@@ -25,11 +25,6 @@ const MainDashboardPage = lazy(() =>
     default: () => <div>Error loading Dashboard. Please refresh.</div>,
   }))
 );
-const UserManagementPage = lazy(() =>
-  import("./pages/UserManagementPage").catch(() => ({
-    default: () => <div>Error loading User Management. Please refresh.</div>,
-  }))
-);
 const PlantOperationsPage = lazy(() =>
   import("./pages/PlantOperationsPage").catch(() => ({
     default: () => <div>Error loading Plant Operations. Please refresh.</div>,
@@ -53,6 +48,28 @@ const SLAManagementPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").catch(() => ({
     default: () => <div>Error loading Settings. Please refresh.</div>,
+  }))
+);
+
+// User Management Pages
+const UserListPage = lazy(() =>
+  import("./pages/user_management/UserListPage").catch(() => ({
+    default: () => <div>Error loading User List. Please refresh.</div>,
+  }))
+);
+const AddUserPage = lazy(() =>
+  import("./pages/user_management/AddUserPage").catch(() => ({
+    default: () => <div>Error loading Add User. Please refresh.</div>,
+  }))
+);
+const UserRolesPage = lazy(() =>
+  import("./pages/user_management/UserRolesPage").catch(() => ({
+    default: () => <div>Error loading User Roles. Please refresh.</div>,
+  }))
+);
+const UserActivityPage = lazy(() =>
+  import("./pages/user_management/UserActivityPage").catch(() => ({
+    default: () => <div>Error loading User Activity. Please refresh.</div>,
   }))
 );
 
@@ -129,6 +146,7 @@ const App: React.FC = () => {
     operations: "op_dashboard",
     packing: "pack_master_data",
     projects: "proj_dashboard",
+    users: "user_list",
   });
 
   useEffect(() => {
@@ -276,7 +294,7 @@ const App: React.FC = () => {
       case "dashboard":
         return t.mainDashboard;
       case "users":
-        return t.userManagement;
+        return t[activeSubPages.users as keyof typeof t] || t.userManagement;
       case "settings":
         return t.header_settings;
       case "sla":
@@ -375,14 +393,41 @@ const App: React.FC = () => {
                 />
               )}
               {currentPage === "users" && (
-                <UserManagementPage
-                  users={users}
-                  currentUser={currentUser}
-                  onEditUser={handleOpenEditUserModal}
-                  onDeleteUser={handleDeleteUser}
-                  onToggleUserStatus={toggleUserStatus}
-                  t={t}
-                />
+                <>
+                  {activeSubPages.users === "user_list" && (
+                    <UserListPage
+                      users={users}
+                      currentUser={currentUser}
+                      onEditUser={handleOpenEditUserModal}
+                      onDeleteUser={handleDeleteUser}
+                      onToggleUserStatus={toggleUserStatus}
+                      t={t}
+                    />
+                  )}
+                  {activeSubPages.users === "add_user" && (
+                    <AddUserPage
+                      onAddUser={(user) => handleSaveUser(user)}
+                      onOpenPasswordDisplay={(password, email, fullName) => {
+                        setGeneratedPassword(password);
+                        setNewUserEmail(email);
+                        setNewUserFullName(fullName);
+                        setShowPasswordDisplay(true);
+                      }}
+                      plantUnits={plantUnits}
+                      t={t}
+                    />
+                  )}
+                  {activeSubPages.users === "user_roles" && (
+                    <UserRolesPage
+                      users={users}
+                      plantUnits={plantUnits}
+                      t={t}
+                    />
+                  )}
+                  {activeSubPages.users === "user_activity" && (
+                    <UserActivityPage users={users} t={t} />
+                  )}
+                </>
               )}
               {currentPage === "settings" && (
                 <SettingsPage

@@ -28,6 +28,8 @@ import ChartPieIcon from "./icons/ChartPieIcon";
 import Bars4Icon from "./icons/Bars4Icon";
 import CogIcon from "./icons/CogIcon";
 import ClockIcon from "./icons/ClockIcon";
+import PlusIcon from "./icons/PlusIcon";
+import ShieldCheckIcon from "./icons/ShieldCheckIcon";
 
 interface SidebarProps {
   currentPage: Page;
@@ -70,7 +72,7 @@ const NavLink: React.FC<NavLinkProps> = ({
       onKeyDown={handleKeyDown}
       className={`w-full flex items-center ${
         isCollapsed ? "justify-center" : "text-left gap-3"
-      } px-3 py-3 rounded-lg text-sm font-semibold transition-all duration-300 group relative min-h-[44px] ${
+      } px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 group relative min-h-[44px] ${
         isActive
           ? "bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 shadow-lg shadow-red-500/10"
           : "text-slate-300 hover:bg-white/5 hover:text-white hover:scale-[1.02] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-2 focus:ring-red-500/50"
@@ -162,7 +164,7 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
   };
 
   return (
-    <div className="space-y-1">
+    <div>
       <button
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
@@ -202,7 +204,7 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
       </button>
       {isOpen && !isCollapsed && (
         <div
-          className="ml-4 space-y-1 animate-fade-in-fast"
+          className="ml-4 flex flex-col gap-1 animate-fade-in-fast"
           id={`submenu-${label.replace(/\s+/g, "-").toLowerCase()}`}
           role="menu"
           aria-label={`${label} submenu`}
@@ -375,6 +377,16 @@ const Sidebar: React.FC<SidebarProps> = ({
     [iconClass]
   );
 
+  const userManagementPages = useMemo(
+    () => [
+      { key: "user_list", icon: <UserGroupIcon className={iconClass} /> },
+      { key: "add_user", icon: <PlusIcon className={iconClass} /> },
+      { key: "user_roles", icon: <ShieldCheckIcon className={iconClass} /> },
+      { key: "user_activity", icon: <ClockIcon className={iconClass} /> },
+    ],
+    [iconClass]
+  );
+
   // Auto-close sidebar on mobile when navigating
   const handleNavigate = useCallback(
     (page: Page, subPage?: string) => {
@@ -502,7 +514,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
           <NavLink
             label={t.mainDashboard}
             icon={<HomeIcon className="w-5 h-5" />}
@@ -544,13 +556,17 @@ const Sidebar: React.FC<SidebarProps> = ({
             isCollapsed={shouldCollapse}
           />
 
-          <NavLink
+          <CollapsibleMenu
             label={t.userManagement}
             icon={<UserGroupIcon className="w-5 h-5" />}
             isActive={currentPage === "users"}
-            onClick={() => handleNavigate("users")}
+            pages={userManagementPages}
+            activeSubPage={activeSubPages.users}
+            onSelect={(subPage) => handleNavigate("users", subPage)}
+            t={t}
             isCollapsed={shouldCollapse}
           />
+
           <NavLink
             label={t.slaManagement}
             icon={<ClockIcon className="w-5 h-5" />}

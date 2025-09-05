@@ -126,6 +126,39 @@ export const translations = {
     delete_user: "Delete User",
     close_button: "Close",
 
+    // User Management Sub-Menu
+    user_list: "Users List",
+    add_user_menu: "Add User",
+    user_roles: "User Roles",
+    user_activity: "User Activity",
+    bulk_operations: "Bulk Operations",
+    user_audit: "User Audit",
+
+    // User Management Descriptions
+    user_list_description: "Manage and view all users in the system",
+    add_user_description:
+      "Create a new user account with appropriate permissions",
+    user_roles_description: "Manage user roles and their permissions",
+    user_activity_description: "Monitor user activities and online status",
+
+    // Activity Page
+    online_users: "Online Users",
+    no_online_users: "No users currently online",
+    activity_filters: "Activity Filters",
+    all_users: "All Users",
+    all_actions: "All Actions",
+    activity_log: "Activity Log",
+    entries: "entries",
+    timestamp: "Timestamp",
+    ip_address: "IP Address",
+
+    // Roles Page
+    users_with_role: "users with this role",
+    role_permissions: "Role Permissions",
+    select_role: "Select Role",
+    module: "Module",
+    permission_level: "Permission Level",
+
     // Plant Operations Dropdown & Page
     op_dashboard: "Dashboard",
     op_report: "Report",
@@ -642,6 +675,38 @@ export const translations = {
       "Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.",
     delete_user: "Hapus Pengguna",
     close_button: "Tutup",
+
+    // User Management Sub-Menu
+    user_list: "Daftar Pengguna",
+    add_user_menu: "Tambah Pengguna",
+    user_roles: "Peran Pengguna",
+    user_activity: "Aktivitas Pengguna",
+    bulk_operations: "Operasi Massal",
+    user_audit: "Audit Pengguna",
+
+    // User Management Descriptions
+    user_list_description: "Kelola dan lihat semua pengguna dalam sistem",
+    add_user_description: "Buat akun pengguna baru dengan izin yang sesuai",
+    user_roles_description: "Kelola peran pengguna dan izin mereka",
+    user_activity_description: "Pantau aktivitas pengguna dan status online",
+
+    // Activity Page
+    online_users: "Pengguna Online",
+    no_online_users: "Tidak ada pengguna yang sedang online",
+    activity_filters: "Filter Aktivitas",
+    all_users: "Semua Pengguna",
+    all_actions: "Semua Tindakan",
+    activity_log: "Log Aktivitas",
+    entries: "entri",
+    timestamp: "Waktu",
+    ip_address: "Alamat IP",
+
+    // Roles Page
+    users_with_role: "pengguna dengan peran ini",
+    role_permissions: "Izin Peran",
+    select_role: "Pilih Peran",
+    module: "Modul",
+    permission_level: "Level Izin",
 
     // Plant Operations Dropdown & Page
     op_dashboard: "Dasbor",

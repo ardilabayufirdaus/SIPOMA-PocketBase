@@ -8,7 +8,7 @@
 
 /* Root font size adjustment for better 100% zoom experience */
 html {
-  font-size: 13px; /* Further optimized for content density */
+  font-size: 14px; /* Further optimized for content density */
   scroll-behavior: smooth;
   line-height: 1.4; /* Improved line height for readability */
 }
