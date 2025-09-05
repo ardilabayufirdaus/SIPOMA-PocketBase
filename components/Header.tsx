@@ -13,6 +13,8 @@ import QuestionMarkCircleIcon from "./icons/QuestionMarkCircleIcon";
 import SunIcon from "./icons/SunIcon";
 import MoonIcon from "./icons/MoonIcon";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useNotifications } from "../hooks/useNotifications";
+import NotificationPanel from "./NotificationPanel";
 
 interface HeaderProps {
   pageTitle: string;
@@ -21,8 +23,8 @@ interface HeaderProps {
   t: any;
   onNavigate: (page: Page) => void;
   onSignOut: () => void;
-  alerts: Alert[];
-  onMarkAllAsRead: () => void;
+  alerts: Alert[]; // Keep for backward compatibility
+  onMarkAllAsRead: () => void; // Keep for backward compatibility
   theme: Theme;
   onToggleTheme: () => void;
   currentUser: User | null;
@@ -36,8 +38,8 @@ const Header: React.FC<HeaderProps> = ({
   t,
   onNavigate,
   onSignOut,
-  alerts,
-  onMarkAllAsRead,
+  alerts, // Keep for backward compatibility but use new hook
+  onMarkAllAsRead, // Keep for backward compatibility
   theme,
   onToggleTheme,
   currentUser,
@@ -46,10 +48,19 @@ const Header: React.FC<HeaderProps> = ({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotifMenuOpen, setIsNotifMenuOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-  const notifDropdownRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const unreadCount = alerts.filter((a) => !a.read).length;
+  // Use the new notifications hook
+  const {
+    notifications,
+    unreadCount,
+    settings,
+    markAsRead,
+    markAllAsRead,
+    dismissNotification,
+    snoozeNotification,
+    updateSettings,
+  } = useNotifications();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,24 +70,12 @@ const Header: React.FC<HeaderProps> = ({
       ) {
         setIsUserMenuOpen(false);
       }
-      if (
-        notifDropdownRef.current &&
-        !notifDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsNotifMenuOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  const severityColors: { [key in AlertSeverity]: string } = {
-    [AlertSeverity.CRITICAL]: "bg-red-500",
-    [AlertSeverity.WARNING]: "bg-amber-500",
-    [AlertSeverity.INFO]: "bg-blue-500",
-  };
 
   return (
     <header className="glass-card border-0 border-b border-white/20 dark:border-slate-700/50 sticky top-0 z-30 backdrop-blur-xl">
@@ -149,89 +148,19 @@ const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Notifications */}
-            <div className="relative" ref={notifDropdownRef}>
-              <button
-                onClick={() => setIsNotifMenuOpen((prev) => !prev)}
-                className="p-3 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 relative transition-all duration-200 backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label={`View notifications. ${
-                  unreadCount > 0
-                    ? `${unreadCount} unread notifications`
-                    : "No new notifications"
-                }`}
-                aria-expanded={isNotifMenuOpen}
-                aria-haspopup="menu"
-              >
-                <BellIcon
-                  className="w-5 h-5 text-slate-600 dark:text-slate-400"
-                  aria-hidden="true"
-                />
-                {unreadCount > 0 && (
-                  <span
-                    className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-red-600 text-xs font-bold text-white ring-2 ring-white dark:ring-slate-800 animate-pulse"
-                    aria-label={`${unreadCount} unread`}
-                  >
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
-              {isNotifMenuOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-72 origin-top-right bg-white dark:bg-slate-800 rounded-md shadow-lg ring-1 ring-black dark:ring-white dark:ring-opacity-10 ring-opacity-5 focus:outline-none z-30 animate-fade-in-fast"
-                  role="menu"
-                  aria-orientation="vertical"
-                >
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-700">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                      {t.notifications_title}
-                    </p>
-                    {unreadCount > 0 && (
-                      <button
-                        onClick={onMarkAllAsRead}
-                        className="text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                      >
-                        {t.mark_all_as_read}
-                      </button>
-                    )}
-                  </div>
-                  <div className="py-1 max-h-64 overflow-y-auto" role="none">
-                    {alerts.length > 0 ? (
-                      alerts.map((alert) => (
-                        <div
-                          key={alert.id}
-                          className={`flex items-start gap-2 px-3 py-2 transition-colors ${
-                            !alert.read ? "bg-red-50 dark:bg-red-500/10" : ""
-                          }`}
-                        >
-                          <div
-                            className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${
-                              severityColors[alert.severity]
-                            }`}
-                          ></div>
-                          <div className="flex-1">
-                            <p className="text-xs text-slate-800 dark:text-slate-200">
-                              {t[alert.message as keyof typeof t] ||
-                                alert.message}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                              {formatTimeSince(alert.timestamp)}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-                        {t.no_new_notifications}
-                      </p>
-                    )}
-                  </div>
-                  <div className="border-t border-slate-100 dark:border-slate-700">
-                    <button className="w-full text-center px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                      {t.view_all_notifications}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <NotificationPanel
+              notifications={notifications}
+              unreadCount={unreadCount}
+              settings={settings}
+              onMarkAsRead={markAsRead}
+              onMarkAllAsRead={markAllAsRead}
+              onDismiss={dismissNotification}
+              onSnooze={snoozeNotification}
+              onUpdateSettings={updateSettings}
+              t={t}
+              isOpen={isNotifMenuOpen}
+              onToggle={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
+            />
 
             {/* User Profile */}
             <div className="relative" ref={userDropdownRef}>

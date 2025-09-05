@@ -24,6 +24,13 @@ export const translations = {
     mark_all_as_read: "Mark all as read",
     view_all_notifications: "View all notifications",
     no_new_notifications: "No new notifications",
+    notification_settings: "Notification Settings",
+    browser_notifications: "Browser Notifications",
+    sound_alerts: "Sound Alerts",
+    critical_only: "Critical Only",
+    snooze_notification: "Snooze",
+    dismiss_notification: "Dismiss",
+    mark_as_read: "Mark as read",
 
     // Main Dashboard
     dashboard_welcome_title: "Welcome to SIPOMA",
@@ -572,6 +579,13 @@ export const translations = {
     mark_all_as_read: "Tandai semua dibaca",
     view_all_notifications: "Lihat semua notifikasi",
     no_new_notifications: "Tidak ada notifikasi baru",
+    notification_settings: "Pengaturan Notifikasi",
+    browser_notifications: "Notifikasi Browser",
+    sound_alerts: "Suara Peringatan",
+    critical_only: "Hanya Kritis",
+    snooze_notification: "Tunda",
+    dismiss_notification: "Tutup",
+    mark_as_read: "Tandai dibaca",
 
     // Main Dashboard
     dashboard_welcome_title: "Selamat Datang di SIPOMA",

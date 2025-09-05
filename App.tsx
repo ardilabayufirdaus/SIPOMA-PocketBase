@@ -374,6 +374,7 @@ const App: React.FC = () => {
           currentUser={currentUser}
           onToggleSidebar={handleToggleSidebar}
         />
+
         <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
           <div className="max-w-none w-full">
             <Suspense fallback={<PageLoading />}>
