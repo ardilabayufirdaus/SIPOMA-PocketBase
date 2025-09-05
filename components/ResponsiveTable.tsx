@@ -37,7 +37,7 @@ export const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
       {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table
-          className={`min-w-full divide-y divide-slate-200 dark:divide-slate-700 ${className}`}
+          className={`min-w-full divide-y divide-slate-200 dark:divide-slate-700 table-dense ${className}`}
         >
           {children}
         </table>
@@ -71,12 +71,9 @@ export const ResponsiveTableBody: React.FC<ResponsiveTableBodyProps> = ({
       </tbody>
 
       {/* Mobile Card Layout */}
-      <div className="md:hidden space-y-4 p-4">
+      <div className="md:hidden space-y-3 p-3">
         {React.Children.map(children, (child, index) => (
-          <div
-            key={index}
-            className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4"
-          >
+          <div key={index} className="mobile-card">
             {child}
           </div>
         ))}

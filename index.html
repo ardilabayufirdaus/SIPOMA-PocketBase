@@ -150,20 +150,20 @@
           inset 0 1px 0 rgba(255, 255, 255, 0.1);
       }
 
-      /* Enhanced hover animations */
+      /* Enhanced hover animations with subtle scaling */
       .hover-lift {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       .hover-lift:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        transform: translateY(-2px) scale(1.01);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.12),
+          0 6px 8px -5px rgba(0, 0, 0, 0.06);
       }
 
       .dark .hover-lift:hover {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4),
-          0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.3),
+          0 6px 8px -5px rgba(0, 0, 0, 0.15);
       }
 
       /* Smooth page transitions */

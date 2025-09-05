@@ -70,7 +70,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       <div
         className={`bg-white dark:bg-slate-900 p-3 rounded-lg shadow-md flex items-start gap-2 transition hover:shadow-lg focus-within:ring-2 focus-within:ring-red-400 dark:focus-within:ring-red-300 ${getTrendBorder()} ${
           isInteractive
-            ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transform hover:scale-105"
+            ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transform hover:scale-[1.02]"
             : ""
         }`}
         tabIndex={isInteractive ? 0 : -1}

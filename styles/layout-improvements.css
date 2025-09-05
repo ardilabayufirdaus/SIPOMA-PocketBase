@@ -1,0 +1,284 @@
+/* Enhanced Layout Improvements for SIPOMA */
+
+/* Improved Content Container System */
+.content-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    padding: 1rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-container {
+    padding: 1.5rem 2rem;
+  }
+}
+
+/* Enhanced Grid System untuk Content Density */
+.content-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .content-grid-sm {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .content-grid-md {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .content-grid-lg {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .content-grid-xl {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Card Layout Improvements */
+.card-compact {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.card-compact:hover {
+  transform: translateY(-1px) scale(1.005);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dark .card-compact {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(71, 85, 105, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Dashboard Metrics Improvements */
+.metrics-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Table Layout Density Improvements */
+.table-dense {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.table-dense th {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.table-dense td {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.7rem;
+}
+
+/* Mobile Card Layout untuk Tables */
+.mobile-card {
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .mobile-card {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+.mobile-card-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+  font-size: 0.75rem;
+}
+
+.mobile-card-field:last-child {
+  border-bottom: none;
+}
+
+.mobile-card-label {
+  font-weight: 500;
+  color: #64748b;
+  min-width: 40%;
+}
+
+.dark .mobile-card-label {
+  color: #94a3b8;
+}
+
+/* Content Hierarchy Improvements */
+.page-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.3);
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+}
+
+.dark .page-title {
+  color: #f1f5f9;
+}
+
+.page-subtitle {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.dark .page-subtitle {
+  color: #94a3b8;
+}
+
+/* Sidebar Content Spacing */
+.sidebar-content {
+  padding: 0.75rem;
+}
+
+.sidebar-section {
+  margin-bottom: 1rem;
+}
+
+.sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Enhanced Loading States */
+.content-skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Form Layout Improvements */
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .form-grid-md {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Enhanced Button Spacing */
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.button-group-center {
+  justify-content: center;
+}
+
+.button-group-end {
+  justify-content: flex-end;
+}
+
+/* Content Area Optimizations */
+.content-area {
+  min-height: calc(100vh - 4rem); /* Adjust based on header height */
+  display: flex;
+  flex-direction: column;
+}
+
+.content-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+/* Typography Scale Adjustments */
+.text-dense {
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.text-dense-sm {
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.text-dense-xs {
+  font-size: 0.65rem;
+  line-height: 1.3;
+}
+
+/* Enhanced Focus States */
+.focus-ring {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Improved Hover States */
+.hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-1px) scale(1.005);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dark .hover-lift:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

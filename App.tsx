@@ -339,7 +339,7 @@ const App: React.FC = () => {
       <div
         className="flex flex-col min-h-screen transition-all duration-300"
         style={{
-          marginLeft: isMobile ? "0" : "4rem", // 64px untuk icon-only width, akan bertransisi smooth
+          marginLeft: isMobile ? "0" : "4rem", // 64px untuk icon-only width
         }}
       >
         <Header
@@ -356,69 +356,71 @@ const App: React.FC = () => {
           currentUser={currentUser}
           onToggleSidebar={handleToggleSidebar}
         />
-        <main className="flex-grow p-0 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition">
-          <Suspense fallback={<PageLoading />}>
-            {currentPage === "dashboard" && (
-              <MainDashboardPage
-                t={t}
-                usersCount={users.filter((u) => u.is_active).length}
-                onlineUsersCount={onlineUsersCount}
-                activeProjects={
-                  projects.filter(
-                    (p) =>
-                      p.status === ProjectStatus.ACTIVE ||
-                      p.status === ProjectStatus.IN_PROGRESS
-                  ).length
-                }
-                onNavigate={handleNavigate}
-              />
-            )}
-            {currentPage === "users" && (
-              <UserManagementPage
-                users={users}
-                currentUser={currentUser}
-                onEditUser={handleOpenEditUserModal}
-                onDeleteUser={handleDeleteUser}
-                onToggleUserStatus={toggleUserStatus}
-                t={t}
-              />
-            )}
-            {currentPage === "settings" && (
-              <SettingsPage
-                t={t}
-                user={currentUser}
-                onOpenProfileModal={handleOpenProfileModal}
-                currentLanguage={language}
-                onLanguageChange={setLanguage}
-              />
-            )}
-            {currentPage === "sla" && <SLAManagementPage t={t} />}
-            {currentPage === "operations" && (
-              <PlantOperationsPage
-                activePage={activeSubPages.operations}
-                t={t}
-                plantData={{
-                  machines,
-                  kpis,
-                  alerts,
-                  productionData,
-                  toggleMachineStatus,
-                }}
-              />
-            )}
-            {currentPage === "packing" && (
-              <PackingPlantPage activePage={activeSubPages.packing} t={t} />
-            )}
-            {currentPage === "projects" && (
-              <ProjectManagementPage
-                activePage={activeSubPages.projects}
-                t={t}
-                onNavigate={(subpage: string) =>
-                  handleNavigate("projects", subpage)
-                }
-              />
-            )}
-          </Suspense>
+        <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
+          <div className="max-w-none w-full">
+            <Suspense fallback={<PageLoading />}>
+              {currentPage === "dashboard" && (
+                <MainDashboardPage
+                  t={t}
+                  usersCount={users.filter((u) => u.is_active).length}
+                  onlineUsersCount={onlineUsersCount}
+                  activeProjects={
+                    projects.filter(
+                      (p) =>
+                        p.status === ProjectStatus.ACTIVE ||
+                        p.status === ProjectStatus.IN_PROGRESS
+                    ).length
+                  }
+                  onNavigate={handleNavigate}
+                />
+              )}
+              {currentPage === "users" && (
+                <UserManagementPage
+                  users={users}
+                  currentUser={currentUser}
+                  onEditUser={handleOpenEditUserModal}
+                  onDeleteUser={handleDeleteUser}
+                  onToggleUserStatus={toggleUserStatus}
+                  t={t}
+                />
+              )}
+              {currentPage === "settings" && (
+                <SettingsPage
+                  t={t}
+                  user={currentUser}
+                  onOpenProfileModal={handleOpenProfileModal}
+                  currentLanguage={language}
+                  onLanguageChange={setLanguage}
+                />
+              )}
+              {currentPage === "sla" && <SLAManagementPage t={t} />}
+              {currentPage === "operations" && (
+                <PlantOperationsPage
+                  activePage={activeSubPages.operations}
+                  t={t}
+                  plantData={{
+                    machines,
+                    kpis,
+                    alerts,
+                    productionData,
+                    toggleMachineStatus,
+                  }}
+                />
+              )}
+              {currentPage === "packing" && (
+                <PackingPlantPage activePage={activeSubPages.packing} t={t} />
+              )}
+              {currentPage === "projects" && (
+                <ProjectManagementPage
+                  activePage={activeSubPages.projects}
+                  t={t}
+                  onNavigate={(subpage: string) =>
+                    handleNavigate("projects", subpage)
+                  }
+                />
+              )}
+            </Suspense>
+          </div>
         </main>
       </div>
 
@@ -503,13 +505,13 @@ const App: React.FC = () => {
         <div className="bg-gradient-to-r from-slate-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10 dark:border-slate-700/50">
           <button
             onClick={handleSignOutCancel}
-            className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-105 dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
+            className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
           >
             {t.cancel_button}
           </button>
           <button
             onClick={handleSignOutConfirm}
-            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-105"
+            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
           >
             {t.header_sign_out}
           </button>

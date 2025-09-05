@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Page } from "../App";
+import {
+  DashboardLayout,
+  MetricsGrid,
+  ContentGrid,
+  CompactCard,
+} from "../components/layout/DashboardLayout";
 import UserGroupIcon from "../components/icons/UserGroupIcon";
 import UsersOnlineIcon from "../components/icons/UsersOnlineIcon";
 import ClipboardDocumentListIcon from "../components/icons/ClipboardDocumentListIcon";
@@ -120,7 +126,7 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
     <>
       <div
         className={`glass-card p-2 rounded-xl hover-lift group cursor-pointer overflow-hidden relative ${getVariantClasses()} ${
-          isInteractive ? "hover:shadow-lg transform hover:scale-105" : ""
+          isInteractive ? "hover:shadow-lg transform hover:scale-[1.02]" : ""
         }`}
         onClick={handleClick}
       >
@@ -129,7 +135,7 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
         ></div>
         <div className="relative z-10 flex items-center">
           <div
-            className={`p-1.5 rounded-lg ${getIconClasses()} mr-2 group-hover:scale-110 transition-transform duration-300`}
+            className={`p-1.5 rounded-lg ${getIconClasses()} mr-2 group-hover:scale-105 transition-transform duration-300`}
           >
             {React.cloneElement(icon as React.ReactElement<any>, {
               className: "w-4 h-4",
@@ -219,7 +225,7 @@ const QuickLinkCard: React.FC<QuickLinkCardProps> = ({
   >
     <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     <div className="relative z-10 flex flex-col items-center justify-center text-center">
-      <div className="p-1.5 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:to-red-600 group-hover:text-white transition-all duration-300 mb-1.5 group-hover:scale-110">
+      <div className="p-1.5 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:to-red-600 group-hover:text-white transition-all duration-300 mb-1.5 group-hover:scale-105">
         {React.cloneElement(icon as React.ReactElement<any>, {
           className: "w-4 h-4",
         })}
@@ -311,7 +317,7 @@ const ProjectProgressWidget: React.FC<ProjectProgressWidgetProps> = ({
   return (
     <>
       <div
-        className="glass-card p-3 rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
+        className="glass-card p-3 rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="flex items-center gap-2 mb-2">
@@ -498,7 +504,7 @@ const PerformanceChartWidget: React.FC<PerformanceChartWidgetProps> = ({
   return (
     <>
       <div
-        className="glass-card p-3 rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
+        className="glass-card p-3 rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="flex items-center gap-2 mb-2">
@@ -662,7 +668,7 @@ const StockOverviewWidget: React.FC<StockOverviewWidgetProps> = ({
   return (
     <>
       <div
-        className="glass-card p-3 rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105"
+        className="glass-card p-3 rounded-xl cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="flex items-center gap-2 mb-2">
