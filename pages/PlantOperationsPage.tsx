@@ -1,0 +1,87 @@
+import React from "react";
+import PlaceholderPage from "../components/PlaceholderPage";
+import PlantOperationsMasterData from "./plant_operations/PlantOperationsMasterData";
+import CcrDataEntryPage from "./plant_operations/CcrDataEntryPage";
+import AutonomousDataEntryPage from "./plant_operations/AutonomousDataEntryPage";
+import CopAnalysisPage from "./plant_operations/CopAnalysisPage";
+import ReportPage from "./plant_operations/ReportPage";
+import WorkInstructionLibraryPage from "./plant_operations/WorkInstructionLibraryPage";
+
+interface PlantData {
+  machines: any[];
+  kpis: any[];
+  alerts: any[];
+  productionData: any[];
+  toggleMachineStatus: (machineId: string) => void;
+}
+
+interface PageProps {
+  t: any;
+  plantData: PlantData;
+}
+
+const PlantOperationsDashboard: React.FC<PageProps> = ({ t, plantData }) => {
+  // Temporary placeholder for development - remove when data is available
+  return (
+    <div className="p-6 lg:p-8 space-y-8">
+      <div className="bg-white rounded-xl shadow-md p-8 text-center">
+        <div className="mx-auto w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+          <svg
+            className="w-12 h-12 text-slate-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 9.172V5L8 4z"
+            />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-slate-800 mb-2">
+          {t.plant_operations_dashboard || "Plant Operations Dashboard"}
+        </h3>
+        <p className="text-slate-600 mb-6">
+          {t.under_development ||
+            "Fitur ini sedang dalam pengembangan. Dashboard operasi pabrik akan segera tersedia dengan data real-time."}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+interface PlantOperationsPageProps {
+  activePage: string;
+  t: any;
+  plantData: PlantData;
+}
+
+const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({
+  activePage,
+  t,
+  plantData,
+}) => {
+  switch (activePage) {
+    case "op_dashboard":
+      return <PlantOperationsDashboard t={t} plantData={plantData} />;
+    case "op_report":
+      return <ReportPage t={t} />;
+    case "op_master_data":
+      return <PlantOperationsMasterData t={t} />;
+    case "op_ccr_data_entry":
+      return <CcrDataEntryPage t={t} />;
+    case "op_autonomous_data_entry":
+      return <AutonomousDataEntryPage t={t} />;
+    case "op_cop_analysis":
+      return <CopAnalysisPage t={t} />;
+    case "op_work_instruction_library":
+      return <WorkInstructionLibraryPage t={t} />;
+    default:
+      const pageTitle = t[activePage as keyof typeof t] || activePage;
+      return <PlaceholderPage title={pageTitle} t={t} />;
+  }
+};
+
+export default PlantOperationsPage;
