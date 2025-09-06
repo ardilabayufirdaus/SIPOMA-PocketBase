@@ -720,7 +720,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <label
               htmlFor="ccr-date"
-              className="text-sm font-medium text-slate-700"
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
             >
               {t.select_date}:
             </label>
@@ -729,15 +729,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="ccr-date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
             />
           </div>
         </div>
       </div>
 
       {/* Silo Data Table */}
-      <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
-        <h3 className="text-lg font-semibold text-slate-800">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
           {t.ccr_data_entry_title}
         </h3>
         <div className="overflow-x-auto">
@@ -934,7 +934,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               )}
               {dailySiloData.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center py-10 text-slate-500">
+                  <td
+                    colSpan={10}
+                    className="text-center py-10 text-slate-500 dark:text-slate-400"
+                  >
                     {!selectedCategory
                       ? "No plant categories found in Master Data."
                       : `No silo master data found for the category: ${selectedCategory}.`}
@@ -947,16 +950,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Enhanced Parameter Data Table */}
-      <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-slate-800">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
             {t.ccr_parameter_data_entry_title}
           </h3>
 
           {/* Table Controls */}
-          <div className="flex items-center gap-2 text-sm text-slate-600">
+          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
             <span>Use ↑↓←→ or Tab to navigate</span>
-            <span className="text-slate-400">|</span>
+            <span className="text-slate-400 dark:text-slate-500">|</span>
             <span>Press Esc to exit navigation</span>
           </div>
         </div>
@@ -1393,9 +1396,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Downtime Data Table */}
-      <div className="bg-white p-6 rounded-lg shadow-md space-y-6">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-slate-800">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
             {t.downtime_data_entry_title}
           </h3>
           <button
@@ -1407,22 +1410,22 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.start_time}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.end_time}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.unit}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.pic}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.problem}
                 </th>
                 <th className="relative px-6 py-3">
@@ -1430,12 +1433,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {loading ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="text-center py-10 text-slate-500 animate-pulse"
+                    className="text-center py-10 text-slate-500 dark:text-slate-400 animate-pulse"
                   >
                     Loading data...
                   </td>
@@ -1444,8 +1447,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 dailyDowntimeData.map((downtime, idx) => (
                   <tr
                     key={downtime.id}
-                    className={`hover:bg-slate-50 ${
-                      idx % 2 === 0 ? "bg-slate-50" : "bg-white"
+                    className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                      idx % 2 === 0
+                        ? "bg-slate-50 dark:bg-slate-700"
+                        : "bg-white dark:bg-slate-800"
                     } transition-colors duration-200`}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-800">

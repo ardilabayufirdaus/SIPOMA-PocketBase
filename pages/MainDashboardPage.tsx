@@ -18,7 +18,6 @@ import ClockIcon from "../components/icons/ClockIcon";
 import ArrowTrendingUpIcon from "../components/icons/ArrowTrendingUpIcon";
 import ArrowTrendingDownIcon from "../components/icons/ArrowTrendingDownIcon";
 import ChartPieIcon from "../components/icons/ChartPieIcon";
-import PresentationChartLineIcon from "../components/icons/PresentationChartLineIcon";
 import CircleStackIcon from "../components/icons/CircleStackIcon";
 import ArrowPathRoundedSquareIcon from "../components/icons/ArrowPathRoundedSquareIcon";
 import ComboChart from "../components/charts/ComboChart";
@@ -1214,10 +1213,21 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
 
       {/* Charts and Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-        <div className="xl:col-span-2">
-          <PerformanceChartWidget data={realPerformanceData} />
+        {/* Only show Performance Chart if we have data */}
+        {realPerformanceData && realPerformanceData.length > 0 ? (
+          <div className="xl:col-span-2">
+            <PerformanceChartWidget data={realPerformanceData} />
+          </div>
+        ) : null}
+        <div
+          className={
+            realPerformanceData && realPerformanceData.length > 0
+              ? ""
+              : "xl:col-span-3"
+          }
+        >
+          <StockOverviewWidget stockData={transformedStockData} />
         </div>
-        <StockOverviewWidget stockData={transformedStockData} />
       </div>
 
       {/* Widgets Section */}
@@ -1256,16 +1266,6 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             title={t.link_project_board}
             icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
             onClick={() => onNavigate("projects", "proj_list")}
-          />
-          <QuickLinkCard
-            title="Analytics"
-            icon={<ChartBarIcon className="w-4 h-4" />}
-            onClick={() => onNavigate("operations", "op_analytics")}
-          />
-          <QuickLinkCard
-            title="Reports"
-            icon={<PresentationChartLineIcon className="w-4 h-4" />}
-            onClick={() => onNavigate("operations", "op_reports")}
           />
         </div>
       </div>

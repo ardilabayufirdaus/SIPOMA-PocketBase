@@ -76,9 +76,9 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   return (
     <div className="p-6 lg:p-8">
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.pack_master_data}
           </h2>
           <button
@@ -91,14 +91,14 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 {tableHeaders.map((header) => (
                   <th
                     key={header}
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
                   >
                     {t[header]}
                   </th>
@@ -108,30 +108,30 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {records.map((record) => {
                 const liveStock = record.silo_capacity - record.dead_stock;
                 return (
                   <tr
                     key={record.id}
-                    className="hover:bg-slate-50 transition-colors duration-150"
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 dark:text-slate-200">
                       {record.area}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-mono">
                       {record.plant_code}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {formatNumber(record.silo_capacity)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {formatNumber(record.dead_stock)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 font-semibold">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 dark:text-slate-200 font-semibold">
                       {formatNumber(liveStock)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {record.cement_type}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -180,11 +180,11 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
           title={t.delete_confirmation_title}
         >
           <div className="p-6">
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               {t.delete_confirmation_message}
             </p>
           </div>
-          <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+          <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
             <button
               onClick={handleDeleteConfirm}
               className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-150"
@@ -193,7 +193,7 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
             </button>
             <button
               onClick={handleCloseModals}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-150"
+              className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-150"
             >
               {t.cancel_button}
             </button>

@@ -577,9 +577,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   return (
     <div className="space-y-8">
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <h2 className="text-2xl font-semibold text-slate-800">
+          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
             {t.op_master_data}
           </h2>
           <div className="flex items-center gap-2">
@@ -592,14 +592,14 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600"
             >
               <DocumentArrowUpIcon className="w-5 h-5" />
               {t.import_all}
             </button>
             <button
               onClick={handleExportAll}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600"
             >
               <DocumentArrowDownIcon className="w-5 h-5" />
               {t.export_all}
@@ -609,9 +609,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Plant Unit Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.plant_unit_title}
           </h2>
           <button
@@ -622,13 +622,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.unit}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.plant_category}
                 </th>
                 <th className="relative px-6 py-3">
@@ -636,13 +636,16 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {paginatedPlantUnits.map((unit) => (
-                <tr key={unit.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                <tr
+                  key={unit.id}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {unit.unit}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                     {unit.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -676,9 +679,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* PIC Settings Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.pic_setting_title}
           </h2>
           <button
@@ -689,10 +692,10 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           </button>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.pic}
                 </th>
                 <th className="relative px-6 py-3">
@@ -700,10 +703,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {paginatedPicSettings.map((pic) => (
-                <tr key={pic.id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                <tr
+                  key={pic.id}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {pic.pic}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -737,9 +743,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Parameter Settings Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.parameter_settings_title}
           </h2>
           <div className="flex items-center gap-2">
@@ -877,9 +883,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Silo Capacity Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.silo_capacity_title}
           </h2>
           <div className="flex items-center gap-2">
@@ -1016,9 +1022,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* COP Parameters Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.cop_parameters_title}
           </h2>
           <div className="flex items-center gap-2">
@@ -1122,9 +1128,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Report Settings Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.report_settings_title}
           </h2>
           <button
@@ -1272,11 +1278,11 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         title={t.delete_confirmation_title}
       >
         <div className="p-6">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {t.delete_confirmation_message}
           </p>
         </div>
-        <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+        <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
           <button
             onClick={handleDeleteConfirm}
             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
@@ -1285,7 +1291,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           </button>
           <button
             onClick={handleCloseModals}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
             {t.cancel_button}
           </button>

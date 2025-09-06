@@ -361,9 +361,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <h2 className="text-xl font-semibold text-slate-800">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.op_cop_analysis}
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
@@ -375,7 +375,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 id="cop-filter-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
               >
                 {plantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -392,7 +392,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 id="cop-filter-unit"
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed dark:disabled:bg-slate-700"
                 disabled={unitsForCategory.length === 0}
               >
                 {unitsForCategory.map((unit) => (
@@ -410,7 +410,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 id="cop-filter-month"
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
               >
                 {monthOptions.map((m) => (
                   <option key={m.value} value={m.value}>
@@ -427,7 +427,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 id="cop-filter-year"
                 value={filterYear}
                 onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
               >
                 {yearOptions.map((y) => (
                   <option key={y} value={y}>
@@ -440,50 +440,50 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm border-collapse">
-            <thead className="bg-slate-100">
+            <thead className="bg-slate-100 dark:bg-slate-700">
               <tr>
-                <th className="sticky left-0 bg-slate-100 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200">
+                <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
                   No.
                 </th>
-                <th className="sticky left-12 bg-slate-100 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 min-w-[200px]">
+                <th className="sticky left-12 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[200px]">
                   {t.parameter}
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
                   {t.min}
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
                   {t.max}
                 </th>
                 {daysHeader.map((day) => (
                   <th
                     key={day}
-                    className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-14"
+                    className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-14"
                   >
                     {day}
                   </th>
                 ))}
-                <th className="sticky right-0 bg-slate-100 z-30 px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-l-2 border-slate-300">
+                <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600">
                   Avg.
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="bg-white dark:bg-slate-800">
               {analysisData.map((row, rowIndex) => (
                 <tr key={row.parameter.id} className="group">
-                  <td className="sticky left-0 z-20 px-4 py-2 whitespace-nowrap text-slate-500 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50">
+                  <td className="sticky left-0 z-20 px-4 py-2 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
                     {rowIndex + 1}
                   </td>
-                  <td className="sticky left-12 z-20 px-4 py-2 whitespace-nowrap font-medium text-slate-800 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50">
+                  <td className="sticky left-12 z-20 px-4 py-2 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
                     {row.parameter.parameter}
                   </td>
                   {/* FIX: Use snake_case properties `min_value` and `max_value` */}
-                  <td className="px-4 py-2 whitespace-nowrap text-center text-slate-600 border-b border-r border-slate-200">
+                  <td className="px-4 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600">
                     {formatCopNumber(row.parameter.min_value)}
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center text-slate-600 border-b border-r border-slate-200">
+                  <td className="px-4 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600">
                     {formatCopNumber(row.parameter.max_value)}
                   </td>
                   {row.dailyValues.map((day, dayIndex) => {
@@ -491,14 +491,14 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                     return (
                       <td
                         key={dayIndex}
-                        className={`relative px-2 py-1.5 whitespace-nowrap text-center border-b border-r border-slate-200 transition-colors duration-150 ${colors.bg}`}
+                        className={`relative px-2 py-1.5 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
                       >
                         <div className="relative group/cell h-full w-full flex items-center justify-center">
                           <span className={`font-medium ${colors.text}`}>
                             {formatCopNumber(day.raw)}
                           </span>
                           {day.raw !== undefined && (
-                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
+                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
                               <div className="flex items-center justify-between gap-4">
                                 <span className="font-bold">
                                   {formatDate(
@@ -551,7 +551,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                     const avgColors = getPercentageColor(row.monthlyAverage);
                     return (
                       <td
-                        className={`sticky right-0 z-20 px-4 py-2 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100`}
+                        className={`sticky right-0 z-20 px-4 py-2 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700`}
                       >
                         <span className={avgColors.text}>
                           {formatCopNumber(row.monthlyAverageRaw)}
@@ -565,7 +565,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 <tr>
                   <td
                     colSpan={daysHeader.length + 5}
-                    className="text-center py-10 text-slate-500"
+                    className="text-center py-10 text-slate-500 dark:text-slate-400"
                   >
                     No COP parameters selected or no data available.
                   </td>
@@ -573,10 +573,10 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
               )}
             </tbody>
             <tfoot className="font-semibold">
-              <tr className="border-t-2 border-slate-300">
+              <tr className="border-t-2 border-slate-300 dark:border-slate-600">
                 <td
                   colSpan={4}
-                  className="sticky left-0 z-20 px-4 py-3 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
+                  className="sticky left-0 z-20 px-4 py-3 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
                 >
                   {t.qaf_daily}
                 </td>
@@ -585,7 +585,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   return (
                     <td
                       key={index}
-                      className={`px-2 py-3 text-center border-b border-r border-slate-200 ${colors.bg} ${colors.text}`}
+                      className={`px-2 py-3 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
                     >
                       <div className="relative group/cell h-full w-full flex items-center justify-center">
                         <span>
@@ -594,7 +594,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                             : "-"}
                         </span>
                         {qaf.total > 0 && (
-                          <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
+                          <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
                             {t.qaf_tooltip
                               ?.replace("{inRange}", qaf.inRange)
                               .replace("{total}", qaf.total)}
@@ -609,7 +609,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   const colors = getQafColor(qaf.value);
                   return (
                     <td
-                      className={`sticky right-0 z-20 px-4 py-3 text-center border-b border-l-2 border-slate-300 ${colors.bg} ${colors.text}`}
+                      className={`sticky right-0 z-20 px-4 py-3 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text}`}
                     >
                       <div className="relative group/cell h-full w-full flex items-center justify-center">
                         <span>
@@ -618,7 +618,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                             : "-"}
                         </span>
                         {qaf.total > 0 && (
-                          <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 left-1/2 -translate-x-1/2 shadow-lg">
+                          <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 left-1/2 -translate-x-1/2 shadow-lg">
                             {t.qaf_tooltip
                               ?.replace("{inRange}", qaf.inRange)
                               .replace("{total}", qaf.total)}
