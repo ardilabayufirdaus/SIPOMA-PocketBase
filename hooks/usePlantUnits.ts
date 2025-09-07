@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
-import { PlantUnit } from '../types';
-import { supabase } from '../utils/supabase';
+import { useState, useCallback, useEffect } from "react";
+import { PlantUnit } from "../types";
+import { supabase } from "../utils/supabase";
 
 export const usePlantUnits = () => {
   const [records, setRecords] = useState<PlantUnit[]>([]);
@@ -9,13 +9,13 @@ export const usePlantUnits = () => {
   const fetchRecords = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('plant_units')
-      .select('*')
-      .order('category')
-      .order('unit');
-    
+      .from("plant_units")
+      .select("*")
+      .order("category")
+      .order("unit");
+
     if (error) {
-      console.error('Error fetching plant units:', error);
+      console.error("Error fetching plant units:", error);
       setRecords([]);
     } else {
       setRecords(data || []);
@@ -27,39 +27,96 @@ export const usePlantUnits = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  const addRecord = useCallback(async (record: Omit<PlantUnit, 'id'>) => {
-    const { error } = await supabase.from('plant_units').insert([record]);
-    if (error) console.error('Error adding plant unit:', error);
-    else fetchRecords();
-  }, [fetchRecords]);
+  const addRecord = useCallback(
+    async (record: Omit<PlantUnit, "id">) => {
+      const { error } = await supabase.from("plant_units").insert([record]);
+      if (error) console.error("Error adding plant unit:", error);
+      else fetchRecords();
+    },
+    [fetchRecords]
+  );
 
-  const updateRecord = useCallback(async (updatedRecord: PlantUnit) => {
-    const { id, ...updateData } = updatedRecord;
-    const { error } = await supabase.from('plant_units').update(updateData).eq('id', id);
-    if (error) console.error('Error updating plant unit:', error);
-    else fetchRecords();
-  }, [fetchRecords]);
+  const updateRecord = useCallback(
+    async (updatedRecord: PlantUnit) => {
+      const { id, ...updateData } = updatedRecord;
+      const { error } = await supabase
+        .from("plant_units")
+        .update(updateData)
+        .eq("id", id);
+      if (error) console.error("Error updating plant unit:", error);
+      else fetchRecords();
+    },
+    [fetchRecords]
+  );
 
-  const deleteRecord = useCallback(async (recordId: string) => {
-    const { error } = await supabase.from('plant_units').delete().eq('id', recordId);
-    if (error) console.error('Error deleting plant unit:', error);
-    else fetchRecords();
-  }, [fetchRecords]);
+  const deleteRecord = useCallback(
+    async (recordId: string) => {
+      const { error } = await supabase
+        .from("plant_units")
+        .delete()
+        .eq("id", recordId);
+      if (error) console.error("Error deleting plant unit:", error);
+      else fetchRecords();
+    },
+    [fetchRecords]
+  );
 
-  const setAllRecords = useCallback(async (newRecords: Omit<PlantUnit, 'id'>[]) => {
-    // This is a more complex operation, ideally done in a transaction or server-side function.
-    // For simplicity here, we'll delete all and insert new.
-    // WARNING: This is destructive and not recommended for production without proper safeguards.
-    const { error: deleteError } = await supabase.from('plant_units').delete().neq('id', '0'); // A trick to delete all rows
-    if (deleteError) {
-      console.error('Error clearing plant units:', deleteError);
-      return;
-    }
-    const { error: insertError } = await supabase.from('plant_units').insert(newRecords);
-    if (insertError) console.error('Error bulk inserting plant units:', insertError);
-    else fetchRecords();
-  }, [fetchRecords]);
+  const setAllRecords = useCallback(
+    async (newRecords: Omit<PlantUnit, "id">[]) => {
+      try {
+        // First, get all existing records to delete them properly
+        const { data: existingRecords, error: fetchError } = await supabase
+          .from("plant_units")
+          .select("id");
 
+        if (fetchError) {
+          console.error("Error fetching existing plant units:", fetchError);
+          return;
+        }
 
-  return { records, addRecord, updateRecord, deleteRecord, setAllRecords, loading };
+        // Delete all existing records if any exist
+        if (existingRecords && existingRecords.length > 0) {
+          const { error: deleteError } = await supabase
+            .from("plant_units")
+            .delete()
+            .in(
+              "id",
+              existingRecords.map((r) => r.id)
+            );
+
+          if (deleteError) {
+            console.error("Error clearing plant units:", deleteError);
+            return;
+          }
+        }
+
+        // Insert new records
+        if (newRecords.length > 0) {
+          const { error: insertError } = await supabase
+            .from("plant_units")
+            .insert(newRecords);
+
+          if (insertError) {
+            console.error("Error bulk inserting plant units:", insertError);
+            return;
+          }
+        }
+
+        // Refresh the data
+        fetchRecords();
+      } catch (error) {
+        console.error("Error in setAllRecords:", error);
+      }
+    },
+    [fetchRecords]
+  );
+
+  return {
+    records,
+    addRecord,
+    updateRecord,
+    deleteRecord,
+    setAllRecords,
+    loading,
+  };
 };
