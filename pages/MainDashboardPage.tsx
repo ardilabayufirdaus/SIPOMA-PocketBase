@@ -26,6 +26,7 @@ import { usePlantData } from "../hooks/usePlantData";
 import { usePackingPlantStockData } from "../hooks/usePackingPlantStockData";
 import { usePackingPlantMasterData } from "../hooks/usePackingPlantMasterData";
 import { useCcrSiloData } from "../hooks/useCcrSiloData";
+import { formatNumber, formatPercentage } from "../utils/formatters";
 import {
   InteractiveCardModal,
   BreakdownData,
@@ -606,12 +607,12 @@ const StockOverviewWidget: React.FC<StockOverviewWidgetProps> = ({
     metrics: [
       {
         label: "Total Stock",
-        value: totalStock.toLocaleString(),
+        value: formatNumber(totalStock),
         unit: "units",
       },
       {
         label: "Total Capacity",
-        value: totalCapacity.toLocaleString(),
+        value: formatNumber(totalCapacity),
         unit: "units",
       },
       {
@@ -640,9 +641,9 @@ const StockOverviewWidget: React.FC<StockOverviewWidgetProps> = ({
     chartType: "pie" as const,
     details: stockData.map((item) => ({
       label: item.area,
-      value: `${item.currentStock.toLocaleString()} / ${item.capacity.toLocaleString()} (${Math.round(
-        (item.currentStock / item.capacity) * 100
-      )}%)`,
+      value: `${formatNumber(item.currentStock)} / ${formatNumber(
+        item.capacity
+      )} (${Math.round((item.currentStock / item.capacity) * 100)}%)`,
       status:
         item.currentStock / item.capacity > 0.9
           ? "critical"
@@ -733,7 +734,7 @@ const StockOverviewWidget: React.FC<StockOverviewWidgetProps> = ({
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold">
-                    {item.currentStock.toLocaleString()}
+                    {formatNumber(item.currentStock)}
                   </p>
                   <div className="flex items-center gap-0.5">
                     {item.trend > 0 ? (
@@ -746,7 +747,7 @@ const StockOverviewWidget: React.FC<StockOverviewWidgetProps> = ({
                         item.trend > 0 ? "text-green-600" : "text-red-600"
                       }`}
                     >
-                      {Math.abs(item.trend)}%
+                      {formatPercentage(Math.abs(item.trend))}%
                     </span>
                   </div>
                 </div>

@@ -63,13 +63,71 @@ html {
   }
 }
 
-/* CCR Parameter Table - Enhanced Clean Layout with better sticky implementation */
+/* CCR Parameter Table - Enhanced Layout with Better Footer Positioning */
 .ccr-table-container {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Table wrapper for proper scrolling */
+.ccr-table-wrapper {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* Ensure proper scrolling behavior for table footer */
+.ccr-table-container:has(.ccr-table tfoot) {
+  padding-bottom: 0;
+}
+
+/* Footer should be outside scrollable area */
+.ccr-table-footer-container {
+  flex-shrink: 0;
+  background: #f1f5f9;
+  border-top: 2px solid #cbd5e1;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  overflow-x: hidden; /* Hide footer scrollbar - will be controlled by main table */
+  z-index: 25;
+  max-height: 300px; /* Limit footer height */
+  position: relative;
+}
+
+.ccr-table-footer-container .ccr-table {
+  margin-bottom: 0;
+  table-layout: fixed; /* Ensure consistent column widths */
+}
+
+.ccr-table-footer-container td {
+  background: #f1f5f9 !important;
+  font-weight: 600;
+}
+
+/* Hide scrollbar in footer but allow programmatic scrolling */
+.ccr-table-footer-container::-webkit-scrollbar {
+  display: none;
+}
+
+.ccr-table-footer-container {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+html.dark .ccr-table-footer-container {
+  background: #1e293b;
+  border-top: 2px solid #475569;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .ccr-table-footer-container td {
+  background: #1e293b !important;
+  color: #f1f5f9;
 }
 
 html.dark .ccr-table-container {
@@ -114,6 +172,27 @@ html.dark .ccr-table td {
 html.dark .ccr-table thead th {
   background: #1f2937;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced footer positioning to prevent hiding */
+.ccr-table tfoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 25;
+  background: #f1f5f9;
+  border-top: 2px solid #cbd5e1;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .ccr-table tfoot {
+  background: #1e293b;
+  border-top: 2px solid #475569;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.ccr-table tfoot td {
+  position: relative;
+  z-index: 26;
 }
 
 .ccr-table .sticky-col {

@@ -20,9 +20,13 @@ import {
 import { usePlantUnits } from "../../hooks/usePlantUnits";
 import Modal from "../../components/Modal";
 import CcrDowntimeForm from "./CcrDowntimeForm";
+import CcrTableFooter from "../../components/ccr/CcrTableFooter";
+import CcrTableSkeleton from "../../components/ccr/CcrTableSkeleton";
+import CcrNavigationHelp from "../../components/ccr/CcrNavigationHelp";
 import PlusIcon from "../../components/icons/PlusIcon";
 import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
+import { formatNumber } from "../../utils/formatters";
 
 // Enhanced Debounce utility function with cancel capability
 const useDebounce = (value: any, delay: number) => {
@@ -64,6 +68,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [showNavigationHelp, setShowNavigationHelp] = useState(false);
 
   // Enhanced keyboard navigation state
   const [focusedCell, setFocusedCell] = useState<{
@@ -77,6 +82,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const debouncedUpdates = useRef<
     Map<string, { value: string; timer: NodeJS.Timeout }>
   >(new Map());
+
+  // Ref for main table wrapper to sync scroll with footer
+  const tableWrapperRef = useRef<HTMLDivElement>(null);
 
   const { users } = useUsers();
   const currentUser = users[0] || { full_name: "Operator" };
@@ -312,12 +320,30 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     return shiftTotals;
   }, [filteredParameterSettings, parameterDataMap]);
 
-  const formatStatValue = (value: number | undefined, precision = 2) => {
+  const formatStatValue = (value: number | undefined, precision = 1) => {
     if (value === undefined || value === null) return "-";
-    // Use German locale for dot-thousand and comma-decimal separators, common in Indonesia.
-    return value.toLocaleString("de-DE", {
-      maximumFractionDigits: precision,
-    });
+    return formatNumber(value);
+  };
+
+  // Helper functions for input value formatting
+  const formatInputValue = (
+    value: number | string | null | undefined
+  ): string => {
+    if (value === null || value === undefined || value === "") {
+      return "";
+    }
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
+    if (isNaN(numValue)) return "";
+    return formatNumber(numValue);
+  };
+
+  const parseInputValue = (formattedValue: string): number | null => {
+    if (!formattedValue || formattedValue.trim() === "") return null;
+    // Convert formatted value back to number
+    // Replace dots (thousands) and comma (decimal) back to standard format
+    const normalized = formattedValue.replace(/\./g, "").replace(",", ".");
+    const parsed = parseFloat(normalized);
+    return isNaN(parsed) ? null : parsed;
   };
 
   const handleSiloDataChange = (
@@ -847,18 +873,30 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   );
                                   setInputRef(refKey, el);
                                 }}
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={siloData[shift]?.emptySpace ?? ""}
-                                onChange={(e) =>
+                                type="text"
+                                value={formatInputValue(
+                                  siloData[shift]?.emptySpace
+                                )}
+                                onChange={(e) => {
+                                  const parsed = parseInputValue(
+                                    e.target.value
+                                  );
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
                                     "emptySpace",
+                                    parsed !== null ? parsed.toString() : ""
+                                  );
+                                }}
+                                onBlur={(e) => {
+                                  // Reformat on blur to ensure consistent display
+                                  const parsed = parseInputValue(
                                     e.target.value
-                                  )
-                                }
+                                  );
+                                  if (parsed !== null) {
+                                    e.target.value = formatInputValue(parsed);
+                                  }
+                                }}
                                 onKeyDown={(e) =>
                                   handleKeyDown(e, "silo", siloIndex, i * 2)
                                 }
@@ -867,7 +905,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                 title={`Isi ruang kosong untuk ${
                                   masterSilo.silo_name
                                 } shift ${i + 1}`}
-                                placeholder="0.00"
+                                placeholder="0,0"
                               />
                             </td>
                             <td
@@ -884,19 +922,28 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   );
                                   setInputRef(refKey, el);
                                 }}
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                max={masterSilo.capacity}
-                                value={content ?? ""}
-                                onChange={(e) =>
+                                type="text"
+                                value={formatInputValue(content)}
+                                onChange={(e) => {
+                                  const parsed = parseInputValue(
+                                    e.target.value
+                                  );
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
                                     "content",
+                                    parsed !== null ? parsed.toString() : ""
+                                  );
+                                }}
+                                onBlur={(e) => {
+                                  // Reformat on blur to ensure consistent display
+                                  const parsed = parseInputValue(
                                     e.target.value
-                                  )
-                                }
+                                  );
+                                  if (parsed !== null) {
+                                    e.target.value = formatInputValue(parsed);
+                                  }
+                                }}
                                 onKeyDown={(e) =>
                                   handleKeyDown(e, "silo", siloIndex, i * 2 + 1)
                                 }
@@ -905,7 +952,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                 title={`Isi konten untuk ${
                                   masterSilo.silo_name
                                 } shift ${i + 1} (Max: ${masterSilo.capacity})`}
-                                placeholder="0.00"
+                                placeholder="0,0"
                               />
                             </td>
                             <td
@@ -921,7 +968,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   }}
                                 ></div>
                                 <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white mix-blend-difference">
-                                  {percentage.toFixed(1)}%
+                                  {formatNumber(percentage)}%
                                 </span>
                               </div>
                             </td>
@@ -956,443 +1003,317 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             {t.ccr_parameter_data_entry_title}
           </h3>
 
-          {/* Table Controls */}
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            <span>Use ↑↓←→ or Tab to navigate</span>
-            <span className="text-slate-400 dark:text-slate-500">|</span>
-            <span>Press Esc to exit navigation</span>
+          {/* Enhanced Table Controls */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span>Use ↑↓←→ or Tab to navigate</span>
+              <span className="text-slate-400 dark:text-slate-500">|</span>
+              <span>Press Esc to exit navigation</span>
+            </div>
+            <button
+              onClick={() => setShowNavigationHelp(true)}
+              className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+              title="Show navigation help"
+            >
+              ? Help
+            </button>
           </div>
         </div>
 
-        <div
-          className="ccr-table-container overflow-auto"
-          style={{ maxHeight: "75vh" }}
-          role="grid"
-          aria-label="Parameter Data Entry Table"
-        >
-          <table className="ccr-table" role="grid">
-            <colgroup>
-              <col style={{ width: "90px" }} />
-              <col style={{ width: "140px" }} />
-              <col style={{ width: "200px" }} />
-              {filteredParameterSettings.map((_, index) => (
-                <col key={index} style={{ width: "160px" }} />
-              ))}
-            </colgroup>
-            <thead
-              className="bg-slate-50 text-center sticky top-0 z-20"
-              role="rowgroup"
-            >
-              <tr className="border-b" role="row">
-                <th
-                  className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
-                  style={{ width: "90px" }}
-                  role="columnheader"
-                  scope="col"
+        {loading ? (
+          <CcrTableSkeleton />
+        ) : (
+          <div
+            className="ccr-table-container"
+            role="grid"
+            aria-label="Parameter Data Entry Table"
+          >
+            {/* Scrollable Table Content */}
+            <div className="ccr-table-wrapper" ref={tableWrapperRef}>
+              <table className="ccr-table" role="grid">
+                <colgroup>
+                  <col style={{ width: "90px" }} />
+                  <col style={{ width: "140px" }} />
+                  <col style={{ width: "200px" }} />
+                  {filteredParameterSettings.map((_, index) => (
+                    <col key={index} style={{ width: "160px" }} />
+                  ))}
+                </colgroup>
+                <thead
+                  className="bg-slate-50 text-center sticky top-0 z-20"
+                  role="rowgroup"
                 >
-                  {t.hour}
-                </th>
-                <th
-                  className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-24 bg-slate-50 z-30 sticky-col-header"
-                  style={{ width: "140px" }}
-                  role="columnheader"
-                  scope="col"
-                >
-                  {t.shift}
-                </th>
-                <th
-                  className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-56 bg-slate-50 z-30 sticky-col-header"
-                  style={{ width: "200px" }}
-                  role="columnheader"
-                  scope="col"
-                >
-                  {t.name}
-                </th>
-                {filteredParameterSettings.map((param, index) => (
-                  <th
-                    key={param.id}
-                    className="px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center"
-                    style={{ width: "160px", minWidth: "160px" }}
-                    role="columnheader"
-                    scope="col"
-                  >
-                    <div className="text-center">
-                      <div className="font-bold text-[11px] leading-tight uppercase tracking-wider">
-                        {param.parameter}
-                      </div>
-                      <div className="font-normal normal-case text-[10px] text-slate-500 mt-1">
-                        ({param.unit})
-                      </div>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white" role="rowgroup">
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={
-                      3 +
-                      (filteredParameterSettings.length > 0
-                        ? filteredParameterSettings.length
-                        : 0)
-                    }
-                    className="text-center py-10 text-slate-500 animate-pulse"
-                  >
-                    Loading data...
-                  </td>
-                </tr>
-              ) : filteredParameterSettings.length > 0 ? (
-                Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
-                  <tr
-                    key={hour}
-                    className={`border-b group ${
-                      hour % 2 === 0 ? "bg-slate-25" : "bg-white"
-                    } hover:bg-slate-100 transition-colors duration-200`}
-                    role="row"
-                  >
-                    <td
-                      className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                  <tr className="border-b" role="row">
+                    <th
+                      className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
                       style={{ width: "90px" }}
-                      role="gridcell"
+                      role="columnheader"
+                      scope="col"
                     >
-                      <div className="flex items-center justify-center h-8">
-                        {String(hour).padStart(2, "0")}:00
-                      </div>
-                    </td>
-                    <td
-                      className="px-3 py-2 whitespace-nowrap text-xs text-slate-600 border-r sticky left-24 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                      {t.hour}
+                    </th>
+                    <th
+                      className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-24 bg-slate-50 z-30 sticky-col-header"
                       style={{ width: "140px" }}
-                      role="gridcell"
+                      role="columnheader"
+                      scope="col"
                     >
-                      <div className="flex items-center h-8">
-                        {getShiftForHour(hour)}
-                      </div>
-                    </td>
-                    <td
-                      className="px-3 py-2 whitespace-nowrap text-xs text-slate-800 border-r sticky left-56 bg-white group-hover:bg-slate-100 z-30 overflow-hidden text-ellipsis sticky-col"
+                      {t.shift}
+                    </th>
+                    <th
+                      className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-56 bg-slate-50 z-30 sticky-col-header"
                       style={{ width: "200px" }}
-                      role="gridcell"
+                      role="columnheader"
+                      scope="col"
                     >
-                      <div className="flex items-center h-8">
-                        {/* Enhanced name display with better logic */}
-                        {(() => {
-                          const filledParam = filteredParameterSettings.find(
-                            (param) => {
-                              const paramData = parameterDataMap.get(param.id);
-                              return (
-                                paramData &&
-                                paramData.hourly_values[hour] !== undefined &&
-                                paramData.hourly_values[hour] !== ""
-                              );
-                            }
-                          );
-                          if (filledParam) {
-                            const paramData = parameterDataMap.get(
-                              filledParam.id
-                            );
-                            return (
-                              <span
-                                className="truncate"
-                                title={
-                                  (paramData as any)?.name ||
-                                  currentUser.full_name
-                                }
-                              >
-                                {(paramData as any)?.name ||
-                                  currentUser.full_name}
-                              </span>
-                            );
-                          }
-                          return (
-                            <span className="text-slate-400 italic">-</span>
-                          );
-                        })()}
-                      </div>
-                    </td>
-                    {filteredParameterSettings.map((param, paramIndex) => {
-                      const value =
-                        parameterDataMap.get(param.id)?.hourly_values[hour] ??
-                        "";
-                      const isCurrentlySaving = savingParameterId === param.id;
-
-                      return (
+                      {t.name}
+                    </th>
+                    {filteredParameterSettings.map((param, index) => (
+                      <th
+                        key={param.id}
+                        className="px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center"
+                        style={{ width: "160px", minWidth: "160px" }}
+                        role="columnheader"
+                        scope="col"
+                      >
+                        <div className="text-center">
+                          <div className="font-bold text-[11px] leading-tight uppercase tracking-wider">
+                            {param.parameter}
+                          </div>
+                          <div className="font-normal normal-case text-[10px] text-slate-500 mt-1">
+                            ({param.unit})
+                          </div>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white" role="rowgroup">
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan={
+                          3 +
+                          (filteredParameterSettings.length > 0
+                            ? filteredParameterSettings.length
+                            : 0)
+                        }
+                        className="text-center py-10 text-slate-500 animate-pulse"
+                      >
+                        Loading data...
+                      </td>
+                    </tr>
+                  ) : filteredParameterSettings.length > 0 ? (
+                    Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
+                      <tr
+                        key={hour}
+                        className={`border-b group ${
+                          hour % 2 === 0 ? "bg-slate-25" : "bg-white"
+                        } hover:bg-slate-100 transition-colors duration-200`}
+                        role="row"
+                      >
                         <td
-                          key={param.id}
-                          className="p-1 border-r bg-white relative"
-                          style={{ width: "160px", minWidth: "160px" }}
+                          className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                          style={{ width: "90px" }}
                           role="gridcell"
                         >
-                          <div className="relative">
-                            <input
-                              ref={(el) => {
-                                const refKey = getInputRef(
-                                  "parameter",
-                                  hour - 1,
-                                  paramIndex
-                                );
-                                setInputRef(refKey, el);
-                              }}
-                              type={
-                                param.data_type === ParameterDataType.NUMBER
-                                  ? "number"
-                                  : "text"
-                              }
-                              step={
-                                param.data_type === ParameterDataType.NUMBER
-                                  ? "0.01"
-                                  : undefined
-                              }
-                              value={value}
-                              onChange={(e) =>
-                                handleParameterDataChange(
-                                  param.id,
-                                  hour,
-                                  e.target.value
-                                )
-                              }
-                              onKeyDown={(e) =>
-                                handleKeyDown(
-                                  e,
-                                  "parameter",
-                                  hour - 1,
-                                  paramIndex
-                                )
-                              }
-                              disabled={isCurrentlySaving}
-                              className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
-                                isCurrentlySaving
-                                  ? "opacity-50 cursor-not-allowed bg-slate-100"
-                                  : ""
-                              }`}
-                              style={{
-                                fontSize: "12px",
-                                minHeight: "32px",
-                                maxWidth: "150px",
-                              }}
-                              aria-label={`Parameter ${param.parameter} jam ${hour}`}
-                              title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
-                              placeholder={
-                                param.data_type === ParameterDataType.NUMBER
-                                  ? "0.00"
-                                  : "Enter text"
-                              }
-                            />
-                            {isCurrentlySaving && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
-                                <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                              </div>
-                            )}
+                          <div className="flex items-center justify-center h-8">
+                            {String(hour).padStart(2, "0")}:00
                           </div>
                         </td>
-                      );
-                    })}
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={
-                      3 +
-                      (filteredParameterSettings.length > 0
-                        ? filteredParameterSettings.length
-                        : 0)
-                    }
-                    className="text-center py-10 text-slate-500"
-                  >
-                    {!selectedCategory || !selectedUnit
-                      ? "Please select a plant category and unit."
-                      : `No parameter master data found for the unit: ${selectedUnit}.`}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            {filteredParameterSettings.length > 0 && (
-              <tfoot
-                className="bg-slate-100 sticky bottom-0 z-20 text-sm"
-                role="rowgroup"
-              >
-                <tr className="border-t-2 border-slate-300" role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.total_shift_3_cont}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const total = parameterShiftFooterData.shift3Cont[param.id];
-                    return (
+                        <td
+                          className="px-3 py-2 whitespace-nowrap text-xs text-slate-600 border-r sticky left-24 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                          style={{ width: "140px" }}
+                          role="gridcell"
+                        >
+                          <div className="flex items-center h-8">
+                            {getShiftForHour(hour)}
+                          </div>
+                        </td>
+                        <td
+                          className="px-3 py-2 whitespace-nowrap text-xs text-slate-800 border-r sticky left-56 bg-white group-hover:bg-slate-100 z-30 overflow-hidden text-ellipsis sticky-col"
+                          style={{ width: "200px" }}
+                          role="gridcell"
+                        >
+                          <div className="flex items-center h-8">
+                            {/* Enhanced name display with better logic */}
+                            {(() => {
+                              const filledParam =
+                                filteredParameterSettings.find((param) => {
+                                  const paramData = parameterDataMap.get(
+                                    param.id
+                                  );
+                                  return (
+                                    paramData &&
+                                    paramData.hourly_values[hour] !==
+                                      undefined &&
+                                    paramData.hourly_values[hour] !== ""
+                                  );
+                                });
+                              if (filledParam) {
+                                const paramData = parameterDataMap.get(
+                                  filledParam.id
+                                );
+                                return (
+                                  <span
+                                    className="truncate"
+                                    title={
+                                      (paramData as any)?.name ||
+                                      currentUser.full_name
+                                    }
+                                  >
+                                    {(paramData as any)?.name ||
+                                      currentUser.full_name}
+                                  </span>
+                                );
+                              }
+                              return (
+                                <span className="text-slate-400 italic">-</span>
+                              );
+                            })()}
+                          </div>
+                        </td>
+                        {filteredParameterSettings.map((param, paramIndex) => {
+                          const value =
+                            parameterDataMap.get(param.id)?.hourly_values[
+                              hour
+                            ] ?? "";
+                          const isCurrentlySaving =
+                            savingParameterId === param.id;
+
+                          return (
+                            <td
+                              key={param.id}
+                              className="p-1 border-r bg-white relative"
+                              style={{ width: "160px", minWidth: "160px" }}
+                              role="gridcell"
+                            >
+                              <div className="relative">
+                                <input
+                                  ref={(el) => {
+                                    const refKey = getInputRef(
+                                      "parameter",
+                                      hour - 1,
+                                      paramIndex
+                                    );
+                                    setInputRef(refKey, el);
+                                  }}
+                                  type={
+                                    param.data_type === ParameterDataType.NUMBER
+                                      ? "text"
+                                      : "text"
+                                  }
+                                  value={
+                                    param.data_type === ParameterDataType.NUMBER
+                                      ? formatInputValue(value)
+                                      : value
+                                  }
+                                  onChange={(e) => {
+                                    if (
+                                      param.data_type ===
+                                      ParameterDataType.NUMBER
+                                    ) {
+                                      const parsed = parseInputValue(
+                                        e.target.value
+                                      );
+                                      handleParameterDataChange(
+                                        param.id,
+                                        hour,
+                                        parsed !== null ? parsed.toString() : ""
+                                      );
+                                    } else {
+                                      handleParameterDataChange(
+                                        param.id,
+                                        hour,
+                                        e.target.value
+                                      );
+                                    }
+                                  }}
+                                  onBlur={(e) => {
+                                    // Reformat numerical values on blur
+                                    if (
+                                      param.data_type ===
+                                      ParameterDataType.NUMBER
+                                    ) {
+                                      const parsed = parseInputValue(
+                                        e.target.value
+                                      );
+                                      if (parsed !== null) {
+                                        e.target.value =
+                                          formatInputValue(parsed);
+                                      }
+                                    }
+                                  }}
+                                  onKeyDown={(e) =>
+                                    handleKeyDown(
+                                      e,
+                                      "parameter",
+                                      hour - 1,
+                                      paramIndex
+                                    )
+                                  }
+                                  disabled={isCurrentlySaving}
+                                  className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
+                                    isCurrentlySaving
+                                      ? "opacity-50 cursor-not-allowed bg-slate-100"
+                                      : ""
+                                  }`}
+                                  style={{
+                                    fontSize: "12px",
+                                    minHeight: "32px",
+                                    maxWidth: "150px",
+                                  }}
+                                  aria-label={`Parameter ${param.parameter} jam ${hour}`}
+                                  title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
+                                  placeholder={
+                                    param.data_type === ParameterDataType.NUMBER
+                                      ? "0,0"
+                                      : "Enter text"
+                                  }
+                                />
+                                {isCurrentlySaving && (
+                                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
+                                    <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
                       <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
+                        colSpan={
+                          3 +
+                          (filteredParameterSettings.length > 0
+                            ? filteredParameterSettings.length
+                            : 0)
+                        }
+                        className="text-center py-10 text-slate-500"
                       >
-                        {total !== undefined ? formatStatValue(total) : "-"}
+                        {!selectedCategory || !selectedUnit
+                          ? "Please select a plant category and unit."
+                          : `No parameter master data found for the unit: ${selectedUnit}.`}
                       </td>
-                    );
-                  })}
-                </tr>
-                <tr role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.total_shift_1}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const total = parameterShiftFooterData.shift1[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {total !== undefined ? formatStatValue(total) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.total_shift_2}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const total = parameterShiftFooterData.shift2[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {total !== undefined ? formatStatValue(total) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.total_shift_3}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const total = parameterShiftFooterData.shift3[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {total !== undefined ? formatStatValue(total) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr className="border-t-2 border-slate-300" role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.total}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const stats = parameterFooterData[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {stats ? formatStatValue(stats.total) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.average}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const stats = parameterFooterData[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {stats ? formatStatValue(stats.avg) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.min}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const stats = parameterFooterData[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {stats ? formatStatValue(stats.min) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-                <tr role="row">
-                  <td
-                    colSpan={3}
-                    className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
-                    role="columnheader"
-                  >
-                    {t.max}
-                  </td>
-                  {filteredParameterSettings.map((param) => {
-                    const stats = parameterFooterData[param.id];
-                    return (
-                      <td
-                        key={param.id}
-                        className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                        style={{ width: "160px", minWidth: "160px" }}
-                        role="gridcell"
-                      >
-                        {stats ? formatStatValue(stats.max) : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tfoot>
-            )}
-          </table>
-        </div>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Separate Footer Component - Always Visible */}
+            <CcrTableFooter
+              filteredParameterSettings={filteredParameterSettings}
+              parameterShiftFooterData={parameterShiftFooterData}
+              parameterFooterData={parameterFooterData}
+              formatStatValue={formatStatValue}
+              t={t}
+              mainTableScrollElement={tableWrapperRef.current}
+            />
+          </div>
+        )}
       </div>
 
       {/* Downtime Data Table */}
@@ -1540,6 +1461,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </button>
         </div>
       </Modal>
+
+      {/* Navigation Help Modal */}
+      <CcrNavigationHelp
+        isVisible={showNavigationHelp}
+        onClose={() => setShowNavigationHelp(false)}
+      />
     </div>
   );
 };
