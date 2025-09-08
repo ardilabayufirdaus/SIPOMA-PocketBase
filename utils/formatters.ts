@@ -12,17 +12,25 @@ export const formatDate = (dateInput: Date | string): string => {
   return `${day}/${month}/${year}`;
 };
 
-// Function to format number with dot as thousand separator and 2 decimal places
+// Function to format number with dot as thousand separator and 1 decimal place
 export const formatNumber = (num: number): string => {
   if (num === null || num === undefined) {
-    return "0.00";
+    return "0,0";
   }
 
-  // Format to 2 decimal places and use dot as thousand separator
-  const formatted = num.toFixed(2);
+  // Format to 1 decimal place and use dot as thousand separator
+  const formatted = num.toFixed(1);
   const parts = formatted.split(".");
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return parts.join(",");
+};
+
+// Function to format percentage with 1 decimal place
+export const formatPercentage = (num: number): string => {
+  if (num === null || num === undefined) {
+    return "0,0";
+  }
+  return num.toFixed(1).replace(".", ",");
 };
 
 // Calculates duration between two HH:MM time strings

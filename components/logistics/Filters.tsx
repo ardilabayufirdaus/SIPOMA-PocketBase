@@ -90,5 +90,13 @@ export const Filters: React.FC<FiltersProps> = ({
         ))}
       </select>
     </div>
+
+    {/* Data refresh indicator */}
+    <div className="w-full sm:w-auto">
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span>Data auto-refresh</span>
+      </div>
+    </div>
   </div>
 );

@@ -104,11 +104,11 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     // Filter records by area, month, year
     const filtered = records.filter((r) => {
       const recordDate = new Date(r.date);
-      return (
+      const matches =
         r.area === filterArea &&
         recordDate.getMonth() === filterMonth &&
-        recordDate.getFullYear() === filterYear
-      );
+        recordDate.getFullYear() === filterYear;
+      return matches;
     });
 
     setTableData(filtered);
@@ -651,6 +651,25 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
           </select>
         </div>
       </div>
+
+      {/* Filter Status Indicator */}
+      {tableData.length > 0 && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                Menampilkan data: {filterArea} -{" "}
+                {monthOptions[filterMonth]?.label} {filterYear}
+              </span>
+            </div>
+            <span className="text-xs text-blue-600 dark:text-blue-400">
+              {tableData.length} entri data
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <Modal
           isOpen={isAddModalOpen}

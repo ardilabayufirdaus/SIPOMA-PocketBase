@@ -1,10 +1,10 @@
 /* Enhanced SIPOMA UI/UX Styles */
+/* Import layout improvements */
+@import "./styles/layout-improvements.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import layout improvements */
-@import "./styles/layout-improvements.css";
 
 /* Root font size adjustment for better 100% zoom experience */
 html {

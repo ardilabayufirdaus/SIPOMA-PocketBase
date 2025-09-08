@@ -100,10 +100,10 @@ const LogisticsPerformance: React.FC<PageProps> = ({
   const performanceData = useMemo(() => {
     const stockRecordsForMonth = stockRecords.filter((r) => {
       const recordDate = new Date(r.date);
-      return (
+      const matches =
         recordDate.getMonth() === filterMonth &&
-        recordDate.getFullYear() === filterYear
-      );
+        recordDate.getFullYear() === filterYear;
+      return matches;
     });
 
     const relevantMasterData = masterData.filter(
@@ -187,7 +187,7 @@ const LogisticsPerformance: React.FC<PageProps> = ({
     const chartDataByArea = displayedAreas.reduce((acc, area) => {
       const areaRecords = stockRecordsForMonth.filter((r) => r.area === area);
       const stockOutByDay = new Map(
-        areaRecords.map((r) => [new Date(r.date).getUTCDate(), r.stock_out])
+        areaRecords.map((r) => [new Date(r.date).getDate(), r.stock_out])
       );
       acc[area] = daysArray.map((day) => ({
         day,
@@ -222,7 +222,7 @@ const LogisticsPerformance: React.FC<PageProps> = ({
         (_, i) => i + 1
       );
       const stockOutByDay = new Map(
-        areaRecords.map((r) => [new Date(r.date).getUTCDate(), r.stock_out])
+        areaRecords.map((r) => [new Date(r.date).getDate(), r.stock_out])
       );
       acc[area] = previousDaysArray.map((day) => ({
         day,
@@ -932,10 +932,38 @@ const LogisticsPerformance: React.FC<PageProps> = ({
         </div>
       ) : performanceData.noData ? (
         <div className="bg-white p-10 rounded-lg shadow-md text-center text-slate-500">
-          <p>{t.forecast_no_data}</p>
+          <div className="space-y-3">
+            <p>{t.forecast_no_data}</p>
+            <div className="text-sm text-slate-400">
+              <p>
+                Filter aktif: {filterArea} - {monthOptions[filterMonth]?.label}{" "}
+                {filterYear}
+              </p>
+              <p>
+                Silakan pilih periode yang berbeda atau pastikan data tersedia
+              </p>
+            </div>
+          </div>
         </div>
       ) : (
         <>
+          {/* Filter Status Indicator */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-3 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  Data untuk: {filterArea} - {monthOptions[filterMonth]?.label}{" "}
+                  {filterYear}
+                </span>
+              </div>
+              <span className="text-xs text-blue-600 dark:text-blue-400">
+                {performanceData.displayedAreas.length} area,{" "}
+                {performanceData.daysInMonth} hari
+              </span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             {metrics.map((m) => (
               <MetricCard key={m.title} {...m} />
@@ -944,9 +972,15 @@ const LogisticsPerformance: React.FC<PageProps> = ({
 
           <div className="bg-white p-4 rounded-lg shadow-md">
             <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-2 mb-3">
-              <h3 className="text-base font-semibold text-slate-800">
-                {t.daily_stock_out_chart}
-              </h3>
+              <div>
+                <h3 className="text-base font-semibold text-slate-800">
+                  {t.daily_stock_out_chart}
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  {filterArea} - {monthOptions[filterMonth]?.label} {filterYear}{" "}
+                  ({performanceData.daysInMonth} hari)
+                </p>
+              </div>
 
               {/* Chart Controls */}
               <div className="flex flex-wrap items-center gap-2">
