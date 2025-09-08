@@ -228,7 +228,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           <input
             type="email"
             id="email"
-            value={user?.email || ""}
+            value={user?.email ?? ""}
             disabled
             className="mt-1 input-style bg-slate-100 dark:bg-slate-700 cursor-not-allowed"
           />

@@ -216,6 +216,11 @@ export const translations = {
     category: "Category",
     min_value: "Min Value",
     max_value: "Max Value",
+    parameter_search_placeholder:
+      "Search parameters by name, unit, or category...",
+    parameter_search_results: "parameter found",
+    parameter_search_results_plural: "parameters found",
+    parameter_clear_search: "Clear search",
     add_parameter_title: "Add Parameter",
     edit_parameter_title: "Edit Parameter",
     parameter_label: "Parameter",
@@ -780,6 +785,11 @@ export const translations = {
     category: "Kategori",
     min_value: "Nilai Min",
     max_value: "Nilai Max",
+    parameter_search_placeholder:
+      "Cari parameter berdasarkan nama, unit, atau kategori...",
+    parameter_search_results: "parameter ditemukan",
+    parameter_search_results_plural: "parameter ditemukan",
+    parameter_clear_search: "Hapus pencarian",
     add_parameter_title: "Tambah Parameter",
     edit_parameter_title: "Ubah Parameter",
     parameter_label: "Parameter",

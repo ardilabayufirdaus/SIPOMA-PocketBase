@@ -350,7 +350,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <select
                   name="role"
                   id="role"
-                  value={formData.role || UserRole.OPERATOR}
+                  value={formData.role ?? UserRole.OPERATOR}
                   onChange={handleChange}
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
                 >
@@ -371,7 +371,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 <select
                   name="department"
                   id="department"
-                  value={formData.department || Department.PRODUCTION}
+                  value={formData.department ?? Department.PRODUCTION}
                   onChange={handleChange}
                   className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
                 >

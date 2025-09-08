@@ -15,17 +15,17 @@ const useCcrDowntimeData = () => {
       console.error("Error fetching all downtime data:", error);
       setDowntimeData([]);
     } else {
-      // FIX: Map camelCase from Supabase to snake_case for application consistency.
+      // FIX: Database sebenarnya sudah menggunakan snake_case, tidak perlu mapping
       const mappedData = ((data || []) as any[]).map((d) => ({
         id: d.id,
         date: d.date,
-        start_time: d.startTime,
-        end_time: d.endTime,
+        start_time: d.start_time,
+        end_time: d.end_time,
         pic: d.pic,
         problem: d.problem,
         unit: d.unit,
         action: d.action,
-        corrective_action: d.correctiveAction,
+        corrective_action: d.corrective_action,
         status: d.status,
       }));
       setDowntimeData(mappedData);
@@ -50,30 +50,51 @@ const useCcrDowntimeData = () => {
 
   const addDowntime = useCallback(
     async (record: Omit<CcrDowntimeData, "id">) => {
-      // FIX: Map snake_case dari aplikasi ke snake_case untuk Supabase.
-      const { start_time, end_time, corrective_action, ...rest } = record;
-      const payload = { ...rest, start_time, end_time, corrective_action };
-      const { error } = await supabase
-        .from("ccr_downtime_data")
-        .insert([payload as any]);
-      if (error) console.error("Error adding downtime:", error);
-      else fetchAllDowntime();
+      try {
+        // FIX: Database sudah menggunakan snake_case, tidak perlu mapping
+        const payload = { ...record };
+        const { error } = await supabase
+          .from("ccr_downtime_data")
+          .insert([payload as any]);
+        if (error) {
+          console.error("Error adding downtime:", error);
+          throw new Error(`Failed to add downtime: ${error.message}`);
+        }
+        await fetchAllDowntime();
+        return { success: true };
+      } catch (error) {
+        console.error("Error in addDowntime:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
     },
     [fetchAllDowntime]
   );
 
   const updateDowntime = useCallback(
     async (updatedRecord: CcrDowntimeData) => {
-      // FIX: Map snake_case dari aplikasi ke snake_case untuk Supabase.
-      const { id, start_time, end_time, corrective_action, ...rest } =
-        updatedRecord;
-      const payload = { ...rest, start_time, end_time, corrective_action };
-      const { error } = await supabase
-        .from("ccr_downtime_data")
-        .update(payload as any)
-        .eq("id", id);
-      if (error) console.error("Error updating downtime:", error);
-      else fetchAllDowntime();
+      try {
+        // FIX: Database sudah menggunakan snake_case, tidak perlu mapping
+        const { id, ...payload } = updatedRecord;
+        const { error } = await supabase
+          .from("ccr_downtime_data")
+          .update(payload as any)
+          .eq("id", id);
+        if (error) {
+          console.error("Error updating downtime:", error);
+          throw new Error(`Failed to update downtime: ${error.message}`);
+        }
+        await fetchAllDowntime();
+        return { success: true };
+      } catch (error) {
+        console.error("Error in updateDowntime:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        };
+      }
     },
     [fetchAllDowntime]
   );

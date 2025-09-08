@@ -151,37 +151,37 @@ export type Database = {
       ccr_downtime_data: {
         Row: {
           action: string | null;
-          correctiveAction: string | null;
+          corrective_action: string | null;
           date: string;
-          endTime: string;
+          end_time: string;
           id: string;
           pic: string;
           problem: string;
-          startTime: string;
+          start_time: string;
           status: string | null;
           unit: string;
         };
         Insert: {
           action?: string | null;
-          correctiveAction?: string | null;
+          corrective_action?: string | null;
           date: string;
-          endTime: string;
+          end_time: string;
           id?: string;
           pic: string;
           problem: string;
-          startTime: string;
+          start_time: string;
           status?: string | null;
           unit: string;
         };
         Update: {
           action?: string | null;
-          correctiveAction?: string | null;
+          corrective_action?: string | null;
           date?: string;
-          endTime?: string;
+          end_time?: string;
           id?: string;
           pic?: string;
           problem?: string;
-          startTime?: string;
+          start_time?: string;
           status?: string | null;
           unit?: string;
         };

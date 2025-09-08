@@ -8,6 +8,7 @@ import React, {
 import { useCopParametersSupabase } from "../../hooks/useCopParametersSupabase";
 import * as XLSX from "xlsx";
 import Modal from "../../components/Modal";
+import { SearchInput } from "../../components/ui/Input";
 import PlusIcon from "../../components/icons/PlusIcon";
 import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
@@ -131,6 +132,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   // Filter States
   const [parameterCategoryFilter, setParameterCategoryFilter] = useState("");
   const [parameterUnitFilter, setParameterUnitFilter] = useState("");
+  const [parameterSearchQuery, setParameterSearchQuery] = useState("");
   const [siloCategoryFilter, setSiloCategoryFilter] = useState("");
   const [siloUnitFilter, setSiloUnitFilter] = useState("");
   const [copCategoryFilter, setCopCategoryFilter] = useState("");
@@ -189,6 +191,16 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     setCopParameterIds(copParameterIds.filter((id) => id !== paramId));
   };
 
+  // Parameter Search Handlers
+  const clearParameterSearch = useCallback(() => {
+    setParameterSearchQuery("");
+  }, []);
+
+  const isParameterSearchActive = useMemo(
+    () => parameterSearchQuery.trim().length > 0,
+    [parameterSearchQuery]
+  );
+
   // Derived data for filters
   const uniquePlantCategories = useMemo(
     () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
@@ -229,6 +241,28 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     copCategoryFilter,
     reportCategoryFilter,
   ]);
+
+  // Keyboard shortcuts for parameter search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "f") {
+        e.preventDefault();
+        const searchInput = document.querySelector(
+          ".parameter-search-input input"
+        ) as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+      if (e.key === "Escape" && parameterSearchQuery) {
+        clearParameterSearch();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [parameterSearchQuery, clearParameterSearch]);
 
   const unitsForParameterFilter = useMemo(() => {
     if (!parameterCategoryFilter) return [];
@@ -323,13 +357,33 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   // Filtered data for tables
   const filteredParameterSettings = useMemo(() => {
     if (!parameterCategoryFilter || !parameterUnitFilter) return [];
-    return parameterSettings.filter((param) => {
+
+    let filtered = parameterSettings.filter((param) => {
       // Direct check for unit and category fields
       const categoryMatch = param.category === parameterCategoryFilter;
       const unitMatch = param.unit === parameterUnitFilter;
       return categoryMatch && unitMatch;
     });
-  }, [parameterSettings, parameterCategoryFilter, parameterUnitFilter]);
+
+    // Apply search filter if search query exists
+    if (parameterSearchQuery.trim()) {
+      const searchTerm = parameterSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (param) =>
+          param.parameter.toLowerCase().includes(searchTerm) ||
+          param.unit.toLowerCase().includes(searchTerm) ||
+          param.category.toLowerCase().includes(searchTerm) ||
+          param.data_type.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  }, [
+    parameterSettings,
+    parameterCategoryFilter,
+    parameterUnitFilter,
+    parameterSearchQuery,
+  ]);
 
   const {
     paginatedData: paginatedParams,
@@ -1064,6 +1118,38 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             </button>
           </div>
         </div>
+
+        {/* Parameter Search */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex-1 max-w-md">
+            <div className="parameter-search-input">
+              <SearchInput
+                placeholder={t.parameter_search_placeholder}
+                value={parameterSearchQuery}
+                onChange={(e) => setParameterSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          {isParameterSearchActive && (
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                {filteredParameterSettings.length}{" "}
+                {filteredParameterSettings.length === 1
+                  ? t.parameter_search_results
+                  : t.parameter_search_results_plural}
+              </div>
+              <button
+                onClick={clearParameterSearch}
+                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+              >
+                {t.parameter_clear_search}
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
             <thead className="bg-slate-50 dark:bg-slate-700">

@@ -711,15 +711,28 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setDowntimeModalOpen(true);
   };
 
-  const handleSaveDowntime = (
+  const handleSaveDowntime = async (
     record: CcrDowntimeData | Omit<CcrDowntimeData, "id" | "date">
   ) => {
-    if ("id" in record) {
-      updateDowntime(record);
-    } else {
-      addDowntime({ ...record, date: selectedDate });
+    try {
+      let result;
+      if ("id" in record) {
+        result = await updateDowntime(record);
+      } else {
+        result = await addDowntime({ ...record, date: selectedDate });
+      }
+
+      if (result && !result.success) {
+        alert(`Error saving downtime: ${result.error}`);
+        return;
+      }
+
+      setDowntimeModalOpen(false);
+      setEditingDowntime(null);
+    } catch (error) {
+      console.error("Error in handleSaveDowntime:", error);
+      alert("Failed to save downtime data. Please try again.");
     }
-    setDowntimeModalOpen(false);
   };
 
   const handleOpenDeleteModal = (id: string, date: string) => {

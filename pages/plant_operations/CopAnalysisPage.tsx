@@ -448,13 +448,13 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
                   No.
                 </th>
-                <th className="sticky left-12 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[200px]">
+                <th className="sticky left-12 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[180px]">
                   {t.parameter}
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
+                <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
                   {t.min}
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
+                <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
                   {t.max}
                 </th>
                 {daysHeader.map((day) => (
@@ -480,10 +480,10 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                     {row.parameter.parameter}
                   </td>
                   {/* FIX: Use snake_case properties `min_value` and `max_value` */}
-                  <td className="px-4 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600">
+                  <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
                     {formatCopNumber(row.parameter.min_value)}
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600">
+                  <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
                     {formatCopNumber(row.parameter.max_value)}
                   </td>
                   {row.dailyValues.map((day, dayIndex) => {
