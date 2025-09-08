@@ -27,6 +27,13 @@ import PlusIcon from "../../components/icons/PlusIcon";
 import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
 import { formatNumber } from "../../utils/formatters";
+import * as XLSX from "xlsx";
+import {
+  DocumentArrowDownIcon,
+  DocumentArrowUpIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 // Enhanced Debounce utility function with cancel capability
 const useDebounce = (value: any, delay: number) => {
@@ -69,6 +76,55 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   );
   const [error, setError] = useState<string | null>(null);
   const [showNavigationHelp, setShowNavigationHelp] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [columnSearchQuery, setColumnSearchQuery] = useState("");
+
+  // Function to check if we're in search mode
+  const isSearchActive = useMemo(
+    () => columnSearchQuery.trim().length > 0,
+    [columnSearchQuery]
+  );
+
+  // Function to check if a parameter column should be highlighted
+  const shouldHighlightColumn = useCallback(
+    (param: any) => {
+      if (!isSearchActive) return false;
+      const searchTerm = columnSearchQuery.toLowerCase().trim();
+      return (
+        param.parameter.toLowerCase().includes(searchTerm) ||
+        param.unit.toLowerCase().includes(searchTerm)
+      );
+    },
+    [isSearchActive, columnSearchQuery]
+  );
+
+  // Enhanced clear search function
+  const clearColumnSearch = useCallback(() => {
+    setColumnSearchQuery("");
+  }, []);
+
+  // Keyboard shortcut for search (Ctrl+F)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "f") {
+        e.preventDefault();
+        const searchInput = document.querySelector(
+          ".ccr-column-search input"
+        ) as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+      if (e.key === "Escape" && columnSearchQuery) {
+        clearColumnSearch();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [columnSearchQuery, clearColumnSearch]);
 
   // Enhanced keyboard navigation state
   const [focusedCell, setFocusedCell] = useState<{
@@ -85,6 +141,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   // Ref for main table wrapper to sync scroll with footer
   const tableWrapperRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { users } = useUsers();
   const currentUser = users[0] || { full_name: "Operator" };
@@ -206,13 +263,31 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     );
     if (!unitBelongsToCategory) return [];
 
-    return parameterSettings
+    let filtered = parameterSettings
       .filter(
         (param) =>
           param.category === selectedCategory && param.unit === selectedUnit
       )
       .sort((a, b) => a.parameter.localeCompare(b.parameter));
-  }, [parameterSettings, plantUnits, selectedCategory, selectedUnit]);
+
+    // Apply column search filter
+    if (columnSearchQuery.trim()) {
+      const searchTerm = columnSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (param) =>
+          param.parameter.toLowerCase().includes(searchTerm) ||
+          param.unit.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  }, [
+    parameterSettings,
+    plantUnits,
+    selectedCategory,
+    selectedUnit,
+    columnSearchQuery,
+  ]);
 
   // Downtime Data Hooks and State
   const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime } =
@@ -656,6 +731,255 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setDeletingRecord(null);
   };
 
+  // Export to Excel functionality
+  const handleExport = async () => {
+    if (isExporting) return;
+
+    if (
+      !selectedCategory ||
+      !selectedUnit ||
+      filteredParameterSettings.length === 0
+    ) {
+      alert(
+        "Please select a plant category and unit with available parameters before exporting."
+      );
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      // Helper function to sanitize names for Excel compatibility
+      const sanitizeName = (name: string) =>
+        name.replace(/[:\\/\?\*\[\]]/g, "_");
+
+      // Prepare data for export
+      const exportData = [];
+
+      // Add metadata rows
+      exportData.push({
+        Hour: "Date:",
+        ...Object.fromEntries(
+          filteredParameterSettings.map((param) => [
+            param.parameter,
+            selectedDate,
+          ])
+        ),
+      });
+      exportData.push({
+        Hour: "Category:",
+        ...Object.fromEntries(
+          filteredParameterSettings.map((param) => [
+            param.parameter,
+            selectedCategory,
+          ])
+        ),
+      });
+      exportData.push({
+        Hour: "Unit:",
+        ...Object.fromEntries(
+          filteredParameterSettings.map((param) => [
+            param.parameter,
+            selectedUnit,
+          ])
+        ),
+      });
+      exportData.push({}); // Empty row
+
+      // Add header row with parameter names and units
+      const headerRow: any = { Hour: "Hour" };
+      filteredParameterSettings.forEach((param) => {
+        headerRow[param.parameter] = `${param.parameter} (${param.unit})`;
+      });
+      exportData.push(headerRow);
+
+      // Add hourly data rows
+      for (let hour = 1; hour <= 24; hour++) {
+        const row: any = { Hour: hour };
+        filteredParameterSettings.forEach((param) => {
+          const data = parameterDataMap.get(param.id);
+          const value = data?.hourly_values[hour] ?? "";
+          // Convert numerical values to display format if needed
+          if (param.data_type === ParameterDataType.NUMBER && value !== "") {
+            const numValue = parseFloat(String(value));
+            row[param.parameter] = !isNaN(numValue)
+              ? formatNumber(numValue)
+              : value;
+          } else {
+            row[param.parameter] = value;
+          }
+        });
+        exportData.push(row);
+      }
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Auto-size columns
+      const colWidths = [
+        { wch: 8 }, // Hour column
+        ...filteredParameterSettings.map(() => ({ wch: 15 })), // Parameter columns
+      ];
+      worksheet["!cols"] = colWidths;
+
+      // Add the worksheet to workbook
+      const sheetName = `CCR_${sanitizeName(selectedCategory)}_${sanitizeName(
+        selectedUnit
+      )}`;
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+      // Generate filename with sanitized names
+      const filename = `CCR_Parameter_Data_${sanitizeName(
+        selectedCategory
+      )}_${sanitizeName(selectedUnit)}_${selectedDate}.xlsx`;
+
+      // Write and download the file
+      XLSX.writeFile(workbook, filename);
+    } catch (error) {
+      console.error("Error exporting CCR parameter data:", error);
+      alert("An error occurred while exporting data. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Import from Excel functionality
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!selectedCategory || !selectedUnit) {
+      alert("Please select a plant category and unit before importing.");
+      return;
+    }
+
+    setIsImporting(true);
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const data = evt.target?.result;
+      if (!data) {
+        setIsImporting(false);
+        return;
+      }
+
+      try {
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        // Find the header row (contains "Hour" in first column)
+        let headerRowIndex = -1;
+        for (let i = 0; i < json.length; i++) {
+          const keys = Object.keys(json[i]);
+          if (
+            keys.length > 0 &&
+            (json[i][keys[0]] === "Hour" || keys[0] === "Hour")
+          ) {
+            headerRowIndex = i;
+            break;
+          }
+        }
+
+        if (headerRowIndex === -1) {
+          alert(
+            "Could not find header row with 'Hour' column in the Excel file."
+          );
+          return;
+        }
+
+        // Get column mapping
+        const headerRow = json[headerRowIndex];
+        const hourColumn = Object.keys(headerRow)[0];
+
+        // Process data rows (after header)
+        const dataRows = json.slice(headerRowIndex + 1);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of dataRows) {
+          const hour = parseInt(String(row[hourColumn]));
+
+          // Skip invalid hours
+          if (isNaN(hour) || hour < 1 || hour > 24) {
+            continue;
+          }
+
+          // Process each parameter column
+          for (const [columnName, value] of Object.entries(row)) {
+            if (columnName === hourColumn) continue; // Skip hour column
+
+            // Find matching parameter by name (remove unit part if present)
+            const paramName = columnName.replace(/\s*\([^)]*\)\s*$/, "").trim();
+            const matchingParam = filteredParameterSettings.find(
+              (param) =>
+                param.parameter.toLowerCase() === paramName.toLowerCase()
+            );
+
+            if (matchingParam && value !== undefined && value !== "") {
+              try {
+                // Parse value based on data type
+                let parsedValue: string | number = String(value);
+                if (matchingParam.data_type === ParameterDataType.NUMBER) {
+                  // Handle formatted numbers (remove dots, replace comma with dot)
+                  const numStr = String(value)
+                    .replace(/\./g, "")
+                    .replace(",", ".");
+                  const numValue = parseFloat(numStr);
+                  if (!isNaN(numValue)) {
+                    parsedValue = numValue;
+                  }
+                }
+
+                // Update parameter data
+                await handleParameterDataChange(
+                  matchingParam.id,
+                  hour,
+                  String(parsedValue)
+                );
+                successCount++;
+              } catch (error) {
+                console.error(
+                  `Error updating parameter ${matchingParam.parameter} hour ${hour}:`,
+                  error
+                );
+                errorCount++;
+              }
+            }
+          }
+        }
+
+        // Show result
+        if (successCount > 0) {
+          alert(
+            `Import successful: ${successCount} values imported${
+              errorCount > 0 ? `, ${errorCount} errors occurred` : ""
+            }`
+          );
+        } else if (errorCount > 0) {
+          alert(`Import failed: ${errorCount} errors occurred`);
+        } else {
+          alert("No valid data found to import");
+        }
+      } catch (error) {
+        console.error("Error processing Excel file:", error);
+        alert(
+          "Error processing Excel file. Please check the file format and try again."
+        );
+      } finally {
+        setIsImporting(false);
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+
+    // Clear the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const getShiftForHour = (h: number) => {
     if (h >= 1 && h <= 7) return `${t.shift_3} (${t.shift_3_cont})`;
     if (h >= 8 && h <= 15) return t.shift_1;
@@ -1010,6 +1334,52 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               <span className="text-slate-400 dark:text-slate-500">|</span>
               <span>Press Esc to exit navigation</span>
             </div>
+
+            {/* Export/Import Controls */}
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImport}
+                accept=".xlsx, .xls"
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImporting || !selectedCategory || !selectedUnit}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                  isImporting || !selectedCategory || !selectedUnit
+                    ? "text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed"
+                    : "text-slate-700 bg-white border border-slate-300 hover:bg-slate-50"
+                }`}
+                title="Import parameter data from Excel"
+              >
+                <DocumentArrowUpIcon className="w-4 h-4" />
+                {isImporting ? "Importing..." : t.import_excel}
+              </button>
+              <button
+                onClick={handleExport}
+                disabled={
+                  isExporting ||
+                  !selectedCategory ||
+                  !selectedUnit ||
+                  filteredParameterSettings.length === 0
+                }
+                className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                  isExporting ||
+                  !selectedCategory ||
+                  !selectedUnit ||
+                  filteredParameterSettings.length === 0
+                    ? "text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed"
+                    : "text-slate-700 bg-white border border-slate-300 hover:bg-slate-50"
+                }`}
+                title="Export parameter data to Excel"
+              >
+                <DocumentArrowDownIcon className="w-4 h-4" />
+                {isExporting ? "Exporting..." : t.export_excel}
+              </button>
+            </div>
+
             <button
               onClick={() => setShowNavigationHelp(true)}
               className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
@@ -1017,6 +1387,63 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             >
               ? Help
             </button>
+          </div>
+        </div>
+
+        {/* Column Search Filter */}
+        <div className="flex items-center justify-between gap-3 pb-4 border-b">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              {t.ccr_search_columns}:
+            </span>
+            <div className="relative ccr-column-search">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 ccr-column-search-icon" />
+              <input
+                type="text"
+                value={columnSearchQuery}
+                onChange={(e) => setColumnSearchQuery(e.target.value)}
+                placeholder={t.ccr_search_placeholder}
+                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400 transition-all duration-200"
+                style={{ width: "320px" }}
+                autoComplete="off"
+                title="Search columns by parameter name or unit. Use Ctrl+F to focus, Escape to clear."
+              />
+              {columnSearchQuery && (
+                <button
+                  onClick={clearColumnSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  title={t.ccr_clear_search}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              )}
+              <div className="absolute right-2 top-full mt-1 text-xs text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                Ctrl+F to focus
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {isSearchActive && (
+              <div className="ccr-search-results-indicator">
+                {filteredParameterSettings.length}{" "}
+                {filteredParameterSettings.length === 1
+                  ? t.ccr_search_results
+                  : t.ccr_search_results_plural}
+              </div>
+            )}
+            {isSearchActive && filteredParameterSettings.length === 0 && (
+              <div className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                {t.ccr_no_columns_match}
+              </div>
+            )}
+            {isSearchActive && (
+              <button
+                onClick={clearColumnSearch}
+                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+              >
+                Clear Filter
+              </button>
+            )}
           </div>
         </div>
 
@@ -1071,7 +1498,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     {filteredParameterSettings.map((param, index) => (
                       <th
                         key={param.id}
-                        className="px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center"
+                        className={`px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center ${
+                          shouldHighlightColumn(param) ? "filtered-column" : ""
+                        }`}
                         style={{ width: "160px", minWidth: "160px" }}
                         role="columnheader"
                         scope="col"
@@ -1184,7 +1613,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           return (
                             <td
                               key={param.id}
-                              className="p-1 border-r bg-white relative"
+                              className={`p-1 border-r bg-white relative ${
+                                shouldHighlightColumn(param)
+                                  ? "filtered-column"
+                                  : ""
+                              }`}
                               style={{ width: "160px", minWidth: "160px" }}
                               role="gridcell"
                             >
