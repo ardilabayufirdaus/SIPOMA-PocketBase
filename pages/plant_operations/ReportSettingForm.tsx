@@ -147,7 +147,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
 
   // Separate useEffect to handle availableParameters changes without resetting user selection
   useEffect(() => {
-    if (!recordToEdit && !isUserInteracting) {
+    if (!recordToEdit && !isUserInteracting && availableParameters.length > 0) {
       setFormData((prev) => {
         const currentParameterId = prev.parameter_id;
         const isCurrentValid = availableParameters.some(
@@ -155,7 +155,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
         );
 
         // Only change parameter_id if current selection is invalid AND we have available parameters
-        if (!isCurrentValid && availableParameters.length > 0) {
+        if (!isCurrentValid) {
           return {
             ...prev,
             parameter_id: availableParameters[0].id,
@@ -165,7 +165,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
         return prev;
       });
     }
-  }, [availableParameters, recordToEdit, isUserInteracting]);
+  }, [availableParameters.length]); // Only depend on length to prevent infinite loops
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

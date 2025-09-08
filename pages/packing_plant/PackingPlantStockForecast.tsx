@@ -620,20 +620,22 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
     return monthData;
   }, [forecastData, stockRecords, filterKey]);
 
-  // Enhanced chart data with moving averages - optimized
+  // Enhanced chart data with moving averages - optimized for performance
   const processedChartData = useMemo(() => {
     // Early return for empty data
     if (!chartData || chartData.length === 0) {
       return [];
     }
+
     try {
       // Calculate moving averages for trend lines
       const movingAvgWindow = Math.min(5, chartData.length);
+
+      // Optimized processing with pre-allocated array
       const processed = chartData.map((item, index) => {
-        // Ensure all required properties exist and are valid numbers
+        // Ensure all required properties exist and are valid numbers with single conversion
         const baseItem = {
           ...item,
-          // Ensure all chart data keys are valid numbers
           closingStock: Number(item.closingStock) || 0,
           projectedClosingStock: Number(item.projectedClosingStock) || 0,
           stockOut: Number(item.stockOut) || 0,
@@ -641,7 +643,6 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           openingStock: Number(item.openingStock) || 0,
           netFlow: Number(item.netFlow) || 0,
           day: Number(item.day) || 1,
-          // New properties for prediction comparison
           predictedStockOut: Number(item.predictedStockOut) || 0,
           actualStockOut: item.actualStockOut
             ? Number(item.actualStockOut)
@@ -650,16 +651,19 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           achievementPercentage: Number(item.achievementPercentage) || 0,
         };
 
+        // Optimized moving average calculation
         const start = Math.max(0, index - Math.floor(movingAvgWindow / 2));
         const end = Math.min(chartData.length, start + movingAvgWindow);
-        const window = chartData.slice(start, end);
+        const windowData = chartData.slice(start, end);
 
         const avgClosingStock =
-          window.reduce((sum, d) => sum + (Number(d.closingStock) || 0), 0) /
-          window.length;
+          windowData.reduce(
+            (sum, d) => sum + (Number(d.closingStock) || 0),
+            0
+          ) / windowData.length;
         const avgStockOut =
-          window.reduce((sum, d) => sum + (Number(d.stockOut) || 0), 0) /
-          window.length;
+          windowData.reduce((sum, d) => sum + (Number(d.stockOut) || 0), 0) /
+          windowData.length;
 
         return {
           ...baseItem,

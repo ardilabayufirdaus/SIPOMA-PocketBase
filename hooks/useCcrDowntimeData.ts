@@ -8,29 +8,35 @@ const useCcrDowntimeData = () => {
 
   const fetchAllDowntime = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("ccr_downtime_data")
-      .select("*");
-    if (error) {
-      console.error("Error fetching all downtime data:", error);
+    try {
+      const { data, error } = await supabase
+        .from("ccr_downtime_data")
+        .select("*");
+      if (error) {
+        console.error("Error fetching all downtime data:", error);
+        setDowntimeData([]);
+      } else {
+        // FIX: Database sebenarnya sudah menggunakan snake_case, tidak perlu mapping
+        const mappedData = ((data || []) as any[]).map((d) => ({
+          id: d.id,
+          date: d.date,
+          start_time: d.start_time,
+          end_time: d.end_time,
+          pic: d.pic,
+          problem: d.problem,
+          unit: d.unit,
+          action: d.action,
+          corrective_action: d.corrective_action,
+          status: d.status,
+        }));
+        setDowntimeData(mappedData);
+      }
+    } catch (error) {
+      console.error("Error in fetchAllDowntime:", error);
       setDowntimeData([]);
-    } else {
-      // FIX: Database sebenarnya sudah menggunakan snake_case, tidak perlu mapping
-      const mappedData = ((data || []) as any[]).map((d) => ({
-        id: d.id,
-        date: d.date,
-        start_time: d.start_time,
-        end_time: d.end_time,
-        pic: d.pic,
-        problem: d.problem,
-        unit: d.unit,
-        action: d.action,
-        corrective_action: d.corrective_action,
-        status: d.status,
-      }));
-      setDowntimeData(mappedData);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {

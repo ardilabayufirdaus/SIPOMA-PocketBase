@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { PackingPlantStockRecord, PackingPlantMasterRecord } from "../../types";
 import { formatNumber, formatDate } from "../../utils/formatters";
 import {
@@ -231,24 +231,43 @@ const LogisticsPerformance: React.FC<PageProps> = ({
       return acc;
     }, {} as Record<string, { day: number; stock_out: number }[]>);
 
-    // Calculate moving average for trend analysis
-    const calculateMovingAverage = (
-      data: { day: number; stock_out: number }[],
-      window: number = 3
-    ) => {
-      return data.map((item, index) => {
-        const start = Math.max(0, index - window + 1);
-        const subset = data.slice(start, index + 1);
-        const average =
-          subset.reduce((sum, d) => sum + d.stock_out, 0) / subset.length;
-        return { ...item, moving_average: average };
-      });
-    };
+    // Optimized moving average calculation to reduce computation overhead
+    const calculateMovingAverage = useCallback(
+      (data: { day: number; stock_out: number }[], window: number = 3) => {
+        if (!data || data.length === 0) return [];
 
-    const trendDataByArea = displayedAreas.reduce((acc, area) => {
-      acc[area] = calculateMovingAverage(chartDataByArea[area]);
-      return acc;
-    }, {} as Record<string, { day: number; stock_out: number; moving_average: number }[]>);
+        // Pre-allocate array for better performance
+        const result = new Array(data.length);
+        let sum = 0;
+
+        // Calculate initial window sum
+        for (let i = 0; i < Math.min(window, data.length); i++) {
+          sum += data[i].stock_out;
+        }
+
+        // Use sliding window for O(n) complexity instead of O(n*w)
+        for (let i = 0; i < data.length; i++) {
+          if (i >= window) {
+            sum = sum - data[i - window].stock_out + data[i].stock_out;
+          }
+          const actualWindow = Math.min(i + 1, window);
+          result[i] = {
+            ...data[i],
+            moving_average: sum / actualWindow,
+          };
+        }
+
+        return result;
+      },
+      []
+    );
+
+    const trendDataByArea = useMemo(() => {
+      return displayedAreas.reduce((acc, area) => {
+        acc[area] = calculateMovingAverage(chartDataByArea[area]);
+        return acc;
+      }, {} as Record<string, { day: number; stock_out: number; moving_average: number }[]>);
+    }, [displayedAreas, chartDataByArea, calculateMovingAverage]);
 
     // Identify critical days (high stock out days)
     const avgStockOut = totalStockOut / daysInMonth;

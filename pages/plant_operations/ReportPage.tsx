@@ -17,6 +17,7 @@ import {
   CcrParameterData,
   ParameterDataType,
   CcrDowntimeData,
+  SiloCapacity,
 } from "../../types";
 import {
   formatDate,
@@ -713,35 +714,38 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const downloadDropdownRef = useRef<HTMLDivElement>(null);
 
-  const { records: reportSettings } = useReportSettings();
-  const { records: parameterSettings } = useParameterSettings();
+  const { records: reportSettings, loading: reportSettingsLoading } =
+    useReportSettings();
+  const { records: parameterSettings, loading: parameterSettingsLoading } =
+    useParameterSettings();
   const { getDataForDate } = useCcrParameterData();
-  const { records: plantUnits } = usePlantUnits();
+  const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
   const { getDowntimeForDate } = useCcrDowntimeData();
   const { getDataForDate: getSiloDataForDate } = useCcrSiloData();
-  const { records: siloMasterData } = useSiloCapacities();
+  const { records: siloMasterData, loading: siloMasterLoading } =
+    useSiloCapacities();
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
 
-  const plantCategories = useMemo(
-    () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
-    [plantUnits]
-  );
+  const plantCategories = useMemo(() => {
+    if (plantUnitsLoading || !plantUnits.length) return [];
+    return [...new Set(plantUnits.map((unit) => unit.category).sort())];
+  }, [plantUnits, plantUnitsLoading]);
 
   const unitsForCategory = useMemo(() => {
-    if (!selectedCategory) return [];
+    if (plantUnitsLoading || !plantUnits.length || !selectedCategory) return [];
     return plantUnits
       .filter((unit) => unit.category === selectedCategory)
       .map((unit) => unit.unit)
       .sort();
-  }, [plantUnits, selectedCategory]);
+  }, [plantUnits, selectedCategory, plantUnitsLoading]);
 
   useEffect(() => {
     if (plantCategories.length > 0 && !selectedCategory) {
       setSelectedCategory(plantCategories[0]);
     }
-  }, [plantCategories, selectedCategory]);
+  }, [plantCategories]); // Removed selectedCategory to prevent loop
 
   useEffect(() => {
     if (unitsForCategory.length > 0) {
@@ -749,9 +753,11 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         setSelectedUnit(unitsForCategory[0]);
       }
     } else {
-      setSelectedUnit("");
+      if (selectedUnit !== "") {
+        setSelectedUnit("");
+      }
     }
-  }, [unitsForCategory, selectedUnit]);
+  }, [unitsForCategory]); // Simplified dependency
 
   useEffect(() => {
     setReportImageUrl(null);
@@ -773,11 +779,22 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
   }, []);
 
   const reportConfig = useMemo(() => {
+    if (
+      reportSettingsLoading ||
+      parameterSettingsLoading ||
+      !reportSettings.length ||
+      !parameterSettings.length
+    ) {
+      return [];
+    }
+
     const paramMap = new Map(parameterSettings.map((p) => [p.id, p]));
 
     const filteredSettings = reportSettings.filter((rs) => {
       // FIX: Use snake_case property `parameter_id`
-      const param = paramMap.get(rs.parameter_id);
+      const param = paramMap.get(rs.parameter_id) as
+        | ParameterSetting
+        | undefined;
       return (
         param &&
         param.unit === selectedUnit &&
@@ -789,7 +806,9 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       .map((rs) => ({
         ...rs,
         // FIX: Use snake_case property `parameter_id`
-        parameter: paramMap.get(rs.parameter_id),
+        parameter: paramMap.get(rs.parameter_id) as
+          | ParameterSetting
+          | undefined,
       }))
       .filter(
         (rs): rs is typeof rs & { parameter: ParameterSetting } =>
@@ -807,11 +826,18 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
     return Object.entries(grouped).map(([category, parameters]) => ({
       category,
-      parameters: parameters.sort((a, b) =>
+      parameters: (parameters as ParameterSetting[]).sort((a, b) =>
         a.parameter.localeCompare(b.parameter)
       ),
     }));
-  }, [reportSettings, parameterSettings, selectedUnit, selectedCategory]);
+  }, [
+    reportSettings,
+    parameterSettings,
+    selectedUnit,
+    selectedCategory,
+    reportSettingsLoading,
+    parameterSettingsLoading,
+  ]);
 
   const getShiftForHour = (h: number) => {
     if (h >= 1 && h <= 7) return `${t.shift_3} (${t.shift_3_cont})`;
@@ -843,15 +869,17 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
     const filteredSiloData = allSiloDataForDate
       .filter((data) => {
         // FIX: Use snake_case property `silo_id`
-        const master = siloMasterMap.get(data.silo_id);
+        const master = siloMasterMap.get(data.silo_id) as
+          | SiloCapacity
+          | undefined;
         return master && master.unit === selectedUnit;
       })
-      .map((data) => ({ ...data, master: siloMasterMap.get(data.silo_id) })) // FIX: Use snake_case property `silo_id`
+      .map((data) => ({
+        ...data,
+        master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
+      })) // FIX: Use snake_case property `silo_id`
       .filter(
-        (
-          data
-        ): data is typeof data & { master: NonNullable<typeof data.master> } =>
-          !!data.master
+        (data): data is typeof data & { master: SiloCapacity } => !!data.master
       );
 
     const operatorParam = parameterSettings.find(
@@ -860,7 +888,9 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
     let operatorData: { shift: string; name: string }[] = [];
 
     if (operatorParam) {
-      const operatorDataRecord = ccrDataMap.get(operatorParam.id);
+      const operatorDataRecord = ccrDataMap.get(operatorParam.id) as
+        | CcrParameterData
+        | undefined;
 
       const getOperatorForShift = (hours: number[]) => {
         if (!operatorDataRecord) return "-";
@@ -897,7 +927,10 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       const values: Record<string, string | number> = {};
       allParams.forEach((param) => {
         // FIX: Use snake_case property `hourly_values`
-        values[param.id] = ccrDataMap.get(param.id)?.hourly_values[hour] ?? "";
+        const paramData = ccrDataMap.get(param.id) as
+          | CcrParameterData
+          | undefined;
+        values[param.id] = paramData?.hourly_values[hour] ?? "";
       });
       return {
         hour,
@@ -949,17 +982,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
     setReportImageUrl(canvasRef.current.toDataURL("image/png"));
     setIsLoading(false);
-  }, [
-    selectedDate,
-    selectedUnit,
-    reportConfig,
-    getDataForDate,
-    getDowntimeForDate,
-    getSiloDataForDate,
-    siloMasterData,
-    t,
-    parameterSettings,
-  ]);
+  }, [selectedDate, selectedUnit, reportConfig, t]);
 
   const handleDownloadImage = () => {
     if (!reportImageUrl) return;

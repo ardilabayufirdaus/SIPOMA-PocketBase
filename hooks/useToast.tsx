@@ -4,6 +4,8 @@ import React, {
   useContext,
   createContext,
   ReactNode,
+  useRef,
+  useEffect,
 } from "react";
 
 export interface Toast {
@@ -33,6 +35,15 @@ const generateToastId = () => `toast-${++toastCounter}`;
 
 export const ToastProvider = ({ children }: { children: ReactNode }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Cleanup timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((timeout) => clearTimeout(timeout));
+      timeoutsRef.current.clear();
+    };
+  }, []);
 
   const addToast = useCallback((toast: Omit<Toast, "id">) => {
     const id = generateToastId();
@@ -47,27 +58,42 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
 
     // Auto remove toast after duration
     if (newToast.duration && newToast.duration > 0) {
-      setTimeout(() => {
+      const hideTimeout = setTimeout(() => {
         setToasts((prev) =>
           prev.map((t) => (t.id === id ? { ...t, isVisible: false } : t))
         );
 
         // Remove from array after animation
-        setTimeout(() => {
+        const removeTimeout = setTimeout(() => {
           setToasts((prev) => prev.filter((t) => t.id !== id));
+          timeoutsRef.current.delete(id);
+          timeoutsRef.current.delete(`${id}-remove`);
         }, 300);
+
+        timeoutsRef.current.set(`${id}-remove`, removeTimeout);
       }, newToast.duration);
+
+      timeoutsRef.current.set(id, hideTimeout);
     }
   }, []);
 
   const removeToast = useCallback((id: string) => {
+    // Clear existing timeouts for this toast
+    const hideTimeout = timeoutsRef.current.get(id);
+    const removeTimeout = timeoutsRef.current.get(`${id}-remove`);
+    if (hideTimeout) clearTimeout(hideTimeout);
+    if (removeTimeout) clearTimeout(removeTimeout);
+
     setToasts((prev) =>
       prev.map((t) => (t.id === id ? { ...t, isVisible: false } : t))
     );
 
-    setTimeout(() => {
+    const newRemoveTimeout = setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
+      timeoutsRef.current.delete(`${id}-remove`);
     }, 300);
+
+    timeoutsRef.current.set(`${id}-remove`, newRemoveTimeout);
   }, []);
 
   const clearAllToasts = useCallback(() => {
