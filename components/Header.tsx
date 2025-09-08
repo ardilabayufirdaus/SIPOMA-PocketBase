@@ -97,12 +97,14 @@ const Header: React.FC<HeaderProps> = ({
             )}
 
             {/* Logo Sipoma */}
-            <img
-              src="/sipoma-logo.png"
-              alt="Sipoma Logo"
-              className="h-5 w-5 sm:h-6 sm:w-6 mr-1 sm:mr-2 object-contain flex-shrink-0"
-              style={{ borderRadius: "6px" }}
-            />
+            <div className="p-1 rounded-lg bg-white/90 dark:bg-slate-800/90 shadow-sm border border-white/20 dark:border-slate-700/50 mr-1 sm:mr-2 flex-shrink-0">
+              <img
+                src="/sipoma-logo.png"
+                alt="Sipoma Logo"
+                className="h-4 w-4 sm:h-5 sm:w-5 object-contain"
+                style={{ borderRadius: "4px" }}
+              />
+            </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-sm sm:text-base lg:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent truncate">
                 {pageTitle}

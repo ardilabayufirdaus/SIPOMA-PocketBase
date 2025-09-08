@@ -74,11 +74,13 @@ const LoginPage: React.FC = () => {
       >
         {/* Logo SIPOMA */}
         <div className="mb-6 flex flex-col items-center animate-fadein-logo">
-          <img
-            src="/sipoma-logo.png"
-            alt="SIPOMA Logo"
-            className="h-16 mb-2 drop-shadow-lg animate-bounce"
-          />
+          <div className="p-2 rounded-xl bg-white/95 dark:bg-slate-800/95 shadow-lg border border-white/30 dark:border-slate-700/50 mb-2">
+            <img
+              src="/sipoma-logo.png"
+              alt="SIPOMA Logo"
+              className="h-12 w-12 object-contain"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-red-600 dark:text-red-400 tracking-wide mb-1 animate-fadein-title">
             SIPOMA
           </h1>

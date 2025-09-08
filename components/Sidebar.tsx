@@ -467,12 +467,12 @@ const Sidebar: React.FC<SidebarProps> = ({
               shouldCollapse ? "" : "gap-2"
             } relative z-10`}
           >
-            <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/25">
+            <div className="p-1.5 rounded-lg bg-white/90 dark:bg-slate-800/90 shadow-lg border border-white/20 dark:border-slate-700/50">
               <img
                 src="/sipoma-logo.png"
                 alt="Sipoma Logo"
                 className="w-6 h-6 object-contain"
-                style={{ borderRadius: "6px" }}
+                style={{ borderRadius: "4px" }}
                 loading="lazy"
                 onError={(e) => {
                   // Fallback jika logo tidak bisa dimuat
