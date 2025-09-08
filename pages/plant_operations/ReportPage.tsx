@@ -778,7 +778,11 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
     const filteredSettings = reportSettings.filter((rs) => {
       // FIX: Use snake_case property `parameter_id`
       const param = paramMap.get(rs.parameter_id);
-      return param && param.category === selectedUnit;
+      return (
+        param &&
+        param.unit === selectedUnit &&
+        param.category === selectedCategory
+      );
     });
 
     const settingsWithDetails = filteredSettings
@@ -807,7 +811,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         a.parameter.localeCompare(b.parameter)
       ),
     }));
-  }, [reportSettings, parameterSettings, selectedUnit]);
+  }, [reportSettings, parameterSettings, selectedUnit, selectedCategory]);
 
   const getShiftForHour = (h: number) => {
     if (h >= 1 && h <= 7) return `${t.shift_3} (${t.shift_3_cont})`;

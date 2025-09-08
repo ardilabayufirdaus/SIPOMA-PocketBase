@@ -14,7 +14,16 @@ export const useCcrParameterData = () => {
 
   const getDataForDate = useCallback(
     async (date: string): Promise<CcrParameterDataWithName[]> => {
-      if (paramsLoading || parameters.length === 0) {
+      // Enhanced validation for date parameter
+      if (
+        paramsLoading ||
+        parameters.length === 0 ||
+        !date ||
+        typeof date !== "string" ||
+        date.trim() === "" ||
+        date === "undefined" ||
+        date === "null"
+      ) {
         return [];
       }
 
@@ -71,17 +80,102 @@ export const useCcrParameterData = () => {
       value: string | number | null,
       userName: string // nama user login
     ) => {
-      try {
-        const { data: existing, error: fetchError } = await supabase
-          .from("ccr_parameter_data")
-          .select("hourly_values")
-          .eq("date", date)
-          .eq("parameter_id", parameter_id)
-          .single();
+      // Enhanced validation for date parameter
+      if (
+        !date ||
+        typeof date !== "string" ||
+        date.trim() === "" ||
+        date === "undefined" ||
+        date === "null"
+      ) {
+        console.error("Invalid date provided to updateParameterData:", date);
+        return;
+      }
 
-        if (fetchError && fetchError.code !== "PGRST116") {
-          console.error("Error fetching existing parameter data", fetchError);
-          return;
+      // Check if we have valid parameter_id
+      if (!parameter_id || typeof parameter_id !== "string") {
+        console.error(
+          "Invalid parameter_id provided to updateParameterData:",
+          parameter_id
+        );
+        return;
+      }
+
+      try {
+        // Check authentication status (only log once per session)
+        if (!(window as any)._supabaseAuthChecked) {
+          const {
+            data: { user },
+            error: authError,
+          } = await supabase.auth.getUser();
+          if (authError) {
+            console.warn("Authentication check failed:", authError);
+          } else {
+            console.log("User authenticated:", !!user);
+          }
+          (window as any)._supabaseAuthChecked = true;
+        }
+
+        // Only log on development mode
+        if (import.meta.env.DEV) {
+          console.log("Attempting to fetch parameter data:", {
+            date,
+            parameter_id,
+          });
+        }
+
+        // Try the query with proper error handling for 406 errors
+        let existing = null;
+        let fetchError = null;
+
+        try {
+          const result = await supabase
+            .from("ccr_parameter_data")
+            .select("*")
+            .eq("date", date)
+            .eq("parameter_id", parameter_id)
+            .maybeSingle();
+
+          existing = result.data;
+          fetchError = result.error;
+        } catch (networkError) {
+          console.error("Network/HTTP error occurred:", networkError);
+          // If it's a 406 error, try without .single() to see if that helps
+          try {
+            const fallbackResult = await supabase
+              .from("ccr_parameter_data")
+              .select("*")
+              .eq("date", date)
+              .eq("parameter_id", parameter_id)
+              .limit(1);
+
+            if (fallbackResult.data && fallbackResult.data.length > 0) {
+              existing = fallbackResult.data[0];
+              fetchError = null;
+            } else {
+              fetchError = fallbackResult.error || {
+                code: "PGRST116",
+                message: "No rows found",
+              };
+            }
+          } catch (fallbackError) {
+            console.error("Fallback query also failed:", fallbackError);
+            throw fallbackError;
+          }
+        }
+
+        if (fetchError) {
+          console.error("Error fetching existing parameter data:", {
+            error: fetchError,
+            code: fetchError.code,
+            message: fetchError.message,
+            details: fetchError.details,
+            hint: fetchError.hint,
+          });
+
+          if (fetchError.code !== "PGRST116") {
+            return;
+          }
         }
 
         const currentHourlyValues =

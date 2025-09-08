@@ -210,6 +210,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const [allDailySiloData, setAllDailySiloData] = useState<CcrSiloData[]>([]);
 
   useEffect(() => {
+    // Don't fetch data if selectedDate is not properly initialized
+    if (!selectedDate || selectedDate.trim() === "") {
+      return;
+    }
+
     setLoading(true);
     getSiloDataForDate(selectedDate).then((data) => {
       setAllDailySiloData(data);
@@ -244,6 +249,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     CcrParameterData[]
   >([]);
   useEffect(() => {
+    // Don't fetch data if selectedDate is not properly initialized
+    if (!selectedDate || selectedDate.trim() === "") {
+      return;
+    }
+
     setLoading(true);
     getParameterDataForDate(selectedDate).then((data) => {
       setDailyParameterData(data);
@@ -869,6 +879,62 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet) as any[];
 
+        // Validate metadata if present
+        let metadataValidation = { valid: true, messages: [] as string[] };
+
+        // Check for metadata rows (Date, Category, Unit)
+        if (json.length >= 3) {
+          const dateRow = json[0];
+          const categoryRow = json[1];
+          const unitRow = json[2];
+
+          const firstKey = Object.keys(dateRow)[0];
+
+          // Validate date
+          if (dateRow[firstKey] === "Date:") {
+            const fileDate = Object.values(dateRow)[1];
+            if (fileDate && fileDate !== selectedDate) {
+              metadataValidation.messages.push(
+                `⚠️ Date mismatch: File contains data for ${fileDate}, but ${selectedDate} is selected`
+              );
+            }
+          }
+
+          // Validate category
+          if (categoryRow[firstKey] === "Category:") {
+            const fileCategory = Object.values(categoryRow)[1];
+            if (fileCategory && fileCategory !== selectedCategory) {
+              metadataValidation.messages.push(
+                `⚠️ Category mismatch: File contains ${fileCategory}, but ${selectedCategory} is selected`
+              );
+            }
+          }
+
+          // Validate unit
+          if (unitRow[firstKey] === "Unit:") {
+            const fileUnit = Object.values(unitRow)[1];
+            if (fileUnit && fileUnit !== selectedUnit) {
+              metadataValidation.messages.push(
+                `⚠️ Unit mismatch: File contains ${fileUnit}, but ${selectedUnit} is selected`
+              );
+            }
+          }
+        }
+
+        // Show metadata validation warnings
+        if (metadataValidation.messages.length > 0) {
+          const continueImport = confirm(
+            "Metadata validation warnings:\n\n" +
+              metadataValidation.messages.join("\n") +
+              "\n\nDo you want to continue with the import?"
+          );
+
+          if (!continueImport) {
+            setIsImporting(false);
+            return;
+          }
+        }
+
         // Find the header row (contains "Hour" in first column)
         let headerRowIndex = -1;
         for (let i = 0; i < json.length; i++) {
@@ -897,12 +963,35 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         const dataRows = json.slice(headerRowIndex + 1);
         let successCount = 0;
         let errorCount = 0;
+        const processingLog: string[] = [];
+        const warningCounts = new Map<string, number>();
+
+        // Batch all updates to reduce database calls
+        const updateBatch: Array<{
+          parameterId: string;
+          hour: number;
+          value: any;
+          paramName: string;
+        }> = [];
+
+        console.log(`Processing ${dataRows.length} data rows...`);
+        if (import.meta.env.DEV) {
+          console.log(
+            `Available parameters:`,
+            filteredParameterSettings.map((p) => p.parameter)
+          );
+          console.log("Selected Category:", selectedCategory);
+          console.log("Selected Unit:", selectedUnit);
+        }
 
         for (const row of dataRows) {
           const hour = parseInt(String(row[hourColumn]));
 
           // Skip invalid hours
           if (isNaN(hour) || hour < 1 || hour > 24) {
+            if (row[hourColumn] !== undefined && row[hourColumn] !== "") {
+              processingLog.push(`Skipped invalid hour: ${row[hourColumn]}`);
+            }
             continue;
           }
 
@@ -911,56 +1000,225 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             if (columnName === hourColumn) continue; // Skip hour column
 
             // Find matching parameter by name (remove unit part if present)
+            // Handle both "Parameter Name (Unit)" and "Parameter Name" formats
             const paramName = columnName.replace(/\s*\([^)]*\)\s*$/, "").trim();
-            const matchingParam = filteredParameterSettings.find(
+
+            // First try exact match (case insensitive)
+            let matchingParam = filteredParameterSettings.find(
               (param) =>
                 param.parameter.toLowerCase() === paramName.toLowerCase()
             );
 
-            if (matchingParam && value !== undefined && value !== "") {
+            // If no exact match, try matching parameter name without unit part
+            if (!matchingParam) {
+              matchingParam = filteredParameterSettings.find((param) => {
+                const dbParamName = param.parameter
+                  .replace(/\s*\([^)]*\)\s*$/, "")
+                  .trim();
+                return dbParamName.toLowerCase() === paramName.toLowerCase();
+              });
+            }
+
+            // If still no match, try fuzzy matching (remove spaces, special chars)
+            if (!matchingParam) {
+              const normalizeString = (str: string) =>
+                str
+                  .toLowerCase()
+                  .replace(/\s+/g, "")
+                  .replace(/[^a-z0-9]/g, "");
+
+              const normalizedParamName = normalizeString(paramName);
+              matchingParam = filteredParameterSettings.find((param) => {
+                const dbParamName = param.parameter
+                  .replace(/\s*\([^)]*\)\s*$/, "")
+                  .trim();
+                return normalizeString(dbParamName) === normalizedParamName;
+              });
+            }
+
+            if (
+              matchingParam &&
+              value !== undefined &&
+              value !== "" &&
+              value !== null
+            ) {
               try {
                 // Parse value based on data type
                 let parsedValue: string | number = String(value);
+
                 if (matchingParam.data_type === ParameterDataType.NUMBER) {
-                  // Handle formatted numbers (remove dots, replace comma with dot)
-                  const numStr = String(value)
-                    .replace(/\./g, "")
-                    .replace(",", ".");
+                  // Robust parsing for Indonesian/Export format
+                  let numStr = String(value).trim();
+                  // Remove spaces and non-numeric except comma, dot, minus, plus
+                  numStr = numStr.replace(/\s+/g, "").replace(/[^\d.,+-]/g, "");
+
+                  // If both dot and comma exist
+                  if (numStr.includes(",") && numStr.includes(".")) {
+                    // Format like "1.234,56" (Indo) - dots are thousands, comma is decimal
+                    if (numStr.lastIndexOf(",") > numStr.lastIndexOf(".")) {
+                      numStr = numStr.replace(/\./g, "").replace(",", ".");
+                    } else {
+                      // Format like "1,234.56" (US) - commas are thousands, dot is decimal
+                      numStr = numStr.replace(/,/g, "");
+                    }
+                  } else if (numStr.includes(",")) {
+                    // Only comma - could be thousands separator or decimal
+                    const commaIndex = numStr.indexOf(",");
+                    const afterComma = numStr.substring(commaIndex + 1);
+                    // If 3 digits after comma, it's likely thousands separator
+                    if (afterComma.length === 3 && !afterComma.includes(",")) {
+                      numStr = numStr.replace(",", "");
+                    } else {
+                      // Treat as decimal separator
+                      numStr = numStr.replace(",", ".");
+                    }
+                  } else if (numStr.includes(".")) {
+                    // Only dot, treat as decimal
+                    // But if 3 digits after dot, treat as thousands separator
+                    const dotIndex = numStr.indexOf(".");
+                    const afterDot = numStr.substring(dotIndex + 1);
+                    if (afterDot.length === 3 && !afterDot.includes(".")) {
+                      numStr = numStr.replace(/\./g, "");
+                    }
+                  }
+
                   const numValue = parseFloat(numStr);
                   if (!isNaN(numValue)) {
                     parsedValue = numValue;
+                  } else {
+                    warningCounts.set(
+                      "invalidNumbers",
+                      (warningCounts.get("invalidNumbers") || 0) + 1
+                    );
+                    if (
+                      !import.meta.env.DEV ||
+                      warningCounts.get("invalidNumbers") <= 3
+                    ) {
+                      console.warn(
+                        `Could not parse number value: "${value}" for parameter ${matchingParam.parameter}`
+                      );
+                    }
+                    continue; // Skip invalid numbers
                   }
                 }
 
-                // Update parameter data
-                await handleParameterDataChange(
-                  matchingParam.id,
+                // Add to batch instead of immediate database update
+                updateBatch.push({
+                  parameterId: matchingParam.id,
                   hour,
-                  String(parsedValue)
-                );
-                successCount++;
+                  value: parsedValue,
+                  paramName: matchingParam.parameter,
+                });
               } catch (error) {
                 console.error(
-                  `Error updating parameter ${matchingParam.parameter} hour ${hour}:`,
+                  `Error processing parameter ${matchingParam.parameter} hour ${hour}:`,
                   error
                 );
                 errorCount++;
               }
+            } else if (value !== undefined && value !== "" && value !== null) {
+              // Parameter not found but has value - count warnings instead of logging each one
+              const warningKey = `Parameter "${paramName}" not found`;
+              warningCounts.set(
+                warningKey,
+                (warningCounts.get(warningKey) || 0) + 1
+              );
             }
           }
         }
 
-        // Show result
-        if (successCount > 0) {
-          alert(
-            `Import successful: ${successCount} values imported${
-              errorCount > 0 ? `, ${errorCount} errors occurred` : ""
-            }`
+        // Process all updates in batches to improve performance
+        console.log(`Processing ${updateBatch.length} parameter updates...`);
+
+        for (const update of updateBatch) {
+          try {
+            await updateParameterData(
+              selectedDate,
+              update.parameterId,
+              update.hour,
+              update.value,
+              currentUser.full_name
+            );
+            successCount++;
+          } catch (error) {
+            console.error(
+              `Error updating parameter ${update.paramName} hour ${update.hour}:`,
+              error
+            );
+            errorCount++;
+          }
+        }
+
+        // Combine warning counts into processingLog
+        const notFoundParameters = new Set<string>();
+        warningCounts.forEach((count, warning) => {
+          if (warning.includes("not found")) {
+            const paramName = warning.match(/"([^"]+)"/)?.[1];
+            if (paramName) notFoundParameters.add(paramName);
+          }
+          processingLog.push(`${warning} (${count} occurrences)`);
+        });
+
+        // Add parameter suggestions for not found parameters
+        if (notFoundParameters.size > 0 && import.meta.env.DEV) {
+          console.log("Parameters not found:", Array.from(notFoundParameters));
+          console.log(
+            "Suggestion: Check if these parameters exist in Parameter Settings for:"
           );
-        } else if (errorCount > 0) {
-          alert(`Import failed: ${errorCount} errors occurred`);
+          console.log(`Category: ${selectedCategory}, Unit: ${selectedUnit}`);
+          console.log(
+            "Available parameters:",
+            filteredParameterSettings.map((p) => `"${p.parameter}"`)
+          );
+        }
+
+        // Show result with more detailed information
+        if (import.meta.env.DEV) {
+          console.log(`Import processing log:`, processingLog.slice(0, 10));
+        }
+
+        if (successCount > 0 || errorCount > 0) {
+          console.log(
+            `Import completed: ${successCount} values imported, ${errorCount} errors`
+          );
+
+          let alertMessage = `Import completed!\n\n✅ Successfully imported: ${successCount} values`;
+
+          if (errorCount > 0) {
+            alertMessage += `\n❌ Errors: ${errorCount} values`;
+          }
+
+          if (processingLog.length > 0) {
+            alertMessage += `\n\n📋 Processing details:\n${processingLog
+              .slice(0, 10)
+              .join("\n")}`;
+            if (processingLog.length > 10) {
+              alertMessage += `\n... and ${
+                processingLog.length - 10
+              } more (check console for full log)`;
+            }
+          }
+
+          alertMessage += `\n\nPlease review the data and save changes.`;
+
+          alert(alertMessage);
+
+          // Refresh data after import
+          try {
+            const updatedData = await getParameterDataForDate(selectedDate);
+            setDailyParameterData(updatedData);
+          } catch (error) {
+            console.error("Error refreshing data after import:", error);
+          }
         } else {
-          alert("No valid data found to import");
+          alert(
+            "No valid data found to import.\n\n" +
+              "Please ensure:\n" +
+              "• The Excel file has the correct format\n" +
+              "• Parameter names match exactly\n" +
+              "• Hour values are between 1-24\n" +
+              "• Data cells are not empty"
+          );
         }
       } catch (error) {
         console.error("Error processing Excel file:", error);

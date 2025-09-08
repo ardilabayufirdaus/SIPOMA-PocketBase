@@ -151,9 +151,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
         // Pastikan filter benar-benar sesuai dengan plant category dan unit
         // parameter.unit = unit, parameter.category = category
-        const categoryMatch =
-          !selectedCategory || parameter.category === selectedCategory;
-        const unitMatch = !selectedUnit || parameter.unit === selectedUnit;
+        if (!selectedCategory || !selectedUnit) return false;
+        const categoryMatch = parameter.category === selectedCategory;
+        const unitMatch = parameter.unit === selectedUnit;
 
         return categoryMatch && unitMatch;
       });

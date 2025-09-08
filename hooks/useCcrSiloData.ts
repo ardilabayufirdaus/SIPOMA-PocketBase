@@ -6,6 +6,18 @@ import { supabase } from "../utils/supabase";
 export const useCcrSiloData = () => {
   // Fungsi untuk menghapus data silo di Supabase
   const deleteSiloData = useCallback(async (date: string, siloId: string) => {
+    // Enhanced validation for date parameter
+    if (
+      !date ||
+      typeof date !== "string" ||
+      date.trim() === "" ||
+      date === "undefined" ||
+      date === "null"
+    ) {
+      console.error("Invalid date provided to deleteSiloData:", date);
+      return;
+    }
+
     const { error } = await supabase
       .from("ccr_silo_data")
       .delete()
@@ -19,7 +31,16 @@ export const useCcrSiloData = () => {
 
   const getDataForDate = useCallback(
     async (date: string): Promise<CcrSiloData[]> => {
-      if (silosLoading || silos.length === 0) {
+      // Enhanced validation for date parameter
+      if (
+        silosLoading ||
+        silos.length === 0 ||
+        !date ||
+        typeof date !== "string" ||
+        date.trim() === "" ||
+        date === "undefined" ||
+        date === "null"
+      ) {
         return [];
       }
 
@@ -77,6 +98,18 @@ export const useCcrSiloData = () => {
       field: "emptySpace" | "content",
       value: number | undefined
     ) => {
+      // Enhanced validation for date parameter
+      if (
+        !date ||
+        typeof date !== "string" ||
+        date.trim() === "" ||
+        date === "undefined" ||
+        date === "null"
+      ) {
+        console.error("Invalid date provided to updateSiloData:", date);
+        return;
+      }
+
       const { data: existing, error: fetchError } = await supabase
         .from("ccr_silo_data")
         .select("*")
