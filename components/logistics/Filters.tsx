@@ -25,7 +25,7 @@ export const Filters: React.FC<FiltersProps> = ({
   yearOptions,
   t,
 }) => (
-  <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+  <div className="flex flex-col sm:flex-row md:flex-row gap-2 w-full md:w-auto">
     <div className="w-full sm:w-40">
       <label
         htmlFor="log-filter-area"

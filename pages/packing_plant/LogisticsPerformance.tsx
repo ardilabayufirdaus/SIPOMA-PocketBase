@@ -1,6 +1,29 @@
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+  useEffect,
+} from "react";
 import { PackingPlantStockRecord, PackingPlantMasterRecord } from "../../types";
 import { formatNumber, formatDate } from "../../utils/formatters";
+
+// Custom debounce hook
+const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 import {
   MetricCard,
   MetricCardProps,
@@ -9,6 +32,7 @@ import { Filters } from "../../components/logistics/Filters";
 import { Recommendations } from "../../components/logistics/Recommendations";
 import { StockOutTable } from "../../components/logistics/StockOutTable";
 import { Chart } from "../../components/logistics/Chart";
+import ErrorBoundary from "../../components/ErrorBoundary";
 import ArrowPathRoundedSquareIcon from "../../components/icons/ArrowPathRoundedSquareIcon";
 import ChartBarSquareIcon from "../../components/icons/ChartBarSquareIcon";
 import ExclamationTriangleIcon from "../../components/icons/ExclamationTriangleIcon";
@@ -48,14 +72,20 @@ const LogisticsPerformance: React.FC<PageProps> = ({
   const chartRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(false);
+
+  // Debounce filter changes to optimize performance
+  const debouncedFilterArea = useDebounce(filterArea, 300);
+  const debouncedFilterMonth = useDebounce(filterMonth, 300);
+  const debouncedFilterYear = useDebounce(filterYear, 300);
+
   React.useEffect(() => {
     setLoading(true);
     const timeout = setTimeout(() => setLoading(false), 300);
     return () => clearTimeout(timeout);
   }, [
-    filterArea,
-    filterMonth,
-    filterYear,
+    debouncedFilterArea,
+    debouncedFilterMonth,
+    debouncedFilterYear,
     chartType,
     showTrend,
     showComparison,
@@ -88,14 +118,31 @@ const LogisticsPerformance: React.FC<PageProps> = ({
       ],
   }));
 
+  // Consistent color scheme for charts and UI elements
   const COLORS = [
-    "#B91C1C",
-    "#DC2626",
-    "#F87171",
-    "#6B7280",
-    "#9CA3AF",
-    "#D1D5DB",
+    "#DC2626", // Red-600
+    "#EA580C", // Orange-600
+    "#CA8A04", // Yellow-600
+    "#16A34A", // Green-600
+    "#0891B2", // Cyan-600
+    "#7C3AED", // Violet-600
+    "#BE185D", // Pink-600
+    "#374151", // Gray-700
   ];
+
+  // Consistent theme colors
+  const THEME_COLORS = {
+    primary: "#DC2626",
+    secondary: "#6B7280",
+    success: "#16A34A",
+    warning: "#CA8A04",
+    error: "#DC2626",
+    info: "#0891B2",
+    background: "#FFFFFF",
+    surface: "#F8FAFC",
+    text: "#1E293B",
+    textSecondary: "#64748B",
+  };
 
   // Optimized moving average calculation to reduce computation overhead
   const calculateMovingAverage = useCallback(
@@ -132,23 +179,29 @@ const LogisticsPerformance: React.FC<PageProps> = ({
     const stockRecordsForMonth = stockRecords.filter((r) => {
       const recordDate = new Date(r.date);
       const matches =
-        recordDate.getMonth() === filterMonth &&
-        recordDate.getFullYear() === filterYear;
+        recordDate.getMonth() === debouncedFilterMonth &&
+        recordDate.getFullYear() === debouncedFilterYear;
       return matches;
     });
 
     const relevantMasterData = masterData.filter(
-      (m) => filterArea === "All Areas" || m.area === filterArea
+      (m) =>
+        debouncedFilterArea === "All Areas" || m.area === debouncedFilterArea
     );
     const relevantStockRecords = stockRecordsForMonth.filter(
-      (r) => filterArea === "All Areas" || r.area === filterArea
+      (r) =>
+        debouncedFilterArea === "All Areas" || r.area === debouncedFilterArea
     );
 
-    const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+    const daysInMonth = new Date(
+      debouncedFilterYear,
+      debouncedFilterMonth + 1,
+      0
+    ).getDate();
     const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     const displayedAreas = (
-      filterArea === "All Areas" ? areas : [filterArea]
+      debouncedFilterArea === "All Areas" ? areas : [debouncedFilterArea]
     ).filter((area) => stockRecordsForMonth.some((r) => r.area === area));
 
     if (relevantStockRecords.length === 0 || relevantMasterData.length === 0) {
@@ -367,9 +420,9 @@ const LogisticsPerformance: React.FC<PageProps> = ({
       noData: false,
     };
   }, [
-    filterArea,
-    filterMonth,
-    filterYear,
+    debouncedFilterArea,
+    debouncedFilterMonth,
+    debouncedFilterYear,
     stockRecords,
     masterData,
     t,
@@ -935,10 +988,13 @@ const LogisticsPerformance: React.FC<PageProps> = ({
   }, [performanceData]);
 
   return (
-    <div className="space-y-4" aria-live="polite">
+    <div className="space-y-4" aria-live="polite" role="main">
       <div className="bg-white p-4 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-          <h2 className="text-lg font-bold text-slate-800 tracking-tight">
+          <h2
+            id="logistics-title"
+            className="text-lg font-bold text-slate-800 tracking-tight"
+          >
             {t.pack_logistics_performance_title}
           </h2>
           <Filters
@@ -957,8 +1013,29 @@ const LogisticsPerformance: React.FC<PageProps> = ({
       </div>
 
       {loading ? (
-        <div className="bg-white p-10 rounded-lg shadow-md text-center text-slate-500 animate-pulse">
-          <p>{t.loading || "Loading data..."}</p>
+        <div className="space-y-4">
+          {/* Skeleton for metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="bg-white p-3 rounded-lg shadow-md animate-pulse"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="p-2 rounded-lg bg-slate-200 w-8 h-8"></div>
+                  <div className="flex-1">
+                    <div className="h-3 bg-slate-200 rounded mb-1"></div>
+                    <div className="h-6 bg-slate-200 rounded mb-1"></div>
+                    <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Skeleton for chart */}
+          <div className="bg-white p-4 rounded-lg shadow-md animate-pulse">
+            <div className="h-80 bg-slate-200 rounded"></div>
+          </div>
         </div>
       ) : performanceData.noData ? (
         <div className="bg-white p-10 rounded-lg shadow-md text-center text-slate-500">
@@ -994,155 +1071,163 @@ const LogisticsPerformance: React.FC<PageProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
             {metrics.map((m) => (
               <MetricCard key={m.title} {...m} />
             ))}
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-2 mb-3">
-              <div>
-                <h3 className="text-base font-semibold text-slate-800">
-                  {t.daily_stock_out_chart}
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {filterArea} - {monthOptions[filterMonth]?.label} {filterYear}{" "}
-                  ({performanceData.daysInMonth} hari)
-                </p>
-              </div>
-
-              {/* Chart Controls */}
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <label className="text-xs font-medium text-slate-600">
-                    Type:
-                  </label>
-                  <select
-                    value={chartType}
-                    onChange={(e) =>
-                      setChartType(e.target.value as "line" | "bar" | "combo")
-                    }
-                    className="px-2 py-1 text-xs border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+          <ErrorBoundary>
+            <div
+              className="bg-white p-4 rounded-lg shadow-md"
+              aria-labelledby="chart-title"
+            >
+              <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-2 mb-3">
+                <div>
+                  <h3
+                    id="chart-title"
+                    className="text-base font-semibold text-slate-800"
                   >
-                    <option value="line">Line</option>
-                    <option value="bar">Bar</option>
-                    <option value="combo">Combo</option>
-                  </select>
+                    {t.daily_stock_out_chart}
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {filterArea} - {monthOptions[filterMonth]?.label}{" "}
+                    {filterYear} ({performanceData.daysInMonth} hari)
+                  </p>
                 </div>
 
-                <label className="flex items-center gap-1 text-xs">
-                  <input
-                    type="checkbox"
-                    checked={showTrend}
-                    onChange={(e) => setShowTrend(e.target.checked)}
-                    className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-                  />
-                  <span className="text-slate-600">Trend</span>
-                </label>
-
-                <label className="flex items-center gap-1 text-xs">
-                  <input
-                    type="checkbox"
-                    checked={showComparison}
-                    onChange={(e) => setShowComparison(e.target.checked)}
-                    className="rounded border-slate-300 text-red-600 focus:ring-red-500"
-                  />
-                  <span className="text-slate-600">Compare</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Critical Days Alert */}
-            {performanceData.criticalDays.length > 0 && (
-              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 text-red-600">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                {/* Chart Controls */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs font-medium text-slate-600">
+                      Type:
+                    </label>
+                    <select
+                      value={chartType}
+                      onChange={(e) =>
+                        setChartType(e.target.value as "line" | "bar" | "combo")
+                      }
+                      className="px-2 py-1 text-xs border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4.586l3.293 3.293 1.414-1.414L12 10.586 8.293 14.293l1.414 1.414L12 12.586V8z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="text-xs font-medium text-red-800">
-                    Critical Days: {performanceData.criticalDays.length} high
-                    stock-out days
-                  </span>
-                  <span className="text-xs text-red-700">
-                    ({performanceData.criticalDays.join(", ")})
-                  </span>
+                      <option value="line">Line</option>
+                      <option value="bar">Bar</option>
+                      <option value="combo">Combo</option>
+                    </select>
+                  </div>
+
+                  <label className="flex items-center gap-1 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={showTrend}
+                      onChange={(e) => setShowTrend(e.target.checked)}
+                      className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+                    />
+                    <span className="text-slate-600">Trend</span>
+                  </label>
+
+                  <label className="flex items-center gap-1 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={showComparison}
+                      onChange={(e) => setShowComparison(e.target.checked)}
+                      className="rounded border-slate-300 text-red-600 focus:ring-red-500"
+                    />
+                    <span className="text-slate-600">Compare</span>
+                  </label>
                 </div>
               </div>
-            )}
 
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 mb-3">
-              {performanceData.displayedAreas.map((area, i) => (
-                <div key={area} className="flex items-center">
-                  <span
-                    className="w-2 h-2 rounded-sm mr-1"
-                    style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                  ></span>
-                  {area}
-                </div>
-              ))}
-              {showTrend && (
-                <div className="flex items-center">
-                  <span className="w-2 h-0.5 bg-slate-400 mr-1"></span>
-                  Trend
+              {/* Critical Days Alert */}
+              {performanceData.criticalDays.length > 0 && (
+                <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 text-red-600">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4.586l3.293 3.293 1.414-1.414L12 10.586 8.293 14.293l1.414 1.414L12 12.586V8z"
+                        />
+                      </svg>
+                    </span>
+                    <span className="text-xs font-medium text-red-800">
+                      Critical Days: {performanceData.criticalDays.length} high
+                      stock-out days
+                    </span>
+                    <span className="text-xs text-red-700">
+                      ({performanceData.criticalDays.join(", ")})
+                    </span>
+                  </div>
                 </div>
               )}
-              {showComparison && (
-                <div className="flex items-center">
-                  <span className="w-2 h-2 rounded-sm mr-1 bg-slate-300 opacity-50"></span>
-                  Prev Month
-                </div>
-              )}
-            </div>
 
-            {/* Modular Chart Component */}
-            <Chart
-              chartType={chartType}
-              performanceData={performanceData}
-              showTrend={showTrend}
-              showComparison={showComparison}
-              COLORS={COLORS}
-              filterYear={filterYear}
-              filterMonth={filterMonth}
-              chartRef={chartRef}
-              handleDaySelection={handleDaySelection}
-              handleChartHover={handleChartHover}
-              handleMouseLeaveChart={handleMouseLeaveChart}
-              hoveredInfo={hoveredInfo}
-              formatDate={formatDate}
-              formatNumber={formatNumber}
-            />
+              {/* Legend */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 mb-3">
+                {performanceData.displayedAreas.map((area, i) => (
+                  <div key={area} className="flex items-center">
+                    <span
+                      className="w-2 h-2 rounded-sm mr-1"
+                      style={{ backgroundColor: COLORS[i % COLORS.length] }}
+                    ></span>
+                    {area}
+                  </div>
+                ))}
+                {showTrend && (
+                  <div className="flex items-center">
+                    <span className="w-2 h-0.5 bg-slate-400 mr-1"></span>
+                    Trend
+                  </div>
+                )}
+                {showComparison && (
+                  <div className="flex items-center">
+                    <span className="w-2 h-2 rounded-sm mr-1 bg-slate-300 opacity-50"></span>
+                    Prev Month
+                  </div>
+                )}
+              </div>
 
-            {/* Recommendations Section */}
-            {performanceData.recommendations.length > 0 && (
-              <Recommendations
-                recommendations={performanceData.recommendations}
+              {/* Modular Chart Component */}
+              <Chart
+                chartType={chartType}
+                performanceData={performanceData}
+                showTrend={showTrend}
+                showComparison={showComparison}
+                COLORS={COLORS}
+                filterYear={filterYear}
+                filterMonth={filterMonth}
+                chartRef={chartRef}
+                handleDaySelection={handleDaySelection}
+                handleChartHover={handleChartHover}
+                handleMouseLeaveChart={handleMouseLeaveChart}
+                hoveredInfo={hoveredInfo}
+                formatDate={formatDate}
+                formatNumber={formatNumber}
               />
-            )}
 
-            {/* Stock Out Table Section */}
-            <StockOutTable
-              tableData={performanceData.tableData}
-              selectedDay={selectedDay}
-              setSelectedDay={setSelectedDay}
-              formatNumber={formatNumber}
-              t={t}
-            />
-          </div>
+              {/* Recommendations Section */}
+              {performanceData.recommendations.length > 0 && (
+                <Recommendations
+                  recommendations={performanceData.recommendations}
+                />
+              )}
+
+              {/* Stock Out Table Section */}
+              <StockOutTable
+                tableData={performanceData.tableData}
+                selectedDay={selectedDay}
+                setSelectedDay={setSelectedDay}
+                formatNumber={formatNumber}
+                t={t}
+              />
+            </div>
+          </ErrorBoundary>
         </>
       )}
     </div>

@@ -169,7 +169,27 @@ export const Chart: React.FC<ChartProps> = ({
           </div>
         )}
         theme={{
+          background: "#FFFFFF",
+          text: { fill: "#374151", fontSize: 12 },
+          axis: {
+            domain: { line: { stroke: "#D1D5DB", strokeWidth: 1 } },
+            ticks: {
+              line: { stroke: "#D1D5DB", strokeWidth: 1 },
+              text: { fill: "#374151" },
+            },
+            legend: { text: { fill: "#374151" } },
+          },
           grid: { line: { stroke: "#E5E7EB", strokeWidth: 1 } },
+          legends: { text: { fill: "#374151" } },
+          tooltip: {
+            container: {
+              background: "#1E293B",
+              color: "#FFFFFF",
+              fontSize: 12,
+              borderRadius: 4,
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+            },
+          },
           crosshair: {
             line: { stroke: "#DC2626", strokeWidth: 2, strokeOpacity: 0.5 },
           },
