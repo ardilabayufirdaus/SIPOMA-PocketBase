@@ -2,9 +2,19 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useCopParametersSupabase } from "../../hooks/useCopParametersSupabase";
 import { useParameterSettings } from "../../hooks/useParameterSettings";
 import { useCcrParameterData } from "../../hooks/useCcrParameterData";
-import { ParameterDataType, ParameterSetting } from "../../types";
+import { ParameterDataType, ParameterSetting, UserRole } from "../../types";
 import { formatDate } from "../../utils/formatters";
 import { usePlantUnits } from "../../hooks/usePlantUnits";
+import { useUsers } from "../../hooks/useUsers";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
@@ -64,16 +74,26 @@ interface AnalysisDataRow {
 }
 
 const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
-  // ...existing code...
-  const { copParameterIds } = useCopParametersSupabase();
+  const { copParameterIds, loading: copLoading } = useCopParametersSupabase();
   const { records: allParameters } = useParameterSettings();
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
   const { records: plantUnits } = usePlantUnits();
+  const { users } = useUsers();
   // Set default filter so not all parameters are shown for all categories/units
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
+  const [selectedOperator, setSelectedOperator] = useState("");
+  const [selectedParameterStats, setSelectedParameterStats] = useState<{
+    parameter: string;
+    avg: number | null;
+    median: number | null;
+    min: number | null;
+    max: number | null;
+    stdev: number | null;
+    qaf: number | null;
+  } | null>(null);
 
   // Set default filter only after plantUnits are loaded
   useEffect(() => {
@@ -103,6 +123,26 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
       .sort();
   }, [plantUnits, selectedCategory]);
 
+  // Memoize filtered parameters to avoid recalculating on every render
+  const filteredCopParameters = useMemo(() => {
+    if (
+      !allParameters.length ||
+      !copParameterIds.length ||
+      !selectedCategory ||
+      !selectedUnit
+    ) {
+      return [];
+    }
+
+    return copParameterIds
+      .map((paramId) => allParameters.find((p) => p.id === paramId))
+      .filter((param): param is ParameterSetting => param !== undefined)
+      .filter(
+        (param) =>
+          param.category === selectedCategory && param.unit === selectedUnit
+      );
+  }, [allParameters, copParameterIds, selectedCategory, selectedUnit]);
+
   useEffect(() => {
     if (unitsForCategory.length > 0) {
       if (!selectedUnit || !unitsForCategory.includes(selectedUnit)) {
@@ -117,6 +157,15 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
     [plantUnits]
   );
+
+  // Update relevantOperators to get all active users with role Operator from User Management, ignoring category and unit permissions
+  const relevantOperators = useMemo(() => {
+    if (!users) return [];
+
+    return users
+      .filter((user) => user.role === UserRole.OPERATOR && user.is_active)
+      .sort((a, b) => a.full_name.localeCompare(b.full_name));
+  }, [users]);
 
   // ...existing code...
 
@@ -134,13 +183,11 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
       try {
         // Validate required data
-        if (!selectedCategory || !selectedUnit) {
-          setAnalysisData([]);
-          setIsLoading(false);
-          return;
-        }
-
-        if (allParameters.length === 0 || copParameterIds.length === 0) {
+        if (
+          !selectedCategory ||
+          !selectedUnit ||
+          filteredCopParameters.length === 0
+        ) {
           setAnalysisData([]);
           setIsLoading(false);
           return;
@@ -188,25 +235,10 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
           }
         });
 
-        const filteredCopIds = copParameterIds.filter((paramId) => {
-          const parameter = allParameters.find((p) => p.id === paramId);
-          if (!parameter) return false;
-
-          // Pastikan filter benar-benar sesuai dengan plant category dan unit
-          // parameter.unit = unit, parameter.category = category
-          const categoryMatch = parameter.category === selectedCategory;
-          const unitMatch = parameter.unit === selectedUnit;
-
-          return categoryMatch && unitMatch;
-        });
-
-        const data = filteredCopIds
-          .map((paramId) => {
-            const parameter = allParameters.find((p) => p.id === paramId);
-            if (!parameter) return null;
-
+        const data = filteredCopParameters
+          .map((parameter) => {
             const dailyValues = dates.map((dateString) => {
-              const avg = dailyAverages.get(paramId)?.get(dateString);
+              const avg = dailyAverages.get(parameter.id)?.get(dateString);
               // FIX: Use snake_case properties `min_value` and `max_value`
               const { min_value, max_value } = parameter;
 
@@ -255,7 +287,6 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
         setAnalysisData(data);
       } catch (err) {
-        console.error("Error fetching COP analysis data:", err);
         setError("Failed to load COP analysis data. Please try again.");
         setAnalysisData([]);
       } finally {
@@ -267,7 +298,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
   }, [
     filterMonth,
     filterYear,
-    copParameterIds,
+    filteredCopParameters,
     allParameters,
     getDataForDate,
     selectedCategory,
@@ -333,6 +364,87 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         total: totalWithValueMonthly,
       },
     };
+  }, [analysisData]);
+
+  // Helper function to calculate statistics
+  const calculateParameterStats = (row: AnalysisDataRow) => {
+    const validValues = row.dailyValues
+      .map((d) => d.raw)
+      .filter((v): v is number => v !== undefined && v !== null && !isNaN(v));
+
+    if (validValues.length === 0) {
+      return {
+        avg: null,
+        median: null,
+        min: null,
+        max: null,
+        stdev: null,
+        qaf: row.monthlyAverage,
+      };
+    }
+
+    const sorted = [...validValues].sort((a, b) => a - b);
+    const avg = validValues.reduce((a, b) => a + b, 0) / validValues.length;
+    const median =
+      sorted.length % 2 === 0
+        ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+        : sorted[Math.floor(sorted.length / 2)];
+    const min = Math.min(...validValues);
+    const max = Math.max(...validValues);
+
+    // Calculate standard deviation
+    const variance =
+      validValues.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) /
+      validValues.length;
+    const stdev = Math.sqrt(variance);
+
+    return {
+      avg: Math.round(avg * 100) / 100,
+      median: Math.round(median * 100) / 100,
+      min: Math.round(min * 100) / 100,
+      max: Math.round(max * 100) / 100,
+      stdev: Math.round(stdev * 100) / 100,
+      qaf: row.monthlyAverage
+        ? Math.round(row.monthlyAverage * 100) / 100
+        : null,
+    };
+  };
+
+  const operatorAchievementData = useMemo(() => {
+    if (!analysisData || analysisData.length === 0) {
+      return [];
+    }
+
+    // Note: operator_id is not available in ParameterSetting type
+    // For now, show all parameters regardless of operator filter
+    // TODO: Add operator_id to ParameterSetting type if needed
+    const filteredData = analysisData;
+
+    return filteredData
+      .map((row) => {
+        const totalDays = row.dailyValues.length;
+        const outOfRangeDays = row.dailyValues.filter(
+          (day) => day.value === null || day.value < 0 || day.value > 100
+        ).length;
+        const percentage =
+          totalDays > 0 ? (outOfRangeDays / totalDays) * 100 : 0;
+
+        return {
+          parameter: row.parameter.parameter,
+          percentage: Math.round(percentage * 10) / 10,
+          outOfRange: outOfRangeDays,
+          total: totalDays,
+          operatorId: null, // Placeholder until operator_id is added to type
+          onClick: () => {
+            const stats = calculateParameterStats(row);
+            setSelectedParameterStats({
+              parameter: row.parameter.parameter,
+              ...stats,
+            });
+          },
+        };
+      })
+      .filter((item) => item.percentage > 0);
   }, [analysisData]);
 
   const yearOptions = Array.from(
@@ -648,7 +760,11 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                       colSpan={daysHeader.length + 5}
                       className="text-center py-10 text-slate-500 dark:text-slate-400"
                     >
-                      No COP parameters selected or no data available.
+                      {!selectedCategory || !selectedUnit
+                        ? "Please select both Category and Unit to view COP analysis data."
+                        : filteredCopParameters.length === 0
+                        ? "No COP parameters found for the selected Category and Unit."
+                        : "No data available for the selected period."}
                     </td>
                   </tr>
                 )}
@@ -715,6 +831,163 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
           </div>
         )}
       </div>
+
+      {/* Kategori Pencapaian COP Operator */}
+      {operatorAchievementData.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700 mt-6 relative">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+              Kategori Pencapaian COP Operator
+            </h3>
+            <div className="w-full md:w-64">
+              <label htmlFor="operator-filter" className="sr-only">
+                Filter Operator
+              </label>
+              <select
+                id="operator-filter"
+                value={selectedOperator}
+                onChange={(e) => setSelectedOperator(e.target.value)}
+                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
+              >
+                <option value="">Semua Operator</option>
+                {relevantOperators.map((operator) => (
+                  <option key={operator.id} value={operator.id}>
+                    {operator.full_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+            Diagram batang menunjukkan persentase hari dimana operator tidak
+            mencapai parameter target (di luar range 0-100%).
+          </p>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={
+                  selectedOperator
+                    ? operatorAchievementData.filter(
+                        (item) =>
+                          item.operatorId &&
+                          item.operatorId === selectedOperator
+                      )
+                    : operatorAchievementData
+                }
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                onClick={(data: any) => {
+                  if (
+                    data &&
+                    data.activePayload &&
+                    data.activePayload.length > 0
+                  ) {
+                    const paramName = data.activePayload[0].payload.parameter;
+                    const paramStats = operatorAchievementData.find(
+                      (item) => item.parameter === paramName
+                    );
+                    if (paramStats && paramStats.onClick) {
+                      paramStats.onClick();
+                    }
+                  }
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis
+                  dataKey="parameter"
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  label={{
+                    value: "Persentase (%)",
+                    angle: -90,
+                    position: "insideLeft",
+                  }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1e293b",
+                    border: "none",
+                    borderRadius: "8px",
+                    color: "white",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  }}
+                  formatter={(value: number, name: string) => [
+                    `${value}%`,
+                    "Persentase Tidak Capai",
+                  ]}
+                  labelFormatter={(label: string) => `Parameter: ${label}`}
+                />
+                <Bar
+                  dataKey="percentage"
+                  fill="#ef4444"
+                  name="Persentase Tidak Capai"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 text-sm text-slate-600 dark:text-slate-400">
+            <p>
+              Total parameter yang tidak mencapai target:{" "}
+              {operatorAchievementData.length}
+            </p>
+          </div>
+          {selectedParameterStats && (
+            <div className="absolute top-16 right-4 z-50 w-72 p-4 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200">
+              <h4 className="font-semibold mb-2">
+                {selectedParameterStats.parameter}
+              </h4>
+              <ul className="space-y-1">
+                <li>
+                  <strong>Avg:</strong>{" "}
+                  {selectedParameterStats.avg !== null
+                    ? selectedParameterStats.avg.toFixed(2)
+                    : "-"}
+                </li>
+                <li>
+                  <strong>Median:</strong>{" "}
+                  {selectedParameterStats.median !== null
+                    ? selectedParameterStats.median.toFixed(2)
+                    : "-"}
+                </li>
+                <li>
+                  <strong>Min:</strong>{" "}
+                  {selectedParameterStats.min !== null
+                    ? selectedParameterStats.min.toFixed(2)
+                    : "-"}
+                </li>
+                <li>
+                  <strong>Max:</strong>{" "}
+                  {selectedParameterStats.max !== null
+                    ? selectedParameterStats.max.toFixed(2)
+                    : "-"}
+                </li>
+                <li>
+                  <strong>Stdev:</strong>{" "}
+                  {selectedParameterStats.stdev !== null
+                    ? selectedParameterStats.stdev.toFixed(2)
+                    : "-"}
+                </li>
+                <li>
+                  <strong>QAF:</strong>{" "}
+                  {selectedParameterStats.qaf !== null
+                    ? `${selectedParameterStats.qaf.toFixed(2)}%`
+                    : "-"}
+                </li>
+              </ul>
+              <button
+                className="mt-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={() => setSelectedParameterStats(null)}
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
