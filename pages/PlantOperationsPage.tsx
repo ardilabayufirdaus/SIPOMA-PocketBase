@@ -1,5 +1,8 @@
 import React from "react";
 import PlaceholderPage from "../components/PlaceholderPage";
+import Monitoring from "../components/plant_operations/Monitoring";
+import useCcrDowntimeData from "../hooks/useCcrDowntimeData";
+import { useAutonomousRiskData } from "../hooks/useAutonomousRiskData";
 import PlantOperationsMasterData from "./plant_operations/PlantOperationsMasterData";
 import CcrDataEntryPage from "./plant_operations/CcrDataEntryPage";
 import AutonomousDataEntryPage from "./plant_operations/AutonomousDataEntryPage";
@@ -78,6 +81,17 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({
       return <CopAnalysisPage t={t} />;
     case "op_work_instruction_library":
       return <WorkInstructionLibraryPage t={t} />;
+    case "op_monitoring": {
+      const { getAllDowntime } = useCcrDowntimeData();
+      const { records: riskRecords } = useAutonomousRiskData();
+      return (
+        <Monitoring
+          downtimeData={getAllDowntime()}
+          riskData={riskRecords}
+          t={t}
+        />
+      );
+    }
     default:
       const pageTitle = t[activePage as keyof typeof t] || activePage;
       return <PlaceholderPage title={pageTitle} t={t} />;

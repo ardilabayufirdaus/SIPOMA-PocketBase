@@ -376,6 +376,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      global_parameter_settings: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          plant_category: string | null;
+          plant_unit: string | null;
+          selected_parameters: string[];
+          is_global: boolean;
+          created_at: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          plant_category?: string | null;
+          plant_unit?: string | null;
+          selected_parameters: string[];
+          is_global?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          updated_by: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          plant_category?: string | null;
+          plant_unit?: string | null;
+          selected_parameters?: string[];
+          is_global?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string;
+        };
+        Relationships: [];
+      };
       pic_settings: {
         Row: {
           id: string;

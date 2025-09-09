@@ -97,6 +97,7 @@ export const translations = {
     user_is_active_label: "User is Active",
     save_button: "Save",
     cancel_button: "Cancel",
+    apply_button: "Apply",
     user_details_title: "User Details",
     permissions_title: "Module Permissions",
     module_dashboard: "Main Dashboard",
@@ -132,6 +133,15 @@ export const translations = {
       "Are you sure you want to delete this user? This action cannot be undone.",
     delete_user: "Delete User",
     close_button: "Close",
+
+    // Global Parameter Settings
+    apply_to_all_users: "Apply to All Users",
+    super_admin_mode: "Super Admin Mode",
+    super_admin_global_settings_info:
+      "Settings you save will be applied to all system users.",
+    global_settings_saved: "Parameter settings have been applied to all users!",
+    global_settings_save_failed:
+      "Failed to save global settings. Please try again.",
 
     // User Management Sub-Menu
     user_list: "Users List",
@@ -664,6 +674,7 @@ export const translations = {
     user_is_active_label: "Pengguna Aktif",
     save_button: "Simpan",
     cancel_button: "Batal",
+    apply_button: "Terapkan",
     user_details_title: "Detail Pengguna",
     permissions_title: "Hak Akses Modul",
     module_dashboard: "Dasbor Utama",
@@ -700,6 +711,16 @@ export const translations = {
       "Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan.",
     delete_user: "Hapus Pengguna",
     close_button: "Tutup",
+
+    // Global Parameter Settings
+    apply_to_all_users: "Terapkan ke Semua Pengguna",
+    super_admin_mode: "Mode Super Admin",
+    super_admin_global_settings_info:
+      "Pengaturan yang Anda simpan akan diterapkan ke semua pengguna sistem.",
+    global_settings_saved:
+      "Pengaturan parameter telah diterapkan ke semua pengguna!",
+    global_settings_save_failed:
+      "Gagal menyimpan pengaturan global. Silahkan coba lagi.",
 
     // User Management Sub-Menu
     user_list: "Daftar Pengguna",

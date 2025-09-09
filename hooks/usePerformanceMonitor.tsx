@@ -40,7 +40,7 @@ export const usePerformanceMonitor = (
 
   const [metrics, setMetrics] = useState<PerformanceMetrics[]>([]);
   const measureStartTimes = useRef<Map<string, number>>(new Map());
-  const frameId = useRef<number>();
+  const frameId = useRef<number>(0);
 
   // Start performance measurement
   const startMeasure = useCallback(
@@ -225,7 +225,9 @@ export const usePerformanceMonitor = (
  */
 export const PerformanceMonitor: React.FC<{
   metrics: PerformanceMetrics[];
-  summary: ReturnType<typeof usePerformanceMonitor>["getPerformanceSummary"];
+  summary: ReturnType<
+    ReturnType<typeof usePerformanceMonitor>["getPerformanceSummary"]
+  >;
   frameRate: number;
   issues: string[];
 }> = ({ metrics, summary, frameRate, issues }) => {
