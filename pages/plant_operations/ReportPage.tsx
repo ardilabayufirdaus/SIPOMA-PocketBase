@@ -848,141 +848,170 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
   const handleGenerateReport = useCallback(async () => {
     if (!canvasRef.current || reportConfig.length === 0) return;
+
+    // Validasi filter sebelum generate
+    if (!selectedCategory || !selectedUnit) {
+      console.warn(
+        "Category and unit must be selected before generating report"
+      );
+      return;
+    }
+
     setIsLoading(true);
     setReportImageUrl(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // FIX: await async data fetching functions
-    const ccrDataForDate = await getDataForDate(selectedDate);
-    // FIX: Use snake_case property `parameter_id`
-    const ccrDataMap = new Map(ccrDataForDate.map((d) => [d.parameter_id, d]));
-
-    const downtimeDataForDate = getDowntimeForDate(selectedDate);
-    const filteredDowntimeData = downtimeDataForDate.filter(
-      (d) => d.unit === selectedUnit
-    );
-
-    // FIX: await async data fetching functions
-    const allSiloDataForDate = await getSiloDataForDate(selectedDate);
-    const siloMasterMap = new Map(siloMasterData.map((s) => [s.id, s]));
-    const filteredSiloData = allSiloDataForDate
-      .filter((data) => {
-        // FIX: Use snake_case property `silo_id`
-        const master = siloMasterMap.get(data.silo_id) as
-          | SiloCapacity
-          | undefined;
-        return master && master.unit === selectedUnit;
-      })
-      .map((data) => ({
-        ...data,
-        master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
-      })) // FIX: Use snake_case property `silo_id`
-      .filter(
-        (data): data is typeof data & { master: SiloCapacity } => !!data.master
+      // FIX: await async data fetching functions
+      const ccrDataForDate = await getDataForDate(selectedDate);
+      // FIX: Use snake_case property `parameter_id`
+      const ccrDataMap = new Map(
+        ccrDataForDate.map((d) => [d.parameter_id, d])
       );
 
-    const operatorParam = parameterSettings.find(
-      (p) => p.parameter === "Operator Name"
-    );
-    let operatorData: { shift: string; name: string }[] = [];
+      const downtimeDataForDate = getDowntimeForDate(selectedDate);
+      const filteredDowntimeData = downtimeDataForDate.filter(
+        (d) => d.unit === selectedUnit
+      );
 
-    if (operatorParam) {
-      const operatorDataRecord = ccrDataMap.get(operatorParam.id) as
-        | CcrParameterData
-        | undefined;
+      // FIX: await async data fetching functions
+      const allSiloDataForDate = await getSiloDataForDate(selectedDate);
+      const siloMasterMap = new Map(siloMasterData.map((s) => [s.id, s]));
+      const filteredSiloData = allSiloDataForDate
+        .filter((data) => {
+          // FIX: Use snake_case property `silo_id`
+          const master = siloMasterMap.get(data.silo_id) as
+            | SiloCapacity
+            | undefined;
+          return master && master.unit === selectedUnit;
+        })
+        .map((data) => ({
+          ...data,
+          master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
+        })) // FIX: Use snake_case property `silo_id`
+        .filter(
+          (data): data is typeof data & { master: SiloCapacity } =>
+            !!data.master
+        );
 
-      const getOperatorForShift = (hours: number[]) => {
-        if (!operatorDataRecord) return "-";
-        for (const hour of hours) {
-          // FIX: Use snake_case property `hourly_values`
-          const operator = operatorDataRecord.hourly_values[hour];
-          if (operator && String(operator).trim() !== "")
-            return String(operator);
-        }
-        return "-";
-      };
+      const operatorParam = parameterSettings.find(
+        (p) => p.parameter === "Operator Name"
+      );
+      let operatorData: { shift: string; name: string }[] = [];
 
-      operatorData = [
-        {
-          shift: `${t.shift_3} (${t.shift_3_cont})`,
-          name: getOperatorForShift([1, 2, 3, 4, 5, 6, 7]),
-        },
-        {
-          shift: t.shift_1,
-          name: getOperatorForShift([8, 9, 10, 11, 12, 13, 14, 15]),
-        },
-        {
-          shift: t.shift_2,
-          name: getOperatorForShift([16, 17, 18, 19, 20, 21, 22]),
-        },
-        { shift: t.shift_3, name: getOperatorForShift([23, 24]) },
-      ];
-    }
-
-    const allParams = reportConfig.flatMap((g) => g.parameters);
-
-    const rows = Array.from({ length: 24 }, (_, i) => {
-      const hour = i + 1;
-      const values: Record<string, string | number> = {};
-      allParams.forEach((param) => {
-        // FIX: Use snake_case property `hourly_values`
-        const paramData = ccrDataMap.get(param.id) as
+      if (operatorParam) {
+        const operatorDataRecord = ccrDataMap.get(operatorParam.id) as
           | CcrParameterData
           | undefined;
-        values[param.id] = paramData?.hourly_values[hour] ?? "";
-      });
-      return {
-        hour,
-        shift: getShiftForHour(hour),
-        values,
-      };
-    });
 
-    const footerStats: { [key: string]: { [key: string]: string } } = {
-      [t.average]: {},
-      [t.min]: {},
-      [t.max]: {},
-    };
+        const getOperatorForShift = (hours: number[]) => {
+          if (!operatorDataRecord) return "-";
+          for (const hour of hours) {
+            // FIX: Use snake_case property `hourly_values`
+            const operator = operatorDataRecord.hourly_values[hour];
+            if (operator && String(operator).trim() !== "")
+              return String(operator);
+          }
+          return "-";
+        };
 
-    allParams.forEach((param) => {
-      // FIX: Use snake_case property `data_type`
-      if (param.data_type === ParameterDataType.NUMBER) {
-        const values = rows
-          .map((r) => Number(r.values[param.id]))
-          .filter((v) => !isNaN(v));
-        if (values.length > 0) {
-          footerStats[t.average][param.id] = (
-            values.reduce((a, b) => a + b, 0) / values.length
-          ).toLocaleString("de-DE", { maximumFractionDigits: 2 });
-          footerStats[t.min][param.id] = Math.min(...values).toLocaleString(
-            "de-DE",
-            { maximumFractionDigits: 2 }
-          );
-          footerStats[t.max][param.id] = Math.max(...values).toLocaleString(
-            "de-DE",
-            { maximumFractionDigits: 2 }
-          );
-        }
+        operatorData = [
+          {
+            shift: `${t.shift_3} (${t.shift_3_cont})`,
+            name: getOperatorForShift([1, 2, 3, 4, 5, 6, 7]),
+          },
+          {
+            shift: t.shift_1,
+            name: getOperatorForShift([8, 9, 10, 11, 12, 13, 14, 15]),
+          },
+          {
+            shift: t.shift_2,
+            name: getOperatorForShift([16, 17, 18, 19, 20, 21, 22]),
+          },
+          { shift: t.shift_3, name: getOperatorForShift([23, 24]) },
+        ];
       }
-    });
 
-    const dataForCanvas = {
-      groupedHeaders: reportConfig,
-      rows,
-      footer: footerStats,
-      title: `${t.op_report_title} - ${selectedUnit}`,
-      date: formatDate(selectedDate),
-      downtimeData: filteredDowntimeData,
-      siloData: filteredSiloData,
-      operatorData: operatorData,
-    };
+      const allParams = reportConfig.flatMap((g) => g.parameters);
 
-    drawReportOnCanvas(canvasRef.current, dataForCanvas, t);
+      const rows = Array.from({ length: 24 }, (_, i) => {
+        const hour = i + 1;
+        const values: Record<string, string | number> = {};
+        allParams.forEach((param) => {
+          // FIX: Use snake_case property `hourly_values`
+          const paramData = ccrDataMap.get(param.id) as
+            | CcrParameterData
+            | undefined;
+          values[param.id] = paramData?.hourly_values[hour] ?? "";
+        });
+        return {
+          hour,
+          shift: getShiftForHour(hour),
+          values,
+        };
+      });
 
-    setReportImageUrl(canvasRef.current.toDataURL("image/png"));
-    setIsLoading(false);
-  }, [selectedDate, selectedUnit, reportConfig, t]);
+      const footerStats: { [key: string]: { [key: string]: string } } = {
+        [t.average]: {},
+        [t.min]: {},
+        [t.max]: {},
+      };
+
+      allParams.forEach((param) => {
+        // FIX: Use snake_case property `data_type`
+        if (param.data_type === ParameterDataType.NUMBER) {
+          const values = rows
+            .map((r) => Number(r.values[param.id]))
+            .filter((v) => !isNaN(v));
+          if (values.length > 0) {
+            footerStats[t.average][param.id] = (
+              values.reduce((a, b) => a + b, 0) / values.length
+            ).toLocaleString("de-DE", { maximumFractionDigits: 2 });
+            footerStats[t.min][param.id] = Math.min(...values).toLocaleString(
+              "de-DE",
+              { maximumFractionDigits: 2 }
+            );
+            footerStats[t.max][param.id] = Math.max(...values).toLocaleString(
+              "de-DE",
+              { maximumFractionDigits: 2 }
+            );
+          }
+        }
+      });
+
+      const dataForCanvas = {
+        groupedHeaders: reportConfig,
+        rows,
+        footer: footerStats,
+        title: `${t.op_report_title} - ${selectedUnit}`,
+        date: formatDate(selectedDate),
+        downtimeData: filteredDowntimeData,
+        siloData: filteredSiloData,
+        operatorData: operatorData,
+      };
+
+      drawReportOnCanvas(canvasRef.current, dataForCanvas, t);
+
+      setReportImageUrl(canvasRef.current.toDataURL("image/png"));
+    } catch (error) {
+      console.error("Error generating report:", error);
+      // Could add toast notification here for user feedback
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    selectedDate,
+    selectedUnit,
+    selectedCategory,
+    reportConfig,
+    t,
+    getDataForDate,
+    getDowntimeForDate,
+    getSiloDataForDate,
+    siloMasterData,
+    parameterSettings,
+  ]);
 
   const handleDownloadImage = () => {
     if (!reportImageUrl) return;

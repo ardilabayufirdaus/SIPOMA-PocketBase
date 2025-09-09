@@ -1,33 +1,62 @@
-# TODO: Rapikan Desain Plant Operations -> Monitoring
+# TODO List for CCR Data Entry UI Improvement
 
-## Tugas Utama
+## Step 1: Layout & Responsiveness
 
-- Merapikan desain tampilan Monitoring di Plant Operations untuk meningkatkan UX dan visual appeal.
+- [ ] Optimize table container overflow handling for smooth horizontal scroll
+- [ ] Fix sticky headers and columns for better mobile support
+- [ ] Standardize spacing and padding between elements
 
-## Subtasks
+## Step 2: Styling Standardization
 
-- [x] Analisis struktur kode Monitoring.tsx dan IndexTab.tsx
-- [x] Identifikasi masalah desain: layout, spacing, responsivitas, konsistensi
-- [x] Perbaiki layout dengan grid/flexbox yang lebih baik
-- [x] Tambahkan spacing konsisten antar elemen
-- [x] Perbaiki responsivitas untuk mobile dan tablet
-- [x] Pastikan dark mode support konsisten
-- [x] Perbaiki visual hierarchy (headings, subheadings)
-- [x] Tambahkan visual separators jika diperlukan
-- [x] Optimalkan alignment dan typography
-- [x] Test perubahan di berbagai ukuran layar
+- [ ] Replace inline styles with consistent Tailwind CSS classes
+- [ ] Ensure color scheme matches app theme including dark mode support
+- [ ] Improve typography hierarchy and font sizes for readability
 
-## File yang Akan Diedit
+## Step 3: UX Enhancements
 
-- components/plant_operations/Monitoring.tsx
-- components/plant_operations/IndexTab.tsx
+- [ ] Improve loading skeleton animation smoothness
+- [ ] Enhance error display styling for clarity
+- [ ] Standardize button styles and hover states
+- [ ] Improve search UI with better visual feedback
 
-## Status
+## Step 4: Performance Optimization
 
-- [x] Analisis selesai
-- [x] Perbaikan layout selesai
-- [x] Perbaikan responsivitas selesai
-- [x] Perbaikan dark mode selesai
-- [x] Perbaikan visual hierarchy selesai
-- [x] Optimasi spacing dan typography selesai
-- [x] Test di berbagai ukuran layar selesai
+- [ ] Add React.memo to appropriate components
+- [ ] Optimize re-renders using useMemo and useCallback hooks
+- [ ] Refine debouncing logic for smoother input handling
+
+## Step 5: Accessibility Improvements
+
+- [ ] Improve aria-labels for better screen reader support
+- [ ] Add better focus indicators for keyboard navigation
+- [ ] Ensure keyboard navigation is smooth and predictable
+
+## Files to Modify
+
+- pages/plant_operations/CcrDataEntryPage.tsx
+- components/ccr/CcrTableFooter.tsx
+- components/ccr/CcrNavigationHelp.tsx
+
+---
+
+## REFACTORING PROGRESS
+
+### ✅ COMPLETED TASKS
+
+- [x] Create comprehensive refactoring plan
+- [x] Extract CcrDataEntryHeader component
+- [x] Extract CcrSiloDataTable component
+- [x] Extract CcrParameterDataTable component
+- [x] Extract CcrDowntimeDataTable component
+- [x] Extract CcrDataEntryModals component
+- [x] Create custom hooks for data management
+- [x] Optimize main component with proper memoization
+- [x] Standardize styling and remove inline styles
+- [x] Improve responsive design
+- [x] Add proper TypeScript types
+- [x] Clean up repetitive JSX patterns
+
+### 🔄 CURRENT TASKS
+
+- [ ] Testing and validation of refactored components
+- [ ] Performance optimization and final cleanup

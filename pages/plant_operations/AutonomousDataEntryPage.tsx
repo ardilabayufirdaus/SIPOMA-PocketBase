@@ -198,14 +198,17 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Main Filter Bar */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+          {t.filters}
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label
               htmlFor="auto-filter-category"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
             >
               {t.plant_category_label}
             </label>
@@ -213,7 +216,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="auto-filter-category"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-3 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg transition-colors"
             >
               {plantCategories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -225,7 +228,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <div>
             <label
               htmlFor="auto-filter-month"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
             >
               {t.filter_by_month}
             </label>
@@ -233,7 +236,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="auto-filter-month"
               value={filterMonth}
               onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-3 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg transition-colors"
             >
               {monthOptions.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -245,7 +248,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <div>
             <label
               htmlFor="auto-filter-year"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
             >
               {t.filter_by_year}
             </label>
@@ -253,7 +256,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="auto-filter-year"
               value={filterYear}
               onChange={(e) => setFilterYear(parseInt(e.target.value))}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-3 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg transition-colors"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>
@@ -266,13 +269,13 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Downtime Follow-up Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {t.autonomous_downtime_follow_up}
           </h2>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
@@ -375,19 +378,19 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Risk Management Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
             {t.autonomous_risk_management}
           </h2>
           <button
             onClick={handleOpenAddRisk}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
           >
             <PlusIcon className="w-5 h-5" /> {t.add_risk_button}
           </button>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>

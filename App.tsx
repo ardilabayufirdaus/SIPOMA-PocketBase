@@ -202,6 +202,9 @@ const App: React.FC = () => {
         await updateUser(user as User);
         setToastMessage(t.user_updated_success || "User updated successfully!");
         setToastType("success");
+        setShowToast(true);
+      } else {
+        // Creating new user
         const result = await addUser(user, plantUnits);
         if (result.success && result.tempPassword) {
           setGeneratedPassword(result.tempPassword);

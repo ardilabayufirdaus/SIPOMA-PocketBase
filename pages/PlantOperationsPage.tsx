@@ -66,6 +66,9 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({
   t,
   plantData,
 }) => {
+  const { getAllDowntime } = useCcrDowntimeData();
+  const { records: riskRecords } = useAutonomousRiskData();
+
   switch (activePage) {
     case "op_dashboard":
       return <PlantOperationsDashboard t={t} plantData={plantData} />;
@@ -81,9 +84,7 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({
       return <CopAnalysisPage t={t} />;
     case "op_work_instruction_library":
       return <WorkInstructionLibraryPage t={t} />;
-    case "op_monitoring": {
-      const { getAllDowntime } = useCcrDowntimeData();
-      const { records: riskRecords } = useAutonomousRiskData();
+    case "op_monitoring":
       return (
         <Monitoring
           downtimeData={getAllDowntime()}
@@ -91,7 +92,6 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({
           t={t}
         />
       );
-    }
     default:
       const pageTitle = t[activePage as keyof typeof t] || activePage;
       return <PlaceholderPage title={pageTitle} t={t} />;

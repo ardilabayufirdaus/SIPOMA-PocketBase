@@ -6,6 +6,56 @@ import { ParameterDataType, ParameterSetting } from "../../types";
 import { formatDate } from "../../utils/formatters";
 import { usePlantUnits } from "../../hooks/usePlantUnits";
 
+// Utility functions for better maintainability
+const formatCopNumber = (num: number | null | undefined): string => {
+  if (num === null || num === undefined || isNaN(num)) {
+    return "-";
+  }
+  return num.toLocaleString("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+};
+
+const getPercentageColor = (
+  percentage: number | null
+): { bg: string; text: string; darkBg: string; status: string } => {
+  if (percentage === null)
+    return {
+      bg: "bg-slate-50",
+      text: "text-slate-500",
+      darkBg: "bg-slate-700",
+      status: "N/A",
+    };
+  if (percentage < 0)
+    return {
+      bg: "bg-red-100",
+      text: "text-red-800",
+      darkBg: "bg-red-500",
+      status: "Low",
+    };
+  if (percentage > 100)
+    return {
+      bg: "bg-amber-100",
+      text: "text-amber-800",
+      darkBg: "bg-amber-500",
+      status: "High",
+    };
+  return {
+    bg: "bg-emerald-100",
+    text: "text-emerald-800",
+    darkBg: "bg-emerald-500",
+    status: "Normal",
+  };
+};
+
+const getQafColor = (qaf: number | null): { bg: string; text: string } => {
+  if (qaf === null) return { bg: "bg-slate-100", text: "text-slate-600" };
+  if (qaf >= 95) return { bg: "bg-emerald-100", text: "text-emerald-800" };
+  if (qaf >= 85) return { bg: "bg-amber-100", text: "text-amber-800" };
+  return { bg: "bg-red-100", text: "text-red-800" };
+};
+
 interface AnalysisDataRow {
   parameter: ParameterSetting;
   dailyValues: { value: number | null; raw: number | undefined }[];
@@ -17,10 +67,6 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
   // ...existing code...
   const { copParameterIds } = useCopParametersSupabase();
   const { records: allParameters } = useParameterSettings();
-  useEffect(() => {
-    // DEBUG copParameterIds: copParameterIds
-    // DEBUG allParameters: allParameters
-  }, [copParameterIds, allParameters]);
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
@@ -71,149 +117,153 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
     [plantUnits]
   );
-  const unitToCategoryMap = useMemo(
-    () => new Map(plantUnits.map((pu) => [pu.unit, pu.category])),
-    [plantUnits]
-  );
-
-  const formatCopNumber = (num: number | null | undefined): string => {
-    if (num === null || num === undefined || isNaN(num)) {
-      return "-";
-    }
-    // Use 'de-DE' locale to get dot as thousand separator and comma as decimal separator.
-    return num.toLocaleString("de-DE", {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    });
-  };
-
-  useEffect(() => {
-    // DEBUG copParameterIds: copParameterIds
-    // DEBUG allParameters: allParameters
-  }, [copParameterIds, allParameters]);
-
-  useEffect(() => {
-    // DEBUG copParameterIds: copParameterIds
-    // DEBUG allParameters: allParameters
-  }, [copParameterIds, allParameters]);
 
   // ...existing code...
 
   // ...existing code...
   const { getDataForDate } = useCcrParameterData();
   const [analysisData, setAnalysisData] = useState<AnalysisDataRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchDataAndAnalyze = async () => {
-      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-      const dates = Array.from({ length: daysInMonth }, (_, i) => {
-        const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
-        return date.toISOString().split("T")[0];
-      });
+      // Reset previous state
+      setIsLoading(true);
+      setError(null);
 
-      const dailyAverages = new Map<string, Map<string, number>>();
-
-      const dataPromises = dates.map((dateString) =>
-        getDataForDate(dateString)
-      );
-      const allDataForMonth = await Promise.all(dataPromises);
-
-      allDataForMonth.flat().forEach((paramData) => {
-        // FIX: Use snake_case property `parameter_id`
-        const paramSetting = allParameters.find(
-          (p) => p.id === paramData.parameter_id
-        );
-        // FIX: Use snake_case property `data_type`
-        if (
-          paramSetting &&
-          paramSetting.data_type === ParameterDataType.NUMBER
-        ) {
-          // FIX: Use snake_case property `hourly_values`
-          const values = Object.values(paramData.hourly_values)
-            .map((v) => Number(v))
-            .filter((v) => !isNaN(v));
-          if (values.length > 0) {
-            const avg = values.reduce((a, b) => a + b, 0) / values.length;
-            // FIX: Use snake_case property `parameter_id`
-            if (!dailyAverages.has(paramData.parameter_id)) {
-              // FIX: Use snake_case property `parameter_id`
-              dailyAverages.set(paramData.parameter_id, new Map());
-            }
-            // FIX: Use snake_case property `parameter_id`
-            dailyAverages.get(paramData.parameter_id)!.set(paramData.date, avg);
-          }
+      try {
+        // Validate required data
+        if (!selectedCategory || !selectedUnit) {
+          setAnalysisData([]);
+          setIsLoading(false);
+          return;
         }
-      });
 
-      const filteredCopIds = copParameterIds.filter((paramId) => {
-        const parameter = allParameters.find((p) => p.id === paramId);
-        if (!parameter) return false;
+        if (allParameters.length === 0 || copParameterIds.length === 0) {
+          setAnalysisData([]);
+          setIsLoading(false);
+          return;
+        }
 
-        // Pastikan filter benar-benar sesuai dengan plant category dan unit
-        // parameter.unit = unit, parameter.category = category
-        if (!selectedCategory || !selectedUnit) return false;
-        const categoryMatch = parameter.category === selectedCategory;
-        const unitMatch = parameter.unit === selectedUnit;
+        const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+        const dates = Array.from({ length: daysInMonth }, (_, i) => {
+          const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
+          return date.toISOString().split("T")[0];
+        });
 
-        return categoryMatch && unitMatch;
-      });
+        const dailyAverages = new Map<string, Map<string, number>>();
 
-      const data = filteredCopIds
-        .map((paramId) => {
-          const parameter = allParameters.find((p) => p.id === paramId);
-          if (!parameter) return null;
+        const dataPromises = dates.map((dateString) =>
+          getDataForDate(dateString)
+        );
+        const allDataForMonth = await Promise.all(dataPromises);
 
-          const dailyValues = dates.map((dateString) => {
-            const avg = dailyAverages.get(paramId)?.get(dateString);
-            // FIX: Use snake_case properties `min_value` and `max_value`
-            const { min_value, max_value } = parameter;
-
-            if (
-              avg === undefined ||
-              min_value === undefined ||
-              max_value === undefined ||
-              max_value <= min_value
-            ) {
-              return { value: null, raw: avg };
+        allDataForMonth.flat().forEach((paramData) => {
+          // FIX: Use snake_case property `parameter_id`
+          const paramSetting = allParameters.find(
+            (p) => p.id === paramData.parameter_id
+          );
+          // FIX: Use snake_case property `data_type`
+          if (
+            paramSetting &&
+            paramSetting.data_type === ParameterDataType.NUMBER
+          ) {
+            // FIX: Use snake_case property `hourly_values`
+            const values = Object.values(paramData.hourly_values || {})
+              .map((v) => Number(v))
+              .filter((v) => !isNaN(v) && v !== null && v !== undefined);
+            if (values.length > 0) {
+              const avg = values.reduce((a, b) => a + b, 0) / values.length;
+              // FIX: Use snake_case property `parameter_id`
+              if (!dailyAverages.has(paramData.parameter_id)) {
+                // FIX: Use snake_case property `parameter_id`
+                dailyAverages.set(paramData.parameter_id, new Map());
+              }
+              // FIX: Use snake_case property `parameter_id`
+              dailyAverages
+                .get(paramData.parameter_id)!
+                .set(paramData.date, avg);
             }
+          }
+        });
 
-            const percentage =
-              ((avg - min_value) / (max_value - min_value)) * 100;
-            return { value: percentage, raw: avg };
-          });
+        const filteredCopIds = copParameterIds.filter((paramId) => {
+          const parameter = allParameters.find((p) => p.id === paramId);
+          if (!parameter) return false;
 
-          const validDailyPercentages = dailyValues
-            .map((d) => d.value)
-            .filter((v): v is number => v !== null);
-          const monthlyAverage =
-            validDailyPercentages.length > 0
-              ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                validDailyPercentages.length
-              : null;
+          // Pastikan filter benar-benar sesuai dengan plant category dan unit
+          // parameter.unit = unit, parameter.category = category
+          const categoryMatch = parameter.category === selectedCategory;
+          const unitMatch = parameter.unit === selectedUnit;
 
-          const validDailyRaw = dailyValues
-            .map((d) => d.raw)
-            .filter((v): v is number => v !== undefined && v !== null);
-          const monthlyAverageRaw =
-            validDailyRaw.length > 0
-              ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
-              : null;
+          return categoryMatch && unitMatch;
+        });
 
-          return {
-            parameter,
-            dailyValues,
-            monthlyAverage,
-            monthlyAverageRaw,
-          };
-        })
-        .filter((p): p is NonNullable<typeof p> => p !== null);
+        const data = filteredCopIds
+          .map((paramId) => {
+            const parameter = allParameters.find((p) => p.id === paramId);
+            if (!parameter) return null;
 
-      setAnalysisData(data);
+            const dailyValues = dates.map((dateString) => {
+              const avg = dailyAverages.get(paramId)?.get(dateString);
+              // FIX: Use snake_case properties `min_value` and `max_value`
+              const { min_value, max_value } = parameter;
+
+              if (
+                avg === undefined ||
+                min_value === undefined ||
+                max_value === undefined ||
+                max_value <= min_value
+              ) {
+                return { value: null, raw: avg };
+              }
+
+              const percentage =
+                ((avg - min_value) / (max_value - min_value)) * 100;
+              return { value: percentage, raw: avg };
+            });
+
+            const validDailyPercentages = dailyValues
+              .map((d) => d.value)
+              .filter((v): v is number => v !== null && !isNaN(v));
+            const monthlyAverage =
+              validDailyPercentages.length > 0
+                ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                  validDailyPercentages.length
+                : null;
+
+            const validDailyRaw = dailyValues
+              .map((d) => d.raw)
+              .filter(
+                (v): v is number => v !== undefined && v !== null && !isNaN(v)
+              );
+            const monthlyAverageRaw =
+              validDailyRaw.length > 0
+                ? validDailyRaw.reduce((a, b) => a + b, 0) /
+                  validDailyRaw.length
+                : null;
+
+            return {
+              parameter,
+              dailyValues,
+              monthlyAverage,
+              monthlyAverageRaw,
+            };
+          })
+          .filter((p): p is NonNullable<typeof p> => p !== null);
+
+        setAnalysisData(data);
+      } catch (err) {
+        console.error("Error fetching COP analysis data:", err);
+        setError("Failed to load COP analysis data. Please try again.");
+        setAnalysisData([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    if (allParameters.length > 0) {
-      fetchDataAndAnalyze();
-    }
+    fetchDataAndAnalyze();
   }, [
     filterMonth,
     filterYear,
@@ -222,7 +272,6 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     getDataForDate,
     selectedCategory,
     selectedUnit,
-    unitToCategoryMap,
   ]);
 
   const dailyQaf = useMemo(() => {
@@ -249,7 +298,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
       analysisData.forEach((paramRow) => {
         const dayValue = paramRow.dailyValues[i]?.value;
-        if (dayValue !== null && dayValue !== undefined) {
+        if (dayValue !== null && dayValue !== undefined && !isNaN(dayValue)) {
           totalParamsWithValue++;
           if (dayValue >= 0 && dayValue <= 100) {
             paramsInRange++;
@@ -285,45 +334,6 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
       },
     };
   }, [analysisData]);
-
-  const getPercentageColor = (
-    percentage: number | null
-  ): { bg: string; text: string; darkBg: string; status: string } => {
-    if (percentage === null)
-      return {
-        bg: "bg-slate-50",
-        text: "text-slate-500",
-        darkBg: "bg-slate-700",
-        status: "N/A",
-      };
-    if (percentage < 0)
-      return {
-        bg: "bg-red-100",
-        text: "text-red-800",
-        darkBg: "bg-red-500",
-        status: "Low",
-      }; // Too Low = Red
-    if (percentage > 100)
-      return {
-        bg: "bg-amber-100",
-        text: "text-amber-800",
-        darkBg: "bg-amber-500",
-        status: "High",
-      }; // Too High = Yellow
-    return {
-      bg: "bg-emerald-100",
-      text: "text-emerald-800",
-      darkBg: "bg-emerald-500",
-      status: "Normal",
-    }; // In Range = Green
-  };
-
-  const getQafColor = (qaf: number | null): { bg: string; text: string } => {
-    if (qaf === null) return { bg: "bg-slate-100", text: "text-slate-600" };
-    if (qaf >= 95) return { bg: "bg-emerald-100", text: "text-emerald-800" };
-    if (qaf >= 85) return { bg: "bg-amber-100", text: "text-amber-800" };
-    return { bg: "bg-red-100", text: "text-red-800" };
-  };
 
   const yearOptions = Array.from(
     { length: 5 },
@@ -441,106 +451,234 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm border-collapse">
-            <thead className="bg-slate-100 dark:bg-slate-700">
-              <tr>
-                <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
-                  No.
-                </th>
-                <th className="sticky left-12 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[180px]">
-                  {t.parameter}
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
-                  {t.min}
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
-                  {t.max}
-                </th>
-                {daysHeader.map((day) => (
-                  <th
-                    key={day}
-                    className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-14"
-                  >
-                    {day}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+              <span className="text-slate-600 dark:text-slate-300">
+                Loading COP analysis data...
+              </span>
+            </div>
+            {/* Loading skeleton */}
+            <div className="mt-6 w-full">
+              <div className="animate-pulse">
+                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-4"></div>
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex space-x-4">
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
+                      {Array.from({ length: 10 }).map((_, j) => (
+                        <div
+                          key={j}
+                          className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-12"
+                        ></div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="text-red-500 mb-2">
+                <svg
+                  className="w-8 h-8 mx-auto"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !error && (
+          <div
+            className="overflow-x-auto scroll-smooth"
+            role="region"
+            aria-label="COP Analysis Data Table"
+            tabIndex={0}
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "#cbd5e1 #f1f5f9",
+            }}
+          >
+            <table
+              className="min-w-full text-sm border-collapse"
+              role="table"
+              aria-label="COP Analysis Table"
+            >
+              <thead className="bg-slate-100 dark:bg-slate-700">
+                <tr>
+                  <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
+                    No.
                   </th>
-                ))}
-                <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600">
-                  Avg.
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800">
-              {analysisData.map((row, rowIndex) => (
-                <tr key={row.parameter.id} className="group">
-                  <td className="sticky left-0 z-20 px-4 py-2 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
-                    {rowIndex + 1}
-                  </td>
-                  <td className="sticky left-12 z-20 px-4 py-2 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
-                    {row.parameter.parameter}
-                  </td>
-                  {/* FIX: Use snake_case properties `min_value` and `max_value` */}
-                  <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
-                    {formatCopNumber(row.parameter.min_value)}
-                  </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
-                    {formatCopNumber(row.parameter.max_value)}
-                  </td>
-                  {row.dailyValues.map((day, dayIndex) => {
-                    const colors = getPercentageColor(day.value);
-                    return (
-                      <td
-                        key={dayIndex}
-                        className={`relative px-2 py-1.5 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
-                      >
-                        <div className="relative group/cell h-full w-full flex items-center justify-center">
-                          <span className={`font-medium ${colors.text}`}>
-                            {formatCopNumber(day.raw)}
-                          </span>
-                          {day.raw !== undefined && (
-                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
-                              <div className="flex items-center justify-between gap-4">
-                                <span className="font-bold">
-                                  {formatDate(
-                                    new Date(
-                                      Date.UTC(
-                                        filterYear,
-                                        filterMonth,
-                                        dayIndex + 1
+                  <th className="sticky left-12 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[180px]">
+                    {t.parameter}
+                  </th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                    {t.min}
+                  </th>
+                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                    {t.max}
+                  </th>
+                  {daysHeader.map((day) => (
+                    <th
+                      key={day}
+                      className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-14"
+                    >
+                      {day}
+                    </th>
+                  ))}
+                  <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600">
+                    Avg.
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-800">
+                {analysisData.map((row, rowIndex) => (
+                  <tr key={row.parameter.id} className="group">
+                    <td className="sticky left-0 z-20 px-4 py-2 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
+                      {rowIndex + 1}
+                    </td>
+                    <td className="sticky left-12 z-20 px-4 py-2 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
+                      {row.parameter.parameter}
+                    </td>
+                    {/* FIX: Use snake_case properties `min_value` and `max_value` */}
+                    <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                      {formatCopNumber(row.parameter.min_value)}
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                      {formatCopNumber(row.parameter.max_value)}
+                    </td>
+                    {row.dailyValues.map((day, dayIndex) => {
+                      const colors = getPercentageColor(day.value);
+                      return (
+                        <td
+                          key={dayIndex}
+                          className={`relative px-2 py-1.5 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
+                        >
+                          <div className="relative group/cell h-full w-full flex items-center justify-center">
+                            <span className={`font-medium ${colors.text}`}>
+                              {formatCopNumber(day.raw)}
+                            </span>
+                            {day.raw !== undefined && (
+                              <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="font-bold">
+                                    {formatDate(
+                                      new Date(
+                                        Date.UTC(
+                                          filterYear,
+                                          filterMonth,
+                                          dayIndex + 1
+                                        )
                                       )
-                                    )
-                                  )}
-                                </span>
-                                <span
-                                  className={`px-1.5 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
-                                >
-                                  {colors.status}
-                                </span>
-                              </div>
-                              <hr className="border-slate-600 my-1" />
-                              <p>
-                                <strong>{t.average}:</strong>{" "}
-                                <span className="font-mono">
-                                  {formatCopNumber(day.raw)}{" "}
-                                  {row.parameter.unit}
-                                </span>
-                              </p>
-                              {/* FIX: Use snake_case properties `min_value` and `max_value` */}
-                              <p>
-                                <strong>Target:</strong>{" "}
-                                <span className="font-mono">
-                                  {formatCopNumber(row.parameter.min_value)} -{" "}
-                                  {formatCopNumber(row.parameter.max_value)}
-                                </span>
-                              </p>
-                              {day.value !== null && (
+                                    )}
+                                  </span>
+                                  <span
+                                    className={`px-1.5 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
+                                  >
+                                    {colors.status}
+                                  </span>
+                                </div>
+                                <hr className="border-slate-600 my-1" />
                                 <p>
-                                  <strong>Normalized:</strong>{" "}
+                                  <strong>{t.average}:</strong>{" "}
                                   <span className="font-mono">
-                                    {day.value.toFixed(1)}%
+                                    {formatCopNumber(day.raw)}{" "}
+                                    {row.parameter.unit}
                                   </span>
                                 </p>
-                              )}
+                                {/* FIX: Use snake_case properties `min_value` and `max_value` */}
+                                <p>
+                                  <strong>Target:</strong>{" "}
+                                  <span className="font-mono">
+                                    {formatCopNumber(row.parameter.min_value)} -{" "}
+                                    {formatCopNumber(row.parameter.max_value)}
+                                  </span>
+                                </p>
+                                {day.value !== null && (
+                                  <p>
+                                    <strong>Normalized:</strong>{" "}
+                                    <span className="font-mono">
+                                      {day.value.toFixed(1)}%
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                    {(() => {
+                      const avgColors = getPercentageColor(row.monthlyAverage);
+                      return (
+                        <td
+                          className={`sticky right-0 z-20 px-4 py-2 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700`}
+                        >
+                          <span className={avgColors.text}>
+                            {formatCopNumber(row.monthlyAverageRaw)}
+                          </span>
+                        </td>
+                      );
+                    })()}
+                  </tr>
+                ))}
+                {analysisData.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={daysHeader.length + 5}
+                      className="text-center py-10 text-slate-500 dark:text-slate-400"
+                    >
+                      No COP parameters selected or no data available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+              <tfoot className="font-semibold">
+                <tr className="border-t-2 border-slate-300 dark:border-slate-600">
+                  <td
+                    colSpan={4}
+                    className="sticky left-0 z-20 px-4 py-3 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
+                  >
+                    {t.qaf_daily}
+                  </td>
+                  {dailyQaf.daily.map((qaf, index) => {
+                    const colors = getQafColor(qaf.value);
+                    return (
+                      <td
+                        key={index}
+                        className={`px-2 py-3 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
+                      >
+                        <div className="relative group/cell h-full w-full flex items-center justify-center">
+                          <span>
+                            {qaf.value !== null && !isNaN(qaf.value)
+                              ? `${formatCopNumber(qaf.value)}%`
+                              : "-"}
+                          </span>
+                          {qaf.total > 0 && (
+                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
+                              {t.qaf_tooltip
+                                ?.replace("{inRange}", qaf.inRange)
+                                .replace("{total}", qaf.total)}
                             </div>
                           )}
                         </div>
@@ -548,90 +686,34 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                     );
                   })}
                   {(() => {
-                    const avgColors = getPercentageColor(row.monthlyAverage);
+                    const qaf = dailyQaf.monthly;
+                    const colors = getQafColor(qaf.value);
                     return (
                       <td
-                        className={`sticky right-0 z-20 px-4 py-2 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700`}
+                        className={`sticky right-0 z-20 px-4 py-3 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text}`}
                       >
-                        <span className={avgColors.text}>
-                          {formatCopNumber(row.monthlyAverageRaw)}
-                        </span>
+                        <div className="relative group/cell h-full w-full flex items-center justify-center">
+                          <span>
+                            {qaf.value !== null && !isNaN(qaf.value)
+                              ? `${formatCopNumber(qaf.value)}%`
+                              : "-"}
+                          </span>
+                          {qaf.total > 0 && (
+                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 left-1/2 -translate-x-1/2 shadow-lg">
+                              {t.qaf_tooltip
+                                ?.replace("{inRange}", qaf.inRange)
+                                .replace("{total}", qaf.total)}
+                            </div>
+                          )}
+                        </div>
                       </td>
                     );
                   })()}
                 </tr>
-              ))}
-              {analysisData.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={daysHeader.length + 5}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
-                  >
-                    No COP parameters selected or no data available.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-            <tfoot className="font-semibold">
-              <tr className="border-t-2 border-slate-300 dark:border-slate-600">
-                <td
-                  colSpan={4}
-                  className="sticky left-0 z-20 px-4 py-3 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
-                >
-                  {t.qaf_daily}
-                </td>
-                {dailyQaf.daily.map((qaf, index) => {
-                  const colors = getQafColor(qaf.value);
-                  return (
-                    <td
-                      key={index}
-                      className={`px-2 py-3 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
-                    >
-                      <div className="relative group/cell h-full w-full flex items-center justify-center">
-                        <span>
-                          {qaf.value !== null
-                            ? `${formatCopNumber(qaf.value)}%`
-                            : "-"}
-                        </span>
-                        {qaf.total > 0 && (
-                          <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
-                            {t.qaf_tooltip
-                              ?.replace("{inRange}", qaf.inRange)
-                              .replace("{total}", qaf.total)}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })}
-                {(() => {
-                  const qaf = dailyQaf.monthly;
-                  const colors = getQafColor(qaf.value);
-                  return (
-                    <td
-                      className={`sticky right-0 z-20 px-4 py-3 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text}`}
-                    >
-                      <div className="relative group/cell h-full w-full flex items-center justify-center">
-                        <span>
-                          {qaf.value !== null
-                            ? `${formatCopNumber(qaf.value)}%`
-                            : "-"}
-                        </span>
-                        {qaf.total > 0 && (
-                          <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 left-1/2 -translate-x-1/2 shadow-lg">
-                            {t.qaf_tooltip
-                              ?.replace("{inRange}", qaf.inRange)
-                              .replace("{total}", qaf.total)}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  );
-                })()}
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+              </tfoot>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

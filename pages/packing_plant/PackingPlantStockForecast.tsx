@@ -1095,29 +1095,27 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
   // Render
   return (
-    <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 lg:p-8">
       {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+      <div className="mb-6 lg:mb-8">
+        <div className="flex flex-col space-y-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
             {t.forecast_packing_plant_stock}
           </h1>
-          <p className="text-lg text-slate-600">
-            <span className="text-lg text-slate-600 dark:text-slate-400">
-              {t.forecast_packing_plant_stock_subtitle}
-            </span>
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+            {t.forecast_packing_plant_stock_subtitle}
           </p>
         </div>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-8">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 mb-6 lg:mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
             <div className="flex-1 min-w-0">
               <label
                 htmlFor="forecast-filter-area"
-                className="block text-sm font-medium text-slate-700 mb-2"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
               >
                 {t.filter_by_area}
               </label>
@@ -1125,7 +1123,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 id="forecast-filter-area"
                 value={filterArea}
                 onChange={(e) => setFilterArea(e.target.value)}
-                className="block w-full pl-3 pr-10 py-3 text-base bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="block w-full pl-3 pr-10 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
               >
                 {areas.map((area) => (
                   <option key={area} value={area}>
@@ -1146,7 +1144,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   id="forecast-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-3 text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  className="block w-full pl-3 pr-10 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 >
                   {monthOptions.map((month) => (
                     <option key={month.value} value={month.value}>
@@ -1166,7 +1164,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   id="forecast-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-3 text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  className="block w-full pl-3 pr-10 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 >
                   {yearOptions.map((year) => (
                     <option key={year} value={year}>
@@ -1219,18 +1217,18 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           </div>
 
           {/* Enhanced Metrics Cards - Compact Layout */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
             <ForecastMetricCard
               title={t.forecast_current_stock}
               value={formatNumber(Math.round(tableMetrics.latestClosingStock))}
               unit="Ton"
-              icon={<ArchiveBoxIcon className="w-6 h-6" />}
+              icon={<ArchiveBoxIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
             />
             <ForecastMetricCard
               title={t.forecast_avg_daily_out}
               value={formatNumber(Math.round(tableMetrics.avgDailyStockOut))}
               unit="Ton/Day"
-              icon={<ArrowTrendingDownIcon className="w-6 h-6" />}
+              icon={<ArrowTrendingDownIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
             />
             <ForecastMetricCard
               title="Avg Daily Received"
@@ -1238,7 +1236,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 Math.round(tableMetrics.avgDailyStockReceived)
               )}
               unit="Ton/Day"
-              icon={<ArrowTrendingUpIcon className="w-6 h-6" />}
+              icon={<ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
             />
             <ForecastMetricCard
               title={t.forecast_days_until_empty}
@@ -1250,9 +1248,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               unit="Days"
               icon={
                 tableMetrics.daysUntilEmpty <= 7 ? (
-                  <ExclamationTriangleIcon className="w-6 h-6" />
+                  <ExclamationTriangleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
                 ) : (
-                  <ClockIcon className="w-6 h-6" />
+                  <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                 )
               }
             />
@@ -1262,9 +1260,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               unit=""
               icon={
                 tableMetrics.daysUntilEmpty <= 7 ? (
-                  <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+                  <ExclamationTriangleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
                 ) : (
-                  <ClockIcon className="w-6 h-6 text-green-600" />
+                  <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                 )
               }
             />
@@ -1275,17 +1273,17 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
             {/* Left Column: Trend Analysis Cards */}
             <div className="xl:col-span-1">
               <div className="grid grid-cols-1 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200 p-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-blue-600 mb-1">
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
                         Stock Out Trend
                       </p>
                       <p
-                        className={`text-2xl font-bold ${
+                        className={`text-xl sm:text-2xl font-bold ${
                           tableMetrics.stockOutTrend > 0
-                            ? "text-red-600"
-                            : "text-green-600"
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-green-600 dark:text-green-400"
                         }`}
                       >
                         {tableMetrics.stockOutTrend > 0 ? "+" : ""}
@@ -1296,32 +1294,32 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       </p>
                     </div>
                     <div
-                      className={`p-3 rounded-full ${
+                      className={`p-2 sm:p-3 rounded-full ${
                         tableMetrics.stockOutTrend > 0
-                          ? "bg-red-100"
-                          : "bg-green-100"
+                          ? "bg-red-100 dark:bg-red-900/30"
+                          : "bg-green-100 dark:bg-green-900/30"
                       }`}
                     >
                       {tableMetrics.stockOutTrend > 0 ? (
-                        <ArrowTrendingUpIcon className="w-6 h-6 text-red-600" />
+                        <ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
                       ) : (
-                        <ArrowTrendingDownIcon className="w-6 h-6 text-green-600" />
+                        <ArrowTrendingDownIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm border border-green-200 p-6">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-green-600 mb-1">
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
                         Stock Level Trend
                       </p>
                       <p
-                        className={`text-2xl font-bold ${
+                        className={`text-xl sm:text-2xl font-bold ${
                           tableMetrics.closingStockTrend > 0
-                            ? "text-green-600"
-                            : "text-red-600"
+                            ? "text-green-600 dark:text-green-400"
+                            : "text-red-600 dark:text-red-400"
                         }`}
                       >
                         {tableMetrics.closingStockTrend > 0 ? "+" : ""}
@@ -1332,41 +1330,41 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       </p>
                     </div>
                     <div
-                      className={`p-3 rounded-full ${
+                      className={`p-2 sm:p-3 rounded-full ${
                         tableMetrics.closingStockTrend > 0
-                          ? "bg-green-100"
-                          : "bg-red-100"
+                          ? "bg-green-100 dark:bg-green-900/30"
+                          : "bg-red-100 dark:bg-red-900/30"
                       }`}
                     >
                       {tableMetrics.closingStockTrend > 0 ? (
-                        <ArrowTrendingUpIcon className="w-6 h-6 text-green-600" />
+                        <ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
                       ) : (
-                        <ArrowTrendingDownIcon className="w-6 h-6 text-red-600" />
+                        <ArrowTrendingDownIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-sm border border-purple-200 p-6">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800 p-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-purple-600 mb-1">
+                      <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
                         Efficiency Ratio
                       </p>
                       <p
-                        className={`text-2xl font-bold ${
+                        className={`text-xl sm:text-2xl font-bold ${
                           tableMetrics.efficiency > 100
-                            ? "text-red-600"
+                            ? "text-red-600 dark:text-red-400"
                             : tableMetrics.efficiency > 80
-                            ? "text-yellow-600"
-                            : "text-green-600"
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-green-600 dark:text-green-400"
                         }`}
                       >
                         {formatPercentage(tableMetrics.efficiency)}%
                       </p>
                     </div>
-                    <div className="p-3 rounded-full bg-purple-100">
-                      <ArrowTrendingUpIcon className="w-6 h-6 text-purple-600" />
+                    <div className="p-2 sm:p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                      <ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
                     </div>
                   </div>
                 </div>
@@ -1377,13 +1375,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
             <div className="xl:col-span-2">
               <div className="space-y-6">
                 {/* Enhanced Chart Section - Compact Layout */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
                   <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
                         {t.forecast_stock_projection_chart}
                       </h3>
-                      <p className="text-xs text-slate-600">
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
                         {filterArea} - {monthOptions[filterMonth]?.label}{" "}
                         {filterYear} | {tableData.length} data points
                       </p>
@@ -1977,17 +1975,17 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 </div>
 
                 {/* Compact Data Table Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                  <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
-                    <h3 className="text-lg font-semibold text-slate-900">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                       {t.forecast_this_month_projection_table}
                     </h3>
-                    <p className="text-xs text-slate-600 mt-1">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                       {filterArea} - {monthOptions[filterMonth]?.label}{" "}
                       {filterYear} | {tableData.length} entri
                     </p>
                   </div>
-                  <div className="overflow-x-auto max-h-96 overflow-y-auto">
+                  <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-200">
                       <thead className="bg-slate-50 sticky top-0">
                         <tr>
@@ -2380,10 +2378,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                           <td className="px-4 py-3 text-xs">
                             {tableStats.actualData.achievementPercentage.total >
                             0
-                              ? `${formatPercentage(
+                              ? formatPercentage(
                                   tableStats.actualData.achievementPercentage
                                     .avg
-                                )}%`
+                                ) + "%"
                               : "-"}
                           </td>
                           <td className="px-4 py-3 text-xs">
@@ -2396,9 +2394,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                           </td>
                           <td className="px-4 py-3 text-xs">
                             {tableStats.actualData.efficiency.total > 0
-                              ? `${formatPercentage(
+                              ? formatPercentage(
                                   tableStats.actualData.efficiency.avg
-                                )}%`
+                                ) + "%"
                               : "-"}
                           </td>
                         </tr>

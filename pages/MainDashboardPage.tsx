@@ -910,26 +910,26 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
   });
 
   return (
-    <div className="p-2 lg:p-3 space-y-3 page-transition">
+    <div className="p-4 lg:p-6 space-y-6 page-transition max-w-screen-xl mx-auto">
       {/* Enhanced Welcome Header */}
-      <div className="glass-card p-3 rounded-xl relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10"></div>
+      <div className="glass-card p-4 rounded-2xl relative overflow-hidden shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-transparent to-blue-500/20"></div>
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-1">
+            <h1 className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-2">
               {t.dashboard_welcome_title}
             </h1>
-            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
+            <p className="text-sm text-slate-700 dark:text-slate-300 max-w-4xl leading-relaxed tracking-wide">
               {t.dashboard_welcome_subtitle}
             </p>
           </div>
-          <div className="mt-2 lg:mt-0 text-right">
-            <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          <div className="mt-3 lg:mt-0 text-right">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-wide">
               {currentTime}
             </p>
-            <div className="flex items-center gap-2 mt-1 lg:justify-end">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+            <div className="flex items-center gap-3 mt-2 lg:justify-end">
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-green-600 dark:text-green-400 font-semibold tracking-wide">
                 System Online
               </span>
             </div>
@@ -939,23 +939,23 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
 
       {/* Enhanced Quick Stats */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-1 h-4 bg-gradient-to-b from-red-500 to-red-600 rounded-full"></div>
-          <h2 className="text-base font-bold text-slate-800 dark:text-slate-200">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-1.5 h-5 bg-gradient-to-b from-red-500 to-red-600 rounded-full"></div>
+          <h2 className="text-lg font-extrabold text-slate-800 dark:text-slate-200">
             {t.dashboard_quick_stats_title}
           </h2>
           <button
             onClick={() => setRefreshKey((prev) => prev + 1)}
-            className="ml-auto p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            className="ml-auto p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            <ArrowPathRoundedSquareIcon className="w-3 h-3" />
+            <ArrowPathRoundedSquareIcon className="w-4 h-4" />
           </button>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <QuickStatCard
             title={t.stat_active_users}
             value={usersCount}
-            icon={<UserGroupIcon className="w-4 h-4" />}
+            icon={<UserGroupIcon className="w-5 h-5" />}
             variant="default"
             trend={getKPITrend(usersCount, "users")}
             onClick={() => onNavigate("users")}
@@ -1042,7 +1042,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
           <QuickStatCard
             title={t.stat_online_users}
             value={onlineUsersCount}
-            icon={<UsersOnlineIcon className="w-4 h-4" />}
+            icon={<UsersOnlineIcon className="w-5 h-5" />}
             variant="online"
             trend={getKPITrend(onlineUsersCount, "online")}
             onClick={() => onNavigate("users")}
@@ -1117,7 +1117,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
           <QuickStatCard
             title={t.stat_active_projects}
             value={activeProjects}
-            icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
+            icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
             variant="default"
             trend={getKPITrend(activeProjects, "projects")}
             onClick={() => onNavigate("projects", "proj_list")}

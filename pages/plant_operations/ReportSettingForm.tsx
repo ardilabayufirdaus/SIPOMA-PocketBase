@@ -233,7 +233,10 @@ const ReportSettingForm: React.FC<FormProps> = ({
         }
       } catch (error) {
         console.error("Error saving report setting:", error);
-        // You could set a general error here if needed
+        // Add user-friendly error feedback
+        setErrors({
+          parameter_id: "Failed to save report setting. Please try again.",
+        });
       } finally {
         setIsSubmitting(false);
       }
@@ -279,20 +282,23 @@ const ReportSettingForm: React.FC<FormProps> = ({
                 : "border-slate-300 dark:border-slate-600"
             }`}
           >
-            <option value="">Select a parameter...</option>
+            <option value="">
+              {availableParameters.length === 0
+                ? "No parameters available"
+                : "Select a parameter..."}
+            </option>
             {availableParameters.map((param) => (
               <option key={param.id} value={param.id}>
                 {param.parameter} - {param.category} ({param.unit})
               </option>
             ))}
-            {availableParameters.length === 0 && (
-              <option value="" disabled>
-                {selectedCategory && selectedUnit
-                  ? `No parameters available for ${selectedCategory} - ${selectedUnit}`
-                  : "No available parameters"}
-              </option>
-            )}
           </select>
+          {availableParameters.length === 0 && (
+            <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
+              No numeric parameters available for the selected category and
+              unit. Please configure parameters in Master Data first.
+            </p>
+          )}
           {errors.parameter_id && touched.parameter_id && (
             <p
               id="parameter_id-error"
@@ -345,9 +351,12 @@ const ReportSettingForm: React.FC<FormProps> = ({
         <button
           type="submit"
           disabled={
-            isSubmitting || (availableParameters.length === 0 && !recordToEdit)
+            isSubmitting ||
+            (availableParameters.length === 0 && !recordToEdit) ||
+            !formData.parameter_id ||
+            !formData.category.trim()
           }
-          className="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-slate-800 sm:ml-3 sm:w-auto sm:text-sm transition-colors disabled:bg-red-400 disabled:cursor-not-allowed"
+          className="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-slate-800 sm:ml-3 sm:w-auto sm:text-sm transition-colors disabled:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? (
             <>
@@ -371,10 +380,12 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Saving...
+              {recordToEdit ? "Updating..." : "Saving..."}
             </>
-          ) : (
+          ) : recordToEdit ? (
             t.save_button
+          ) : (
+            "Add Parameter"
           )}
         </button>
         <button

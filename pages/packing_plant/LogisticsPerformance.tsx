@@ -97,6 +97,37 @@ const LogisticsPerformance: React.FC<PageProps> = ({
     "#D1D5DB",
   ];
 
+  // Optimized moving average calculation to reduce computation overhead
+  const calculateMovingAverage = useCallback(
+    (data: { day: number; stock_out: number }[], window: number = 3) => {
+      if (!data || data.length === 0) return [];
+
+      // Pre-allocate array for better performance
+      const result = new Array(data.length);
+      let sum = 0;
+
+      // Calculate initial window sum
+      for (let i = 0; i < Math.min(window, data.length); i++) {
+        sum += data[i].stock_out;
+      }
+
+      // Use sliding window for O(n) complexity instead of O(n*w)
+      for (let i = 0; i < data.length; i++) {
+        if (i >= window) {
+          sum = sum - data[i - window].stock_out + data[i].stock_out;
+        }
+        const actualWindow = Math.min(i + 1, window);
+        result[i] = {
+          ...data[i],
+          moving_average: sum / actualWindow,
+        };
+      }
+
+      return result;
+    },
+    []
+  );
+
   const performanceData = useMemo(() => {
     const stockRecordsForMonth = stockRecords.filter((r) => {
       const recordDate = new Date(r.date);
@@ -231,43 +262,14 @@ const LogisticsPerformance: React.FC<PageProps> = ({
       return acc;
     }, {} as Record<string, { day: number; stock_out: number }[]>);
 
-    // Optimized moving average calculation to reduce computation overhead
-    const calculateMovingAverage = useCallback(
-      (data: { day: number; stock_out: number }[], window: number = 3) => {
-        if (!data || data.length === 0) return [];
-
-        // Pre-allocate array for better performance
-        const result = new Array(data.length);
-        let sum = 0;
-
-        // Calculate initial window sum
-        for (let i = 0; i < Math.min(window, data.length); i++) {
-          sum += data[i].stock_out;
-        }
-
-        // Use sliding window for O(n) complexity instead of O(n*w)
-        for (let i = 0; i < data.length; i++) {
-          if (i >= window) {
-            sum = sum - data[i - window].stock_out + data[i].stock_out;
-          }
-          const actualWindow = Math.min(i + 1, window);
-          result[i] = {
-            ...data[i],
-            moving_average: sum / actualWindow,
-          };
-        }
-
-        return result;
-      },
-      []
-    );
-
-    const trendDataByArea = useMemo(() => {
-      return displayedAreas.reduce((acc, area) => {
-        acc[area] = calculateMovingAverage(chartDataByArea[area]);
-        return acc;
-      }, {} as Record<string, { day: number; stock_out: number; moving_average: number }[]>);
-    }, [displayedAreas, chartDataByArea, calculateMovingAverage]);
+    // Calculate trend data using the extracted moving average function
+    const trendDataByArea: Record<
+      string,
+      { day: number; stock_out: number; moving_average: number }[]
+    > = {};
+    displayedAreas.forEach((area) => {
+      trendDataByArea[area] = calculateMovingAverage(chartDataByArea[area]);
+    });
 
     // Identify critical days (high stock out days)
     const avgStockOut = totalStockOut / daysInMonth;
@@ -364,7 +366,16 @@ const LogisticsPerformance: React.FC<PageProps> = ({
       },
       noData: false,
     };
-  }, [filterArea, filterMonth, filterYear, stockRecords, masterData, t, areas]);
+  }, [
+    filterArea,
+    filterMonth,
+    filterYear,
+    stockRecords,
+    masterData,
+    t,
+    areas,
+    calculateMovingAverage,
+  ]);
 
   const handleDaySelection = (event: React.MouseEvent) => {
     if (!chartRef.current || performanceData.noData) return;
