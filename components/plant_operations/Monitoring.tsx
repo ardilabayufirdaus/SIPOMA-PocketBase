@@ -259,261 +259,502 @@ const Monitoring: React.FC<MonitoringProps> = ({
   }
 
   return (
-    <div className="space-y-8">
-      {/* Filter Plant Category & Unit */}
-      <div className="flex gap-4 mb-2">
-        <div className="w-full sm:w-48">
-          <label htmlFor="monitoring-category-filter" className="sr-only">
-            Plant Category
-          </label>
-          <select
-            id="monitoring-category-filter"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
-          >
-            {plantCategories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="w-full sm:w-48">
-          <label htmlFor="monitoring-unit-filter" className="sr-only">
-            Plant Unit
-          </label>
-          <select
-            id="monitoring-unit-filter"
-            value={selectedUnit}
-            onChange={(e) => setSelectedUnit(e.target.value)}
-            className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
-            disabled={unitsForCategory.length === 0}
-          >
-            {unitsForCategory.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      {/* Tabs */}
-      <div
-        className="flex gap-2 border-b mb-4"
-        role="tablist"
-        aria-label="Monitoring tabs"
-      >
-        <button
-          role="tab"
-          aria-selected={activeTab === "availability"}
-          aria-controls="availability-panel"
-          id="availability-tab"
-          className={`px-4 py-2 font-semibold rounded-t-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-150 ${
-            activeTab === "availability"
-              ? "bg-white dark:bg-slate-800 border-x border-t border-b-0 text-red-600"
-              : "bg-slate-100 dark:bg-slate-700 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600"
-          }`}
-          onClick={() => setActiveTab("availability")}
-        >
-          {tf("availability_tab", "Availability")}
-        </button>
-        <button
-          role="tab"
-          aria-selected={activeTab === "index"}
-          aria-controls="index-panel"
-          id="index-tab"
-          className={`px-4 py-2 font-semibold rounded-t-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-150 ${
-            activeTab === "index"
-              ? "bg-white dark:bg-slate-800 border-x border-t border-b-0 text-red-600"
-              : "bg-slate-100 dark:bg-slate-700 text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600"
-          }`}
-          onClick={() => setActiveTab("index")}
-        >
-          {tf("index_tab", "Index")}
-        </button>
-      </div>
-      <div
-        role="tabpanel"
-        id={activeTab === "availability" ? "availability-panel" : "index-panel"}
-        aria-labelledby={
-          activeTab === "availability" ? "availability-tab" : "index-tab"
-        }
-      >
-        {activeTab === "availability" && (
-          <div>
-            {/* Chart Pareto Downtime */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                {tf("downtime_pareto_chart", "Grafik Pareto Downtime")}
-              </h2>
-              {filteredDowntimeData.length > 0 ? (
-                <ComboChart
-                  data={calculateProblemMap(filteredDowntimeData)}
-                  bars={[
-                    {
-                      dataKey: "duration",
-                      fill: "#ef4444",
-                      name: tf("duration", "Durasi"),
-                    },
-                  ]}
-                  xAxisConfig={{
-                    dataKey: "problem",
-                    label: tf("problem", "Masalah"),
-                  }}
-                  leftYAxisConfig={{ label: tf("duration", "Durasi") }}
-                  height={320}
-                />
-              ) : (
-                <div className="text-slate-500 py-8 text-center">
-                  {tf("no_downtime_data", "Data downtime tidak tersedia.")}
-                </div>
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* Header Section */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
+              {tf("monitoring_title", "Monitoring Plant Operations")}
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-lg">
+              {tf(
+                "monitoring_subtitle",
+                "Pantau performa dan downtime operasi pabrik"
               )}
+            </p>
+          </div>
+
+          {/* Filter Plant Category & Unit */}
+          <div className="flex flex-col sm:flex-row gap-4 min-w-0 xl:w-auto">
+            <div className="min-w-0 flex-1 sm:max-w-xs">
+              <label
+                htmlFor="monitoring-category-filter"
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+              >
+                {tf("plant_category", "Kategori Plant")}
+              </label>
+              <select
+                id="monitoring-category-filter"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="block w-full pl-4 pr-10 py-3 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg shadow-sm transition-colors"
+              >
+                {plantCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
-            {/* Chart PIC */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                {tf("pic_bar_chart", "Grafik PIC")}
-              </h2>
-              {filteredDowntimeData.length > 0 ? (
-                <ComboChart
-                  data={picChartData}
-                  bars={[
-                    {
-                      dataKey: "count",
-                      fill: "#3b82f6",
-                      name: tf("count", "Jumlah"),
-                    },
-                  ]}
-                  xAxisConfig={{ dataKey: "pic", label: tf("pic", "PIC") }}
-                  leftYAxisConfig={{ label: tf("count", "Jumlah") }}
-                  height={320}
-                />
-              ) : (
-                <div className="text-slate-500 py-8 text-center">
-                  {tf("no_pic_data", "Data PIC tidak tersedia.")}
-                </div>
-              )}
-            </div>
-            {/* Tabel 3 Masalah Teratas */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                {tf("top_3_problems", "3 Masalah Teratas")}
-              </h2>
-              <ResponsiveTable>
-                <thead className="bg-slate-50 dark:bg-slate-800">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("problem", "Masalah")}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("duration", "Durasi")}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("pic", "PIC")}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("correction_action", "Tindakan Koreksi")}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("corrective_action", "Tindakan Perbaikan")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    // Top 3 problems from filteredDowntimeData using helper function
-                    const topProblems = calculateProblemMap(
-                      filteredDowntimeData
-                    ).slice(0, 3);
-                    return topProblems.length > 0 ? (
-                      topProblems.flatMap((p) =>
-                        p.details.map((d, idx) => (
-                          <tr key={p.problem + d.pic + idx}>
-                            <td className="px-4 py-2">{p.problem}</td>
-                            <td className="px-4 py-2">{p.duration} menit</td>
-                            <td className="px-4 py-2">{d.pic}</td>
-                            <td className="px-4 py-2">{d.action}</td>
-                            <td className="px-4 py-2">{d.corrective_action}</td>
-                          </tr>
-                        ))
-                      )
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={5}
-                          className="text-slate-500 py-8 text-center"
-                        >
-                          {tf(
-                            "no_downtime_problem_data",
-                            "Data masalah downtime tidak tersedia."
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })()}
-                </tbody>
-              </ResponsiveTable>
-            </div>
-            {/* Tabel Upcoming Events */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
-                {tf("upcoming_events", "Event Mendatang")}
-              </h2>
-              <ResponsiveTable>
-                <thead className="bg-slate-50 dark:bg-slate-800">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("upcoming_event", "Event Mendatang")}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("potential_counter_measures", "Tindakan Pencegahan")}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                      {tf("risk_mitigation", "Mitigasi Risiko")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRiskData.length > 0 ? (
-                    filteredRiskData.map((event, idx) => (
-                      <tr key={event.id + idx}>
-                        <td className="px-4 py-2">
-                          {event.potential_disruption}
-                        </td>
-                        <td className="px-4 py-2">{event.preventive_action}</td>
-                        <td className="px-4 py-2">{event.mitigation_plan}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={3}
-                        className="text-slate-500 py-8 text-center"
-                      >
-                        {tf(
-                          "no_upcoming_event_data",
-                          "Data event mendatang tidak tersedia."
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </ResponsiveTable>
+            <div className="min-w-0 flex-1 sm:max-w-xs">
+              <label
+                htmlFor="monitoring-unit-filter"
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+              >
+                {tf("plant_unit", "Unit Plant")}
+              </label>
+              <select
+                id="monitoring-unit-filter"
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="block w-full pl-4 pr-10 py-3 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg shadow-sm disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors"
+                disabled={unitsForCategory.length === 0}
+              >
+                {unitsForCategory.map((unit) => (
+                  <option key={unit} value={unit}>
+                    {unit}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-        )}
-        {activeTab === "index" && (
-          <IndexTab
-            t={t}
-            selectedCategory={selectedCategory}
-            selectedUnit={selectedUnit}
-            fetchIndexData={async (filter) => {
-              // TODO: Integrate with real CCR Data Entry API here
-              return [];
-            }}
-          />
-        )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div
+          className="flex gap-0 border-b border-slate-200 dark:border-slate-700"
+          role="tablist"
+          aria-label="Monitoring tabs"
+        >
+          <button
+            role="tab"
+            aria-selected={activeTab === "availability"}
+            aria-controls="availability-panel"
+            id="availability-tab"
+            className={`flex-1 px-6 py-4 font-semibold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 ${
+              activeTab === "availability"
+                ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500"
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200"
+            }`}
+            onClick={() => setActiveTab("availability")}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {tf("availability_tab", "Availability")}
+            </div>
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === "index"}
+            aria-controls="index-panel"
+            id="index-tab"
+            className={`flex-1 px-6 py-4 font-semibold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 ${
+              activeTab === "index"
+                ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500"
+                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200"
+            }`}
+            onClick={() => setActiveTab("index")}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+              {tf("index_tab", "Index")}
+            </div>
+          </button>
+        </div>
+
+        <div
+          role="tabpanel"
+          id={
+            activeTab === "availability" ? "availability-panel" : "index-panel"
+          }
+          aria-labelledby={
+            activeTab === "availability" ? "availability-tab" : "index-tab"
+          }
+          className="p-8"
+        >
+          {activeTab === "availability" && (
+            <div className="space-y-8">
+              {/* Charts Section - Grid Layout */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                {/* Chart Pareto Downtime */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                      {tf("downtime_pareto_chart", "Grafik Pareto Downtime")}
+                    </h2>
+                    <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                      {tf("chart", "Grafik")}
+                    </div>
+                  </div>
+                  {filteredDowntimeData.length > 0 ? (
+                    <ComboChart
+                      data={calculateProblemMap(filteredDowntimeData)}
+                      bars={[
+                        {
+                          dataKey: "duration",
+                          fill: "#ef4444",
+                          name: tf("duration", "Durasi"),
+                        },
+                      ]}
+                      xAxisConfig={{
+                        dataKey: "problem",
+                        label: tf("problem", "Masalah"),
+                      }}
+                      leftYAxisConfig={{ label: tf("duration", "Durasi") }}
+                      height={350}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+                      <svg
+                        className="w-16 h-16 mb-4 opacity-50"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                      <h3 className="text-lg font-medium mb-2">
+                        {tf("no_data_available", "Tidak Ada Data Tersedia")}
+                      </h3>
+                      <p className="text-center text-sm">
+                        {tf(
+                          "no_downtime_data",
+                          "Data downtime tidak tersedia."
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Chart PIC */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                      {tf("pic_bar_chart", "Grafik PIC")}
+                    </h2>
+                    <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      {tf("personnel", "Personil")}
+                    </div>
+                  </div>
+                  {filteredDowntimeData.length > 0 ? (
+                    <ComboChart
+                      data={picChartData}
+                      bars={[
+                        {
+                          dataKey: "count",
+                          fill: "#3b82f6",
+                          name: tf("count", "Jumlah"),
+                        },
+                      ]}
+                      xAxisConfig={{ dataKey: "pic", label: tf("pic", "PIC") }}
+                      leftYAxisConfig={{ label: tf("count", "Jumlah") }}
+                      height={350}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+                      <svg
+                        className="w-16 h-16 mb-4 opacity-50"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      <h3 className="text-lg font-medium mb-2">
+                        {tf("no_data_available", "Tidak Ada Data Tersedia")}
+                      </h3>
+                      <p className="text-center text-sm">
+                        {tf("no_pic_data", "Data PIC tidak tersedia.")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tables Section */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                {/* Tabel 3 Masalah Teratas */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                        {tf("top_3_problems", "3 Masalah Teratas")}
+                      </h2>
+                      <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.924-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
+                        </svg>
+                        {tf("issues", "Masalah")}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <ResponsiveTable>
+                      <thead className="bg-slate-50 dark:bg-slate-800">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("problem", "Masalah")}
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("duration", "Durasi")}
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("pic", "PIC")}
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("correction_action", "Tindakan Koreksi")}
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("corrective_action", "Tindakan Perbaikan")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                        {(() => {
+                          // Top 3 problems from filteredDowntimeData using helper function
+                          const topProblems = calculateProblemMap(
+                            filteredDowntimeData
+                          ).slice(0, 3);
+                          return topProblems.length > 0 ? (
+                            topProblems.flatMap((p) =>
+                              p.details.map((d, idx) => (
+                                <tr
+                                  key={p.problem + d.pic + idx}
+                                  className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                >
+                                  <td className="px-6 py-4 text-sm text-slate-900 dark:text-slate-100 font-medium">
+                                    {p.problem}
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                    {p.duration} menit
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                    {d.pic}
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                    {d.action}
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                    {d.corrective_action}
+                                  </td>
+                                </tr>
+                              ))
+                            )
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan={5}
+                                className="px-6 py-16 text-center text-slate-500 dark:text-slate-400"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <svg
+                                    className="w-12 h-12 mb-4 opacity-50"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-.966-5.618-2.479.047-.074.1-.147.16-.218 1.049-1.235 2.737-2.303 4.458-2.303s3.409 1.068 4.458 2.303c.06.071.113.144.16.218C16.29 14.034 14.34 15 12 15z"
+                                    />
+                                  </svg>
+                                  {tf(
+                                    "no_downtime_problem_data",
+                                    "Data masalah downtime tidak tersedia."
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })()}
+                      </tbody>
+                    </ResponsiveTable>
+                  </div>
+                </div>
+
+                {/* Tabel Upcoming Events */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                        {tf("upcoming_events", "Event Mendatang")}
+                      </h2>
+                      <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                        <svg
+                          className="w-5 h-5 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {tf("events", "Event")}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <ResponsiveTable>
+                      <thead className="bg-slate-50 dark:bg-slate-800">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("upcoming_event", "Event Mendatang")}
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf(
+                              "potential_counter_measures",
+                              "Tindakan Pencegahan"
+                            )}
+                          </th>
+                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                            {tf("risk_mitigation", "Mitigasi Risiko")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                        {filteredRiskData.length > 0 ? (
+                          filteredRiskData.map((event, idx) => (
+                            <tr
+                              key={event.id + idx}
+                              className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                            >
+                              <td className="px-6 py-4 text-sm text-slate-900 dark:text-slate-100 font-medium">
+                                {event.potential_disruption}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                {event.preventive_action}
+                              </td>
+                              <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                {event.mitigation_plan}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="px-6 py-16 text-center text-slate-500 dark:text-slate-400"
+                            >
+                              <div className="flex flex-col items-center">
+                                <svg
+                                  className="w-12 h-12 mb-4 opacity-50"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
+                                </svg>
+                                {tf(
+                                  "no_upcoming_event_data",
+                                  "Data event mendatang tidak tersedia."
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </ResponsiveTable>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {activeTab === "index" && (
+            <IndexTab
+              t={t}
+              selectedCategory={selectedCategory}
+              selectedUnit={selectedUnit}
+              fetchIndexData={async (filter) => {
+                // TODO: Integrate with real CCR Data Entry API here
+                return [];
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
