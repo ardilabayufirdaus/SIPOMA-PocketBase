@@ -1,24 +1,45 @@
-# Refactor Plant Operations Master Data
+# TODO: Fix Edit User Role Save Bug
 
-## Overview
+## Status: In Progress
 
-Refactor PlantOperationsMasterData.tsx menjadi struktur modular tanpa mengubah proses bisnis.
+### Completed Tasks
 
-## Tasks
+- [x] Fix UserForm.tsx - Ensure permissions are always included when submitting edited user
+- [x] Fix useUsers.ts - Add comprehensive logging and error handling for updateUser
+- [x] Fix App.tsx - Add error handling in handleSaveUser with proper error messages
 
-- [ ] Create PlantUnitSection component
-- [ ] Create PicSettingSection component
-- [ ] Create ParameterSettingSection component
-- [ ] Create SiloCapacitySection component
-- [ ] Create CopParameterSection component
-- [ ] Create ReportSettingSection component
-- [ ] Refactor import/export functions to be modular
-- [ ] Update PlantOperationsMasterData to use sub-components
-- [ ] Clean up duplicate code and improve variable naming
-- [ ] Test all functionality remains intact
+### Remaining Tasks
 
-## Progress
+- [ ] Test edit user role flow
+  - Open user management page
+  - Click edit on a user
+  - Change user role (e.g., from Operator to Manager)
+  - Verify permissions auto-update
+  - Click Save
+  - Check if user role is saved successfully
+  - Verify permissions are updated in database
+- [ ] Verify permissions sync with role changes
+  - Check if permissions matrix updates correctly when role changes
+  - Test different role transitions (Operator -> Manager, Manager -> Supervisor, etc.)
+- [ ] Test error scenarios
+  - Test with invalid data
+  - Test network errors
+  - Verify error messages are displayed correctly
 
-- [x] Analyze current code structure
-- [x] Create refactor plan
-- [x] Get approval for plan
+### Technical Details
+
+- **Root Cause**: Permissions were not being explicitly included in the update payload
+- **Fix Applied**:
+  - UserForm.tsx: Explicitly include permissions in submit payload
+  - useUsers.ts: Added detailed logging and error handling
+  - App.tsx: Added try-catch with user-friendly error messages
+- **Files Modified**:
+  - components/UserForm.tsx
+  - hooks/useUsers.ts
+  - App.tsx
+
+### Testing Notes
+
+- Monitor browser console for detailed logging during user update
+- Check database to verify role and permissions are updated correctly
+- Test with different user roles and permission combinations

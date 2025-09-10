@@ -197,27 +197,43 @@ const App: React.FC = () => {
 
   const handleSaveUser = useCallback(
     async (user: User | Omit<User, "id" | "created_at" | "last_active">) => {
-      if ("id" in user) {
-        // Editing existing user
-        await updateUser(user as User);
-        setToastMessage(t.user_updated_success || "User updated successfully!");
-        setToastType("success");
-        setShowToast(true);
-      } else {
-        // Creating new user
-        const result = await addUser(user, plantUnits);
-        if (result.success && result.tempPassword) {
-          setGeneratedPassword(result.tempPassword);
-          setNewUserEmail(user.email);
-          setNewUserFullName(user.full_name);
-          setShowPasswordDisplay(true);
-        } else {
-          setToastMessage(result.error || "Failed to create user");
-          setToastType("error");
+      try {
+        if ("id" in user) {
+          // Editing existing user
+          console.log("Saving edited user:", user.id, user.role);
+          await updateUser(user as User);
+          setToastMessage(
+            t.user_updated_success || "User updated successfully!"
+          );
+          setToastType("success");
           setShowToast(true);
+          console.log("User updated successfully");
+        } else {
+          // Creating new user
+          const result = await addUser(user, plantUnits);
+          if (result.success && result.tempPassword) {
+            setGeneratedPassword(result.tempPassword);
+            setNewUserEmail(user.email);
+            setNewUserFullName(user.full_name);
+            setShowPasswordDisplay(true);
+          } else {
+            setToastMessage(result.error || "Failed to create user");
+            setToastType("error");
+            setShowToast(true);
+          }
         }
+        handleCloseUserModal();
+      } catch (error) {
+        console.error("Error in handleSaveUser:", error);
+        setToastMessage(
+          error instanceof Error
+            ? `Failed to save user: ${error.message}`
+            : "Failed to save user"
+        );
+        setToastType("error");
+        setShowToast(true);
+        // Don't close modal on error so user can retry
       }
-      handleCloseUserModal();
     },
     [addUser, updateUser, handleCloseUserModal, plantUnits, t]
   );

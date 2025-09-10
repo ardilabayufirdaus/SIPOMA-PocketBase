@@ -268,7 +268,31 @@ export const useUsers = () => {
         console.log("Auth user created successfully:", authUser.id);
         console.log("Temporary password generated:", tempPassword);
 
-        // Step 2: Create profile in users table using auth user ID
+        // Step 2: Check if user profile already exists by email
+        const { data: existingUsers, error: checkError } = await supabase
+          .from("users")
+          .select("id, email")
+          .eq("email", user.email)
+          .limit(1);
+
+        if (checkError) {
+          console.error("Error checking existing user:", checkError);
+          // Cleanup auth user
+          await deleteUserWithAdmin(authUser.id);
+          return { success: false, error: "Failed to check existing user" };
+        }
+
+        if (existingUsers && existingUsers.length > 0) {
+          console.log("User profile already exists with email:", user.email);
+          // Cleanup auth user since profile already exists
+          await deleteUserWithAdmin(authUser.id);
+          return {
+            success: false,
+            error: "User with this email already exists",
+          };
+        }
+
+        // Step 3: Create profile in users table using auth user ID
         const newUserPayload: Database["public"]["Tables"]["users"]["Insert"] =
           {
             id: authUser.id, // Use auth user ID
@@ -296,6 +320,20 @@ export const useUsers = () => {
             hint: error.hint,
           });
 
+          // Handle specific 409 conflict error
+          if (
+            error.code === "23505" ||
+            error.message?.includes("duplicate key") ||
+            error.message?.includes("already exists")
+          ) {
+            console.log("Profile conflict detected, cleaning up auth user");
+            await deleteUserWithAdmin(authUser.id);
+            return {
+              success: false,
+              error: "User with this email already exists",
+            };
+          }
+
           // Jika profile creation gagal, hapus auth user yang sudah dibuat
           console.log("Attempting to cleanup auth user...");
           await deleteUserWithAdmin(authUser.id);
@@ -319,6 +357,18 @@ export const useUsers = () => {
   const updateUser = useCallback(
     async (updatedUser: User) => {
       try {
+        console.log(
+          "Starting updateUser for:",
+          updatedUser.id,
+          updatedUser.email
+        );
+        console.log("Updated user data:", {
+          role: updatedUser.role,
+          permissions: updatedUser.permissions,
+          full_name: updatedUser.full_name,
+          email: updatedUser.email,
+        });
+
         const { id, created_at, last_active, email, ...updateData } =
           updatedUser;
 
@@ -348,6 +398,13 @@ export const useUsers = () => {
         }
 
         // Step 2: Update user profile (selalu dilakukan)
+        console.log("Updating user profile with data:", {
+          ...updateData,
+          email: email,
+          permissions: updateData.permissions,
+          last_active: new Date().toISOString(),
+        });
+
         const { error } = await supabase
           .from("users")
           .update({
@@ -359,12 +416,22 @@ export const useUsers = () => {
 
         if (error) {
           console.error("Error updating user profile:", error);
+          console.error("Error details:", {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+          });
+          throw new Error(`Failed to update user profile: ${error.message}`);
         } else {
           console.log("User profile updated successfully");
-          fetchUsers();
+          console.log("Fetching updated users list...");
+          await fetchUsers();
+          console.log("Users list refreshed after update");
         }
       } catch (err) {
         console.error("Unexpected error updating user:", err);
+        throw err; // Re-throw to allow caller to handle
       }
     },
     [users, fetchUsers]

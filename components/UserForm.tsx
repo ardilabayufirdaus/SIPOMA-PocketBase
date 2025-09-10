@@ -70,7 +70,14 @@ const UserForm: React.FC<UserFormProps> = ({
       (value: string) => validators.email(value),
     ],
     role: [(value: string) => validators.required(value, "Role")],
-    department: [(value: string) => validators.required(value, "Department")],
+    department: [
+      (value: string) => {
+        if (value === null || value === undefined || value === "") {
+          return { isValid: false, error: "Department is required" };
+        }
+        return { isValid: true };
+      },
+    ],
   };
 
   useEffect(() => {
@@ -102,6 +109,7 @@ const UserForm: React.FC<UserFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    console.log(`handleChange triggered for ${name} with value:`, value);
 
     // Clear error when user starts typing
     if (errors[name]) {
@@ -114,6 +122,13 @@ const UserForm: React.FC<UserFormProps> = ({
         ...prev,
         role: newRole,
         permissions: getDefaultPermissionsByRole(newRole, plantUnits),
+      }));
+    } else if (name === "department") {
+      // Cast value to Department enum if possible
+      const newDepartment = value as Department;
+      setFormData((prev) => ({
+        ...prev,
+        department: newDepartment,
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -212,13 +227,16 @@ const UserForm: React.FC<UserFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("handleSubmit started");
     setIsSubmitting(true);
 
     // Validate all fields
     const validation = validateForm(formData, validationRules);
+    console.log("Validation result:", validation);
     setErrors(validation.errors);
 
     if (!validation.isValid) {
+      console.warn("Validation failed:", validation.errors);
       setIsSubmitting(false);
       // Mark all fields as touched to show errors
       const touchedFields = Object.keys(validationRules).reduce(
@@ -232,9 +250,17 @@ const UserForm: React.FC<UserFormProps> = ({
       return;
     }
 
+    console.log("Validation passed, submitting user");
     try {
       if (userToEdit) {
-        await onSave({ ...userToEdit, ...formData });
+        // Pastikan permissions selalu di-include saat edit user
+        const updatedUser = {
+          ...userToEdit,
+          ...formData,
+          permissions: formData.permissions, // Explicitly include permissions
+        };
+        console.log("Submitting updated user:", updatedUser);
+        await onSave(updatedUser);
       } else {
         await onSave(formData);
       }
@@ -255,7 +281,12 @@ const UserForm: React.FC<UserFormProps> = ({
   ];
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(e) => {
+        console.log("Form submit triggered");
+        handleSubmit(e);
+      }}
+    >
       <div className="max-h-[70vh] overflow-y-auto grid grid-cols-1 lg:grid-cols-5 lg:divide-x lg:divide-slate-200 dark:lg:divide-slate-700">
         {/* Section 1: User Details (Left Column) */}
         <div className="lg:col-span-2 p-6 space-y-6">
