@@ -15,6 +15,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   onCancel,
   t,
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     parameter: "",
     data_type: ParameterDataType.NUMBER,
@@ -23,6 +25,84 @@ const ParameterSettingForm: React.FC<FormProps> = ({
     min_value: undefined as number | undefined,
     max_value: undefined as number | undefined,
   });
+  const [errors, setErrors] = useState<any>({});
+  const [touched, setTouched] = useState<any>({});
+
+  // Validasi field
+  const validateField = (name: string, value: any) => {
+    switch (name) {
+      case "parameter":
+        if (!value.trim()) return "Parameter wajib diisi";
+        if (value.length < 2) return "Minimal 2 karakter";
+        return "";
+      case "unit":
+        if (!value.trim()) return "Unit wajib diisi";
+        return "";
+      case "category":
+        if (!value.trim()) return "Kategori wajib diisi";
+        return "";
+      case "min_value":
+        if (formData.max_value !== undefined && value > formData.max_value)
+          return "Min tidak boleh lebih dari Max";
+        return "";
+      case "max_value":
+        if (formData.min_value !== undefined && value < formData.min_value)
+          return "Max tidak boleh kurang dari Min";
+        return "";
+      default:
+        return "";
+    }
+  };
+
+  // Validasi sebelum submit
+  const validateForm = () => {
+    const newErrors: any = {};
+    Object.keys(formData).forEach((key) => {
+      const err = validateField(key, (formData as any)[key]);
+      if (err) newErrors[key] = err;
+    });
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "number"
+          ? value === ""
+            ? undefined
+            : parseFloat(value)
+          : value,
+    }));
+    setTouched((prev: any) => ({ ...prev, [name]: true }));
+    setErrors((prev: any) => ({ ...prev, [name]: validateField(name, value) }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      // Focus ke field error pertama
+      const firstErrorKey = Object.keys(errors)[0];
+      if (formRef.current && firstErrorKey) {
+        const el = formRef.current.querySelector(`[name='${firstErrorKey}']`);
+        if (el) (el as HTMLElement).focus();
+      }
+      return;
+    }
+    setIsSubmitting(true);
+    setTimeout(() => {
+      if (recordToEdit) {
+        onSave({ ...recordToEdit, ...formData });
+      } else {
+        onSave(formData);
+      }
+      setIsSubmitting(false);
+    }, 1000); // simulasi loading
+  };
 
   useEffect(() => {
     if (recordToEdit) {
@@ -46,30 +126,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
     }
   }, [recordToEdit]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === "number"
-          ? value === ""
-            ? undefined
-            : parseFloat(value)
-          : value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (recordToEdit) {
-      onSave({ ...recordToEdit, ...formData });
-    } else {
-      onSave(formData);
-    }
-  };
-
   const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
 
   // Get unique units and categories from plantUnits
@@ -79,7 +135,11 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   );
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      aria-label="Parameter Setting Form"
+    >
       <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         <div className="sm:col-span-2">
           <label
@@ -95,8 +155,21 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             value={formData.parameter}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            aria-invalid={!!errors.parameter}
+            aria-describedby={errors.parameter ? "parameter-error" : undefined}
+            className={`mt-1 block w-full px-3 py-2 bg-white border ${
+              errors.parameter ? "border-red-500" : "border-slate-300"
+            } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
           />
+          {errors.parameter && touched.parameter && (
+            <p
+              id="parameter-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+            >
+              {errors.parameter}
+            </p>
+          )}
         </div>
         <div>
           <label
@@ -132,7 +205,11 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             value={formData.unit}
             onChange={handleChange}
             required
-            className="mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border-slate-300 text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+            aria-invalid={!!errors.unit}
+            aria-describedby={errors.unit ? "unit-error" : undefined}
+            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border ${
+              errors.unit ? "border-red-500" : "border-slate-300"
+            } text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md`}
           >
             <option value="" disabled>
               {plantUnitsLoading ? t.loading : t.select_unit}
@@ -143,6 +220,15 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               </option>
             ))}
           </select>
+          {errors.unit && touched.unit && (
+            <p
+              id="unit-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+            >
+              {errors.unit}
+            </p>
+          )}
         </div>
         <div className="sm:col-span-2">
           <label
@@ -157,7 +243,11 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             value={formData.category}
             onChange={handleChange}
             required
-            className="mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border-slate-300 text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+            aria-invalid={!!errors.category}
+            aria-describedby={errors.category ? "category-error" : undefined}
+            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border ${
+              errors.category ? "border-red-500" : "border-slate-300"
+            } text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md`}
           >
             <option value="" disabled>
               {plantUnitsLoading ? t.loading : t.select_category}
@@ -168,6 +258,15 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               </option>
             ))}
           </select>
+          {errors.category && touched.category && (
+            <p
+              id="category-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+            >
+              {errors.category}
+            </p>
+          )}
         </div>
         {formData.data_type === ParameterDataType.NUMBER && (
           <>
@@ -184,8 +283,23 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 id="min_value"
                 value={formData.min_value ?? ""}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                aria-invalid={!!errors.min_value}
+                aria-describedby={
+                  errors.min_value ? "min_value-error" : undefined
+                }
+                className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                  errors.min_value ? "border-red-500" : "border-slate-300"
+                } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
               />
+              {errors.min_value && touched.min_value && (
+                <p
+                  id="min_value-error"
+                  className="mt-1 text-sm text-red-600"
+                  role="alert"
+                >
+                  {errors.min_value}
+                </p>
+              )}
             </div>
             <div>
               <label
@@ -200,13 +314,34 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 id="max_value"
                 value={formData.max_value ?? ""}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                aria-invalid={!!errors.max_value}
+                aria-describedby={
+                  errors.max_value ? "max_value-error" : undefined
+                }
+                className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                  errors.max_value ? "border-red-500" : "border-slate-300"
+                } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
               />
+              {errors.max_value && touched.max_value && (
+                <p
+                  id="max_value-error"
+                  className="mt-1 text-sm text-red-600"
+                  role="alert"
+                >
+                  {errors.max_value}
+                </p>
+              )}
             </div>
           </>
         )}
       </div>
       <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+        {isSubmitting && (
+          <div className="w-full flex justify-center items-center mb-2">
+            <span className="animate-spin h-5 w-5 mr-2 border-2 border-red-500 border-t-transparent rounded-full inline-block"></span>
+            <span className="text-red-600">Menyimpan...</span>
+          </div>
+        )}
         <button
           type="submit"
           className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"

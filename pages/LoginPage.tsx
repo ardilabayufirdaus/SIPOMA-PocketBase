@@ -13,12 +13,9 @@ const LoginPage: React.FC = () => {
   // Load saved credentials on component mount
   useEffect(() => {
     const savedEmail = localStorage.getItem("savedEmail");
-    const savedPassword = localStorage.getItem("savedPassword");
     const savedRememberMe = localStorage.getItem("rememberMe") === "true";
-
-    if (savedRememberMe && savedEmail && savedPassword) {
+    if (savedRememberMe && savedEmail) {
       setEmail(savedEmail);
-      setPassword(savedPassword);
       setRememberMe(true);
     }
   }, []);
@@ -35,18 +32,27 @@ const LoginPage: React.FC = () => {
 
     if (!email.trim()) {
       setError("Email is required");
+      document.getElementById("email")?.focus();
       setLoading(false);
       return;
     }
 
     if (!validateEmail(email)) {
       setError("Please enter a valid email address");
+      document.getElementById("email")?.focus();
       setLoading(false);
       return;
     }
 
     if (!password.trim()) {
       setError("Password is required");
+      document.getElementById("password")?.focus();
+      setLoading(false);
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      document.getElementById("password")?.focus();
       setLoading(false);
       return;
     }
@@ -72,12 +78,9 @@ const LoginPage: React.FC = () => {
       // Save credentials if remember me is checked
       if (rememberMe) {
         localStorage.setItem("savedEmail", email.trim());
-        localStorage.setItem("savedPassword", password);
         localStorage.setItem("rememberMe", "true");
       } else {
-        // Clear saved credentials if remember me is unchecked
         localStorage.removeItem("savedEmail");
-        localStorage.removeItem("savedPassword");
         localStorage.removeItem("rememberMe");
       }
 
@@ -126,9 +129,13 @@ const LoginPage: React.FC = () => {
             </label>
             <input
               type="email"
+              id="email"
+              aria-label="Email"
+              aria-invalid={!!error && error.toLowerCase().includes("email")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="username"
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300"
             />
           </div>
@@ -138,14 +145,22 @@ const LoginPage: React.FC = () => {
             </label>
             <input
               type="password"
+              id="password"
+              aria-label="Password"
+              aria-invalid={!!error && error.toLowerCase().includes("password")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
+              autoComplete="current-password"
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300"
             />
           </div>
           {error && (
-            <div className="mb-4 text-red-600 dark:text-red-400 text-sm text-center animate-fadein-error">
+            <div
+              className="mb-4 text-red-600 dark:text-red-400 text-sm text-center animate-fadein-error"
+              role="alert"
+            >
               {error}
             </div>
           )}
