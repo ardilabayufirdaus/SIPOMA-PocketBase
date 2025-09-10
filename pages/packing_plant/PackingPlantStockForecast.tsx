@@ -1093,6 +1093,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
     normal: 200,
   };
 
+  // Calculate today's day in the selected month for vertical line
+  const today = new Date();
+  const todayDay = today.getDate();
+  const isCurrentMonth =
+    today.getMonth() === filterMonth && today.getFullYear() === filterYear;
+  const todayLinePosition = isCurrentMonth ? todayDay : null;
+
   // Render
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-2 sm:p-4 lg:p-6">
@@ -1457,6 +1464,23 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     position: "insideTopRight",
                                   }}
                                 />
+
+                                {/* Today vertical line */}
+                                {todayLinePosition && (
+                                  <ReferenceLine
+                                    x={todayLinePosition}
+                                    stroke="#10b981"
+                                    strokeWidth={2}
+                                    strokeDasharray="5 5"
+                                    label={{
+                                      value: "Today",
+                                      position: "top",
+                                      fill: "#10b981",
+                                      fontSize: 12,
+                                      fontWeight: "bold",
+                                    }}
+                                  />
+                                )}
 
                                 {/* Simplified Area chart - Use Line instead if Area causes issues */}
                                 <Line
@@ -1884,6 +1908,23 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                         position: "insideTopRight",
                                       }}
                                     />
+
+                                    {/* Today vertical line */}
+                                    {todayLinePosition && (
+                                      <ReferenceLine
+                                        x={todayLinePosition}
+                                        stroke="#10b981"
+                                        strokeWidth={2}
+                                        strokeDasharray="5 5"
+                                        label={{
+                                          value: "Today",
+                                          position: "top",
+                                          fill: "#10b981",
+                                          fontSize: 10,
+                                          fontWeight: "bold",
+                                        }}
+                                      />
+                                    )}
                                     <Tooltip
                                       formatter={(value, name) => [
                                         formatNumber(Number(value)),
@@ -1951,6 +1992,23 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     name="Net Flow"
                                   />
                                   <ReferenceLine y={0} stroke="#64748b" />
+
+                                  {/* Today vertical line */}
+                                  {todayLinePosition && (
+                                    <ReferenceLine
+                                      x={todayLinePosition}
+                                      stroke="#10b981"
+                                      strokeWidth={2}
+                                      strokeDasharray="5 5"
+                                      label={{
+                                        value: "Today",
+                                        position: "top",
+                                        fill: "#10b981",
+                                        fontSize: 10,
+                                        fontWeight: "bold",
+                                      }}
+                                    />
+                                  )}
                                   <Tooltip
                                     formatter={(value, name) => [
                                       formatNumber(Number(value)),
