@@ -1095,27 +1095,27 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
   // Render
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-2 sm:p-4 lg:p-6">
       {/* Header Section */}
-      <div className="mb-6 lg:mb-8">
-        <div className="flex flex-col space-y-3">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">
+      <div className="mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex flex-col space-y-2 sm:space-y-3">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100">
             {t.forecast_packing_plant_stock}
           </h1>
-          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+          <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-400">
             {t.forecast_packing_plant_stock_subtitle}
           </p>
         </div>
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-6 mb-6 lg:mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-3 sm:p-4 mb-4 sm:mb-6 lg:mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 flex-1">
             <div className="flex-1 min-w-0">
               <label
                 htmlFor="forecast-filter-area"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-2"
               >
                 {t.filter_by_area}
               </label>
@@ -1123,7 +1123,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 id="forecast-filter-area"
                 value={filterArea}
                 onChange={(e) => setFilterArea(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="block w-full pl-3 pr-10 py-2 sm:py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
               >
                 {areas.map((area) => (
                   <option key={area} value={area}>
@@ -1132,11 +1132,11 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="min-w-0">
                 <label
                   htmlFor="forecast-filter-month"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                  className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-2"
                 >
                   {t.filter_by_month}
                 </label>
@@ -1144,7 +1144,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   id="forecast-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  className="block w-full pl-3 pr-10 py-2 sm:py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 >
                   {monthOptions.map((month) => (
                     <option key={month.value} value={month.value}>
@@ -1153,10 +1153,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   ))}
                 </select>
               </div>
-              <div className="w-full sm:w-32">
+              <div className="w-full sm:w-28">
                 <label
                   htmlFor="forecast-filter-year"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                  className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 sm:mb-2"
                 >
                   {t.filter_by_year}
                 </label>
@@ -1164,7 +1164,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   id="forecast-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-2.5 sm:py-3 text-sm sm:text-base bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  className="block w-full pl-3 pr-10 py-2 sm:py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 >
                   {yearOptions.map((year) => (
                     <option key={year} value={year}>
@@ -1199,7 +1199,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Filter Status Indicator */}
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-3">
             <div className="flex items-center justify-between">
@@ -1217,18 +1217,18 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           </div>
 
           {/* Enhanced Metrics Cards - Compact Layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
             <ForecastMetricCard
               title={t.forecast_current_stock}
               value={formatNumber(Math.round(tableMetrics.latestClosingStock))}
               unit="Ton"
-              icon={<ArchiveBoxIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+              icon={<ArchiveBoxIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
             />
             <ForecastMetricCard
               title={t.forecast_avg_daily_out}
               value={formatNumber(Math.round(tableMetrics.avgDailyStockOut))}
               unit="Ton/Day"
-              icon={<ArrowTrendingDownIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+              icon={<ArrowTrendingDownIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
             />
             <ForecastMetricCard
               title="Avg Daily Received"
@@ -1236,7 +1236,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 Math.round(tableMetrics.avgDailyStockReceived)
               )}
               unit="Ton/Day"
-              icon={<ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+              icon={<ArrowTrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
             />
             <ForecastMetricCard
               title={t.forecast_days_until_empty}
@@ -1248,9 +1248,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               unit="Days"
               icon={
                 tableMetrics.daysUntilEmpty <= 7 ? (
-                  <ExclamationTriangleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+                  <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                 ) : (
-                  <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                  <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 )
               }
             />
@@ -1260,27 +1260,27 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               unit=""
               icon={
                 tableMetrics.daysUntilEmpty <= 7 ? (
-                  <ExclamationTriangleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
+                  <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                 ) : (
-                  <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                  <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 )
               }
             />
           </div>
 
           {/* Main Content Grid Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Left Column: Trend Analysis Cards */}
-            <div className="xl:col-span-1">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-4 sm:p-6">
+            <div className="lg:col-span-1">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-3 sm:p-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 mb-1 truncate">
                         Stock Out Trend
                       </p>
                       <p
-                        className={`text-xl sm:text-2xl font-bold ${
+                        className={`text-lg sm:text-xl font-bold ${
                           tableMetrics.stockOutTrend > 0
                             ? "text-red-600 dark:text-red-400"
                             : "text-green-600 dark:text-green-400"
@@ -1294,29 +1294,29 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       </p>
                     </div>
                     <div
-                      className={`p-2 sm:p-3 rounded-full ${
+                      className={`p-2 rounded-full flex-shrink-0 ${
                         tableMetrics.stockOutTrend > 0
                           ? "bg-red-100 dark:bg-red-900/30"
                           : "bg-green-100 dark:bg-green-900/30"
                       }`}
                     >
                       {tableMetrics.stockOutTrend > 0 ? (
-                        <ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+                        <ArrowTrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
                       ) : (
-                        <ArrowTrendingDownIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
+                        <ArrowTrendingDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-4 sm:p-6">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-3 sm:p-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400 mb-1 truncate">
                         Stock Level Trend
                       </p>
                       <p
-                        className={`text-xl sm:text-2xl font-bold ${
+                        className={`text-lg sm:text-xl font-bold ${
                           tableMetrics.closingStockTrend > 0
                             ? "text-green-600 dark:text-green-400"
                             : "text-red-600 dark:text-red-400"
@@ -1330,29 +1330,29 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       </p>
                     </div>
                     <div
-                      className={`p-2 sm:p-3 rounded-full ${
+                      className={`p-2 rounded-full flex-shrink-0 ${
                         tableMetrics.closingStockTrend > 0
                           ? "bg-green-100 dark:bg-green-900/30"
                           : "bg-red-100 dark:bg-red-900/30"
                       }`}
                     >
                       {tableMetrics.closingStockTrend > 0 ? (
-                        <ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400" />
+                        <ArrowTrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
                       ) : (
-                        <ArrowTrendingDownIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 dark:text-red-400" />
+                        <ArrowTrendingDownIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800 p-4 sm:p-6">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800 p-3 sm:p-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-purple-600 dark:text-purple-400 mb-1 truncate">
                         Efficiency Ratio
                       </p>
                       <p
-                        className={`text-xl sm:text-2xl font-bold ${
+                        className={`text-lg sm:text-xl font-bold ${
                           tableMetrics.efficiency > 100
                             ? "text-red-600 dark:text-red-400"
                             : tableMetrics.efficiency > 80
@@ -1363,8 +1363,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                         {formatPercentage(tableMetrics.efficiency)}%
                       </p>
                     </div>
-                    <div className="p-2 sm:p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
-                      <ArrowTrendingUpIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400" />
+                    <div className="p-2 rounded-full flex-shrink-0 bg-purple-100 dark:bg-purple-900/30">
+                      <ArrowTrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
                     </div>
                   </div>
                 </div>
@@ -1372,13 +1372,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
             </div>
 
             {/* Right Column: Charts and Table */}
-            <div className="xl:col-span-2">
-              <div className="space-y-6">
+            <div className="lg:col-span-2">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Enhanced Chart Section - Compact Layout */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4">
-                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
+                      <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">
                         {t.forecast_stock_projection_chart}
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -1390,511 +1390,521 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
                   {tableData.length > 0 ? (
                     <div className="space-y-4">
-                      {/* Main Composite Chart - Reduced Height */}
-                      <div className="h-72">
+                      {/* Main Composite Chart - Responsive Height */}
+                      <div className="h-64 sm:h-80 lg:h-96">
                         <ChartErrorBoundary>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart
-                              data={tableData}
-                              margin={{
-                                top: 20,
-                                right: 30,
-                                left: 20,
-                                bottom: 20,
-                              }}
-                            >
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#f1f5f9"
-                              />
-                              <XAxis
-                                dataKey="day"
-                                tick={{ fontSize: 12, fill: "#64748b" }}
-                                tickFormatter={(value) => `Day ${value}`}
-                                domain={["dataMin", "dataMax"]}
-                              />
-                              <YAxis
-                                yAxisId="stock"
-                                orientation="left"
-                                tick={{ fontSize: 12, fill: "#64748b" }}
-                                label={{
-                                  value: "Stock (Ton)",
-                                  angle: -90,
-                                  position: "insideLeft",
+                          <div className="w-full h-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ComposedChart
+                                data={tableData}
+                                margin={{
+                                  top: 15,
+                                  right: 20,
+                                  left: 15,
+                                  bottom: 15,
                                 }}
-                                domain={[0, "dataMax + 50"]}
-                              />
-                              <YAxis
-                                yAxisId="flow"
-                                orientation="right"
-                                tick={{ fontSize: 12, fill: "#64748b" }}
-                                label={{
-                                  value: "Daily Flow (Ton)",
-                                  angle: 90,
-                                  position: "insideRight",
-                                }}
-                              />
-
-                              {/* Critical thresholds */}
-                              <ReferenceLine
-                                y={thresholds.critical}
-                                stroke="#ef4444"
-                                strokeDasharray="8 8"
-                                yAxisId="stock"
-                                label={{
-                                  value: "Critical Level",
-                                  position: "insideTopRight",
-                                }}
-                              />
-                              <ReferenceLine
-                                y={thresholds.low}
-                                stroke="#f59e0b"
-                                strokeDasharray="5 5"
-                                yAxisId="stock"
-                                label={{
-                                  value: "Low Level",
-                                  position: "insideTopRight",
-                                }}
-                              />
-
-                              {/* Simplified Area chart - Use Line instead if Area causes issues */}
-                              <Line
-                                yAxisId="stock"
-                                type="monotone"
-                                dataKey="closingStock"
-                                stroke="#0ea5e9"
-                                strokeWidth={3}
-                                dot={{ r: 3, fill: "#0ea5e9" }}
-                                name="Closing Stock"
-                              />
-                              <Line
-                                yAxisId="stock"
-                                type="monotone"
-                                dataKey="projectedClosingStock"
-                                stroke="#6366f1"
-                                strokeWidth={2}
-                                strokeDasharray="8 4"
-                                dot={{ r: 2, fill: "#6366f1" }}
-                                name="Projected Stock"
-                              />
-
-                              {/* Stock flow as bars - Actual vs Predicted */}
-                              <Bar
-                                yAxisId="flow"
-                                dataKey="actualStockOut"
-                                fill="#ef4444"
-                                name="Actual Stock Out"
-                                radius={[2, 2, 0, 0]}
                               >
-                                {tableData.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-actual-out-${index}`}
-                                    fill={
-                                      entry.actualStockOut &&
-                                      entry.actualStockOut >
+                                <CartesianGrid
+                                  strokeDasharray="3 3"
+                                  stroke="#f1f5f9"
+                                />
+                                <XAxis
+                                  dataKey="day"
+                                  tick={{ fontSize: 12, fill: "#64748b" }}
+                                  tickFormatter={(value) => `Day ${value}`}
+                                  domain={["dataMin", "dataMax"]}
+                                />
+                                <YAxis
+                                  yAxisId="stock"
+                                  orientation="left"
+                                  tick={{ fontSize: 12, fill: "#64748b" }}
+                                  label={{
+                                    value: "Stock (Ton)",
+                                    angle: -90,
+                                    position: "insideLeft",
+                                  }}
+                                  domain={[0, "dataMax + 50"]}
+                                />
+                                <YAxis
+                                  yAxisId="flow"
+                                  orientation="right"
+                                  tick={{ fontSize: 12, fill: "#64748b" }}
+                                  label={{
+                                    value: "Daily Flow (Ton)",
+                                    angle: 90,
+                                    position: "insideRight",
+                                  }}
+                                />
+
+                                {/* Critical thresholds */}
+                                <ReferenceLine
+                                  y={thresholds.critical}
+                                  stroke="#ef4444"
+                                  strokeDasharray="8 8"
+                                  yAxisId="stock"
+                                  label={{
+                                    value: "Critical Level",
+                                    position: "insideTopRight",
+                                  }}
+                                />
+                                <ReferenceLine
+                                  y={thresholds.low}
+                                  stroke="#f59e0b"
+                                  strokeDasharray="5 5"
+                                  yAxisId="stock"
+                                  label={{
+                                    value: "Low Level",
+                                    position: "insideTopRight",
+                                  }}
+                                />
+
+                                {/* Simplified Area chart - Use Line instead if Area causes issues */}
+                                <Line
+                                  yAxisId="stock"
+                                  type="monotone"
+                                  dataKey="closingStock"
+                                  stroke="#0ea5e9"
+                                  strokeWidth={3}
+                                  dot={{ r: 3, fill: "#0ea5e9" }}
+                                  name="Closing Stock"
+                                />
+                                <Line
+                                  yAxisId="stock"
+                                  type="monotone"
+                                  dataKey="projectedClosingStock"
+                                  stroke="#6366f1"
+                                  strokeWidth={2}
+                                  strokeDasharray="8 4"
+                                  dot={{ r: 2, fill: "#6366f1" }}
+                                  name="Projected Stock"
+                                />
+
+                                {/* Stock flow as bars - Actual vs Predicted */}
+                                <Bar
+                                  yAxisId="flow"
+                                  dataKey="actualStockOut"
+                                  fill="#ef4444"
+                                  name="Actual Stock Out"
+                                  radius={[2, 2, 0, 0]}
+                                >
+                                  {tableData.map((entry, index) => (
+                                    <Cell
+                                      key={`cell-actual-out-${index}`}
+                                      fill={
+                                        entry.actualStockOut &&
+                                        entry.actualStockOut >
+                                          forecastData.avgDailyStockOut * 1.2
+                                          ? "#dc2626"
+                                          : "#ef4444"
+                                      }
+                                    />
+                                  ))}
+                                </Bar>
+                                <Bar
+                                  yAxisId="flow"
+                                  dataKey="predictedStockOut"
+                                  fill="#f97316"
+                                  fillOpacity={0.6}
+                                  name="Predicted Stock Out"
+                                  radius={[2, 2, 0, 0]}
+                                >
+                                  {tableData.map((entry, index) => (
+                                    <Cell
+                                      key={`cell-predicted-out-${index}`}
+                                      fill={
+                                        entry.predictedStockOut >
                                         forecastData.avgDailyStockOut * 1.2
-                                        ? "#dc2626"
-                                        : "#ef4444"
-                                    }
-                                  />
-                                ))}
-                              </Bar>
-                              <Bar
-                                yAxisId="flow"
-                                dataKey="predictedStockOut"
-                                fill="#f97316"
-                                fillOpacity={0.6}
-                                name="Predicted Stock Out"
-                                radius={[2, 2, 0, 0]}
-                              >
-                                {tableData.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-predicted-out-${index}`}
-                                    fill={
-                                      entry.predictedStockOut >
-                                      forecastData.avgDailyStockOut * 1.2
-                                        ? "#ea580c"
-                                        : "#f97316"
-                                    }
-                                    fillOpacity={
-                                      entry.actualStockOut ? 0.4 : 0.8
-                                    }
-                                  />
-                                ))}
-                              </Bar>
-                              <Bar
-                                yAxisId="flow"
-                                dataKey="stockReceived"
-                                fill="#10b981"
-                                name="Stock Received"
-                                radius={[2, 2, 0, 0]}
-                              >
-                                {tableData.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-in-${index}`}
-                                    fill={
-                                      entry.stockReceived >
-                                      forecastData.avgDailyStockReceived * 1.2
-                                        ? "#059669"
-                                        : "#10b981"
-                                    }
-                                  />
-                                ))}
-                              </Bar>
+                                          ? "#ea580c"
+                                          : "#f97316"
+                                      }
+                                      fillOpacity={
+                                        entry.actualStockOut ? 0.4 : 0.8
+                                      }
+                                    />
+                                  ))}
+                                </Bar>
+                                <Bar
+                                  yAxisId="flow"
+                                  dataKey="stockReceived"
+                                  fill="#10b981"
+                                  name="Stock Received"
+                                  radius={[2, 2, 0, 0]}
+                                >
+                                  {tableData.map((entry, index) => (
+                                    <Cell
+                                      key={`cell-in-${index}`}
+                                      fill={
+                                        entry.stockReceived >
+                                        forecastData.avgDailyStockReceived * 1.2
+                                          ? "#059669"
+                                          : "#10b981"
+                                      }
+                                    />
+                                  ))}
+                                </Bar>
 
-                              {/* Trend lines */}
-                              <Line
-                                yAxisId="stock"
-                                type="monotone"
-                                dataKey="trendClosingStock"
-                                stroke="#8b5cf6"
-                                strokeWidth={3}
-                                dot={false}
-                                strokeDasharray="10 5"
-                                name="Stock Trend"
-                              />
+                                {/* Trend lines */}
+                                <Line
+                                  yAxisId="stock"
+                                  type="monotone"
+                                  dataKey="trendClosingStock"
+                                  stroke="#8b5cf6"
+                                  strokeWidth={3}
+                                  dot={false}
+                                  strokeDasharray="10 5"
+                                  name="Stock Trend"
+                                />
 
-                              {/* Predicted Stock Out Line (7-day Moving Average) */}
-                              <Line
-                                yAxisId="flow"
-                                type="monotone"
-                                dataKey="predictedStockOut"
-                                stroke="#f59e0b"
-                                strokeWidth={3}
-                                strokeDasharray="8 8"
-                                dot={{ r: 3, fill: "#f59e0b" }}
-                                name="Predicted Stock Out (7-day MA)"
-                              />
+                                {/* Predicted Stock Out Line (7-day Moving Average) */}
+                                <Line
+                                  yAxisId="flow"
+                                  type="monotone"
+                                  dataKey="predictedStockOut"
+                                  stroke="#f59e0b"
+                                  strokeWidth={3}
+                                  strokeDasharray="8 8"
+                                  dot={{ r: 3, fill: "#f59e0b" }}
+                                  name="Predicted Stock Out (7-day MA)"
+                                />
 
-                              <Tooltip
-                                content={({ active, payload, label }) => {
-                                  if (active && payload && payload.length) {
-                                    const data = payload[0].payload;
-                                    return (
-                                      <div className="bg-slate-900 text-white p-4 rounded-lg shadow-xl border border-slate-600 min-w-[280px]">
-                                        <div className="flex items-center justify-between mb-3 border-b border-slate-600 pb-2">
-                                          <p className="font-semibold text-lg">
-                                            {data.dateFormatted}
-                                          </p>
-                                          <span
-                                            className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                              data.isActual
-                                                ? "bg-green-600 text-green-100"
-                                                : "bg-blue-600 text-blue-100"
-                                            }`}
-                                          >
-                                            {data.isActual
-                                              ? "Actual"
-                                              : "Predicted"}
-                                          </span>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                          <div>
-                                            <p className="text-slate-300 mb-1">
-                                              Stock Levels
+                                <Tooltip
+                                  content={({ active, payload, label }) => {
+                                    if (active && payload && payload.length) {
+                                      const data = payload[0].payload;
+                                      return (
+                                        <div className="bg-slate-900 text-white p-4 rounded-lg shadow-xl border border-slate-600 min-w-[280px]">
+                                          <div className="flex items-center justify-between mb-3 border-b border-slate-600 pb-2">
+                                            <p className="font-semibold text-lg">
+                                              {data.dateFormatted}
                                             </p>
-                                            <div className="space-y-1">
-                                              <p className="flex justify-between">
-                                                <span className="text-blue-300">
-                                                  Opening:
-                                                </span>
-                                                <span className="font-bold">
-                                                  {formatNumber(
-                                                    data.openingStock
-                                                  )}{" "}
-                                                  T
-                                                </span>
-                                              </p>
-                                              <p className="flex justify-between">
-                                                <span className="text-blue-400">
-                                                  Closing:
-                                                </span>
-                                                <span className="font-bold">
-                                                  {formatNumber(
-                                                    data.closingStock
-                                                  )}{" "}
-                                                  T
-                                                </span>
-                                              </p>
-                                              <p className="flex justify-between">
-                                                <span className="text-indigo-300">
-                                                  Projected:
-                                                </span>
-                                                <span className="font-bold">
-                                                  {formatNumber(
-                                                    data.projectedClosingStock
-                                                  )}{" "}
-                                                  T
-                                                </span>
-                                              </p>
-                                            </div>
+                                            <span
+                                              className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                                data.isActual
+                                                  ? "bg-green-600 text-green-100"
+                                                  : "bg-blue-600 text-blue-100"
+                                              }`}
+                                            >
+                                              {data.isActual
+                                                ? "Actual"
+                                                : "Predicted"}
+                                            </span>
                                           </div>
-                                          <div>
-                                            <p className="text-slate-300 mb-1">
-                                              Daily Flow
-                                            </p>
-                                            <div className="space-y-1">
-                                              <p className="flex justify-between">
-                                                <span className="text-green-300">
-                                                  Received:
-                                                </span>
-                                                <span className="font-bold text-green-400">
-                                                  {formatNumber(
-                                                    data.stockReceived
-                                                  )}{" "}
-                                                  T
-                                                </span>
+                                          <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                              <p className="text-slate-300 mb-1">
+                                                Stock Levels
                                               </p>
-                                              {data.actualStockOut && (
+                                              <div className="space-y-1">
                                                 <p className="flex justify-between">
-                                                  <span className="text-red-300">
-                                                    Actual Out:
+                                                  <span className="text-blue-300">
+                                                    Opening:
                                                   </span>
-                                                  <span className="font-bold text-red-400">
+                                                  <span className="font-bold">
                                                     {formatNumber(
-                                                      data.actualStockOut
+                                                      data.openingStock
                                                     )}{" "}
                                                     T
                                                   </span>
                                                 </p>
-                                              )}
-                                              <p className="flex justify-between">
-                                                <span className="text-orange-300">
-                                                  Predicted Out:
-                                                </span>
-                                                <span className="font-bold text-orange-400">
-                                                  {formatNumber(
-                                                    data.predictedStockOut
-                                                  )}{" "}
-                                                  T
-                                                </span>
+                                                <p className="flex justify-between">
+                                                  <span className="text-blue-400">
+                                                    Closing:
+                                                  </span>
+                                                  <span className="font-bold">
+                                                    {formatNumber(
+                                                      data.closingStock
+                                                    )}{" "}
+                                                    T
+                                                  </span>
+                                                </p>
+                                                <p className="flex justify-between">
+                                                  <span className="text-indigo-300">
+                                                    Projected:
+                                                  </span>
+                                                  <span className="font-bold">
+                                                    {formatNumber(
+                                                      data.projectedClosingStock
+                                                    )}{" "}
+                                                    T
+                                                  </span>
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <p className="text-slate-300 mb-1">
+                                                Daily Flow
                                               </p>
-                                              <p className="flex justify-between">
-                                                <span className="text-yellow-300">
-                                                  Net:
+                                              <div className="space-y-1">
+                                                <p className="flex justify-between">
+                                                  <span className="text-green-300">
+                                                    Received:
+                                                  </span>
+                                                  <span className="font-bold text-green-400">
+                                                    {formatNumber(
+                                                      data.stockReceived
+                                                    )}{" "}
+                                                    T
+                                                  </span>
+                                                </p>
+                                                {data.actualStockOut && (
+                                                  <p className="flex justify-between">
+                                                    <span className="text-red-300">
+                                                      Actual Out:
+                                                    </span>
+                                                    <span className="font-bold text-red-400">
+                                                      {formatNumber(
+                                                        data.actualStockOut
+                                                      )}{" "}
+                                                      T
+                                                    </span>
+                                                  </p>
+                                                )}
+                                                <p className="flex justify-between">
+                                                  <span className="text-orange-300">
+                                                    Predicted Out:
+                                                  </span>
+                                                  <span className="font-bold text-orange-400">
+                                                    {formatNumber(
+                                                      data.predictedStockOut
+                                                    )}{" "}
+                                                    T
+                                                  </span>
+                                                </p>
+                                                <p className="flex justify-between">
+                                                  <span className="text-yellow-300">
+                                                    Net:
+                                                  </span>
+                                                  <span
+                                                    className={`font-bold ${
+                                                      data.netFlow >= 0
+                                                        ? "text-green-400"
+                                                        : "text-red-400"
+                                                    }`}
+                                                  >
+                                                    {data.netFlow >= 0
+                                                      ? "+"
+                                                      : ""}
+                                                    {formatNumber(data.netFlow)}{" "}
+                                                    T
+                                                  </span>
+                                                </p>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="mt-3 pt-3 border-t border-slate-600">
+                                            <div className="flex justify-between items-center">
+                                              <span className="text-slate-300">
+                                                Safety Level:
+                                              </span>
+                                              <span
+                                                className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                                  data.safetyLevel === "Normal"
+                                                    ? "bg-green-600 text-green-100"
+                                                    : data.safetyLevel === "Low"
+                                                    ? "bg-yellow-600 text-yellow-100"
+                                                    : "bg-red-600 text-red-100"
+                                                }`}
+                                              >
+                                                {data.safetyLevel}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between items-center mt-1">
+                                              <span className="text-slate-300">
+                                                Turnover:
+                                              </span>
+                                              <span className="font-bold text-purple-300">
+                                                {formatPercentage(
+                                                  data.turnoverRatio
+                                                )}
+                                                %
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between items-center mt-1">
+                                              <span className="text-slate-300">
+                                                Efficiency:
+                                              </span>
+                                              <span className="font-bold text-cyan-300">
+                                                {formatPercentage(
+                                                  data.efficiency
+                                                )}
+                                                %
+                                              </span>
+                                            </div>
+                                            {/* 7-day Moving Average Prediction Info */}
+                                            <div className="flex justify-between items-center mt-1">
+                                              <span className="text-slate-300">
+                                                Predicted Out (7-day MA):
+                                              </span>
+                                              <span className="font-bold text-yellow-300">
+                                                {formatNumber(
+                                                  data.predictedStockOut
+                                                )}{" "}
+                                                T
+                                              </span>
+                                            </div>
+                                            {data.isActual && (
+                                              <div className="flex justify-between items-center mt-1">
+                                                <span className="text-slate-300">
+                                                  Deviation:
                                                 </span>
                                                 <span
                                                   className={`font-bold ${
-                                                    data.netFlow >= 0
-                                                      ? "text-green-400"
-                                                      : "text-red-400"
+                                                    data.deviation >= 0
+                                                      ? "text-red-300"
+                                                      : "text-green-300"
                                                   }`}
                                                 >
-                                                  {data.netFlow >= 0 ? "+" : ""}
-                                                  {formatNumber(data.netFlow)} T
+                                                  {data.deviation >= 0
+                                                    ? "+"
+                                                    : ""}
+                                                  {formatNumber(data.deviation)}{" "}
+                                                  T
                                                 </span>
-                                              </p>
-                                            </div>
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
-                                        <div className="mt-3 pt-3 border-t border-slate-600">
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-slate-300">
-                                              Safety Level:
-                                            </span>
-                                            <span
-                                              className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                                data.safetyLevel === "Normal"
-                                                  ? "bg-green-600 text-green-100"
-                                                  : data.safetyLevel === "Low"
-                                                  ? "bg-yellow-600 text-yellow-100"
-                                                  : "bg-red-600 text-red-100"
-                                              }`}
-                                            >
-                                              {data.safetyLevel}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between items-center mt-1">
-                                            <span className="text-slate-300">
-                                              Turnover:
-                                            </span>
-                                            <span className="font-bold text-purple-300">
-                                              {formatPercentage(
-                                                data.turnoverRatio
-                                              )}
-                                              %
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between items-center mt-1">
-                                            <span className="text-slate-300">
-                                              Efficiency:
-                                            </span>
-                                            <span className="font-bold text-cyan-300">
-                                              {formatPercentage(
-                                                data.efficiency
-                                              )}
-                                              %
-                                            </span>
-                                          </div>
-                                          {/* 7-day Moving Average Prediction Info */}
-                                          <div className="flex justify-between items-center mt-1">
-                                            <span className="text-slate-300">
-                                              Predicted Out (7-day MA):
-                                            </span>
-                                            <span className="font-bold text-yellow-300">
-                                              {formatNumber(
-                                                data.predictedStockOut
-                                              )}{" "}
-                                              T
-                                            </span>
-                                          </div>
-                                          {data.isActual && (
-                                            <div className="flex justify-between items-center mt-1">
-                                              <span className="text-slate-300">
-                                                Deviation:
-                                              </span>
-                                              <span
-                                                className={`font-bold ${
-                                                  data.deviation >= 0
-                                                    ? "text-red-300"
-                                                    : "text-green-300"
-                                                }`}
-                                              >
-                                                {data.deviation >= 0 ? "+" : ""}
-                                                {formatNumber(data.deviation)} T
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                  return null;
-                                }}
-                              />
+                                      );
+                                    }
+                                    return null;
+                                  }}
+                                />
 
-                              <Legend
-                                wrapperStyle={{ paddingTop: "20px" }}
-                                iconType="rect"
-                              />
+                                <Legend
+                                  wrapperStyle={{ paddingTop: "20px" }}
+                                  iconType="rect"
+                                />
 
-                              <Brush
-                                dataKey="day"
-                                height={30}
-                                stroke="#6366f1"
-                                fill="#f1f5f9"
-                              />
+                                <Brush
+                                  dataKey="day"
+                                  height={30}
+                                  stroke="#6366f1"
+                                  fill="#f1f5f9"
+                                />
 
-                              {/* Gradients */}
-                              <defs>
-                                <linearGradient
-                                  id="stockGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#0ea5e9"
-                                    stopOpacity={0.8}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#0ea5e9"
-                                    stopOpacity={0.1}
-                                  />
-                                </linearGradient>
-                                <linearGradient
-                                  id="projectedGradient"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#6366f1"
-                                    stopOpacity={0.6}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#6366f1"
-                                    stopOpacity={0.1}
-                                  />
-                                </linearGradient>
-                              </defs>
-                            </ComposedChart>
-                          </ResponsiveContainer>
+                                {/* Gradients */}
+                                <defs>
+                                  <linearGradient
+                                    id="stockGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="5%"
+                                      stopColor="#0ea5e9"
+                                      stopOpacity={0.8}
+                                    />
+                                    <stop
+                                      offset="95%"
+                                      stopColor="#0ea5e9"
+                                      stopOpacity={0.1}
+                                    />
+                                  </linearGradient>
+                                  <linearGradient
+                                    id="projectedGradient"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="5%"
+                                      stopColor="#6366f1"
+                                      stopOpacity={0.6}
+                                    />
+                                    <stop
+                                      offset="95%"
+                                      stopColor="#6366f1"
+                                      stopOpacity={0.1}
+                                    />
+                                  </linearGradient>
+                                </defs>
+                              </ComposedChart>
+                            </ResponsiveContainer>
+                          </div>
                         </ChartErrorBoundary>
                       </div>
 
-                      {/* Compact Stock Analysis - Horizontal Layout */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Compact Stock Analysis - Responsive Layout */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                          <h4 className="text-base font-semibold text-slate-900 mb-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 mb-2 sm:mb-3">
                             Stock Level Distribution
                           </h4>
-                          <div className="h-40">
+                          <div className="h-32 sm:h-36 lg:h-40">
                             <ChartErrorBoundary>
-                              <ResponsiveContainer width="100%" height="100%">
-                                <ComposedChart data={tableData}>
-                                  <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    stroke="#f1f5f9"
-                                  />
-                                  <XAxis
-                                    dataKey="day"
-                                    tick={{ fontSize: 11 }}
-                                  />
-                                  <YAxis tick={{ fontSize: 11 }} />
-                                  {/* Actual closing stock line */}
-                                  <Line
-                                    type="monotone"
-                                    dataKey="closingStock"
-                                    stroke="#3b82f6"
-                                    strokeWidth={2}
-                                    dot={{ r: 3, fill: "#3b82f6" }}
-                                    name="Actual/Projected Stock"
-                                  />
-                                  {/* Predicted stock out line for comparison */}
-                                  <Line
-                                    type="monotone"
-                                    dataKey="predictedStockOut"
-                                    stroke="#8b5cf6"
-                                    strokeWidth={2}
-                                    strokeDasharray="5 5"
-                                    dot={{ r: 2, fill: "#8b5cf6" }}
-                                    name="Predicted Stock Out (7-day MA)"
-                                  />
-                                  <ReferenceLine
-                                    y={thresholds.critical}
-                                    stroke="#ef4444"
-                                    strokeDasharray="5 5"
-                                    label={{
-                                      value: "Critical",
-                                      position: "insideTopRight",
-                                    }}
-                                  />
-                                  <ReferenceLine
-                                    y={thresholds.low}
-                                    stroke="#f59e0b"
-                                    strokeDasharray="5 5"
-                                    label={{
-                                      value: "Low",
-                                      position: "insideTopRight",
-                                    }}
-                                  />
-                                  <Tooltip
-                                    formatter={(value, name) => [
-                                      formatNumber(Number(value)),
-                                      name === "predictedStockOut"
-                                        ? "Predicted Stock Out (7-day MA)"
-                                        : "Stock Level (Ton)",
-                                    ]}
-                                  />
-                                  <Legend fontSize={10} />
-                                </ComposedChart>
-                              </ResponsiveContainer>
+                              <div className="w-full h-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <ComposedChart data={tableData}>
+                                    <CartesianGrid
+                                      strokeDasharray="3 3"
+                                      stroke="#f1f5f9"
+                                    />
+                                    <XAxis
+                                      dataKey="day"
+                                      tick={{ fontSize: 10 }}
+                                    />
+                                    <YAxis tick={{ fontSize: 10 }} />
+                                    {/* Actual closing stock line */}
+                                    <Line
+                                      type="monotone"
+                                      dataKey="closingStock"
+                                      stroke="#3b82f6"
+                                      strokeWidth={2}
+                                      dot={{ r: 2, fill: "#3b82f6" }}
+                                      name="Actual/Projected Stock"
+                                    />
+                                    {/* Predicted stock out line for comparison */}
+                                    <Line
+                                      type="monotone"
+                                      dataKey="predictedStockOut"
+                                      stroke="#8b5cf6"
+                                      strokeWidth={2}
+                                      strokeDasharray="5 5"
+                                      dot={{ r: 2, fill: "#8b5cf6" }}
+                                      name="Predicted Stock Out (7-day MA)"
+                                    />
+                                    <ReferenceLine
+                                      y={thresholds.critical}
+                                      stroke="#ef4444"
+                                      strokeDasharray="5 5"
+                                      label={{
+                                        value: "Critical",
+                                        position: "insideTopRight",
+                                      }}
+                                    />
+                                    <ReferenceLine
+                                      y={thresholds.low}
+                                      stroke="#f59e0b"
+                                      strokeDasharray="5 5"
+                                      label={{
+                                        value: "Low",
+                                        position: "insideTopRight",
+                                      }}
+                                    />
+                                    <Tooltip
+                                      formatter={(value, name) => [
+                                        formatNumber(Number(value)),
+                                        name === "predictedStockOut"
+                                          ? "Predicted Stock Out (7-day MA)"
+                                          : "Stock Level (Ton)",
+                                      ]}
+                                    />
+                                    <Legend fontSize={9} />
+                                  </ComposedChart>
+                                </ResponsiveContainer>
+                              </div>
                             </ChartErrorBoundary>
                           </div>
                         </div>
 
                         <div>
-                          <h4 className="text-base font-semibold text-slate-900 mb-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 mb-2 sm:mb-3">
                             Daily Stock Flow
                           </h4>
-                          <div className="h-40">
+                          <div className="h-32 sm:h-36 lg:h-40">
                             <ChartErrorBoundary>
                               <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={tableData}>
@@ -1904,9 +1914,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   />
                                   <XAxis
                                     dataKey="day"
-                                    tick={{ fontSize: 11 }}
+                                    tick={{ fontSize: 10 }}
                                   />
-                                  <YAxis tick={{ fontSize: 11 }} />
+                                  <YAxis tick={{ fontSize: 10 }} />
                                   {/* Stock received bars */}
                                   <Bar
                                     dataKey="stockReceived"
@@ -1926,9 +1936,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     type="monotone"
                                     dataKey="predictedStockOut"
                                     stroke="#8b5cf6"
-                                    strokeWidth={3}
+                                    strokeWidth={2}
                                     strokeDasharray="5 5"
-                                    dot={{ r: 3, fill: "#8b5cf6" }}
+                                    dot={{ r: 2, fill: "#8b5cf6" }}
                                     name="Predicted Stock Out (7-day MA)"
                                   />
                                   {/* Net flow line */}
@@ -1937,7 +1947,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     dataKey="netFlow"
                                     stroke="#6366f1"
                                     strokeWidth={2}
-                                    dot={{ r: 3 }}
+                                    dot={{ r: 2 }}
                                     name="Net Flow"
                                   />
                                   <ReferenceLine y={0} stroke="#64748b" />
@@ -1951,7 +1961,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                         : `${name} (Ton)`,
                                     ]}
                                   />
-                                  <Legend fontSize={10} />
+                                  <Legend fontSize={9} />
                                 </ComposedChart>
                               </ResponsiveContainer>
                             </ChartErrorBoundary>
@@ -1989,34 +1999,34 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                     <table className="min-w-full divide-y divide-slate-200">
                       <thead className="bg-slate-50 sticky top-0">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             {t.forecast_projected_date || "Date"}
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Opening Stock (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Stock Received (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Stock Out (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Predicted Out (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Deviation (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Achievement (%)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Closing Stock (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Net Flow (Ton)
                           </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Efficiency (%)
                           </th>
                         </tr>
@@ -2048,10 +2058,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   : "border-l-4 border-blue-500"
                               }`}
                             >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-slate-900">
                                 {item.dateFormatted}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs text-slate-600">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.openingStock)}
@@ -2063,7 +2073,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs text-green-600 font-medium">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.stockReceived)}
@@ -2076,7 +2086,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 )}
                               </td>
                               <td
-                                className={`px-4 py-2 whitespace-nowrap text-xs font-medium ${
+                                className={`px-3 py-2 whitespace-nowrap text-xs font-medium ${
                                   item.isActual
                                     ? "text-red-700 bg-red-50"
                                     : "text-slate-400"
@@ -2093,10 +2103,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-xs text-blue-600 font-medium">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs text-blue-600 font-medium">
                                 {formatNumber(item.predictedStockOut)}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-xs font-medium">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
                                 {item.isActual ? (
                                   <span
                                     className={`${
@@ -2112,7 +2122,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-xs font-medium">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
                                 {item.isActual ? (
                                   <span
                                     className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
@@ -2135,7 +2145,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 )}
                               </td>
                               <td
-                                className={`px-4 py-2 whitespace-nowrap text-xs font-bold ${
+                                className={`px-3 py-2 whitespace-nowrap text-xs font-bold ${
                                   item.isActual
                                     ? "text-slate-900 bg-green-50"
                                     : "text-slate-400"
@@ -2152,7 +2162,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-xs font-medium">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     <span
@@ -2173,7 +2183,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-4 py-2 whitespace-nowrap text-xs">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     <span
@@ -2202,180 +2212,180 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <tfoot className="bg-slate-100 border-t-2 border-slate-300">
                         {/* Average Row */}
                         <tr className="font-semibold text-slate-700">
-                          <td className="px-4 py-3 text-xs font-bold">
+                          <td className="px-3 py-2 text-xs font-bold">
                             Average
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.openingStock.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.stockReceived.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.stockOut.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.predictedStockOut.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.deviation.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatPercentage(
                               tableStats.achievementPercentage.avg
                             )}
                             %
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.closingStock.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.netFlow.avg)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatPercentage(tableStats.efficiency.avg)}%
                           </td>
                         </tr>
                         {/* Min Row */}
                         <tr className="font-medium text-slate-600">
-                          <td className="px-4 py-3 text-xs font-bold">Min</td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs font-bold">Min</td>
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.openingStock.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.stockReceived.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.stockOut.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.predictedStockOut.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.deviation.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatPercentage(
                               tableStats.achievementPercentage.min
                             )}
                             %
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.closingStock.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.netFlow.min)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatPercentage(tableStats.efficiency.min)}%
                           </td>
                         </tr>
                         {/* Max Row */}
                         <tr className="font-medium text-slate-600">
-                          <td className="px-4 py-3 text-xs font-bold">Max</td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs font-bold">Max</td>
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.openingStock.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.stockReceived.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.stockOut.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.predictedStockOut.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.deviation.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatPercentage(
                               tableStats.achievementPercentage.max
                             )}
                             %
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.closingStock.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.netFlow.max)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatPercentage(tableStats.efficiency.max)}%
                           </td>
                         </tr>
                         {/* Predicted Total Row */}
                         <tr className="font-bold text-blue-800 border-t border-slate-300">
-                          <td className="px-4 py-3 text-xs font-bold">
+                          <td className="px-3 py-2 text-xs font-bold">
                             Predicted Total
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.openingStock.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.stockReceived.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.stockOut.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.predictedStockOut.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.deviation.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">-</td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">-</td>
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.closingStock.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.predictedData.netFlow.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">-</td>
+                          <td className="px-3 py-2 text-xs">-</td>
                         </tr>
                         {/* Actual Total Row */}
                         <tr className="font-bold text-green-800 border-t border-slate-300">
-                          <td className="px-4 py-3 text-xs font-bold">
+                          <td className="px-3 py-2 text-xs font-bold">
                             Actual Total
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.actualData.openingStock.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.actualData.stockReceived.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.actualData.stockOut.total)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.actualData.predictedStockOut.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.actualData.deviation.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {tableStats.actualData.achievementPercentage.total >
                             0
                               ? formatPercentage(
@@ -2384,15 +2394,15 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 ) + "%"
                               : "-"}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(
                               tableStats.actualData.closingStock.total
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.actualData.netFlow.total)}
                           </td>
-                          <td className="px-4 py-3 text-xs">
+                          <td className="px-3 py-2 text-xs">
                             {tableStats.actualData.efficiency.total > 0
                               ? formatPercentage(
                                   tableStats.actualData.efficiency.avg
