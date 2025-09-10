@@ -102,18 +102,20 @@ export const useCcrParameterData = () => {
       }
 
       try {
-        // Check authentication status (only log once per session)
-        if (!(window as any)._supabaseAuthChecked) {
-          const {
-            data: { user },
-            error: authError,
-          } = await supabase.auth.getUser();
-          if (authError) {
-            console.warn("Authentication check failed:", authError);
+        // Check user session status (only log once per session)
+        if (!(window as any)._userSessionChecked) {
+          const userSession = localStorage.getItem("currentUser");
+          if (userSession) {
+            try {
+              const sessionData = JSON.parse(userSession);
+              console.log("User session active:", !!sessionData.id);
+            } catch (error) {
+              console.warn("Invalid user session data");
+            }
           } else {
-            console.log("User authenticated:", !!user);
+            console.log("No active user session");
           }
-          (window as any)._supabaseAuthChecked = true;
+          (window as any)._userSessionChecked = true;
         }
 
         // Only log on development mode

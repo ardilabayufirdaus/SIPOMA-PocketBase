@@ -8,28 +8,43 @@ import {
 import App from "../App";
 import LoginPage from "./LoginPage";
 
-import { supabase } from "../utils/supabase";
-
 const RootRouter: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (mounted) {
-        setIsLoggedIn(!!data.session);
-        setChecking(false);
+
+    const checkAuthStatus = () => {
+      try {
+        // Check if user exists in localStorage
+        const storedUser = localStorage.getItem("currentUser");
+        if (mounted) {
+          setIsLoggedIn(!!storedUser);
+          setChecking(false);
+        }
+      } catch (error) {
+        if (mounted) {
+          setIsLoggedIn(false);
+          setChecking(false);
+        }
       }
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setIsLoggedIn(!!session);
+    };
+
+    checkAuthStatus();
+
+    // Listen for storage changes (for logout in other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "currentUser" && !e.newValue) {
+        setIsLoggedIn(false);
       }
-    );
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
     return () => {
       mounted = false;
-      listener.subscription.unsubscribe();
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 

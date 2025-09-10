@@ -66,17 +66,16 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 
   const uploadFileToSupabase = async (file: File): Promise<string | null> => {
     try {
-      // Ensure user is authenticated
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      if (!authUser || !user) {
-        throw new Error("User not authenticated");
+      // Ensure user is logged in (check localStorage)
+      if (!user) {
+        throw new Error("User not logged in");
       }
 
       const fileExt = file.name.split(".").pop();
-      const fileName = `${authUser.id}_${uuidv4()}.${fileExt}`;
+      const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`; // Direct to root of avatars bucket
+
+      console.log("Uploading file to avatars bucket:", filePath);
 
       // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -87,14 +86,22 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         });
 
       if (uploadError) {
-        throw uploadError;
+        console.error("Upload error details:", uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
+
+      console.log("Upload successful:", uploadData);
 
       // Get public URL
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
+      if (!data?.publicUrl) {
+        throw new Error("Failed to get public URL for uploaded file");
+      }
+
+      console.log("Public URL generated:", data.publicUrl);
       return data.publicUrl;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading file:", error);
       throw error;
     }

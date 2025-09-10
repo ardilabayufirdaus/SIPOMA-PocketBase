@@ -1,18 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../utils/supabase";
 import {
-  createUserWithAdmin,
-  updateUserWithAdmin,
-  deleteUserWithAdmin,
-} from "../utils/supabaseAdmin";
-import {
   User,
+  AddUserData,
   UserRole,
   PermissionMatrix,
   PermissionLevel,
   PlantUnit,
   PlantOperationsPermissions,
-  Department,
+  // Removed Department import since column deleted
 } from "../types";
 import { Database } from "../types/supabase";
 import useErrorHandler from "./useErrorHandler";
@@ -153,7 +149,6 @@ export const useUsers = () => {
         email: user.email,
         full_name: user.full_name,
         role: user.role as UserRole,
-        department: user.department as Department,
         avatar_url: user.avatar_url ?? undefined,
         last_active: new Date(user.last_active),
         is_active: user.is_active,
@@ -171,7 +166,7 @@ export const useUsers = () => {
 
   const addUser = useCallback(
     async (
-      user: Omit<User, "id" | "created_at" | "last_active">,
+      user: AddUserData,
       plantUnits: PlantUnit[]
     ): Promise<{ success: boolean; tempPassword?: string; error?: string }> => {
       try {
@@ -179,96 +174,12 @@ export const useUsers = () => {
           user.permissions ||
           getDefaultPermissionsByRole(user.role, plantUnits);
 
-        // Generate temporary password
+        // Generate password random untuk pembuatan pengguna baru
         const tempPassword =
-          "TempPass" + Math.random().toString(36).slice(-8) + "!";
+          Math.random().toString(36).slice(-12) +
+          Math.random().toString(36).slice(-12);
 
-        console.log("Creating user with admin API:", user.email);
-
-        // Step 1: Create user in Supabase Auth using admin API
-        const { user: authUser, error: authError } = await createUserWithAdmin(
-          user.email,
-          tempPassword,
-          {
-            full_name: user.full_name,
-            role: user.role,
-            department: user.department,
-            permissions,
-            avatar_url: user.avatar_url,
-          }
-        );
-
-        if (authError) {
-          console.error("Error creating auth user:", authError);
-
-          // Jika user sudah ada, coba ambil user existing
-          if (
-            authError.message?.includes("already registered") ||
-            authError.message?.includes("already exists")
-          ) {
-            console.log(
-              "User already exists, trying to create profile only..."
-            );
-
-            // Coba buat profile tanpa auth user (akan gagal jika ada foreign key)
-            const newUserPayload: Database["public"]["Tables"]["users"]["Insert"] =
-              {
-                full_name: user.full_name,
-                email: user.email,
-                role: user.role,
-                department: user.department,
-                is_active: true,
-                last_active: new Date().toISOString(),
-                permissions: permissions as any,
-                avatar_url: user.avatar_url || null,
-              };
-
-            const { data, error } = await supabase
-              .from("users")
-              .insert([newUserPayload])
-              .select("*");
-
-            if (error) {
-              console.error("Error adding user profile:", error);
-              // Coba cari user yang ada berdasarkan email
-              const { data: existingUsers } = await supabase
-                .from("users")
-                .select("*")
-                .eq("email", user.email)
-                .limit(1);
-
-              if (existingUsers && existingUsers.length > 0) {
-                console.log("User profile already exists");
-                fetchUsers();
-                return { success: true, tempPassword };
-              } else {
-                return {
-                  success: false,
-                  error: "Failed to create user profile",
-                };
-              }
-            } else {
-              console.log("User profile created successfully:", data);
-              fetchUsers();
-              return { success: true, tempPassword };
-            }
-          } else {
-            return { success: false, error: authError.message };
-          }
-        }
-
-        if (!authUser) {
-          console.error("No user returned from auth creation");
-          return {
-            success: false,
-            error: "No user returned from auth creation",
-          };
-        }
-
-        console.log("Auth user created successfully:", authUser.id);
-        console.log("Temporary password generated:", tempPassword);
-
-        // Step 2: Check if user profile already exists by email
+        // Step 1: Check if user profile already exists by email
         const { data: existingUsers, error: checkError } = await supabase
           .from("users")
           .select("id, email")
@@ -277,34 +188,28 @@ export const useUsers = () => {
 
         if (checkError) {
           console.error("Error checking existing user:", checkError);
-          // Cleanup auth user
-          await deleteUserWithAdmin(authUser.id);
           return { success: false, error: "Failed to check existing user" };
         }
 
         if (existingUsers && existingUsers.length > 0) {
-          console.log("User profile already exists with email:", user.email);
-          // Cleanup auth user since profile already exists
-          await deleteUserWithAdmin(authUser.id);
           return {
             success: false,
             error: "User with this email already exists",
           };
         }
 
-        // Step 3: Create profile in users table using auth user ID
+        // Step 2: Create profile in users table directly
         const newUserPayload: Database["public"]["Tables"]["users"]["Insert"] =
           {
-            id: authUser.id, // Use auth user ID
             full_name: user.full_name,
             email: user.email,
             role: user.role,
-            department: user.department,
             is_active: true,
             last_active: new Date().toISOString(),
             permissions: permissions as any,
             avatar_url: user.avatar_url || null,
-          };
+            password: tempPassword, // Store password directly in users table
+          } as any;
 
         const { data, error } = await supabase
           .from("users")
@@ -326,20 +231,15 @@ export const useUsers = () => {
             error.message?.includes("duplicate key") ||
             error.message?.includes("already exists")
           ) {
-            console.log("Profile conflict detected, cleaning up auth user");
-            await deleteUserWithAdmin(authUser.id);
             return {
               success: false,
               error: "User with this email already exists",
             };
           }
 
-          // Jika profile creation gagal, hapus auth user yang sudah dibuat
-          console.log("Attempting to cleanup auth user...");
-          await deleteUserWithAdmin(authUser.id);
           return { success: false, error: error.message };
         } else {
-          console.log("User and profile created successfully!", data);
+          console.log("User profile created successfully!", data);
           console.log("📧 Email:", user.email);
           console.log("🔑 Temporary Password:", tempPassword);
           console.log("⚠️  User should change password on first login");
@@ -357,59 +257,13 @@ export const useUsers = () => {
   const updateUser = useCallback(
     async (updatedUser: User) => {
       try {
-        console.log(
-          "Starting updateUser for:",
-          updatedUser.id,
-          updatedUser.email
-        );
-        console.log("Updated user data:", {
-          role: updatedUser.role,
-          permissions: updatedUser.permissions,
-          full_name: updatedUser.full_name,
-          email: updatedUser.email,
-        });
+        const { id, created_at, last_active, ...updateData } = updatedUser;
 
-        const { id, created_at, last_active, email, ...updateData } =
-          updatedUser;
-
-        // Cek apakah email berubah dengan membandingkan dengan user existing
-        const existingUser = users.find((u) => u.id === id);
-        const emailChanged = existingUser && existingUser.email !== email;
-
-        // Step 1: Update auth user hanya jika email berubah dan service key tersedia
-        if (emailChanged) {
-          console.log("Email changed, attempting to update auth user:", email);
-          const { error: authError } = await updateUserWithAdmin(id, {
-            email: email,
-            user_metadata: {
-              full_name: updateData.full_name,
-            },
-          });
-
-          if (authError) {
-            console.warn(
-              "Could not update auth user (this is OK if no service key):",
-              authError.message
-            );
-            // Continue dengan update profile meskipun auth update gagal
-          } else {
-            console.log("Auth user updated successfully");
-          }
-        }
-
-        // Step 2: Update user profile (selalu dilakukan)
-        console.log("Updating user profile with data:", {
-          ...updateData,
-          email: email,
-          permissions: updateData.permissions,
-          last_active: new Date().toISOString(),
-        });
-
+        // Update user profile directly in users table
         const { error } = await supabase
           .from("users")
           .update({
             ...updateData,
-            email: email, // Include email in profile update
             last_active: new Date().toISOString(),
           } as any)
           .eq("id", id);
@@ -424,17 +278,14 @@ export const useUsers = () => {
           });
           throw new Error(`Failed to update user profile: ${error.message}`);
         } else {
-          console.log("User profile updated successfully");
-          console.log("Fetching updated users list...");
           await fetchUsers();
-          console.log("Users list refreshed after update");
         }
       } catch (err) {
         console.error("Unexpected error updating user:", err);
         throw err; // Re-throw to allow caller to handle
       }
     },
-    [users, fetchUsers]
+    [fetchUsers]
   );
 
   const deleteUser = useCallback(
@@ -453,29 +304,21 @@ export const useUsers = () => {
           return;
         }
 
-        // Step 1: Delete from users table first
-        const { error: profileError } = await supabase
+        // Delete from users table directly
+        const { error } = await supabase
           .from("users")
           .delete()
           .eq("id", userId);
 
-        if (profileError) {
-          console.error("Error deleting user profile:", profileError);
-          return;
+        if (error) {
+          console.error("Error deleting user profile:", error);
+          throw new Error(`Failed to delete user profile: ${error.message}`);
         }
 
-        // Step 2: Delete from auth
-        const { error: authError } = await deleteUserWithAdmin(userId);
-
-        if (authError) {
-          console.error("Error deleting auth user:", authError);
-          // Profile already deleted, so just log the error
-        }
-
-        console.log("User deleted successfully");
-        fetchUsers();
+        await fetchUsers();
       } catch (err) {
         console.error("Unexpected error deleting user:", err);
+        // Optionally, propagate error or handle UI feedback here
       }
     },
     [users, fetchUsers]

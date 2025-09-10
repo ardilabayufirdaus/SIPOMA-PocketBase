@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { User } from "../types";
 import UserIcon from "./icons/UserIcon";
 import EditIcon from "./icons/EditIcon";
@@ -6,6 +6,7 @@ import ToggleIcon from "./icons/ToggleIcon";
 import TrashIcon from "./icons/TrashIcon";
 import { formatDate } from "../utils/formatters";
 import Pagination from "./Pagination";
+import Modal from "./Modal";
 
 interface UserTableProps {
   users: User[];
@@ -57,12 +58,32 @@ const UserTable: React.FC<UserTableProps> = ({
 }) => {
   // Helper function to check if user can be deleted
   const canDeleteUser = (user: User): boolean => {
-    // Super admin users cannot be deleted
     if (user.role === "Super Admin") {
       return false;
     }
-    // Only super admin can delete other users
     return currentUser?.role === "Super Admin";
+  };
+
+  const handleDeleteClick = (user: User) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete user ${user.full_name}? This action cannot be undone.`
+      )
+    ) {
+      onDeleteUser(user.id);
+    }
+  };
+
+  const handleToggleStatusClick = (user: User) => {
+    if (
+      window.confirm(
+        `Are you sure you want to ${
+          user.is_active ? "deactivate" : "activate"
+        } user ${user.full_name}?`
+      )
+    ) {
+      onToggleUserStatus(user.id);
+    }
   };
 
   return (
@@ -132,9 +153,6 @@ const UserTable: React.FC<UserTableProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-900 dark:text-slate-100 mb-1 hidden md:block">
-                    {user.department}
-                  </div>
                   <RoleBadge role={user.role} />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -161,7 +179,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       <EditIcon className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => onToggleUserStatus(user.id)}
+                      onClick={() => handleToggleStatusClick(user)}
                       className="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all duration-150"
                       title={
                         user.is_active ? "Deactivate User" : "Activate User"
@@ -176,7 +194,7 @@ const UserTable: React.FC<UserTableProps> = ({
                     </button>
                     {canDeleteUser(user) && (
                       <button
-                        onClick={() => onDeleteUser(user.id)}
+                        onClick={() => handleDeleteClick(user)}
                         className="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all duration-150"
                         title={t.delete_user || "Delete User"}
                         aria-label={`${t.delete_user || "Delete"} ${

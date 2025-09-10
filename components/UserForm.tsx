@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   User,
+  AddUserData,
   UserRole,
-  Department,
   PermissionLevel,
   PermissionMatrix,
   PlantOperationsPermissions,
@@ -14,9 +14,7 @@ import ChevronDownIcon from "./icons/ChevronDownIcon";
 
 interface UserFormProps {
   userToEdit: User | null;
-  onSave: (
-    user: User | Omit<User, "id" | "created_at" | "last_active">
-  ) => void;
+  onSave: (user: User | AddUserData) => void;
   onCancel: () => void;
   t: any;
   plantUnits: PlantUnit[];
@@ -47,8 +45,8 @@ const UserForm: React.FC<UserFormProps> = ({
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
+    password: "",
     role: UserRole.OPERATOR,
-    department: Department.PRODUCTION,
     is_active: true,
     permissions: getDefaultPermissionsByRole(UserRole.OPERATOR, plantUnits),
   });
@@ -69,15 +67,11 @@ const UserForm: React.FC<UserFormProps> = ({
       (value: string) => validators.required(value, "Email"),
       (value: string) => validators.email(value),
     ],
-    role: [(value: string) => validators.required(value, "Role")],
-    department: [
-      (value: string) => {
-        if (value === null || value === undefined || value === "") {
-          return { isValid: false, error: "Department is required" };
-        }
-        return { isValid: true };
-      },
+    password: [
+      (value: string) => validators.required(value, "Password"),
+      (value: string) => validators.minLength(value, 8, "Password"),
     ],
+    role: [(value: string) => validators.required(value, "Role")],
   };
 
   useEffect(() => {
@@ -85,31 +79,35 @@ const UserForm: React.FC<UserFormProps> = ({
       setFormData({
         full_name: userToEdit.full_name,
         email: userToEdit.email,
+        password: "", // Password tidak ditampilkan saat edit
         role: userToEdit.role,
-        department: userToEdit.department,
         is_active: userToEdit.is_active,
         permissions:
           userToEdit.permissions ||
           getDefaultPermissionsByRole(userToEdit.role, plantUnits),
       });
     } else {
+      // Reset form untuk add user - pastikan semua field kosong
       const defaultRole = UserRole.OPERATOR;
       setFormData({
         full_name: "",
         email: "",
+        password: "",
         role: defaultRole,
-        department: Department.PRODUCTION,
         is_active: true,
         permissions: getDefaultPermissionsByRole(defaultRole, plantUnits),
       });
     }
+
+    // Reset errors dan touched state saat mode berubah
+    setErrors({});
+    setTouched({});
   }, [userToEdit, plantUnits]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    console.log(`handleChange triggered for ${name} with value:`, value);
 
     // Clear error when user starts typing
     if (errors[name]) {
@@ -124,12 +122,9 @@ const UserForm: React.FC<UserFormProps> = ({
         permissions: getDefaultPermissionsByRole(newRole, plantUnits),
       }));
     } else if (name === "department") {
-      // Cast value to Department enum if possible
-      const newDepartment = value as Department;
-      setFormData((prev) => ({
-        ...prev,
-        department: newDepartment,
-      }));
+      // Removed department handling since column is removed
+      // Ignore or handle gracefully
+      return;
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -227,16 +222,13 @@ const UserForm: React.FC<UserFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("handleSubmit started");
     setIsSubmitting(true);
 
     // Validate all fields
     const validation = validateForm(formData, validationRules);
-    console.log("Validation result:", validation);
     setErrors(validation.errors);
 
     if (!validation.isValid) {
-      console.warn("Validation failed:", validation.errors);
       setIsSubmitting(false);
       // Mark all fields as touched to show errors
       const touchedFields = Object.keys(validationRules).reduce(
@@ -250,7 +242,6 @@ const UserForm: React.FC<UserFormProps> = ({
       return;
     }
 
-    console.log("Validation passed, submitting user");
     try {
       if (userToEdit) {
         // Pastikan permissions selalu di-include saat edit user
@@ -259,10 +250,18 @@ const UserForm: React.FC<UserFormProps> = ({
           ...formData,
           permissions: formData.permissions, // Explicitly include permissions
         };
-        console.log("Submitting updated user:", updatedUser);
         await onSave(updatedUser);
       } else {
-        await onSave(formData);
+        // Untuk add user, gunakan AddUserData dengan password
+        const newUser: AddUserData = {
+          full_name: formData.full_name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          is_active: formData.is_active,
+          permissions: formData.permissions,
+        };
+        await onSave(newUser);
       }
     } catch (error) {
       console.error("Error saving user:", error);
@@ -283,7 +282,6 @@ const UserForm: React.FC<UserFormProps> = ({
   return (
     <form
       onSubmit={(e) => {
-        console.log("Form submit triggered");
         handleSubmit(e);
       }}
     >
@@ -345,10 +343,12 @@ const UserForm: React.FC<UserFormProps> = ({
                   type="email"
                   name="email"
                   id="email"
-                  value={formData.email}
+                  value={formData.email || ""}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
+                  autoComplete="off"
+                  placeholder="Enter email address"
                   className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 sm:text-sm ${
                     errors.email && touched.email
                       ? "border-red-500 focus:border-red-500 focus:ring-red-500"
@@ -371,6 +371,50 @@ const UserForm: React.FC<UserFormProps> = ({
                   </p>
                 )}
               </div>
+              {!userToEdit && (
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    {t.password_label || "Password"}{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    value={formData.password || ""}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    required
+                    autoComplete="new-password"
+                    placeholder="Enter password"
+                    className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 sm:text-sm ${
+                      errors.password && touched.password
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                        : "border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500"
+                    }`}
+                    aria-invalid={
+                      errors.password && touched.password ? "true" : "false"
+                    }
+                    aria-describedby={
+                      errors.password && touched.password
+                        ? "password-error"
+                        : undefined
+                    }
+                  />
+                  {errors.password && touched.password && (
+                    <p
+                      id="password-error"
+                      className="mt-1 text-sm text-red-600"
+                      role="alert"
+                    >
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+              )}
               <div>
                 <label
                   htmlFor="role"
@@ -392,27 +436,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   ))}
                 </select>
               </div>
-              <div>
-                <label
-                  htmlFor="department"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  {t.department_label}
-                </label>
-                <select
-                  name="department"
-                  id="department"
-                  value={formData.department ?? Department.PRODUCTION}
-                  onChange={handleChange}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                >
-                  {Object.values(Department).map((dep) => (
-                    <option key={dep} value={dep}>
-                      {dep}
-                    </option>
-                  ))}
-                </select>
-              </div>
+
               {userToEdit && (
                 <div className="sm:col-span-2 flex items-center pt-2">
                   <input

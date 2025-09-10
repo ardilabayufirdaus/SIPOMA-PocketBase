@@ -300,12 +300,10 @@ const App: React.FC = () => {
   const handleSignOutCancel = () => setIsSignOutModalOpen(false);
   const handleSignOutConfirm = () => {
     setIsSignOutModalOpen(false);
-    // Supabase sign out
-    import("./utils/supabase").then(({ supabase }) => {
-      supabase.auth.signOut().then(() => {
-        window.location.href = "/login";
-      });
-    });
+    // Clear user session dari localStorage
+    localStorage.removeItem("currentUser");
+    // Redirect ke login page
+    window.location.href = "/login";
   };
 
   const getPageTitle = () => {

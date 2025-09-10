@@ -1,13 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../utils/supabase";
+import { api } from "../utils/api";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("savedEmail");
+    const savedPassword = localStorage.getItem("savedPassword");
+    const savedRememberMe = localStorage.getItem("rememberMe") === "true";
+
+    if (savedRememberMe && savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    }
+  }, []);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,7 +33,6 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    // Client-side validation
     if (!email.trim()) {
       setError("Email is required");
       setLoading(false);
@@ -38,26 +51,41 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+      const user = await api.users.getByEmail(email.trim());
+      console.log("User dari database:", user);
+      console.log("Password input:", password);
+      console.log("Password dari database:", user?.password);
 
-      if (error) {
-        setError(error.message);
-      } else {
-        // Use React Router navigate instead of window.location
-        navigate("/", { replace: true });
+      if (!user) {
+        setError("Email tidak ditemukan");
+        setLoading(false);
+        return;
       }
+
+      if (user.password !== password) {
+        setError("Email atau password salah");
+        setLoading(false);
+        return;
+      }
+
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem("savedEmail", email.trim());
+        localStorage.setItem("savedPassword", password);
+        localStorage.setItem("rememberMe", "true");
+      } else {
+        // Clear saved credentials if remember me is unchecked
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedPassword");
+        localStorage.removeItem("rememberMe");
+      }
+
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      navigate("/", { replace: true });
     } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+      console.error("Error saat login:", err);
+      setError("Terjadi kesalahan saat login. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -121,6 +149,21 @@ const LoginPage: React.FC = () => {
               {error}
             </div>
           )}
+          <div className="mb-4 flex items-center">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="mr-2"
+            />
+            <label
+              htmlFor="rememberMe"
+              className="text-sm text-slate-700 dark:text-slate-200 select-none"
+            >
+              Simpan login
+            </label>
+          </div>
           <button
             type="submit"
             disabled={loading}

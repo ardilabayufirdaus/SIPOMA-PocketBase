@@ -67,8 +67,6 @@ export const useGlobalParameterSettings =
             .limit(1);
 
           if (fetchError) {
-            console.error("Supabase fetch error:", fetchError);
-
             // If no personal settings found for regular users, try global settings
             if (
               currentUser.role !== "Super Admin" &&
@@ -106,7 +104,6 @@ export const useGlobalParameterSettings =
           const resultSettings = data?.[0] || null;
           setSettings(resultSettings);
         } catch (err) {
-          console.error("Error loading global parameter settings:", err);
           setError(
             err instanceof Error ? err.message : "Failed to load settings"
           );
@@ -175,7 +172,6 @@ export const useGlobalParameterSettings =
             await existingQuery.limit(1);
 
           if (fetchError) {
-            console.error("Error checking existing settings:", fetchError);
             // Continue with insert if error checking existing
           }
 

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import UserForm from "../../components/UserForm";
-import { User, PlantUnit } from "../../types";
+import { AddUserData, PlantUnit } from "../../types";
 
 interface AddUserPageProps {
-  onAddUser: (user: Omit<User, "id" | "created_at" | "last_active">) => void;
+  onAddUser: (user: AddUserData) => void;
   onOpenPasswordDisplay: (
     password: string,
     email: string,
@@ -21,9 +21,7 @@ const AddUserPage: React.FC<AddUserPageProps> = ({
 }) => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  const handleSaveUser = async (
-    user: Omit<User, "id" | "created_at" | "last_active">
-  ) => {
+  const handleSaveUser = async (user: AddUserData) => {
     try {
       await onAddUser(user);
       setShowSuccessMessage(true);

@@ -5,6 +5,7 @@ import CogIcon from "../components/icons/CogIcon";
 import ShieldCheckIcon from "../components/icons/ShieldCheckIcon";
 import LanguageIcon from "../components/icons/LanguageIcon";
 import BellIcon from "../components/icons/BellIcon";
+import { supabase } from "../utils/supabase";
 
 interface SettingsPageProps {
   t: any;
@@ -44,15 +45,43 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     projectUpdates: false,
   });
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
+  // Load notification preferences from localStorage
+  React.useEffect(() => {
+    const savedPrefs = localStorage.getItem("sipoma_notification_prefs");
+    if (savedPrefs) {
+      try {
+        setNotificationPrefs(JSON.parse(savedPrefs));
+      } catch (err) {
+        console.error("Failed to load notification preferences:", err);
+      }
+    }
+  }, []);
+
+  // Save notification preferences to localStorage
+  const saveNotificationPrefs = (prefs: typeof notificationPrefs) => {
+    setNotificationPrefs(prefs);
+    localStorage.setItem("sipoma_notification_prefs", JSON.stringify(prefs));
+  };
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordData.new !== passwordData.confirm) {
       alert(t.password_no_match);
       return;
     }
-    // In a real app, you'd call an API here.
-    alert(t.password_updated);
-    setPasswordData({ current: "", new: "", confirm: "" });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.new,
+      });
+      if (error) {
+        alert(t.password_update_failed || "Failed to update password");
+      } else {
+        alert(t.password_updated);
+        setPasswordData({ current: "", new: "", confirm: "" });
+      }
+    } catch (err) {
+      alert(t.password_update_failed || "Failed to update password");
+    }
   };
 
   if (!user) {
@@ -108,10 +137,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 {t.role_label}:
               </span>
               <span className="text-slate-800">{user.role}</span>
-              <span className="font-semibold text-slate-600">
-                {t.department_label}:
-              </span>
-              <span className="text-slate-800">{user.department}</span>
             </div>
           </div>
           <div className="flex justify-end">
@@ -225,12 +250,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 </p>
               </div>
               <button
-                onClick={() =>
-                  setNotificationPrefs((p) => ({
-                    ...p,
-                    projectUpdates: !p.projectUpdates,
-                  }))
-                }
+                onClick={() => {
+                  const newPrefs = {
+                    ...notificationPrefs,
+                    projectUpdates: !notificationPrefs.projectUpdates,
+                  };
+                  saveNotificationPrefs(newPrefs);
+                }}
                 className={`${
                   notificationPrefs.projectUpdates
                     ? "bg-red-600"

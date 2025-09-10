@@ -15,8 +15,13 @@ if (import.meta.env.PROD && supabaseServiceKey) {
   );
 }
 
-// Use publishable key for frontend operations
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+// Use service role key for admin operations only
+const supabaseKey =
+  supabaseServiceKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing Supabase environment variables");
+}
 
 export const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
@@ -35,7 +40,6 @@ export const createUserWithAdmin = async (
   userData: {
     full_name: string;
     role: string;
-    department: string;
     permissions?: any;
     avatar_url?: string;
   }

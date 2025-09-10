@@ -9,16 +9,6 @@ export enum UserRole {
   VIEWER = "Viewer",
 }
 
-export enum Department {
-  IT = "IT",
-  PRODUCTION = "Production",
-  QUALITY = "Quality",
-  MAINTENANCE = "Maintenance",
-  LOGISTICS = "Logistics",
-  FINANCE = "Finance",
-  HR = "Human Resources",
-}
-
 export enum PermissionLevel {
   NONE = "none",
   READ = "read",
@@ -44,13 +34,23 @@ export interface PermissionMatrix {
 export interface User {
   id: string;
   email: string;
+  password?: string; // Optional karena tidak selalu dikirim dari frontend
   full_name: string;
   role: UserRole;
-  department: Department;
   avatar_url?: string;
   last_active: Date;
   is_active: boolean;
   created_at: Date;
+  permissions: PermissionMatrix;
+}
+
+export interface AddUserData {
+  full_name: string;
+  email: string;
+  password: string; // Required untuk add user
+  role: UserRole;
+  avatar_url?: string;
+  is_active: boolean;
   permissions: PermissionMatrix;
 }
 
