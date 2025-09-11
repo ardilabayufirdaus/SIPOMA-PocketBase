@@ -3,12 +3,11 @@ import {
   User,
   AddUserData,
   UserRole,
-  PermissionLevel,
   PermissionMatrix,
-  PlantOperationsPermissions,
+  PermissionLevel,
   PlantUnit,
 } from "../types";
-import { getDefaultPermissionsByRole } from "../hooks/useUsers";
+import { getDefaultPermissionsByRole } from "../hooks/useUserManagement";
 import { validators, validateForm } from "../utils/validation";
 import ChevronDownIcon from "./icons/ChevronDownIcon";
 
@@ -43,6 +42,7 @@ const UserForm: React.FC<UserFormProps> = ({
   }, [plantUnits]) as Record<string, string[]>;
 
   const [formData, setFormData] = useState({
+    username: "",
     full_name: "",
     email: "",
     password: "",
@@ -77,6 +77,7 @@ const UserForm: React.FC<UserFormProps> = ({
   useEffect(() => {
     if (userToEdit) {
       setFormData({
+        username: userToEdit.username || "",
         full_name: userToEdit.full_name,
         email: userToEdit.email,
         password: "", // Password tidak ditampilkan saat edit
@@ -90,6 +91,7 @@ const UserForm: React.FC<UserFormProps> = ({
       // Reset form untuk add user - pastikan semua field kosong
       const defaultRole = UserRole.OPERATOR;
       setFormData({
+        username: "",
         full_name: "",
         email: "",
         password: "",
@@ -254,6 +256,7 @@ const UserForm: React.FC<UserFormProps> = ({
       } else {
         // Untuk add user, gunakan AddUserData dengan password
         const newUser: AddUserData = {
+          username: formData.username,
           full_name: formData.full_name,
           email: formData.email,
           password: formData.password,
@@ -293,6 +296,36 @@ const UserForm: React.FC<UserFormProps> = ({
               {t.user_details_title}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+              <div>
+                <label
+                  htmlFor="username"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Username <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="username"
+                  id="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                  className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 sm:text-sm ${
+                    errors.username && touched.username
+                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                      : "border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500"
+                  }`}
+                  aria-invalid={
+                    errors.username && touched.username ? "true" : "false"
+                  }
+                />
+                {errors.username && touched.username && (
+                  <p className="mt-2 text-sm text-red-600" id="username-error">
+                    {errors.username}
+                  </p>
+                )}
+              </div>
               <div>
                 <label
                   htmlFor="full_name"

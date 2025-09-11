@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import UserForm from "../../components/UserForm";
 import { AddUserData, PlantUnit } from "../../types";
+import { useUserManagement } from "../../hooks/useUserManagement";
 
 interface AddUserPageProps {
-  onAddUser: (user: AddUserData) => void;
   onOpenPasswordDisplay: (
     password: string,
     email: string,
@@ -14,18 +14,21 @@ interface AddUserPageProps {
 }
 
 const AddUserPage: React.FC<AddUserPageProps> = ({
-  onAddUser,
   onOpenPasswordDisplay,
   plantUnits,
   t,
 }) => {
+  const { addUser } = useUserManagement();
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const handleSaveUser = async (user: AddUserData) => {
     try {
-      await onAddUser(user);
-      setShowSuccessMessage(true);
-      setTimeout(() => setShowSuccessMessage(false), 3000);
+      const result = await addUser(user, plantUnits);
+      if (result.success && result.tempPassword) {
+        onOpenPasswordDisplay(result.tempPassword, user.email, user.full_name);
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      }
     } catch (error) {
       console.error("Error adding user:", error);
     }

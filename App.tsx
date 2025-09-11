@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import React, { useState, useCallback, useEffect, Suspense, lazy } from "react";
 import Modal from "./components/Modal";
 import ProfileEditModal from "./components/ProfileEditModal";
@@ -5,7 +6,7 @@ import UserForm from "./components/UserForm";
 import PasswordDisplay from "./components/PasswordDisplay";
 import Toast from "./components/Toast";
 import LoadingSkeleton, { PageLoading } from "./components/LoadingSkeleton";
-import { useUsers } from "./hooks/useUsers";
+import { useUserManagement } from "./hooks/useUserManagement";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { useOnlineUsers } from "./hooks/useOnlineUsers";
 import { useUserActivity } from "./hooks/useUserActivity";
@@ -92,6 +93,7 @@ export type Language = "en" | "id";
 export type Theme = "light" | "dark";
 
 const App: React.FC = () => {
+  const navigate = useNavigate();
   const [language, setLanguage] = useState<Language>("en");
   const t = translations[language];
   const [theme, setTheme] = useState<Theme>("light");
@@ -108,8 +110,8 @@ const App: React.FC = () => {
     deleteUser,
     toggleUserStatus,
     loading: usersLoading,
-  } = useUsers();
-  const { currentUser, loading: currentUserLoading } = useCurrentUser();
+  } = useUserManagement();
+  const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
   const onlineUsersCount = useOnlineUsers(users);
 
   // Update current user activity
@@ -299,11 +301,8 @@ const App: React.FC = () => {
   const handleSignOutClick = () => setIsSignOutModalOpen(true);
   const handleSignOutCancel = () => setIsSignOutModalOpen(false);
   const handleSignOutConfirm = () => {
-    setIsSignOutModalOpen(false);
-    // Clear user session dari localStorage
-    localStorage.removeItem("currentUser");
-    // Redirect ke login page
-    window.location.href = "/login";
+    logout();
+    navigate("/login");
   };
 
   const getPageTitle = () => {

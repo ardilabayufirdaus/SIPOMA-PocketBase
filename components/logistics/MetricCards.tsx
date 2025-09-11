@@ -139,9 +139,15 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           <div className="flex items-baseline space-x-1 mt-0.5">
             <p
               className="text-lg font-semibold text-slate-900 dark:text-slate-100"
-              aria-label={value}
+              aria-label={
+                typeof value === "string" || typeof value === "number"
+                  ? String(value)
+                  : JSON.stringify(value)
+              }
             >
-              {value}
+              {typeof value === "string" || typeof value === "number"
+                ? String(value)
+                : "[Invalid Value]"}
             </p>
             {unit && (
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400">

@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { User } from "../../types";
 import { usePagination } from "../../hooks/usePagination";
+import { api } from "../../utils/api";
 
 interface UserActivityPageProps {
   users: User[];
@@ -18,78 +19,48 @@ interface ActivityLog {
 }
 
 const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<string>("all");
   const [selectedAction, setSelectedAction] = useState<string>("all");
   const [dateRange, setDateRange] = useState<string>("7");
 
-  // Mock activity data - in real app this would come from API
-  const mockActivities: ActivityLog[] = useMemo(() => {
-    const activities: ActivityLog[] = [];
-    const actions = [
-      "login",
-      "logout",
-      "create_user",
-      "edit_user",
-      "delete_user",
-      "view_report",
-      "export_data",
-    ];
-
-    users.forEach((user) => {
-      // Generate 5-20 activities per user
-      const activityCount = Math.floor(Math.random() * 15) + 5;
-      for (let i = 0; i < activityCount; i++) {
-        const daysAgo = Math.floor(Math.random() * 30);
-        const hoursAgo = Math.floor(Math.random() * 24);
-        const minutesAgo = Math.floor(Math.random() * 60);
-
-        activities.push({
-          id: `${user.id}-${i}`,
-          user_id: user.id,
-          user_name: user.full_name,
-          action: actions[Math.floor(Math.random() * actions.length)],
-          timestamp: new Date(
-            Date.now() -
-              daysAgo * 24 * 60 * 60 * 1000 -
-              hoursAgo * 60 * 60 * 1000 -
-              minutesAgo * 60 * 1000
-          ),
-          ip_address: `192.168.1.${Math.floor(Math.random() * 255)}`,
-          user_agent: "Mozilla/5.0...",
-        });
+  useEffect(() => {
+    const fetchActivityLogs = async () => {
+      setLoading(true);
+      try {
+        const logs = await api.users.getActivityLogs();
+        setActivityLogs(logs.map((log: any) => ({ ...log, timestamp: new Date(log.timestamp) })));
+      } catch (error) {
+        console.error("Error fetching activity logs:", error);
+      } finally {
+        setLoading(false);
       }
-    });
+    };
+    fetchActivityLogs();
+  }, []);
 
-    return activities.sort(
-      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-    );
-  }, [users]);
-
-  // Filter activities
   const filteredActivities = useMemo(() => {
-    let filtered = mockActivities;
+    let filtered = activityLogs;
 
-    // Filter by user
     if (selectedUser !== "all") {
       filtered = filtered.filter(
         (activity) => activity.user_id === selectedUser
       );
     }
 
-    // Filter by action
     if (selectedAction !== "all") {
       filtered = filtered.filter(
         (activity) => activity.action === selectedAction
       );
     }
 
-    // Filter by date range
     const daysAgo = parseInt(dateRange);
     const cutoffDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
     filtered = filtered.filter((activity) => activity.timestamp >= cutoffDate);
 
     return filtered;
-  }, [mockActivities, selectedUser, selectedAction, dateRange]);
+  }, [activityLogs, selectedUser, selectedAction, dateRange]);
 
   const {
     paginatedData: paginatedActivities,
@@ -98,18 +69,16 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
     setCurrentPage,
   } = usePagination(filteredActivities, 15);
 
-  // Online users
   const onlineUsers = useMemo(() => {
     return users.filter((user) => {
-      // Mock online status - user is online if they had activity in last 10 minutes
-      const recentActivity = mockActivities.find(
+      const recentActivity = activityLogs.find(
         (activity) =>
           activity.user_id === user.id &&
           activity.timestamp > new Date(Date.now() - 10 * 60 * 1000)
       );
       return !!recentActivity;
     });
-  }, [users, mockActivities]);
+  }, [users, activityLogs]);
 
   const formatTimestamp = (timestamp: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -169,7 +138,6 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
         </p>
       </div>
 
-      {/* Online Users */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
           {t.online_users || "Online Users"} ({onlineUsers.length})
@@ -192,7 +160,6 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
         </div>
       </div>
 
-      {/* Activity Filters */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
           {t.activity_filters || "Activity Filters"}
@@ -252,65 +219,67 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
         </div>
       </div>
 
-      {/* Activity Log */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
           {t.activity_log || "Activity Log"} ({filteredActivities.length}{" "}
           {t.entries || "entries"})
         </h2>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-900">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                  {t.user || "User"}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                  {t.action || "Action"}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                  {t.timestamp || "Timestamp"}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
-                  {t.ip_address || "IP Address"}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedActivities.map((activity) => (
-                <tr
-                  key={activity.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
-                    {activity.user_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center">
-                      <span className="mr-2">
-                        {getActionIcon(activity.action)}
-                      </span>
-                      <span className={getActionColor(activity.action)}>
-                        {activity.action
-                          .replace("_", " ")
-                          .replace(/\b\w/g, (l) => l.toUpperCase())}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {formatTimestamp(activity.timestamp)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {activity.ip_address}
-                  </td>
+        {loading ? (
+          <div className="text-center py-8">Loading...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead className="bg-slate-50 dark:bg-slate-900">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    {t.user || "User"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    {t.action || "Action"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    {t.timestamp || "Timestamp"}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
+                    {t.ip_address || "IP Address"}
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                {paginatedActivities.map((activity) => (
+                  <tr
+                    key={activity.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-700"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
+                      {activity.user_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex items-center">
+                        <span className="mr-2">
+                          {getActionIcon(activity.action)}
+                        </span>
+                        <span className={getActionColor(activity.action)}>
+                          {activity.action
+                            .replace("_", " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {formatTimestamp(activity.timestamp)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {activity.ip_address}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-6 flex items-center justify-between">
             <div className="text-sm text-slate-700 dark:text-slate-300">

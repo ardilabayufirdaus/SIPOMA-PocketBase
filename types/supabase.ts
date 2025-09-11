@@ -79,6 +79,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      user_requests: {
+        Row: {
+          id: string;
+          email: string;
+          name: string;
+          status: string;
+          requested_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name: string;
+          status?: string;
+          requested_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string;
+          status?: string;
+          requested_at?: string;
+        };
+        Relationships: [];
+      };
       cop_parameters: {
         Row: {
           id: string;
@@ -582,6 +606,7 @@ export type Database = {
           last_active: string;
           permissions: Json | null;
           role: string;
+          username: string;
         };
         Insert: {
           avatar_url?: string | null;
@@ -594,6 +619,7 @@ export type Database = {
           last_active: string;
           permissions?: Json | null;
           role: string;
+          username: string;
         };
         Update: {
           avatar_url?: string | null;
@@ -606,6 +632,7 @@ export type Database = {
           last_active?: string;
           permissions?: Json | null;
           role?: string;
+          username?: string;
         };
         Relationships: [];
       };

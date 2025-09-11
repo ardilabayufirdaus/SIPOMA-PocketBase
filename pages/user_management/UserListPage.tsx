@@ -2,24 +2,21 @@ import React from "react";
 import UserTable from "../../components/UserTable";
 import { User } from "../../types";
 import { usePagination } from "../../hooks/usePagination";
+import { useUserManagement } from "../../hooks/useUserManagement";
+import RegistrationRequests from "../../components/user_management/RegistrationRequests";
 
 interface UserListPageProps {
-  users: User[];
   currentUser: User | null;
   onEditUser: (user: User) => void;
-  onDeleteUser: (userId: string) => void;
-  onToggleUserStatus: (userId: string) => void;
   t: any;
 }
 
 const UserListPage: React.FC<UserListPageProps> = ({
-  users,
   currentUser,
   onEditUser,
-  onDeleteUser,
-  onToggleUserStatus,
   t,
 }) => {
+  const { users, loading, deleteUser, toggleUserStatus } = useUserManagement();
   const {
     paginatedData: paginatedUsers,
     currentPage,
@@ -27,8 +24,19 @@ const UserListPage: React.FC<UserListPageProps> = ({
     setCurrentPage,
   } = usePagination(users, 10);
 
+  const sanitizedUsers = paginatedUsers.map((user) => ({
+    ...user,
+    id: String(user.id),
+    full_name: String(user.full_name),
+    email: String(user.email),
+    role: user.role,
+    avatar_url: user.avatar_url,
+    is_active: !!user.is_active,
+  }));
+
   return (
     <div className="p-4 lg:p-6">
+      <RegistrationRequests />
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
           {t.user_list || "Users List"}
@@ -39,12 +47,21 @@ const UserListPage: React.FC<UserListPageProps> = ({
       </div>
 
       <UserTable
-        users={paginatedUsers}
+        users={sanitizedUsers}
         currentUser={currentUser}
         onEditUser={onEditUser}
-        onDeleteUser={onDeleteUser}
-        onToggleUserStatus={onToggleUserStatus}
-        t={t}
+        onDeleteUser={deleteUser}
+        onToggleUserStatus={toggleUserStatus}
+        t={{
+          name: t.name,
+          role: t.role,
+          status: t.status,
+          last_active: t.last_active,
+          actions: t.actions,
+          active: t.active,
+          inactive: t.inactive,
+          delete_user: t.delete_user,
+        }}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}

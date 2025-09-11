@@ -246,7 +246,10 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                         </div>
                         <div className="flex items-baseline space-x-1 mt-1">
                           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {metric.value}
+                            {typeof metric.value === "string" ||
+                            typeof metric.value === "number"
+                              ? String(metric.value)
+                              : "[Invalid Value]"}
                           </div>
                           {metric.unit && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -307,7 +310,10 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                         </span>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {detail.value}
+                            {typeof detail.value === "string" ||
+                            typeof detail.value === "number"
+                              ? String(detail.value)
+                              : "[Invalid Value]"}
                           </span>
                           {detail.status && (
                             <span
