@@ -1052,7 +1052,14 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       const y = (pdfHeight - imgHeight) / 2;
 
       pdf.addImage(reportImageUrl, "PNG", x, y, imgWidth, imgHeight);
-      pdf.save(`SIPOMA_Report_${selectedUnit}_${selectedDate}.pdf`);
+
+      // Generate filename with Plant Unit, Date, Month, Year, Hour
+      const now = new Date();
+      const [year, month, day] = selectedDate.split("-");
+      const hour = now.getHours().toString().padStart(2, "0");
+      const filename = `Report_${selectedUnit}_${day}_${month}_${year}_${hour}.pdf`;
+
+      pdf.save(filename);
       setIsDownloadDropdownOpen(false);
     };
   }, [reportImageUrl, selectedDate, selectedUnit]);

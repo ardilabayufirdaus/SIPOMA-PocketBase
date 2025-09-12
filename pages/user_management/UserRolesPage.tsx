@@ -1,7 +1,14 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { User, UserRole, PermissionLevel, PlantUnit, PermissionMatrix } from "../../types";
+import { useState, useMemo, useEffect, FC } from "react";
+import {
+  User,
+  UserRole,
+  PermissionLevel,
+  PlantUnit,
+  PermissionMatrix,
+} from "../../types";
 import { getDefaultPermissionsByRole } from "../../hooks/useUserManagement";
 import { api } from "../../utils/api";
+import PermissionsEditor from "../../components/user_management/PermissionsEditor";
 
 interface UserRolesPageProps {
   users: User[];
@@ -9,13 +16,11 @@ interface UserRolesPageProps {
   t: any;
 }
 
-const UserRolesPage: React.FC<UserRolesPageProps> = ({
-  users,
-  plantUnits,
-  t,
-}) => {
+const UserRolesPage: FC<UserRolesPageProps> = ({ users, plantUnits, t }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.VIEWER);
-  const [permissions, setPermissions] = useState<PermissionMatrix>(getDefaultPermissionsByRole(selectedRole, plantUnits));
+  const [permissions, setPermissions] = useState<PermissionMatrix>(
+    getDefaultPermissionsByRole(selectedRole, plantUnits)
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -148,25 +153,25 @@ const UserRolesPage: React.FC<UserRolesPageProps> = ({
           </select>
         </div>
 
-        <PermissionsEditor 
-            permissions={permissions} 
-            plantUnits={plantUnits} 
-            onPermissionChange={handlePermissionChange} 
-            t={t} 
+        <PermissionsEditor
+          permissions={permissions}
+          plantUnits={plantUnits}
+          onPermissionChange={handlePermissionChange}
+          t={t}
         />
 
         <div className="mt-6 flex justify-end">
-            <button
-                onClick={handleSavePermissions}
-                disabled={isSaving}
-                className={`px-4 py-2 text-sm font-semibold text-white border border-transparent rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150 ${
-                    isSaving
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-red-600 hover:bg-red-700"
-                }`}
-            >
-                {isSaving ? "Saving..." : "Save Permissions"}
-            </button>
+          <button
+            onClick={handleSavePermissions}
+            disabled={isSaving}
+            className={`px-4 py-2 text-sm font-semibold text-white border border-transparent rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150 ${
+              isSaving
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+          >
+            {isSaving ? "Saving..." : "Save Permissions"}
+          </button>
         </div>
       </div>
     </div>

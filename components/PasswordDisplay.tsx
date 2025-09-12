@@ -4,7 +4,7 @@ import ClipboardIcon from "./icons/ClipboardIcon";
 
 interface PasswordDisplayProps {
   password: string;
-  email: string;
+  username: string;
   fullName: string;
   onClose: () => void;
   t: any;
@@ -12,7 +12,7 @@ interface PasswordDisplayProps {
 
 const PasswordDisplay: React.FC<PasswordDisplayProps> = ({
   password,
-  email,
+  username,
   fullName,
   onClose,
   t,
@@ -33,7 +33,7 @@ const PasswordDisplay: React.FC<PasswordDisplayProps> = ({
   };
 
   const copyCredentials = async () => {
-    const credentials = `Email: ${email}\nTemporary Password: ${password}\n\nPlease change your password on first login.`;
+    const credentials = `Username: ${username}\nTemporary Password: ${password}\n\nPlease change your password on first login.`;
     try {
       await navigator.clipboard.writeText(credentials);
       setToastMessage("All credentials copied to clipboard!");
@@ -92,10 +92,10 @@ const PasswordDisplay: React.FC<PasswordDisplayProps> = ({
             <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl mb-6 text-left">
               <div className="mb-4">
                 <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                  {t?.email_label || "Email"}:
+                  {t?.username_label || "Username"}:
                 </label>
                 <div className="text-sm text-gray-900 font-mono bg-white p-3 rounded-lg border border-gray-300 break-all">
-                  {email}
+                  {username}
                 </div>
               </div>
               <div className="mb-4">

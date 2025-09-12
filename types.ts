@@ -34,7 +34,6 @@ export interface PermissionMatrix {
 export interface User {
   id: string;
   username: string;
-  email: string;
   password?: string; // Optional karena tidak selalu dikirim dari frontend
   full_name: string;
   role: UserRole;
@@ -48,8 +47,7 @@ export interface User {
 export interface AddUserData {
   username: string;
   full_name: string;
-  email: string;
-  password: string; // Required untuk add user
+  password?: string; // Optional karena akan di-generate otomatis
   role: UserRole;
   avatar_url?: string;
   is_active: boolean;

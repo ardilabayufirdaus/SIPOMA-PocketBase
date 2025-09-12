@@ -130,9 +130,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               </span>
               <span className="text-slate-800">{user.full_name}</span>
               <span className="font-semibold text-slate-600">
-                {t.email_label}:
+                {t.username_label || "Username"}:
               </span>
-              <span className="text-slate-800">{user.email}</span>
+              <span className="text-slate-800">{user.username}</span>
               <span className="font-semibold text-slate-600">
                 {t.role_label}:
               </span>

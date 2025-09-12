@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,41 +12,53 @@ const RootRouter: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
 
-  useEffect(() => {
-    let mounted = true;
+  const checkAuthStatus = useCallback(() => {
+    try {
+      const storedUser = localStorage.getItem("currentUser");
+      const loggedIn = !!storedUser;
+      setIsLoggedIn(loggedIn);
+      setChecking(false);
+      return loggedIn;
+    } catch (error) {
+      setIsLoggedIn(false);
+      setChecking(false);
+      return false;
+    }
+  }, []);
 
-    const checkAuthStatus = () => {
-      try {
-        // Check if user exists in localStorage
-        const storedUser = localStorage.getItem("currentUser");
-        if (mounted) {
-          setIsLoggedIn(!!storedUser);
-          setChecking(false);
-        }
-      } catch (error) {
-        if (mounted) {
-          setIsLoggedIn(false);
-          setChecking(false);
-        }
+  useEffect(() => {
+    // Initial check
+    checkAuthStatus();
+
+    // Listen for storage changes with debouncing
+    let timeoutId: NodeJS.Timeout;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "currentUser") {
+        // Clear previous timeout
+        clearTimeout(timeoutId);
+
+        // Debounce storage change handling
+        timeoutId = setTimeout(() => {
+          checkAuthStatus();
+        }, 100);
       }
     };
 
-    checkAuthStatus();
-
-    // Listen for storage changes (for logout in other tabs)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "currentUser" && !e.newValue) {
-        setIsLoggedIn(false);
-      }
+    // Also listen for custom auth events
+    const handleAuthChange = () => {
+      checkAuthStatus();
     };
 
     window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("authStateChanged", handleAuthChange);
 
     return () => {
-      mounted = false;
+      clearTimeout(timeoutId);
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("authStateChanged", handleAuthChange);
     };
-  }, []);
+  }, [checkAuthStatus]);
 
   if (checking || isLoggedIn === null) {
     return (

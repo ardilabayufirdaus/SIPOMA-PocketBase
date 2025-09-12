@@ -6,7 +6,7 @@ import { useUserManagement } from "../../hooks/useUserManagement";
 interface AddUserPageProps {
   onOpenPasswordDisplay: (
     password: string,
-    email: string,
+    username: string,
     fullName: string
   ) => void;
   plantUnits: PlantUnit[];
@@ -25,7 +25,11 @@ const AddUserPage: React.FC<AddUserPageProps> = ({
     try {
       const result = await addUser(user, plantUnits);
       if (result.success && result.tempPassword) {
-        onOpenPasswordDisplay(result.tempPassword, user.email, user.full_name);
+        onOpenPasswordDisplay(
+          result.tempPassword,
+          user.username,
+          user.full_name
+        );
         setShowSuccessMessage(true);
         setTimeout(() => setShowSuccessMessage(false), 3000);
       }

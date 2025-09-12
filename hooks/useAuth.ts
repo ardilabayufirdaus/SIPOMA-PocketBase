@@ -12,13 +12,17 @@ export const useAuth = () => {
     async (identifier, password) => {
       setLoading(true);
       try {
-        // Query untuk mencari user berdasarkan username atau email
-        const { data, error } = await supabase
+        // Query untuk mencari user berdasarkan username
+        const result: any = await supabase
           .from("users")
-          .select("*")
-          .or(`username.eq.${identifier},email.eq.${identifier}`)
+          .select(
+            "id, username, full_name, role, avatar_url, last_active, is_active, created_at, permissions"
+          )
+          .eq("username", identifier)
           .eq("password", password)
           .single();
+
+        const { data, error } = result;
 
         if (error) {
           throw error;
@@ -45,7 +49,11 @@ export const useAuth = () => {
 
   const logout = useCallback(() => {
     setUser(null);
+    setLoading(false);
     localStorage.removeItem("currentUser");
+
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent("authStateChanged"));
   }, []);
 
   useEffect(() => {
@@ -54,6 +62,23 @@ export const useAuth = () => {
       setUser(JSON.parse(currentUser));
     }
     setLoading(false);
+
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      const storedUser = localStorage.getItem("currentUser");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    window.addEventListener("authStateChanged", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("authStateChanged", handleAuthChange);
+    };
   }, []);
 
   return { user, loading, login, logout };

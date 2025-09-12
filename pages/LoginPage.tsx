@@ -16,7 +16,7 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     if (!identifier.trim()) {
-      setError("Username or email is required");
+      setError("Username is required");
       return;
     }
 
@@ -31,9 +31,16 @@ const LoginPage: React.FC = () => {
       // Clear any remaining localStorage data from old remember me functionality
       localStorage.removeItem("savedIdentifier");
       localStorage.removeItem("rememberMe");
-      navigate("/", { replace: true });
+
+      // Dispatch auth state change event
+      window.dispatchEvent(new CustomEvent("authStateChanged"));
+
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 100);
     } else {
-      setError("Invalid username/email or password");
+      setError("Invalid username or password");
     }
   };
 
@@ -70,7 +77,7 @@ const LoginPage: React.FC = () => {
           <form onSubmit={handleLogin} className="w-full animate-fadein-form">
             <div className="mb-4 relative">
               <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-                Username or Email
+                Username
               </label>
               <input
                 type="text"

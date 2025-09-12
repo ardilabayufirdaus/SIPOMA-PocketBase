@@ -12,7 +12,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,23 +28,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       return;
     }
 
-    if (!formData.email.trim()) {
-      setError("Email wajib diisi");
-      setLoading(false);
-      return;
-    }
-
-    // Validasi format email sederhana
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError("Format email tidak valid");
-      setLoading(false);
-      return;
-    }
-
     try {
       await api.users.requestRegistration({
-        email: formData.email.trim(),
+        email: "",
         name: formData.name.trim(),
       });
 
@@ -56,7 +41,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       }, 2000);
     } catch (err: any) {
       if (err.message?.includes("already exists")) {
-        setError("Email sudah terdaftar atau sedang dalam proses verifikasi");
+        setError("Nama sudah terdaftar atau sedang dalam proses verifikasi");
       } else {
         setError("Gagal mengirim permintaan registrasi. Silakan coba lagi.");
       }
@@ -145,21 +130,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               required
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Masukkan nama lengkap"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-              placeholder="Masukkan alamat email"
             />
           </div>
 

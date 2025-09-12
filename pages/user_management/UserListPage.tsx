@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import UserTable from "../../components/UserTable";
 import { User } from "../../types";
 import { usePagination } from "../../hooks/usePagination";
@@ -28,7 +28,7 @@ const UserListPage: React.FC<UserListPageProps> = ({
     ...user,
     id: String(user.id),
     full_name: String(user.full_name),
-    email: String(user.email),
+    username: String(user.username),
     role: user.role,
     avatar_url: user.avatar_url,
     is_active: !!user.is_active,

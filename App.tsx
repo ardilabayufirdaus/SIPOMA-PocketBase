@@ -136,7 +136,7 @@ const App: React.FC = () => {
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [showPasswordDisplay, setShowPasswordDisplay] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [newUserFullName, setNewUserFullName] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -215,7 +215,7 @@ const App: React.FC = () => {
           const result = await addUser(user, plantUnits);
           if (result.success && result.tempPassword) {
             setGeneratedPassword(result.tempPassword);
-            setNewUserEmail(user.email);
+            setNewUsername(user.username);
             setNewUserFullName(user.full_name);
             setShowPasswordDisplay(true);
           } else {
@@ -336,7 +336,7 @@ const App: React.FC = () => {
     usersLoading ||
     plantUnitsLoading ||
     plantDataLoading ||
-    currentUserLoading
+    (currentUserLoading && !localStorage.getItem("currentUser"))
   ) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -424,9 +424,9 @@ const App: React.FC = () => {
                   {activeSubPages.users === "add_user" && (
                     <AddUserPage
                       onAddUser={(user) => handleSaveUser(user)}
-                      onOpenPasswordDisplay={(password, email, fullName) => {
+                      onOpenPasswordDisplay={(password, username, fullName) => {
                         setGeneratedPassword(password);
-                        setNewUserEmail(email);
+                        setNewUsername(username);
                         setNewUserFullName(fullName);
                         setShowPasswordDisplay(true);
                       }}
@@ -517,7 +517,7 @@ const App: React.FC = () => {
       {showPasswordDisplay && (
         <PasswordDisplay
           password={generatedPassword}
-          email={newUserEmail}
+          username={newUsername}
           fullName={newUserFullName}
           onClose={() => setShowPasswordDisplay(false)}
           t={t}

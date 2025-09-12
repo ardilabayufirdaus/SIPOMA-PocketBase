@@ -598,8 +598,6 @@ export type Database = {
         Row: {
           avatar_url: string | null;
           created_at: string;
-          department: string;
-          email: string;
           full_name: string;
           id: string;
           is_active: boolean;
@@ -611,8 +609,6 @@ export type Database = {
         Insert: {
           avatar_url?: string | null;
           created_at?: string;
-          department: string;
-          email: string;
           full_name: string;
           id?: string;
           is_active?: boolean;
@@ -624,8 +620,6 @@ export type Database = {
         Update: {
           avatar_url?: string | null;
           created_at?: string;
-          department?: string;
-          email?: string;
           full_name?: string;
           id?: string;
           is_active?: boolean;

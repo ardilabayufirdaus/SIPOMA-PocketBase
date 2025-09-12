@@ -44,8 +44,6 @@ const UserForm: React.FC<UserFormProps> = ({
   const [formData, setFormData] = useState({
     username: "",
     full_name: "",
-    email: "",
-    password: "",
     role: UserRole.OPERATOR,
     is_active: true,
     permissions: getDefaultPermissionsByRole(UserRole.OPERATOR, plantUnits),
@@ -63,14 +61,6 @@ const UserForm: React.FC<UserFormProps> = ({
       (value: string) => validators.minLength(value, 2, "Full name"),
       (value: string) => validators.maxLength(value, 100, "Full name"),
     ],
-    email: [
-      (value: string) => validators.required(value, "Email"),
-      (value: string) => validators.email(value),
-    ],
-    password: [
-      (value: string) => validators.required(value, "Password"),
-      (value: string) => validators.minLength(value, 8, "Password"),
-    ],
     role: [(value: string) => validators.required(value, "Role")],
   };
 
@@ -79,8 +69,6 @@ const UserForm: React.FC<UserFormProps> = ({
       setFormData({
         username: userToEdit.username || "",
         full_name: userToEdit.full_name,
-        email: userToEdit.email,
-        password: "", // Password tidak ditampilkan saat edit
         role: userToEdit.role,
         is_active: userToEdit.is_active,
         permissions:
@@ -93,8 +81,6 @@ const UserForm: React.FC<UserFormProps> = ({
       setFormData({
         username: "",
         full_name: "",
-        email: "",
-        password: "",
         role: defaultRole,
         is_active: true,
         permissions: getDefaultPermissionsByRole(defaultRole, plantUnits),
@@ -254,12 +240,10 @@ const UserForm: React.FC<UserFormProps> = ({
         };
         await onSave(updatedUser);
       } else {
-        // Untuk add user, gunakan AddUserData dengan password
+        // Untuk add user, gunakan AddUserData tanpa password dan email
         const newUser: AddUserData = {
           username: formData.username,
           full_name: formData.full_name,
-          email: formData.email,
-          password: formData.password,
           role: formData.role,
           is_active: formData.is_active,
           permissions: formData.permissions,
@@ -365,110 +349,29 @@ const UserForm: React.FC<UserFormProps> = ({
                   </p>
                 )}
               </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  {t.email_label} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  value={formData.email || ""}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  required
-                  autoComplete="off"
-                  placeholder="Enter email address"
-                  className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 sm:text-sm ${
-                    errors.email && touched.email
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                      : "border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500"
-                  }`}
-                  aria-invalid={
-                    errors.email && touched.email ? "true" : "false"
-                  }
-                  aria-describedby={
-                    errors.email && touched.email ? "email-error" : undefined
-                  }
-                />
-                {errors.email && touched.email && (
-                  <p
-                    id="email-error"
-                    className="mt-1 text-sm text-red-600"
-                    role="alert"
-                  >
-                    {errors.email}
-                  </p>
-                )}
-              </div>
               {!userToEdit && (
                 <div>
                   <label
-                    htmlFor="password"
+                    htmlFor="role"
                     className="block text-sm font-medium text-slate-700 dark:text-slate-300"
                   >
-                    {t.password_label || "Password"}{" "}
-                    <span className="text-red-500">*</span>
+                    {t.role_label}
                   </label>
-                  <input
-                    type="password"
-                    name="password"
-                    id="password"
-                    value={formData.password || ""}
+                  <select
+                    name="role"
+                    id="role"
+                    value={formData.role ?? UserRole.OPERATOR}
                     onChange={handleChange}
-                    onBlur={handleBlur}
-                    required
-                    autoComplete="new-password"
-                    placeholder="Enter password"
-                    className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 sm:text-sm ${
-                      errors.password && touched.password
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                        : "border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500"
-                    }`}
-                    aria-invalid={
-                      errors.password && touched.password ? "true" : "false"
-                    }
-                    aria-describedby={
-                      errors.password && touched.password
-                        ? "password-error"
-                        : undefined
-                    }
-                  />
-                  {errors.password && touched.password && (
-                    <p
-                      id="password-error"
-                      className="mt-1 text-sm text-red-600"
-                      role="alert"
-                    >
-                      {errors.password}
-                    </p>
-                  )}
+                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                  >
+                    {Object.values(UserRole).map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
-              <div>
-                <label
-                  htmlFor="role"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  {t.role_label}
-                </label>
-                <select
-                  name="role"
-                  id="role"
-                  value={formData.role ?? UserRole.OPERATOR}
-                  onChange={handleChange}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
-                >
-                  {Object.values(UserRole).map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
               {userToEdit && (
                 <div className="sm:col-span-2 flex items-center pt-2">

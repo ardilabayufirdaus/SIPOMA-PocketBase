@@ -184,12 +184,25 @@ export const useUserManagement = () => {
           Math.random().toString(36).slice(-12) +
           Math.random().toString(36).slice(-12);
 
-        const result = await api.users.approveRegistrationRequest("", {
-          ...user,
-          username: user.username,
-          password: tempPassword,
-          permissions,
-        });
+        // Create user directly in users table instead of using approveRegistrationRequest
+        const { data, error } = await supabase
+          .from("users")
+          .insert({
+            username: user.username,
+            full_name: user.full_name,
+            role: user.role,
+            is_active: user.is_active,
+            permissions: permissions as any, // Cast to Json type
+            password: tempPassword, // Include password in insert
+            created_at: new Date().toISOString(),
+            last_active: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
 
         fetchUsers();
         return { success: true, tempPassword };

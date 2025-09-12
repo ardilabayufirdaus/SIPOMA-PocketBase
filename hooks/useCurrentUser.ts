@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "../types";
 import { api } from "../utils/api";
 
@@ -57,17 +57,37 @@ export const useCurrentUser = () => {
 
     getCurrentUser();
 
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      const storedUser = localStorage.getItem("currentUser");
+      if (!storedUser) {
+        setCurrentUser(null);
+        setLoading(false);
+        setError(null);
+      } else {
+        // Re-verify user if needed
+        getCurrentUser();
+      }
+    };
+
+    window.addEventListener("authStateChanged", handleAuthChange);
+
     return () => {
       mounted = false;
+      window.removeEventListener("authStateChanged", handleAuthChange);
     };
   }, []);
 
-  // Function untuk logout
-  const logout = () => {
+  // Function untuk logout - menggunakan useAuth logout
+  const logout = useCallback(() => {
     localStorage.removeItem("currentUser");
     setCurrentUser(null);
     setError(null);
-  };
+    setLoading(false);
+
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent("authStateChanged"));
+  }, []);
 
   return { currentUser, loading, error, logout };
 };
