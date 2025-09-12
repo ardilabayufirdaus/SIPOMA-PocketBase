@@ -22,9 +22,11 @@ import Header from "./components/Header";
 
 // Enhanced lazy loading with better error boundaries and retries
 const MainDashboardPage = lazy(() =>
-  import("./pages/MainDashboardPage").catch(() => ({
-    default: () => <div>Error loading Dashboard. Please refresh.</div>,
-  }))
+  import("./pages/MainDashboardPage").catch(() => {
+    return { 
+      default: () => React.createElement('div', {}, 'Error loading Dashboard. Please refresh.') 
+    };
+  })
 );
 const PlantOperationsPage = lazy(() =>
   import("./pages/PlantOperationsPage").catch(() => ({

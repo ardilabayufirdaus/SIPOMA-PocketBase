@@ -1,0 +1,306 @@
+/* Modern Dashboard Styles */
+.dashboard-container {
+  @apply min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100;
+}
+
+.dark .dashboard-container {
+  @apply from-slate-900 via-slate-800 to-slate-900;
+}
+
+/* Glass Morphism Effects */
+.glass-card-modern {
+  @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl;
+}
+
+.dark .glass-card-modern {
+  @apply bg-slate-800/80 border-slate-700/30;
+}
+
+/* Enhanced Metric Cards */
+.metric-card-modern {
+  @apply relative overflow-hidden rounded-2xl border backdrop-blur-sm transition-all duration-300;
+  @apply hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1;
+}
+
+.metric-card-modern::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20 opacity-0 transition-opacity duration-300;
+}
+
+.dark .metric-card-modern::before {
+  @apply from-transparent via-white/5 to-white/10;
+}
+
+.metric-card-modern:hover::before {
+  @apply opacity-100;
+}
+
+/* Chart Container Enhancements */
+.chart-container-modern {
+  @apply bg-white/95 backdrop-blur-xl rounded-2xl border border-slate-200/50 shadow-lg;
+  @apply hover:shadow-xl transition-all duration-500;
+}
+
+.dark .chart-container-modern {
+  @apply bg-slate-800/95 border-slate-700/30;
+}
+
+/* Animation Classes */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Micro Interactions */
+.interactive-element {
+  @apply transition-all duration-200 ease-out;
+}
+
+.interactive-element:hover {
+  @apply transform scale-105;
+}
+
+.interactive-element:active {
+  @apply transform scale-95;
+}
+
+/* Status Indicators */
+.status-indicator {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-indicator.online {
+  @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+}
+
+.status-indicator.warning {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+}
+
+.status-indicator.error {
+  @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+}
+
+.status-indicator.neutral {
+  @apply bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300;
+}
+
+/* Progress Bars */
+.progress-bar-modern {
+  @apply w-full bg-slate-200 rounded-full h-2 dark:bg-slate-700;
+}
+
+.progress-bar-fill {
+  @apply h-2 rounded-full transition-all duration-500 ease-out;
+}
+
+/* Quick Action Buttons */
+.quick-action-button {
+  @apply w-full p-4 rounded-xl border text-left transition-all duration-300;
+  @apply hover:shadow-lg hover:scale-[1.02] hover:-translate-y-0.5;
+}
+
+.quick-action-button.primary {
+  @apply bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg;
+}
+
+.quick-action-button.primary:hover {
+  @apply shadow-red-500/25 shadow-xl;
+}
+
+.quick-action-button.secondary {
+  @apply bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700;
+  @apply hover:border-red-300 dark:hover:border-red-600;
+}
+
+/* Loading States */
+.skeleton-loader {
+  @apply animate-pulse bg-slate-200 dark:bg-slate-700 rounded;
+}
+
+.skeleton-text {
+  @apply h-4 skeleton-loader;
+}
+
+.skeleton-title {
+  @apply h-6 skeleton-loader;
+}
+
+.skeleton-circle {
+  @apply w-12 h-12 skeleton-loader rounded-full;
+}
+
+/* Responsive Grid Improvements */
+.dashboard-grid {
+  @apply grid gap-6;
+}
+
+.dashboard-grid.metrics {
+  @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.dashboard-grid.charts {
+  @apply grid-cols-1 lg:grid-cols-3;
+}
+
+.dashboard-grid.widgets {
+  @apply grid-cols-1 lg:grid-cols-2;
+}
+
+/* Chart Styling Improvements */
+.recharts-wrapper {
+  @apply text-slate-600 dark:text-slate-400;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  @apply stroke-slate-200 dark:stroke-slate-700;
+}
+
+.recharts-tooltip-wrapper {
+  @apply drop-shadow-xl;
+}
+
+/* Header Gradient Background */
+.dashboard-header {
+  @apply bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl p-6 text-white relative overflow-hidden;
+}
+
+.dashboard-header::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10;
+}
+
+.dashboard-header::after {
+  content: '';
+  @apply absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl;
+}
+
+/* Search Input Styling */
+.search-input-modern {
+  @apply pl-10 pr-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg;
+  @apply text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50;
+  @apply transition-all duration-300;
+}
+
+.search-input-modern:focus {
+  @apply bg-white/30 border-white/50;
+}
+
+/* Notification Badge */
+.notification-badge {
+  @apply absolute -top-1 -right-1 bg-amber-400 text-amber-900 text-xs font-bold;
+  @apply px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  @apply flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1;
+}
+
+.tab-button {
+  @apply flex items-center space-x-1 px-3 py-1.5 rounded text-xs font-medium transition-all;
+}
+
+.tab-button.active {
+  @apply bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm;
+}
+
+.tab-button.inactive {
+  @apply text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200;
+}
+
+/* Data Visualization Enhancements */
+.data-point {
+  @apply transition-all duration-200;
+}
+
+.data-point:hover {
+  @apply transform scale-110 drop-shadow-lg;
+}
+
+/* Status Cards in Widgets */
+.status-card {
+  @apply p-3 bg-slate-50 dark:bg-slate-700 rounded-lg transition-all duration-200;
+  @apply hover:bg-slate-100 dark:hover:bg-slate-600;
+}
+
+/* Performance Optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.gpu-accelerated {
+  transform: translateZ(0);
+}
+
+/* Print Styles */
+@media print {
+  .dashboard-container {
+    @apply bg-white text-black;
+  }
+  
+  .glass-card-modern,
+  .chart-container-modern {
+    @apply bg-white border-slate-300 shadow-none;
+  }
+  
+  .dashboard-header {
+    @apply bg-slate-100 text-black;
+  }
+  
+  .interactive-element {
+    @apply transform-none hover:transform-none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .metric-card-modern {
+    @apply border-2 border-slate-900 dark:border-slate-100;
+  }
+  
+  .status-indicator {
+    @apply border border-current;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-up,
+  .stagger-children > *,
+  .interactive-element,
+  .metric-card-modern,
+  .chart-container-modern,
+  .quick-action-button {
+    @apply transition-none;
+    animation: none;
+  }
+  
+  .skeleton-loader {
+    @apply animate-none;
+  }
+}

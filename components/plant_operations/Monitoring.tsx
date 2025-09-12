@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import * as React from "react";
+import { useMemo, useState } from "react";
 import { usePlantUnits } from "../../hooks/usePlantUnits";
 import IndexTab from "./IndexTab";
 import ComboChart from "../charts/ComboChart";
 import { CcrDowntimeData, AutonomousRiskData } from "../../types";
 import { ResponsiveTable } from "../ResponsiveTable";
+import { calculateDuration, formatDuration } from "../../utils/formatters";
 
 interface MonitoringProps {
   downtimeData: CcrDowntimeData[];
@@ -88,45 +90,16 @@ const Monitoring: React.FC<MonitoringProps> = ({
   }, [riskData, selectedCategory, selectedUnit, plantUnits]);
 
   // Helper function for duration calculation to avoid code duplication
-  const calculateDuration = (startTime: string, endTime: string): number => {
-    try {
-      const startParts = startTime.split(":");
-      const endParts = endTime.split(":");
-
-      if (startParts.length !== 2 || endParts.length !== 2) return 0;
-
-      const startHour = parseInt(startParts[0], 10);
-      const startMin = parseInt(startParts[1], 10);
-      const endHour = parseInt(endParts[0], 10);
-      const endMin = parseInt(endParts[1], 10);
-
-      if (
-        isNaN(startHour) ||
-        isNaN(startMin) ||
-        isNaN(endHour) ||
-        isNaN(endMin)
-      )
-        return 0;
-      if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23)
-        return 0;
-      if (startMin < 0 || startMin > 59 || endMin < 0 || endMin > 59) return 0;
-
-      const startMinutes = startHour * 60 + startMin;
-      let endMinutes = endHour * 60 + endMin;
-
-      // Handle cases where end time is next day
-      if (endMinutes < startMinutes) {
-        endMinutes += 24 * 60; // Add 24 hours
-      }
-
-      return Math.max(0, endMinutes - startMinutes);
-    } catch (error) {
-      console.warn("Invalid time format:", { startTime, endTime });
-      return 0;
-    }
+  // Using the same calculation method as Autonomous Data Entry for consistency
+  const calculateDurationInMinutes = (startTime: string, endTime: string): number => {
+    if (!startTime || !endTime) return 0;
+    
+    const { hours, minutes } = calculateDuration(startTime, endTime);
+    return hours * 60 + minutes;
   };
 
   // Helper function to calculate problem map for charts
+  // Updated to use Autonomous Data Entry duration calculation method
   const calculateProblemMap = (data: CcrDowntimeData[]) => {
     const problemMap: Record<
       string,
@@ -138,7 +111,8 @@ const Monitoring: React.FC<MonitoringProps> = ({
         problemMap[d.problem] = { count: 0, duration: 0, details: [] };
       }
       problemMap[d.problem].count++;
-      const duration = calculateDuration(
+      // Use Autonomous Data Entry duration calculation method
+      const duration = calculateDurationInMinutes(
         d.start_time || "0:0",
         d.end_time || "0:0"
       );
@@ -599,7 +573,11 @@ const Monitoring: React.FC<MonitoringProps> = ({
                                     {p.problem}
                                   </td>
                                   <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
-                                    {p.duration} menit
+                                    {(() => {
+                                      const hours = Math.floor(p.duration / 60);
+                                      const minutes = p.duration % 60;
+                                      return formatDuration(hours, minutes);
+                                    })()}
                                   </td>
                                   <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                     {d.pic}
