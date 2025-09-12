@@ -519,10 +519,91 @@ html.dark .ccr-table input:hover:not(:focus) {
   }
 }
 
-/* Compact mode utilities for better content density */
+/* Enhanced compact mode for maximum content density */
 .compact {
-  --spacing-unit: 0.4rem; /* Further reduced spacing */
-  font-size: 0.8rem; /* More compact base font */
+  --spacing-unit: 0.25rem; /* Even more aggressive */
+  font-size: 0.7rem; /* Smaller base font for maximum density */
+  line-height: 1.15; /* Tighter line height */
+}
+
+/* Ultra-compact padding reductions */
+.compact .p-1 {
+  padding: 0.0625rem !important;
+}
+.compact .p-2 {
+  padding: 0.125rem !important;
+}
+.compact .p-3 {
+  padding: 0.1875rem !important;
+}
+.compact .p-4 {
+  padding: 0.25rem !important;
+}
+.compact .p-6 {
+  padding: 0.375rem !important;
+}
+.compact .p-8 {
+  padding: 0.5rem !important;
+}
+
+/* Ultra-compact margin reductions */
+.compact .m-1 {
+  margin: 0.0625rem !important;
+}
+.compact .m-2 {
+  margin: 0.125rem !important;
+}
+.compact .m-3 {
+  margin: 0.1875rem !important;
+}
+.compact .m-4 {
+  margin: 0.25rem !important;
+}
+.compact .m-6 {
+  margin: 0.375rem !important;
+}
+
+/* Ultra-compact gap reductions */
+.compact .gap-1 {
+  gap: 0.0625rem !important;
+}
+.compact .gap-2 {
+  gap: 0.125rem !important;
+}
+.compact .gap-3 {
+  gap: 0.1875rem !important;
+}
+.compact .gap-4 {
+  gap: 0.25rem !important;
+}
+.compact .gap-6 {
+  gap: 0.375rem !important;
+}
+
+/* Ultra-compact space utilities */
+.compact .space-y-1 > * + * {
+  margin-top: 0.0625rem !important;
+}
+.compact .space-y-2 > * + * {
+  margin-top: 0.125rem !important;
+}
+.compact .space-y-3 > * + * {
+  margin-top: 0.1875rem !important;
+}
+.compact .space-y-4 > * + * {
+  margin-top: 0.25rem !important;
+}
+.compact .space-y-6 > * + * {
+  margin-top: 0.375rem !important;
+}
+.compact .space-x-1 > * + * {
+  margin-left: 0.0625rem !important;
+}
+.compact .space-x-2 > * + * {
+  margin-left: 0.125rem !important;
+}
+.compact .space-x-3 > * + * {
+  margin-left: 0.1875rem !important;
 }
 
 .compact .table-cell {

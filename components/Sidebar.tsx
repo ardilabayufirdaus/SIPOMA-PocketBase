@@ -71,31 +71,35 @@ const NavLink: React.FC<NavLinkProps> = ({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={`w-full flex items-center ${
-        isCollapsed ? "justify-center" : "text-left gap-3"
-      } px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 group relative min-h-[44px] ${
+        isCollapsed
+          ? "justify-center px-2 py-1.5"
+          : "text-left gap-2 px-2 py-1.5"
+      } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px] ${
         isActive
-          ? "bg-gradient-to-r from-red-500/20 to-red-600/20 text-red-400 shadow-lg shadow-red-500/10"
-          : "text-slate-300 hover:bg-white/5 hover:text-white hover:scale-[1.02] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-2 focus:ring-red-500/50"
+          ? "bg-gradient-to-r from-red-500/15 to-red-600/15 text-red-400 shadow-sm"
+          : "text-slate-300 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
       }`}
       title={isCollapsed ? label : undefined}
       aria-label={label}
       aria-current={isActive ? "page" : undefined}
     >
       <div
-        className={`transition-all duration-300 ${
-          isActive ? "scale-110" : "group-hover:scale-110"
+        className={`transition-all duration-200 ${
+          isActive ? "scale-105" : "group-hover:scale-105"
         }`}
         aria-hidden="true"
       >
         {icon}
       </div>
-      {!isCollapsed && <span className="relative">{label}</span>}
+      {!isCollapsed && (
+        <span className="relative text-xs truncate">{label}</span>
+      )}
 
       {/* Tooltip untuk collapsed state */}
       {isCollapsed && <div className="sidebar-tooltip">{label}</div>}
 
       {isActive && (
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-red-500/10 to-red-600/10 border border-red-500/20"></div>
+        <div className="absolute inset-0 rounded-md bg-gradient-to-r from-red-500/8 to-red-600/8 border border-red-500/15"></div>
       )}
     </button>
   );
@@ -169,11 +173,13 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
         className={`w-full flex items-center ${
-          isCollapsed ? "justify-center" : "justify-between text-left gap-2"
-        } px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300 group ${
+          isCollapsed
+            ? "justify-center px-2 py-1.5"
+            : "justify-between text-left gap-1 px-2 py-1.5"
+        } rounded-md text-xs font-semibold transition-all duration-200 group ${
           isActive
-            ? "text-white bg-gradient-to-r from-slate-700/50 to-slate-600/50"
-            : "text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            ? "text-white bg-gradient-to-r from-slate-700/40 to-slate-600/40"
+            : "text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
         }`}
         title={isCollapsed ? label : undefined}
         aria-expanded={!isCollapsed ? isOpen : undefined}
@@ -184,19 +190,19 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
         }
         aria-label={`${label}${isActive ? " (active)" : ""}`}
       >
-        <div className={`flex items-center ${isCollapsed ? "" : "gap-2"}`}>
+        <div className={`flex items-center ${isCollapsed ? "" : "gap-1"}`}>
           <div
-            className={`transition-all duration-300 ${
-              isActive ? "scale-110" : "group-hover:scale-110"
+            className={`transition-all duration-200 ${
+              isActive ? "scale-105" : "group-hover:scale-105"
             }`}
           >
             {icon}
           </div>
-          {!isCollapsed && <span>{label}</span>}
+          {!isCollapsed && <span className="text-xs truncate">{label}</span>}
         </div>
         {!isCollapsed && (
           <ChevronDownIcon
-            className={`w-3 h-3 transition-all duration-300 ${
+            className={`w-3 h-3 transition-all duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}
           />

@@ -79,51 +79,51 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="glass-card border-0 border-b border-white/20 dark:border-slate-700/50 sticky top-0 z-30 backdrop-blur-xl">
-      <div className="px-4 sm:px-6 py-3">
+      <div className="px-3 sm:px-4 py-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {/* Mobile Hamburger Menu */}
             {isMobile && onToggleSidebar && (
               <button
                 onClick={onToggleSidebar}
-                className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center md:hidden flex-shrink-0"
+                className="p-1.5 rounded-md hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center md:hidden flex-shrink-0"
                 aria-label="Toggle navigation menu"
               >
                 <Bars3Icon
-                  className="w-5 h-5 text-slate-600 dark:text-slate-400"
+                  className="w-4 h-4 text-slate-600 dark:text-slate-400"
                   aria-hidden="true"
                 />
               </button>
             )}
 
             {/* Logo Sipoma */}
-            <div className="p-2 rounded-lg bg-white/90 dark:bg-slate-800/90 shadow-sm border border-white/20 dark:border-slate-700/50 flex-shrink-0">
+            <div className="p-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-sm border border-white/20 dark:border-slate-700/50 flex-shrink-0">
               <img
                 src="/sipoma-logo.png"
                 alt="Sipoma Logo"
-                className="h-5 w-5 sm:h-6 sm:w-6 object-contain"
-                style={{ borderRadius: "4px" }}
+                className="h-4 w-4 sm:h-5 sm:w-5 object-contain"
+                style={{ borderRadius: "3px" }}
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-base sm:text-lg lg:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent truncate">
+              <h1 className="text-sm sm:text-base lg:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent truncate">
                 {pageTitle}
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block truncate">
+              <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
                 {t.header_welcome},{" "}
                 {currentUser?.full_name?.split(" ")[0] || "Admin"}! ✨
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {showAddUserButton && (
               <button
                 onClick={onAddUser}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg shadow-lg shadow-red-500/25 hover:shadow-red-500/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] min-h-[44px]"
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-md shadow-sm hover:shadow-md focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all duration-200 hover:scale-[1.01] min-h-[36px]"
                 aria-label={t.add_user_button || "Add new user"}
               >
-                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                <PlusIcon className="w-3.5 h-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">{t.add_user_button}</span>
               </button>
             )}
@@ -131,19 +131,19 @@ const Header: React.FC<HeaderProps> = ({
             {/* Theme Toggle */}
             <button
               onClick={onToggleTheme}
-              className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-1.5 rounded-md hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all duration-200 backdrop-blur-sm min-h-[36px] min-w-[36px] flex items-center justify-center"
               aria-label={`Switch to ${
                 theme === "light" ? "dark" : "light"
               } mode`}
             >
               {theme === "light" ? (
                 <MoonIcon
-                  className="w-5 h-5 text-slate-600 dark:text-slate-400"
+                  className="w-4 h-4 text-slate-600 dark:text-slate-400"
                   aria-hidden="true"
                 />
               ) : (
                 <SunIcon
-                  className="w-5 h-5 text-slate-600 dark:text-slate-400"
+                  className="w-4 h-4 text-slate-600 dark:text-slate-400"
                   aria-hidden="true"
                 />
               )}
