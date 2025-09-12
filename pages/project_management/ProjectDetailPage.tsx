@@ -219,7 +219,7 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white dark:bg-slate-800 p-5 rounded-lg shadow-md flex items-center transition-all duration-300 ${
+        className={`bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md flex items-center transition-all duration-300 ${
           isInteractive ? "cursor-pointer hover:shadow-lg hover:scale-105" : ""
         }`}
         onClick={handleClick}
@@ -250,7 +250,7 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
               </div>
             )}
           </div>
-          <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+          <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
             {value}
           </p>
           {subText && (
@@ -583,6 +583,46 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
     ];
   }, [sCurveData]);
 
+  // --- Today Marker for Chart ---
+  const todayMarker = useMemo(() => {
+    if (!sCurveData.points || sCurveData.points.length === 0) {
+      return [];
+    }
+
+    const today = new Date();
+    const startDate = sCurveData.startDate;
+    const duration = sCurveData.duration;
+
+    // Calculate which day today is in the project timeline
+    const daysFromStart = Math.floor(
+      (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
+    );
+
+    // Check if today is within project duration
+    if (daysFromStart >= 0 && daysFromStart < duration) {
+      return [
+        {
+          axis: "x" as const,
+          value: `Day ${daysFromStart + 1}`,
+          lineStyle: {
+            stroke: "#F59E0B", // Amber color for today line
+            strokeWidth: 2,
+            strokeDasharray: "5,5", // Dashed line
+          },
+          textStyle: {
+            fill: "#F59E0B",
+            fontSize: 12,
+            fontWeight: "bold",
+          },
+          legend: "Today",
+          legendPosition: "top" as const,
+        },
+      ];
+    }
+
+    return [];
+  }, [sCurveData]);
+
   // --- Handlers ---
   const handleSaveTask = useCallback(
     (task: Omit<ProjectTask, "id" | "project_id"> | ProjectTask) => {
@@ -894,12 +934,12 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header: Project Title */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
         <div className="flex justify-between items-center">
           {isProjectEditMode ? (
-            <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-3 flex-1">
               <input
                 type="text"
                 value={editingProjectData.title}
@@ -909,7 +949,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     title: e.target.value,
                   }))
                 }
-                className="text-2xl font-bold text-slate-900 dark:text-slate-100 bg-transparent border-b-2 border-red-500 focus:outline-none flex-1"
+                className="text-xl font-bold text-slate-900 dark:text-slate-100 bg-transparent border-b-2 border-red-500 focus:outline-none flex-1"
                 placeholder={t.project_name || "Project Name"}
               />
               <div className="flex gap-2">
@@ -929,15 +969,15 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {activeProject.title}
               </h1>
               <button
                 onClick={handleEditProject}
-                className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
+                className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
                 title={t.edit_project || "Edit Project"}
               >
-                <EditIcon className="w-5 h-5" />
+                <EditIcon className="w-4 h-4" />
               </button>
             </>
           )}
@@ -945,44 +985,44 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       </div>
 
       {/* Project Overviews */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-md flex items-center">
-          <div className="p-3 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-4">
-            <CalendarDaysIcon className="w-6 h-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md flex items-center">
+          <div className="p-2 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-3">
+            <CalendarDaysIcon className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {t.proj_duration}
             </p>
-            <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               {formatNumber(projectOverview.duration)} Days
             </p>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-md flex items-center">
-          <div className="p-3 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-4">
-            <ClipboardDocumentListIcon className="w-6 h-6" />
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md flex items-center">
+          <div className="p-2 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-3">
+            <ClipboardDocumentListIcon className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {t.proj_total_tasks}
             </p>
-            <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
               {projectOverview.totalTasks}
             </p>
           </div>
         </div>
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-md flex items-center">
-          <div className="p-3 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-4">
-            <CurrencyDollarIcon className="w-6 h-6" />
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md flex items-center">
+          <div className="p-2 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-3">
+            <CurrencyDollarIcon className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {t.proj_budget}
             </p>
             {isProjectEditMode ? (
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                <span className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                   Rp
                 </span>
                 <input
@@ -994,14 +1034,14 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                       budget: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="text-2xl font-semibold text-slate-900 dark:text-slate-100 bg-transparent border-b-2 border-red-500 focus:outline-none flex-1"
+                  className="text-xl font-semibold text-slate-900 dark:text-slate-100 bg-transparent border-b-2 border-red-500 focus:outline-none flex-1"
                   placeholder="0"
                   step="1000"
                   min="0"
                 />
               </div>
             ) : (
-              <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 {formatRupiah(projectOverview.budget)}
               </p>
             )}
@@ -1050,8 +1090,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       </div>
 
       {/* Chart */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
             {chartView === "s-curve"
               ? t.s_curve_chart_title
@@ -1066,7 +1106,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                   : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
-              <ChartPieIcon className="w-5 h-5" />
+              <ChartPieIcon className="w-4 h-4" />
             </button>
             <button
               onClick={() => setChartView("gantt")}
@@ -1076,14 +1116,14 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                   : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600"
               }`}
             >
-              <Bars4Icon className="w-5 h-5" />
+              <Bars4Icon className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* S-Curve Statistics */}
         {chartView === "s-curve" && sCurveData.points.length > 0 && (
-          <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mb-4 grid grid-cols-2 gap-3">
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
               <div className="text-xs font-medium text-blue-600 mb-1">
                 Current Progress
@@ -1132,165 +1172,221 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
         )}
 
         {chartView === "s-curve" ? (
-          <div className="h-96 w-full relative">
-            <ResponsiveLine
-              data={nivoSCurveData}
-              margin={{ top: 50, right: 80, bottom: 70, left: 80 }}
-              xScale={{ type: "point" }}
-              yScale={{ type: "linear", min: 0, max: 100 }}
-              axisBottom={{
-                legend: "Project Timeline (Days)",
-                legendPosition: "middle",
-                legendOffset: 50,
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: -45,
-                format: (value) => {
-                  const dayIndex = parseInt(value.replace("Day ", "")) - 1;
-                  if (sCurveData.points[dayIndex]) {
-                    const date = new Date(sCurveData.points[dayIndex].date);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }
-                  return value;
-                },
-              }}
-              axisLeft={{
-                legend: "Cumulative Progress (%)",
-                legendPosition: "middle",
-                legendOffset: -60,
-                tickSize: 5,
-                tickPadding: 5,
-                format: (value) => `${value}%`,
-              }}
-              axisTop={{
-                tickSize: 0,
-                tickPadding: 5,
-                format: () => "",
-              }}
-              axisRight={{
-                tickSize: 0,
-                tickPadding: 5,
-                format: (value) => `${value}%`,
-              }}
-              colors={[
-                "#3B82F6", // Blue for planned
-                "#EF4444", // Red for actual
-                "#10B981", // Green for baseline/target
-              ]}
-              pointSize={8}
-              pointColor={{ theme: "background" }}
-              pointBorderWidth={3}
-              pointBorderColor={{ from: "serieColor" }}
-              enableArea={true}
-              areaOpacity={0.1}
-              areaBaselineValue={0}
-              useMesh={true}
-              enableSlices="x"
-              enableGridX={true}
-              enableGridY={true}
-              gridXValues={5}
-              gridYValues={10}
-              curve="cardinal"
-              lineWidth={3}
-              animate={true}
-              motionConfig="gentle"
-              legends={[
-                {
-                  anchor: "top-right",
-                  direction: "column",
-                  justify: false,
-                  translateX: 0,
-                  translateY: -30,
-                  itemsSpacing: 0,
-                  itemDirection: "left-to-right",
-                  itemWidth: 80,
-                  itemHeight: 20,
-                  itemOpacity: 0.75,
-                  symbolSize: 12,
-                  symbolShape: "circle",
-                  symbolBorderColor: "rgba(0, 0, 0, .5)",
-                  effects: [
-                    {
-                      on: "hover",
-                      style: {
-                        itemBackground: "rgba(0, 0, 0, .03)",
-                        itemOpacity: 1,
-                      },
-                    },
-                  ],
-                },
-              ]}
-              sliceTooltip={({ slice }) => {
-                const point = slice.points[0];
-                const dayIndex =
-                  parseInt(point.data.x.toString().replace("Day ", "")) - 1;
-                const dayData = sCurveData.points[dayIndex];
-
-                return (
-                  <div className="bg-white p-4 border border-slate-200 rounded-lg shadow-lg min-w-64">
-                    <div className="font-semibold text-slate-800 mb-2">
-                      {new Date(dayData?.date || "").toLocaleDateString(
-                        "en-US",
-                        {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
+          <div className="h-72 md:h-80 w-full relative">
+            {nivoSCurveData.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-slate-500 dark:text-slate-400">
+                <div className="text-center">
+                  <ChartPieIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>
+                    {t.no_data_available ||
+                      "No data available for S-Curve chart"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <ResponsiveLine
+                data={nivoSCurveData}
+                margin={{ top: 50, right: 110, bottom: 70, left: 80 }}
+                xScale={{ type: "point" }}
+                yScale={{ type: "linear", min: 0, max: 100 }}
+                axisBottom={{
+                  legend: "Project Timeline (Days)",
+                  legendPosition: "middle",
+                  legendOffset: 50,
+                  tickSize: 5,
+                  tickPadding: 5,
+                  tickRotation: -45,
+                  tickValues: (() => {
+                    const maxTicks = 10;
+                    const totalDays = sCurveData.duration;
+                    if (totalDays <= maxTicks) {
+                      return sCurveData.points.map(
+                        (_, index) => `Day ${index + 1}`
+                      );
+                    }
+                    const interval = Math.ceil(totalDays / maxTicks);
+                    const ticks = [];
+                    for (let i = 0; i < totalDays; i += interval) {
+                      ticks.push(`Day ${i + 1}`);
+                    }
+                    // Pastikan hari terakhir selalu ditampilkan
+                    if (ticks[ticks.length - 1] !== `Day ${totalDays}`) {
+                      ticks.push(`Day ${totalDays}`);
+                    }
+                    return ticks;
+                  })(),
+                  format: (value) => {
+                    try {
+                      const dayIndex = parseInt(value.replace("Day ", "")) - 1;
+                      if (
+                        dayIndex >= 0 &&
+                        dayIndex < sCurveData.points.length &&
+                        sCurveData.points[dayIndex]
+                      ) {
+                        const date = new Date(sCurveData.points[dayIndex].date);
+                        if (!isNaN(date.getTime())) {
+                          return date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          });
                         }
-                      )}
-                    </div>
-                    {slice.points.map((point) => (
-                      <div
-                        key={point.seriesId}
-                        className="flex items-center justify-between mb-1"
-                      >
-                        <div className="flex items-center">
-                          <div
-                            className="w-3 h-3 rounded-full mr-2"
-                            style={{ backgroundColor: point.seriesColor }}
-                          />
-                          <span className="text-sm text-slate-600">
-                            {point.seriesId}
-                          </span>
-                        </div>
-                        <span className="font-medium text-slate-800">
-                          {point.data.yFormatted}%
-                        </span>
-                      </div>
-                    ))}
-                    {dayData?.activeTasks && dayData.activeTasks.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-slate-200">
-                        <div className="text-xs font-semibold text-slate-600 mb-1">
-                          Active Tasks ({dayData.activeTasks.length}):
-                        </div>
-                        {dayData.activeTasks.slice(0, 3).map((task, idx) => (
-                          <div
-                            key={idx}
-                            className="text-xs text-slate-500 truncate"
-                          >
-                            • {task.activity}
-                          </div>
-                        ))}
-                        {dayData.activeTasks.length > 3 && (
-                          <div className="text-xs text-slate-400">
-                            +{dayData.activeTasks.length - 3} more tasks
-                          </div>
+                      }
+                      return value; // Fallback ke "Day X" jika parsing gagal
+                    } catch (error) {
+                      console.warn(
+                        "Error formatting date for tick:",
+                        value,
+                        error
+                      );
+                      return value;
+                    }
+                  },
+                }}
+                axisLeft={{
+                  legend: "Cumulative Progress (%)",
+                  legendPosition: "middle",
+                  legendOffset: -60,
+                  tickSize: 5,
+                  tickPadding: 5,
+                  format: (value) => `${value}%`,
+                }}
+                axisTop={{
+                  tickSize: 0,
+                  tickPadding: 5,
+                  format: () => "",
+                }}
+                axisRight={{
+                  tickSize: 0,
+                  tickPadding: 5,
+                  format: (value) => `${value}%`,
+                }}
+                colors={[
+                  "#3B82F6", // Blue for planned
+                  "#EF4444", // Red for actual
+                  "#10B981", // Green for baseline/target
+                ]}
+                pointSize={6}
+                pointColor={{ theme: "background" }}
+                pointBorderWidth={2}
+                pointBorderColor={{ from: "serieColor" }}
+                enableArea={true}
+                areaOpacity={0.05}
+                areaBaselineValue={0}
+                useMesh={true}
+                enableSlices="x"
+                enableGridX={true}
+                enableGridY={true}
+                gridXValues={Math.min(10, sCurveData.duration)}
+                gridYValues={5}
+                curve="cardinal"
+                lineWidth={2}
+                animate={true}
+                motionConfig="gentle"
+                legends={[
+                  {
+                    anchor: "top",
+                    direction: "row",
+                    justify: true,
+                    translateX: 0,
+                    translateY: -45,
+                    itemsSpacing: 30,
+                    itemDirection: "left-to-right",
+                    itemWidth: 140,
+                    itemHeight: 24,
+                    itemOpacity: 0.9,
+                    symbolSize: 14,
+                    symbolShape: "circle",
+                    symbolBorderColor: "rgba(0, 0, 0, .6)",
+                    symbolBorderWidth: 1,
+                    effects: [
+                      {
+                        on: "hover",
+                        style: {
+                          itemBackground: "rgba(0, 0, 0, .05)",
+                          itemOpacity: 1,
+                        },
+                      },
+                    ],
+                    itemTextColor: "#374151",
+                    itemBackground: "rgba(255, 255, 255, 0.8)",
+                    itemBorderRadius: 6,
+                    itemBorderWidth: 1,
+                    itemBorderColor: "rgba(0, 0, 0, 0.1)",
+                  },
+                ]}
+                sliceTooltip={({ slice }) => {
+                  const point = slice.points[0];
+                  const dayIndex =
+                    parseInt(point.data.x.toString().replace("Day ", "")) - 1;
+                  const dayData = sCurveData.points[dayIndex];
+
+                  return (
+                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg min-w-64">
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                        {new Date(dayData?.date || "").toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
                         )}
                       </div>
-                    )}
+                      {slice.points.map((point) => (
+                        <div
+                          key={point.seriesId}
+                          className="flex items-center justify-between mb-1"
+                        >
+                          <div className="flex items-center">
+                            <div
+                              className="w-3 h-3 rounded-full mr-2"
+                              style={{ backgroundColor: point.seriesColor }}
+                            />
+                            <span className="text-sm text-slate-600 dark:text-slate-400">
+                              {point.seriesId}
+                            </span>
+                          </div>
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
+                            {point.data.yFormatted}%
+                          </span>
+                        </div>
+                      ))}
+                      {dayData?.activeTasks &&
+                        dayData.activeTasks.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600">
+                            <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                              Active Tasks ({dayData.activeTasks.length}):
+                            </div>
+                            {dayData.activeTasks
+                              .slice(0, 3)
+                              .map((task, idx) => (
+                                <div
+                                  key={idx}
+                                  className="text-xs text-slate-500 dark:text-slate-500 truncate"
+                                >
+                                  • {task.activity}
+                                </div>
+                              ))}
+                            {dayData.activeTasks.length > 3 && (
+                              <div className="text-xs text-slate-400 dark:text-slate-500">
+                                +{dayData.activeTasks.length - 3} more tasks
+                              </div>
+                            )}
+                          </div>
+                        )}
+                    </div>
+                  );
+                }}
+                tooltip={({ point }) => (
+                  <div className="bg-slate-800 dark:bg-slate-700 text-white p-2 rounded shadow-lg">
+                    <strong>{point.seriesId}</strong>:{" "}
+                    {point.data.yFormatted as string}%
                   </div>
-                );
-              }}
-              tooltip={({ point }) => (
-                <div className="bg-slate-800 text-white p-2 rounded shadow-lg">
-                  <strong>{point.seriesId}</strong>:{" "}
-                  {point.data.yFormatted as string}%
-                </div>
-              )}
-            />
+                )}
+                markers={todayMarker}
+              />
+            )}
           </div>
         ) : (
           <GanttChart

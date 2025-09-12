@@ -123,7 +123,11 @@ const UserTable: React.FC<UserTableProps> = ({
               className="hidden lg:table-cell text-sm text-gray-500"
               hideOnMobile={true}
             >
-              {formatDate(user.last_active)}
+              {user.last_active &&
+              (typeof user.last_active === "string" ||
+                user.last_active instanceof Date)
+                ? formatDate(user.last_active)
+                : "[Invalid Value]"}
             </ResponsiveTableCell>
 
             {/* Actions */}

@@ -32,6 +32,11 @@ const UserListPage: React.FC<UserListPageProps> = ({
     role: user.role,
     avatar_url: user.avatar_url,
     is_active: !!user.is_active,
+    last_active:
+      user.last_active &&
+      (typeof user.last_active === "string" || user.last_active instanceof Date)
+        ? user.last_active
+        : null,
   }));
 
   return (

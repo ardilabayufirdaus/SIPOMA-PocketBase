@@ -1,6 +1,15 @@
 // Function to format date to DD/MM/YYYY
 export const formatDate = (dateInput: Date | string): string => {
+  if (
+    !dateInput ||
+    (typeof dateInput !== "string" && !(dateInput instanceof Date))
+  ) {
+    return "[Invalid Date]";
+  }
   const date = new Date(dateInput);
+  if (isNaN(date.getTime())) {
+    return "[Invalid Date]";
+  }
   // Adjust for timezone offset to prevent day-before issues
   const userTimezoneOffset = date.getTimezoneOffset() * 60000;
   const correctedDate = new Date(date.getTime() + userTimezoneOffset);

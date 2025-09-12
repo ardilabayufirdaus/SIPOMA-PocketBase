@@ -80,14 +80,14 @@ const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white dark:bg-slate-900 p-5 rounded-lg shadow-md transition-all duration-300 ${
+        className={`bg-white dark:bg-slate-900 p-4 rounded-lg shadow-md transition-all duration-300 ${
           isInteractive ? "cursor-pointer hover:shadow-lg hover:scale-105" : ""
         }`}
         onClick={handleClick}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className={`p-3 rounded-full ${getColorClasses()} mr-4`}>
+            <div className={`p-2.5 rounded-full ${getColorClasses()} mr-3`}>
               {icon}
             </div>
             <div>
@@ -113,7 +113,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
                   </div>
                 )}
               </div>
-              <p className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 {value}
               </p>
               {trend !== undefined && (
@@ -605,24 +605,24 @@ const ProjectDashboardPage: React.FC<{
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
               {t.project_dashboard_title}
             </h1>
-            <p className="text-slate-600 mt-1">
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               {t.executive_insights ||
                 "Comprehensive project overview and analytics"}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-red-500 to-red-600 dark:from-red-900 dark:to-red-800 text-white px-4 py-2 rounded-lg">
+          <div className="flex items-center">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 dark:from-red-900 dark:to-red-800 text-white px-3 py-2 rounded-lg">
               <div className="flex items-center space-x-2">
-                <ShieldCheckIcon className="w-5 h-5" />
-                <span className="font-semibold">
+                <ShieldCheckIcon className="w-4 h-4" />
+                <span className="font-semibold text-sm">
                   {t.project_health_score || "Health Score"}:{" "}
                   {overallMetrics.projectHealthScore}%
                 </span>
@@ -633,7 +633,7 @@ const ProjectDashboardPage: React.FC<{
       </div>
 
       {/* Enhanced Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <MetricCard
           title={t.total_projects}
           value={overallMetrics.totalProjects}
@@ -674,41 +674,41 @@ const ProjectDashboardPage: React.FC<{
 
       {/* Financial Overview */}
       {overallMetrics.totalBudget > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <CurrencyDollarIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+            <CurrencyDollarIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             {t.financial_overview || "Financial Overview"}
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-              <p className="text-sm font-medium text-green-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 p-3 rounded-lg border border-green-200 dark:border-green-700">
+              <p className="text-xs font-medium text-green-700 dark:text-green-300">
                 {t.total_budget || "Total Budget"}
               </p>
-              <p className="text-2xl font-bold text-green-900">
+              <p className="text-xl font-bold text-green-900 dark:text-green-100">
                 {formatRupiah(overallMetrics.totalBudget)}
               </p>
             </div>
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-              <p className="text-sm font-medium text-blue-700">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
+              <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
                 {t.avg_project_budget || "Average Budget"}
               </p>
-              <p className="text-2xl font-bold text-blue-900">
+              <p className="text-xl font-bold text-blue-900 dark:text-blue-100">
                 {formatRupiah(overallMetrics.avgBudget)}
               </p>
             </div>
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-              <p className="text-sm font-medium text-purple-700">
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-3 rounded-lg border border-purple-200 dark:border-purple-700">
+              <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
                 {t.high_budget_projects || "High Budget Projects"}
               </p>
-              <p className="text-2xl font-bold text-purple-900">
+              <p className="text-xl font-bold text-purple-900 dark:text-purple-100">
                 {overallMetrics.highBudgetProjects}
               </p>
             </div>
-            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-lg border border-yellow-200">
-              <p className="text-sm font-medium text-yellow-700">
+            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 p-3 rounded-lg border border-yellow-200 dark:border-yellow-700">
+              <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
                 {t.budget_utilization || "Budget Utilization"}
               </p>
-              <p className="text-2xl font-bold text-yellow-900">
+              <p className="text-xl font-bold text-yellow-900 dark:text-yellow-100">
                 {(
                   (overallMetrics.completedProjects /
                     Math.max(overallMetrics.totalProjects, 1)) *
@@ -723,16 +723,16 @@ const ProjectDashboardPage: React.FC<{
 
       {/* Critical Issues Alert */}
       {criticalIssues.length > 0 && (
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-red-800 mb-4 flex items-center gap-2">
-            <ExclamationTriangleIcon className="w-6 h-6 text-red-600" />
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-3 flex items-center gap-2">
+            <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
             {t.critical_issues || "Critical Issues"} ({criticalIssues.length})
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {criticalIssues.map((issue, index) => (
               <div
                 key={index}
-                className="flex items-start space-x-3 p-3 bg-white rounded-lg border border-red-100"
+                className="flex items-start space-x-2 p-2 bg-white dark:bg-slate-800 rounded-lg border border-red-100 dark:border-red-700"
               >
                 <div
                   className={`w-3 h-3 rounded-full mt-2 ${
@@ -753,13 +753,13 @@ const ProjectDashboardPage: React.FC<{
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Projects by Status */}
-        <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-1">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md lg:col-span-1">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
             {t.projects_by_status}
           </h3>
-          <div className="flex flex-col md:flex-row lg:flex-col items-center gap-6">
+          <div className="flex flex-col md:flex-row lg:flex-col items-center gap-4">
             <DonutChart data={statusCounts} t={t} />
             <div className="space-y-2">
               {statusCounts.map((item) => (
@@ -782,16 +782,16 @@ const ProjectDashboardPage: React.FC<{
         </div>
 
         {/* Risk Assessment */}
-        <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-1">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <ShieldCheckIcon className="w-6 h-6 text-slate-500" />
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md lg:col-span-1">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+            <ShieldCheckIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             {t.risk_assessment || "Risk Assessment"}
           </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-sm font-medium text-red-700 dark:text-red-300">
+                <span className="text-xs font-medium text-red-700 dark:text-red-300">
                   {t.high_risk_projects || "High Risk"}
                 </span>
               </div>
@@ -799,10 +799,10 @@ const ProjectDashboardPage: React.FC<{
                 {overallMetrics.highRiskCount}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+            <div className="flex items-center justify-between p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
                   {t.medium_risk_projects || "Medium Risk"}
                 </span>
               </div>
@@ -810,10 +810,10 @@ const ProjectDashboardPage: React.FC<{
                 {overallMetrics.mediumRiskCount}
               </span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                <span className="text-xs font-medium text-green-700 dark:text-green-300">
                   {t.low_risk_projects || "Low Risk"}
                 </span>
               </div>
@@ -825,15 +825,15 @@ const ProjectDashboardPage: React.FC<{
         </div>
 
         {/* Upcoming Deadlines */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md lg:col-span-1">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-            <CalendarDaysIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md lg:col-span-1">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+            <CalendarDaysIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
             {t.upcoming_deadlines}
           </h3>
           {upcomingTasks.length > 0 ? (
-            <ul className="divide-y divide-slate-200 dark:divide-slate-700">
+            <ul className="divide-y divide-slate-200 dark:divide-slate-700 space-y-0">
               {upcomingTasks.map((task) => (
-                <li key={task.id} className="py-3">
+                <li key={task.id} className="py-2">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
