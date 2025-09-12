@@ -12,7 +12,7 @@ import {
   MoreHorizontalIcon,
   PlayIcon,
   PauseIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
 } from "lucide-react";
 import UserGroupIcon from "../components/icons/UserGroupIcon";
 import UsersOnlineIcon from "../components/icons/UsersOnlineIcon";
@@ -47,7 +47,7 @@ const ModernDashboardHeader: React.FC<{
   notificationCount = 0,
   isAutoRefresh = true,
   onToggleAutoRefresh,
-  onRefresh
+  onRefresh,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -62,7 +62,7 @@ const ModernDashboardHeader: React.FC<{
       <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10" />
       <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
       <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-black/10 rounded-full blur-xl" />
-      
+
       <div className="relative">
         {/* Main Header */}
         <div className="flex items-center justify-between mb-6">
@@ -74,7 +74,7 @@ const ModernDashboardHeader: React.FC<{
               System Informasi Plant Operations Management & Analytics
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {/* Search Bar */}
             <div className="relative">
@@ -90,29 +90,37 @@ const ModernDashboardHeader: React.FC<{
                 className="pl-10 pr-4 py-3 w-80 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/30 transition-all"
               />
             </div>
-            
+
             {/* Control Buttons */}
             <div className="flex items-center space-x-2">
               <button
                 onClick={onToggleAutoRefresh}
                 className={`
                   flex items-center space-x-2 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/30 transition-all
-                  ${isAutoRefresh ? 'bg-green-500/30 text-white' : 'bg-white/20 text-white/80'}
+                  ${
+                    isAutoRefresh
+                      ? "bg-green-500/30 text-white"
+                      : "bg-white/20 text-white/80"
+                  }
                 `}
               >
-                {isAutoRefresh ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
+                {isAutoRefresh ? (
+                  <PauseIcon className="w-4 h-4" />
+                ) : (
+                  <PlayIcon className="w-4 h-4" />
+                )}
                 <span className="text-sm font-medium">
-                  {isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}
+                  {isAutoRefresh ? "Auto Refresh" : "Manual Mode"}
                 </span>
               </button>
-              
+
               <button
                 onClick={onRefresh}
                 className="p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all"
               >
                 <RefreshCcwIcon className="w-4 h-4" />
               </button>
-              
+
               {/* Notifications */}
               <button
                 onClick={onNotificationClick}
@@ -121,7 +129,7 @@ const ModernDashboardHeader: React.FC<{
                 <BellIcon className="w-4 h-4" />
                 {notificationCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-amber-400 text-amber-900 text-xs font-bold px-2 py-1 rounded-full min-w-[1.5rem] text-center">
-                    {notificationCount > 99 ? '99+' : notificationCount}
+                    {notificationCount > 99 ? "99+" : notificationCount}
                   </span>
                 )}
               </button>
@@ -141,10 +149,10 @@ const ModernDashboardHeader: React.FC<{
               <span className="text-white/80">{currentTime}</span>
             </div>
           </div>
-          
+
           <div className="text-right">
             <p className="text-white/90 text-sm font-medium">
-              Last Updated: {new Date().toLocaleTimeString('id-ID')}
+              Last Updated: {new Date().toLocaleTimeString("id-ID")}
             </p>
           </div>
         </div>
@@ -205,11 +213,16 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
   const getIconBgColor = () => {
     switch (variant) {
-      case "online": return "bg-green-500";
-      case "success": return "bg-blue-500";
-      case "warning": return "bg-amber-500";
-      case "danger": return "bg-red-500";
-      default: return "bg-slate-500";
+      case "online":
+        return "bg-green-500";
+      case "success":
+        return "bg-blue-500";
+      case "warning":
+        return "bg-amber-500";
+      case "danger":
+        return "bg-red-500";
+      default:
+        return "bg-slate-500";
     }
   };
 
@@ -220,23 +233,28 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: isInteractive ? 1.02 : 1, y: isInteractive ? -2 : 0 }}
+        whileHover={{
+          scale: isInteractive ? 1.02 : 1,
+          y: isInteractive ? -2 : 0,
+        }}
         whileTap={{ scale: isInteractive ? 0.98 : 1 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
         className={`
           relative overflow-hidden rounded-2xl border backdrop-blur-sm cursor-pointer transition-all duration-300
           ${getVariantClasses()}
-          ${isInteractive ? 'hover:shadow-xl' : ''}
+          ${isInteractive ? "hover:shadow-xl" : ""}
         `}
         onClick={handleClick}
       >
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20 dark:from-transparent dark:via-white/5 dark:to-white/10" />
-        
+
         <div className="relative p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <div className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}>
+            <div
+              className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}
+            >
               {React.cloneElement(icon as React.ReactElement<any>, {
                 className: "w-5 h-5",
               })}
@@ -253,10 +271,10 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
             <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
               {title}
             </h3>
-            
+
             <div className="flex items-baseline space-x-2">
               <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {typeof value === 'number' ? value.toLocaleString() : value}
+                {typeof value === "number" ? value.toLocaleString() : value}
               </span>
               {unit && (
                 <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -271,11 +289,13 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
             {/* Trend */}
             {trend && (
               <div className="flex items-center space-x-2">
-                <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  trend.isPositive 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                }`}>
+                <div
+                  className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+                    trend.isPositive
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  }`}
+                >
                   {trend.isPositive ? (
                     <TrendingUpIcon className="w-3 h-3" />
                   ) : (
@@ -355,14 +375,15 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
   // Hooks for data
   const { projects, tasks, loading: projectsLoading } = useProjects();
   const { productionData, loading: plantLoading } = usePlantData();
-  const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
+  const { records: stockRecords, loading: stockLoading } =
+    usePackingPlantStockData();
 
   // Auto refresh every 30 seconds
   useEffect(() => {
     if (!isAutoRefresh) return;
-    
+
     const interval = setInterval(() => {
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     }, 30000);
 
     return () => clearInterval(interval);
@@ -398,12 +419,12 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
         {/* Enhanced Header */}
         <ModernDashboardHeader
           currentTime={currentTime}
-          onSearch={(query) => console.log('Search:', query)}
-          onNotificationClick={() => console.log('Notifications')}
+          onSearch={(query) => console.log("Search:", query)}
+          onNotificationClick={() => console.log("Notifications")}
           notificationCount={5}
           isAutoRefresh={isAutoRefresh}
           onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
-          onRefresh={() => setRefreshKey(prev => prev + 1)}
+          onRefresh={() => setRefreshKey((prev) => prev + 1)}
         />
 
         {/* Enhanced Quick Stats */}
@@ -421,7 +442,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             trend={getKPITrend(usersCount, "users")}
             onClick={() => onNavigate("users")}
           />
-          
+
           <QuickStatCard
             title="Online Users"
             value={onlineUsersCount}
@@ -430,7 +451,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             trend={getKPITrend(onlineUsersCount, "online")}
             onClick={() => onNavigate("users")}
           />
-          
+
           <QuickStatCard
             title="Active Projects"
             value={activeProjects}
@@ -439,7 +460,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             trend={getKPITrend(activeProjects, "projects")}
             onClick={() => onNavigate("projects", "proj_list")}
           />
-          
+
           <QuickStatCard
             title="System Health"
             value="98.5"
@@ -515,7 +536,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
               <div className="flex items-center space-x-2">
                 <ClockIcon className="w-4 h-4 text-slate-400" />
                 <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Last Updated: {new Date().toLocaleString('id-ID')}
+                  Last Updated: {new Date().toLocaleString("id-ID")}
                 </span>
               </div>
             </div>

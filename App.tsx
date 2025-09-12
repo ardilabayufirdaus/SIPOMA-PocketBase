@@ -17,14 +17,19 @@ import { User, ProjectStatus } from "./types";
 import { translations } from "./translations";
 import { usePlantUnits } from "./hooks/usePlantUnits";
 
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/ModernSidebar";
 import Header from "./components/Header";
 
 // Enhanced lazy loading with better error boundaries and retries
 const MainDashboardPage = lazy(() =>
   import("./pages/MainDashboardPage").catch(() => {
-    return { 
-      default: () => React.createElement('div', {}, 'Error loading Dashboard. Please refresh.') 
+    return {
+      default: () =>
+        React.createElement(
+          "div",
+          {},
+          "Error loading Dashboard. Please refresh."
+        ),
     };
   })
 );
@@ -105,6 +110,7 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
   const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
+  const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
   const {
     users,
     addUser,
@@ -112,8 +118,7 @@ const App: React.FC = () => {
     deleteUser,
     toggleUserStatus,
     loading: usersLoading,
-  } = useUserManagement();
-  const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
+  } = useUserManagement(currentUser);
   const onlineUsersCount = useOnlineUsers(users);
 
   // Update current user activity
@@ -369,7 +374,7 @@ const App: React.FC = () => {
         isOpen={isSidebarOpen}
         isCollapsed={false}
         onClose={handleCloseSidebar}
-        autoHide={!isMobile} // Auto-hide hanya untuk desktop
+        currentUser={currentUser}
       />
 
       <div
@@ -411,43 +416,84 @@ const App: React.FC = () => {
                   onNavigate={handleNavigate}
                 />
               )}
-              {currentPage === "users" && (
-                <>
-                  {activeSubPages.users === "user_list" && (
-                    <UserListPage
-                      users={users}
-                      currentUser={currentUser}
-                      onEditUser={handleOpenEditUserModal}
-                      onDeleteUser={handleDeleteUser}
-                      onToggleUserStatus={toggleUserStatus}
-                      t={t}
-                    />
-                  )}
-                  {activeSubPages.users === "add_user" && (
-                    <AddUserPage
-                      onAddUser={(user) => handleSaveUser(user)}
-                      onOpenPasswordDisplay={(password, username, fullName) => {
-                        setGeneratedPassword(password);
-                        setNewUsername(username);
-                        setNewUserFullName(fullName);
-                        setShowPasswordDisplay(true);
-                      }}
-                      plantUnits={plantUnits}
-                      t={t}
-                    />
-                  )}
-                  {activeSubPages.users === "user_roles" && (
-                    <UserRolesPage
-                      users={users}
-                      plantUnits={plantUnits}
-                      t={t}
-                    />
-                  )}
-                  {activeSubPages.users === "user_activity" && (
-                    <UserActivityPage users={users} t={t} />
-                  )}
-                </>
-              )}
+              {currentPage === "users" &&
+                currentUser?.role === "Super Admin" && (
+                  <>
+                    {activeSubPages.users === "user_list" && (
+                      <UserListPage
+                        users={users}
+                        currentUser={currentUser}
+                        onEditUser={handleOpenEditUserModal}
+                        onDeleteUser={handleDeleteUser}
+                        onToggleUserStatus={toggleUserStatus}
+                        t={t}
+                      />
+                    )}
+                    {activeSubPages.users === "add_user" && (
+                      <AddUserPage
+                        onAddUser={(user) => handleSaveUser(user)}
+                        onOpenPasswordDisplay={(
+                          password,
+                          username,
+                          fullName
+                        ) => {
+                          setGeneratedPassword(password);
+                          setNewUsername(username);
+                          setNewUserFullName(fullName);
+                          setShowPasswordDisplay(true);
+                        }}
+                        plantUnits={plantUnits}
+                        t={t}
+                      />
+                    )}
+                    {activeSubPages.users === "user_roles" && (
+                      <UserRolesPage
+                        users={users}
+                        plantUnits={plantUnits}
+                        t={t}
+                      />
+                    )}
+                    {activeSubPages.users === "user_activity" && (
+                      <UserActivityPage users={users} t={t} />
+                    )}
+                  </>
+                )}
+              {/* Access Denied for User Management if not Super Admin */}
+              {currentPage === "users" &&
+                currentUser?.role !== "Super Admin" && (
+                  <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                      <div className="mb-4">
+                        <svg
+                          className="w-16 h-16 text-red-500 mx-auto"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
+                        {t.access_denied || "Access Denied"}
+                      </h3>
+                      <p className="text-red-600 dark:text-red-300 mb-4">
+                        {t.super_admin_only_access ||
+                          "Only Super Admin can access User Management module"}
+                      </p>
+                      <button
+                        onClick={() => handleNavigate("dashboard")}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      >
+                        {t.back_to_dashboard || "Back to Dashboard"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               {currentPage === "settings" && (
                 <SettingsPage
                   t={t}

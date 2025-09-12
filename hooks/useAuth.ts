@@ -12,26 +12,31 @@ export const useAuth = () => {
     async (identifier, password) => {
       setLoading(true);
       try {
-        // Query untuk mencari user berdasarkan username
-        const result: any = await supabase
-          .from("users")
-          .select(
-            "id, username, full_name, role, avatar_url, last_active, is_active, created_at, permissions"
-          )
-          .eq("username", identifier)
-          .eq("password", password)
-          .single();
-
-        const { data, error } = result;
+        // Use raw SQL query with type assertion to bypass type checking
+        const { data, error } = await (supabase as any).rpc(
+          "validate_user_credentials",
+          {
+            input_username: identifier,
+            input_password: password,
+          }
+        );
 
         if (error) {
           throw error;
         }
 
-        // Convert last_active to Date if it's a string
-        const userData = data as any;
+        if (!data || data.length === 0) {
+          throw new Error("Invalid username or password");
+        }
+
+        const userData = data[0];
+
+        // Convert dates
         if (userData.last_active && typeof userData.last_active === "string") {
           userData.last_active = new Date(userData.last_active);
+        }
+        if (userData.created_at && typeof userData.created_at === "string") {
+          userData.created_at = new Date(userData.created_at);
         }
 
         setUser(userData as User);

@@ -36,6 +36,7 @@ interface ModernSidebarProps {
   isOpen: boolean;
   isCollapsed: boolean;
   onClose?: () => void;
+  currentUser?: { role: string } | null;
 }
 
 // Optimized NavLink component
@@ -215,6 +216,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   isOpen,
   isCollapsed,
   onClose,
+  currentUser,
 }) => {
   const isMobile = useIsMobile();
   const { isHovered, setIsHovered, shouldCollapse } = useSidebarState({
@@ -456,16 +458,19 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             isCollapsed={shouldCollapse}
           />
 
-          <CollapsibleMenu
-            label={t.userManagement}
-            icon={<UserGroupIcon className="w-5 h-5" />}
-            isActive={currentPage === "users"}
-            pages={navigationData.userManagementPages}
-            activeSubPage={activeSubPages.users}
-            onSelect={(subPage) => handleNavigate("users", subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
-          />
+          {/* User Management - Only visible for Super Admin */}
+          {currentUser?.role === "Super Admin" && (
+            <CollapsibleMenu
+              label={t.userManagement}
+              icon={<UserGroupIcon className="w-5 h-5" />}
+              isActive={currentPage === "users"}
+              pages={navigationData.userManagementPages}
+              activeSubPage={activeSubPages.users}
+              onSelect={(subPage) => handleNavigate("users", subPage)}
+              t={t}
+              isCollapsed={shouldCollapse}
+            />
+          )}
 
           <NavLink
             label={t.slaManagement}

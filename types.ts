@@ -46,6 +46,7 @@ export interface User {
 
 export interface AddUserData {
   username: string;
+  email?: string;
   full_name: string;
   password?: string; // Optional karena akan di-generate otomatis
   role: UserRole;

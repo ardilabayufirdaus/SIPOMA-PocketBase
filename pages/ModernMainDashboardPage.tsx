@@ -18,7 +18,7 @@ import {
   SettingsIcon,
   ArrowRightIcon,
   FilterIcon,
-  ExternalLinkIcon
+  ExternalLinkIcon,
 } from "lucide-react";
 
 // Import modern components
@@ -30,7 +30,7 @@ import {
   fadeInUp,
   staggerContainer,
   scaleOnHover,
-  colors
+  colors,
 } from "../components/dashboard/ModernDashboard";
 
 // Import existing hooks
@@ -58,11 +58,11 @@ import {
   PieChart,
   Pie,
   Cell,
-  ComposedChart
+  ComposedChart,
 } from "recharts";
 
 interface ModernMainDashboardPageProps {
-  language: 'en' | 'id';
+  language: "en" | "id";
   onNavigate: (page: Page, subPage?: string) => void;
   usersCount: number;
   onlineUsersCount: number;
@@ -70,12 +70,14 @@ interface ModernMainDashboardPageProps {
 
 // Enhanced Performance Chart Widget
 const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
-  const [activeTab, setActiveTab] = useState<'performance' | 'trends' | 'comparison'>('performance');
+  const [activeTab, setActiveTab] = useState<
+    "performance" | "trends" | "comparison"
+  >("performance");
 
   const tabs = [
-    { key: 'performance', label: 'Performance', icon: BarChart3Icon },
-    { key: 'trends', label: 'Trends', icon: TrendingUpIcon },
-    { key: 'comparison', label: 'Comparison', icon: PieChartIcon }
+    { key: "performance", label: "Performance", icon: BarChart3Icon },
+    { key: "trends", label: "Trends", icon: TrendingUpIcon },
+    { key: "comparison", label: "Comparison", icon: PieChartIcon },
   ];
 
   return (
@@ -91,9 +93,10 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
                 onClick={() => setActiveTab(tab.key as any)}
                 className={`
                   flex items-center space-x-1 px-3 py-1.5 rounded text-xs font-medium transition-all
-                  ${activeTab === tab.key 
-                    ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm' 
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  ${
+                    activeTab === tab.key
+                      ? "bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                   }
                 `}
               >
@@ -111,27 +114,27 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
     >
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          {activeTab === 'performance' && (
+          {activeTab === "performance" && (
             <ComposedChart data={data}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="time" 
+              <XAxis
+                dataKey="time"
                 tick={{ fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
-                  backgroundColor: 'rgb(15 23 42)',
-                  border: 'none',
-                  borderRadius: '12px',
-                  boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-                  color: 'white'
+                  backgroundColor: "rgb(15 23 42)",
+                  border: "none",
+                  borderRadius: "12px",
+                  boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+                  color: "white",
                 }}
               />
               <Legend />
@@ -160,35 +163,94 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
                 name="Quality Score"
               />
               <defs>
-                <linearGradient id="productionGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={colors.primary} stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor={colors.primary} stopOpacity={0.05}/>
+                <linearGradient
+                  id="productionGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor={colors.primary}
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={colors.primary}
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
               </defs>
             </ComposedChart>
           )}
-          {activeTab === 'trends' && (
+          {activeTab === "trends" && (
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="time" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="time"
+                tick={{ fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="production" stroke={colors.primary} strokeWidth={3} />
-              <Line type="monotone" dataKey="efficiency" stroke={colors.secondary} strokeWidth={3} />
-              <Line type="monotone" dataKey="quality" stroke={colors.success} strokeWidth={3} />
+              <Line
+                type="monotone"
+                dataKey="production"
+                stroke={colors.primary}
+                strokeWidth={3}
+              />
+              <Line
+                type="monotone"
+                dataKey="efficiency"
+                stroke={colors.secondary}
+                strokeWidth={3}
+              />
+              <Line
+                type="monotone"
+                dataKey="quality"
+                stroke={colors.success}
+                strokeWidth={3}
+              />
             </LineChart>
           )}
-          {activeTab === 'comparison' && (
+          {activeTab === "comparison" && (
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis dataKey="time" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="time"
+                tick={{ fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip />
               <Legend />
-              <Bar dataKey="production" fill={colors.primary} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="efficiency" fill={colors.secondary} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="quality" fill={colors.success} radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="production"
+                fill={colors.primary}
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="efficiency"
+                fill={colors.secondary}
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="quality"
+                fill={colors.success}
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           )}
         </ResponsiveContainer>
@@ -200,13 +262,16 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
 // Stock Overview Widget
 const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
   const totalCapacity = stockData.reduce((acc, item) => acc + item.capacity, 0);
-  const totalStock = stockData.reduce((acc, item) => acc + item.currentStock, 0);
+  const totalStock = stockData.reduce(
+    (acc, item) => acc + item.currentStock,
+    0
+  );
   const utilizationRate = (totalStock / totalCapacity) * 100;
 
   const pieData = stockData.map((item, index) => ({
     name: item.area,
     value: item.currentStock,
-    fill: `hsl(${(index * 60) % 360}, 70%, 60%)`
+    fill: `hsl(${(index * 60) % 360}, 70%, 60%)`,
   }));
 
   return (
@@ -216,7 +281,7 @@ const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
       actions={
         <div className="flex items-center space-x-2">
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Last updated: {new Date().toLocaleTimeString('id-ID')}
+            Last updated: {new Date().toLocaleTimeString("id-ID")}
           </span>
         </div>
       }
@@ -245,9 +310,12 @@ const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
         </div>
         <div className="space-y-3">
           {stockData.slice(0, 5).map((item, index) => (
-            <div key={item.area} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+            <div
+              key={item.area}
+              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
+            >
               <div className="flex items-center space-x-3">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: pieData[index]?.fill }}
                 />
@@ -274,15 +342,15 @@ const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
 // Project Progress Widget
 const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
   const statusCounts = {
-    on_track: projects.filter(p => p.status === 'on_track').length,
-    at_risk: projects.filter(p => p.status === 'at_risk').length,
-    delayed: projects.filter(p => p.status === 'delayed').length
+    on_track: projects.filter((p) => p.status === "on_track").length,
+    at_risk: projects.filter((p) => p.status === "at_risk").length,
+    delayed: projects.filter((p) => p.status === "delayed").length,
   };
 
   const chartData = [
-    { name: 'On Track', value: statusCounts.on_track, fill: colors.success },
-    { name: 'At Risk', value: statusCounts.at_risk, fill: colors.warning },
-    { name: 'Delayed', value: statusCounts.delayed, fill: colors.danger }
+    { name: "On Track", value: statusCounts.on_track, fill: colors.success },
+    { name: "At Risk", value: statusCounts.at_risk, fill: colors.warning },
+    { name: "Delayed", value: statusCounts.delayed, fill: colors.danger },
   ];
 
   return (
@@ -319,16 +387,24 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
         </div>
         <div className="space-y-3">
           {projects.slice(0, 4).map((project) => (
-            <div key={project.id} className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+            <div
+              key={project.id}
+              className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                   {project.name}
                 </span>
                 <div className="flex items-center space-x-1">
-                  <div className={`w-2 h-2 rounded-full ${
-                    project.status === 'on_track' ? 'bg-green-500' :
-                    project.status === 'at_risk' ? 'bg-yellow-500' : 'bg-red-500'
-                  }`} />
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      project.status === "on_track"
+                        ? "bg-green-500"
+                        : project.status === "at_risk"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                    }`}
+                  />
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
                     {project.progress}%
                   </span>
@@ -337,8 +413,11 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
               <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all duration-300 ${
-                    project.status === 'on_track' ? 'bg-green-500' :
-                    project.status === 'at_risk' ? 'bg-yellow-500' : 'bg-red-500'
+                    project.status === "on_track"
+                      ? "bg-green-500"
+                      : project.status === "at_risk"
+                      ? "bg-yellow-500"
+                      : "bg-red-500"
                   }`}
                   style={{ width: `${project.progress}%` }}
                 />
@@ -356,7 +435,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   language,
   onNavigate,
   usersCount,
-  onlineUsersCount
+  onlineUsersCount,
 }) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
@@ -364,15 +443,16 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   // Hooks for data
   const { projects, tasks, loading: projectsLoading } = useProjects();
   const { data: productionData, loading: plantLoading } = usePlantData();
-  const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
+  const { records: stockRecords, loading: stockLoading } =
+    usePackingPlantStockData();
   const { records: packingPlantMasterRecords } = usePackingPlantMasterData();
 
   // Auto refresh every 30 seconds
   useEffect(() => {
     if (!isAutoRefresh) return;
-    
+
     const interval = setInterval(() => {
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey((prev) => prev + 1);
     }, 30000);
 
     return () => clearInterval(interval);
@@ -381,15 +461,15 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   // Transform data for charts
   const performanceData = useMemo(() => {
     if (!productionData || productionData.length === 0) return [];
-    
+
     return productionData.slice(-12).map((item, index) => {
       const baseTime = new Date();
       baseTime.setHours(baseTime.getHours() - (12 - index) * 2);
 
       return {
-        time: baseTime.toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
+        time: baseTime.toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
         }),
         production: item.output || 0,
         efficiency: Math.min(100, Math.max(0, (item.output / 100) * 95)),
@@ -401,12 +481,15 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   // Transform project data
   const transformedProjects = useMemo(() => {
     return projects.slice(0, 5).map((project) => {
-      const projectTasks = tasks.filter((task) => task.project_id === project.id);
+      const projectTasks = tasks.filter(
+        (task) => task.project_id === project.id
+      );
       const totalTasks = projectTasks.length;
       const completedTasks = projectTasks.filter(
         (task) => task.percent_complete === 100
       ).length;
-      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      const progress =
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
       let status: "on_track" | "at_risk" | "delayed" = "on_track";
       if (progress < 50) status = "at_risk";
@@ -417,19 +500,25 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
         name: project.title,
         progress,
         status,
-        dueDate: project.end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        dueDate:
+          project.end_date ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       };
     });
   }, [projects, tasks]);
 
   // Transform stock data
   const transformedStockData = useMemo(() => {
-    const uniqueAreas = Array.from(new Set(stockRecords.map((record) => record.area)));
-    
+    const uniqueAreas = Array.from(
+      new Set(stockRecords.map((record) => record.area))
+    );
+
     return uniqueAreas.slice(0, 5).map((area) => {
       const latestRecord = stockRecords
         .filter((record) => record.area === area)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+        .sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )[0];
 
       const masterDataForArea = packingPlantMasterRecords.find(
         (master) => master.area === area
@@ -439,43 +528,50 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
         area: area,
         currentStock: latestRecord?.closing_stock || 0,
         capacity: masterDataForArea?.silo_capacity || 1000,
-        trend: Math.random() > 0.5 ? 'up' : 'down',
+        trend: Math.random() > 0.5 ? "up" : "down",
       };
     });
   }, [stockRecords, packingPlantMasterRecords, refreshKey]);
 
   // Calculate metrics
-  const activeProjects = projects.filter(p => p.status === 'active').length;
-  const totalCapacity = transformedStockData.reduce((acc, item) => acc + item.capacity, 0);
-  const totalStock = transformedStockData.reduce((acc, item) => acc + item.currentStock, 0);
-  const utilizationRate = totalCapacity > 0 ? (totalStock / totalCapacity) * 100 : 0;
+  const activeProjects = projects.filter((p) => p.status === "active").length;
+  const totalCapacity = transformedStockData.reduce(
+    (acc, item) => acc + item.capacity,
+    0
+  );
+  const totalStock = transformedStockData.reduce(
+    (acc, item) => acc + item.currentStock,
+    0
+  );
+  const utilizationRate =
+    totalCapacity > 0 ? (totalStock / totalCapacity) * 100 : 0;
 
   // Quick actions data
   const quickActions = [
     {
-      title: 'User Management',
-      description: 'Manage user accounts, roles, and permissions',
+      title: "User Management",
+      description: "Manage user accounts, roles, and permissions",
       icon: <UsersIcon className="w-5 h-5" />,
-      onClick: () => onNavigate('users'),
+      onClick: () => onNavigate("users"),
     },
     {
-      title: 'Plant Operations',
-      description: 'Monitor production and operational metrics',
+      title: "Plant Operations",
+      description: "Monitor production and operational metrics",
       icon: <SettingsIcon className="w-5 h-5" />,
-      onClick: () => onNavigate('operations'),
+      onClick: () => onNavigate("operations"),
     },
     {
-      title: 'Project Management',
-      description: 'Track project progress and deliverables',
+      title: "Project Management",
+      description: "Track project progress and deliverables",
       icon: <FolderIcon className="w-5 h-5" />,
-      onClick: () => onNavigate('projects'),
+      onClick: () => onNavigate("projects"),
     },
     {
-      title: 'Analytics Dashboard',
-      description: 'View detailed analytics and reports',
+      title: "Analytics Dashboard",
+      description: "View detailed analytics and reports",
       icon: <BarChart3Icon className="w-5 h-5" />,
-      onClick: () => onNavigate('operations', 'op_dashboard'),
-      variant: 'primary' as const,
+      onClick: () => onNavigate("operations", "op_dashboard"),
+      variant: "primary" as const,
     },
   ];
 
@@ -485,11 +581,11 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
         {/* Header */}
         <DashboardHeader
           currentUser={{
-            name: 'Admin User',
-            role: 'Super Administrator',
+            name: "Admin User",
+            role: "Super Administrator",
           }}
-          onSearch={(query) => console.log('Search:', query)}
-          onNotificationClick={() => console.log('Notifications')}
+          onSearch={(query) => console.log("Search:", query)}
+          onNotificationClick={() => console.log("Notifications")}
           notificationCount={5}
         />
 
@@ -507,12 +603,12 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             variant="primary"
             trend={{
               value: 12.5,
-              direction: 'up',
-              period: 'vs last month'
+              direction: "up",
+              period: "vs last month",
             }}
-            onClick={() => onNavigate('users')}
+            onClick={() => onNavigate("users")}
           />
-          
+
           <ModernMetricCard
             title="Online Users"
             value={onlineUsersCount}
@@ -520,12 +616,12 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             variant="success"
             trend={{
               value: 8.3,
-              direction: 'up',
-              period: 'vs yesterday'
+              direction: "up",
+              period: "vs yesterday",
             }}
-            onClick={() => onNavigate('users')}
+            onClick={() => onNavigate("users")}
           />
-          
+
           <ModernMetricCard
             title="Active Projects"
             value={activeProjects}
@@ -533,24 +629,24 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             variant="default"
             trend={{
               value: 5.7,
-              direction: 'up',
-              period: 'vs last week'
+              direction: "up",
+              period: "vs last week",
             }}
-            onClick={() => onNavigate('projects')}
+            onClick={() => onNavigate("projects")}
           />
-          
+
           <ModernMetricCard
             title="Stock Utilization"
             value={utilizationRate.toFixed(1)}
             unit="%"
             icon={<PieChartIcon className="w-6 h-6" />}
-            variant={utilizationRate > 80 ? 'warning' : 'default'}
+            variant={utilizationRate > 80 ? "warning" : "default"}
             trend={{
               value: 3.2,
-              direction: utilizationRate > 75 ? 'up' : 'down',
-              period: 'vs last month'
+              direction: utilizationRate > 75 ? "up" : "down",
+              period: "vs last month",
             }}
-            onClick={() => onNavigate('packing')}
+            onClick={() => onNavigate("packing")}
           />
         </motion.div>
 
@@ -565,7 +661,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
           {performanceData.length > 0 && (
             <PerformanceOverview data={performanceData} />
           )}
-          
+
           {/* Stock Insights */}
           <StockInsights stockData={transformedStockData} />
         </motion.div>
@@ -578,7 +674,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
           className="grid grid-cols-1 lg:grid-cols-2 gap-6"
         >
           <ProjectInsights projects={transformedProjects} />
-          
+
           {/* Quick Actions */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -590,24 +686,29 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
                   onClick={() => setIsAutoRefresh(!isAutoRefresh)}
                   className={`
                     flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                    ${isAutoRefresh 
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                      : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                    ${
+                      isAutoRefresh
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
                     }
                   `}
                 >
-                  {isAutoRefresh ? <PauseIcon className="w-3 h-3" /> : <PlayIcon className="w-3 h-3" />}
-                  <span>{isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}</span>
+                  {isAutoRefresh ? (
+                    <PauseIcon className="w-3 h-3" />
+                  ) : (
+                    <PlayIcon className="w-3 h-3" />
+                  )}
+                  <span>{isAutoRefresh ? "Auto Refresh" : "Manual Mode"}</span>
                 </button>
                 <button
-                  onClick={() => setRefreshKey(prev => prev + 1)}
+                  onClick={() => setRefreshKey((prev) => prev + 1)}
                   className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 >
                   <RefreshCcwIcon className="w-4 h-4" />
                 </button>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-3">
               {quickActions.map((action, index) => (
                 <motion.div
@@ -638,7 +739,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
               <div className="flex items-center space-x-2">
                 <ClockIcon className="w-4 h-4 text-slate-400" />
                 <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Last Updated: {new Date().toLocaleString('id-ID')}
+                  Last Updated: {new Date().toLocaleString("id-ID")}
                 </span>
               </div>
             </div>

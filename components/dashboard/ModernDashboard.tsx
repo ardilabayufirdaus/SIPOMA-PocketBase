@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  TrendingUpIcon, 
+import {
+  TrendingUpIcon,
   TrendingDownIcon,
   PlayIcon,
   PauseIcon,
@@ -19,7 +19,7 @@ import {
   BellIcon,
   SearchIcon,
   FilterIcon,
-  MoreHorizontalIcon
+  MoreHorizontalIcon,
 } from "lucide-react";
 
 // Modern Color Palette
@@ -38,21 +38,21 @@ const colors = {
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, ease: "easeOut" }
+  transition: { duration: 0.4, ease: "easeOut" },
 };
 
 const staggerContainer = {
   animate: {
     transition: {
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const scaleOnHover = {
   whileHover: { scale: 1.02 },
   whileTap: { scale: 0.98 },
-  transition: { type: "spring", stiffness: 400, damping: 17 }
+  transition: { type: "spring", stiffness: 400, damping: 17 },
 };
 
 // Enhanced Metric Card Component
@@ -63,10 +63,10 @@ interface ModernMetricCardProps {
   icon: React.ReactNode;
   trend?: {
     value: number;
-    direction: 'up' | 'down' | 'neutral';
+    direction: "up" | "down" | "neutral";
     period?: string;
   };
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
+  variant?: "default" | "primary" | "success" | "warning" | "danger";
   isLoading?: boolean;
   onClick?: () => void;
   className?: string;
@@ -78,33 +78,38 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
   unit,
   icon,
   trend,
-  variant = 'default',
+  variant = "default",
   isLoading = false,
   onClick,
-  className = ""
+  className = "",
 }) => {
   const getVariantClasses = () => {
     switch (variant) {
-      case 'primary':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30';
-      case 'success':
-        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-green-950/30 dark:to-green-900/30 dark:border-green-800/30';
-      case 'warning':
-        return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/30 dark:border-amber-800/30';
-      case 'danger':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30';
+      case "primary":
+        return "bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30";
+      case "success":
+        return "bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-green-950/30 dark:to-green-900/30 dark:border-green-800/30";
+      case "warning":
+        return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/30 dark:border-amber-800/30";
+      case "danger":
+        return "bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30";
       default:
-        return 'bg-gradient-to-br from-slate-50 to-white border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700';
+        return "bg-gradient-to-br from-slate-50 to-white border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700";
     }
   };
 
   const getIconBgColor = () => {
     switch (variant) {
-      case 'primary': return 'bg-red-500';
-      case 'success': return 'bg-green-500';
-      case 'warning': return 'bg-amber-500';
-      case 'danger': return 'bg-red-500';
-      default: return 'bg-slate-500';
+      case "primary":
+        return "bg-red-500";
+      case "success":
+        return "bg-green-500";
+      case "warning":
+        return "bg-amber-500";
+      case "danger":
+        return "bg-red-500";
+      default:
+        return "bg-slate-500";
     }
   };
 
@@ -115,18 +120,20 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
       className={`
         relative overflow-hidden rounded-2xl border backdrop-blur-sm
         ${getVariantClasses()}
-        ${onClick ? 'cursor-pointer hover:shadow-lg' : ''}
+        ${onClick ? "cursor-pointer hover:shadow-lg" : ""}
         ${className}
       `}
       onClick={onClick}
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20 dark:from-transparent dark:via-white/5 dark:to-white/10" />
-      
+
       <div className="relative p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}>
+          <div
+            className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}
+          >
             {icon}
           </div>
           {onClick && (
@@ -141,14 +148,14 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
           <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
             {title}
           </h3>
-          
+
           <div className="flex items-baseline space-x-2">
             {isLoading ? (
               <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
             ) : (
               <>
                 <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                  {typeof value === 'number' ? value.toLocaleString() : value}
+                  {typeof value === "number" ? value.toLocaleString() : value}
                 </span>
                 {unit && (
                   <span className="text-lg font-medium text-slate-500 dark:text-slate-400">
@@ -162,15 +169,21 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
           {/* Trend */}
           {trend && (
             <div className="flex items-center space-x-2">
-              <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
-                trend.direction === 'up' 
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                  : trend.direction === 'down'
-                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
-              }`}>
-                {trend.direction === 'up' && <TrendingUpIcon className="w-3 h-3" />}
-                {trend.direction === 'down' && <TrendingDownIcon className="w-3 h-3" />}
+              <div
+                className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+                  trend.direction === "up"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : trend.direction === "down"
+                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                    : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                }`}
+              >
+                {trend.direction === "up" && (
+                  <TrendingUpIcon className="w-3 h-3" />
+                )}
+                {trend.direction === "down" && (
+                  <TrendingDownIcon className="w-3 h-3" />
+                )}
                 <span>{trend.value}%</span>
               </div>
               {trend.period && (
@@ -202,7 +215,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
   children,
   actions,
   isLoading = false,
-  className = ""
+  className = "",
 }) => {
   return (
     <motion.div
@@ -227,9 +240,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
             )}
           </div>
           {actions && (
-            <div className="flex items-center space-x-2">
-              {actions}
-            </div>
+            <div className="flex items-center space-x-2">{actions}</div>
           )}
         </div>
       </div>
@@ -252,7 +263,7 @@ interface QuickActionProps {
   description: string;
   icon: React.ReactNode;
   onClick: () => void;
-  variant?: 'default' | 'primary';
+  variant?: "default" | "primary";
 }
 
 const QuickAction: React.FC<QuickActionProps> = ({
@@ -260,7 +271,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
   description,
   icon,
   onClick,
-  variant = 'default'
+  variant = "default",
 }) => {
   return (
     <motion.button
@@ -268,33 +279,49 @@ const QuickAction: React.FC<QuickActionProps> = ({
       onClick={onClick}
       className={`
         w-full p-4 rounded-xl border text-left group transition-all duration-300
-        ${variant === 'primary' 
-          ? 'bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg hover:shadow-xl'
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-600'
+        ${
+          variant === "primary"
+            ? "bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg hover:shadow-xl"
+            : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-600"
         }
       `}
     >
       <div className="flex items-start space-x-3">
-        <div className={`
+        <div
+          className={`
           p-2 rounded-lg flex-shrink-0 transition-colors
-          ${variant === 'primary' 
-            ? 'bg-white/20' 
-            : 'bg-slate-100 dark:bg-slate-700 group-hover:bg-red-100 dark:group-hover:bg-red-900/30'
+          ${
+            variant === "primary"
+              ? "bg-white/20"
+              : "bg-slate-100 dark:bg-slate-700 group-hover:bg-red-100 dark:group-hover:bg-red-900/30"
           }
-        `}>
+        `}
+        >
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className={`
+          <h4
+            className={`
             font-medium text-sm mb-1
-            ${variant === 'primary' ? 'text-white' : 'text-slate-900 dark:text-slate-100'}
-          `}>
+            ${
+              variant === "primary"
+                ? "text-white"
+                : "text-slate-900 dark:text-slate-100"
+            }
+          `}
+          >
             {title}
           </h4>
-          <p className={`
+          <p
+            className={`
             text-xs leading-relaxed
-            ${variant === 'primary' ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}
-          `}>
+            ${
+              variant === "primary"
+                ? "text-white/80"
+                : "text-slate-500 dark:text-slate-400"
+            }
+          `}
+          >
             {description}
           </p>
         </div>
@@ -319,16 +346,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentUser,
   onSearch,
   onNotificationClick,
-  notificationCount = 0
+  notificationCount = 0,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const currentTime = new Date().toLocaleString('id-ID', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  const currentTime = new Date().toLocaleString("id-ID", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   return (
@@ -340,7 +367,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10" />
       <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
       <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-black/10 rounded-full blur-xl" />
-      
+
       <div className="relative">
         {/* Top Row */}
         <div className="flex items-center justify-between mb-6">
@@ -348,11 +375,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <h1 className="text-2xl font-bold mb-1">
               Selamat Datang di SIPOMA v2.0
             </h1>
-            <p className="text-white/80 text-sm">
-              {currentTime}
-            </p>
+            <p className="text-white/80 text-sm">{currentTime}</p>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             {/* Search */}
             <div className="relative">
@@ -368,7 +393,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 className="pl-10 pr-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 w-64"
               />
             </div>
-            
+
             {/* Notifications */}
             <button
               onClick={onNotificationClick}
@@ -377,11 +402,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <BellIcon className="w-5 h-5" />
               {notificationCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-amber-400 text-amber-900 text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
-                  {notificationCount > 99 ? '99+' : notificationCount}
+                  {notificationCount > 99 ? "99+" : notificationCount}
                 </span>
               )}
             </button>
-            
+
             {/* User Profile */}
             {currentUser && (
               <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-lg p-2">
@@ -392,7 +417,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 </div>
                 <div className="text-sm">
                   <div className="font-medium">{currentUser.name}</div>
-                  <div className="text-white/70 text-xs">{currentUser.role}</div>
+                  <div className="text-white/70 text-xs">
+                    {currentUser.role}
+                  </div>
                 </div>
               </div>
             )}
@@ -407,7 +434,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <ClockIcon className="w-4 h-4 text-white/70" />
-            <span className="text-sm text-white/70">Last Updated: {new Date().toLocaleTimeString('id-ID')}</span>
+            <span className="text-sm text-white/70">
+              Last Updated: {new Date().toLocaleTimeString("id-ID")}
+            </span>
           </div>
         </div>
       </div>
@@ -423,5 +452,5 @@ export {
   fadeInUp,
   staggerContainer,
   scaleOnHover,
-  colors
+  colors,
 };

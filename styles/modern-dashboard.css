@@ -23,7 +23,7 @@
 }
 
 .metric-card-modern::before {
-  content: '';
+  content: "";
   @apply absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20 opacity-0 transition-opacity duration-300;
 }
 
@@ -56,12 +56,24 @@
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
-.stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
-.stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
-.stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
-.stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
-.stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
-.stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+.stagger-children > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.stagger-children > *:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.stagger-children > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.stagger-children > *:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.stagger-children > *:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.stagger-children > *:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 @keyframes fadeInUp {
   from {
@@ -190,12 +202,12 @@
 }
 
 .dashboard-header::before {
-  content: '';
+  content: "";
   @apply absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10;
 }
 
 .dashboard-header::after {
-  content: '';
+  content: "";
   @apply absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl;
 }
 
@@ -262,16 +274,16 @@
   .dashboard-container {
     @apply bg-white text-black;
   }
-  
+
   .glass-card-modern,
   .chart-container-modern {
     @apply bg-white border-slate-300 shadow-none;
   }
-  
+
   .dashboard-header {
     @apply bg-slate-100 text-black;
   }
-  
+
   .interactive-element {
     @apply transform-none hover:transform-none;
   }
@@ -282,7 +294,7 @@
   .metric-card-modern {
     @apply border-2 border-slate-900 dark:border-slate-100;
   }
-  
+
   .status-indicator {
     @apply border border-current;
   }
@@ -299,7 +311,7 @@
     @apply transition-none;
     animation: none;
   }
-  
+
   .skeleton-loader {
     @apply animate-none;
   }

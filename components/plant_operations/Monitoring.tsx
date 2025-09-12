@@ -91,9 +91,12 @@ const Monitoring: React.FC<MonitoringProps> = ({
 
   // Helper function for duration calculation to avoid code duplication
   // Using the same calculation method as Autonomous Data Entry for consistency
-  const calculateDurationInMinutes = (startTime: string, endTime: string): number => {
+  const calculateDurationInMinutes = (
+    startTime: string,
+    endTime: string
+  ): number => {
     if (!startTime || !endTime) return 0;
-    
+
     const { hours, minutes } = calculateDuration(startTime, endTime);
     return hours * 60 + minutes;
   };

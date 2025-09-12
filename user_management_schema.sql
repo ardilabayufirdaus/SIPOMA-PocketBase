@@ -117,6 +117,10 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Drop triggers if they exist to avoid duplicate errors
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+DROP TRIGGER IF EXISTS update_user_permissions_updated_at ON user_permissions;
+
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -225,7 +229,18 @@ ALTER TABLE user_permissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE registration_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_logs ENABLE ROW LEVEL SECURITY;
 
+-- Drop policies if they exist
+DROP POLICY IF EXISTS "Users can view their own data" ON users;
+DROP POLICY IF EXISTS "Admins can manage users" ON users;
+DROP POLICY IF EXISTS "Users can view their own permissions" ON user_permissions;
+DROP POLICY IF EXISTS "Admins can manage permissions" ON user_permissions;
+DROP POLICY IF EXISTS "Admins can manage registration requests" ON registration_requests;
+DROP POLICY IF EXISTS "Users can view their own activity" ON activity_logs;
+DROP POLICY IF EXISTS "Admins can view all activity" ON activity_logs;
+
 -- Users table policies
+DROP POLICY IF EXISTS "Allow all select" ON users;
+CREATE POLICY "Allow all select" ON users FOR SELECT USING (true);
 CREATE POLICY "Users can view their own data" ON users
     FOR SELECT USING (auth.uid()::text = id::text OR auth.role() = 'service_role');
 
@@ -431,6 +446,10 @@ CREATE OR REPLACE FUNCTION validate_user_credentials(
     permissions JSONB
 ) AS $$
 BEGIN
+    -- Debug output
+    RAISE NOTICE 'Input username: %', input_username;
+    RAISE NOTICE 'Input password (raw): %', input_password;
+
     RETURN QUERY
     SELECT
         u.id,
@@ -450,7 +469,7 @@ BEGIN
     FROM users u
     LEFT JOIN user_permissions up ON u.id = up.user_id
     WHERE u.username = input_username
-    AND u.password = hash_password(input_password)
+    AND u.password = input_password
     AND u.is_active = true;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

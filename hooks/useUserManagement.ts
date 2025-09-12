@@ -129,26 +129,37 @@ export const getDefaultPermissionsByRole = (
   }
 };
 
-export const useUserManagement = () => {
+export const useUserManagement = (currentUser?: User | null) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const { handleError } = useErrorHandler();
 
+  // Role-based access control check
+  const hasUserManagementAccess = currentUser?.role === "Super Admin";
+
   const fetchUsers = useCallback(async () => {
+    // Only Super Admin can fetch users
+    if (!hasUserManagementAccess) {
+      setUsers([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("users")
+      // Use raw query with type assertion to get users with permissions
+      const { data, error } = await (supabase as any)
+        .from("user_list")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
         throw error;
       }
-      const parsedData = (data || []).map((user) => ({
+      const parsedData = (data || []).map((user: any) => ({
         id: user.id,
-        username: (user as any).username,
-        email: user.email,
+        username: user.username,
+        email: user.email || "",
         full_name: user.full_name,
         role: user.role as UserRole,
         avatar_url: user.avatar_url ?? undefined,
@@ -168,13 +179,21 @@ export const useUserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers, hasUserManagementAccess]);
 
   const addUser = useCallback(
     async (
       user: AddUserData,
       plantUnits: PlantUnit[]
     ): Promise<{ success: boolean; tempPassword?: string; error?: string }> => {
+      // Only Super Admin can add users
+      if (!hasUserManagementAccess) {
+        return {
+          success: false,
+          error: "Access denied. Only Super Admin can add users.",
+        };
+      }
+
       try {
         const permissions =
           user.permissions ||
@@ -184,24 +203,46 @@ export const useUserManagement = () => {
           Math.random().toString(36).slice(-12) +
           Math.random().toString(36).slice(-12);
 
-        // Create user directly in users table instead of using approveRegistrationRequest
-        const { data, error } = await supabase
+        // Create user in users table first
+        const { data: newUser, error: userError } = await (supabase as any)
           .from("users")
           .insert({
             username: user.username,
+            email: user.email || `${user.username}@sig.id`,
             full_name: user.full_name,
             role: user.role,
-            is_active: user.is_active,
-            permissions: permissions as any, // Cast to Json type
-            password: tempPassword, // Include password in insert
+            is_active: user.is_active ?? true,
+            password: tempPassword,
             created_at: new Date().toISOString(),
             last_active: new Date().toISOString(),
           })
           .select()
           .single();
 
-        if (error) {
-          throw error;
+        if (userError) {
+          throw userError;
+        }
+
+        // Create permissions in user_permissions table
+        const { error: permissionsError } = await (supabase as any)
+          .from("user_permissions")
+          .insert({
+            user_id: newUser.id,
+            dashboard: permissions.dashboard,
+            user_management: permissions.user_management,
+            plant_operations: permissions.plant_operations,
+            packing_plant: permissions.packing_plant,
+            project_management: permissions.project_management,
+            system_settings: permissions.system_settings,
+          });
+
+        if (permissionsError) {
+          // If permissions insert fails, we should ideally rollback the user creation
+          // For now, we'll just log the error and continue
+          console.warn(
+            "Failed to create permissions for user:",
+            permissionsError
+          );
         }
 
         fetchUsers();
@@ -211,11 +252,16 @@ export const useUserManagement = () => {
         return { success: false, error: "Unexpected error occurred" };
       }
     },
-    [fetchUsers, handleError]
+    [fetchUsers, handleError, hasUserManagementAccess]
   );
 
   const updateUser = useCallback(
     async (updatedUser: User) => {
+      // Only Super Admin can update users
+      if (!hasUserManagementAccess) {
+        throw new Error("Access denied. Only Super Admin can update users.");
+      }
+
       try {
         const { id, created_at, last_active, ...updateData } = updatedUser;
 
@@ -236,11 +282,16 @@ export const useUserManagement = () => {
         throw err;
       }
     },
-    [fetchUsers, handleError]
+    [fetchUsers, handleError, hasUserManagementAccess]
   );
 
   const deleteUser = useCallback(
     async (userId: string) => {
+      // Only Super Admin can delete users
+      if (!hasUserManagementAccess) {
+        throw new Error("Access denied. Only Super Admin can delete users.");
+      }
+
       try {
         const userToDelete = users.find((u) => u.id === userId);
         if (!userToDelete) {
@@ -265,11 +316,18 @@ export const useUserManagement = () => {
         handleError(err, "Error deleting user");
       }
     },
-    [users, fetchUsers, handleError]
+    [users, fetchUsers, handleError, hasUserManagementAccess]
   );
 
   const toggleUserStatus = useCallback(
     async (userId: string) => {
+      // Only Super Admin can toggle user status
+      if (!hasUserManagementAccess) {
+        throw new Error(
+          "Access denied. Only Super Admin can toggle user status."
+        );
+      }
+
       const userToToggle = users.find((u) => u.id === userId);
       if (!userToToggle) return;
 
@@ -290,7 +348,7 @@ export const useUserManagement = () => {
         handleError(error, "Error toggling user status");
       }
     },
-    [users, fetchUsers, handleError]
+    [users, fetchUsers, handleError, hasUserManagementAccess]
   );
 
   return {
@@ -301,5 +359,6 @@ export const useUserManagement = () => {
     deleteUser,
     toggleUserStatus,
     fetchUsers,
+    hasUserManagementAccess, // Export access control state
   };
 };

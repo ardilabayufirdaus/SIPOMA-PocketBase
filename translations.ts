@@ -565,6 +565,12 @@ export const translations = {
     // Placeholder
     under_construction: "This module is under construction.",
 
+    // Access Control
+    access_denied: "Access Denied",
+    super_admin_only_access:
+      "Only Super Admin can access User Management module",
+    back_to_dashboard: "Back to Dashboard",
+
     // COP Analysis
     qaf_daily: "QAF Daily",
     qaf_tooltip: "{inRange} of {total} parameters in range",
@@ -1147,6 +1153,12 @@ export const translations = {
 
     // Placeholder
     under_construction: "Modul ini sedang dalam pengembangan.",
+
+    // Access Control
+    access_denied: "Akses Ditolak",
+    super_admin_only_access:
+      "Hanya Super Admin yang dapat mengakses modul User Management",
+    back_to_dashboard: "Kembali ke Dashboard",
 
     // COP Analysis
     qaf_daily: "QAF Harian",
