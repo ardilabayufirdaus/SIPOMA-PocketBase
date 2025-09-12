@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../utils/supabase";
 import { User } from "../types";
@@ -9,30 +8,40 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const { handleError } = useErrorHandler();
 
-  const login = useCallback(async (username, password) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("username", username)
-        .eq("password", password)
-        .single();
+  const login = useCallback(
+    async (identifier, password) => {
+      setLoading(true);
+      try {
+        // Query untuk mencari user berdasarkan username atau email
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .or(`username.eq.${identifier},email.eq.${identifier}`)
+          .eq("password", password)
+          .single();
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        // Convert last_active to Date if it's a string
+        const userData = data as any;
+        if (userData.last_active && typeof userData.last_active === "string") {
+          userData.last_active = new Date(userData.last_active);
+        }
+
+        setUser(userData as User);
+        localStorage.setItem("currentUser", JSON.stringify(userData));
+        return userData;
+      } catch (error) {
+        handleError(error, "Error logging in");
+        return null;
+      } finally {
+        setLoading(false);
       }
-
-      setUser(data as User);
-      localStorage.setItem("currentUser", JSON.stringify(data));
-      return data;
-    } catch (error) {
-      handleError(error, "Error logging in");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [handleError]);
+    },
+    [handleError]
+  );
 
   const logout = useCallback(() => {
     setUser(null);

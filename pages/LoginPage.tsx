@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -11,10 +11,10 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedUsername = localStorage.getItem("savedUsername");
+    const savedIdentifier = localStorage.getItem("savedIdentifier");
     const savedRememberMe = localStorage.getItem("rememberMe") === "true";
-    if (savedRememberMe && savedUsername) {
-      setUsername(savedUsername);
+    if (savedRememberMe && savedIdentifier) {
+      setIdentifier(savedIdentifier);
       setRememberMe(true);
     }
   }, []);
@@ -23,8 +23,8 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
 
-    if (!username.trim()) {
-      setError("Username is required");
+    if (!identifier.trim()) {
+      setError("Username or email is required");
       return;
     }
 
@@ -33,19 +33,19 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    const loggedInUser = await login(username, password);
+    const loggedInUser = await login(identifier, password);
 
     if (loggedInUser) {
       if (rememberMe) {
-        localStorage.setItem("savedUsername", username.trim());
+        localStorage.setItem("savedIdentifier", identifier.trim());
         localStorage.setItem("rememberMe", "true");
       } else {
-        localStorage.removeItem("savedUsername");
+        localStorage.removeItem("savedIdentifier");
         localStorage.removeItem("rememberMe");
       }
       navigate("/", { replace: true });
     } else {
-      setError("Invalid username or password");
+      setError("Invalid username/email or password");
     }
   };
 
@@ -76,13 +76,13 @@ const LoginPage: React.FC = () => {
         <form onSubmit={handleLogin} className="w-full animate-fadein-form">
           <div className="mb-4 relative">
             <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
-              Username
+              Username or Email
             </label>
             <input
               type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="identifier"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
               autoComplete="username"
               className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300"

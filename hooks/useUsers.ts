@@ -62,44 +62,56 @@ export const useCurrentUser = () => {
     const fetchCurrentUser = async () => {
       setLoading(true);
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        if (session?.user) {
-          const { data: user, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-
-          if (userError) throw userError;
-
-          setCurrentUser(user as User);
-        } else {
+        // Get user from localStorage (custom auth)
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
           setCurrentUser(null);
+          setLoading(false);
+          return;
+        }
+
+        const userData = JSON.parse(storedUser);
+
+        // Verify user is still active by checking database
+        const { data: user, error: userError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", userData.id)
+          .single();
+
+        if (userError || !user) {
+          // User not found or error, clear localStorage
+          localStorage.removeItem("currentUser");
+          setCurrentUser(null);
+        } else if (!user.is_active) {
+          // User inactive, clear session
+          localStorage.removeItem("currentUser");
+          setCurrentUser(null);
+        } else {
+          // User active, set current user
+          setCurrentUser(user as User);
         }
       } catch (error) {
         handleError(error, "Error fetching current user");
         setCurrentUser(null);
-      }
-      finally {
+      } finally {
         setLoading(false);
       }
     };
 
     fetchCurrentUser();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user;
-      if (user) {
-        fetchCurrentUser();
-      } else {
+    // Listen for storage changes (for logout in other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "currentUser" && !e.newValue) {
         setCurrentUser(null);
       }
-    });
+    };
+
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      authListener?.subscription.unsubscribe();
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [handleError]);
 
