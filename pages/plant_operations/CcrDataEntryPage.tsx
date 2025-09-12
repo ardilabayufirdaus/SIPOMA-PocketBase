@@ -1292,12 +1292,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Enhanced Header with Error Display */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
               {t.op_ccr_data_entry}
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -1401,8 +1401,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Silo Data Table */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
+        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
           {t.ccr_data_entry_title}
         </h3>
         <div className="overflow-x-auto">
@@ -1414,25 +1414,25 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               <tr>
                 <th
                   rowSpan={2}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r align-middle"
+                  className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r align-middle"
                 >
                   {t.silo_name}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
+                  className="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
                 >
                   {t.shift_1}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
+                  className="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
                 >
                   {t.shift_2}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b"
+                  className="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b"
                 >
                   {t.shift_3}
                 </th>
@@ -1441,19 +1441,19 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 {[...Array(3)].flatMap((_, i) => [
                   <th
                     key={`es-${i}`}
-                    className="px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                    className="px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
                   >
                     {t.empty_space}
                   </th>,
                   <th
                     key={`c-${i}`}
-                    className="px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                    className="px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
                   >
                     {t.content}
                   </th>,
                   <th
                     key={`p-${i}`}
-                    className={`px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider ${
+                    className={`px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider ${
                       i < 2 ? "border-r" : ""
                     }`}
                   >
@@ -1485,7 +1485,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
                   return (
                     <tr key={siloData.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white z-10">
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white z-10">
                         {masterSilo.silo_name}
                       </td>
                       {shifts.map((shift, i) => {
@@ -1622,7 +1622,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 <tr>
                   <td
                     colSpan={10}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
+                    className="text-center py-6 text-slate-500 dark:text-slate-400"
                   >
                     {!selectedCategory
                       ? "No plant categories found in Master Data."
@@ -1636,9 +1636,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Enhanced Parameter Data Table */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
             {t.ccr_parameter_data_entry_title}
           </h3>
 
@@ -1787,7 +1787,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 >
                   <tr className="border-b" role="row">
                     <th
-                      className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
+                      className="px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
                       style={{ width: "90px" }}
                       role="columnheader"
                       scope="col"
@@ -1795,7 +1795,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       {t.hour}
                     </th>
                     <th
-                      className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-24 bg-slate-50 z-30 sticky-col-header"
+                      className="px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-24 bg-slate-50 z-30 sticky-col-header"
                       style={{ width: "140px" }}
                       role="columnheader"
                       scope="col"
@@ -2065,16 +2065,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Downtime Data Table */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
             {t.downtime_data_entry_title}
           </h3>
           <button
             onClick={handleOpenAddDowntimeModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
           >
-            <PlusIcon className="w-5 h-5" />
+            <PlusIcon className="w-4 h-4" />
             {t.add_downtime_button}
           </button>
         </div>
@@ -2082,22 +2082,22 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.start_time}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.end_time}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.unit}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.pic}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.problem}
                 </th>
-                <th className="relative px-6 py-3">
+                <th className="relative px-4 py-2">
                   <span className="sr-only">{t.actions}</span>
                 </th>
               </tr>
@@ -2122,26 +2122,26 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         : "bg-white dark:bg-slate-800"
                     } transition-colors duration-200`}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-800">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
                       {downtime.start_time}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-800">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
                       {downtime.end_time}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
                       {downtime.unit}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
                       {downtime.pic}
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-3 text-sm text-slate-600 max-w-sm whitespace-pre-wrap">
                       {downtime.problem}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => handleOpenEditDowntimeModal(downtime)}
-                          className="p-2 text-slate-400 hover:text-red-600"
+                          className="p-1.5 text-slate-400 hover:text-red-600"
                         >
                           <EditIcon />
                         </button>
@@ -2149,7 +2149,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           onClick={() =>
                             handleOpenDeleteModal(downtime.id, downtime.date)
                           }
-                          className="p-2 text-slate-400 hover:text-red-600"
+                          className="p-1.5 text-slate-400 hover:text-red-600"
                         >
                           <TrashIcon />
                         </button>
@@ -2159,7 +2159,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-slate-500">
+                  <td colSpan={6} className="text-center py-6 text-slate-500">
                     {t.no_downtime_recorded}
                   </td>
                 </tr>
@@ -2194,16 +2194,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             {t.delete_confirmation_message}
           </p>
         </div>
-        <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+        <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
           <button
             onClick={handleDeleteConfirm}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
+            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-3 py-1.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
           >
             {t.confirm_delete_button}
           </button>
           <button
             onClick={handleCloseDeleteModal}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-2 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-3 py-1.5 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
             {t.cancel_button}
           </button>

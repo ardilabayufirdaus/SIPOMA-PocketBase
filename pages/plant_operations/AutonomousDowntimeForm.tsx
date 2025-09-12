@@ -49,12 +49,12 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="p-6 space-y-6">
-        <div className="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+      <div className="p-4 space-y-4">
+        <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded-lg">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-3">
             {t.downtime_details}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
               <strong className="text-slate-600 dark:text-slate-400">
                 {t.date}:
@@ -97,11 +97,11 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
             </div>
           </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
             <label
               htmlFor="action"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
             >
               {t.action}
             </label>
@@ -110,7 +110,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
               id="action"
               value={formData.action}
               onChange={handleChange}
-              rows={3}
+              rows={2}
               className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors"
               placeholder={t.action_placeholder || "Enter action taken..."}
             />
@@ -118,7 +118,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
           <div>
             <label
               htmlFor="corrective_action"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
             >
               {t.corrective_action}
             </label>
@@ -127,7 +127,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
               id="corrective_action"
               value={formData.corrective_action}
               onChange={handleChange}
-              rows={3}
+              rows={2}
               className="block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors"
               placeholder={
                 t.corrective_action_placeholder || "Enter corrective action..."
@@ -137,7 +137,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
           <div>
             <label
               htmlFor="status"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
             >
               {t.status}
             </label>
@@ -157,17 +157,17 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
           </div>
         </div>
       </div>
-      <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-600">
+      <div className="bg-slate-50 dark:bg-slate-700 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-600">
         <button
           type="submit"
-          className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-3 py-1.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
         >
           {t.save_button}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-600 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          className="mt-2 w-full inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-600 shadow-sm px-3 py-1.5 bg-white dark:bg-slate-600 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
         >
           {t.cancel_button}
         </button>

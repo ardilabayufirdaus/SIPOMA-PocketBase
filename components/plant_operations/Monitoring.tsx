@@ -184,9 +184,9 @@ const Monitoring: React.FC<MonitoringProps> = ({
   // Show loading state
   if (plantUnitsLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-        <span className="ml-3 text-slate-600 dark:text-slate-400">
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+        <span className="ml-2 text-slate-600 dark:text-slate-400 text-sm">
           {tf("loading_plant_data", "Memuat data plant...")}
         </span>
       </div>
@@ -196,10 +196,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
   // Show validation errors
   if (validateData.length > 0) {
     return (
-      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
         <div className="flex items-center">
           <svg
-            className="w-5 h-5 text-red-500 mr-2"
+            className="w-4 h-4 text-red-500 mr-2 flex-shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -229,10 +229,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
   // Show message when no plant units available
   if (plantCategories.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-slate-500 mb-4">
+      <div className="text-center py-8">
+        <div className="text-slate-500 mb-3">
           <svg
-            className="w-16 h-16 mx-auto mb-4"
+            className="w-12 h-12 mx-auto mb-3"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -245,10 +245,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-slate-700 dark:text-slate-300 mb-2">
+        <h3 className="text-base font-medium text-slate-700 dark:text-slate-300 mb-1">
           {tf("no_plant_units", "Tidak Ada Unit Plant Tersedia")}
         </h3>
-        <p className="text-slate-500 dark:text-slate-400">
+        <p className="text-slate-500 dark:text-slate-400 text-sm">
           {tf(
             "add_plant_units_first",
             "Silahkan tambahkan unit plant di Master Data terlebih dahulu."
@@ -259,15 +259,15 @@ const Monitoring: React.FC<MonitoringProps> = ({
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-4">
       {/* Header Section */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-8">
-        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 p-4">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {tf("monitoring_title", "Monitoring Plant Operations")}
             </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
               {tf(
                 "monitoring_subtitle",
                 "Pantau performa dan downtime operasi pabrik"
@@ -276,11 +276,11 @@ const Monitoring: React.FC<MonitoringProps> = ({
           </div>
 
           {/* Filter Plant Category & Unit */}
-          <div className="flex flex-col sm:flex-row gap-4 min-w-0 xl:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 min-w-0 xl:w-auto">
             <div className="min-w-0 flex-1 sm:max-w-xs">
               <label
                 htmlFor="monitoring-category-filter"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tf("plant_category", "Kategori Plant")}
               </label>
@@ -288,7 +288,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 id="monitoring-category-filter"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="block w-full pl-4 pr-10 py-3 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg shadow-sm transition-colors"
+                className="block w-full pl-3 pr-8 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-md shadow-sm transition-colors"
               >
                 {plantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -300,7 +300,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
             <div className="min-w-0 flex-1 sm:max-w-xs">
               <label
                 htmlFor="monitoring-unit-filter"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
                 {tf("plant_unit", "Unit Plant")}
               </label>
@@ -308,7 +308,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 id="monitoring-unit-filter"
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                className="block w-full pl-4 pr-10 py-3 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg shadow-sm disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors"
+                className="block w-full pl-3 pr-8 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-md shadow-sm disabled:bg-slate-50 dark:disabled:bg-slate-900 disabled:text-slate-500 dark:disabled:text-slate-400 transition-colors"
                 disabled={unitsForCategory.length === 0}
               >
                 {unitsForCategory.map((unit) => (
@@ -323,7 +323,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div
           className="flex gap-0 border-b border-slate-200 dark:border-slate-700"
           role="tablist"
@@ -334,7 +334,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
             aria-selected={activeTab === "availability"}
             aria-controls="availability-panel"
             id="availability-tab"
-            className={`flex-1 px-6 py-4 font-semibold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 ${
+            className={`flex-1 px-4 py-3 font-medium text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 text-sm ${
               activeTab === "availability"
                 ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500"
                 : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200"
@@ -343,7 +343,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
           >
             <div className="flex items-center justify-center gap-2">
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -363,7 +363,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
             aria-selected={activeTab === "index"}
             aria-controls="index-panel"
             id="index-tab"
-            className={`flex-1 px-6 py-4 font-semibold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 ${
+            className={`flex-1 px-4 py-3 font-medium text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 text-sm ${
               activeTab === "index"
                 ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500"
                 : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200"
@@ -372,7 +372,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
           >
             <div className="flex items-center justify-center gap-2">
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -397,21 +397,21 @@ const Monitoring: React.FC<MonitoringProps> = ({
           aria-labelledby={
             activeTab === "availability" ? "availability-tab" : "index-tab"
           }
-          className="p-8"
+          className="p-4"
         >
           {activeTab === "availability" && (
-            <div className="space-y-8">
+            <div className="space-y-4">
               {/* Charts Section - Grid Layout */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {/* Chart Pareto Downtime */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
                       {tf("downtime_pareto_chart", "Grafik Pareto Downtime")}
                     </h2>
                     <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                       <svg
-                        className="w-5 h-5 mr-2"
+                        className="w-4 h-4 mr-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -444,9 +444,9 @@ const Monitoring: React.FC<MonitoringProps> = ({
                       height={350}
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-col items-center justify-center py-8 text-slate-500 dark:text-slate-400">
                       <svg
-                        className="w-16 h-16 mb-4 opacity-50"
+                        className="w-12 h-12 mb-3 opacity-50"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -458,10 +458,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
                           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                         />
                       </svg>
-                      <h3 className="text-lg font-medium mb-2">
+                      <h3 className="text-base font-medium mb-1">
                         {tf("no_data_available", "Tidak Ada Data Tersedia")}
                       </h3>
-                      <p className="text-center text-sm">
+                      <p className="text-center text-xs">
                         {tf(
                           "no_downtime_data",
                           "Data downtime tidak tersedia."
@@ -472,14 +472,14 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 </div>
 
                 {/* Chart PIC */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
                       {tf("pic_bar_chart", "Grafik PIC")}
                     </h2>
                     <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                       <svg
-                        className="w-5 h-5 mr-2"
+                        className="w-4 h-4 mr-2"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -509,9 +509,9 @@ const Monitoring: React.FC<MonitoringProps> = ({
                       height={350}
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-col items-center justify-center py-8 text-slate-500 dark:text-slate-400">
                       <svg
-                        className="w-16 h-16 mb-4 opacity-50"
+                        className="w-12 h-12 mb-3 opacity-50"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -523,10 +523,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                         />
                       </svg>
-                      <h3 className="text-lg font-medium mb-2">
+                      <h3 className="text-base font-medium mb-1">
                         {tf("no_data_available", "Tidak Ada Data Tersedia")}
                       </h3>
-                      <p className="text-center text-sm">
+                      <p className="text-center text-xs">
                         {tf("no_pic_data", "Data PIC tidak tersedia.")}
                       </p>
                     </div>
@@ -535,17 +535,17 @@ const Monitoring: React.FC<MonitoringProps> = ({
               </div>
 
               {/* Tables Section */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 {/* Tabel 3 Masalah Teratas */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                  <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                      <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
                         {tf("top_3_problems", "3 Masalah Teratas")}
                       </h2>
                       <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                         <svg
-                          className="w-5 h-5 mr-2"
+                          className="w-4 h-4 mr-2"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -565,19 +565,19 @@ const Monitoring: React.FC<MonitoringProps> = ({
                     <ResponsiveTable>
                       <thead className="bg-slate-50 dark:bg-slate-800">
                         <tr>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("problem", "Masalah")}
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("duration", "Durasi")}
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("pic", "PIC")}
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("correction_action", "Tindakan Koreksi")}
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("corrective_action", "Tindakan Perbaikan")}
                           </th>
                         </tr>
@@ -595,19 +595,19 @@ const Monitoring: React.FC<MonitoringProps> = ({
                                   key={p.problem + d.pic + idx}
                                   className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                                 >
-                                  <td className="px-6 py-4 text-sm text-slate-900 dark:text-slate-100 font-medium">
+                                  <td className="px-3 py-2 text-sm text-slate-900 dark:text-slate-100 font-medium">
                                     {p.problem}
                                   </td>
-                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                     {p.duration} menit
                                   </td>
-                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                     {d.pic}
                                   </td>
-                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                     {d.action}
                                   </td>
-                                  <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                  <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                     {d.corrective_action}
                                   </td>
                                 </tr>
@@ -617,11 +617,11 @@ const Monitoring: React.FC<MonitoringProps> = ({
                             <tr>
                               <td
                                 colSpan={5}
-                                className="px-6 py-16 text-center text-slate-500 dark:text-slate-400"
+                                className="px-3 py-8 text-center text-slate-500 dark:text-slate-400"
                               >
                                 <div className="flex flex-col items-center">
                                   <svg
-                                    className="w-12 h-12 mb-4 opacity-50"
+                                    className="w-8 h-8 mb-2 opacity-50"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -648,15 +648,15 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 </div>
 
                 {/* Tabel Upcoming Events */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
-                  <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                     <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                      <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
                         {tf("upcoming_events", "Event Mendatang")}
                       </h2>
                       <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                         <svg
-                          className="w-5 h-5 mr-2"
+                          className="w-4 h-4 mr-2"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -676,16 +676,16 @@ const Monitoring: React.FC<MonitoringProps> = ({
                     <ResponsiveTable>
                       <thead className="bg-slate-50 dark:bg-slate-800">
                         <tr>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("upcoming_event", "Event Mendatang")}
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf(
                               "potential_counter_measures",
                               "Tindakan Pencegahan"
                             )}
                           </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                             {tf("risk_mitigation", "Mitigasi Risiko")}
                           </th>
                         </tr>
@@ -697,13 +697,13 @@ const Monitoring: React.FC<MonitoringProps> = ({
                               key={event.id + idx}
                               className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                             >
-                              <td className="px-6 py-4 text-sm text-slate-900 dark:text-slate-100 font-medium">
+                              <td className="px-3 py-2 text-sm text-slate-900 dark:text-slate-100 font-medium">
                                 {event.potential_disruption}
                               </td>
-                              <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                              <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                 {event.preventive_action}
                               </td>
-                              <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                              <td className="px-3 py-2 text-sm text-slate-600 dark:text-slate-400">
                                 {event.mitigation_plan}
                               </td>
                             </tr>
@@ -712,11 +712,11 @@ const Monitoring: React.FC<MonitoringProps> = ({
                           <tr>
                             <td
                               colSpan={3}
-                              className="px-6 py-16 text-center text-slate-500 dark:text-slate-400"
+                              className="px-3 py-8 text-center text-slate-500 dark:text-slate-400"
                             >
                               <div className="flex flex-col items-center">
                                 <svg
-                                  className="w-12 h-12 mb-4 opacity-50"
+                                  className="w-8 h-8 mb-2 opacity-50"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"

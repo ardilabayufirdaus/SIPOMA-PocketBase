@@ -482,13 +482,13 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     );
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+    <div className="space-y-4">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
             {t.op_cop_analysis}
           </h2>
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <div className="w-full sm:w-48">
               <label htmlFor="cop-filter-category" className="sr-only">
                 {t.plant_category_label}
@@ -572,20 +572,20 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
               </span>
             </div>
             {/* Loading skeleton */}
-            <div className="mt-6 w-full">
+            <div className="mt-4 w-full">
               <div className="animate-pulse">
-                <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-4"></div>
-                <div className="space-y-3">
+                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-3"></div>
+                <div className="space-y-2">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex space-x-4">
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
+                    <div key={i} className="flex space-x-2">
+                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/5"></div>
+                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/5"></div>
+                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
                       {Array.from({ length: 10 }).map((_, j) => (
                         <div
                           key={j}
-                          className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-12"
+                          className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-8"
                         ></div>
                       ))}
                     </div>
@@ -597,11 +597,11 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         )}
 
         {error && (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-8">
             <div className="text-center">
               <div className="text-red-500 mb-2">
                 <svg
-                  className="w-8 h-8 mx-auto"
+                  className="w-6 h-6 mx-auto"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -615,7 +615,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <p className="text-slate-600 dark:text-slate-300">{error}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {error}
+              </p>
             </div>
           </div>
         )}
@@ -632,51 +634,54 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             }}
           >
             <table
-              className="min-w-full text-sm border-collapse"
+              className="min-w-full text-xs border-collapse"
               role="table"
               aria-label="COP Analysis Table"
             >
               <thead className="bg-slate-100 dark:bg-slate-700">
                 <tr>
-                  <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600">
+                  <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-8">
                     No.
                   </th>
-                  <th className="sticky left-12 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[180px]">
+                  <th className="sticky left-8 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[140px]">
                     {t.parameter}
                   </th>
-                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                  <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
                     {t.min}
                   </th>
-                  <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                  <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
                     {t.max}
                   </th>
                   {daysHeader.map((day) => (
                     <th
                       key={day}
-                      className="px-2 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-14"
+                      className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-10"
                     >
                       {day}
                     </th>
                   ))}
-                  <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600">
+                  <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600 w-16">
                     Avg.
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-slate-800">
                 {analysisData.map((row, rowIndex) => (
-                  <tr key={row.parameter.id} className="group">
-                    <td className="sticky left-0 z-20 px-4 py-2 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
+                  <tr
+                    key={row.parameter.id}
+                    className="group hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                  >
+                    <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 w-8">
                       {rowIndex + 1}
                     </td>
-                    <td className="sticky left-12 z-20 px-4 py-2 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700">
+                    <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 min-w-[140px]">
                       {row.parameter.parameter}
                     </td>
                     {/* FIX: Use snake_case properties `min_value` and `max_value` */}
-                    <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                    <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
                       {formatCopNumber(row.parameter.min_value)}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-24">
+                    <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
                       {formatCopNumber(row.parameter.max_value)}
                     </td>
                     {row.dailyValues.map((day, dayIndex) => {
@@ -684,16 +689,18 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                       return (
                         <td
                           key={dayIndex}
-                          className={`relative px-2 py-1.5 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
+                          className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
                         >
                           <div className="relative group/cell h-full w-full flex items-center justify-center">
-                            <span className={`font-medium ${colors.text}`}>
+                            <span
+                              className={`font-medium text-xs ${colors.text}`}
+                            >
                               {formatCopNumber(day.raw)}
                             </span>
                             {day.raw !== undefined && (
-                              <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className="font-bold">
+                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-bold text-xs">
                                     {formatDate(
                                       new Date(
                                         Date.UTC(
@@ -705,13 +712,13 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                                     )}
                                   </span>
                                   <span
-                                    className={`px-1.5 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
+                                    className={`px-1 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
                                   >
                                     {colors.status}
                                   </span>
                                 </div>
                                 <hr className="border-slate-600 my-1" />
-                                <p>
+                                <p className="text-xs">
                                   <strong>{t.average}:</strong>{" "}
                                   <span className="font-mono">
                                     {formatCopNumber(day.raw)}{" "}
@@ -719,15 +726,15 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                                   </span>
                                 </p>
                                 {/* FIX: Use snake_case properties `min_value` and `max_value` */}
-                                <p>
+                                <p className="text-xs">
                                   <strong>Target:</strong>{" "}
-                                  <span className="font-mono">
+                                  <span className="font-mono text-xs">
                                     {formatCopNumber(row.parameter.min_value)} -{" "}
                                     {formatCopNumber(row.parameter.max_value)}
                                   </span>
                                 </p>
                                 {day.value !== null && (
-                                  <p>
+                                  <p className="text-xs">
                                     <strong>Normalized:</strong>{" "}
                                     <span className="font-mono">
                                       {day.value.toFixed(1)}%
@@ -744,9 +751,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                       const avgColors = getPercentageColor(row.monthlyAverage);
                       return (
                         <td
-                          className={`sticky right-0 z-20 px-4 py-2 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700`}
+                          className={`sticky right-0 z-20 px-2 py-1.5 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700 w-16`}
                         >
-                          <span className={avgColors.text}>
+                          <span className={`${avgColors.text} text-xs`}>
                             {formatCopNumber(row.monthlyAverageRaw)}
                           </span>
                         </td>
@@ -769,11 +776,11 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   </tr>
                 )}
               </tbody>
-              <tfoot className="font-semibold">
+              <tfoot className="font-semibold bg-slate-50 dark:bg-slate-700/50">
                 <tr className="border-t-2 border-slate-300 dark:border-slate-600">
                   <td
                     colSpan={4}
-                    className="sticky left-0 z-20 px-4 py-3 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
+                    className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
                   >
                     {t.qaf_daily}
                   </td>
@@ -782,16 +789,16 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                     return (
                       <td
                         key={index}
-                        className={`px-2 py-3 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
+                        className={`px-1 py-2 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
                       >
                         <div className="relative group/cell h-full w-full flex items-center justify-center">
-                          <span>
+                          <span className="text-xs font-bold">
                             {qaf.value !== null && !isNaN(qaf.value)
                               ? `${formatCopNumber(qaf.value)}%`
                               : "-"}
                           </span>
                           {qaf.total > 0 && (
-                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 shadow-lg">
+                            <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                               {t.qaf_tooltip
                                 ?.replace("{inRange}", qaf.inRange)
                                 .replace("{total}", qaf.total)}
@@ -806,7 +813,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                     const colors = getQafColor(qaf.value);
                     return (
                       <td
-                        className={`sticky right-0 z-20 px-4 py-3 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text}`}
+                        className={`sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text} font-bold text-sm`}
                       >
                         <div className="relative group/cell h-full w-full flex items-center justify-center">
                           <span>
@@ -815,7 +822,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                               : "-"}
                           </span>
                           {qaf.total > 0 && (
-                            <div className="absolute bottom-full mb-2 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1.5 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-30 left-1/2 -translate-x-1/2 shadow-lg">
+                            <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                               {t.qaf_tooltip
                                 ?.replace("{inRange}", qaf.inRange)
                                 .replace("{total}", qaf.total)}
@@ -834,12 +841,12 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
       {/* Kategori Pencapaian COP Operator */}
       {operatorAchievementData.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700 mt-6 relative">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700 mt-4 relative">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
               Kategori Pencapaian COP Operator
             </h3>
-            <div className="w-full md:w-64">
+            <div className="w-full md:w-56">
               <label htmlFor="operator-filter" className="sr-only">
                 Filter Operator
               </label>
@@ -847,7 +854,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 id="operator-filter"
                 value={selectedOperator}
                 onChange={(e) => setSelectedOperator(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
+                className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 rounded-md transition-colors duration-200"
               >
                 <option value="">Semua Operator</option>
                 {relevantOperators.map((operator) => (
@@ -858,11 +865,11 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
               </select>
             </div>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
             Diagram batang menunjukkan persentase hari dimana operator tidak
             mencapai parameter target (di luar range 0-100%).
           </p>
-          <div className="h-80">
+          <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={
@@ -874,7 +881,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                       )
                     : operatorAchievementData
                 }
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
                 onClick={(data: any) => {
                   if (
                     data &&
@@ -894,26 +901,28 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis
                   dataKey="parameter"
-                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  tick={{ fontSize: 10, fill: "#64748b" }}
                   angle={-45}
                   textAnchor="end"
-                  height={80}
+                  height={60}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  tick={{ fontSize: 10, fill: "#64748b" }}
                   label={{
                     value: "Persentase (%)",
                     angle: -90,
                     position: "insideLeft",
+                    style: { fontSize: 11 },
                   }}
                 />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#1e293b",
                     border: "none",
-                    borderRadius: "8px",
+                    borderRadius: "6px",
                     color: "white",
                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    fontSize: "11px",
                   }}
                   formatter={(value: number, name: string) => [
                     `${value}%`,
@@ -925,65 +934,93 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   dataKey="percentage"
                   fill="#ef4444"
                   name="Persentase Tidak Capai"
+                  radius={[2, 2, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 text-sm text-slate-600 dark:text-slate-400">
+          <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
             <p>
               Total parameter yang tidak mencapai target:{" "}
               {operatorAchievementData.length}
             </p>
           </div>
           {selectedParameterStats && (
-            <div className="absolute top-16 right-4 z-50 w-72 p-4 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200">
-              <h4 className="font-semibold mb-2">
-                {selectedParameterStats.parameter}
-              </h4>
-              <ul className="space-y-1">
-                <li>
-                  <strong>Avg:</strong>{" "}
-                  {selectedParameterStats.avg !== null
-                    ? selectedParameterStats.avg.toFixed(2)
-                    : "-"}
+            <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 max-h-80 overflow-y-auto">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-semibold text-sm truncate pr-2">
+                  {selectedParameterStats.parameter}
+                </h4>
+                <button
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
+                  onClick={() => setSelectedParameterStats(null)}
+                  aria-label="Close stats"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <ul className="space-y-1 text-xs">
+                <li className="flex justify-between">
+                  <strong>Avg:</strong>
+                  <span className="font-mono">
+                    {selectedParameterStats.avg !== null
+                      ? selectedParameterStats.avg.toFixed(2)
+                      : "-"}
+                  </span>
                 </li>
-                <li>
-                  <strong>Median:</strong>{" "}
-                  {selectedParameterStats.median !== null
-                    ? selectedParameterStats.median.toFixed(2)
-                    : "-"}
+                <li className="flex justify-between">
+                  <strong>Median:</strong>
+                  <span className="font-mono">
+                    {selectedParameterStats.median !== null
+                      ? selectedParameterStats.median.toFixed(2)
+                      : "-"}
+                  </span>
                 </li>
-                <li>
-                  <strong>Min:</strong>{" "}
-                  {selectedParameterStats.min !== null
-                    ? selectedParameterStats.min.toFixed(2)
-                    : "-"}
+                <li className="flex justify-between">
+                  <strong>Min:</strong>
+                  <span className="font-mono">
+                    {selectedParameterStats.min !== null
+                      ? selectedParameterStats.min.toFixed(2)
+                      : "-"}
+                  </span>
                 </li>
-                <li>
-                  <strong>Max:</strong>{" "}
-                  {selectedParameterStats.max !== null
-                    ? selectedParameterStats.max.toFixed(2)
-                    : "-"}
+                <li className="flex justify-between">
+                  <strong>Max:</strong>
+                  <span className="font-mono">
+                    {selectedParameterStats.max !== null
+                      ? selectedParameterStats.max.toFixed(2)
+                      : "-"}
+                  </span>
                 </li>
-                <li>
-                  <strong>Stdev:</strong>{" "}
-                  {selectedParameterStats.stdev !== null
-                    ? selectedParameterStats.stdev.toFixed(2)
-                    : "-"}
+                <li className="flex justify-between">
+                  <strong>Stdev:</strong>
+                  <span className="font-mono">
+                    {selectedParameterStats.stdev !== null
+                      ? selectedParameterStats.stdev.toFixed(2)
+                      : "-"}
+                  </span>
                 </li>
-                <li>
-                  <strong>QAF:</strong>{" "}
-                  {selectedParameterStats.qaf !== null
-                    ? `${selectedParameterStats.qaf.toFixed(2)}%`
-                    : "-"}
+                <li className="flex justify-between">
+                  <strong>QAF:</strong>
+                  <span className="font-mono">
+                    {selectedParameterStats.qaf !== null
+                      ? `${selectedParameterStats.qaf.toFixed(2)}%`
+                      : "-"}
+                  </span>
                 </li>
               </ul>
-              <button
-                className="mt-2 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                onClick={() => setSelectedParameterStats(null)}
-              >
-                Close
-              </button>
             </div>
           )}
         </div>

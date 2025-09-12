@@ -1223,19 +1223,19 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
             </div>
           </div>
 
-          {/* Enhanced Metrics Cards - Compact Layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
+          {/* Enhanced Metrics Cards - Ultra Compact Layout */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-2">
             <ForecastMetricCard
               title={t.forecast_current_stock}
               value={formatNumber(Math.round(tableMetrics.latestClosingStock))}
               unit="Ton"
-              icon={<ArchiveBoxIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
+              icon={<ArchiveBoxIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
             />
             <ForecastMetricCard
               title={t.forecast_avg_daily_out}
               value={formatNumber(Math.round(tableMetrics.avgDailyStockOut))}
               unit="Ton/Day"
-              icon={<ArrowTrendingDownIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
+              icon={<ArrowTrendingDownIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
             />
             <ForecastMetricCard
               title="Avg Daily Received"
@@ -1243,7 +1243,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 Math.round(tableMetrics.avgDailyStockReceived)
               )}
               unit="Ton/Day"
-              icon={<ArrowTrendingUpIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
+              icon={<ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
             />
             <ForecastMetricCard
               title={t.forecast_days_until_empty}
@@ -1255,9 +1255,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               unit="Days"
               icon={
                 tableMetrics.daysUntilEmpty <= 7 ? (
-                  <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                  <ExclamationTriangleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
                 ) : (
-                  <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                  <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                 )
               }
             />
@@ -1267,20 +1267,20 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               unit=""
               icon={
                 tableMetrics.daysUntilEmpty <= 7 ? (
-                  <ExclamationTriangleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                  <ExclamationTriangleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
                 ) : (
-                  <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                  <ClockIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                 )
               }
             />
           </div>
 
-          {/* Main Content Grid Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Main Content Grid Layout - More Compact */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3">
             {/* Left Column: Trend Analysis Cards */}
             <div className="lg:col-span-1">
-              <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-3 sm:p-4">
+              <div className="grid grid-cols-1 gap-2">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800 p-2 sm:p-3">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 mb-1 truncate">
@@ -1316,7 +1316,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-3 sm:p-4">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg shadow-sm border border-green-200 dark:border-green-800 p-2 sm:p-3">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0 flex-1">
                       <p className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400 mb-1 truncate">
@@ -1852,12 +1852,12 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       </div>
 
                       {/* Compact Stock Analysis - Responsive Layout */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3">
                         <div>
-                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 mb-2 sm:mb-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 mb-1 sm:mb-2">
                             Stock Level Distribution
                           </h4>
-                          <div className="h-32 sm:h-36 lg:h-40">
+                          <div className="h-24 sm:h-28 lg:h-32">
                             <ChartErrorBoundary>
                               <div className="w-full h-full">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -1942,10 +1942,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                         </div>
 
                         <div>
-                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 mb-2 sm:mb-3">
+                          <h4 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-100 mb-1 sm:mb-2">
                             Daily Stock Flow
                           </h4>
-                          <div className="h-32 sm:h-36 lg:h-40">
+                          <div className="h-24 sm:h-28 lg:h-32">
                             <ChartErrorBoundary>
                               <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={tableData}>
@@ -2057,25 +2057,25 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                     <table className="min-w-full divide-y divide-slate-200">
                       <thead className="bg-slate-50 sticky top-0">
                         <tr>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             {t.forecast_projected_date || "Date"}
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Opening Stock (Ton)
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Stock Received (Ton)
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Stock Out (Ton)
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Predicted Out (Ton)
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Deviation (Ton)
                           </th>
-                          <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Achievement (%)
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -2116,10 +2116,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   : "border-l-4 border-blue-500"
                               }`}
                             >
-                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium text-slate-900">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs font-medium text-slate-900">
                                 {item.dateFormatted}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs text-slate-600">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs text-slate-600">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.openingStock)}
@@ -2131,7 +2131,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs text-green-600 font-medium">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs text-green-600 font-medium">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.stockReceived)}
@@ -2144,7 +2144,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 )}
                               </td>
                               <td
-                                className={`px-3 py-2 whitespace-nowrap text-xs font-medium ${
+                                className={`px-2 py-1 whitespace-nowrap text-xs font-medium ${
                                   item.isActual
                                     ? "text-red-700 bg-red-50"
                                     : "text-slate-400"
@@ -2161,10 +2161,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs text-blue-600 font-medium">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs text-blue-600 font-medium">
                                 {formatNumber(item.predictedStockOut)}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs font-medium">
                                 {item.isActual ? (
                                   <span
                                     className={`${
@@ -2180,10 +2180,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs font-medium">
                                 {item.isActual ? (
                                   <span
-                                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
+                                    className={`inline-flex items-center px-1 py-0.5 rounded-full text-xs font-bold ${
                                       item.achievementPercentage >= 90 &&
                                       item.achievementPercentage <= 110
                                         ? "bg-green-100 text-green-800"
@@ -2220,7 +2220,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <span className="text-slate-400">-</span>
                                 )}
                               </td>
-                              <td className="px-3 py-2 whitespace-nowrap text-xs font-medium">
+                              <td className="px-2 py-1 whitespace-nowrap text-xs font-medium">
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     <span
@@ -2306,7 +2306,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                         </tr>
                         {/* Min Row */}
                         <tr className="font-medium text-slate-600">
-                          <td className="px-3 py-2 text-xs font-bold">Min</td>
+                          <td className="px-2 py-1 text-xs font-bold">Min</td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.openingStock.min)}
                           </td>
@@ -2340,7 +2340,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                         </tr>
                         {/* Max Row */}
                         <tr className="font-medium text-slate-600">
-                          <td className="px-3 py-2 text-xs font-bold">Max</td>
+                          <td className="px-2 py-1 text-xs font-bold">Max</td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.openingStock.max)}
                           </td>
