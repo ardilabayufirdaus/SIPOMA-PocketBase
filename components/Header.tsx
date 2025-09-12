@@ -78,15 +78,15 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="glass-card border-0 border-b border-white/20 dark:border-slate-700/50 sticky top-0 z-30 backdrop-blur-xl">
-      <div className="px-3 sm:px-4 py-2">
+    <header className="header-modern backdrop-blur-xl">
+      <div className="header-modern-content">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {/* Mobile Hamburger Menu */}
             {isMobile && onToggleSidebar && (
               <button
                 onClick={onToggleSidebar}
-                className="p-1.5 rounded-md hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all duration-200 min-h-[36px] min-w-[36px] flex items-center justify-center md:hidden flex-shrink-0"
+                className="btn-modern btn-ghost p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center md:hidden flex-shrink-0 hover-lift-modern"
                 aria-label="Toggle navigation menu"
               >
                 <Bars3Icon
@@ -106,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({
               />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-sm sm:text-base lg:text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent truncate">
+              <h1 className="header-modern-title text-gradient-modern truncate">
                 {pageTitle}
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">

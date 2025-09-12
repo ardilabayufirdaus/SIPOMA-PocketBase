@@ -456,16 +456,16 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         ref={sidebarRef}
-        className={sidebarClasses}
+        className={`sidebar-modern ${sidebarClasses}`}
         role="navigation"
         aria-label="Main navigation"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <div
-          className={`h-16 flex items-center ${
-            shouldCollapse ? "justify-center" : "justify-between"
-          } px-4 border-b border-white/10 relative overflow-hidden`}
+          className={`sidebar-modern-header ${
+            shouldCollapse ? "justify-center px-3" : "justify-between px-4"
+          }`}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10"></div>
           <div
