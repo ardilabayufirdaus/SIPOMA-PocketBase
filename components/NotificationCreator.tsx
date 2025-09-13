@@ -7,12 +7,14 @@ import {
 } from "../utils/demoNotifications";
 import PlusIcon from "./icons/PlusIcon";
 import ExclamationTriangleIcon from "./icons/ExclamationTriangleIcon";
+import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
 
 interface NotificationCreatorProps {
   t: any;
 }
 
 const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
+  const { announceToScreenReader } = useAccessibility();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [severity, setSeverity] = useState<AlertSeverity>(AlertSeverity.INFO);
@@ -56,12 +58,15 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
           <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             Create Test Notification
           </h3>
-          <button
+          <EnhancedButton
             onClick={() => setIsOpen(false)}
+            variant="ghost"
+            size="sm"
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            ariaLabel="Close notification creator"
           >
             ×
-          </button>
+          </EnhancedButton>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
@@ -114,20 +119,24 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button
+            <EnhancedButton
               type="button"
               onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+              variant="secondary"
+              size="sm"
+              ariaLabel="Cancel creating notification"
             >
               Cancel
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
               type="submit"
               disabled={!message.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              variant="primary"
+              size="sm"
+              ariaLabel="Create notification"
             >
               Create Notification
-            </button>
+            </EnhancedButton>
           </div>
         </form>
       </div>

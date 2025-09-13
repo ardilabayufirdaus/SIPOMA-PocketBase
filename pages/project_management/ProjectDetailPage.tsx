@@ -10,6 +10,15 @@ import {
 import Modal from "../../components/Modal";
 import ProjectTaskForm from "../../components/ProjectTaskForm";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 // Icons
 import PlusIcon from "../../components/icons/PlusIcon";
 import EditIcon from "../../components/icons/EditIcon";
@@ -315,6 +324,12 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   const [highlightedTaskIds, setHighlightedTaskIds] = useState<string[]>([]);
   const [filteredDate, setFilteredDate] = useState<string | null>(null);
   const [chartView, setChartView] = useState<ChartView>("s-curve");
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -953,18 +968,22 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                 placeholder={t.project_name || "Project Name"}
               />
               <div className="flex gap-2">
-                <button
+                <EnhancedButton
+                  variant="success"
+                  size="sm"
                   onClick={handleSaveProject}
-                  className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                  aria-label={t.save || "Save project changes"}
                 >
                   {t.save || "Save"}
-                </button>
-                <button
+                </EnhancedButton>
+                <EnhancedButton
+                  variant="secondary"
+                  size="sm"
                   onClick={handleCancelProjectEdit}
-                  className="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+                  aria-label={t.cancel || "Cancel project edit"}
                 >
                   {t.cancel || "Cancel"}
-                </button>
+                </EnhancedButton>
               </div>
             </div>
           ) : (
@@ -972,13 +991,14 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
               <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {activeProject.title}
               </h1>
-              <button
+              <EnhancedButton
+                variant="ghost"
+                size="xs"
                 onClick={handleEditProject}
-                className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors"
-                title={t.edit_project || "Edit Project"}
+                aria-label={t.edit_project || "Edit project"}
               >
                 <EditIcon className="w-4 h-4" />
-              </button>
+              </EnhancedButton>
             </>
           )}
         </div>
@@ -1098,26 +1118,24 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
               : t.gantt_chart_view}
           </h3>
           <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
-            <button
+            <EnhancedButton
+              variant={chartView === "s-curve" ? "primary" : "ghost"}
+              size="xs"
               onClick={() => setChartView("s-curve")}
-              className={`p-1.5 rounded-md ${
-                chartView === "s-curve"
-                  ? "bg-white dark:bg-slate-600 shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600"
-              }`}
+              aria-label={t.s_curve_chart_title || "S-curve chart view"}
+              aria-pressed={chartView === "s-curve"}
             >
               <ChartPieIcon className="w-4 h-4" />
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
+              variant={chartView === "gantt" ? "primary" : "ghost"}
+              size="xs"
               onClick={() => setChartView("gantt")}
-              className={`p-1.5 rounded-md ${
-                chartView === "gantt"
-                  ? "bg-white dark:bg-slate-600 shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600"
-              }`}
+              aria-label={t.gantt_chart_view || "Gantt chart view"}
+              aria-pressed={chartView === "gantt"}
             >
               <Bars4Icon className="w-4 h-4" />
-            </button>
+            </EnhancedButton>
           </div>
         </div>
 
@@ -1406,13 +1424,15 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
               {t.task_details_title}
             </h3>
             {filteredDate && (
-              <button
+              <EnhancedButton
+                variant="error"
+                size="xs"
                 onClick={clearDateFilter}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full hover:bg-red-200"
+                aria-label={`Clear filter for ${formatDate(filteredDate)}`}
               >
                 {formatDate(filteredDate)}
-                <XCircleIcon className="w-4 h-4" />
-              </button>
+                <XCircleIcon className="w-4 h-4 ml-1" />
+              </EnhancedButton>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -1423,30 +1443,36 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
               accept=".xlsx, .xls"
               className="hidden"
             />
-            <button
+            <EnhancedButton
+              variant="outline"
+              size="sm"
               onClick={handleImportClick}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50"
+              aria-label={t.import_excel || "Import Excel file"}
             >
-              <DocumentArrowUpIcon className="w-5 h-5" />
+              <DocumentArrowUpIcon className="w-5 h-5 mr-2" />
               {t.import_excel}
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
+              variant="outline"
+              size="sm"
               onClick={handleExport}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50"
+              aria-label={t.export_excel || "Export to Excel"}
             >
-              <DocumentArrowDownIcon className="w-5 h-5" />
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
               {t.export_excel}
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
+              variant="primary"
+              size="sm"
               onClick={() => {
                 setEditingTask(null);
                 setFormModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+              aria-label={t.add_task_button || "Add new task"}
             >
-              <PlusIcon className="w-5 h-5" />
+              <PlusIcon className="w-5 h-5 mr-2" />
               {t.add_task_button}
-            </button>
+            </EnhancedButton>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -1559,21 +1585,25 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end">
-                        <button
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
                           onClick={() => {
                             setEditingTask(task);
                             setFormModalOpen(true);
                           }}
-                          className="text-slate-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50"
+                          aria-label={`Edit task ${task.activity}`}
                         >
                           <EditIcon />
-                        </button>
-                        <button
+                        </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
                           onClick={() => handleOpenDeleteModal(task.id)}
-                          className="text-slate-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50"
+                          aria-label={`Delete task ${task.activity}`}
                         >
                           <TrashIcon />
-                        </button>
+                        </EnhancedButton>
                       </div>
                     </td>
                   </tr>

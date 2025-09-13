@@ -27,14 +27,14 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
   parseTimeValue,
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+    <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow space-y-3">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+        <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1 truncate">
           {t.ccr_downtime_data_entry_title}
         </h3>
         <button
           onClick={handleAddDowntime}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-xs font-medium"
         >
           + {t.add_downtime}
         </button>
@@ -46,7 +46,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 border border-slate-200">
+          <table className="min-w-full divide-y divide-slate-200 border border-slate-200 text-xs">
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
@@ -97,7 +97,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                               parsed
                             );
                           }}
-                          className="w-full px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
+                          className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           aria-label={`Start time for downtime ${index + 1}`}
                         />
                       </td>
@@ -113,7 +113,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                               parsed
                             );
                           }}
-                          className="w-full px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
+                          className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           aria-label={`End time for downtime ${index + 1}`}
                         />
                       </td>
@@ -135,7 +135,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                               e.target.value
                             )
                           }
-                          className="w-full px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
+                          className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           placeholder={t.enter_reason}
                           aria-label={`Problem for downtime ${index + 1}`}
                         />
@@ -143,7 +143,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-center">
                         <button
                           onClick={() => handleDeleteDowntime(downtime.id)}
-                          className="px-3 py-1.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors font-medium"
+                          className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors text-xs font-medium"
                           aria-label={`Delete downtime ${index + 1}`}
                         >
                           {t.delete}

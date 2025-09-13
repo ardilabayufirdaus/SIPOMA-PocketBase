@@ -7,6 +7,16 @@ import LanguageIcon from "../components/icons/LanguageIcon";
 import BellIcon from "../components/icons/BellIcon";
 import { supabase } from "../utils/supabase";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../components/ui/EnhancedComponents";
+
 interface SettingsPageProps {
   t: any;
   user: User | null;
@@ -20,13 +30,13 @@ const SettingsCard: React.FC<{
   icon: React.ReactNode;
   children: React.ReactNode;
 }> = ({ title, icon, children }) => (
-  <div className="bg-white rounded-lg shadow-md border border-slate-200">
+  <EnhancedCard className="w-full">
     <div className="flex items-center gap-3 p-4 border-b border-slate-200">
       <div className="text-slate-500">{icon}</div>
       <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
     </div>
     <div className="p-6 space-y-6">{children}</div>
-  </div>
+  </EnhancedCard>
 );
 
 const SettingsPage: React.FC<SettingsPageProps> = ({
@@ -44,6 +54,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const [notificationPrefs, setNotificationPrefs] = useState({
     projectUpdates: false,
   });
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   // Load notification preferences from localStorage
   React.useEffect(() => {
@@ -140,12 +156,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             </div>
           </div>
           <div className="flex justify-end">
-            <button
+            <EnhancedButton
+              variant="primary"
+              size="sm"
               onClick={onOpenProfileModal}
-              className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700"
+              aria-label={t.edit_profile || "Edit profile"}
             >
               {t.edit_profile}
-            </button>
+            </EnhancedButton>
           </div>
         </SettingsCard>
 
@@ -200,12 +218,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
             </div>
             <div className="flex justify-end">
-              <button
+              <EnhancedButton
+                variant="primary"
+                size="sm"
                 type="submit"
-                className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700"
+                aria-label={t.save_password || "Save password"}
               >
                 {t.save_password}
-              </button>
+              </EnhancedButton>
             </div>
           </form>
         </SettingsCard>
@@ -249,7 +269,11 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   {t.push_notifications_project_desc}
                 </p>
               </div>
-              <button
+              <EnhancedButton
+                variant={
+                  notificationPrefs.projectUpdates ? "primary" : "outline"
+                }
+                size="sm"
                 onClick={() => {
                   const newPrefs = {
                     ...notificationPrefs,
@@ -257,20 +281,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   };
                   saveNotificationPrefs(newPrefs);
                 }}
-                className={`${
-                  notificationPrefs.projectUpdates
-                    ? "bg-red-600"
-                    : "bg-slate-300"
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+                aria-label={`${
+                  notificationPrefs.projectUpdates ? t.disable : t.enable
+                } ${t.push_notifications_project}`}
+                aria-pressed={notificationPrefs.projectUpdates}
               >
-                <span
-                  className={`${
-                    notificationPrefs.projectUpdates
-                      ? "translate-x-6"
-                      : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </button>
+                {notificationPrefs.projectUpdates
+                  ? t.enabled || "Enabled"
+                  : t.disabled || "Disabled"}
+              </EnhancedButton>
             </div>
           </div>
         </SettingsCard>

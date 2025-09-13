@@ -55,13 +55,7 @@ const LoginPage: React.FC = () => {
   return (
     <>
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-slate-100 to-slate-300 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 transition-colors duration-300">
-        <div
-          className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center animate-fadein"
-          style={{
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
-            backdropFilter: "blur(6px)",
-          }}
-        >
+        <div className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center glass-card animate-fadein">
           <div className="mb-6 flex flex-col items-center animate-fadein-logo">
             <div className="p-2 rounded-2xl bg-white/95 dark:bg-slate-800/95 shadow-lg border border-white/30 dark:border-slate-700/50 mb-2">
               <img
@@ -137,17 +131,7 @@ const LoginPage: React.FC = () => {
             &copy; {new Date().getFullYear()} SIPOMA. All rights reserved.
           </div>
         </div>
-        <style>{`
-        @keyframes fadein { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fadein { animation: fadein 0.8s ease; }
-        .animate-fadein-logo { animation: fadein 1.2s ease; }
-        .animate-fadein-title { animation: fadein 1.4s ease; }
-        .animate-fadein-desc { animation: fadein 1.6s ease; }
-        .animate-fadein-form { animation: fadein 1.8s ease; }
-        .animate-fadein-btn { animation: fadein 2s ease; }
-        .animate-fadein-error { animation: fadein 2.2s ease; }
-        .animate-fadein-footer { animation: fadein 2.4s ease; }
-      `}</style>
+        {/* Animasi fadein dipindahkan ke file CSS global agar konsisten di seluruh aplikasi */}
       </div>
 
       {showRegistration && (

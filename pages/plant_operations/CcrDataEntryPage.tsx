@@ -35,6 +35,15 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 // Enhanced Debounce utility function with cancel capability
 const useDebounce = (value: any, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -99,6 +108,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       setToastMessage(null);
     }, 3000);
   };
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   // Function to check if we're in search mode
   const isSearchActive = useMemo(
@@ -1326,12 +1341,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   <p className="text-sm font-medium text-red-800 dark:text-red-200">
                     {error}
                   </p>
-                  <button
+                  <EnhancedButton
+                    variant="ghost"
+                    size="xs"
                     onClick={() => setError(null)}
-                    className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 underline font-medium"
+                    className="mt-2 text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 underline font-medium"
+                    aria-label="Tutup pesan error"
                   >
                     Tutup
-                  </button>
+                  </EnhancedButton>
                 </div>
               </div>
             </div>
@@ -1659,20 +1677,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 accept=".xlsx, .xls"
                 className="hidden"
               />
-              <button
+              <EnhancedButton
+                variant="outline"
+                size="xs"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isImporting || !selectedCategory || !selectedUnit}
-                className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                  isImporting || !selectedCategory || !selectedUnit
-                    ? "text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed"
-                    : "text-slate-700 bg-white border border-slate-300 hover:bg-slate-50"
-                }`}
+                loading={isImporting}
+                aria-label={t.import_excel || "Import Excel file"}
                 title="Import parameter data from Excel"
               >
-                <DocumentArrowUpIcon className="w-4 h-4" />
+                <DocumentArrowUpIcon className="w-4 h-4 mr-1" />
                 {isImporting ? "Importing..." : t.import_excel}
-              </button>
-              <button
+              </EnhancedButton>
+              <EnhancedButton
+                variant="outline"
+                size="xs"
                 onClick={handleExport}
                 disabled={
                   isExporting ||
@@ -1680,28 +1699,24 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   !selectedUnit ||
                   filteredParameterSettings.length === 0
                 }
-                className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                  isExporting ||
-                  !selectedCategory ||
-                  !selectedUnit ||
-                  filteredParameterSettings.length === 0
-                    ? "text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed"
-                    : "text-slate-700 bg-white border border-slate-300 hover:bg-slate-50"
-                }`}
+                loading={isExporting}
+                aria-label={t.export_excel || "Export to Excel"}
                 title="Export parameter data to Excel"
               >
-                <DocumentArrowDownIcon className="w-4 h-4" />
+                <DocumentArrowDownIcon className="w-4 h-4 mr-1" />
                 {isExporting ? "Exporting..." : t.export_excel}
-              </button>
+              </EnhancedButton>
             </div>
 
-            <button
+            <EnhancedButton
+              variant="info"
+              size="xs"
               onClick={() => setShowNavigationHelp(true)}
-              className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors"
+              aria-label="Show navigation help"
               title="Show navigation help"
             >
               ? Help
-            </button>
+            </EnhancedButton>
           </div>
         </div>
 
@@ -1724,13 +1739,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 title="Search columns by parameter name or unit. Use Ctrl+F to focus, Escape to clear."
               />
               {columnSearchQuery && (
-                <button
+                <EnhancedButton
+                  variant="ghost"
+                  size="xs"
                   onClick={clearColumnSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  aria-label={t.ccr_clear_search || "Clear search"}
                   title={t.ccr_clear_search}
                 >
                   <XMarkIcon className="w-4 h-4" />
-                </button>
+                </EnhancedButton>
               )}
               <div className="absolute right-2 top-full mt-1 text-xs text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
                 Ctrl+F to focus
@@ -1752,12 +1770,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               </div>
             )}
             {isSearchActive && (
-              <button
+              <EnhancedButton
+                variant="ghost"
+                size="xs"
                 onClick={clearColumnSearch}
-                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+                aria-label="Clear column search filter"
               >
                 Clear Filter
-              </button>
+              </EnhancedButton>
             )}
           </div>
         </div>
@@ -2070,13 +2091,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
             {t.downtime_data_entry_title}
           </h3>
-          <button
+          <EnhancedButton
+            variant="primary"
+            size="sm"
             onClick={handleOpenAddDowntimeModal}
-            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+            aria-label={t.add_downtime_button || "Add new downtime"}
           >
-            <PlusIcon className="w-4 h-4" />
+            <PlusIcon className="w-4 h-4 mr-2" />
             {t.add_downtime_button}
-          </button>
+          </EnhancedButton>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
@@ -2139,20 +2162,24 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <button
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
                           onClick={() => handleOpenEditDowntimeModal(downtime)}
-                          className="p-1.5 text-slate-400 hover:text-red-600"
+                          aria-label={`Edit downtime for ${downtime.unit}`}
                         >
                           <EditIcon />
-                        </button>
-                        <button
+                        </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
                           onClick={() =>
                             handleOpenDeleteModal(downtime.id, downtime.date)
                           }
-                          className="p-1.5 text-slate-400 hover:text-red-600"
+                          aria-label={`Delete downtime for ${downtime.unit}`}
                         >
                           <TrashIcon />
-                        </button>
+                        </EnhancedButton>
                       </div>
                     </td>
                   </tr>
@@ -2195,18 +2222,22 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </p>
         </div>
         <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
-          <button
+          <EnhancedButton
+            variant="error"
             onClick={handleDeleteConfirm}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-3 py-1.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
+            className="sm:ml-3 sm:w-auto"
+            aria-label={t.confirm_delete_button || "Confirm delete"}
           >
             {t.confirm_delete_button}
-          </button>
-          <button
+          </EnhancedButton>
+          <EnhancedButton
+            variant="secondary"
             onClick={handleCloseDeleteModal}
-            className="mt-2 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-3 py-1.5 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
+            aria-label={t.cancel_button || "Cancel"}
           >
             {t.cancel_button}
-          </button>
+          </EnhancedButton>
         </div>
       </Modal>
 

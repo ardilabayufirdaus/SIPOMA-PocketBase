@@ -5,6 +5,15 @@ import {
   ParameterDataType,
 } from "../../types";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 interface FormProps {
   recordToEdit: ReportSetting | null;
   onSave: (record: ReportSetting | Omit<ReportSetting, "id">) => void;
@@ -36,6 +45,12 @@ const ReportSettingForm: React.FC<FormProps> = ({
   selectedCategory,
   selectedUnit,
 }) => {
+  // Enhanced accessibility hooks
+  const announceToScreenReader = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
+
   // State management
   const [formData, setFormData] = useState<FormData>({
     parameter_id: "",
@@ -348,54 +363,36 @@ const ReportSettingForm: React.FC<FormProps> = ({
         </div>
       </div>
       <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-600">
-        <button
+        <EnhancedButton
           type="submit"
+          variant="primary"
           disabled={
             isSubmitting ||
             (availableParameters.length === 0 && !recordToEdit) ||
             !formData.parameter_id ||
             !formData.category.trim()
           }
-          className="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-slate-800 sm:ml-3 sm:w-auto sm:text-sm transition-colors disabled:bg-red-400 disabled:cursor-not-allowed disabled:opacity-60"
+          loading={isSubmitting}
+          loadingText={recordToEdit ? "Updating..." : "Saving..."}
+          className="sm:ml-3 sm:w-auto"
+          aria-label={
+            recordToEdit
+              ? t.save_button || "Update report setting"
+              : "Add parameter"
+          }
         >
-          {isSubmitting ? (
-            <>
-              <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              {recordToEdit ? "Updating..." : "Saving..."}
-            </>
-          ) : recordToEdit ? (
-            t.save_button
-          ) : (
-            "Add Parameter"
-          )}
-        </button>
-        <button
+          {recordToEdit ? t.save_button : "Add Parameter"}
+        </EnhancedButton>
+        <EnhancedButton
           type="button"
+          variant="secondary"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-slate-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
+          aria-label={t.cancel_button || "Cancel"}
         >
           {t.cancel_button}
-        </button>
+        </EnhancedButton>
       </div>
     </form>
   );

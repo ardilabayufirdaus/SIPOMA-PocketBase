@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { api } from "../utils/api";
+import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
 
 interface RegistrationFormProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { announceToScreenReader } = useAccessibility();
   const [formData, setFormData] = useState({
     name: "",
   });
@@ -97,9 +99,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
             Permintaan Registrasi
           </h2>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+          <EnhancedButton
+            onClick={() => {
+              onClose();
+              announceToScreenReader("Registration form closed");
+            }}
+            variant="ghost"
+            size="sm"
+            ariaLabel="Close registration form"
           >
             <svg
               className="w-6 h-6"
@@ -114,7 +121,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </EnhancedButton>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -143,20 +150,27 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           )}
 
           <div className="flex space-x-3">
-            <button
+            <EnhancedButton
               type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              onClick={() => {
+                onClose();
+                announceToScreenReader("Registration form cancelled");
+              }}
+              variant="outline"
+              size="md"
+              ariaLabel="Cancel registration request"
             >
               Batal
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="md"
+              ariaLabel="Submit registration request"
             >
               {loading ? "Mengirim..." : "Kirim Permintaan"}
-            </button>
+            </EnhancedButton>
           </div>
         </form>
 

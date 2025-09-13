@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { SearchInput } from "./ui/Input";
-import Button from "./ui/Button";
-import { User, UserRole, Department } from "../types";
+import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
+import { User, UserRole } from "../types";
 
 interface TableFiltersProps {
   users: User[];
@@ -12,7 +12,6 @@ interface TableFiltersProps {
 interface FilterState {
   search: string;
   role: UserRole | "all";
-  department: Department | "all";
   status: "active" | "inactive" | "all";
   dateRange: {
     start: string;
@@ -28,7 +27,6 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   const [filters, setFilters] = useState<FilterState>({
     search: "",
     role: "all",
-    department: "all",
     status: "all",
     dateRange: {
       start: "",
@@ -43,11 +41,8 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   // Get unique values for filter options
   const filterOptions = useMemo(() => {
     const roles = Array.from(new Set(users.map((user) => user.role))).sort();
-    const departments = Array.from(
-      new Set(users.map((user) => user.department))
-    ).sort();
 
-    return { roles, departments };
+    return { roles };
   }, [users]);
 
   // Apply filters and sorting
@@ -56,12 +51,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
       // Search filter
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
-        const searchableFields = [
-          user.full_name,
-          user.email,
-          user.role,
-          user.department,
-        ]
+        const searchableFields = [user.full_name, user.role]
           .join(" ")
           .toLowerCase();
 
@@ -72,14 +62,6 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
       // Role filter
       if (filters.role !== "all" && user.role !== filters.role) {
-        return false;
-      }
-
-      // Department filter
-      if (
-        filters.department !== "all" &&
-        user.department !== filters.department
-      ) {
         return false;
       }
 
@@ -161,7 +143,6 @@ const TableFilters: React.FC<TableFiltersProps> = ({
     setFilters({
       search: "",
       role: "all",
-      department: "all",
       status: "all",
       dateRange: { start: "", end: "" },
     });
@@ -171,22 +152,13 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
   const exportData = useCallback(() => {
     // Convert filtered data to CSV
-    const headers = [
-      "Name",
-      "Email",
-      "Role",
-      "Department",
-      "Status",
-      "Created Date",
-    ];
+    const headers = ["Name", "Role", "Status", "Created Date"];
     const csvData = [
       headers.join(","),
       ...filteredAndSortedUsers.map((user) =>
         [
           `"${user.full_name}"`,
-          `"${user.email}"`,
           `"${user.role}"`,
-          `"${user.department}"`,
           user.is_active ? "Active" : "Inactive",
           new Date(user.created_at).toLocaleDateString(),
         ].join(",")
@@ -224,10 +196,11 @@ const TableFilters: React.FC<TableFiltersProps> = ({
         </div>
 
         <div className="flex gap-2">
-          <Button
+          <EnhancedButton
             variant="outline"
-            size="base"
+            size="md"
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            ariaLabel="Toggle advanced filters"
           >
             <svg
               className="w-4 h-4 mr-2"
@@ -243,9 +216,14 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               />
             </svg>
             Filters
-          </Button>
+          </EnhancedButton>
 
-          <Button variant="outline" size="base" onClick={exportData}>
+          <EnhancedButton
+            variant="outline"
+            size="md"
+            onClick={exportData}
+            ariaLabel="Export filtered data to CSV"
+          >
             <svg
               className="w-4 h-4 mr-2"
               fill="none"
@@ -260,7 +238,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               />
             </svg>
             Export
-          </Button>
+          </EnhancedButton>
         </div>
       </div>
 
@@ -284,30 +262,6 @@ const TableFilters: React.FC<TableFiltersProps> = ({
                 {filterOptions.roles.map((role) => (
                   <option key={role} value={role}>
                     {role}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Department Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Department
-              </label>
-              <select
-                value={filters.department}
-                onChange={(e) =>
-                  handleFilterChange(
-                    "department",
-                    e.target.value as Department | "all"
-                  )
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="all">All Departments</option>
-                {filterOptions.departments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
                   </option>
                 ))}
               </select>
@@ -405,9 +359,14 @@ const TableFilters: React.FC<TableFiltersProps> = ({
               Showing {filteredAndSortedUsers.length} of {users.length} users
             </span>
 
-            <Button variant="ghost" size="sm" onClick={clearFilters}>
+            <EnhancedButton
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              ariaLabel="Clear all applied filters"
+            >
               Clear All Filters
-            </Button>
+            </EnhancedButton>
           </div>
         </div>
       )}

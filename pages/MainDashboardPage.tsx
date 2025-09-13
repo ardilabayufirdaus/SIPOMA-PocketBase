@@ -68,7 +68,7 @@ const ModernDashboardHeader: React.FC<{
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-2 tracking-tight">
-              Selamat Datang di SIPOMA v2.0
+              Selamat Datang di SIPOMA
             </h1>
             <p className="text-white/90 text-lg">
               System Informasi Plant Operations Management & Analytics
@@ -542,7 +542,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                SIPOMA v2.0
+                SIPOMA
               </span>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>

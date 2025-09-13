@@ -26,6 +26,16 @@ import ClockIcon from "./icons/ClockIcon";
 import PlusIcon from "./icons/PlusIcon";
 import ShieldCheckIcon from "./icons/ShieldCheckIcon";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "./ui/EnhancedComponents";
+
 interface ModernSidebarProps {
   currentPage: Page;
   activeSubPages: { [key: string]: string };
@@ -47,47 +57,24 @@ const NavLink: React.FC<{
   onClick: () => void;
   isCollapsed?: boolean;
 }> = memo(({ icon, label, isActive, onClick, isCollapsed = false }) => {
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        onClick();
-      }
-    },
-    [onClick]
-  );
-
   return (
-    <button
+    <EnhancedButton
+      variant={isActive ? "primary" : "ghost"}
+      size="sm"
       onClick={onClick}
-      onKeyDown={handleKeyDown}
-      className={`group relative w-full flex items-center rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-        isCollapsed
-          ? "justify-center px-3 py-2"
-          : "justify-start gap-3 px-4 py-2"
-      } ${
-        isActive
-          ? "bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm"
-          : "text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-2 focus:ring-red-500/30"
+      ariaLabel={label}
+      className={`w-full ${isCollapsed ? "justify-center" : "justify-start"} ${
+        isActive ? "bg-red-500/10 text-red-400 border border-red-500/20" : ""
       }`}
-      title={isCollapsed ? label : undefined}
-      aria-label={label}
-      aria-current={isActive ? "page" : undefined}
+      icon={icon}
     >
-      <div
-        className={`transition-transform duration-200 ${
-          isActive ? "scale-110" : "group-hover:scale-105"
-        }`}
-      >
-        {icon}
-      </div>
       {!isCollapsed && <span className="truncate">{label}</span>}
       {isCollapsed && (
         <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
           {label}
         </div>
       )}
-    </button>
+    </EnhancedButton>
   );
 });
 
@@ -137,30 +124,27 @@ const CollapsibleMenu: React.FC<{
 
     return (
       <div className="space-y-1">
-        <button
+        <EnhancedButton
+          variant={isActive ? "primary" : "ghost"}
+          size="sm"
           onClick={handleToggle}
-          className={`group relative w-full flex items-center rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-            isCollapsed
-              ? "justify-center px-3 py-2"
-              : "justify-between px-4 py-2"
-          } ${
-            isActive
-              ? "text-white bg-slate-700/50"
-              : "text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-2 focus:ring-red-500/30"
-          }`}
-          title={isCollapsed ? label : undefined}
-          aria-expanded={!isCollapsed ? isOpen : undefined}
-        >
-          <div className={`flex items-center ${isCollapsed ? "" : "gap-3"}`}>
-            <div
-              className={`transition-transform duration-200 ${
-                isActive ? "scale-110" : "group-hover:scale-105"
-              }`}
-            >
-              {icon}
+          ariaLabel={label}
+          className={`w-full ${
+            isCollapsed ? "justify-center" : "justify-between"
+          } ${isActive ? "text-white bg-slate-700/50" : ""}`}
+          icon={
+            <div className={`flex items-center ${isCollapsed ? "" : "gap-3"}`}>
+              <div
+                className={`transition-transform duration-200 ${
+                  isActive ? "scale-110" : "group-hover:scale-105"
+                }`}
+              >
+                {icon}
+              </div>
+              {!isCollapsed && <span className="truncate">{label}</span>}
             </div>
-            {!isCollapsed && <span className="truncate">{label}</span>}
-          </div>
+          }
+        >
           {!isCollapsed && (
             <ChevronDownIcon
               className={`w-4 h-4 transition-transform duration-200 ${
@@ -173,31 +157,35 @@ const CollapsibleMenu: React.FC<{
               {label}
             </div>
           )}
-        </button>
+        </EnhancedButton>
 
         {isOpen && !isCollapsed && (
           <div className="ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200">
             {pages.map((page) => (
-              <button
+              <EnhancedButton
                 key={page.key}
+                variant={activeSubPage === page.key ? "primary" : "ghost"}
+                size="sm"
                 onClick={() => handleSubItemClick(page.key)}
-                className={`group w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                className={`w-full justify-start ${
                   activeSubPage === page.key
                     ? "text-red-400 bg-red-500/10 border-l-2 border-red-400"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/5 hover:translate-x-1 focus:text-slate-200 focus:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
+                icon={
+                  <div
+                    className={`transition-transform duration-200 ${
+                      activeSubPage === page.key
+                        ? "scale-110"
+                        : "group-hover:scale-105"
+                    }`}
+                  >
+                    {page.icon}
+                  </div>
+                }
               >
-                <div
-                  className={`transition-transform duration-200 ${
-                    activeSubPage === page.key
-                      ? "scale-110"
-                      : "group-hover:scale-105"
-                  }`}
-                >
-                  {page.icon}
-                </div>
                 <span>{t[page.key as keyof typeof t] || page.key}</span>
-              </button>
+              </EnhancedButton>
             ))}
           </div>
         )}
@@ -224,6 +212,12 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
     isOpen,
     autoHide: true,
   });
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   const iconClass = "w-5 h-5";
 
@@ -501,62 +495,56 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
                 Language
               </p>
               <div className="flex items-center justify-center space-x-3">
-                <button
+                <EnhancedButton
+                  variant={currentLanguage === "en" ? "primary" : "ghost"}
+                  size="sm"
                   onClick={() => onLanguageChange("en")}
-                  className={`transition-all duration-200 rounded-lg p-1 ${
-                    currentLanguage === "en"
-                      ? "ring-2 ring-red-400 shadow-lg scale-105"
-                      : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                  }`}
-                  aria-label="Switch to English"
+                  ariaLabel="Switch to English"
                   disabled={currentLanguage === "en"}
+                  className="p-1"
+                  icon={<FlagENIcon className="w-8 h-auto rounded-md" />}
                 >
-                  <FlagENIcon className="w-8 h-auto rounded-md" />
-                </button>
-                <button
+                  <span className="sr-only">English</span>
+                </EnhancedButton>
+                <EnhancedButton
+                  variant={currentLanguage === "id" ? "primary" : "ghost"}
+                  size="sm"
                   onClick={() => onLanguageChange("id")}
-                  className={`transition-all duration-200 rounded-lg p-1 ${
-                    currentLanguage === "id"
-                      ? "ring-2 ring-red-400 shadow-lg scale-105"
-                      : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                  }`}
-                  aria-label="Switch to Indonesian"
+                  ariaLabel="Switch to Indonesian"
                   disabled={currentLanguage === "id"}
+                  className="p-1"
+                  icon={<FlagIDIcon className="w-8 h-auto rounded-md" />}
                 >
-                  <FlagIDIcon className="w-8 h-auto rounded-md" />
-                </button>
+                  <span className="sr-only">Indonesian</span>
+                </EnhancedButton>
               </div>
             </div>
           )}
 
           {shouldCollapse ? (
             <div className="flex flex-col items-center space-y-2">
-              <button
+              <EnhancedButton
+                variant={currentLanguage === "en" ? "primary" : "ghost"}
+                size="sm"
                 onClick={() => onLanguageChange("en")}
-                className={`transition-all duration-200 rounded-lg p-1 ${
-                  currentLanguage === "en"
-                    ? "ring-2 ring-red-400 shadow-lg scale-105"
-                    : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                }`}
-                aria-label="Switch to English"
-                title="English"
+                ariaLabel="Switch to English"
                 disabled={currentLanguage === "en"}
+                className="p-1"
+                icon={<FlagENIcon className="w-6 h-auto rounded-md" />}
               >
-                <FlagENIcon className="w-6 h-auto rounded-md" />
-              </button>
-              <button
+                <span className="sr-only">English</span>
+              </EnhancedButton>
+              <EnhancedButton
+                variant={currentLanguage === "id" ? "primary" : "ghost"}
+                size="sm"
                 onClick={() => onLanguageChange("id")}
-                className={`transition-all duration-200 rounded-lg p-1 ${
-                  currentLanguage === "id"
-                    ? "ring-2 ring-red-400 shadow-lg scale-105"
-                    : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-                }`}
-                aria-label="Switch to Indonesian"
-                title="Indonesian"
+                ariaLabel="Switch to Indonesian"
                 disabled={currentLanguage === "id"}
+                className="p-1"
+                icon={<FlagIDIcon className="w-6 h-auto rounded-md" />}
               >
-                <FlagIDIcon className="w-6 h-auto rounded-md" />
-              </button>
+                <span className="sr-only">Indonesian</span>
+              </EnhancedButton>
             </div>
           ) : (
             <div className="text-center">

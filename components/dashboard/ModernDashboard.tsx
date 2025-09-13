@@ -22,6 +22,16 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../ui/EnhancedComponents";
+
 // Modern Color Palette
 const colors = {
   primary: "rgb(239, 68, 68)", // red-500
@@ -38,7 +48,7 @@ const colors = {
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, ease: "easeOut" },
+  transition: { duration: 0.4 },
 };
 
 const staggerContainer = {
@@ -52,7 +62,7 @@ const staggerContainer = {
 const scaleOnHover = {
   whileHover: { scale: 1.02 },
   whileTap: { scale: 0.98 },
-  transition: { type: "spring", stiffness: 400, damping: 17 },
+  transition: { type: "spring" as const, stiffness: 400, damping: 17 },
 };
 
 // Enhanced Metric Card Component
@@ -83,6 +93,11 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
   onClick,
   className = "",
 }) => {
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
   const getVariantClasses = () => {
     switch (variant) {
       case "primary":
@@ -137,9 +152,16 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
             {icon}
           </div>
           {onClick && (
-            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-              <MoreHorizontalIcon className="w-5 h-5" />
-            </button>
+            <EnhancedButton
+              variant="ghost"
+              size="sm"
+              onClick={onClick}
+              ariaLabel="More options"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              icon={<MoreHorizontalIcon className="w-5 h-5" />}
+            >
+              <span className="sr-only">More options</span>
+            </EnhancedButton>
           )}
         </div>
 
@@ -274,19 +296,16 @@ const QuickAction: React.FC<QuickActionProps> = ({
   variant = "default",
 }) => {
   return (
-    <motion.button
-      {...scaleOnHover}
+    <EnhancedButton
+      variant={variant === "primary" ? "primary" : "secondary"}
+      size="lg"
       onClick={onClick}
-      className={`
-        w-full p-4 rounded-xl border text-left group transition-all duration-300
-        ${
-          variant === "primary"
-            ? "bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg hover:shadow-xl"
-            : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-600"
-        }
-      `}
-    >
-      <div className="flex items-start space-x-3">
+      className={`w-full p-4 text-left group transition-all duration-300 ${
+        variant === "primary"
+          ? "bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg hover:shadow-xl"
+          : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-600"
+      }`}
+      icon={
         <div
           className={`
           p-2 rounded-lg flex-shrink-0 transition-colors
@@ -294,39 +313,37 @@ const QuickAction: React.FC<QuickActionProps> = ({
             variant === "primary"
               ? "bg-white/20"
               : "bg-slate-100 dark:bg-slate-700 group-hover:bg-red-100 dark:group-hover:bg-red-900/30"
-          }
-        `}
+          }`}
         >
           {icon}
         </div>
-        <div className="min-w-0 flex-1">
-          <h4
-            className={`
-            font-medium text-sm mb-1
-            ${
-              variant === "primary"
-                ? "text-white"
-                : "text-slate-900 dark:text-slate-100"
-            }
-          `}
-          >
-            {title}
-          </h4>
-          <p
-            className={`
-            text-xs leading-relaxed
-            ${
-              variant === "primary"
-                ? "text-white/80"
-                : "text-slate-500 dark:text-slate-400"
-            }
-          `}
-          >
-            {description}
-          </p>
-        </div>
+      }
+    >
+      <div className="min-w-0 flex-1">
+        <h4
+          className={`
+          font-medium text-sm mb-1
+          ${
+            variant === "primary"
+              ? "text-white"
+              : "text-slate-900 dark:text-slate-100"
+          }`}
+        >
+          {title}
+        </h4>
+        <p
+          className={`
+          text-xs leading-relaxed
+          ${
+            variant === "primary"
+              ? "text-white/80"
+              : "text-slate-500 dark:text-slate-400"
+          }`}
+        >
+          {description}
+        </p>
       </div>
-    </motion.button>
+    </EnhancedButton>
   );
 };
 
@@ -373,7 +390,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold mb-1">
-              Selamat Datang di SIPOMA v2.0
+              Selamat Datang di SIPOMA
             </h1>
             <p className="text-white/80 text-sm">{currentTime}</p>
           </div>
@@ -395,17 +412,28 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
 
             {/* Notifications */}
-            <button
-              onClick={onNotificationClick}
-              className="relative p-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors"
-            >
-              <BellIcon className="w-5 h-5" />
+            <div className="relative">
+              <EnhancedButton
+                variant="ghost"
+                size="sm"
+                onClick={onNotificationClick}
+                ariaLabel={`Notifications ${
+                  notificationCount > 0 ? `(${notificationCount} unread)` : ""
+                }`}
+                className="p-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30"
+                icon={<BellIcon className="w-5 h-5" />}
+              >
+                <span className="sr-only">
+                  Notifications{" "}
+                  {notificationCount > 0 ? `(${notificationCount} unread)` : ""}
+                </span>
+              </EnhancedButton>
               {notificationCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-amber-400 text-amber-900 text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
                   {notificationCount > 99 ? "99+" : notificationCount}
                 </span>
               )}
-            </button>
+            </div>
 
             {/* User Profile */}
             {currentUser && (

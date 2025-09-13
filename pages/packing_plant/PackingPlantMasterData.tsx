@@ -8,7 +8,22 @@ import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
 import { formatNumber } from "../../utils/formatters";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
+  // Enhanced accessibility hooks
+  const announceToScreenReader = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
+
   const { records, addRecord, updateRecord, deleteRecord } =
     usePackingPlantMasterData();
 
@@ -81,13 +96,15 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.pack_master_data}
           </h2>
-          <button
+          <EnhancedButton
             onClick={handleOpenAddModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200"
+            variant="primary"
+            className="inline-flex items-center justify-center gap-2"
+            aria-label={t.add_data_button || "Add new packing plant data"}
           >
             <PlusIcon className="w-5 h-5" />
             {t.add_data_button}
-          </button>
+          </EnhancedButton>
         </div>
 
         <div className="overflow-x-auto">
@@ -136,20 +153,22 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <button
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleOpenEditModal(record)}
-                          className="text-slate-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-all duration-150"
                           aria-label={`Edit ${record.plant_code}`}
                         >
                           <EditIcon />
-                        </button>
-                        <button
+                        </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleOpenDeleteModal(record.id)}
-                          className="text-slate-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-all duration-150"
                           aria-label={`Delete ${record.plant_code}`}
                         >
                           <TrashIcon />
-                        </button>
+                        </EnhancedButton>
                       </div>
                     </td>
                   </tr>
@@ -185,18 +204,22 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
             </p>
           </div>
           <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-            <button
+            <EnhancedButton
               onClick={handleDeleteConfirm}
-              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-150"
+              variant="error"
+              className="sm:ml-3 sm:w-auto"
+              aria-label={t.confirm_delete_button || "Confirm delete"}
             >
               {t.confirm_delete_button}
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
               onClick={handleCloseModals}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-400 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-150"
+              variant="secondary"
+              className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
+              aria-label={t.cancel_button || "Cancel"}
             >
               {t.cancel_button}
-            </button>
+            </EnhancedButton>
           </div>
         </Modal>
       </div>

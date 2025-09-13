@@ -13,6 +13,10 @@ import { ParameterSetting, CcrParameterData } from "../../types";
 import { useParameterSettings } from "../../hooks/useParameterSettings";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useGlobalParameterSettings } from "../../hooks/useGlobalParameterSettings";
+import {
+  EnhancedButton,
+  useAccessibility,
+} from "../../components/ui/EnhancedComponents";
 
 interface IndexTabProps {
   t: any;
@@ -52,6 +56,7 @@ const IndexTab: React.FC<IndexTabProps> = ({
   selectedUnit,
   fetchIndexData,
 }) => {
+  const { announceToScreenReader } = useAccessibility();
   const [filterType, setFilterType] = useState<IndexFilterType>("daily");
   const [filter, setFilter] = useState<IndexFilter>({ type: "daily" });
   const [data, setData] = useState<IndexChartData[]>([]);
@@ -515,10 +520,14 @@ const IndexTab: React.FC<IndexTabProps> = ({
               )}
             </div>
 
-            <button
+            <EnhancedButton
               type="submit"
               disabled={loading}
-              className="inline-flex items-center px-6 py-3 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center"
+              ariaLabel={t.apply_filter || "Terapkan Filter"}
+              isLoading={loading}
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -534,7 +543,7 @@ const IndexTab: React.FC<IndexTabProps> = ({
                 />
               </svg>
               {t.apply_filter || "Terapkan Filter"}
-            </button>
+            </EnhancedButton>
           </div>
         </form>
       </div>
@@ -563,10 +572,12 @@ const IndexTab: React.FC<IndexTabProps> = ({
               {t.chart || "Grafik"}
             </div>
           </div>
-          <button
+          <EnhancedButton
             onClick={openSettings}
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors duration-150"
-            title={t.parameter_settings || "Pengaturan Parameter"}
+            variant="ghost"
+            size="sm"
+            className="inline-flex items-center"
+            ariaLabel={t.parameter_settings || "Pengaturan Parameter"}
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -582,7 +593,7 @@ const IndexTab: React.FC<IndexTabProps> = ({
               />
             </svg>
             {t.settings || "Pengaturan"}
-          </button>
+          </EnhancedButton>
         </div>
 
         {data.length > 0 ? (
@@ -673,9 +684,12 @@ const IndexTab: React.FC<IndexTabProps> = ({
               <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
                 Pilih Parameter
               </h3>
-              <button
+              <EnhancedButton
                 onClick={() => setShowSettings(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                variant="ghost"
+                size="sm"
+                className="p-2"
+                ariaLabel="Close settings modal"
               >
                 <svg
                   className="w-6 h-6"
@@ -690,7 +704,7 @@ const IndexTab: React.FC<IndexTabProps> = ({
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-              </button>
+              </EnhancedButton>
             </div>
 
             <div className="space-y-6">
@@ -790,16 +804,21 @@ const IndexTab: React.FC<IndexTabProps> = ({
             </div>
 
             <div className="flex justify-end space-x-4 mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <button
+              <EnhancedButton
                 onClick={() => setShowSettings(false)}
-                className="px-6 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium rounded-lg transition-colors"
+                variant="ghost"
+                size="md"
+                ariaLabel={t.cancel_button || "Batal"}
               >
                 {t.cancel_button || "Batal"}
-              </button>
+              </EnhancedButton>
               {currentUser?.role === "Super Admin" ? (
-                <button
+                <EnhancedButton
                   onClick={handleSaveGlobalSettings}
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2"
+                  variant="primary"
+                  size="md"
+                  className="flex items-center space-x-2"
+                  ariaLabel={t.apply_to_all_users || "Terapkan ke Semua User"}
                 >
                   <svg
                     className="w-5 h-5"
@@ -817,14 +836,16 @@ const IndexTab: React.FC<IndexTabProps> = ({
                   <span>
                     {t.apply_to_all_users || "Terapkan ke Semua User"}
                   </span>
-                </button>
+                </EnhancedButton>
               ) : (
-                <button
+                <EnhancedButton
                   onClick={() => setShowSettings(false)}
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  variant="primary"
+                  size="md"
+                  ariaLabel={t.apply_button || "Terapkan"}
                 >
                   {t.apply_button || "Terapkan"}
-                </button>
+                </EnhancedButton>
               )}
             </div>
           </div>

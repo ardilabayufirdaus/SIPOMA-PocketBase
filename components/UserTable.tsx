@@ -10,6 +10,16 @@ import { isValidString } from "../utils/stringUtils";
 import Pagination from "./Pagination";
 import useConfirmation from "../hooks/useConfirmation";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "./ui/EnhancedComponents";
+
 interface UserTableProps {
   users: User[];
   currentUser: User | null;
@@ -61,6 +71,12 @@ const UserTable: React.FC<UserTableProps> = ({
   onPageChange,
 }) => {
   const { confirm } = useConfirmation();
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   const canDeleteUser = (user: User): boolean => {
     if (user.role === "Super Admin") {
@@ -199,36 +215,43 @@ const UserTable: React.FC<UserTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end space-x-1">
-                    <button
+                    <EnhancedButton
+                      variant="ghost"
+                      size="sm"
                       onClick={() => onEditUser(user)}
-                      className="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all duration-150"
-                      aria-label={`Edit ${user.full_name}`}
+                      ariaLabel={`Edit ${user.full_name}`}
+                      className="text-slate-400 hover:text-red-600"
+                      icon={<EditIcon className="w-5 h-5" />}
                     >
-                      <EditIcon className="w-5 h-5" />
-                    </button>
-                    <button
+                      <span className="sr-only">Edit</span>
+                    </EnhancedButton>
+                    <EnhancedButton
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleToggleStatusClick(user)}
-                      className="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all duration-150"
-                      title={
-                        user.is_active ? "Deactivate User" : "Activate User"
-                      }
-                      aria-label={`${
+                      ariaLabel={`${
                         user.is_active ? "Deactivate" : "Activate"
                       } ${user.full_name}`}
+                      className="text-slate-400 hover:text-red-600"
+                      icon={<ToggleIcon className="w-5 h-5" />}
                     >
-                      <ToggleIcon className="w-5 h-5" />
-                    </button>
+                      <span className="sr-only">
+                        {user.is_active ? "Deactivate" : "Activate"}
+                      </span>
+                    </EnhancedButton>
                     {canDeleteUser(user) && (
-                      <button
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleDeleteClick(user)}
-                        className="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-all duration-150"
-                        title={t.delete_user || "Delete User"}
-                        aria-label={`${t.delete_user || "Delete"} ${
+                        ariaLabel={`${t.delete_user || "Delete"} ${
                           user.full_name
                         }`}
+                        className="text-slate-400 hover:text-red-600"
+                        icon={<TrashIcon className="w-5 h-5" />}
                       >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
+                        <span className="sr-only">Delete</span>
+                      </EnhancedButton>
                     )}
                   </div>
                 </td>

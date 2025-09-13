@@ -11,6 +11,7 @@ import CogIcon from "./icons/CogIcon";
 import EyeSlashIcon from "./icons/EyeSlashIcon";
 import SpeakerWaveIcon from "./icons/SpeakerWaveIcon";
 import SpeakerXMarkIcon from "./icons/SpeakerXMarkIcon";
+import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
 
 interface NotificationPanelProps {
   notifications: ExtendedAlert[];
@@ -39,6 +40,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   isOpen,
   onToggle,
 }) => {
+  const { announceToScreenReader } = useAccessibility();
   const [showSettings, setShowSettings] = useState(false);
   const [activeSnoozeId, setActiveSnoozeId] = useState<string | null>(null);
 
@@ -87,16 +89,16 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   return (
     <div className="relative">
       {/* Notification Bell Button */}
-      <button
+      <EnhancedButton
         onClick={onToggle}
-        className="p-3 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 relative transition-all duration-200 backdrop-blur-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
-        aria-label={`View notifications. ${
+        variant="ghost"
+        size="sm"
+        className="p-3 min-h-[44px] min-w-[44px]"
+        ariaLabel={`View notifications. ${
           unreadCount > 0
             ? `${unreadCount} unread notifications`
             : "No new notifications"
         }`}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
       >
         {settings.browser ? (
           <BellIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -111,7 +113,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
-      </button>
+      </EnhancedButton>
 
       {/* Notification Dropdown */}
       {isOpen && (
@@ -130,21 +132,26 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
             </div>
             <div className="flex items-center gap-1">
               {/* Settings Button */}
-              <button
+              <EnhancedButton
                 onClick={() => setShowSettings(!showSettings)}
-                className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                title="Notification Settings"
+                variant="ghost"
+                size="sm"
+                className="p-1.5"
+                ariaLabel="Notification Settings"
               >
                 <CogIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              </button>
+              </EnhancedButton>
               {/* Mark All Read Button */}
               {unreadCount > 0 && (
-                <button
+                <EnhancedButton
                   onClick={onMarkAllAsRead}
-                  className="text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs px-2 py-1"
+                  ariaLabel={t.mark_all_as_read}
                 >
                   {t.mark_all_as_read}
-                </button>
+                </EnhancedButton>
               )}
             </div>
           </div>
@@ -250,18 +257,20 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                         {/* Action Buttons */}
                         <div className="flex items-center gap-1">
                           {!notification.read && (
-                            <button
+                            <EnhancedButton
                               onClick={() => onMarkAsRead(notification.id)}
-                              className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                              title="Mark as read"
+                              variant="ghost"
+                              size="sm"
+                              className="p-1"
+                              ariaLabel={`Mark notification as read: ${notification.message}`}
                             >
                               <CheckIcon className="w-3 h-3 text-green-600 dark:text-green-400" />
-                            </button>
+                            </EnhancedButton>
                           )}
 
                           {/* Snooze Button */}
                           <div className="relative">
-                            <button
+                            <EnhancedButton
                               onClick={() =>
                                 setActiveSnoozeId(
                                   activeSnoozeId === notification.id
@@ -269,11 +278,13 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                                     : notification.id
                                 )
                               }
-                              className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                              title="Snooze"
+                              variant="ghost"
+                              size="sm"
+                              className="p-1"
+                              ariaLabel={`Snooze notification: ${notification.message}`}
                             >
                               <ClockIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                            </button>
+                            </EnhancedButton>
 
                             {/* Snooze Dropdown */}
                             {activeSnoozeId === notification.id && (
@@ -297,13 +308,15 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                           </div>
 
                           {/* Dismiss Button */}
-                          <button
+                          <EnhancedButton
                             onClick={() => onDismiss(notification.id)}
-                            className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                            title="Dismiss"
+                            variant="ghost"
+                            size="sm"
+                            className="p-1"
+                            ariaLabel={`Dismiss notification: ${notification.message}`}
                           >
                             <XMarkIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                          </button>
+                          </EnhancedButton>
                         </div>
                       </div>
                     </div>
@@ -322,9 +335,14 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
 
           {/* Footer */}
           <div className="border-t border-slate-100 dark:border-slate-700">
-            <button className="w-full text-center px-4 py-3 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+            <EnhancedButton
+              variant="ghost"
+              size="sm"
+              className="w-full text-center px-4 py-3 text-xs"
+              ariaLabel={t.view_all_notifications}
+            >
               {t.view_all_notifications}
-            </button>
+            </EnhancedButton>
           </div>
         </div>
       )}

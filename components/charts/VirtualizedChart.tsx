@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { EnhancedButton, useAccessibility } from "../ui/EnhancedComponents";
 
 interface VirtualizedChartProps {
   data: any[];
@@ -37,6 +38,7 @@ const VirtualizedChart: React.FC<VirtualizedChartProps> = ({
   lines,
   xAxisKey,
 }) => {
+  const { announceToScreenReader } = useAccessibility();
   const [currentWindow, setCurrentWindow] = useState(0);
 
   // Calculate total windows needed
@@ -135,20 +137,34 @@ const VirtualizedChart: React.FC<VirtualizedChartProps> = ({
       {/* Navigation Controls */}
       <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
         <div className="flex items-center space-x-2">
-          <button
-            onClick={handlePrevWindow}
+          <EnhancedButton
+            onClick={() => {
+              handlePrevWindow();
+              announceToScreenReader(
+                `Navigated to previous window ${currentWindow}`
+              );
+            }}
             disabled={currentWindow === 0}
-            className="px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+            variant="primary"
+            size="sm"
+            ariaLabel="Navigate to previous data window"
           >
             Previous
-          </button>
-          <button
-            onClick={handleNextWindow}
+          </EnhancedButton>
+          <EnhancedButton
+            onClick={() => {
+              handleNextWindow();
+              announceToScreenReader(
+                `Navigated to next window ${currentWindow + 2}`
+              );
+            }}
             disabled={currentWindow === totalWindows - 1}
-            className="px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:cursor-not-allowed text-sm"
+            variant="primary"
+            size="sm"
+            ariaLabel="Navigate to next data window"
           >
             Next
-          </button>
+          </EnhancedButton>
         </div>
 
         <div className="flex items-center space-x-2 text-sm text-gray-600">

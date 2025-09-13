@@ -8,6 +8,10 @@ import TrashIcon from "../../components/icons/TrashIcon";
 import Pagination from "../../components/Pagination";
 import ParameterSettingForm from "../../pages/plant_operations/ParameterSettingForm";
 import { SearchInput } from "../../components/ui/Input";
+import {
+  EnhancedButton,
+  useAccessibility,
+} from "../../components/ui/EnhancedComponents";
 
 // Types
 import { ParameterSetting, ParameterDataType } from "../../types";
@@ -23,6 +27,7 @@ const ParameterSettingSection: React.FC<ParameterSettingSectionProps> = ({
   plantUnits,
   onOpenDeleteModal,
 }) => {
+  const { announceToScreenReader } = useAccessibility();
   const {
     records: parameterSettings,
     addRecord: addParameter,
@@ -192,12 +197,15 @@ const ParameterSettingSection: React.FC<ParameterSettingSectionProps> = ({
                 ))}
               </select>
             </div>
-            <button
+            <EnhancedButton
               onClick={handleOpenAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+              variant="primary"
+              size="sm"
+              className="inline-flex items-center gap-2"
+              ariaLabel={t.add_data_button}
             >
               <PlusIcon className="w-5 h-5" /> {t.add_data_button}
-            </button>
+            </EnhancedButton>
           </div>
         </div>
 
@@ -222,12 +230,15 @@ const ParameterSettingSection: React.FC<ParameterSettingSectionProps> = ({
                   ? t.parameter_search_results
                   : t.parameter_search_results_plural}
               </div>
-              <button
+              <EnhancedButton
                 onClick={clearParameterSearch}
-                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+                variant="ghost"
+                size="sm"
+                className="text-sm"
+                ariaLabel={t.parameter_clear_search}
               >
                 {t.parameter_clear_search}
-              </button>
+              </EnhancedButton>
             </div>
           )}
         </div>
@@ -289,20 +300,26 @@ const ParameterSettingSection: React.FC<ParameterSettingSectionProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
-                      <button
+                      <EnhancedButton
                         onClick={() => handleOpenEditModal(param)}
-                        className="p-2 text-slate-400 hover:text-red-600"
+                        variant="ghost"
+                        size="sm"
+                        className="p-2"
+                        ariaLabel={`Edit ${param.parameter}`}
                       >
                         <EditIcon />
-                      </button>
-                      <button
+                      </EnhancedButton>
+                      <EnhancedButton
                         onClick={() =>
                           onOpenDeleteModal(param.id, "parameterSetting")
                         }
-                        className="p-2 text-slate-400 hover:text-red-600"
+                        variant="ghost"
+                        size="sm"
+                        className="p-2"
+                        ariaLabel={`Delete ${param.parameter}`}
                       >
                         <TrashIcon />
-                      </button>
+                      </EnhancedButton>
                     </div>
                   </td>
                 </tr>

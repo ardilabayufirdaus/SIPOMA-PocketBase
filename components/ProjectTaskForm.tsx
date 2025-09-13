@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { ProjectTask } from "../types";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "./ui/EnhancedComponents";
+
 type TaskFormData = Omit<ProjectTask, "id" | "project_id">;
 
 interface FormProps {
@@ -24,6 +33,12 @@ const ProjectTaskForm: React.FC<FormProps> = ({
     actual_end: null,
     percent_complete: 0,
   });
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     if (taskToEdit) {
@@ -187,19 +202,24 @@ const ProjectTaskForm: React.FC<FormProps> = ({
         </div>
       </div>
       <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-        <button
+        <EnhancedButton
+          variant="primary"
+          size="sm"
           type="submit"
-          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+          className="sm:ml-3"
+          aria-label={t.save_button || "Save task"}
         >
           {t.save_button}
-        </button>
-        <button
-          type="button"
+        </EnhancedButton>
+        <EnhancedButton
+          variant="secondary"
+          size="sm"
           onClick={onCancel}
-          className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          className="mt-3 sm:mt-0 sm:ml-3"
+          aria-label={t.cancel_button || "Cancel task form"}
         >
           {t.cancel_button}
-        </button>
+        </EnhancedButton>
       </div>
     </form>
   );

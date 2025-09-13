@@ -20,8 +20,23 @@ import PlusIcon from "../../components/icons/PlusIcon";
 import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const { records: plantUnits } = usePlantUnits();
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   // Downtime State
   const { getAllDowntime, updateDowntime } = useCcrDowntimeData();
@@ -355,12 +370,14 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         </span>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-right text-sm">
-                        <button
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
                           onClick={() => handleOpenEditDowntime(d)}
-                          className="p-1.5 text-slate-400 hover:text-red-600"
+                          aria-label={`Edit downtime record for ${d.unit}`}
                         >
                           <EditIcon />
-                        </button>
+                        </EnhancedButton>
                       </td>
                     </tr>
                   );
@@ -383,12 +400,14 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
             {t.autonomous_risk_management}
           </h2>
-          <button
+          <EnhancedButton
+            variant="primary"
+            size="sm"
             onClick={handleOpenAddRisk}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+            aria-label={t.add_risk_button || "Add new risk"}
           >
-            <PlusIcon className="w-4 h-4" /> {t.add_risk_button}
-          </button>
+            <PlusIcon className="w-4 h-4 mr-2" /> {t.add_risk_button}
+          </EnhancedButton>
         </div>
         <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
@@ -446,18 +465,22 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap text-right text-sm">
                     <div className="flex items-center justify-end space-x-2">
-                      <button
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleOpenEditRisk(risk)}
-                        className="p-1.5 text-slate-400 hover:text-red-600"
+                        aria-label={`Edit risk for ${risk.unit}`}
                       >
                         <EditIcon />
-                      </button>
-                      <button
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleOpenDeleteRisk(risk.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-600"
+                        aria-label={`Delete risk for ${risk.unit}`}
                       >
                         <TrashIcon />
-                      </button>
+                      </EnhancedButton>
                     </div>
                   </td>
                 </tr>
@@ -516,18 +539,24 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </p>
         </div>
         <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-          <button
+          <EnhancedButton
+            variant="error"
+            size="sm"
             onClick={handleDeleteRiskConfirm}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
+            className="sm:ml-3"
+            aria-label={t.confirm_delete_button || "Confirm delete"}
           >
             {t.confirm_delete_button}
-          </button>
-          <button
+          </EnhancedButton>
+          <EnhancedButton
+            variant="secondary"
+            size="sm"
             onClick={() => setDeleteModalOpen(false)}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-3 sm:mt-0 sm:ml-3"
+            aria-label={t.cancel_button || "Cancel delete"}
           >
             {t.cancel_button}
-          </button>
+          </EnhancedButton>
         </div>
       </Modal>
     </div>

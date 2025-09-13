@@ -7,6 +7,15 @@ import PlusIcon from "../../components/icons/PlusIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
 import Pagination from "../../components/Pagination";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 // Types
 import { ParameterDataType } from "../../types";
 
@@ -21,6 +30,12 @@ const CopParameterSection: React.FC<CopParameterSectionProps> = ({
 }) => {
   const { copParameterIds, setCopParameterIds } = useCopParametersSupabase();
   const { records: parameterSettings } = useParameterSettings();
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   // Filter States
   const [copCategoryFilter, setCopCategoryFilter] = useState("");
@@ -157,12 +172,14 @@ const CopParameterSection: React.FC<CopParameterSectionProps> = ({
                 ))}
               </select>
             </div>
-            <button
+            <EnhancedButton
+              variant="primary"
+              size="sm"
               onClick={handleOpenCopModal}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+              aria-label={t.add_data_button || "Add COP data"}
             >
-              <PlusIcon className="w-5 h-5" /> {t.add_data_button}
-            </button>
+              <PlusIcon className="w-5 h-5 mr-2" /> {t.add_data_button}
+            </EnhancedButton>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -199,12 +216,14 @@ const CopParameterSection: React.FC<CopParameterSectionProps> = ({
                     {param.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
+                    <EnhancedButton
+                      variant="ghost"
+                      size="xs"
                       onClick={() => handleRemoveCopParameter(param.id)}
-                      className="p-2 text-slate-400 hover:text-red-600"
+                      aria-label={`Remove ${param.parameter} from COP parameters`}
                     >
                       <TrashIcon />
-                    </button>
+                    </EnhancedButton>
                   </td>
                 </tr>
               ))}
@@ -310,20 +329,24 @@ const CopParameterSection: React.FC<CopParameterSectionProps> = ({
           </div>
         </div>
         <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-          <button
+          <EnhancedButton
+            variant="primary"
+            size="sm"
             onClick={handleSaveCopSelection}
-            type="button"
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+            className="sm:ml-3"
+            aria-label={t.save_button || "Save COP selection"}
           >
             {t.save_button}
-          </button>
-          <button
-            type="button"
+          </EnhancedButton>
+          <EnhancedButton
+            variant="secondary"
+            size="sm"
             onClick={handleCloseCopModal}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-3 sm:mt-0 sm:ml-3"
+            aria-label={t.cancel_button || "Cancel COP selection"}
           >
             {t.cancel_button}
-          </button>
+          </EnhancedButton>
         </div>
       </Modal>
     </>

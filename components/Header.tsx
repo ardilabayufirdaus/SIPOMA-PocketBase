@@ -16,6 +16,17 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { useNotifications } from "../hooks/useNotifications";
 import NotificationPanel from "./NotificationPanel";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  SkipLinks,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "./ui/EnhancedComponents";
+
 interface HeaderProps {
   pageTitle: string;
   showAddUserButton: boolean;
@@ -62,6 +73,12 @@ const Header: React.FC<HeaderProps> = ({
     updateSettings,
   } = useNotifications();
 
+  // Enhanced accessibility hooks
+  const announceToScreenReader = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -78,236 +95,238 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="header-modern backdrop-blur-xl">
-      <div className="header-modern-content">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            {/* Mobile Hamburger Menu */}
-            {isMobile && onToggleSidebar && (
-              <button
-                onClick={onToggleSidebar}
-                className="btn-modern btn-ghost p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center md:hidden flex-shrink-0 hover-lift-modern"
-                aria-label="Toggle navigation menu"
-              >
-                <Bars3Icon
-                  className="w-4 h-4 text-slate-600 dark:text-slate-400"
-                  aria-hidden="true"
-                />
-              </button>
-            )}
+    <>
+      {/* Skip Links for accessibility */}
+      <SkipLinks />
 
-            {/* Logo Sipoma */}
-            <div className="p-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-sm border border-white/20 dark:border-slate-700/50 flex-shrink-0">
-              <img
-                src="/sipoma-logo.png"
-                alt="Sipoma Logo"
-                className="h-4 w-4 sm:h-5 sm:w-5 object-contain"
-                style={{ borderRadius: "3px" }}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="header-modern-title text-gradient-modern truncate">
-                {pageTitle}
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
-                {t.header_welcome},{" "}
-                {currentUser?.full_name?.split(" ")[0] || "Admin"}! ✨
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {showAddUserButton && (
-              <button
-                onClick={onAddUser}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-md shadow-sm hover:shadow-md focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all duration-200 hover:scale-[1.01] min-h-[36px]"
-                aria-label={t.add_user_button || "Add new user"}
-              >
-                <PlusIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                <span className="hidden sm:inline">{t.add_user_button}</span>
-              </button>
-            )}
-
-            {/* Theme Toggle */}
-            <button
-              onClick={onToggleTheme}
-              className="p-1.5 rounded-md hover:bg-white/50 dark:hover:bg-slate-800/50 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all duration-200 backdrop-blur-sm min-h-[36px] min-w-[36px] flex items-center justify-center"
-              aria-label={`Switch to ${
-                theme === "light" ? "dark" : "light"
-              } mode`}
-            >
-              {theme === "light" ? (
-                <MoonIcon
-                  className="w-4 h-4 text-slate-600 dark:text-slate-400"
-                  aria-hidden="true"
-                />
-              ) : (
-                <SunIcon
-                  className="w-4 h-4 text-slate-600 dark:text-slate-400"
-                  aria-hidden="true"
-                />
-              )}
-            </button>
-
-            {/* Notifications */}
-            <NotificationPanel
-              notifications={notifications}
-              unreadCount={unreadCount}
-              settings={settings}
-              onMarkAsRead={markAsRead}
-              onMarkAllAsRead={markAllAsRead}
-              onDismiss={dismissNotification}
-              onSnooze={snoozeNotification}
-              onUpdateSettings={updateSettings}
-              t={t}
-              isOpen={isNotifMenuOpen}
-              onToggle={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
-            />
-
-            {/* User Profile */}
-            <div className="relative" ref={userDropdownRef}>
-              <button
-                id="user-menu-button"
-                onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                aria-expanded={isUserMenuOpen}
-                aria-haspopup="true"
-              >
-                {currentUser?.avatar_url ? (
-                  <img
-                    className="h-7 w-7 rounded-full object-cover"
-                    src={currentUser.avatar_url}
-                    alt="User avatar"
-                  />
-                ) : (
-                  <UserIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                )}
-              </button>
-              {isUserMenuOpen && (
-                <div
-                  className="absolute right-0 mt-2 w-56 origin-top-right bg-white dark:bg-slate-800 rounded-md shadow-lg ring-1 ring-black dark:ring-white dark:ring-opacity-10 ring-opacity-5 focus:outline-none z-30 animate-fade-in-fast"
-                  role="menu"
-                  aria-orientation="vertical"
-                  aria-labelledby="user-menu-button"
+      <header className="header-modern backdrop-blur-xl" role="banner">
+        <div className="header-modern-content">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              {/* Mobile Hamburger Menu */}
+              {isMobile && onToggleSidebar && (
+                <EnhancedButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggleSidebar}
+                  ariaLabel="Toggle navigation menu"
+                  className="md:hidden flex-shrink-0"
+                  icon={<Bars3Icon className="w-4 h-4" />}
                 >
-                  <div className="flex items-center gap-2 px-3 py-2">
-                    <div className="flex-shrink-0">
-                      {currentUser?.avatar_url ? (
-                        <img
-                          className="h-8 w-8 rounded-full object-cover"
-                          src={currentUser.avatar_url}
-                          alt="User avatar"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                          <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                        {currentUser?.full_name || "Admin User"}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                        {currentUser?.email || "admin@sipoma.com"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                  <div className="py-1" role="none">
-                    <button
-                      onClick={() => {
-                        onNavigate("settings");
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
-                      role="menuitem"
-                    >
-                      <CogIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                      <span>{t.header_settings}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        // TODO: Implement audit trail functionality
-                      }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
-                      role="menuitem"
-                      aria-label="View audit trail"
-                    >
-                      <ShieldCheckIcon
-                        className="w-4 h-4 text-slate-500 dark:text-slate-400"
-                        aria-hidden="true"
+                  <span className="sr-only">Toggle navigation menu</span>
+                </EnhancedButton>
+              )}
+
+              {/* Logo Sipoma */}
+              <div className="p-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-sm border border-white/20 dark:border-slate-700/50 flex-shrink-0">
+                <img
+                  src="/sipoma-logo.png"
+                  alt="Sipoma Logo"
+                  className="h-4 w-4 sm:h-5 sm:w-5 object-contain"
+                  style={{ borderRadius: "3px" }}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="header-modern-title text-gradient-modern truncate">
+                  {pageTitle}
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
+                  {t.header_welcome},{" "}
+                  {currentUser?.full_name?.split(" ")[0] || "Admin"}! ✨
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {showAddUserButton && (
+                <EnhancedButton
+                  variant="primary"
+                  size="sm"
+                  onClick={onAddUser}
+                  ariaLabel={t.add_user_button || "Add new user"}
+                  icon={<PlusIcon className="w-3.5 h-3.5" />}
+                  className="hidden sm:flex"
+                >
+                  {t.add_user_button}
+                </EnhancedButton>
+              )}
+
+              {/* Theme Toggle */}
+              <EnhancedButton
+                variant="ghost"
+                size="sm"
+                onClick={onToggleTheme}
+                ariaLabel={`Switch to ${
+                  theme === "light" ? "dark" : "light"
+                } mode`}
+                icon={
+                  theme === "light" ? (
+                    <MoonIcon className="w-4 h-4" />
+                  ) : (
+                    <SunIcon className="w-4 h-4" />
+                  )
+                }
+              >
+                <span className="sr-only">
+                  Switch to {theme === "light" ? "dark" : "light"} mode
+                </span>
+              </EnhancedButton>
+
+              {/* Notifications */}
+              <NotificationPanel
+                notifications={notifications}
+                unreadCount={unreadCount}
+                settings={settings}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+                onDismiss={dismissNotification}
+                onSnooze={snoozeNotification}
+                onUpdateSettings={updateSettings}
+                t={t}
+                isOpen={isNotifMenuOpen}
+                onToggle={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
+              />
+
+              {/* User Profile */}
+              <div className="relative" ref={userDropdownRef}>
+                <EnhancedButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                  ariaLabel={
+                    isUserMenuOpen ? "Close user menu" : "Open user menu"
+                  }
+                  className="p-1.5 rounded-full"
+                  icon={
+                    currentUser?.avatar_url ? (
+                      <img
+                        className="h-7 w-7 rounded-full object-cover"
+                        src={currentUser.avatar_url}
+                        alt="User avatar"
                       />
-                      <span>{t.header_audit_trail}</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        // TODO: Implement help and support functionality
-                      }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
-                      role="menuitem"
-                      aria-label="Get help and support"
-                    >
-                      <QuestionMarkCircleIcon
-                        className="w-4 h-4 text-slate-500 dark:text-slate-400"
-                        aria-hidden="true"
-                      />
-                      <span>{t.header_help_support}</span>
-                    </button>
-                  </div>
-                  <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                  <div className="py-1" role="none">
-                    <div className="flex items-center justify-between px-3 pt-1 pb-1 text-xs text-slate-500 dark:text-slate-400">
-                      {t.theme_toggle}
-                    </div>
-                    <div className="p-2">
-                      <div className="grid grid-cols-2 gap-1">
-                        <button
-                          onClick={() => theme !== "light" && onToggleTheme()}
-                          className={`flex items-center justify-center gap-1 px-2 py-1 rounded-md text-xs ${
-                            theme === "light"
-                              ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"
-                              : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
-                          }`}
-                        >
-                          <SunIcon className="w-4 h-4" />
-                          {t.theme_light}
-                        </button>
-                        <button
-                          onClick={() => theme !== "dark" && onToggleTheme()}
-                          className={`flex items-center justify-center gap-1 px-2 py-1 rounded-md text-xs ${
-                            theme === "dark"
-                              ? "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400"
-                              : "hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300"
-                          }`}
-                        >
-                          <MoonIcon className="w-4 h-4" />
-                          {t.theme_dark}
-                        </button>
+                    ) : (
+                      <UserIcon className="w-5 h-5" />
+                    )
+                  }
+                >
+                  <span className="sr-only">
+                    {isUserMenuOpen ? "Close user menu" : "Open user menu"}
+                  </span>
+                </EnhancedButton>
+                {isUserMenuOpen && (
+                  <EnhancedCard className="absolute right-0 mt-2 w-56 origin-top-right shadow-lg z-30 animate-fade-in-fast">
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      <div className="flex-shrink-0">
+                        {currentUser?.avatar_url ? (
+                          <img
+                            className="h-8 w-8 rounded-full object-cover"
+                            src={currentUser.avatar_url}
+                            alt="User avatar"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                            <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                          {currentUser?.full_name || "Admin User"}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {currentUser?.username || "admin@sipoma.com"}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                  <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                  <div className="py-1" role="none">
-                    <button
-                      onClick={() => {
-                        onSignOut();
-                        setIsUserMenuOpen(false);
-                      }}
-                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors"
-                      role="menuitem"
-                    >
-                      <ArrowRightOnRectangleIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                      <span>{t.header_sign_out}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+                    <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                    <div className="py-1" role="none">
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          onNavigate("settings");
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full justify-start"
+                        icon={<CogIcon className="w-4 h-4" />}
+                      >
+                        {t.header_settings}
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement audit trail functionality
+                        }}
+                        className="w-full justify-start"
+                        icon={<ShieldCheckIcon className="w-4 h-4" />}
+                        ariaLabel="View audit trail"
+                      >
+                        {t.header_audit_trail}
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement help and support functionality
+                        }}
+                        className="w-full justify-start"
+                        icon={<QuestionMarkCircleIcon className="w-4 h-4" />}
+                        ariaLabel="Get help and support"
+                      >
+                        {t.header_help_support}
+                      </EnhancedButton>
+                    </div>
+                    <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                    <div className="py-1" role="none">
+                      <div className="flex items-center justify-between px-3 pt-1 pb-1 text-xs text-slate-500 dark:text-slate-400">
+                        {t.theme_toggle}
+                      </div>
+                      <div className="p-2">
+                        <div className="grid grid-cols-2 gap-1">
+                          <EnhancedButton
+                            variant={theme === "light" ? "primary" : "ghost"}
+                            size="sm"
+                            onClick={() => theme !== "light" && onToggleTheme()}
+                            icon={<SunIcon className="w-4 h-4" />}
+                            className="justify-center"
+                          >
+                            {t.theme_light}
+                          </EnhancedButton>
+                          <EnhancedButton
+                            variant={theme === "dark" ? "primary" : "ghost"}
+                            size="sm"
+                            onClick={() => theme !== "dark" && onToggleTheme()}
+                            icon={<MoonIcon className="w-4 h-4" />}
+                            className="justify-center"
+                          >
+                            {t.theme_dark}
+                          </EnhancedButton>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                    <div className="py-1" role="none">
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          onSignOut();
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                        icon={<ArrowRightOnRectangleIcon className="w-4 h-4" />}
+                      >
+                        {t.header_sign_out}
+                      </EnhancedButton>
+                    </div>
+                  </EnhancedCard>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <style>{`
+        <style>{`
                 @keyframes fade-in-fast {
                     from { opacity: 0; transform: scale(0.95) translateY(-5px); }
                     to { opacity: 1; transform: scale(1) translateY(0); }
@@ -316,7 +335,8 @@ const Header: React.FC<HeaderProps> = ({
                     animation: fade-in-fast 0.1s ease-out forwards;
                 }
             `}</style>
-    </header>
+      </header>
+    </>
   );
 };
 

@@ -14,6 +14,7 @@ import {
   Legend,
   ComposedChart,
 } from "recharts";
+import { EnhancedButton, useAccessibility } from "../ui/EnhancedComponents";
 
 interface AnalyticsDashboardProps {
   data: Array<{
@@ -33,6 +34,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   timeRange,
   onTimeRangeChange,
 }) => {
+  const { announceToScreenReader } = useAccessibility();
+
   const formatValue = (value: number, type: string) => {
     switch (type) {
       case "percentage":
@@ -81,17 +84,18 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </h2>
         <div className="flex gap-2">
           {(["1h", "24h", "7d", "30d"] as const).map((range) => (
-            <button
+            <EnhancedButton
               key={range}
-              onClick={() => onTimeRangeChange(range)}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-                timeRange === range
-                  ? "bg-red-500 text-white"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
-              }`}
+              variant={timeRange === range ? "primary" : "outline"}
+              size="sm"
+              onClick={() => {
+                onTimeRangeChange(range);
+                announceToScreenReader(`Time range changed to ${range}`);
+              }}
+              ariaLabel={`Select ${range} time range`}
             >
               {range}
-            </button>
+            </EnhancedButton>
           ))}
         </div>
       </div>

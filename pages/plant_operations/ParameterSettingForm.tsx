@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { usePlantUnits } from "../../hooks/usePlantUnits";
 import { ParameterSetting, ParameterDataType } from "../../types";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 interface FormProps {
   recordToEdit: ParameterSetting | null;
   onSave: (record: ParameterSetting | Omit<ParameterSetting, "id">) => void;
@@ -15,6 +24,12 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   onCancel,
   t,
 }) => {
+  // Enhanced accessibility hooks
+  const announceToScreenReader = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
@@ -342,19 +357,25 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             <span className="text-red-600">Menyimpan...</span>
           </div>
         )}
-        <button
+        <EnhancedButton
           type="submit"
-          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          variant="primary"
+          disabled={isSubmitting}
+          className="sm:ml-3 sm:w-auto"
+          aria-label={t.save_button || "Save parameter setting"}
         >
           {t.save_button}
-        </button>
-        <button
+        </EnhancedButton>
+        <EnhancedButton
           type="button"
+          variant="secondary"
           onClick={onCancel}
-          className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          disabled={isSubmitting}
+          className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
+          aria-label={t.cancel_button || "Cancel"}
         >
           {t.cancel_button}
-        </button>
+        </EnhancedButton>
       </div>
     </form>
   );

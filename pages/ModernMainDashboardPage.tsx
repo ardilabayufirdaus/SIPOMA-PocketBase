@@ -577,7 +577,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <div className="max-w-screen-2xl mx-auto p-6 space-y-8">
+      <div className="max-w-screen-xl mx-auto p-2 space-y-4">
         {/* Header */}
         <DashboardHeader
           currentUser={{
@@ -594,7 +594,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
           variants={staggerContainer}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3"
         >
           <ModernMetricCard
             title="Active Users"
@@ -655,7 +655,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
           variants={staggerContainer}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
         >
           {/* Performance Chart - takes 2/3 width */}
           {performanceData.length > 0 && (
@@ -671,7 +671,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
           variants={staggerContainer}
           initial="initial"
           animate="animate"
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 gap-3"
         >
           <ProjectInsights projects={transformedProjects} />
 
@@ -709,7 +709,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {quickActions.map((action, index) => (
                 <motion.div
                   key={action.title}
@@ -745,7 +745,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                SIPOMA v2.0
+                SIPOMA
               </span>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>

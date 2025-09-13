@@ -1,7 +1,16 @@
+import React, { useState, useMemo } from "react";
+import { PermissionMatrix, PermissionLevel, PlantUnit } from "../../types";
+import ChevronDownIcon from "../icons/ChevronDownIcon";
 
-import React, { useState, useMemo } from 'react';
-import { PermissionMatrix, PermissionLevel, PlantUnit } from '../../types';
-import ChevronDownIcon from '../icons/ChevronDownIcon';
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../ui/EnhancedComponents";
 
 interface PermissionsEditorProps {
   permissions: PermissionMatrix;
@@ -10,8 +19,21 @@ interface PermissionsEditorProps {
   t: any;
 }
 
-const PermissionsEditor: React.FC<PermissionsEditorProps> = ({ permissions, plantUnits, onPermissionChange, t }) => {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+const PermissionsEditor: React.FC<PermissionsEditorProps> = ({
+  permissions,
+  plantUnits,
+  onPermissionChange,
+  t,
+}) => {
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   const plantUnitsByCategory = useMemo(() => {
     return plantUnits.reduce((acc, unit) => {
@@ -108,10 +130,7 @@ const PermissionsEditor: React.FC<PermissionsEditorProps> = ({ permissions, plan
               name={`perm-${key}`}
               value={permissions[key] as PermissionLevel}
               onChange={(e) =>
-                handlePermissionChange(
-                  key,
-                  e.target.value as PermissionLevel
-                )
+                handlePermissionChange(key, e.target.value as PermissionLevel)
               }
               className="mt-1 block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 sm:text-sm"
             >
@@ -130,99 +149,95 @@ const PermissionsEditor: React.FC<PermissionsEditorProps> = ({ permissions, plan
           {t.module_plant_operations}
         </h4>
         <div className="rounded-lg border border-slate-200 dark:border-slate-700 divide-y divide-slate-200 dark:divide-slate-700 max-h-96 overflow-y-auto">
-          {Object.entries(plantUnitsByCategory).map(
-            ([category, units]) => {
-              const isExpanded = expandedCategories.has(category);
-              return (
-                <div key={category}>
-                  <button
-                    type="button"
-                    onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    aria-expanded={isExpanded}
-                    aria-controls={`permissions-category-${category}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <ChevronDownIcon
-                        className={`w-5 h-5 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
-                          isExpanded ? "rotate-180" : ""
-                        }`}
-                      />
-                      <span className="font-medium text-slate-800 dark:text-slate-200">
-                        {category}
-                      </span>
-                    </div>
-                    <div
-                      className="w-48"
-                      onClick={(e) => e.stopPropagation()}
+          {Object.entries(plantUnitsByCategory).map(([category, units]) => {
+            const isExpanded = expandedCategories.has(category);
+            return (
+              <div key={category}>
+                <EnhancedButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleCategory(category)}
+                  className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  aria-expanded={isExpanded}
+                  aria-controls={`permissions-category-${category}`}
+                  aria-label={`${
+                    isExpanded ? t.collapse : t.expand
+                  } ${category} permissions`}
+                >
+                  <div className="flex items-center gap-3">
+                    <ChevronDownIcon
+                      className={`w-5 h-5 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${
+                        isExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                    <span className="font-medium text-slate-800 dark:text-slate-200">
+                      {category}
+                    </span>
+                  </div>
+                  <div className="w-48" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      value=""
+                      onChange={(e) =>
+                        handleCategoryPermissionChange(
+                          category,
+                          e.target.value as PermissionLevel
+                        )
+                      }
+                      className="w-full pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-red-300 focus:border-red-500"
                     >
-                      <select
-                        value=""
-                        onChange={(e) =>
-                          handleCategoryPermissionChange(
-                            category,
-                            e.target.value as PermissionLevel
-                          )
-                        }
-                        className="w-full pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-red-300 focus:border-red-500"
-                      >
-                        <option value="" disabled>
-                          {t.set_for_all_units}
+                      <option value="" disabled>
+                        {t.set_for_all_units}
+                      </option>
+                      {Object.values(PermissionLevel).map((level) => (
+                        <option key={level} value={level}>
+                          {t[`permission_level_${level}`]}
                         </option>
-                        {Object.values(PermissionLevel).map((level) => (
-                          <option key={level} value={level}>
-                            {t[`permission_level_${level}`]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </button>
-                  {isExpanded && (
-                    <div
-                      id={`permissions-category-${category}`}
-                      className="pl-8 pr-3 pb-3"
-                    >
-                      <div className="border-l-2 border-slate-200 pl-6 pt-3 space-y-3">
-                        {units.map((unit) => (
-                          <div
-                            key={unit}
-                            className="flex items-center justify-between"
+                      ))}
+                    </select>
+                  </div>
+                </EnhancedButton>
+                {isExpanded && (
+                  <div
+                    id={`permissions-category-${category}`}
+                    className="pl-8 pr-3 pb-3"
+                  >
+                    <div className="border-l-2 border-slate-200 pl-6 pt-3 space-y-3">
+                      {units.map((unit) => (
+                        <div
+                          key={unit}
+                          className="flex items-center justify-between"
+                        >
+                          <label className="text-sm text-slate-600">
+                            {unit}
+                          </label>
+                          <select
+                            value={
+                              permissions.plant_operations[category]?.[unit] ||
+                              PermissionLevel.NONE
+                            }
+                            onChange={(e) =>
+                              handleUnitPermissionChange(
+                                category,
+                                unit,
+                                e.target.value as PermissionLevel
+                              )
+                            }
+                            className="w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-red-300 focus:border-red-500"
                           >
-                            <label className="text-sm text-slate-600">
-                              {unit}
-                            </label>
-                            <select
-                              value={
-                                permissions.plant_operations[
-                                  category
-                                ]?.[unit] || PermissionLevel.NONE
-                              }
-                              onChange={(e) =>
-                                handleUnitPermissionChange(
-                                  category,
-                                  unit,
-                                  e.target.value as PermissionLevel
-                                )
-                              }
-                              className="w-48 pl-3 pr-8 py-1.5 text-xs bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-red-300 focus:border-red-500"
-                            >
-                              {Object.values(PermissionLevel).map(
-                                (level) => (
-                                  <option key={level} value={level}>
-                                    {t[`permission_level_${level}`]}
-                                  </option>
-                                )
-                              )}
-                            </select>
-                          </div>
-                        ))}
-                      </div>
+                            {Object.values(PermissionLevel).map((level) => (
+                              <option key={level} value={level}>
+                                {t[`permission_level_${level}`]}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </div>
-              );
-            }
-          )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

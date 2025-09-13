@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { CcrDowntimeData, DowntimeStatus } from "../../types";
 import { formatDate } from "../../utils/formatters";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
   onSave: (record: CcrDowntimeData) => void;
@@ -20,6 +29,12 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
     corrective_action: "",
     status: DowntimeStatus.OPEN,
   });
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     if (recordToEdit) {
@@ -158,19 +173,25 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({
         </div>
       </div>
       <div className="bg-slate-50 dark:bg-slate-700 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-600">
-        <button
+        <EnhancedButton
+          variant="primary"
+          size="sm"
           type="submit"
-          className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-3 py-1.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          className="sm:ml-3"
+          aria-label={t.save_button || "Save downtime record"}
         >
           {t.save_button}
-        </button>
-        <button
+        </EnhancedButton>
+        <EnhancedButton
+          variant="secondary"
+          size="sm"
           type="button"
           onClick={onCancel}
-          className="mt-2 w-full inline-flex justify-center rounded-lg border border-slate-300 dark:border-slate-600 shadow-sm px-3 py-1.5 bg-white dark:bg-slate-600 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          className="mt-2 sm:mt-0 sm:ml-3"
+          aria-label={t.cancel_button || "Cancel downtime form"}
         >
           {t.cancel_button}
-        </button>
+        </EnhancedButton>
       </div>
     </form>
   );

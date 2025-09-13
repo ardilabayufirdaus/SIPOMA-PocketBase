@@ -11,6 +11,15 @@ import {
   BreakdownData,
 } from "../../components/InteractiveCardModal";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 // Icons
 import PresentationChartLineIcon from "../../components/icons/PresentationChartLineIcon";
 import CheckBadgeIcon from "../../components/icons/CheckBadgeIcon";
@@ -387,6 +396,12 @@ const ProjectDashboardPage: React.FC<{
   const [sortBy, setSortBy] = useState<string>("title");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [refreshing, setRefreshing] = useState(false);
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -779,37 +794,26 @@ const ProjectDashboardPage: React.FC<{
             </select>
           </div>
           <div className="flex gap-1">
-            <button
+            <EnhancedButton
+              variant="primary"
+              size="sm"
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              loading={refreshing}
               aria-label={
                 refreshing ? "Refreshing data..." : "Refresh dashboard data"
               }
             >
-              <svg
-                className={`h-3 w-3 ${refreshing ? "animate-spin" : ""}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
               {refreshing ? "..." : "Refresh"}
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
+              variant="success"
+              size="sm"
               onClick={handleExport}
-              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
               aria-label="Export project data to CSV"
             >
               Export
-            </button>
+            </EnhancedButton>
           </div>
         </div>
       </div>
@@ -1182,13 +1186,14 @@ const ProjectDashboardPage: React.FC<{
                       </div>
                     </div>
                     <div className="flex-shrink-0">
-                      <button
+                      <EnhancedButton
+                        variant="primary"
+                        size="xs"
                         onClick={() => onNavigateToDetail(p.id)}
-                        className="px-3 py-1 text-xs font-semibold text-white bg-red-600 rounded hover:bg-red-700 transition-colors"
                         aria-label={`View details for project ${p.title}`}
                       >
                         {t.view_details_button}
-                      </button>
+                      </EnhancedButton>
                     </div>
                   </div>
                 </div>

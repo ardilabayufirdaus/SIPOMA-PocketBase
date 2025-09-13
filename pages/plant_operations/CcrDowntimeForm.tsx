@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import { CcrDowntimeData } from "../../types";
 import { usePicSettings } from "../../hooks/usePicSettings";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
   onSave: (
@@ -19,6 +28,12 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   t,
   plantUnits,
 }) => {
+  // Enhanced accessibility hooks
+  const announceToScreenReader = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
+
   const { records: picSettings } = usePicSettings();
   const [formData, setFormData] = useState({
     start_time: "00:00:00",
@@ -257,19 +272,23 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         </div>
       </div>
       <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
-        <button
+        <EnhancedButton
           type="submit"
-          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-3 py-1.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          variant="primary"
+          className="sm:ml-3 sm:w-auto"
+          aria-label={t.save_button || "Save downtime record"}
         >
           {t.save_button}
-        </button>
-        <button
+        </EnhancedButton>
+        <EnhancedButton
           type="button"
+          variant="secondary"
           onClick={onCancel}
-          className="mt-2 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-3 py-1.5 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+          className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
+          aria-label={t.cancel_button || "Cancel"}
         >
           {t.cancel_button}
-        </button>
+        </EnhancedButton>
       </div>
     </form>
   );

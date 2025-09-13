@@ -21,41 +21,68 @@ import Sidebar from "./components/ModernSidebar";
 import Header from "./components/Header";
 
 // Enhanced lazy loading with better error boundaries and retries
-const MainDashboardPage = lazy(() =>
-  import("./pages/MainDashboardPage").catch(() => {
+const ModernMainDashboardPage = lazy(() =>
+  import("./pages/ModernMainDashboardPage").catch(() => {
     return {
       default: () =>
         React.createElement(
           "div",
-          {},
+          { className: "text-center p-8" },
           "Error loading Dashboard. Please refresh."
         ),
     };
   })
 );
+
+// Heavy components with preload hints
 const PlantOperationsPage = lazy(() =>
   import("./pages/PlantOperationsPage").catch(() => ({
-    default: () => <div>Error loading Plant Operations. Please refresh.</div>,
+    default: () => (
+      <div className="text-center p-8">
+        Error loading Plant Operations. Please refresh.
+      </div>
+    ),
   }))
 );
+
 const PackingPlantPage = lazy(() =>
   import("./pages/PackingPlantPage").catch(() => ({
-    default: () => <div>Error loading Packing Plant. Please refresh.</div>,
+    default: () => (
+      <div className="text-center p-8">
+        Error loading Packing Plant. Please refresh.
+      </div>
+    ),
   }))
 );
+
 const ProjectManagementPage = lazy(() =>
   import("./pages/ProjectManagementPage").catch(() => ({
-    default: () => <div>Error loading Project Management. Please refresh.</div>,
+    default: () => (
+      <div className="text-center p-8">
+        Error loading Project Management. Please refresh.
+      </div>
+    ),
   }))
 );
+
+// Lightweight components
 const SLAManagementPage = lazy(() =>
   import("./pages/SLAManagementPage").catch(() => ({
-    default: () => <div>Error loading SLA Management. Please refresh.</div>,
+    default: () => (
+      <div className="text-center p-8">
+        Error loading SLA Management. Please refresh.
+      </div>
+    ),
   }))
 );
+
 const SettingsPage = lazy(() =>
   import("./pages/SettingsPage").catch(() => ({
-    default: () => <div>Error loading Settings. Please refresh.</div>,
+    default: () => (
+      <div className="text-center p-8">
+        Error loading Settings. Please refresh.
+      </div>
+    ),
   }))
 );
 
@@ -210,7 +237,7 @@ const App: React.FC = () => {
         if ("id" in user) {
           // Editing existing user
           console.log("Saving edited user:", user.id, user.role);
-          await updateUser(user as User);
+          await updateUser(user.id, user);
           setToastMessage(
             t.user_updated_success || "User updated successfully!"
           );
@@ -219,17 +246,12 @@ const App: React.FC = () => {
           console.log("User updated successfully");
         } else {
           // Creating new user
-          const result = await addUser(user, plantUnits);
-          if (result.success && result.tempPassword) {
-            setGeneratedPassword(result.tempPassword);
-            setNewUsername(user.username);
-            setNewUserFullName(user.full_name);
-            setShowPasswordDisplay(true);
-          } else {
-            setToastMessage(result.error || "Failed to create user");
-            setToastType("error");
-            setShowToast(true);
-          }
+          await addUser(user);
+          setToastMessage(
+            t.user_created_success_title || "User created successfully!"
+          );
+          setToastType("success");
+          setShowToast(true);
         }
         handleCloseUserModal();
       } catch (error) {
@@ -402,17 +424,10 @@ const App: React.FC = () => {
           <div className="max-w-none w-full">
             <Suspense fallback={<PageLoading />}>
               {currentPage === "dashboard" && (
-                <MainDashboardPage
-                  t={t}
+                <ModernMainDashboardPage
+                  language={language}
                   usersCount={users.filter((u) => u.is_active).length}
                   onlineUsersCount={onlineUsersCount}
-                  activeProjects={
-                    projects.filter(
-                      (p) =>
-                        p.status === ProjectStatus.ACTIVE ||
-                        p.status === ProjectStatus.IN_PROGRESS
-                    ).length
-                  }
                   onNavigate={handleNavigate}
                 />
               )}
@@ -421,17 +436,13 @@ const App: React.FC = () => {
                   <>
                     {activeSubPages.users === "user_list" && (
                       <UserListPage
-                        users={users}
                         currentUser={currentUser}
                         onEditUser={handleOpenEditUserModal}
-                        onDeleteUser={handleDeleteUser}
-                        onToggleUserStatus={toggleUserStatus}
                         t={t}
                       />
                     )}
                     {activeSubPages.users === "add_user" && (
                       <AddUserPage
-                        onAddUser={(user) => handleSaveUser(user)}
                         onOpenPasswordDisplay={(
                           password,
                           username,
@@ -553,11 +564,15 @@ const App: React.FC = () => {
         onClose={handleCloseProfileModal}
         user={currentUser}
         onSave={(updatedUser) => {
-          updateUser(updatedUser);
-          setToastMessage(t.avatar_updated || "Profile updated successfully!");
-          setToastType("success");
-          setShowToast(true);
-          handleCloseProfileModal();
+          if (currentUser) {
+            updateUser(currentUser.id, updatedUser);
+            setToastMessage(
+              t.avatar_updated || "Profile updated successfully!"
+            );
+            setToastType("success");
+            setShowToast(true);
+            handleCloseProfileModal();
+          }
         }}
         t={t}
       />

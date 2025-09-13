@@ -602,7 +602,6 @@ export type Database = {
           id: string;
           is_active: boolean;
           last_active: string;
-          permissions: Json | null;
           role: string;
           username: string;
         };
@@ -613,7 +612,6 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           last_active: string;
-          permissions?: Json | null;
           role: string;
           username: string;
         };
@@ -624,11 +622,51 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           last_active?: string;
-          permissions?: Json | null;
           role?: string;
           username?: string;
         };
         Relationships: [];
+      };
+      user_permissions: {
+        Row: {
+          id: string;
+          user_id: string;
+          dashboard: string;
+          user_management: string;
+          plant_operations: Json;
+          packing_plant: string;
+          project_management: string;
+          system_settings: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          dashboard: string;
+          user_management: string;
+          plant_operations: Json;
+          packing_plant: string;
+          project_management: string;
+          system_settings: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          dashboard?: string;
+          user_management?: string;
+          plant_operations?: Json;
+          packing_plant?: string;
+          project_management?: string;
+          system_settings?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_permissions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       work_instructions: {
         Row: {
@@ -659,7 +697,20 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      user_list: {
+        Row: {
+          id: string;
+          username: string;
+          full_name: string;
+          role: string;
+          avatar_url: string | null;
+          last_active: string;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          permissions: Json;
+        };
+      };
     };
     Functions: {
       [_ in never]: never;

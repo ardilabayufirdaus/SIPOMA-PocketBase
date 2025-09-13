@@ -27,6 +27,10 @@ import {
 } from "../../utils/formatters";
 import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
 import ClipboardIcon from "../../components/icons/ClipboardIcon";
+import {
+  EnhancedButton,
+  useAccessibility,
+} from "../../components/ui/EnhancedComponents";
 
 declare global {
   interface Window {
@@ -704,6 +708,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 };
 
 const ReportPage: React.FC<{ t: any }> = ({ t }) => {
+  const { announceToScreenReader } = useAccessibility();
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
@@ -1145,33 +1150,45 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button
+              <EnhancedButton
                 onClick={handleGenerateReport}
                 disabled={isLoading || reportConfig.length === 0}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed"
+                variant="primary"
+                size="md"
+                className="w-full sm:w-auto"
+                ariaLabel={t.generate_report_button}
+                loading={isLoading}
               >
                 {isLoading
                   ? t.generating_report_message
                   : t.generate_report_button}
-              </button>
+              </EnhancedButton>
               {reportImageUrl && (
                 <>
-                  <button
+                  <EnhancedButton
                     onClick={handleCopy}
                     disabled={isCopied}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-md shadow-sm hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-75 transition-colors"
+                    variant="secondary"
+                    size="md"
+                    className="w-full sm:w-auto"
+                    ariaLabel={
+                      isCopied ? t.copied_button_text : t.copy_image_button
+                    }
                   >
                     <ClipboardIcon className="w-5 h-5" />
                     {isCopied ? t.copied_button_text : t.copy_image_button}
-                  </button>
+                  </EnhancedButton>
                   <div className="relative" ref={downloadDropdownRef}>
-                    <button
+                    <EnhancedButton
                       onClick={() => setIsDownloadDropdownOpen((prev) => !prev)}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-red-700 bg-red-100 rounded-md shadow-sm hover:bg-red-200"
+                      variant="secondary"
+                      size="md"
+                      className="w-full sm:w-auto"
+                      ariaLabel={t.download_button}
                     >
                       <DocumentArrowDownIcon className="w-5 h-5" />
                       {t.download_button}
-                    </button>
+                    </EnhancedButton>
                     {isDownloadDropdownOpen && (
                       <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white dark:bg-slate-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
                         <div

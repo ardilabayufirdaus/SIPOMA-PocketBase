@@ -1,4 +1,5 @@
 import React, { Component, ReactNode } from "react";
+import { EnhancedButton } from "./ui/EnhancedComponents";
 
 interface Props {
   children: ReactNode;
@@ -54,12 +55,14 @@ class ChartErrorBoundary extends Component<Props, State> {
             <p className="text-sm text-slate-600 mb-4">
               Unable to render chart visualization
             </p>
-            <button
+            <EnhancedButton
               onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              variant="primary"
+              size="md"
+              ariaLabel="Retry loading the chart"
             >
               Retry
-            </button>
+            </EnhancedButton>
           </div>
         </div>
       );

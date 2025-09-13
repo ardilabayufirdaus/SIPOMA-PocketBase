@@ -28,20 +28,20 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
   onClearError,
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow border border-slate-200 dark:border-slate-700 p-3 mb-4">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1 truncate">
             {t.op_ccr_data_entry}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             Kelola data CCR untuk monitoring performa pabrik
           </p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 max-w-md">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 max-w-xs">
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <svg
@@ -71,8 +71,8 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row md:flex-row items-start gap-2 min-w-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <label
               htmlFor="ccr-category"
               className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
@@ -83,7 +83,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               id="ccr-category"
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+              className="flex-1 min-w-0 px-2 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs font-medium transition-colors"
             >
               <option value="">Pilih Kategori</option>
               {plantCategories.map((cat) => (
@@ -93,7 +93,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <label
               htmlFor="ccr-unit"
               className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
@@ -105,7 +105,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               value={selectedUnit}
               onChange={(e) => onUnitChange(e.target.value)}
               disabled={unitsForCategory.length === 0}
-              className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              className="flex-1 min-w-0 px-2 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-xs font-medium transition-colors"
             >
               <option value="">Pilih Unit</option>
               {unitsForCategory.map((unit) => (
@@ -115,7 +115,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <label
               htmlFor="ccr-date"
               className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
@@ -127,7 +127,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               id="ccr-date"
               value={selectedDate}
               onChange={(e) => onDateChange(e.target.value)}
-              className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+              className="flex-1 min-w-0 px-2 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs font-medium transition-colors"
             />
           </div>
         </div>

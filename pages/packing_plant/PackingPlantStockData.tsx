@@ -8,6 +8,15 @@ import DocumentArrowUpIcon from "../../components/icons/DocumentArrowUpIcon";
 import { formatDate, formatNumber } from "../../utils/formatters";
 import { usePackingPlantStockData } from "../../hooks/usePackingPlantStockData";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 // Helper function to format number for display in inputs
 const formatInputNumber = (num: number): string => {
   if (num === null || num === undefined) {
@@ -62,6 +71,12 @@ interface PageProps {
 }
 
 const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
+  // Enhanced accessibility hooks
+  const announceToScreenReader = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { records, upsertRecord } = usePackingPlantStockData();
   const { records: masterAreas } = usePackingPlantMasterData();
@@ -539,13 +554,15 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
           {t.pack_stock_data_entry_title}
         </h2>
         <div className="flex items-center gap-2 flex-wrap">
-          <button
+          <EnhancedButton
             onClick={handleExport}
-            className="inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 transition-all dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600"
+            variant="secondary"
+            className="inline-flex items-center justify-center gap-2"
+            aria-label={t.export_excel || "Export to Excel"}
           >
             <DocumentArrowDownIcon className="w-5 h-5" />
             {t.export_excel}
-          </button>
+          </EnhancedButton>
           <input
             type="file"
             ref={fileInputRef}
@@ -553,28 +570,33 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             accept=".xlsx, .xls"
             className="hidden"
           />
-          <button
+          <EnhancedButton
             onClick={() => fileInputRef.current?.click()}
             disabled={isImporting}
-            className={`inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold ${
-              isImporting
-                ? "text-slate-400 bg-slate-100 border-slate-200 cursor-not-allowed"
-                : "text-slate-700 bg-white border-slate-300 hover:bg-slate-50"
-            } border rounded-md shadow-sm transition-all dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600`}
+            variant="secondary"
+            loading={isImporting}
+            loadingText={t.importing || "Importing..."}
+            className="inline-flex items-center justify-center gap-2"
+            aria-label={t.import_excel || "Import from Excel"}
           >
             <DocumentArrowUpIcon className="w-5 h-5" />
-            {isImporting
-              ? t.importing || "Importing..."
-              : t.import_excel || "Import Excel"}
-          </button>
-          <button
+            {t.import_excel || "Import Excel"}
+          </EnhancedButton>
+          <EnhancedButton
             onClick={handleAddData}
-            className={`inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold border rounded-md shadow-sm transition-all ${
-              quickAddMode
-                ? "text-slate-500 bg-slate-200 border-slate-300 cursor-not-allowed"
-                : "text-white bg-green-600 border-green-700 hover:bg-green-700"
-            }`}
             disabled={quickAddMode}
+            variant="success"
+            className="inline-flex items-center justify-center gap-2"
+            aria-label={(() => {
+              if (quickAddMode) return "Currently inputting...";
+              const nextDate = new Date(getNextDate());
+              const isInCurrentFilter =
+                nextDate.getMonth() === filterMonth &&
+                nextDate.getFullYear() === filterYear;
+              return isInCurrentFilter
+                ? `Add data for ${formatDate(getNextDate())}`
+                : t.add_data || "Add Data";
+            })()}
           >
             {(() => {
               if (quickAddMode) return "Sedang Input...";
@@ -586,7 +608,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                 ? `+ ${formatDate(getNextDate())}`
                 : t.add_data || "Add Data";
             })()}
-          </button>
+          </EnhancedButton>
         </div>
       </div>
       <div className="flex flex-col md:flex-row gap-4 p-4 bg-slate-100 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
@@ -739,19 +761,21 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <button
+              <EnhancedButton
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
-                className="px-4 py-2 bg-gray-300 rounded"
+                variant="secondary"
+                aria-label={t.cancel || "Cancel"}
               >
                 {t.cancel || "Batal"}
-              </button>
-              <button
+              </EnhancedButton>
+              <EnhancedButton
                 type="submit"
-                className="px-4 py-2 bg-green-600 text-white rounded"
+                variant="primary"
+                aria-label={t.save || "Save"}
               >
                 {t.save || "Simpan"}
-              </button>
+              </EnhancedButton>
             </div>
           </form>
         </Modal>
@@ -933,18 +957,22 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
               <tr className="bg-green-50 dark:bg-green-900/20">
                 <td colSpan={6} className="px-6 py-3 text-center">
                   <div className="flex items-center justify-center gap-3">
-                    <button
+                    <EnhancedButton
                       onClick={handleQuickAddSubmit}
-                      className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-green-600 border border-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                      variant="success"
+                      size="sm"
+                      aria-label="Save quick add data"
                     >
                       ✓ Simpan
-                    </button>
-                    <button
+                    </EnhancedButton>
+                    <EnhancedButton
                       onClick={handleQuickAddCancel}
-                      className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600 dark:hover:bg-slate-600"
+                      variant="secondary"
+                      size="sm"
+                      aria-label="Cancel quick add"
                     >
                       ✕ Batal
-                    </button>
+                    </EnhancedButton>
                     <div className="flex items-center gap-2 ml-4">
                       <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                         <input
@@ -973,13 +1001,17 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                 >
                   <div className="space-y-2">
                     <div>Belum ada data untuk periode ini</div>
-                    <button
+                    <EnhancedButton
                       onClick={handleQuickAdd}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-600 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors dark:bg-green-900/20 dark:border-green-800 dark:text-green-400"
+                      variant="success"
+                      className="inline-flex items-center gap-2"
+                      aria-label={`Add first data for ${formatDate(
+                        getNextDate()
+                      )}`}
                     >
                       <span className="text-lg">+</span>
                       Tambah data pertama untuk {formatDate(getNextDate())}
-                    </button>
+                    </EnhancedButton>
                   </div>
                 </td>
               </tr>

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import RootRouter from "./pages/RootRouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { performanceMonitor } from "./utils/performanceMonitor";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -9,6 +10,10 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+// Initialize performance monitoring
+performanceMonitor.init();
+
 root.render(
   <React.StrictMode>
     <ErrorBoundary>

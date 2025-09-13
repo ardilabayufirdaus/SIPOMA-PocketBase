@@ -10,6 +10,15 @@ import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
 import { Project } from "../../types";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "../../components/ui/EnhancedComponents";
+
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
@@ -33,6 +42,12 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
     null
   );
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   const projectsData = useMemo(() => {
     return projects.map((project) => {
@@ -176,13 +191,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.proj_list}
           </h2>
-          <button
+          <EnhancedButton
+            variant="primary"
+            size="sm"
             onClick={handleAddProject}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
+            aria-label={t.add_project || "Add new project"}
           >
             <PlusIcon className="w-4 h-4 mr-2" />
             {t.add_project || "Add Project"}
-          </button>
+          </EnhancedButton>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
@@ -248,26 +265,30 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      <button
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleEditProject(p)}
-                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150 p-1"
-                        title={t.edit || "Edit"}
+                        aria-label={`${t.edit || "Edit"} ${p.title}`}
                       >
                         <EditIcon className="w-4 h-4" />
-                      </button>
-                      <button
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
                         onClick={() => onNavigateToDetail(p.id)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150"
+                        aria-label={`${t.view_details_button} for ${p.title}`}
                       >
                         {t.view_details_button}
-                      </button>
-                      <button
+                      </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleOpenDeleteModal(p.id)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-150 p-1"
-                        title={t.delete || "Delete"}
+                        aria-label={`${t.delete || "Delete"} ${p.title}`}
                       >
                         <TrashIcon className="w-4 h-4" />
-                      </button>
+                      </EnhancedButton>
                     </div>
                   </td>
                 </tr>
@@ -312,18 +333,22 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
               "Are you sure you want to delete this project? This action cannot be undone and will also delete all associated tasks."}
           </p>
           <div className="flex justify-end gap-3">
-            <button
+            <EnhancedButton
+              variant="secondary"
+              size="sm"
               onClick={() => setDeleteModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              aria-label={t.cancel || "Cancel delete"}
             >
               {t.cancel || "Cancel"}
-            </button>
-            <button
+            </EnhancedButton>
+            <EnhancedButton
+              variant="error"
+              size="sm"
               onClick={handleDeleteConfirm}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              aria-label={t.delete || "Confirm delete"}
             >
               {t.delete || "Delete"}
-            </button>
+            </EnhancedButton>
           </div>
         </div>
       </Modal>

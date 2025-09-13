@@ -11,6 +11,16 @@ import { getDefaultPermissionsByRole } from "../hooks/useUserManagement";
 import { validators, validateForm } from "../utils/validation";
 import ChevronDownIcon from "./icons/ChevronDownIcon";
 
+// Import Enhanced Components
+import {
+  EnhancedButton,
+  EnhancedCard,
+  useAccessibility,
+  useHighContrast,
+  useReducedMotion,
+  useColorScheme,
+} from "./ui/EnhancedComponents";
+
 interface UserFormProps {
   userToEdit: User | null;
   onSave: (user: User | AddUserData) => void;
@@ -29,6 +39,12 @@ const UserForm: React.FC<UserFormProps> = ({
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   );
+
+  // Enhanced accessibility hooks
+  const { announceToScreenReader } = useAccessibility();
+  const isHighContrast = useHighContrast();
+  const prefersReducedMotion = useReducedMotion();
+  const colorScheme = useColorScheme();
 
   const plantUnitsByCategory = useMemo(() => {
     return plantUnits.reduce((acc, unit) => {
@@ -442,12 +458,13 @@ const UserForm: React.FC<UserFormProps> = ({
                     const isExpanded = expandedCategories.has(category);
                     return (
                       <div key={category}>
-                        <button
+                        <EnhancedButton
                           type="button"
                           onClick={() => toggleCategory(category)}
-                          className="w-full flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                          aria-expanded={isExpanded}
-                          aria-controls={`permissions-category-${category}`}
+                          variant="ghost"
+                          size="md"
+                          className="w-full flex items-center justify-between p-3"
+                          ariaLabel={`Toggle ${category} permissions category`}
                         >
                           <div className="flex items-center gap-3">
                             <ChevronDownIcon
@@ -483,7 +500,7 @@ const UserForm: React.FC<UserFormProps> = ({
                               ))}
                             </select>
                           </div>
-                        </button>
+                        </EnhancedButton>
                         {isExpanded && (
                           <div
                             id={`permissions-category-${category}`}
@@ -536,31 +553,27 @@ const UserForm: React.FC<UserFormProps> = ({
         </div>
       </div>
       <div className="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 flex justify-end gap-3 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-        <button
-          type="button"
+        <EnhancedButton
+          variant="secondary"
+          size="sm"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150"
+          type="button"
+          ariaLabel={t.cancel_button}
         >
           {t.cancel_button}
-        </button>
-        <button
+        </EnhancedButton>
+        <EnhancedButton
+          variant="primary"
+          size="sm"
+          onClick={() => {}}
           type="submit"
           disabled={isSubmitting}
-          className={`px-4 py-2 text-sm font-semibold text-white border border-transparent rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-150 ${
-            isSubmitting
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-red-600 hover:bg-red-700"
-          }`}
+          loading={isSubmitting}
+          loadingText={t.saving || "Saving..."}
+          ariaLabel={t.save_button}
         >
-          {isSubmitting ? (
-            <div className="flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-              {t.saving || "Saving..."}
-            </div>
-          ) : (
-            t.save_button
-          )}
-        </button>
+          {t.save_button}
+        </EnhancedButton>
       </div>
     </form>
   );

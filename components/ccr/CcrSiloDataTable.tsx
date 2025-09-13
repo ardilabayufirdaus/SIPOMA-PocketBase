@@ -42,13 +42,13 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = ({
   selectedCategory,
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md space-y-6">
-      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+    <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow space-y-3">
+      <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1 truncate">
         {t.ccr_data_entry_title}
       </h3>
       <div className="overflow-x-auto">
         <table
-          className="min-w-full divide-y divide-slate-200 border border-slate-200"
+          className="min-w-full divide-y divide-slate-200 border border-slate-200 text-xs"
           aria-label="Silo Data Table"
         >
           <thead className="bg-slate-50 text-center">
@@ -175,7 +175,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = ({
                               onKeyDown={(e) =>
                                 handleKeyDown(e, "silo", siloIndex, i * 2)
                               }
-                              className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
+                              className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                               aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                               title={`Isi ruang kosong untuk ${
                                 masterSilo.silo_name
@@ -217,7 +217,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = ({
                               onKeyDown={(e) =>
                                 handleKeyDown(e, "silo", siloIndex, i * 2 + 1)
                               }
-                              className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
+                              className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                               aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                               title={`Isi konten untuk ${
                                 masterSilo.silo_name
