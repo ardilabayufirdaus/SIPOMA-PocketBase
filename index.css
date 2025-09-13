@@ -1,12 +1,4 @@
 /* Enhanced SIPOMA UI/UX Styles */
-/* Import layout improvements */
-@import "./styles/layout-improvements.css";
-/* Import modern design system */
-@import "./styles/modern-design-system.css";
-/* Import modern components */
-@import "./styles/modern-components.css";
-/* Import modern dashboard styles */
-@import "./styles/modern-dashboard.css";
 
 @tailwind base;
 @tailwind components;
