@@ -462,8 +462,8 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
         <label
           className={`block text-sm font-medium transition-colors duration-200 ${
             isFocused
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-gray-700 dark:text-gray-300"
+              ? "text-red-600 dark:text-red-400"
+              : "text-slate-600 dark:text-slate-400"
           }`}
         >
           {label}
@@ -675,9 +675,9 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
 
   const iconClasses = {
     success: "text-green-500",
-    error: "text-red-500",
+    error: "text-red-600",
     warning: "text-yellow-500",
-    info: "text-blue-500",
+    info: "text-blue-600",
   };
 
   if (!visible) return null;
@@ -714,7 +714,7 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
             setVisible(false);
             onClose?.();
           }}
-          className="flex-shrink-0 ml-auto text-gray-400 hover:text-gray-600 transition-colors duration-200"
+          className="flex-shrink-0 ml-auto text-slate-400 hover:text-slate-600 transition-colors duration-200"
         >
           <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
             <path

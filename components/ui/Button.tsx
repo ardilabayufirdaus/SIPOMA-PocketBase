@@ -67,12 +67,12 @@ const Button: React.FC<ButtonProps> = ({
     switch (variant) {
       case "primary":
         return [
-          "bg-blue-600",
-          "hover:bg-blue-700",
-          "active:bg-blue-800",
+          "bg-red-600",
+          "hover:bg-red-700",
+          "active:bg-red-800",
           "text-white",
           "border-transparent",
-          "focus:ring-blue-500",
+          "focus:ring-red-500",
           "shadow-sm",
         ].join(" ");
 

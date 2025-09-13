@@ -27,6 +27,12 @@ import {
   useColorScheme,
 } from "./ui/EnhancedComponents";
 
+// Import Design System
+import { designSystem } from "../utils/designSystem";
+
+// Import Typography Components
+import { Body, UIText } from "./ui/Typography";
+
 interface HeaderProps {
   pageTitle: string;
   showAddUserButton: boolean;

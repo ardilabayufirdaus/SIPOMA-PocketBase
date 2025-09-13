@@ -31,6 +31,9 @@ import ClockIcon from "./icons/ClockIcon";
 import PlusIcon from "./icons/PlusIcon";
 import ShieldCheckIcon from "./icons/ShieldCheckIcon";
 
+// Import Design System
+import { designSystem } from "../utils/designSystem";
+
 interface SidebarProps {
   currentPage: Page;
   activeSubPages: { [key: string]: string };
@@ -76,7 +79,7 @@ const NavLink: React.FC<NavLinkProps> = ({
           : "text-left gap-2 px-2 py-1.5"
       } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px] ${
         isActive
-          ? "bg-gradient-to-r from-red-500/15 to-red-600/15 text-red-400 shadow-sm"
+          ? "bg-red-500/15 text-red-400 shadow-sm border border-red-500/20"
           : "text-slate-300 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
       }`}
       title={isCollapsed ? label : undefined}

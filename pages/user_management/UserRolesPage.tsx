@@ -9,6 +9,7 @@ import {
 import { getDefaultPermissionsByRole } from "../../hooks/useUserManagement";
 import { api } from "../../utils/api";
 import PermissionsEditor from "../../components/user_management/PermissionsEditor";
+import { H1, Body } from "../../components/ui/Typography";
 
 interface UserRolesPageProps {
   users: User[];
@@ -76,19 +77,17 @@ const UserRolesPage: FC<UserRolesPageProps> = ({ users, plantUnits, t }) => {
     [UserRole.OPERATOR]:
       "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
     [UserRole.VIEWER]:
-      "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300",
+      "bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-300",
   };
 
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-          {t.user_roles || "User Roles"}
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <H1 className="mb-2">{t.user_roles || "User Roles"}</H1>
+        <Body color="secondary">
           {t.user_roles_description ||
             "Manage user roles and their permissions"}
-        </p>
+        </Body>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

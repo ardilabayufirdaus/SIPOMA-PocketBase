@@ -4,6 +4,7 @@ import { User } from "../../types";
 import { usePagination } from "../../hooks/usePagination";
 import { useUserManagement } from "../../hooks/useUserManagement";
 import RegistrationRequests from "../../components/user_management/RegistrationRequests";
+import { H1, Body } from "../../components/ui/Typography";
 
 interface UserListPageProps {
   currentUser: User | null;
@@ -49,12 +50,10 @@ const UserListPage: React.FC<UserListPageProps> = ({
     <div className="p-4 lg:p-6">
       <RegistrationRequests />
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-          {t.user_list || "Users List"}
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <H1 className="mb-2">{t.user_list || "Users List"}</H1>
+        <Body color="secondary">
           {t.user_list_description || "Manage and view all users in the system"}
-        </p>
+        </Body>
       </div>
       <UserTable
         users={sanitizedUsers}

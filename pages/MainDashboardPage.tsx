@@ -31,6 +31,9 @@ import {
   BreakdownData,
 } from "../components/InteractiveCardModal";
 
+// Import Typography Components
+import { H1, Body, WhiteText } from "../components/ui/Typography";
+
 // Enhanced Header Component with Modern Design
 const ModernDashboardHeader: React.FC<{
   currentTime: string;
@@ -67,12 +70,10 @@ const ModernDashboardHeader: React.FC<{
         {/* Main Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2 tracking-tight">
-              Selamat Datang di SIPOMA
-            </h1>
-            <p className="text-white/90 text-lg">
+            <H1 className="mb-2 tracking-tight">Selamat Datang di SIPOMA</H1>
+            <Body size="large" className="text-white/90">
               System Informasi Plant Operations Management & Analytics
-            </p>
+            </Body>
           </div>
 
           <div className="flex items-center space-x-4">

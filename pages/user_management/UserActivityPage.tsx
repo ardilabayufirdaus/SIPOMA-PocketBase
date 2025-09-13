@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { User } from "../../types";
 import { usePagination } from "../../hooks/usePagination";
 import { api } from "../../utils/api";
+import { H1, H2, Body } from "../../components/ui/Typography";
 
 interface UserActivityPageProps {
   users: User[];
@@ -30,7 +31,12 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
       setLoading(true);
       try {
         const logs = await api.users.getActivityLogs();
-        setActivityLogs(logs.map((log: any) => ({ ...log, timestamp: new Date(log.timestamp) })));
+        setActivityLogs(
+          logs.map((log: any) => ({
+            ...log,
+            timestamp: new Date(log.timestamp),
+          }))
+        );
       } catch (error) {
         console.error("Error fetching activity logs:", error);
       } finally {
@@ -129,26 +135,24 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
   return (
     <div className="p-4 lg:p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-          {t.user_activity || "User Activity"}
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <H1 className="mb-2">{t.user_activity || "User Activity"}</H1>
+        <Body color="secondary">
           {t.user_activity_description ||
             "Monitor user activities and online status"}
-        </p>
+        </Body>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+        <H2 className="mb-4">
           {t.online_users || "Online Users"} ({onlineUsers.length})
-        </h2>
+        </H2>
         <div className="flex flex-wrap gap-2">
           {onlineUsers.map((user) => (
             <div
               key={user.id}
-              className="flex items-center bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1 rounded-full text-sm"
+              className="flex items-center bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-3 py-1 rounded-full text-sm"
             >
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+              <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
               {user.full_name}
             </div>
           ))}
@@ -161,9 +165,7 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
-          {t.activity_filters || "Activity Filters"}
-        </h2>
+        <H2 className="mb-4">{t.activity_filters || "Activity Filters"}</H2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">

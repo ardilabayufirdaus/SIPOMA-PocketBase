@@ -41,6 +41,9 @@ import { usePackingPlantMasterData } from "../hooks/usePackingPlantMasterData";
 import { useCcrSiloData } from "../hooks/useCcrSiloData";
 import { formatNumber, formatPercentage } from "../utils/formatters";
 
+// Import Typography Components
+import { H2, Body, UIText } from "../components/ui/Typography";
+
 // Chart components
 import {
   LineChart,
