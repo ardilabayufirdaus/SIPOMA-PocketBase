@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import React, { useState, useCallback, useEffect, Suspense, lazy } from "react";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Modal from "./components/Modal";
 import ProfileEditModal from "./components/ProfileEditModal";
 import UserForm from "./components/UserForm";
@@ -236,7 +237,7 @@ const App: React.FC = () => {
       try {
         if ("id" in user) {
           // Editing existing user
-          console.log("Saving edited user:", user.id, user.role);
+          // console.log("Saving edited user:", user.id, user.role); // removed for production
           await updateUser(user.id, user);
           setToastMessage(
             t.user_updated_success || "User updated successfully!"
@@ -385,264 +386,280 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 font-sans compact">
-      <Sidebar
-        currentPage={currentPage}
-        activeSubPages={activeSubPages}
-        onNavigate={handleNavigate}
-        t={t}
-        currentLanguage={language}
-        onLanguageChange={setLanguage}
-        isOpen={isSidebarOpen}
-        isCollapsed={false}
-        onClose={handleCloseSidebar}
-        currentUser={currentUser}
-      />
-
-      <div
-        className="flex flex-col min-h-screen transition-all duration-300"
-        style={{
-          marginLeft: isMobile ? "0" : "4rem", // 64px untuk icon-only width
-        }}
-      >
-        <Header
-          pageTitle={getPageTitle()}
-          showAddUserButton={currentPage === "users"}
-          onAddUser={handleOpenAddUserModal}
-          t={t}
-          onNavigate={handleNavigate}
-          onSignOut={handleSignOutClick}
-          alerts={alerts}
-          onMarkAllAsRead={markAllAlertsAsRead}
-          theme={theme}
-          onToggleTheme={handleToggleTheme}
-          currentUser={currentUser}
-          onToggleSidebar={handleToggleSidebar}
-        />
-
-        <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
-          <div className="max-w-none w-full">
-            <Suspense fallback={<PageLoading />}>
-              {currentPage === "dashboard" && (
-                <ModernMainDashboardPage
-                  language={language}
-                  usersCount={users.filter((u) => u.is_active).length}
-                  onlineUsersCount={onlineUsersCount}
-                  onNavigate={handleNavigate}
-                />
-              )}
-              {currentPage === "users" &&
-                currentUser?.role === "Super Admin" && (
-                  <>
-                    {activeSubPages.users === "user_list" && (
-                      <UserListPage
-                        currentUser={currentUser}
-                        onEditUser={handleOpenEditUserModal}
-                        t={t}
-                      />
-                    )}
-                    {activeSubPages.users === "add_user" && (
-                      <AddUserPage
-                        onOpenPasswordDisplay={(
-                          password,
-                          username,
-                          fullName
-                        ) => {
-                          setGeneratedPassword(password);
-                          setNewUsername(username);
-                          setNewUserFullName(fullName);
-                          setShowPasswordDisplay(true);
-                        }}
-                        plantUnits={plantUnits}
-                        t={t}
-                      />
-                    )}
-                    {activeSubPages.users === "user_roles" && (
-                      <UserRolesPage
-                        users={users}
-                        plantUnits={plantUnits}
-                        t={t}
-                      />
-                    )}
-                    {activeSubPages.users === "user_activity" && (
-                      <UserActivityPage users={users} t={t} />
-                    )}
-                  </>
-                )}
-              {/* Access Denied for User Management if not Super Admin */}
-              {currentPage === "users" &&
-                currentUser?.role !== "Super Admin" && (
-                  <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                      <div className="mb-4">
-                        <svg
-                          className="w-16 h-16 text-red-500 mx-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
-                          />
-                        </svg>
-                      </div>
-                      <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
-                        {t.access_denied || "Access Denied"}
-                      </h3>
-                      <p className="text-red-600 dark:text-red-300 mb-4">
-                        {t.super_admin_only_access ||
-                          "Only Super Admin can access User Management module"}
-                      </p>
-                      <button
-                        onClick={() => handleNavigate("dashboard")}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                      >
-                        {t.back_to_dashboard || "Back to Dashboard"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              {currentPage === "settings" && (
-                <SettingsPage
-                  t={t}
-                  user={currentUser}
-                  onOpenProfileModal={handleOpenProfileModal}
-                  currentLanguage={language}
-                  onLanguageChange={setLanguage}
-                />
-              )}
-              {currentPage === "sla" && <SLAManagementPage t={t} />}
-              {currentPage === "operations" && (
-                <PlantOperationsPage
-                  activePage={activeSubPages.operations}
-                  t={t}
-                  plantData={{
-                    machines,
-                    kpis,
-                    alerts,
-                    productionData,
-                    toggleMachineStatus,
-                  }}
-                />
-              )}
-              {currentPage === "packing" && (
-                <PackingPlantPage activePage={activeSubPages.packing} t={t} />
-              )}
-              {currentPage === "projects" && (
-                <ProjectManagementPage
-                  activePage={activeSubPages.projects}
-                  t={t}
-                  onNavigate={(subpage: string) =>
-                    handleNavigate("projects", subpage)
+    <ErrorBoundary
+      fallback={
+        <div className="flex items-center justify-center min-h-screen text-red-600">
+          Terjadi error pada aplikasi. Silakan refresh halaman.
+        </div>
+      }
+    >
+      <div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 font-sans compact">
+          <Sidebar
+            currentPage={currentPage}
+            activeSubPages={activeSubPages}
+            onNavigate={handleNavigate}
+            t={t}
+            currentLanguage={language}
+            onLanguageChange={setLanguage}
+            isOpen={isSidebarOpen}
+            isCollapsed={false}
+            onClose={handleCloseSidebar}
+            currentUser={currentUser}
+          />
+          <div
+            className="flex flex-col min-h-screen transition-all duration-300"
+            style={{
+              marginLeft: isMobile ? "0" : "5rem", // 80px untuk compact sidebar width (w-20)
+            }}
+          >
+            <Header
+              pageTitle={getPageTitle()}
+              showAddUserButton={currentPage === "users"}
+              onAddUser={handleOpenAddUserModal}
+              t={t}
+              onNavigate={handleNavigate}
+              onSignOut={handleSignOutClick}
+              alerts={alerts}
+              onMarkAllAsRead={markAllAlertsAsRead}
+              theme={theme}
+              onToggleTheme={handleToggleTheme}
+              currentUser={currentUser}
+              onToggleSidebar={handleToggleSidebar}
+            />
+            <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
+              <div className="max-w-none w-full">
+                <Suspense
+                  fallback={
+                    <LoadingSkeleton
+                      variant="rectangular"
+                      height={48}
+                      width={48}
+                      className="mx-auto mt-24"
+                    />
                   }
-                />
-              )}
-            </Suspense>
+                >
+                  {/* ...existing page rendering logic... */}
+                  {currentPage === "dashboard" && (
+                    <ModernMainDashboardPage
+                      language={language}
+                      usersCount={users.filter((u) => u.is_active).length}
+                      onlineUsersCount={onlineUsersCount}
+                      onNavigate={handleNavigate}
+                    />
+                  )}
+                  {currentPage === "users" &&
+                    currentUser?.role === "Super Admin" && (
+                      <>
+                        {activeSubPages.users === "user_list" && (
+                          <UserListPage
+                            currentUser={currentUser}
+                            onEditUser={handleOpenEditUserModal}
+                            t={t}
+                          />
+                        )}
+                        {activeSubPages.users === "add_user" && (
+                          <AddUserPage
+                            onOpenPasswordDisplay={(
+                              password,
+                              username,
+                              fullName
+                            ) => {
+                              setGeneratedPassword(password);
+                              setNewUsername(username);
+                              setNewUserFullName(fullName);
+                              setShowPasswordDisplay(true);
+                            }}
+                            plantUnits={plantUnits}
+                            t={t}
+                          />
+                        )}
+                        {activeSubPages.users === "user_roles" && (
+                          <UserRolesPage
+                            users={users}
+                            plantUnits={plantUnits}
+                            t={t}
+                          />
+                        )}
+                        {activeSubPages.users === "user_activity" && (
+                          <UserActivityPage users={users} t={t} />
+                        )}
+                      </>
+                    )}
+                  {/* Access Denied for User Management if not Super Admin */}
+                  {currentPage === "users" &&
+                    currentUser?.role !== "Super Admin" && (
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
+                            {t.access_denied || "Access Denied"}
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300 mb-4">
+                            {t.super_admin_only_access ||
+                              "Only Super Admin can access User Management module"}
+                          </p>
+                          <button
+                            onClick={() => handleNavigate("dashboard")}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                          >
+                            {t.back_to_dashboard || "Back to Dashboard"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  {currentPage === "settings" && (
+                    <SettingsPage
+                      t={t}
+                      user={currentUser}
+                      onOpenProfileModal={handleOpenProfileModal}
+                      currentLanguage={language}
+                      onLanguageChange={setLanguage}
+                    />
+                  )}
+                  {currentPage === "sla" && <SLAManagementPage t={t} />}
+                  {currentPage === "operations" && (
+                    <PlantOperationsPage
+                      activePage={activeSubPages.operations}
+                      t={t}
+                      plantData={{
+                        machines,
+                        kpis,
+                        alerts,
+                        productionData,
+                        toggleMachineStatus,
+                      }}
+                    />
+                  )}
+                  {currentPage === "packing" && (
+                    <PackingPlantPage
+                      activePage={activeSubPages.packing}
+                      t={t}
+                    />
+                  )}
+                  {currentPage === "projects" && (
+                    <ProjectManagementPage
+                      activePage={activeSubPages.projects}
+                      t={t}
+                      onNavigate={(subpage: string) =>
+                        handleNavigate("projects", subpage)
+                      }
+                    />
+                  )}
+                </Suspense>
+              </div>
+            </main>
           </div>
-        </main>
+        </div>
+        <Modal
+          isOpen={isUserModalOpen}
+          onClose={handleCloseUserModal}
+          title={editingUser ? t.edit_user_title : t.add_user_title}
+        >
+          <UserForm
+            userToEdit={editingUser}
+            onSave={handleSaveUser}
+            onCancel={handleCloseUserModal}
+            t={t}
+            plantUnits={plantUnits}
+          />
+        </Modal>
+        <ProfileEditModal
+          isOpen={isProfileModalOpen}
+          onClose={handleCloseProfileModal}
+          user={currentUser}
+          onSave={(updatedUser) => {
+            if (currentUser) {
+              updateUser(currentUser.id, updatedUser);
+              setToastMessage(
+                t.avatar_updated || "Profile updated successfully!"
+              );
+              setToastType("success");
+              setShowToast(true);
+              handleCloseProfileModal();
+            }
+          }}
+          t={t}
+        />
+        {showPasswordDisplay && (
+          <PasswordDisplay
+            password={generatedPassword}
+            username={newUsername}
+            fullName={newUserFullName}
+            onClose={() => setShowPasswordDisplay(false)}
+            t={t}
+          />
+        )}
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          isVisible={showToast}
+          onClose={() => setShowToast(false)}
+          duration={4000}
+        />
+        <Modal
+          isOpen={isSignOutModalOpen}
+          onClose={handleSignOutCancel}
+          title={t.confirm_sign_out_title}
+        >
+          <div className="p-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-red-600 dark:text-red-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                  Konfirmasi Keluar
+                </h4>
+                <p className="text-slate-600 dark:text-slate-400">
+                  {t.confirm_sign_out_message}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gradient-to-r from-slate-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10 dark:border-slate-700/50">
+            <button
+              onClick={handleSignOutCancel}
+              className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
+            >
+              {t.cancel_button}
+            </button>
+            <button
+              onClick={handleSignOutConfirm}
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
+            >
+              {t.header_sign_out}
+            </button>
+          </div>
+        </Modal>
       </div>
-
-      <Modal
-        isOpen={isUserModalOpen}
-        onClose={handleCloseUserModal}
-        title={editingUser ? t.edit_user_title : t.add_user_title}
-      >
-        <UserForm
-          userToEdit={editingUser}
-          onSave={handleSaveUser}
-          onCancel={handleCloseUserModal}
-          t={t}
-          plantUnits={plantUnits}
-        />
-      </Modal>
-
-      <ProfileEditModal
-        isOpen={isProfileModalOpen}
-        onClose={handleCloseProfileModal}
-        user={currentUser}
-        onSave={(updatedUser) => {
-          if (currentUser) {
-            updateUser(currentUser.id, updatedUser);
-            setToastMessage(
-              t.avatar_updated || "Profile updated successfully!"
-            );
-            setToastType("success");
-            setShowToast(true);
-            handleCloseProfileModal();
-          }
-        }}
-        t={t}
-      />
-
-      {showPasswordDisplay && (
-        <PasswordDisplay
-          password={generatedPassword}
-          username={newUsername}
-          fullName={newUserFullName}
-          onClose={() => setShowPasswordDisplay(false)}
-          t={t}
-        />
-      )}
-
-      <Toast
-        message={toastMessage}
-        type={toastType}
-        isVisible={showToast}
-        onClose={() => setShowToast(false)}
-        duration={4000}
-      />
-
-      <Modal
-        isOpen={isSignOutModalOpen}
-        onClose={handleSignOutCancel}
-        title={t.confirm_sign_out_title}
-      >
-        <div className="p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-red-600 dark:text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-                Konfirmasi Keluar
-              </h4>
-              <p className="text-slate-600 dark:text-slate-400">
-                {t.confirm_sign_out_message}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-gradient-to-r from-slate-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10 dark:border-slate-700/50">
-          <button
-            onClick={handleSignOutCancel}
-            className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
-          >
-            {t.cancel_button}
-          </button>
-          <button
-            onClick={handleSignOutConfirm}
-            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
-          >
-            {t.header_sign_out}
-          </button>
-        </div>
-      </Modal>
-    </div>
+    </ErrorBoundary>
   );
 };
 

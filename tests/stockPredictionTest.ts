@@ -39,11 +39,11 @@ const mockPlantParameters: PlantParameters = {
 
 // Test function
 function testStockPrediction() {
-  console.log("🧪 Testing Stock Prediction Algorithm...\n");
+  // console.log("🧪 Testing Stock Prediction Algorithm...\n"); // removed for production
 
   try {
     // Test 1: Basic prediction calculation
-    console.log("📊 Test 1: Basic Prediction Calculation");
+    // console.log("📊 Test 1: Basic Prediction Calculation"); // removed for production
     const result = calculateStockPrediction(
       mockHistoricalStock,
       mockPlannedDeliveries,
@@ -52,41 +52,39 @@ function testStockPrediction() {
       7 // 7 days history
     );
 
-    console.log(`✅ Generated ${result.prognosisData.length} data points`);
-    console.log(
-      `📅 Critical stock date: ${result.criticalStockDate || "None (Safe)"}`
-    );
+    // console.log(`✅ Generated ${result.prognosisData.length} data points`); // removed for production
+    // console.log(
+    //   `📅 Critical stock date: ${result.criticalStockDate || "None (Safe)"}`
+    // );
 
     // Test 2: Data structure validation
-    console.log("\n🔍 Test 2: Data Structure Validation");
+    // console.log("\n🔍 Test 2: Data Structure Validation"); // removed for production
     const firstDataPoint = result.prognosisData[0];
     const lastDataPoint = result.prognosisData[result.prognosisData.length - 1];
-
-    console.log(
-      `📈 First data point (${firstDataPoint.date}): ${
-        firstDataPoint.isActual ? "Actual" : "Predicted"
-      }`
-    );
-    console.log(
-      `📉 Last data point (${lastDataPoint.date}): ${
-        lastDataPoint.isActual ? "Actual" : "Predicted"
-      }`
-    );
+    // console.log(
+    //   `📈 First data point (${firstDataPoint.date}): ${
+    //     firstDataPoint.isActual ? "Actual" : "Predicted"
+    //   }`
+    // );
+    // console.log(
+    //   `📉 Last data point (${lastDataPoint.date}): ${
+    //     lastDataPoint.isActual ? "Actual" : "Predicted"
+    //   }`
+    // );
 
     // Test 3: Prediction metrics
-    console.log("\n📊 Test 3: Prediction Metrics");
+    // console.log("\n📊 Test 3: Prediction Metrics"); // removed for production
     const metrics = calculatePredictionMetrics(result, mockPlantParameters);
-
-    console.log(
-      `⏰ Days until empty: ${
-        metrics.daysUntilEmpty === Infinity ? "∞" : metrics.daysUntilEmpty
-      }`
-    );
-    console.log(
-      `📊 Average projected stock: ${Math.round(
-        metrics.avgProjectedStock
-      )} tons`
-    );
+    // console.log(
+    //   `⏰ Days until empty: ${
+    //     metrics.daysUntilEmpty === Infinity ? "∞" : metrics.daysUntilEmpty
+    //   }`
+    // );
+    // console.log(
+    //   `📊 Average projected stock: ${Math.round(
+    //     metrics.avgProjectedStock
+    //   )} tons`
+    // );
     console.log(`⚠️ Stock critical: ${metrics.isStockCritical ? "Yes" : "No"}`);
     console.log(
       `🎯 Projection accuracy: ${Math.round(metrics.projectionAccuracy)}%`

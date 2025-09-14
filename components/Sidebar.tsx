@@ -80,7 +80,7 @@ const NavLink: React.FC<NavLinkProps> = ({
       } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px] ${
         isActive
           ? "bg-red-500/15 text-red-400 shadow-sm border border-red-500/20"
-          : "text-slate-300 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
+          : "text-slate-100 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
       }`}
       title={isCollapsed ? label : undefined}
       aria-label={label}
@@ -182,7 +182,7 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
         } rounded-md text-xs font-semibold transition-all duration-200 group ${
           isActive
             ? "text-white bg-gradient-to-r from-slate-700/40 to-slate-600/40"
-            : "text-slate-300 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
+            : "text-slate-100 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
         }`}
         title={isCollapsed ? label : undefined}
         aria-expanded={!isCollapsed ? isOpen : undefined}
@@ -213,7 +213,7 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
       </button>
       {isOpen && !isCollapsed && (
         <div
-          className="ml-4 flex flex-col gap-1 animate-fade-in-fast"
+          className="ml-2 flex flex-col gap-2 p-2 rounded-lg border border-slate-700/30 bg-slate-900/80 shadow-lg animate-fade-in-fast"
           id={`submenu-${label.replace(/\s+/g, "-").toLowerCase()}`}
           role="menu"
           aria-label={`${label} submenu`}
@@ -223,10 +223,10 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
               key={page.key}
               onClick={() => onSelect(page.key)}
               onKeyDown={(e) => handleSubItemKeyDown(e, page.key)}
-              className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all duration-200 group ${
+              className={`w-full text-left flex items-center gap-3 px-4 py-2 rounded-md text-sm transition-all duration-200 group ${
                 activeSubPage === page.key
-                  ? "text-red-400 font-medium bg-red-500/10 border-l-2 border-red-400"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 hover:translate-x-1 focus:text-slate-200 focus:bg-white/5 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                  ? "text-red-500 font-semibold bg-red-500/10 border-l-4 border-red-500 shadow-md"
+                  : "text-slate-100 hover:text-white hover:bg-slate-800/60 hover:translate-x-1 focus:text-white focus:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-red-500/50"
               }`}
               role="menuitem"
               aria-current={activeSubPage === page.key ? "page" : undefined}
@@ -240,7 +240,9 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
               >
                 {page.icon}
               </div>
-              <span>{t[page.key as keyof typeof t] || page.key}</span>
+              <span className="truncate">
+                {t[page.key as keyof typeof t] || page.key}
+              </span>
             </button>
           ))}
         </div>

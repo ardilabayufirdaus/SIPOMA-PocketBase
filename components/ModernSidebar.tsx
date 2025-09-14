@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  forwardRef,
+} from "react";
 import { Page, Language } from "../App";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useSidebarState } from "../hooks/useSidebarState";
@@ -36,6 +43,10 @@ import {
   useColorScheme,
 } from "./ui/EnhancedComponents";
 
+import NavLink from "./atoms/NavLink";
+
+import CollapsibleMenu from "./molecules/CollapsibleMenu";
+
 interface ModernSidebarProps {
   currentPage: Page;
   activeSubPages: { [key: string]: string };
@@ -49,150 +60,178 @@ interface ModernSidebarProps {
   currentUser?: { role: string } | null;
 }
 
-// Optimized NavLink component
-const NavLink: React.FC<{
+// Icon Button Component for Compact Sidebar
+interface IconButtonProps {
   icon: React.ReactNode;
   label: string;
   isActive: boolean;
   onClick: () => void;
-  isCollapsed?: boolean;
-}> = memo(({ icon, label, isActive, onClick, isCollapsed = false }) => {
-  return (
-    <EnhancedButton
-      variant={isActive ? "primary" : "ghost"}
-      size="sm"
-      onClick={onClick}
-      ariaLabel={label}
-      className={`w-full ${isCollapsed ? "justify-center" : "justify-start"} ${
-        isActive ? "bg-red-500/10 text-red-400 border border-red-500/20" : ""
-      }`}
-      icon={icon}
-    >
-      {!isCollapsed && <span className="truncate">{label}</span>}
-      {isCollapsed && (
-        <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-          {label}
-        </div>
-      )}
-    </EnhancedButton>
-  );
-});
+  tooltipPosition?: "right" | "left" | "top" | "bottom";
+}
 
-// Optimized CollapsibleMenu component
-const CollapsibleMenu: React.FC<{
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  pages: { key: string; icon: React.ReactNode }[];
-  activeSubPage: string;
-  onSelect: (pageKey: string) => void;
-  t: any;
-  isCollapsed?: boolean;
-}> = memo(
-  ({
-    icon,
-    label,
-    isActive,
-    pages,
-    activeSubPage,
-    onSelect,
-    t,
-    isCollapsed = false,
-  }) => {
-    const [isOpen, setIsOpen] = useState(isActive && !isCollapsed);
+const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ icon, label, isActive, onClick, tooltipPosition = "right" }, ref) => {
+    const [showTooltip, setShowTooltip] = useState(false);
 
-    useEffect(() => {
-      if (isCollapsed) {
-        setIsOpen(false);
-      } else if (isActive) {
-        setIsOpen(true);
+    const handleMouseEnter = () => setShowTooltip(true);
+    const handleMouseLeave = () => setShowTooltip(false);
+
+    const getTooltipPosition = () => {
+      if (!ref || !(ref as React.RefObject<HTMLButtonElement>).current)
+        return { top: 0, left: 0 };
+
+      const rect = (
+        ref as React.RefObject<HTMLButtonElement>
+      ).current!.getBoundingClientRect();
+      const tooltipOffset = 8;
+
+      switch (tooltipPosition) {
+        case "right":
+          return {
+            top: rect.top + rect.height / 2,
+            left: rect.right + tooltipOffset,
+          };
+        case "left":
+          return {
+            top: rect.top + rect.height / 2,
+            left: rect.left - tooltipOffset,
+          };
+        case "top":
+          return {
+            top: rect.top - tooltipOffset,
+            left: rect.left + rect.width / 2,
+          };
+        case "bottom":
+          return {
+            top: rect.bottom + tooltipOffset,
+            left: rect.left + rect.width / 2,
+          };
+        default:
+          return {
+            top: rect.top + rect.height / 2,
+            left: rect.right + tooltipOffset,
+          };
       }
-    }, [isCollapsed, isActive]);
-
-    const handleToggle = useCallback(() => {
-      if (!isCollapsed) {
-        setIsOpen((prev) => !prev);
-      }
-    }, [isCollapsed]);
-
-    const handleSubItemClick = useCallback(
-      (pageKey: string) => {
-        onSelect(pageKey);
-      },
-      [onSelect]
-    );
+    };
 
     return (
-      <div className="space-y-1">
-        <EnhancedButton
-          variant={isActive ? "primary" : "ghost"}
-          size="sm"
-          onClick={handleToggle}
-          ariaLabel={label}
-          className={`w-full ${
-            isCollapsed ? "justify-center" : "justify-between"
-          } ${isActive ? "text-white bg-slate-700/50" : ""}`}
-          icon={
-            <div className={`flex items-center ${isCollapsed ? "" : "gap-3"}`}>
-              <div
-                className={`transition-transform duration-200 ${
-                  isActive ? "scale-110" : "group-hover:scale-105"
-                }`}
-              >
-                {icon}
-              </div>
-              {!isCollapsed && <span className="truncate">{label}</span>}
-            </div>
-          }
+      <>
+        <button
+          ref={ref}
+          onClick={onClick}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          className={`w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 group relative ${
+            isActive
+              ? "bg-red-500 text-white shadow-lg"
+              : "text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+          }`}
+          aria-label={label}
         >
-          {!isCollapsed && (
-            <ChevronDownIcon
-              className={`w-4 h-4 transition-transform duration-200 ${
-                isOpen ? "rotate-180" : ""
-              }`}
-            />
-          )}
-          {isCollapsed && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              {label}
-            </div>
-          )}
-        </EnhancedButton>
+          <div
+            className={`transition-transform duration-200 ${
+              isActive ? "scale-110" : "group-hover:scale-105"
+            }`}
+          >
+            {icon}
+          </div>
+        </button>
 
-        {isOpen && !isCollapsed && (
-          <div className="ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200">
-            {pages.map((page) => (
-              <EnhancedButton
-                key={page.key}
-                variant={activeSubPage === page.key ? "primary" : "ghost"}
-                size="sm"
-                onClick={() => handleSubItemClick(page.key)}
-                className={`w-full justify-start ${
-                  activeSubPage === page.key
-                    ? "text-red-400 bg-red-500/10 border-l-2 border-red-400"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-                icon={
-                  <div
-                    className={`transition-transform duration-200 ${
-                      activeSubPage === page.key
-                        ? "scale-110"
-                        : "group-hover:scale-105"
-                    }`}
-                  >
-                    {page.icon}
-                  </div>
-                }
-              >
-                <span>{t[page.key as keyof typeof t] || page.key}</span>
-              </EnhancedButton>
-            ))}
+        {showTooltip && (
+          <div
+            className="fixed z-50 px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white text-xs rounded shadow-lg pointer-events-none whitespace-nowrap"
+            style={{
+              top: `${getTooltipPosition().top}px`,
+              left: `${getTooltipPosition().left}px`,
+              transform:
+                tooltipPosition === "right" || tooltipPosition === "left"
+                  ? "translateY(-50%)"
+                  : "translateX(-50%) translateY(-100%)",
+            }}
+          >
+            {label}
           </div>
         )}
-      </div>
+      </>
     );
   }
 );
+
+interface FloatingDropdownItem {
+  key: string;
+  label: string;
+  icon: React.ReactElement;
+}
+
+interface FloatingDropdownProps {
+  items: FloatingDropdownItem[];
+  position: { top: number; left: number };
+  onClose: () => void;
+  onSelect: (item: FloatingDropdownItem) => void;
+}
+
+const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
+  items,
+  position,
+  onClose,
+  onSelect,
+}) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      ref={dropdownRef}
+      className="fixed z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg py-2 min-w-48"
+      style={{
+        top: `${position.top}px`,
+        left: `${position.left}px`,
+      }}
+    >
+      {items.map((item) => (
+        <button
+          key={item.key}
+          onClick={() => {
+            onSelect(item);
+            onClose();
+          }}
+          className="w-full px-4 py-2 text-left hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center space-x-3 transition-colors duration-150"
+        >
+          <div className="flex-shrink-0 w-5 h-5 text-slate-600 dark:text-slate-400">
+            {item.icon}
+          </div>
+          <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
+            {item.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+};
 
 const ModernSidebar: React.FC<ModernSidebarProps> = ({
   currentPage,
@@ -207,11 +246,8 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   currentUser,
 }) => {
   const isMobile = useIsMobile();
-  const { isHovered, setIsHovered, shouldCollapse } = useSidebarState({
-    isMobile,
-    isOpen,
-    autoHide: true,
-  });
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -219,7 +255,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
 
-  const iconClass = "w-5 h-5";
+  const iconClass = "w-6 h-6";
 
   // Memoized navigation data
   const navigationData = useMemo(
@@ -296,6 +332,61 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
     [iconClass]
   );
 
+  // Handle dropdown toggle
+  const handleDropdownToggle = useCallback(
+    (moduleKey: string, buttonRef: React.RefObject<HTMLButtonElement>) => {
+      if (activeDropdown === moduleKey) {
+        setActiveDropdown(null);
+      } else {
+        if (buttonRef.current) {
+          const rect = buttonRef.current.getBoundingClientRect();
+          setDropdownPosition({ top: rect.top, left: rect.right + 8 });
+        }
+        setActiveDropdown(moduleKey);
+      }
+    },
+    [activeDropdown]
+  );
+
+  const handleDropdownClose = useCallback(() => {
+    setActiveDropdown(null);
+    setDropdownPosition(null);
+  }, []);
+
+  const getDropdownItems = useCallback(
+    (module: string) => {
+      switch (module) {
+        case "operations":
+          return navigationData.plantOperationPages.map((page) => ({
+            key: page.key,
+            label: t[page.key as keyof typeof t] || page.key,
+            icon: page.icon,
+          }));
+        case "packing":
+          return navigationData.packingPlantPages.map((page) => ({
+            key: page.key,
+            label: t[page.key as keyof typeof t] || page.key,
+            icon: page.icon,
+          }));
+        case "projects":
+          return navigationData.projectPages.map((page) => ({
+            key: page.key,
+            label: t[page.key as keyof typeof t] || page.key,
+            icon: page.icon,
+          }));
+        case "users":
+          return navigationData.userManagementPages.map((page) => ({
+            key: page.key,
+            label: t[page.key as keyof typeof t] || page.key,
+            icon: page.icon,
+          }));
+        default:
+          return [];
+      }
+    },
+    [navigationData, t]
+  );
+
   const handleNavigate = useCallback(
     (page: Page, subPage?: string) => {
       onNavigate(page, subPage);
@@ -306,13 +397,22 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
     [onNavigate, isMobile, onClose]
   );
 
+  // Create refs for dropdown positioning
+  const dashboardButtonRef = useRef<HTMLButtonElement>(null);
+  const operationsButtonRef = useRef<HTMLButtonElement>(null);
+  const packingButtonRef = useRef<HTMLButtonElement>(null);
+  const projectsButtonRef = useRef<HTMLButtonElement>(null);
+  const usersButtonRef = useRef<HTMLButtonElement>(null);
+  const slaButtonRef = useRef<HTMLButtonElement>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+
   const handleMouseEnter = useCallback(() => {
-    if (!isMobile) setIsHovered(true);
-  }, [isMobile, setIsHovered]);
+    // Tooltip will be handled by individual buttons
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
-    if (!isMobile) setIsHovered(false);
-  }, [isMobile, setIsHovered]);
+    // Tooltip will be handled by individual buttons
+  }, []);
 
   // ESC key handler for mobile
   useEffect(() => {
@@ -340,9 +440,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 ${
-          shouldCollapse ? "w-16" : isMobile ? "w-72" : "w-64"
-        } ${
+        className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 w-20 ${
           isMobile
             ? isOpen
               ? "translate-x-0 shadow-2xl"
@@ -355,17 +453,9 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         aria-label="Main navigation"
       >
         {/* Header */}
-        <div
-          className={`h-16 flex items-center border-b border-white/10 relative overflow-hidden ${
-            shouldCollapse ? "justify-center px-3" : "justify-between px-4"
-          }`}
-        >
+        <div className="h-16 flex items-center justify-center border-b border-white/10 relative overflow-hidden px-3">
           <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10" />
-          <div
-            className={`flex items-center ${
-              shouldCollapse ? "" : "gap-3"
-            } relative z-10`}
-          >
+          <div className="flex items-center justify-center relative z-10">
             <div className="p-2 rounded-lg bg-white/90 shadow-lg border border-white/20">
               <img
                 src="/sipoma-logo.png"
@@ -378,18 +468,13 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
                 }}
               />
             </div>
-            {!shouldCollapse && (
-              <span className="text-lg font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                SIPOMA
-              </span>
-            )}
           </div>
 
           {/* Mobile Close Button */}
-          {isMobile && !shouldCollapse && onClose && (
+          {isMobile && onClose && (
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors relative z-10"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-lg hover:bg-white/10 transition-colors relative z-10"
               aria-label="Close sidebar"
             >
               <svg
@@ -410,149 +495,113 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
-          <NavLink
+        <nav className="flex-1 px-3 py-4 flex flex-col items-center space-y-4 overflow-y-auto">
+          <IconButton
+            ref={dashboardButtonRef}
+            icon={<HomeIcon className={iconClass} />}
             label={t.mainDashboard}
-            icon={<HomeIcon className="w-5 h-5" />}
             isActive={currentPage === "dashboard"}
             onClick={() => handleNavigate("dashboard")}
-            isCollapsed={shouldCollapse}
           />
 
-          <CollapsibleMenu
+          <IconButton
+            ref={operationsButtonRef}
+            icon={<FactoryIcon className={iconClass} />}
             label={t.plantOperations}
-            icon={<FactoryIcon className="w-5 h-5" />}
             isActive={currentPage === "operations"}
-            pages={navigationData.plantOperationPages}
-            activeSubPage={activeSubPages.operations}
-            onSelect={(subPage) => handleNavigate("operations", subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
+            onClick={() =>
+              handleDropdownToggle("operations", operationsButtonRef)
+            }
           />
 
-          <CollapsibleMenu
+          <IconButton
+            ref={packingButtonRef}
+            icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
             label={t.packingPlant}
-            icon={<ArchiveBoxArrowDownIcon className="w-5 h-5" />}
             isActive={currentPage === "packing"}
-            pages={navigationData.packingPlantPages}
-            activeSubPage={activeSubPages.packing}
-            onSelect={(subPage) => handleNavigate("packing", subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
+            onClick={() => handleDropdownToggle("packing", packingButtonRef)}
           />
 
-          <CollapsibleMenu
+          <IconButton
+            ref={projectsButtonRef}
+            icon={<ClipboardDocumentListIcon className={iconClass} />}
             label={t.projectManagement}
-            icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
             isActive={currentPage === "projects"}
-            pages={navigationData.projectPages}
-            activeSubPage={activeSubPages.projects}
-            onSelect={(subPage) => handleNavigate("projects", subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
+            onClick={() => handleDropdownToggle("projects", projectsButtonRef)}
           />
 
           {/* User Management - Only visible for Super Admin */}
           {currentUser?.role === "Super Admin" && (
-            <CollapsibleMenu
+            <IconButton
+              ref={usersButtonRef}
+              icon={<UserGroupIcon className={iconClass} />}
               label={t.userManagement}
-              icon={<UserGroupIcon className="w-5 h-5" />}
               isActive={currentPage === "users"}
-              pages={navigationData.userManagementPages}
-              activeSubPage={activeSubPages.users}
-              onSelect={(subPage) => handleNavigate("users", subPage)}
-              t={t}
-              isCollapsed={shouldCollapse}
+              onClick={() => handleDropdownToggle("users", usersButtonRef)}
             />
           )}
 
-          <NavLink
+          <IconButton
+            ref={slaButtonRef}
+            icon={<ClockIcon className={iconClass} />}
             label={t.slaManagement}
-            icon={<ClockIcon className="w-5 h-5" />}
             isActive={currentPage === "sla"}
             onClick={() => handleNavigate("sla")}
-            isCollapsed={shouldCollapse}
           />
 
-          <NavLink
+          <IconButton
+            ref={settingsButtonRef}
+            icon={<CogIcon className={iconClass} />}
             label={t.header_settings}
-            icon={<CogIcon className="w-5 h-5" />}
             isActive={currentPage === "settings"}
             onClick={() => handleNavigate("settings")}
-            isCollapsed={shouldCollapse}
           />
         </nav>
 
-        {/* Footer */}
-        <div
-          className={`px-4 py-6 border-t border-white/10 bg-gradient-to-r from-slate-900/50 to-slate-800/50 ${
-            shouldCollapse ? "px-3" : ""
-          }`}
-        >
-          {!shouldCollapse && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">
-                Language
-              </p>
-              <div className="flex items-center justify-center space-x-3">
-                <EnhancedButton
-                  variant={currentLanguage === "en" ? "primary" : "ghost"}
-                  size="sm"
-                  onClick={() => onLanguageChange("en")}
-                  ariaLabel="Switch to English"
-                  disabled={currentLanguage === "en"}
-                  className="p-1"
-                  icon={<FlagENIcon className="w-8 h-auto rounded-md" />}
-                >
-                  <span className="sr-only">English</span>
-                </EnhancedButton>
-                <EnhancedButton
-                  variant={currentLanguage === "id" ? "primary" : "ghost"}
-                  size="sm"
-                  onClick={() => onLanguageChange("id")}
-                  ariaLabel="Switch to Indonesian"
-                  disabled={currentLanguage === "id"}
-                  className="p-1"
-                  icon={<FlagIDIcon className="w-8 h-auto rounded-md" />}
-                >
-                  <span className="sr-only">Indonesian</span>
-                </EnhancedButton>
-              </div>
-            </div>
-          )}
+        {/* Language Switcher & Footer */}
+        <div className="px-3 py-4 border-t border-slate-700 bg-slate-800/50">
+          {/* Language Switcher - Compact Design */}
+          <div className="flex flex-col items-center space-y-3 mb-4">
+            <EnhancedButton
+              variant={currentLanguage === "en" ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => onLanguageChange("en")}
+              ariaLabel="Switch to English"
+              disabled={currentLanguage === "en"}
+              className="p-1 w-10 h-10"
+              icon={<FlagENIcon className="w-6 h-auto rounded-md" />}
+            >
+              <span className="sr-only">English</span>
+            </EnhancedButton>
+            <EnhancedButton
+              variant={currentLanguage === "id" ? "primary" : "ghost"}
+              size="sm"
+              onClick={() => onLanguageChange("id")}
+              ariaLabel="Switch to Indonesian"
+              disabled={currentLanguage === "id"}
+              className="p-1 w-10 h-10"
+              icon={<FlagIDIcon className="w-6 h-auto rounded-md" />}
+            >
+              <span className="sr-only">Indonesian</span>
+            </EnhancedButton>
+          </div>
 
-          {shouldCollapse ? (
-            <div className="flex flex-col items-center space-y-2">
-              <EnhancedButton
-                variant={currentLanguage === "en" ? "primary" : "ghost"}
-                size="sm"
-                onClick={() => onLanguageChange("en")}
-                ariaLabel="Switch to English"
-                disabled={currentLanguage === "en"}
-                className="p-1"
-                icon={<FlagENIcon className="w-6 h-auto rounded-md" />}
-              >
-                <span className="sr-only">English</span>
-              </EnhancedButton>
-              <EnhancedButton
-                variant={currentLanguage === "id" ? "primary" : "ghost"}
-                size="sm"
-                onClick={() => onLanguageChange("id")}
-                ariaLabel="Switch to Indonesian"
-                disabled={currentLanguage === "id"}
-                className="p-1"
-                icon={<FlagIDIcon className="w-6 h-auto rounded-md" />}
-              >
-                <span className="sr-only">Indonesian</span>
-              </EnhancedButton>
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-xs text-slate-400">© 2025 SIPOMA</p>
-            </div>
-          )}
+          {/* Footer */}
+          <div className="text-center">
+            <p className="text-xs text-slate-400">© 2025 SIPOMA</p>
+          </div>
         </div>
       </aside>
+
+      {/* Floating Dropdown */}
+      {activeDropdown && dropdownPosition && (
+        <FloatingDropdown
+          items={getDropdownItems(activeDropdown)}
+          position={dropdownPosition}
+          onClose={handleDropdownClose}
+          onSelect={(item) => handleNavigate(activeDropdown as Page, item.key)}
+        />
+      )}
     </>
   );
 };

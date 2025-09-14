@@ -1,10 +1,12 @@
+/* Import design tokens untuk konsistensi styling */
+@import url("./styles/design-tokens.css");
+
 /* Enhanced SIPOMA UI/UX Styles */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties untuk konsistensi warna dan tema */
 :root {
   /* Primary Colors */
   --color-primary-50: #fef2f2;
@@ -12,7 +14,7 @@
   --color-primary-200: #fecaca;
   --color-primary-300: #fca5a5;
   --color-primary-400: #f87171;
-  --color-primary-500: #ef4444;
+  --color-primary-500: var(--color-primary);
   --color-primary-600: #dc2626;
   --color-primary-700: #b91c1c;
   --color-primary-800: #991b1b;
@@ -20,20 +22,20 @@
 
   /* Neutral Colors (Slate) */
   --color-neutral-50: #f8fafc;
-  --color-neutral-100: #f1f5f9;
+  --color-neutral-100: var(--color-text);
   --color-neutral-200: #e2e8f0;
   --color-neutral-300: #cbd5e1;
   --color-neutral-400: #94a3b8;
-  --color-neutral-500: #64748b;
+  --color-neutral-500: var(--color-secondary);
   --color-neutral-600: #475569;
   --color-neutral-700: #334155;
-  --color-neutral-800: #1e293b;
-  --color-neutral-900: #0f172a;
+  --color-neutral-800: var(--color-surface);
+  --color-neutral-900: var(--color-bg);
 
   /* Semantic Colors */
   --color-success: #10b981;
   --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  --color-error: var(--color-primary);
   --color-info: #3b82f6;
 
   /* Spacing Scale */

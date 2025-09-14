@@ -6,43 +6,45 @@ export const createDemoNotifications = async () => {
   const demoNotifications = [
     {
       message: "System maintenance will begin in 30 minutes",
-      severity: AlertSeverity.WARNING,
+      severity: "Warning",
       timestamp: new Date().toISOString(),
       read: false,
     },
     {
       message: "New user John Doe has been registered",
-      severity: AlertSeverity.INFO,
+      severity: "Info",
       timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
       read: false,
     },
     {
       message: "Critical: Temperature sensor in Unit 1 is malfunctioning",
-      severity: AlertSeverity.CRITICAL,
+      severity: "Critical",
       timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 minutes ago
       read: false,
     },
     {
       message: "Production target for today has been achieved",
-      severity: AlertSeverity.INFO,
+      severity: "Info",
       timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
       read: true,
     },
     {
       message: "Backup process completed successfully",
-      severity: AlertSeverity.INFO,
+      severity: "Info",
       timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
       read: true,
     },
   ];
 
   try {
-    const { error } = await supabase.from("alerts").insert(demoNotifications);
+    const { error } = await supabase
+      .from("alerts")
+      .insert(demoNotifications as any);
 
     if (error) {
       console.error("Error creating demo notifications:", error);
     } else {
-      console.log("Demo notifications created successfully");
+      // console.log("Demo notifications created successfully"); // removed for production
     }
   } catch (error) {
     console.error("Error:", error);
@@ -62,7 +64,7 @@ export const clearDemoNotifications = async () => {
     if (error) {
       console.error("Error clearing demo notifications:", error);
     } else {
-      console.log("Demo notifications cleared successfully");
+      // console.log("Demo notifications cleared successfully"); // removed for production
     }
   } catch (error) {
     console.error("Error:", error);

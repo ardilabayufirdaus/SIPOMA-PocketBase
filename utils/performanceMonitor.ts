@@ -177,7 +177,7 @@ class PerformanceMonitor {
     // Example: Sentry, DataDog, New Relic, etc.
     try {
       // Placeholder for monitoring service integration
-      console.log(`Sending ${type} to monitoring service:`, data);
+      // console.log(`Sending ${type} to monitoring service:`, data); // removed for production
     } catch (error) {
       console.error("Failed to send to monitoring service:", error);
     }
