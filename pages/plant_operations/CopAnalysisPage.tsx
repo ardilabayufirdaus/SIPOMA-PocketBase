@@ -15,6 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import Modal from "../../components/Modal";
 
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
@@ -94,6 +95,29 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     stdev: number | null;
     qaf: number | null;
   } | null>(null);
+
+  // State untuk modal breakdown
+  const [breakdownModal, setBreakdownModal] = useState<{
+    isOpen: boolean;
+    parameter: string;
+    data: AnalysisDataRow | null;
+  }>({
+    isOpen: false,
+    parameter: "",
+    data: null,
+  });
+
+  const [hourlyBreakdownModal, setHourlyBreakdownModal] = useState<{
+    isOpen: boolean;
+    parameter: string;
+    dayIndex: number;
+    data: { hour: number; value: number | null; isOutOfRange: boolean }[];
+  }>({
+    isOpen: false,
+    parameter: "",
+    dayIndex: -1,
+    data: [],
+  });
 
   // Set default filter only after plantUnits are loaded
   useEffect(() => {
@@ -440,6 +464,12 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             setSelectedParameterStats({
               parameter: row.parameter.parameter,
               ...stats,
+            });
+            // Buka modal breakdown harian
+            setBreakdownModal({
+              isOpen: true,
+              parameter: row.parameter.parameter,
+              data: row,
             });
           },
         };
@@ -1025,6 +1055,114 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
           )}
         </div>
       )}
+
+      {/* Modal Breakdown Harian */}
+      <Modal
+        isOpen={breakdownModal.isOpen}
+        onClose={() =>
+          setBreakdownModal({ isOpen: false, parameter: "", data: null })
+        }
+        title={`Breakdown Harian - ${breakdownModal.parameter}`}
+      >
+        <div className="p-6 max-h-96 overflow-y-auto">
+          {breakdownModal.data && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-7 gap-2">
+                {breakdownModal.data.dailyValues.map((day, index) => {
+                  const isOutOfRange =
+                    day.value === null || day.value < 0 || day.value > 100;
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        // Simulasi data jam-jam (24 jam)
+                        const hourlyData = Array.from(
+                          { length: 24 },
+                          (_, hour) => ({
+                            hour,
+                            value: day.value
+                              ? day.value + (Math.random() - 0.5) * 20
+                              : null,
+                            isOutOfRange: day.value
+                              ? Math.random() > 0.8
+                              : true,
+                          })
+                        );
+                        setHourlyBreakdownModal({
+                          isOpen: true,
+                          parameter: breakdownModal.parameter,
+                          dayIndex: index,
+                          data: hourlyData,
+                        });
+                      }}
+                      className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                        isOutOfRange
+                          ? "bg-red-100 text-red-800 hover:bg-red-200"
+                          : "bg-green-100 text-green-800 hover:bg-green-200"
+                      }`}
+                    >
+                      <div className="text-center">
+                        <div className="text-xs">Hari {index + 1}</div>
+                        <div className="text-lg font-bold">
+                          {day.value !== null
+                            ? `${day.value.toFixed(1)}%`
+                            : "-"}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-xs text-slate-600 dark:text-slate-400 mt-4">
+                Klik pada hari untuk melihat breakdown jam-jam. Hari berwarna
+                merah menunjukkan parameter di luar range (0-100%).
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Modal Breakdown Jam-jam */}
+      <Modal
+        isOpen={hourlyBreakdownModal.isOpen}
+        onClose={() =>
+          setHourlyBreakdownModal({
+            isOpen: false,
+            parameter: "",
+            dayIndex: -1,
+            data: [],
+          })
+        }
+        title={`Breakdown Jam - ${hourlyBreakdownModal.parameter} (Hari ${
+          hourlyBreakdownModal.dayIndex + 1
+        })`}
+      >
+        <div className="p-6 max-h-96 overflow-y-auto">
+          <div className="grid grid-cols-6 gap-2">
+            {hourlyBreakdownModal.data.map((hour) => (
+              <div
+                key={hour.hour}
+                className={`p-3 rounded-lg text-sm transition-colors ${
+                  hour.isOutOfRange
+                    ? "bg-red-100 text-red-800 border-2 border-red-300"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                <div className="text-center">
+                  <div className="text-xs">Jam {hour.hour}:00</div>
+                  <div className="text-lg font-bold">
+                    {hour.value !== null ? `${hour.value.toFixed(1)}%` : "-"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-xs text-slate-600 dark:text-slate-400 mt-4">
+            Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar
+            range target.
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
