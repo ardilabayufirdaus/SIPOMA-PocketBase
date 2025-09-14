@@ -34,6 +34,22 @@ export const formatNumber = (num: number): string => {
   return parts.join(",");
 };
 
+// Function to format number with dot as thousand separator and configurable decimal places
+export const formatNumberWithPrecision = (
+  num: number,
+  precision: number = 1
+): string => {
+  if (num === null || num === undefined) {
+    return precision > 0 ? "0," + "0".repeat(precision) : "0";
+  }
+
+  // Format to specified decimal places and use dot as thousand separator
+  const formatted = num.toFixed(precision);
+  const parts = formatted.split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return precision > 0 ? parts.join(",") : parts[0];
+};
+
 // Function to format percentage with 1 decimal place
 export const formatPercentage = (num: number): string => {
   if (num === null || num === undefined) {

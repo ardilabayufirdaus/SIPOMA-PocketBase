@@ -21,6 +21,10 @@ import { usePlantUnits } from "./hooks/usePlantUnits";
 import Sidebar from "./components/ModernSidebar";
 import Header from "./components/Header";
 
+// Import permission utilities
+import { usePermissions, PermissionGuard } from "./utils/permissions";
+import { PermissionLevel } from "./types";
+
 // Enhanced lazy loading with better error boundaries and retries
 const ModernMainDashboardPage = lazy(() =>
   import("./pages/ModernMainDashboardPage").catch(() => {
@@ -439,17 +443,88 @@ const App: React.FC = () => {
                     />
                   }
                 >
-                  {/* ...existing page rendering logic... */}
-                  {currentPage === "dashboard" && (
-                    <ModernMainDashboardPage
-                      language={language}
-                      usersCount={users.filter((u) => u.is_active).length}
-                      onlineUsersCount={onlineUsersCount}
-                      onNavigate={handleNavigate}
-                    />
-                  )}
-                  {currentPage === "users" &&
-                    currentUser?.role === "Super Admin" && (
+                  {/* Dashboard - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="dashboard"
+                    requiredLevel={PermissionLevel.READ}
+                    fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300">
+                            You don't have permission to access the Dashboard.
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {currentPage === "dashboard" && (
+                      <ModernMainDashboardPage
+                        language={language}
+                        usersCount={users.filter((u) => u.is_active).length}
+                        onlineUsersCount={onlineUsersCount}
+                        onNavigate={handleNavigate}
+                      />
+                    )}
+                  </PermissionGuard>
+                  {/* User Management - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="user_management"
+                    requiredLevel={PermissionLevel.READ}
+                    fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300 mb-4">
+                            You don't have permission to access User Management.
+                          </p>
+                          <button
+                            onClick={() => handleNavigate("dashboard")}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                          >
+                            Back to Dashboard
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {currentPage === "users" && (
                       <>
                         {activeSubPages.users === "user_list" && (
                           <UserListPage
@@ -486,9 +561,13 @@ const App: React.FC = () => {
                         )}
                       </>
                     )}
-                  {/* Access Denied for User Management if not Super Admin */}
-                  {currentPage === "users" &&
-                    currentUser?.role !== "Super Admin" && (
+                  </PermissionGuard>
+                  {/* Settings - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="system_settings"
+                    requiredLevel={PermissionLevel.READ}
+                    fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
                           <div className="mb-4">
@@ -502,64 +581,163 @@ const App: React.FC = () => {
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
                               />
                             </svg>
                           </div>
-                          <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
-                            {t.access_denied || "Access Denied"}
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
                           </h3>
-                          <p className="text-red-600 dark:text-red-300 mb-4">
-                            {t.super_admin_only_access ||
-                              "Only Super Admin can access User Management module"}
+                          <p className="text-red-600 dark:text-red-300">
+                            You don't have permission to access Settings.
                           </p>
-                          <button
-                            onClick={() => handleNavigate("dashboard")}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                          >
-                            {t.back_to_dashboard || "Back to Dashboard"}
-                          </button>
                         </div>
                       </div>
+                    }
+                  >
+                    {currentPage === "settings" && (
+                      <SettingsPage
+                        t={t}
+                        user={currentUser}
+                        onOpenProfileModal={handleOpenProfileModal}
+                        currentLanguage={language}
+                        onLanguageChange={setLanguage}
+                      />
                     )}
-                  {currentPage === "settings" && (
-                    <SettingsPage
-                      t={t}
-                      user={currentUser}
-                      onOpenProfileModal={handleOpenProfileModal}
-                      currentLanguage={language}
-                      onLanguageChange={setLanguage}
-                    />
-                  )}
+                  </PermissionGuard>
                   {currentPage === "sla" && <SLAManagementPage t={t} />}
-                  {currentPage === "operations" && (
-                    <PlantOperationsPage
-                      activePage={activeSubPages.operations}
-                      t={t}
-                      plantData={{
-                        machines,
-                        kpis,
-                        alerts,
-                        productionData,
-                        toggleMachineStatus,
-                      }}
-                    />
-                  )}
-                  {currentPage === "packing" && (
-                    <PackingPlantPage
-                      activePage={activeSubPages.packing}
-                      t={t}
-                    />
-                  )}
-                  {currentPage === "projects" && (
-                    <ProjectManagementPage
-                      activePage={activeSubPages.projects}
-                      t={t}
-                      onNavigate={(subpage: string) =>
-                        handleNavigate("projects", subpage)
-                      }
-                    />
-                  )}
+                  {/* Plant Operations - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="plant_operations"
+                    requiredLevel={PermissionLevel.READ}
+                    fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300">
+                            You don't have permission to access Plant
+                            Operations.
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {currentPage === "operations" && (
+                      <PlantOperationsPage
+                        activePage={activeSubPages.operations}
+                        t={t}
+                        plantData={{
+                          machines,
+                          kpis,
+                          alerts,
+                          productionData,
+                          toggleMachineStatus,
+                        }}
+                      />
+                    )}
+                  </PermissionGuard>
+                  {/* Packing Plant - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="packing_plant"
+                    requiredLevel={PermissionLevel.READ}
+                    fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300">
+                            You don't have permission to access Packing Plant.
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {currentPage === "packing" && (
+                      <PackingPlantPage
+                        activePage={activeSubPages.packing}
+                        t={t}
+                      />
+                    )}
+                  </PermissionGuard>
+                  {/* Project Management - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="project_management"
+                    requiredLevel={PermissionLevel.READ}
+                    fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300">
+                            You don't have permission to access Project
+                            Management.
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {currentPage === "projects" && (
+                      <ProjectManagementPage
+                        activePage={activeSubPages.projects}
+                        t={t}
+                        onNavigate={(subpage: string) =>
+                          handleNavigate("projects", subpage)
+                        }
+                      />
+                    )}
+                  </PermissionGuard>
                 </Suspense>
               </div>
             </main>

@@ -208,18 +208,22 @@ export const useCcrParameterData = () => {
             throw deleteError;
           }
         } else {
-          // Upsert record dengan kolom name
+          // Prepare upsert data - only set name if this is a new record
+          const upsertData: any = {
+            date,
+            parameter_id,
+            hourly_values: updatedHourlyValues,
+          };
+
+          // Only set name if this is a new record (no existing data)
+          if (!existing) {
+            upsertData.name = userName;
+          }
+
+          // Upsert record
           const { error: upsertError } = await supabase
             .from("ccr_parameter_data")
-            .upsert(
-              {
-                date,
-                parameter_id,
-                hourly_values: updatedHourlyValues,
-                name: userName,
-              },
-              { onConflict: "date,parameter_id" }
-            );
+            .upsert(upsertData, { onConflict: "date,parameter_id" });
 
           if (upsertError) {
             console.error("Error updating CCR parameter data:", upsertError);

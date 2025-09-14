@@ -33,6 +33,10 @@ import ClockIcon from "./icons/ClockIcon";
 import PlusIcon from "./icons/PlusIcon";
 import ShieldCheckIcon from "./icons/ShieldCheckIcon";
 
+// Import permission utilities
+import { usePermissions } from "../utils/permissions";
+import { User, PermissionLevel } from "../types";
+
 // Import Enhanced Components
 import {
   EnhancedButton,
@@ -57,7 +61,7 @@ interface ModernSidebarProps {
   isOpen: boolean;
   isCollapsed: boolean;
   onClose?: () => void;
-  currentUser?: { role: string } | null;
+  currentUser?: User | null;
 }
 
 // Icon Button Component for Compact Sidebar
@@ -255,6 +259,9 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
 
+  // Permission checker
+  const permissionChecker = usePermissions(currentUser);
+
   const iconClass = "w-6 h-6";
 
   // Memoized navigation data
@@ -357,34 +364,70 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
     (module: string) => {
       switch (module) {
         case "operations":
-          return navigationData.plantOperationPages.map((page) => ({
-            key: page.key,
-            label: t[page.key as keyof typeof t] || page.key,
-            icon: page.icon,
-          }));
+          return navigationData.plantOperationPages
+            .filter((page) => {
+              // For now, use main plant_operations permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission(
+                "plant_operations",
+                PermissionLevel.READ
+              );
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
         case "packing":
-          return navigationData.packingPlantPages.map((page) => ({
-            key: page.key,
-            label: t[page.key as keyof typeof t] || page.key,
-            icon: page.icon,
-          }));
+          return navigationData.packingPlantPages
+            .filter((page) => {
+              // For now, use main packing_plant permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission(
+                "packing_plant",
+                PermissionLevel.READ
+              );
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
         case "projects":
-          return navigationData.projectPages.map((page) => ({
-            key: page.key,
-            label: t[page.key as keyof typeof t] || page.key,
-            icon: page.icon,
-          }));
+          return navigationData.projectPages
+            .filter((page) => {
+              // For now, use main project_management permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission(
+                "project_management",
+                PermissionLevel.READ
+              );
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
         case "users":
-          return navigationData.userManagementPages.map((page) => ({
-            key: page.key,
-            label: t[page.key as keyof typeof t] || page.key,
-            icon: page.icon,
-          }));
+          return navigationData.userManagementPages
+            .filter((page) => {
+              // For now, use main user_management permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission(
+                "user_management",
+                PermissionLevel.READ
+              );
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
         default:
           return [];
       }
     },
-    [navigationData, t]
+    [navigationData, t, permissionChecker]
   );
 
   const handleNavigate = useCallback(
@@ -496,42 +539,71 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 flex flex-col items-center space-y-4 overflow-y-auto">
-          <IconButton
-            ref={dashboardButtonRef}
-            icon={<HomeIcon className={iconClass} />}
-            label={t.mainDashboard}
-            isActive={currentPage === "dashboard"}
-            onClick={() => handleNavigate("dashboard")}
-          />
+          {/* Dashboard - Check permission */}
+          {permissionChecker.hasPermission(
+            "dashboard",
+            PermissionLevel.READ
+          ) && (
+            <IconButton
+              ref={dashboardButtonRef}
+              icon={<HomeIcon className={iconClass} />}
+              label={t.mainDashboard}
+              isActive={currentPage === "dashboard"}
+              onClick={() => handleNavigate("dashboard")}
+            />
+          )}
 
-          <IconButton
-            ref={operationsButtonRef}
-            icon={<FactoryIcon className={iconClass} />}
-            label={t.plantOperations}
-            isActive={currentPage === "operations"}
-            onClick={() =>
-              handleDropdownToggle("operations", operationsButtonRef)
-            }
-          />
+          {/* Plant Operations - Check permission */}
+          {permissionChecker.hasPermission(
+            "plant_operations",
+            PermissionLevel.READ
+          ) && (
+            <IconButton
+              ref={operationsButtonRef}
+              icon={<FactoryIcon className={iconClass} />}
+              label={t.plantOperations}
+              isActive={currentPage === "operations"}
+              onClick={() =>
+                handleDropdownToggle("operations", operationsButtonRef)
+              }
+            />
+          )}
 
-          <IconButton
-            ref={packingButtonRef}
-            icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
-            label={t.packingPlant}
-            isActive={currentPage === "packing"}
-            onClick={() => handleDropdownToggle("packing", packingButtonRef)}
-          />
+          {/* Packing Plant - Check permission */}
+          {permissionChecker.hasPermission(
+            "packing_plant",
+            PermissionLevel.READ
+          ) && (
+            <IconButton
+              ref={packingButtonRef}
+              icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
+              label={t.packingPlant}
+              isActive={currentPage === "packing"}
+              onClick={() => handleDropdownToggle("packing", packingButtonRef)}
+            />
+          )}
 
-          <IconButton
-            ref={projectsButtonRef}
-            icon={<ClipboardDocumentListIcon className={iconClass} />}
-            label={t.projectManagement}
-            isActive={currentPage === "projects"}
-            onClick={() => handleDropdownToggle("projects", projectsButtonRef)}
-          />
+          {/* Project Management - Check permission */}
+          {permissionChecker.hasPermission(
+            "project_management",
+            PermissionLevel.READ
+          ) && (
+            <IconButton
+              ref={projectsButtonRef}
+              icon={<ClipboardDocumentListIcon className={iconClass} />}
+              label={t.projectManagement}
+              isActive={currentPage === "projects"}
+              onClick={() =>
+                handleDropdownToggle("projects", projectsButtonRef)
+              }
+            />
+          )}
 
-          {/* User Management - Only visible for Super Admin */}
-          {currentUser?.role === "Super Admin" && (
+          {/* User Management - Only visible if user has permission */}
+          {permissionChecker.hasPermission(
+            "user_management",
+            PermissionLevel.READ
+          ) && (
             <IconButton
               ref={usersButtonRef}
               icon={<UserGroupIcon className={iconClass} />}
@@ -549,13 +621,19 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             onClick={() => handleNavigate("sla")}
           />
 
-          <IconButton
-            ref={settingsButtonRef}
-            icon={<CogIcon className={iconClass} />}
-            label={t.header_settings}
-            isActive={currentPage === "settings"}
-            onClick={() => handleNavigate("settings")}
-          />
+          {/* Settings - Check permission */}
+          {permissionChecker.hasPermission(
+            "system_settings",
+            PermissionLevel.READ
+          ) && (
+            <IconButton
+              ref={settingsButtonRef}
+              icon={<CogIcon className={iconClass} />}
+              label={t.header_settings}
+              isActive={currentPage === "settings"}
+              onClick={() => handleNavigate("settings")}
+            />
+          )}
         </nav>
 
         {/* Language Switcher & Footer */}

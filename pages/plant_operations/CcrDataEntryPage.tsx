@@ -1,4 +1,4 @@
-import React, {
+﻿import React, {
   useState,
   useMemo,
   useEffect,
@@ -26,7 +26,14 @@ import CcrNavigationHelp from "../../components/ccr/CcrNavigationHelp";
 import PlusIcon from "../../components/icons/PlusIcon";
 import EditIcon from "../../components/icons/EditIcon";
 import TrashIcon from "../../components/icons/TrashIcon";
-import { formatNumber } from "../../utils/formatters";
+import {
+  formatNumber,
+  formatNumberWithPrecision,
+} from "../../utils/formatters";
+import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
+import { useDebouncedParameterUpdates } from "../../hooks/useDebouncedParameterUpdates";
+import { useDataFiltering } from "../../hooks/useDataFiltering";
+import { useFooterCalculations } from "../../hooks/useFooterCalculations";
 import * as XLSX from "xlsx";
 import {
   DocumentArrowDownIcon,
@@ -34,6 +41,9 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { usePermissions } from "../../utils/permissions";
+import { PermissionLevel } from "../../types";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 // Import Enhanced Components
 import {
@@ -80,9 +90,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     new Date().toISOString().split("T")[0]
   );
   const [loading, setLoading] = useState(true);
-  const [savingParameterId, setSavingParameterId] = useState<string | null>(
-    null
-  );
   const [error, setError] = useState<string | null>(null);
   const [showNavigationHelp, setShowNavigationHelp] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -114,6 +121,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const isHighContrast = useHighContrast();
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
+
+  // Permission checker
+  const { currentUser: loggedInUser } = useCurrentUser();
+  const permissionChecker = usePermissions(loggedInUser);
 
   // Function to check if we're in search mode
   const isSearchActive = useMemo(
@@ -189,20 +200,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   );
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
-
-  // Enhanced cleanup for inputRefs and debounced updates
-  useEffect(() => {
-    return () => {
-      // Clear all debounced timers
-      debouncedUpdates.current.forEach((update) => {
-        clearTimeout(update.timer);
-      });
-      debouncedUpdates.current.clear();
-
-      // Clear input refs
-      inputRefs.current.clear();
-    };
-  }, [selectedDate, selectedCategory, selectedUnit]);
   const unitToCategoryMap = useMemo(
     () => new Map(plantUnits.map((pu) => [pu.unit, pu.category])),
     [plantUnits]
@@ -257,27 +254,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     });
   }, [selectedDate, getSiloDataForDate]);
 
-  const siloMasterMap = useMemo(
-    () => new Map(siloMasterData.map((silo) => [silo.id, silo])),
-    [siloMasterData]
-  );
-
-  const dailySiloData = useMemo(() => {
-    if (!selectedCategory) {
-      return [];
-    }
-    return allDailySiloData.filter((data) => {
-      const master = siloMasterMap.get(data.silo_id);
-      if (!master) return false;
-
-      const categoryMatch = master.plant_category === selectedCategory;
-      const unitMatch = !selectedUnit || master.unit === selectedUnit;
-      return categoryMatch && unitMatch;
-    });
-  }, [allDailySiloData, selectedCategory, selectedUnit, siloMasterMap]);
-
   // Parameter Data Hooks and Filtering
   const { records: parameterSettings } = useParameterSettings();
+
+  // Use custom hook for data filtering
+  const { filteredParameterSettings, dailySiloData, siloMasterMap } =
+    useDataFiltering({
+      parameterSettings,
+      plantUnits,
+      selectedCategory,
+      selectedUnit,
+      columnSearchQuery,
+      allDailySiloData,
+      siloMasterData,
+    });
+
   const { getDataForDate: getParameterDataForDate, updateParameterData } =
     useCcrParameterData();
   const [dailyParameterData, setDailyParameterData] = useState<
@@ -293,46 +284,97 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     getParameterDataForDate(selectedDate).then((data) => {
       setDailyParameterData(data);
       setLoading(false);
+
+      // Update legacy records that don't have name field
+      const legacyRecords = data.filter(
+        (record: any) =>
+          !record.name && Object.keys(record.hourly_values).length > 0
+      );
+      if (legacyRecords.length > 0) {
+        console.log(
+          `Found ${legacyRecords.length} legacy records without name, updating...`
+        );
+        legacyRecords.forEach((record: any) => {
+          supabase
+            .from("ccr_parameter_data")
+            .update({ name: loggedInUser?.full_name || currentUser.full_name })
+            .eq("id", record.id)
+            .then(() => {
+              console.log(
+                `Updated legacy record ${record.id} with name: ${
+                  loggedInUser?.full_name || currentUser.full_name
+                }`
+              );
+            })
+            .catch((error: any) => {
+              console.error("Error updating legacy record:", error);
+            });
+        });
+      }
     });
-  }, [selectedDate, getParameterDataForDate]);
+  }, [
+    selectedDate,
+    getParameterDataForDate,
+    loggedInUser?.full_name,
+    currentUser.full_name,
+  ]);
 
   const parameterDataMap = useMemo(
     () => new Map(dailyParameterData.map((p) => [p.parameter_id, p])),
     [dailyParameterData]
   );
 
-  const filteredParameterSettings = useMemo(() => {
-    if (!selectedCategory || !selectedUnit) return [];
-    const unitBelongsToCategory = plantUnits.some(
-      (pu) => pu.unit === selectedUnit && pu.category === selectedCategory
-    );
-    if (!unitBelongsToCategory) return [];
+  // Use custom hook for footer calculations
+  const { parameterFooterData, parameterShiftFooterData } =
+    useFooterCalculations({
+      filteredParameterSettings,
+      parameterDataMap,
+    });
 
-    let filtered = parameterSettings
-      .filter(
-        (param) =>
-          param.category === selectedCategory && param.unit === selectedUnit
-      )
-      .sort((a, b) => a.parameter.localeCompare(b.parameter));
+  // Table dimension functions for keyboard navigation
+  const getSiloTableDimensions = () => {
+    const rows = dailySiloData.length;
+    const cols = 6; // 2 input fields per shift * 3 shifts
+    return { rows, cols };
+  };
 
-    // Apply column search filter
-    if (columnSearchQuery.trim()) {
-      const searchTerm = columnSearchQuery.toLowerCase().trim();
-      filtered = filtered.filter(
-        (param) =>
-          param.parameter.toLowerCase().includes(searchTerm) ||
-          param.unit.toLowerCase().includes(searchTerm)
-      );
-    }
+  const getParameterTableDimensions = () => {
+    const rows = 24; // 24 hours
+    const cols = filteredParameterSettings.length;
+    return { rows, cols };
+  };
 
-    return filtered;
-  }, [
-    parameterSettings,
-    plantUnits,
-    selectedCategory,
-    selectedUnit,
-    columnSearchQuery,
-  ]);
+  // Input ref management function
+  const getInputRef = useCallback(
+    (table: "silo" | "parameter", row: number, col: number) => {
+      return `${table}-${row}-${col}`;
+    },
+    []
+  );
+
+  const focusCell = useCallback(
+    (table: "silo" | "parameter", row: number, col: number) => {
+      const refKey = getInputRef(table, row, col);
+      const input = inputRefs.current.get(refKey);
+      if (input) {
+        try {
+          input.focus();
+          input.select(); // Select text for better UX
+          setFocusedCell({ table, row, col });
+        } catch (error) {
+          console.warn("Error focusing cell:", error);
+        }
+      }
+    },
+    [getInputRef]
+  );
+
+  // Use custom hook for keyboard navigation
+  const { setInputRef, handleKeyDown } = useKeyboardNavigation({
+    getSiloTableDimensions,
+    getParameterTableDimensions,
+    focusCell,
+  });
 
   // Downtime Data Hooks and State
   const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime } =
@@ -365,96 +407,69 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     date: string;
   } | null>(null);
 
-  const parameterFooterData = useMemo(() => {
-    const footer: Record<
-      string,
-      { total: number; avg: number; min: number; max: number } | null
-    > = {};
-
-    filteredParameterSettings.forEach((param) => {
-      if (param.data_type !== ParameterDataType.NUMBER) {
-        footer[param.id] = null;
-        return;
-      }
-
-      const data = parameterDataMap.get(param.id);
-      if (!data || !data.hourly_values) {
-        footer[param.id] = null;
-        return;
-      }
-
-      const values = Object.values(data.hourly_values)
-        .map((v) => parseFloat(String(v)))
-        .filter((v) => !isNaN(v));
-
-      if (values.length === 0) {
-        footer[param.id] = null;
-        return;
-      }
-
-      const total = values.reduce((sum, val) => sum + val, 0);
-      const avg = total / values.length;
-      const min = Math.min(...values);
-      const max = Math.max(...values);
-
-      footer[param.id] = { total, avg, min, max };
-    });
-
-    return footer;
-  }, [filteredParameterSettings, parameterDataMap]);
-
-  const parameterShiftFooterData = useMemo(() => {
-    const shiftTotals: Record<string, Record<string, number>> = {
-      shift1: {},
-      shift2: {},
-      shift3: {},
-      shift3Cont: {},
-    };
-
-    const shiftHours = {
-      shift1: [8, 9, 10, 11, 12, 13, 14, 15],
-      shift2: [16, 17, 18, 19, 20, 21, 22],
-      shift3: [23, 24],
-      shift3Cont: [1, 2, 3, 4, 5, 6, 7],
-    };
-
-    filteredParameterSettings.forEach((param) => {
-      if (param.data_type !== ParameterDataType.NUMBER) {
-        return;
-      }
-
-      const data = parameterDataMap.get(param.id);
-      if (!data || !data.hourly_values) {
-        return;
-      }
-
-      for (const [shiftKey, hours] of Object.entries(shiftHours)) {
-        const total = hours.reduce((sum, hour) => {
-          const value = parseFloat(String(data.hourly_values[hour]));
-          return sum + (isNaN(value) ? 0 : value);
-        }, 0);
-        shiftTotals[shiftKey][param.id] = total;
-      }
-    });
-
-    return shiftTotals;
-  }, [filteredParameterSettings, parameterDataMap]);
-
   const formatStatValue = (value: number | undefined, precision = 1) => {
     if (value === undefined || value === null) return "-";
     return formatNumber(value);
   };
 
+  // Helper function to determine precision based on unit
+  const getPrecisionForUnit = (unit: string): number => {
+    if (!unit) return 1;
+
+    // Units that typically need 2 decimal places
+    const highPrecisionUnits = [
+      "bar",
+      "psi",
+      "kPa",
+      "MPa",
+      "m³/h",
+      "kg/h",
+      "t/h",
+      "L/h",
+      "mL/h",
+    ];
+    // Units that typically need 1 decimal place
+    const mediumPrecisionUnits = [
+      "°C",
+      "°F",
+      "°K",
+      "%",
+      "kg",
+      "ton",
+      "m³",
+      "L",
+      "mL",
+    ];
+    // Units that typically need 0 decimal places (whole numbers)
+    const lowPrecisionUnits = ["unit", "pcs", "buah", "batch", "shift"];
+
+    const lowerUnit = unit.toLowerCase();
+
+    if (highPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
+      return 2;
+    }
+    if (mediumPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
+      return 1;
+    }
+    if (lowPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
+      return 0;
+    }
+
+    // Default to 1 decimal place for unknown units
+    return 1;
+  };
+
   // Helper functions for input value formatting
   const formatInputValue = (
-    value: number | string | null | undefined
+    value: number | string | null | undefined,
+    precision: number = 1
   ): string => {
     if (value === null || value === undefined || value === "") {
       return "";
     }
     const numValue = typeof value === "string" ? parseFloat(value) : value;
     if (isNaN(numValue)) return "";
-    return formatNumber(numValue);
+    return formatNumberWithPrecision(numValue, precision);
   };
 
   const parseInputValue = (formattedValue: string): number | null => {
@@ -491,18 +506,43 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     });
   };
 
-  // Enhanced Parameter Data with debouncing and error handling
+  // Use custom hook for debounced parameter updates
+  const {
+    savingParameterId: debouncedSavingParameterId,
+    error: debouncedError,
+    updateParameterDataDebounced,
+    cleanup: cleanupDebouncedUpdates,
+  } = useDebouncedParameterUpdates({
+    selectedDate,
+    updateParameterData,
+    getParameterDataForDate,
+    currentUserName: loggedInUser?.full_name || currentUser.full_name,
+    onSuccess: (parameterId, hour) => {
+      showToast(`Data parameter ${parameterId} jam ${hour} berhasil disimpan.`);
+    },
+    onError: (parameterId, errorMessage) => {
+      setError(errorMessage);
+    },
+  });
+
+  // Alias for saving parameter ID
+  const savingParameterId = debouncedSavingParameterId;
+
+  // Enhanced cleanup for inputRefs, debounced updates, and custom hooks
+  useEffect(() => {
+    return () => {
+      // Clear all debounced timers from custom hook
+      cleanupDebouncedUpdates();
+
+      // Clear input refs
+      inputRefs.current.clear();
+    };
+  }, [selectedDate, selectedCategory, selectedUnit, cleanupDebouncedUpdates]);
+
+  // Wrapper function for parameter data changes with optimistic updates
   const handleParameterDataChange = useCallback(
     (parameterId: string, hour: number, value: string) => {
-      const updateKey = `${parameterId}-${hour}`;
-
-      // Cancel previous debounced update for this parameter-hour
-      const previousUpdate = debouncedUpdates.current.get(updateKey);
-      if (previousUpdate) {
-        clearTimeout(previousUpdate.timer);
-      }
-
-      // Save previous value for undo
+      // Optimistic update for UI
       setDailyParameterData((prev) => {
         const idx = prev.findIndex((p) => p.parameter_id === parameterId);
         if (idx === -1) return prev;
@@ -521,7 +561,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         // Push to undo stack
         setUndoStack((stack) => [
           ...stack,
-          { parameterId, hour, previousValue },
+          { parameterId, hour, previousValue: String(previousValue) },
         ]);
 
         const updatedParam = { ...param, hourly_values: newHourlyValues };
@@ -530,223 +570,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         return newArr;
       });
 
-      // Set up debounced database update
-      const timer = setTimeout(async () => {
-        try {
-          setSavingParameterId(parameterId);
-          setError(null);
-
-          const finalValue = value === "" ? null : value;
-          await updateParameterData(
-            selectedDate,
-            parameterId,
-            hour,
-            finalValue,
-            currentUser.full_name
-          );
-
-          // Refetch data to ensure consistency
-          const updatedData = await getParameterDataForDate(selectedDate);
-          setDailyParameterData(updatedData);
-
-          // Show success toast
-          showToast(
-            `Data parameter ${parameterId} jam ${hour} berhasil disimpan.`
-          );
-        } catch (error) {
-          console.error("Error updating parameter data:", error);
-          setError(`Failed to save data for parameter ${parameterId}`);
-
-          // Revert optimistic update on error
-          try {
-            const revertedData = await getParameterDataForDate(selectedDate);
-            setDailyParameterData(revertedData);
-          } catch (revertError) {
-            console.error("Error reverting data:", revertError);
-          }
-        } finally {
-          setSavingParameterId(null);
-          debouncedUpdates.current.delete(updateKey);
-        }
-      }, 800); // 800ms debounce delay
-
-      // Store the timer for potential cancellation
-      debouncedUpdates.current.set(updateKey, { value, timer });
+      // Debounced database update
+      updateParameterDataDebounced(parameterId, hour, value);
     },
-    [
-      selectedDate,
-      updateParameterData,
-      getParameterDataForDate,
-      currentUser.full_name,
-    ]
-  );
-
-  // Keyboard navigation functions
-  const getSiloTableDimensions = () => {
-    const rows = dailySiloData.length;
-    const cols = 6; // 2 input fields per shift * 3 shifts
-    return { rows, cols };
-  };
-
-  const getParameterTableDimensions = () => {
-    const rows = 24; // 24 hours
-    const cols = filteredParameterSettings.length;
-    return { rows, cols };
-  };
-
-  // Enhanced keyboard navigation with better input reference management
-  const getInputRef = useCallback(
-    (table: "silo" | "parameter", row: number, col: number) => {
-      return `${table}-${row}-${col}`;
-    },
-    []
-  );
-
-  const setInputRef = useCallback(
-    (key: string, element: HTMLInputElement | null) => {
-      if (element) {
-        inputRefs.current.set(key, element);
-      } else {
-        inputRefs.current.delete(key);
-      }
-    },
-    []
-  );
-
-  const focusCell = useCallback(
-    (table: "silo" | "parameter", row: number, col: number) => {
-      const refKey = getInputRef(table, row, col);
-      const input = inputRefs.current.get(refKey);
-      if (input) {
-        try {
-          input.focus();
-          input.select(); // Select text for better UX
-          setFocusedCell({ table, row, col });
-        } catch (error) {
-          console.warn("Error focusing cell:", error);
-        }
-      }
-    },
-    [getInputRef]
-  );
-
-  // Enhanced keyboard navigation with improved logic
-  const handleKeyDown = useCallback(
-    (
-      e: React.KeyboardEvent,
-      table: "silo" | "parameter",
-      currentRow: number,
-      currentCol: number
-    ) => {
-      const navigationKeys = [
-        "ArrowUp",
-        "ArrowDown",
-        "ArrowLeft",
-        "ArrowRight",
-        "Enter",
-        "Tab",
-        "Escape",
-      ];
-
-      if (!navigationKeys.includes(e.key)) {
-        return;
-      }
-
-      // Handle Escape to clear focus
-      if (e.key === "Escape") {
-        (e.target as HTMLInputElement).blur();
-        setFocusedCell(null);
-        return;
-      }
-
-      e.preventDefault();
-
-      let newRow = currentRow;
-      let newCol = currentCol;
-      let newTable = table;
-
-      const { rows: siloRows, cols: siloCols } = getSiloTableDimensions();
-      const { rows: paramRows, cols: paramCols } =
-        getParameterTableDimensions();
-
-      // Early return if no valid tables
-      if (siloRows === 0 && paramRows === 0) return;
-
-      switch (e.key) {
-        case "ArrowUp":
-          if (table === "silo") {
-            newRow = Math.max(0, currentRow - 1);
-          } else if (table === "parameter") {
-            if (currentRow > 0) {
-              newRow = currentRow - 1;
-            } else if (siloRows > 0) {
-              // Jump to silo table
-              newTable = "silo";
-              newRow = siloRows - 1;
-              newCol = Math.min(currentCol, siloCols - 1);
-            }
-          }
-          break;
-
-        case "ArrowDown":
-        case "Enter":
-          if (table === "silo") {
-            if (currentRow < siloRows - 1) {
-              newRow = currentRow + 1;
-            } else if (paramRows > 0) {
-              // Jump to parameter table
-              newTable = "parameter";
-              newRow = 0;
-              newCol = Math.min(currentCol, paramCols - 1);
-            }
-          } else if (table === "parameter") {
-            newRow = Math.min(paramRows - 1, currentRow + 1);
-          }
-          break;
-
-        case "ArrowLeft":
-          newCol = Math.max(0, currentCol - 1);
-          break;
-
-        case "ArrowRight":
-        case "Tab":
-          if (table === "silo") {
-            if (currentCol < siloCols - 1) {
-              newCol = currentCol + 1;
-            } else if (currentRow < siloRows - 1) {
-              newCol = 0;
-              newRow = currentRow + 1;
-            } else if (paramRows > 0 && paramCols > 0) {
-              // Jump to parameter table
-              newTable = "parameter";
-              newRow = 0;
-              newCol = 0;
-            }
-          } else if (table === "parameter") {
-            if (currentCol < paramCols - 1) {
-              newCol = currentCol + 1;
-            } else if (currentRow < paramRows - 1) {
-              newCol = 0;
-              newRow = currentRow + 1;
-            }
-          }
-          break;
-      }
-
-      // Validate new position and focus
-      const isValidSilo =
-        newTable === "silo" && newRow < siloRows && newCol < siloCols;
-      const isValidParam =
-        newTable === "parameter" && newRow < paramRows && newCol < paramCols;
-
-      if (isValidSilo || isValidParam) {
-        // Use requestAnimationFrame for better performance
-        requestAnimationFrame(() => {
-          focusCell(newTable, newRow, newCol);
-        });
-      }
-    },
-    [focusCell, getSiloTableDimensions, getParameterTableDimensions]
+    [updateParameterDataDebounced]
   );
 
   const handleOpenAddDowntimeModal = () => {
@@ -1196,9 +1023,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             await updateParameterData(
               selectedDate,
               update.parameterId,
-              update.hour,
-              update.value,
-              currentUser.full_name
+              currentUser.full_name,
+              loggedInUser?.full_name || currentUser.full_name
             );
             successCount++;
           } catch (error) {
@@ -1531,8 +1357,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
-                                value={formatInputValue(
-                                  siloData[shift]?.emptySpace
+                                defaultValue={formatInputValue(
+                                  siloData[shift]?.emptySpace,
+                                  1
                                 )}
                                 onChange={(e) => {
                                   const parsed = parseInputValue(
@@ -1551,7 +1378,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                     e.target.value
                                   );
                                   if (parsed !== null) {
-                                    e.target.value = formatInputValue(parsed);
+                                    e.target.value = formatInputValue(
+                                      parsed,
+                                      1
+                                    );
                                   }
                                 }}
                                 onKeyDown={(e) =>
@@ -1580,7 +1410,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
-                                value={formatInputValue(content)}
+                                defaultValue={formatInputValue(content, 1)}
                                 onChange={(e) => {
                                   const parsed = parseInputValue(
                                     e.target.value
@@ -1598,7 +1428,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                     e.target.value
                                   );
                                   if (parsed !== null) {
-                                    e.target.value = formatInputValue(parsed);
+                                    e.target.value = formatInputValue(
+                                      parsed,
+                                      1
+                                    );
                                   }
                                 }}
                                 onKeyDown={(e) =>
@@ -1681,10 +1514,17 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 variant="outline"
                 size="xs"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isImporting || !selectedCategory || !selectedUnit}
+                disabled={
+                  isImporting ||
+                  !selectedCategory ||
+                  !selectedUnit ||
+                  !permissionChecker.hasPermission(
+                    "plant_operations",
+                    PermissionLevel.WRITE
+                  )
+                }
                 loading={isImporting}
                 aria-label={t.import_excel || "Import Excel file"}
-                title="Import parameter data from Excel"
               >
                 <DocumentArrowUpIcon className="w-4 h-4 mr-1" />
                 {isImporting ? "Importing..." : t.import_excel}
@@ -1697,11 +1537,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   isExporting ||
                   !selectedCategory ||
                   !selectedUnit ||
-                  filteredParameterSettings.length === 0
+                  filteredParameterSettings.length === 0 ||
+                  !permissionChecker.hasPermission(
+                    "plant_operations",
+                    PermissionLevel.READ
+                  )
                 }
                 loading={isExporting}
                 aria-label={t.export_excel || "Export to Excel"}
-                title="Export parameter data to Excel"
               >
                 <DocumentArrowDownIcon className="w-4 h-4 mr-1" />
                 {isExporting ? "Exporting..." : t.export_excel}
@@ -1709,11 +1552,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             </div>
 
             <EnhancedButton
-              variant="info"
+              variant="primary"
               size="xs"
               onClick={() => setShowNavigationHelp(true)}
               aria-label="Show navigation help"
-              title="Show navigation help"
             >
               ? Help
             </EnhancedButton>
@@ -1745,7 +1587,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   onClick={clearColumnSearch}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2"
                   aria-label={t.ccr_clear_search || "Clear search"}
-                  title={t.ccr_clear_search}
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </EnhancedButton>
@@ -1924,10 +1765,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                     className="truncate"
                                     title={
                                       (paramData as any)?.name ||
+                                      loggedInUser?.full_name ||
                                       currentUser.full_name
                                     }
                                   >
                                     {(paramData as any)?.name ||
+                                      loggedInUser?.full_name ||
                                       currentUser.full_name}
                                   </span>
                                 );
@@ -1972,9 +1815,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                       ? "text"
                                       : "text"
                                   }
-                                  value={
+                                  defaultValue={
                                     param.data_type === ParameterDataType.NUMBER
-                                      ? formatInputValue(value)
+                                      ? formatInputValue(
+                                          value,
+                                          getPrecisionForUnit(param.unit)
+                                        )
                                       : value
                                   }
                                   onChange={(e) => {
@@ -2008,8 +1854,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                         e.target.value
                                       );
                                       if (parsed !== null) {
-                                        e.target.value =
-                                          formatInputValue(parsed);
+                                        e.target.value = formatInputValue(
+                                          parsed,
+                                          getPrecisionForUnit(param.unit)
+                                        );
                                       }
                                     }
                                   }}
@@ -2095,6 +1943,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             variant="primary"
             size="sm"
             onClick={handleOpenAddDowntimeModal}
+            disabled={
+              !permissionChecker.hasPermission(
+                "plant_operations",
+                PermissionLevel.WRITE
+              )
+            }
             aria-label={t.add_downtime_button || "Add new downtime"}
           >
             <PlusIcon className="w-4 h-4 mr-2" />

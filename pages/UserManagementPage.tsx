@@ -2,6 +2,8 @@ import React from "react";
 import UserTable from "../components/UserTable";
 import { User } from "../types";
 import { usePagination } from "../hooks/usePagination";
+import { PermissionChecker, usePermissions } from "../utils/permissions";
+import { PermissionLevel } from "../types";
 
 interface UserManagementPageProps {
   users: User[];
@@ -27,8 +29,13 @@ const UserManagementPage: React.FC<UserManagementPageProps> = ({
     setCurrentPage,
   } = usePagination(users, 10);
 
-  // Role-based access control
-  if (!currentUser || currentUser.role !== "Super Admin") {
+  // Use permission system instead of hardcoded role check
+  const permissionChecker = usePermissions(currentUser);
+
+  // Check if user has permission to access user management
+  if (
+    !permissionChecker.hasPermission("user_management", PermissionLevel.READ)
+  ) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -51,8 +58,8 @@ const UserManagementPage: React.FC<UserManagementPageProps> = ({
             {t.access_denied || "Access Denied"}
           </h3>
           <p className="text-red-600 dark:text-red-300">
-            {t.super_admin_only_access ||
-              "Only Super Admin can access User Management module"}
+            {t.insufficient_permissions ||
+              "You don't have sufficient permissions to access this module"}
           </p>
         </div>
       </div>

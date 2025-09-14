@@ -9,6 +9,8 @@ import { formatDate } from "../utils/formatters";
 import { isValidString } from "../utils/stringUtils";
 import Pagination from "./Pagination";
 import useConfirmation from "../hooks/useConfirmation";
+import { PermissionChecker, usePermissions } from "../utils/permissions";
+import { PermissionLevel } from "../types";
 
 // Import Enhanced Components
 import {
@@ -78,11 +80,39 @@ const UserTable: React.FC<UserTableProps> = ({
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
 
+  // Permission checker
+  const permissionChecker = usePermissions(currentUser);
+
+  const canEditUser = (user: User): boolean => {
+    // Can edit if user has WRITE permission on user_management
+    return permissionChecker.hasPermission(
+      "user_management",
+      PermissionLevel.WRITE
+    );
+  };
+
   const canDeleteUser = (user: User): boolean => {
-    if (user.role === "Super Admin") {
+    // Can delete if user has ADMIN permission on user_management
+    // Also prevent deleting Super Admin users unless current user is Super Admin
+    if (user.role === "Super Admin" && currentUser?.role !== "Super Admin") {
       return false;
     }
-    return currentUser?.role === "Super Admin";
+    return permissionChecker.hasPermission(
+      "user_management",
+      PermissionLevel.ADMIN
+    );
+  };
+
+  const canToggleUserStatus = (user: User): boolean => {
+    // Can toggle status if user has WRITE permission on user_management
+    // Also prevent deactivating Super Admin users unless current user is Super Admin
+    if (user.role === "Super Admin" && currentUser?.role !== "Super Admin") {
+      return false;
+    }
+    return permissionChecker.hasPermission(
+      "user_management",
+      PermissionLevel.WRITE
+    );
   };
 
   const handleDeleteClick = async (user: User) => {
@@ -215,30 +245,34 @@ const UserTable: React.FC<UserTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end space-x-1">
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEditUser(user)}
-                      ariaLabel={`Edit ${user.full_name}`}
-                      className="text-slate-400 hover:text-red-600"
-                      icon={<EditIcon className="w-5 h-5" />}
-                    >
-                      <span className="sr-only">Edit</span>
-                    </EnhancedButton>
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleStatusClick(user)}
-                      ariaLabel={`${
-                        user.is_active ? "Deactivate" : "Activate"
-                      } ${user.full_name}`}
-                      className="text-slate-400 hover:text-red-600"
-                      icon={<ToggleIcon className="w-5 h-5" />}
-                    >
-                      <span className="sr-only">
-                        {user.is_active ? "Deactivate" : "Activate"}
-                      </span>
-                    </EnhancedButton>
+                    {canEditUser(user) && (
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEditUser(user)}
+                        ariaLabel={`Edit ${user.full_name}`}
+                        className="text-slate-400 hover:text-red-600"
+                        icon={<EditIcon className="w-5 h-5" />}
+                      >
+                        <span className="sr-only">Edit</span>
+                      </EnhancedButton>
+                    )}
+                    {canToggleUserStatus(user) && (
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleStatusClick(user)}
+                        ariaLabel={`${
+                          user.is_active ? "Deactivate" : "Activate"
+                        } ${user.full_name}`}
+                        className="text-slate-400 hover:text-red-600"
+                        icon={<ToggleIcon className="w-5 h-5" />}
+                      >
+                        <span className="sr-only">
+                          {user.is_active ? "Deactivate" : "Activate"}
+                        </span>
+                      </EnhancedButton>
+                    )}
                     {canDeleteUser(user) && (
                       <EnhancedButton
                         variant="ghost"
