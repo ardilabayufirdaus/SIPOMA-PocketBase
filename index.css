@@ -1449,3 +1449,122 @@ html.dark .ccr-table input:hover:not(:focus) {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   @apply from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600;
 }
+
+/* Header Styling - Consistent with App Theme */
+.header-modern {
+  @apply sticky top-0 z-40 w-full border-b border-white/10 dark:border-slate-700/50;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.header-modern-content {
+  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.header-modern-title {
+  @apply text-lg sm:text-xl font-bold leading-tight;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-accent) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-modern {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-accent) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Header Logo Enhancement */
+.header-logo-container {
+  @apply p-1.5 rounded-lg transition-all duration-200;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dark .header-logo-container {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.header-logo-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Header Button Enhancements */
+.header-button {
+  @apply transition-all duration-200 rounded-lg;
+}
+
+.header-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header-button:active {
+  transform: scale(0.95);
+}
+
+/* User Menu Dropdown */
+.user-menu-dropdown {
+  @apply absolute right-0 mt-2 w-56 rounded-xl shadow-xl z-30;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: fade-in-scale 0.2s ease-out forwards;
+}
+
+.dark .user-menu-dropdown {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Notification Badge */
+.notification-badge {
+  @apply absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 border-2 border-white dark:border-slate-800 flex items-center justify-center;
+}
+
+.notification-badge-text {
+  @apply text-xs font-bold text-white;
+}
+
+/* Mobile Header Adjustments */
+@media (max-width: 640px) {
+  .header-modern-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .header-modern-title {
+    @apply text-base;
+  }
+}

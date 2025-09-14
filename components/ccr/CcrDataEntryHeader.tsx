@@ -83,7 +83,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               id="ccr-category"
               value={selectedCategory}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="flex-1 min-w-0 px-2 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs font-medium transition-colors"
+              className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
             >
               <option value="">Pilih Kategori</option>
               {plantCategories.map((cat) => (
@@ -105,7 +105,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               value={selectedUnit}
               onChange={(e) => onUnitChange(e.target.value)}
               disabled={unitsForCategory.length === 0}
-              className="flex-1 min-w-0 px-2 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-xs font-medium transition-colors"
+              className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
             >
               <option value="">Pilih Unit</option>
               {unitsForCategory.map((unit) => (
@@ -127,7 +127,7 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
               id="ccr-date"
               value={selectedDate}
               onChange={(e) => onDateChange(e.target.value)}
-              className="flex-1 min-w-0 px-2 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs font-medium transition-colors"
+              className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
             />
           </div>
         </div>

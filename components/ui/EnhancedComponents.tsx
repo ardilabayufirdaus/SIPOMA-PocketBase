@@ -253,6 +253,7 @@ interface EnhancedButtonProps {
   ariaLabel?: string;
   ariaDescribedBy?: string;
   loadingText?: string;
+  align?: "left" | "center" | "right";
 }
 
 export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
@@ -273,6 +274,7 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   ariaLabel,
   ariaDescribedBy,
   loadingText = "Loading...",
+  align = "left",
 }) => {
   const [isPressed, setIsPressed] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -306,9 +308,16 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
     }
   }, [loading, loadingText, announceToScreenReader]);
 
-  // Base styles
+  // Alignment styles
+  const alignClasses = {
+    left: "justify-start",
+    center: "justify-center",
+    right: "justify-end",
+  };
+
   const baseClasses = cn(
-    "relative inline-flex items-center justify-center font-medium transition-all duration-200",
+    "relative inline-flex items-center font-medium transition-all duration-200",
+    alignClasses[align],
     "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500",
     "disabled:opacity-50 disabled:cursor-not-allowed",
     "active:scale-95",

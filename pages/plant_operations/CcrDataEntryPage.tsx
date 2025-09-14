@@ -34,7 +34,7 @@ import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
 import { useDebouncedParameterUpdates } from "../../hooks/useDebouncedParameterUpdates";
 import { useDataFiltering } from "../../hooks/useDataFiltering";
 import { useFooterCalculations } from "../../hooks/useFooterCalculations";
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import {
   DocumentArrowDownIcon,
   DocumentArrowUpIcon,

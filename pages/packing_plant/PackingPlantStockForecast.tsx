@@ -1130,7 +1130,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                 id="forecast-filter-area"
                 value={filterArea}
                 onChange={(e) => setFilterArea(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 sm:py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {areas.map((area) => (
                   <option key={area} value={area}>
@@ -1151,7 +1151,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   id="forecast-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-2 sm:py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  className="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
                 >
                   {monthOptions.map((month) => (
                     <option key={month.value} value={month.value}>
@@ -1171,7 +1171,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                   id="forecast-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="block w-full pl-3 pr-10 py-2 sm:py-2.5 text-xs sm:text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                  className="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
                 >
                   {yearOptions.map((year) => (
                     <option key={year} value={year}>

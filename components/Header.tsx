@@ -105,10 +105,13 @@ const Header: React.FC<HeaderProps> = ({
       {/* Skip Links for accessibility */}
       <SkipLinks />
 
-      <header className="header-modern backdrop-blur-xl" role="banner">
+      <header className="header-modern" role="banner">
         <div className="header-modern-content">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div
+              className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1"
+              style={{ gap: designSystem.header.spacing.logoGap }}
+            >
               {/* Mobile Hamburger Menu */}
               {isMobile && onToggleSidebar && (
                 <EnhancedButton
@@ -124,7 +127,7 @@ const Header: React.FC<HeaderProps> = ({
               )}
 
               {/* Logo Sipoma */}
-              <div className="p-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 shadow-sm border border-white/20 dark:border-slate-700/50 flex-shrink-0">
+              <div className="header-logo-container flex-shrink-0">
                 <img
                   src="/sipoma-logo.png"
                   alt="Sipoma Logo"
@@ -133,9 +136,7 @@ const Header: React.FC<HeaderProps> = ({
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="header-modern-title text-gradient-modern truncate">
-                  {pageTitle}
-                </h1>
+                <h1 className="header-modern-title truncate">{pageTitle}</h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
                   {t.header_welcome},{" "}
                   {currentUser?.full_name?.split(" ")[0] || "Admin"}! ✨
@@ -143,7 +144,10 @@ const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div
+              className="flex items-center gap-1.5 flex-shrink-0"
+              style={{ gap: designSystem.header.spacing.buttonGap }}
+            >
               {showAddUserButton && (
                 <EnhancedButton
                   variant="primary"
@@ -172,6 +176,7 @@ const Header: React.FC<HeaderProps> = ({
                     <SunIcon className="w-4 h-4" />
                   )
                 }
+                className="header-button"
               >
                 <span className="sr-only">
                   Switch to {theme === "light" ? "dark" : "light"} mode
@@ -220,127 +225,134 @@ const Header: React.FC<HeaderProps> = ({
                   </span>
                 </EnhancedButton>
                 {isUserMenuOpen && (
-                  <EnhancedCard className="absolute right-0 mt-2 w-56 origin-top-right shadow-lg z-30 animate-fade-in-fast">
-                    <div className="flex items-center gap-2 px-3 py-2">
-                      <div className="flex-shrink-0">
-                        {currentUser?.avatar_url ? (
-                          <img
-                            className="h-8 w-8 rounded-full object-cover"
-                            src={currentUser.avatar_url}
-                            alt="User avatar"
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                            <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                          {currentUser?.full_name || "Admin User"}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                          {currentUser?.username || "admin@sipoma.com"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                    <div className="py-1" role="none">
-                      <EnhancedButton
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          onNavigate("settings");
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full justify-start"
-                        icon={<CogIcon className="w-4 h-4" />}
-                      >
-                        {t.header_settings}
-                      </EnhancedButton>
-                      <EnhancedButton
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: Implement audit trail functionality
-                        }}
-                        className="w-full justify-start"
-                        icon={<ShieldCheckIcon className="w-4 h-4" />}
-                        ariaLabel="View audit trail"
-                      >
-                        {t.header_audit_trail}
-                      </EnhancedButton>
-                      <EnhancedButton
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          // TODO: Implement help and support functionality
-                        }}
-                        className="w-full justify-start"
-                        icon={<QuestionMarkCircleIcon className="w-4 h-4" />}
-                        ariaLabel="Get help and support"
-                      >
-                        {t.header_help_support}
-                      </EnhancedButton>
-                    </div>
-                    <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                    <div className="py-1" role="none">
-                      <div className="flex items-center justify-between px-3 pt-1 pb-1 text-xs text-slate-500 dark:text-slate-400">
-                        {t.theme_toggle}
-                      </div>
-                      <div className="p-2">
-                        <div className="grid grid-cols-2 gap-1">
-                          <EnhancedButton
-                            variant={theme === "light" ? "primary" : "ghost"}
-                            size="sm"
-                            onClick={() => theme !== "light" && onToggleTheme()}
-                            icon={<SunIcon className="w-4 h-4" />}
-                            className="justify-center"
-                          >
-                            {t.theme_light}
-                          </EnhancedButton>
-                          <EnhancedButton
-                            variant={theme === "dark" ? "primary" : "ghost"}
-                            size="sm"
-                            onClick={() => theme !== "dark" && onToggleTheme()}
-                            icon={<MoonIcon className="w-4 h-4" />}
-                            className="justify-center"
-                          >
-                            {t.theme_dark}
-                          </EnhancedButton>
+                  <div
+                    className="user-menu-dropdown"
+                    style={{
+                      marginTop: designSystem.header.spacing.dropdownOffset,
+                    }}
+                  >
+                    <EnhancedCard className="shadow-lg">
+                      <div className="flex items-center gap-2 px-3 py-2">
+                        <div className="flex-shrink-0">
+                          {currentUser?.avatar_url ? (
+                            <img
+                              className="h-8 w-8 rounded-full object-cover"
+                              src={currentUser.avatar_url}
+                              alt="User avatar"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+                              <UserIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+                            {currentUser?.full_name || "Admin User"}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                            {currentUser?.username || "admin@sipoma.com"}
+                          </p>
                         </div>
                       </div>
-                    </div>
-                    <div className="border-t border-slate-100 dark:border-slate-700"></div>
-                    <div className="py-1" role="none">
-                      <EnhancedButton
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          onSignOut();
-                          setIsUserMenuOpen(false);
-                        }}
-                        className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                        icon={<ArrowRightOnRectangleIcon className="w-4 h-4" />}
-                      >
-                        {t.header_sign_out}
-                      </EnhancedButton>
-                    </div>
-                  </EnhancedCard>
+                      <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                      <div className="py-1" role="none">
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            onNavigate("settings");
+                            setIsUserMenuOpen(false);
+                          }}
+                          className="w-full justify-start"
+                          icon={<CogIcon className="w-4 h-4" />}
+                        >
+                          {t.header_settings}
+                        </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            onNavigate("settings");
+                            setIsUserMenuOpen(false);
+                          }}
+                          className="w-full justify-start"
+                          icon={<ShieldCheckIcon className="w-4 h-4" />}
+                          ariaLabel="View audit trail"
+                        >
+                          {t.header_audit_trail}
+                        </EnhancedButton>
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            // Open help modal or navigate to help page
+                            window.open("/help", "_blank");
+                            setIsUserMenuOpen(false);
+                          }}
+                          className="w-full justify-start"
+                          icon={<QuestionMarkCircleIcon className="w-4 h-4" />}
+                          ariaLabel="Get help and support"
+                        >
+                          {t.header_help_support}
+                        </EnhancedButton>
+                      </div>
+                      <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                      <div className="py-1" role="none">
+                        <div className="flex items-center justify-between px-3 pt-1 pb-1 text-xs text-slate-500 dark:text-slate-400">
+                          {t.theme_toggle}
+                        </div>
+                        <div className="p-2">
+                          <div className="grid grid-cols-2 gap-1">
+                            <EnhancedButton
+                              variant={theme === "light" ? "primary" : "ghost"}
+                              size="sm"
+                              onClick={() =>
+                                theme !== "light" && onToggleTheme()
+                              }
+                              icon={<SunIcon className="w-4 h-4" />}
+                              className="justify-center"
+                            >
+                              {t.theme_light}
+                            </EnhancedButton>
+                            <EnhancedButton
+                              variant={theme === "dark" ? "primary" : "ghost"}
+                              size="sm"
+                              onClick={() =>
+                                theme !== "dark" && onToggleTheme()
+                              }
+                              icon={<MoonIcon className="w-4 h-4" />}
+                              className="justify-center"
+                            >
+                              {t.theme_dark}
+                            </EnhancedButton>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-100 dark:border-slate-700"></div>
+                      <div className="py-1" role="none">
+                        <EnhancedButton
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            onSignOut();
+                            setIsUserMenuOpen(false);
+                          }}
+                          className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                          icon={
+                            <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                          }
+                        >
+                          {t.header_sign_out}
+                        </EnhancedButton>
+                      </div>
+                    </EnhancedCard>
+                  </div>
                 )}
               </div>
             </div>
           </div>
         </div>
-        <style>{`
-                @keyframes fade-in-fast {
-                    from { opacity: 0; transform: scale(0.95) translateY(-5px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
-                }
-                .animate-fade-in-fast {
-                    animation: fade-in-fast 0.1s ease-out forwards;
-                }
-            `}</style>
       </header>
     </>
   );

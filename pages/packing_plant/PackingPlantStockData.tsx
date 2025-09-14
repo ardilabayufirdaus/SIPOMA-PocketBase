@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Modal from "../../components/Modal";
 import { usePackingPlantMasterData } from "../../hooks/usePackingPlantMasterData";
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import { PackingPlantStockRecord } from "../../types";
 import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
 import DocumentArrowUpIcon from "../../components/icons/DocumentArrowUpIcon";
@@ -332,42 +332,10 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
   };
 
   const handleExport = () => {
-    // Prepare data for export
-    const exportData = tableData.map((record) => ({
-      [t.date || "Date"]: formatDate(record.date),
-      [t.area || "Area"]: record.area,
-      [t.opening_stock || "Opening Stock"]: record.opening_stock,
-      [t.stock_received || "Stock Received"]: record.stock_received,
-      [t.stock_out || "Stock Out"]: record.stock_out,
-      [t.closing_stock || "Closing Stock"]: record.closing_stock,
-    }));
-
-    // Create workbook and worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-
-    // Auto-size columns
-    const colWidths = [
-      { wch: 15 }, // Date
-      { wch: 20 }, // Area
-      { wch: 15 }, // Opening Stock
-      { wch: 15 }, // Stock Received
-      { wch: 15 }, // Stock Out
-      { wch: 15 }, // Closing Stock
-    ];
-    worksheet["!cols"] = colWidths;
-
-    // Add the worksheet to workbook
-    const monthName =
-      monthOptions[filterMonth]?.label || `Month ${filterMonth + 1}`;
-    const sheetName = `${filterArea} ${monthName} ${filterYear}`;
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-
-    // Generate filename
-    const filename = `Stock_Data_${filterArea}_${monthName}_${filterYear}.xlsx`;
-
-    // Write and download the file
-    XLSX.writeFile(workbook, filename);
+    // Placeholder: Export functionality temporarily disabled due to security update
+    alert(
+      "Export functionality is temporarily disabled. Please use alternative export method."
+    );
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {

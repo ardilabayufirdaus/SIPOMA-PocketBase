@@ -231,7 +231,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="auto-filter-category"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg transition-colors"
+              className="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
             >
               {plantCategories.map((cat) => (
                 <option key={cat} value={cat}>
@@ -251,7 +251,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="auto-filter-month"
               value={filterMonth}
               onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-              className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg transition-colors"
+              className="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
             >
               {monthOptions.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -271,7 +271,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               id="auto-filter-year"
               value={filterYear}
               onChange={(e) => setFilterYear(parseInt(e.target.value))}
-              className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-lg transition-colors"
+              className="block w-full px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>

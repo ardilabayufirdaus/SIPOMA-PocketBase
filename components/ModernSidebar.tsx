@@ -6,6 +6,7 @@ import {
   useRef,
   forwardRef,
 } from "react";
+import { useDrag } from "@use-gesture/react";
 import { Page, Language } from "../App";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useSidebarState } from "../hooks/useSidebarState";
@@ -471,6 +472,27 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
     }
   }, [isMobile, isOpen, onClose]);
 
+  // Touch gesture for mobile swipe to close
+  const bind = useDrag(
+    ({ down, movement: [mx], direction: [xDir], velocity }) => {
+      if (!isMobile || !isOpen) return;
+
+      const trigger =
+        Math.abs(mx) > 100 || (Math.abs(mx) > 50 && velocity[0] > 0.5);
+      const dir = xDir < 0 ? -1 : 1;
+
+      if (!down && trigger && dir === -1) {
+        // Swipe left to close
+        onClose?.();
+      }
+    },
+    {
+      axis: "x",
+      filterTaps: true,
+      bounds: { left: -200, right: 0 },
+    }
+  );
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -483,6 +505,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
       )}
 
       <aside
+        {...bind()}
         className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 w-20 ${
           isMobile
             ? isOpen

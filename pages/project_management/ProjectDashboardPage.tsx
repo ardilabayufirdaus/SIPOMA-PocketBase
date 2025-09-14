@@ -741,9 +741,9 @@ const ProjectDashboardPage: React.FC<{
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30 p-4 rounded-lg">
       {/* Header - Compact */}
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
@@ -768,7 +768,7 @@ const ProjectDashboardPage: React.FC<{
       </div>
 
       {/* Search and Filter Controls - Compact */}
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
         <div className="flex flex-col sm:flex-row gap-2 items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-2 flex-1">
             <div className="relative flex-1 max-w-sm">
@@ -892,7 +892,7 @@ const ProjectDashboardPage: React.FC<{
 
       {/* Financial Overview - Compact */}
       {overallMetrics.totalBudget > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
             <CurrencyDollarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             {t.financial_overview || "Financial Overview"}
@@ -975,7 +975,7 @@ const ProjectDashboardPage: React.FC<{
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         {/* Projects by Status - Compact */}
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50 dark:border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
             {t.projects_by_status}
           </h3>
@@ -1002,7 +1002,7 @@ const ProjectDashboardPage: React.FC<{
         </div>
 
         {/* Risk Assessment - Compact */}
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50 dark:border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
             <ShieldCheckIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             {t.risk_assessment || "Risk Assessment"}
@@ -1045,7 +1045,7 @@ const ProjectDashboardPage: React.FC<{
         </div>
 
         {/* Upcoming Deadlines - Compact */}
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50 dark:border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
             <CalendarDaysIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             {t.upcoming_deadlines}
@@ -1080,7 +1080,7 @@ const ProjectDashboardPage: React.FC<{
 
       {/* Progress Trends and Resource Allocation Charts - Compact */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
             <ChartPieIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             {t.progress_trends || "Progress Trends"}
@@ -1088,7 +1088,7 @@ const ProjectDashboardPage: React.FC<{
           <ProgressTrendChart data={progressTrendData} t={t} />
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
             <ChartBarSquareIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             {t.resource_allocation || "Resource Allocation"}
@@ -1098,7 +1098,7 @@ const ProjectDashboardPage: React.FC<{
       </div>
 
       {/* Enhanced Project Summary List - Compact */}
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
+      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
           <ClipboardDocumentListIcon
             className="w-4 h-4 text-slate-500 dark:text-slate-400"

@@ -354,6 +354,35 @@ export const breakpoints = {
   "2xl": "1536px",
 };
 
+// Header Design System
+export const header = {
+  height: {
+    mobile: "64px",
+    desktop: "72px",
+  },
+  spacing: {
+    content: "1rem",
+    logoGap: "0.5rem",
+    buttonGap: "0.375rem",
+    dropdownOffset: "0.5rem",
+  },
+  gradients: {
+    title: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    background:
+      "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+  },
+  animations: {
+    dropdown: "fade-in-fast 0.15s ease-out forwards",
+    hover: "scale(1.02)",
+    active: "scale(0.98)",
+  },
+  shadows: {
+    logo: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+    dropdown:
+      "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+  },
+};
+
 // Export everything as a design system object
 export const designSystem = {
   colors,
@@ -366,6 +395,7 @@ export const designSystem = {
   buttonVariants,
   inputVariants,
   breakpoints,
+  header,
 };
 
 export default designSystem;

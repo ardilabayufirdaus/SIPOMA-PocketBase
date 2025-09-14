@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { useCopParametersSupabase } from "../../hooks/useCopParametersSupabase";
-import * as XLSX from "xlsx";
+// import * as XLSX from "xlsx";
 import Modal from "../../components/Modal";
 import { SearchInput } from "../../components/ui/Input";
 import PlusIcon from "../../components/icons/PlusIcon";
@@ -510,84 +510,10 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
     setIsExporting(true);
     try {
-      // Validate data before export
-      if (
-        plantUnits.length === 0 &&
-        parameterSettings.length === 0 &&
-        siloCapacities.length === 0 &&
-        picSettings.length === 0 &&
-        copParameters.length === 0 &&
-        reportSettings.length === 0
-      ) {
-        alert("No data available to export. Please add some data first.");
-        return;
-      }
-
-      const wb = XLSX.utils.book_new();
-
-      // Plant Units sheet
-      if (plantUnits.length > 0) {
-        const ws_pu = XLSX.utils.json_to_sheet(
-          plantUnits.map(({ id, ...rest }) => rest)
-        );
-        XLSX.utils.book_append_sheet(wb, ws_pu, "Plant Units");
-      }
-
-      // PIC Settings sheet
-      if (picSettings.length > 0) {
-        const ws_pic = XLSX.utils.json_to_sheet(
-          picSettings.map(({ id, ...rest }) => rest)
-        );
-        XLSX.utils.book_append_sheet(wb, ws_pic, "PIC Settings");
-      }
-
-      // Parameter Settings sheet
-      if (parameterSettings.length > 0) {
-        const ws_param = XLSX.utils.json_to_sheet(
-          parameterSettings.map(({ id, ...rest }) => rest)
-        );
-        XLSX.utils.book_append_sheet(wb, ws_param, "Parameter Settings");
-      }
-
-      // Silo Capacities sheet
-      if (siloCapacities.length > 0) {
-        const ws_silo = XLSX.utils.json_to_sheet(
-          siloCapacities.map(({ id, ...rest }) => rest)
-        );
-        XLSX.utils.book_append_sheet(wb, ws_silo, "Silo Capacities");
-      }
-
-      // COP Parameters sheet
-      if (copParameters.length > 0) {
-        const copDataToExport = copParameters.map((p) => ({
-          Parameter: p.parameter,
-          Category: p.category,
-        }));
-        const ws_cop = XLSX.utils.json_to_sheet(copDataToExport);
-        XLSX.utils.book_append_sheet(wb, ws_cop, "COP Parameters");
-      }
-
-      // Report Settings sheet
-      if (reportSettings.length > 0) {
-        const reportDataToExport = reportSettings.map((rs) => {
-          const param = allParametersMap.get(rs.parameter_id);
-          return {
-            Parameter: param?.parameter || `ID:${rs.parameter_id}`,
-            Category: rs.category,
-          };
-        });
-        const ws_report = XLSX.utils.json_to_sheet(reportDataToExport);
-        XLSX.utils.book_append_sheet(wb, ws_report, "Report Settings");
-      }
-
-      // Generate filename with timestamp
-      const timestamp = new Date()
-        .toISOString()
-        .slice(0, 19)
-        .replace(/[:.]/g, "-");
-      const filename = `SIPOMA_MasterData_${timestamp}.xlsx`;
-
-      XLSX.writeFile(wb, filename);
+      // Placeholder: Export functionality temporarily disabled due to security update
+      alert(
+        "Export functionality is temporarily disabled. Please use alternative export method."
+      );
     } catch (error) {
       console.error("Failed to export master data:", error);
       alert(
@@ -601,302 +527,21 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   };
 
   const handleImportAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    // Placeholder: Import functionality temporarily disabled due to security update
+    alert(
+      "Import functionality is temporarily disabled. Please use alternative import method."
+    );
+  };
 
-    if (isImporting) return;
+  // Removed incomplete import implementation code that was causing syntax errors
 
-    // Validate file type
-    const validExtensions = [".xlsx", ".xls"];
-    const fileExtension = file.name
-      .toLowerCase()
-      .substring(file.name.lastIndexOf("."));
-    if (!validExtensions.includes(fileExtension)) {
-      alert("Please select a valid Excel file (.xlsx or .xls)");
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-
-    setIsImporting(true);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        if (!data) {
-          throw new Error("Failed to read file data");
-        }
-
-        const wb = XLSX.read(data, { type: "array" });
-        let importedCount = 0;
-        let newParams: ParameterSetting[] = [];
-        let parameterImportCount = 0; // Track parameter import count
-
-        // Process sheets. Non-dependent first.
-        // 1. Plant Units
-        const ws_pu = wb.Sheets["Plant Units"];
-        if (ws_pu) {
-          const jsonData: any[] = XLSX.utils.sheet_to_json(ws_pu);
-          const newPlantUnits = jsonData
-            .map((row) => ({
-              unit: row.unit?.toString().trim(),
-              category: row.category?.toString().trim(),
-            }))
-            .filter((d) => d.unit && d.category);
-
-          if (newPlantUnits.length > 0) {
-            setAllPlantUnits(newPlantUnits);
-            importedCount++;
-          }
-        }
-
-        // 2. PIC Settings
-        const ws_pic = wb.Sheets["PIC Settings"];
-        if (ws_pic) {
-          const jsonData: any[] = XLSX.utils.sheet_to_json(ws_pic);
-          const newPics = jsonData
-            .map((row) => ({ pic: row.pic?.toString().trim() }))
-            .filter((d) => d.pic);
-
-          if (newPics.length > 0) {
-            setAllPicSettings(newPics);
-            importedCount++;
-          }
-        }
-
-        // 3. Silo Capacities
-        const ws_silo = wb.Sheets["Silo Capacities"];
-        if (ws_silo) {
-          const jsonData: any[] = XLSX.utils.sheet_to_json(ws_silo);
-          const newSilos = jsonData
-            .map((row) => ({
-              plant_category: row.plant_category?.toString().trim(),
-              unit: row.unit?.toString().trim(),
-              silo_name: row.silo_name?.toString().trim(),
-              capacity: parseFloat(row.capacity) || 0,
-              dead_stock: parseFloat(row.dead_stock) || 0,
-            }))
-            .filter((d) => d.silo_name && d.capacity > 0);
-
-          if (newSilos.length > 0) {
-            setAllSiloCapacities(newSilos);
-            importedCount++;
-          }
-        }
-
-        // 4. Parameter Settings (must be processed before dependent sheets)
-        const ws_param = wb.Sheets["Parameter Settings"];
-        if (ws_param) {
-          console.log("Found Parameter Settings sheet");
-          const jsonData: any[] = XLSX.utils.sheet_to_json(ws_param);
-          console.log("Raw parameter data from Excel:", jsonData); // Debug log
-          console.log(
-            "Sheet headers detected:",
-            Object.keys(jsonData[0] || {})
-          ); // Show detected headers
-
-          const newRawParams = jsonData
-            .map((row, index) => {
-              // Handle different possible column names and formats
-              const parameter =
-                row.parameter?.toString().trim() ||
-                row.Parameter?.toString().trim() ||
-                row.PARAMETER?.toString().trim() ||
-                "";
-
-              const dataType =
-                row.data_type?.toString().trim() ||
-                row.Data_Type?.toString().trim() ||
-                row.DATA_TYPE?.toString().trim() ||
-                row.type?.toString().trim() ||
-                "Number"; // Default to Number
-
-              // Normalize data type to match enum
-              let normalizedDataType = "Number";
-              const lowerDataType = dataType.toLowerCase();
-              if (
-                lowerDataType.includes("number") ||
-                lowerDataType.includes("num") ||
-                lowerDataType.includes("numeric")
-              ) {
-                normalizedDataType = "Number";
-              } else if (
-                lowerDataType.includes("text") ||
-                lowerDataType.includes("string") ||
-                lowerDataType.includes("str")
-              ) {
-                normalizedDataType = "Text";
-              } else {
-                // Default to Number if unrecognized
-                normalizedDataType = "Number";
-              }
-
-              const unit =
-                row.unit?.toString().trim() ||
-                row.Unit?.toString().trim() ||
-                row.UNIT?.toString().trim() ||
-                "";
-
-              const category =
-                row.category?.toString().trim() ||
-                row.Category?.toString().trim() ||
-                row.CATEGORY?.toString().trim() ||
-                "";
-
-              const processedParam = {
-                parameter,
-                data_type: normalizedDataType, // Use normalized data type
-                unit,
-                category,
-                min_value:
-                  row.min_value !== undefined &&
-                  row.min_value !== null &&
-                  row.min_value !== ""
-                    ? parseFloat(row.min_value)
-                    : undefined,
-                max_value:
-                  row.max_value !== undefined &&
-                  row.max_value !== null &&
-                  row.max_value !== ""
-                    ? parseFloat(row.max_value)
-                    : undefined,
-              };
-
-              console.log(`Processing row ${index + 1}:`, {
-                original: row,
-                processed: processedParam,
-                isValid:
-                  processedParam.parameter &&
-                  processedParam.data_type &&
-                  processedParam.category,
-              });
-              return processedParam;
-            })
-            .filter((d) => {
-              const isValid = d.parameter && d.data_type && d.category;
-              if (!isValid) {
-                console.log("Filtered out invalid row:", d);
-              }
-              return isValid;
-            });
-
-          console.log(
-            "Valid parameter settings after processing:",
-            newRawParams
-          ); // Debug log
-
-          if (newRawParams.length > 0) {
-            console.log(
-              `Attempting to import ${newRawParams.length} parameter settings...`
-            );
-            setAllParameterSettings(newRawParams as any);
-            parameterImportCount = newRawParams.length; // Store count
-            // Regenerate with IDs for dependency mapping
-            newParams = newRawParams.map(
-              (p, i) =>
-                ({
-                  ...p,
-                  id: `imported_${Date.now()}_${i}`,
-                } as ParameterSetting)
-            );
-            importedCount++;
-          } else {
-            console.log(
-              "No valid parameter settings found to import - check data format"
-            );
-            console.log(
-              "Required fields: parameter, data_type, unit, category"
-            );
-          }
-        } else {
-          console.log("Parameter Settings sheet not found in Excel file");
-        }
-
-        // 5. COP Parameters (dependent)
-        const ws_cop = wb.Sheets["COP Parameters"];
-        if (ws_cop && newParams.length > 0) {
-          const jsonData: any[] = XLSX.utils.sheet_to_json(ws_cop);
-          const newCopIds = jsonData
-            .map((row) => {
-              const param = newParams.find(
-                (p) =>
-                  p.parameter === row.Parameter?.toString().trim() &&
-                  p.category === row.Category?.toString().trim()
-              );
-              return param ? param.id : null;
-            })
-            .filter((id): id is string => id !== null);
-
-          if (newCopIds.length > 0) {
-            setCopParameterIds(newCopIds);
-            importedCount++;
-          }
-        }
-
-        // 6. Report Settings (dependent)
-        const ws_report = wb.Sheets["Report Settings"];
-        if (ws_report && newParams.length > 0) {
-          const jsonData: any[] = XLSX.utils.sheet_to_json(ws_report);
-          const newReportSettings = jsonData
-            .map((row) => {
-              const param = newParams.find(
-                (p) => p.parameter === row.Parameter?.toString().trim()
-              );
-              return param
-                ? {
-                    parameter_id: param.id,
-                    category: row.Category?.toString().trim(),
-                  }
-                : null;
-            })
-            .filter(
-              (rs): rs is Omit<ReportSetting, "id"> =>
-                rs !== null && rs.category
-            );
-
-          if (newReportSettings.length > 0) {
-            setAllReportSettings(newReportSettings);
-            importedCount++;
-          }
-        }
-
-        if (importedCount > 0) {
-          let successMessage = `Master data imported successfully! ${importedCount} section(s) were imported.\n\n`;
-
-          if (parameterImportCount > 0) {
-            successMessage += `• Parameter Settings: ${parameterImportCount} records imported\n`;
-          }
-
-          console.log("Import completed successfully:", {
-            totalSections: importedCount,
-            parameterCount: parameterImportCount,
-          });
-
-          alert(successMessage);
-        } else {
-          alert(
-            "No valid data found in the Excel file. Please check the file format and sheet names.\n\nFor Parameter Settings, make sure you have columns: parameter, data_type, unit, category"
-          );
-        }
-      } catch (error) {
-        console.error("Failed to import master data:", error);
-        alert(
-          `An error occurred during import: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }. Please check file format and content.`
-        );
-      } finally {
-        setIsImporting(false);
-        if (fileInputRef.current) fileInputRef.current.value = "";
-      }
-    };
-
-    reader.onerror = () => {
-      alert("Failed to read the file. Please try again.");
-      setIsImporting(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    reader.readAsArrayBuffer(file);
+  const handleDelete = (type: ModalType, id: string) => {
+    if (type === "plantUnit") deletePlantUnit(id);
+    if (type === "parameterSetting") deleteParameter(id);
+    if (type === "siloCapacity") deleteSilo(id);
+    if (type === "reportSetting") deleteReportSetting(id);
+    if (type === "picSetting") deletePicSetting(id);
+    handleCloseModals();
   };
 
   return (
@@ -1075,15 +720,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             {t.parameter_settings_title}
           </h2>
           <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label htmlFor="param-cat-filter" className="sr-only">
-                {t.plant_category}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="param-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
               </label>
               <select
                 id="param-cat-filter"
                 value={parameterCategoryFilter}
                 onChange={handleParameterCategoryChange}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {uniquePlantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -1092,15 +740,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="flex-1">
-              <label htmlFor="param-unit-filter" className="sr-only">
-                {t.unit}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="param-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
               </label>
               <select
                 id="param-unit-filter"
                 value={parameterUnitFilter}
                 onChange={(e) => setParameterUnitFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 disabled={unitsForParameterFilter.length === 0}
               >
                 {unitsForParameterFilter.map((unit) => (
@@ -1253,16 +904,19 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.silo_capacity_title}
           </h2>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label htmlFor="silo-cat-filter" className="sr-only">
-                {t.plant_category}
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="silo-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
               </label>
               <select
                 id="silo-cat-filter"
                 value={siloCategoryFilter}
                 onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {uniquePlantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -1271,15 +925,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="flex-1">
-              <label htmlFor="silo-unit-filter" className="sr-only">
-                {t.unit}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="silo-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
               </label>
               <select
                 id="silo-unit-filter"
                 value={siloUnitFilter}
                 onChange={(e) => setSiloUnitFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 disabled={unitsForSiloFilter.length === 0}
               >
                 {unitsForSiloFilter.map((unit) => (
@@ -1396,16 +1053,19 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.cop_parameters_title}
           </h2>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label htmlFor="cop-cat-filter" className="sr-only">
-                {t.plant_category}
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
               </label>
               <select
                 id="cop-cat-filter"
                 value={copCategoryFilter}
                 onChange={(e) => setCopCategoryFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {uniquePlantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -1414,15 +1074,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="flex-1">
-              <label htmlFor="cop-unit-filter" className="sr-only">
-                {t.unit}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
               </label>
               <select
                 id="cop-unit-filter"
                 value={copUnitFilter}
                 onChange={(e) => setCopUnitFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 disabled={unitsForCopFilter.length === 0}
               >
                 {unitsForCopFilter.map((unit) => (
@@ -1509,16 +1172,19 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
             {t.report_settings_title}
           </h2>
-          <div className="flex items-center gap-2">
-            <div className="flex-1">
-              <label htmlFor="report-cat-filter" className="sr-only">
-                {t.plant_category}
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="report-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
               </label>
               <select
                 id="report-cat-filter"
                 value={reportCategoryFilter}
                 onChange={handleReportCategoryChange}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {uniquePlantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -1527,15 +1193,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="flex-1">
-              <label htmlFor="report-unit-filter" className="sr-only">
-                {t.unit}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="report-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
               </label>
               <select
                 id="report-unit-filter"
                 value={reportUnitFilter}
                 onChange={(e) => setReportUnitFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 disabled={unitsForReportFilter.length === 0}
               >
                 {unitsForReportFilter.map((unit) => (
@@ -1740,16 +1409,19 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             COP (Cost of Production) analysis. Only numerical parameters are
             shown.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <div className="w-full sm:w-48">
-              <label htmlFor="modal-cop-filter-category" className="sr-only">
-                {t.plant_category}
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0 mt-4">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="modal-cop-filter-category"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
               </label>
               <select
                 id="modal-cop-filter-category"
                 value={copCategoryFilter}
                 onChange={(e) => setCopCategoryFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {uniquePlantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -1758,15 +1430,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="w-full sm:w-48">
-              <label htmlFor="modal-cop-filter-unit" className="sr-only">
-                {t.unit}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="modal-cop-filter-unit"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
               </label>
               <select
                 id="modal-cop-filter-unit"
                 value={copUnitFilter}
                 onChange={(e) => setCopUnitFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 disabled={unitsForCopFilter.length === 0}
               >
                 {unitsForCopFilter.map((unit) => (

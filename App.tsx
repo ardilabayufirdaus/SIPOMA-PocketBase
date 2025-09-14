@@ -39,6 +39,11 @@ const ModernMainDashboardPage = lazy(() =>
   })
 );
 
+// Preload critical routes
+const preloadDashboard = () => import("./pages/ModernMainDashboardPage");
+const preloadPlantOperations = () => import("./pages/PlantOperationsPage");
+const preloadPackingPlant = () => import("./pages/PackingPlantPage");
+
 // Heavy components with preload hints
 const PlantOperationsPage = lazy(() =>
   import("./pages/PlantOperationsPage").catch(() => ({
@@ -197,6 +202,16 @@ const App: React.FC = () => {
       document.documentElement.classList.remove("dark");
     }
   }, [theme]);
+
+  // Preload critical routes after user authentication
+  useEffect(() => {
+    if (currentUser && !currentUserLoading) {
+      // Preload main dashboard and common pages
+      preloadDashboard();
+      preloadPlantOperations();
+      preloadPackingPlant();
+    }
+  }, [currentUser, currentUserLoading]);
 
   // Auto-close sidebar on mobile when screen size changes
   useEffect(() => {

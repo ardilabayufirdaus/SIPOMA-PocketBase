@@ -477,57 +477,73 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
       .filter((item) => item.percentage > 0);
   }, [analysisData]);
 
-  const yearOptions = Array.from(
-    { length: 5 },
-    (_, i) => new Date().getFullYear() - i
+  const yearOptions = useMemo(
+    () => Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i),
+    []
   );
-  const monthOptions = Array.from({ length: 12 }, (_, i) => ({
-    value: i,
-    label:
-      t[
-        `month_${
-          [
-            "jan",
-            "feb",
-            "mar",
-            "apr",
-            "may",
-            "jun",
-            "jul",
-            "aug",
-            "sep",
-            "oct",
-            "nov",
-            "dec",
-          ][i]
-        }`
-      ],
-  }));
 
-  const daysHeader =
-    analysisData[0]?.dailyValues.map((_, index) => index + 1) ||
-    Array.from(
-      { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-      (_, i) => i + 1
-    );
+  const monthOptions = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        value: i,
+        label:
+          t[
+            `month_${
+              [
+                "jan",
+                "feb",
+                "mar",
+                "apr",
+                "may",
+                "jun",
+                "jul",
+                "aug",
+                "sep",
+                "oct",
+                "nov",
+                "dec",
+              ][i]
+            }`
+          ],
+      })),
+    [t]
+  );
+
+  const daysHeader = useMemo(
+    () =>
+      analysisData[0]?.dailyValues.map((_, index) => index + 1) ||
+      Array.from(
+        { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+        (_, i) => i + 1
+      ),
+    [analysisData, filterYear, filterMonth]
+  );
 
   return (
     <div className="space-y-4">
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-            {t.op_cop_analysis}
-          </h2>
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <div className="w-full sm:w-48">
-              <label htmlFor="cop-filter-category" className="sr-only">
-                {t.plant_category_label}
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              {t.op_cop_analysis}
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Kelola data COP untuk monitoring performa pabrik
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-filter-category"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
               </label>
               <select
                 id="cop-filter-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {plantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -536,15 +552,18 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="w-full sm:w-48">
-              <label htmlFor="cop-filter-unit" className="sr-only">
-                {t.unit_label}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-filter-unit"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
               </label>
               <select
                 id="cop-filter-unit"
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed dark:disabled:bg-slate-700"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 disabled={unitsForCategory.length === 0}
               >
                 {unitsForCategory.map((unit) => (
@@ -554,15 +573,18 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="w-full sm:w-48">
-              <label htmlFor="cop-filter-month" className="sr-only">
-                {t.filter_by_month}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-filter-month"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Month:
               </label>
               <select
                 id="cop-filter-month"
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {monthOptions.map((m) => (
                   <option key={m.value} value={m.value}>
@@ -571,15 +593,18 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="w-full sm:w-32">
-              <label htmlFor="cop-filter-year" className="sr-only">
-                {t.filter_by_year}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-filter-year"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Year:
               </label>
               <select
                 id="cop-filter-year"
                 value={filterYear}
                 onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                className="block w-full pl-3 pr-10 py-2 text-base bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 sm:text-sm rounded-md transition-colors duration-200"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 {yearOptions.map((y) => (
                   <option key={y} value={y}>
@@ -871,20 +896,23 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
       {/* Kategori Pencapaian COP Operator */}
       {operatorAchievementData.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700 mt-4 relative">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4 mt-4 relative">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
             <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
               Kategori Pencapaian COP Operator
             </h3>
-            <div className="w-full md:w-56">
-              <label htmlFor="operator-filter" className="sr-only">
-                Filter Operator
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <label
+                htmlFor="operator-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Operator:
               </label>
               <select
                 id="operator-filter"
                 value={selectedOperator}
                 onChange={(e) => setSelectedOperator(e.target.value)}
-                className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-300 border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-400 dark:focus:border-red-400 rounded-md transition-colors duration-200"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               >
                 <option value="">Semua Operator</option>
                 {relevantOperators.map((operator) => (
