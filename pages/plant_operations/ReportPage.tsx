@@ -216,7 +216,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   ctx.font = styles.tableHeaderTextSmall;
   let paramX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
   allParams.forEach((param: any) => {
-    const text = `${param.parameter} (${param.unit})`;
+    const text = param.parameter;
     ctx.fillText(
       text,
       paramX + paramColWidth / 2,

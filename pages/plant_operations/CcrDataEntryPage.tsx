@@ -1686,9 +1686,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           <div className="font-bold text-[11px] leading-tight uppercase tracking-wider">
                             {param.parameter}
                           </div>
-                          <div className="font-normal normal-case text-[10px] text-slate-500 mt-1">
-                            ({param.unit})
-                          </div>
                         </div>
                       </th>
                     ))}

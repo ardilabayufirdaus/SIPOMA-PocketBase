@@ -210,7 +210,7 @@ const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className="fixed z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg py-2 min-w-48"
+      className="fixed z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl py-2 min-w-52 max-w-64 backdrop-blur-sm animate-in fade-in-0 zoom-in-95 duration-200"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -223,12 +223,12 @@ const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
             onSelect(item);
             onClose();
           }}
-          className="w-full px-4 py-2 text-left hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center space-x-3 transition-colors duration-150"
+          className="w-full px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 flex items-center space-x-4 transition-all duration-200 group"
         >
-          <div className="flex-shrink-0 w-5 h-5 text-slate-600 dark:text-slate-400">
+          <div className="flex-shrink-0 w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors duration-200">
             {item.icon}
           </div>
-          <span className="text-sm text-gray-700 dark:text-slate-300 truncate">
+          <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 font-medium truncate transition-colors duration-200">
             {item.label}
           </span>
         </button>
