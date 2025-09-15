@@ -1,4 +1,11 @@
-import React, { useState, useMemo, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  Suspense,
+  lazy,
+} from "react";
 import ExcelJS from "exceljs";
 import { useProjects } from "../../hooks/useProjects";
 import { Project, ProjectTask } from "../../types";
@@ -45,12 +52,23 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
+// Helper function for status classes
+const getStatusClasses = (status: string, t: any) => {
+  if (status === t.proj_status_completed) {
+    return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+  } else if (status === t.proj_status_delayed) {
+    return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+  } else {
+    return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+  }
+};
+
 const GanttChart: React.FC<{
   tasks: ProjectTask[];
   startDate: Date;
   duration: number;
   t: any;
-}> = ({ tasks, startDate, duration, t }) => {
+}> = React.memo(({ tasks, startDate, duration, t }) => {
   const [hoveredTask, setHoveredTask] = useState<ProjectTask | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
@@ -193,7 +211,7 @@ const GanttChart: React.FC<{
       )}
     </div>
   );
-};
+});
 
 interface PerformanceMetricCardProps {
   title: string;
@@ -305,6 +323,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isImportConfirmModalOpen, setImportConfirmModalOpen] = useState(false);
   const [isProjectEditMode, setProjectEditMode] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [editingProjectData, setEditingProjectData] = useState({
     title: "",
     budget: 0,
@@ -343,7 +363,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
     [getTasksByProjectId, projectId]
   );
 
-  // --- Overview Calculations ---
+  // --- Optimized Overview Calculations ---
   const projectOverview = useMemo(() => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
       return {
@@ -352,26 +372,35 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
         budget: activeProject?.budget || 0,
       };
     }
+
+    // Use cached values if available
+    const taskCount = activeProjectTasks.length;
+    const budget = activeProject?.budget || 0;
+
+    if (taskCount === 0) {
+      return { duration: 0, totalTasks: 0, budget };
+    }
+
+    // Optimize date calculations
     const startDates = activeProjectTasks.map((t) =>
       new Date(t.planned_start).getTime()
     );
     const endDates = activeProjectTasks.map((t) =>
       new Date(t.planned_end).getTime()
     );
-    const minDate = new Date(Math.min(...startDates));
-    const maxDate = new Date(Math.max(...endDates));
-    const duration =
-      Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 3600 * 24)) +
-      1;
+
+    const minDate = Math.min(...startDates);
+    const maxDate = Math.max(...endDates);
+    const duration = Math.ceil((maxDate - minDate) / (1000 * 3600 * 24)) + 1;
 
     return {
-      duration,
-      totalTasks: activeProjectTasks.length,
-      budget: activeProject?.budget || 0,
+      duration: Math.max(0, duration),
+      totalTasks: taskCount,
+      budget,
     };
-  }, [activeProjectTasks, activeProject]);
+  }, [activeProjectTasks?.length, activeProject?.budget]); // More specific dependencies
 
-  // --- Performance Calculations ---
+  // --- Optimized Performance Calculations ---
   const performanceMetrics = useMemo(() => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
       return {
@@ -382,13 +411,26 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       };
     }
 
+    // Early return for empty tasks
+    const taskCount = activeProjectTasks.length;
+    if (taskCount === 0) {
+      return {
+        overallProgress: 0,
+        projectStatus: t.proj_status_on_track,
+        deviation: 0,
+        predictedCompletion: null,
+      };
+    }
+
+    // Pre-calculate dates for better performance
     const tasksWithDurations = activeProjectTasks.map((task) => {
       const plannedStart = new Date(task.planned_start);
       const plannedEnd = new Date(task.planned_end);
-      const duration =
-        (plannedEnd.getTime() - plannedStart.getTime()) / (1000 * 3600 * 24) +
-        1;
-      return { ...task, duration };
+      const duration = Math.max(
+        1,
+        (plannedEnd.getTime() - plannedStart.getTime()) / (1000 * 3600 * 24) + 1
+      );
+      return { ...task, duration, plannedStart, plannedEnd };
     });
 
     const totalWeight = tasksWithDurations.reduce(
@@ -396,50 +438,50 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       0
     );
 
+    if (totalWeight === 0) {
+      return {
+        overallProgress: 0,
+        projectStatus: t.proj_status_on_track,
+        deviation: 0,
+        predictedCompletion: null,
+      };
+    }
+
+    // Calculate overall progress
     const overallProgress =
       tasksWithDurations.reduce((sum, task) => {
         const weight = task.duration / totalWeight;
         return sum + (task.percent_complete / 100) * weight;
       }, 0) * 100;
 
-    const projectStartDate = new Date(
-      Math.min(
-        ...tasksWithDurations.map((t) => new Date(t.planned_start).getTime())
-      )
-    );
-    const projectEndDate = new Date(
-      Math.max(
-        ...tasksWithDurations.map((t) => new Date(t.planned_end).getTime())
-      )
-    );
+    // Calculate planned progress
+    const projectStartDate = tasksWithDurations[0]?.plannedStart;
+    const projectEndDate = tasksWithDurations[0]?.plannedEnd;
     const today = new Date();
 
     let plannedProgress = 0;
-    if (today >= projectStartDate) {
-      plannedProgress =
-        tasksWithDurations.reduce((sum, task) => {
-          const taskStart = new Date(task.planned_start);
-          const taskEnd = new Date(task.planned_end);
-          const weight = task.duration / totalWeight;
+    if (projectStartDate && today >= projectStartDate) {
+      const elapsedDays = Math.max(
+        0,
+        (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
+      );
+      const totalDuration = projectEndDate
+        ? (projectEndDate.getTime() - projectStartDate.getTime()) /
+          (1000 * 3600 * 24)
+        : 0;
 
-          if (today >= taskEnd) {
-            return sum + weight;
-          } else if (today >= taskStart) {
-            const elapsedTaskDays =
-              (today.getTime() - taskStart.getTime()) / (1000 * 3600 * 24) + 1;
-            return sum + (elapsedTaskDays / task.duration) * weight;
-          }
-          return sum;
-        }, 0) * 100;
+      if (totalDuration > 0) {
+        plannedProgress = Math.min(100, (elapsedDays / totalDuration) * 100);
+      }
     }
 
-    plannedProgress = Math.min(100, plannedProgress);
     const deviation = overallProgress - plannedProgress;
 
+    // Determine project status
     let projectStatus;
     if (overallProgress >= 100) {
       projectStatus = t.proj_status_completed;
-    } else if (today > projectEndDate) {
+    } else if (projectEndDate && today > projectEndDate) {
       projectStatus = t.proj_status_delayed;
     } else if (deviation > 5) {
       projectStatus = t.proj_status_ahead;
@@ -449,11 +491,15 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       projectStatus = t.proj_status_on_track;
     }
 
+    // Calculate predicted completion
     let predictedCompletion: Date | null = null;
-    const elapsedDays = Math.max(
-      0,
-      (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
-    );
+    const elapsedDays = projectStartDate
+      ? Math.max(
+          0,
+          (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
+        )
+      : 0;
+
     if (overallProgress > 0 && overallProgress < 100 && elapsedDays > 0) {
       const dailyProgressRate = overallProgress / elapsedDays;
       if (dailyProgressRate > 0) {
@@ -463,8 +509,13 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       }
     }
 
-    return { overallProgress, projectStatus, deviation, predictedCompletion };
-  }, [activeProjectTasks, t]);
+    return {
+      overallProgress: Math.min(100, Math.max(0, overallProgress)),
+      projectStatus,
+      deviation: Math.round(deviation * 10) / 10,
+      predictedCompletion,
+    };
+  }, [activeProjectTasks, t]); // Keep t as dependency for translations
 
   // --- S-Curve Data Calculation ---
   const sCurveData = useMemo(() => {
@@ -743,8 +794,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
           // Process imported data
           const importedTasks = json
             .map((row: any) => ({
-              name: row[t.task_name] || row["Task Name"] || "",
-              description: row[t.task_description] || row["Description"] || "",
+              activity: row[t.task_activity] || row["Task Name"] || "",
               planned_start:
                 row[t.task_planned_start] || row["Planned Start"] || "",
               planned_end: row[t.task_planned_end] || row["Planned End"] || "",
@@ -755,17 +805,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                 row[t.task_percent_complete] || row["Percent Complete"] || "0"
               ),
             }))
-            .filter((task) => task.name);
+            .filter((task) => task.activity);
 
           if (importedTasks.length > 0) {
-            // Add to existing tasks
-            const newTasks = importedTasks.map((task, index) => ({
-              ...task,
-              id: `imported-${Date.now()}-${index}`,
-              project_id: activeProject?.id,
-            }));
-            setTasks((prev) => [...prev, ...newTasks]);
-            alert(`Successfully imported ${importedTasks.length} tasks.`);
+            setPendingImportTasks(importedTasks);
+            setImportConfirmModalOpen(true);
           } else {
             alert("No valid tasks found in the Excel file.");
           }
@@ -798,7 +842,12 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
 
   const handleSaveProject = () => {
     if (activeProject && editingProjectData) {
-      updateProject(activeProject.id, editingProjectData);
+      const updatedProject: Project = {
+        ...activeProject,
+        title: editingProjectData.title,
+        budget: editingProjectData.budget,
+      };
+      updateProject(updatedProject);
       setProjectEditMode(false);
     }
   };
@@ -820,9 +869,698 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto">
-        {/* Content will be added here */}
+        {/* Enhanced Header with Better Mobile Support */}
+        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-2">
+                <h1
+                  className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate"
+                  role="heading"
+                  aria-level={1}
+                >
+                  {activeProject?.title || t.project_details}
+                </h1>
+                {/* Enhanced Status Badge with Screen Reader Support */}
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClasses(
+                    performanceMetrics.projectStatus,
+                    t
+                  )}`}
+                  role="status"
+                  aria-label={`Project status: ${performanceMetrics.projectStatus}`}
+                >
+                  {performanceMetrics.projectStatus}
+                </span>
+              </div>
+              <p
+                className="text-sm text-slate-600 dark:text-slate-400"
+                aria-describedby="project-meta"
+              >
+                {t.project_overview} • {projectOverview.totalTasks} tasks •{" "}
+                {projectOverview.duration} days
+              </p>
+            </div>
+
+            {/* Enhanced Action Buttons - Better Mobile Layout */}
+            <div
+              className="flex flex-wrap gap-2"
+              role="toolbar"
+              aria-label="Project actions"
+            >
+              <EnhancedButton
+                onClick={handleEditProject}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1.5"
+                aria-label={t.edit_project}
+              >
+                <EditIcon className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{t.edit_project}</span>
+              </EnhancedButton>
+              <EnhancedButton
+                onClick={() => setFormModalOpen(true)}
+                variant="primary"
+                size="sm"
+                className="flex items-center gap-1.5"
+                aria-label={t.add_task}
+              >
+                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{t.add_task}</span>
+              </EnhancedButton>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-4 py-6 sm:px-6 lg:px-8">
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              {/* Project Overview Section Header */}
+              <div className="mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                  {t.project_overview_title}
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Key metrics and information about this project
+                </p>
+              </div>
+
+              {/* Enhanced Overview Cards - Better Responsive Grid */}
+              <div
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+                role="region"
+                aria-labelledby="overview-metrics"
+              >
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
+                        {t.total_tasks}
+                      </p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                        {loading ? (
+                          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+                        ) : (
+                          projectOverview.totalTasks
+                        )}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg ml-3">
+                      <ClipboardDocumentListIcon
+                        className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
+                        {t.project_duration}
+                      </p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                        {loading ? (
+                          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+                        ) : (
+                          projectOverview.duration
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {t.days}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg ml-3">
+                      <CalendarDaysIcon
+                        className="w-6 h-6 text-green-600 dark:text-green-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
+                        {t.project_budget}
+                      </p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+                        {loading ? (
+                          <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+                        ) : (
+                          formatRupiah(projectOverview.budget)
+                        )}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg ml-3">
+                      <CurrencyDollarIcon
+                        className="w-6 h-6 text-yellow-600 dark:text-yellow-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
+                        {t.overall_progress}
+                      </p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                        {loading ? (
+                          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+                        ) : (
+                          `${performanceMetrics.overallProgress.toFixed(1)}%`
+                        )}
+                      </p>
+                      {!loading && (
+                        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2">
+                          <div
+                            className="bg-red-600 h-2 rounded-full transition-all duration-500 ease-out"
+                            style={{
+                              width: `${performanceMetrics.overallProgress}%`,
+                            }}
+                            role="progressbar"
+                            aria-valuenow={performanceMetrics.overallProgress}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                          ></div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 bg-red-50 dark:bg-red-900/30 rounded-lg ml-3">
+                      <ChartPieIcon
+                        className="w-6 h-6 text-red-600 dark:text-red-400"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Metrics Section Header */}
+              <div className="mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                  {t.performance_summary_title}
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Key performance indicators and project status metrics
+                </p>
+              </div>
+
+              {/* Performance Metrics - More Compact */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      {t.deviation_from_plan}
+                    </p>
+                    {performanceMetrics.deviation > 0 ? (
+                      <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <ArrowTrendingDownIcon className="w-4 h-4 text-red-600" />
+                    )}
+                  </div>
+                  <p
+                    className={`text-lg font-bold ${
+                      performanceMetrics.deviation > 5
+                        ? "text-green-600"
+                        : performanceMetrics.deviation < -5
+                        ? "text-red-600"
+                        : "text-slate-900 dark:text-slate-100"
+                    }`}
+                  >
+                    {performanceMetrics.deviation > 0 ? "+" : ""}
+                    {performanceMetrics.deviation.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {performanceMetrics.deviation > 5
+                      ? t.ahead_of_schedule
+                      : performanceMetrics.deviation < -5
+                      ? t.behind_schedule
+                      : t.on_track}
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      {t.predicted_completion}
+                    </p>
+                    <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
+                    {performanceMetrics.predictedCompletion
+                      ? formatDate(performanceMetrics.predictedCompletion)
+                      : t.not_available}
+                  </p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      {t.tasks_completed}
+                    </p>
+                    <CheckBadgeIcon className="w-4 h-4 text-green-600" />
+                  </div>
+                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    {activeProjectTasks?.filter(
+                      (t) => t.percent_complete === 100
+                    ).length || 0}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    dari {projectOverview.totalTasks} total
+                  </p>
+                </div>
+              </div>
+
+              {/* Compact Chart Section with Better Controls */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      {t.project_progress_chart}
+                    </h2>
+                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+                      <button
+                        onClick={() => setChartView("s-curve")}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                          chartView === "s-curve"
+                            ? "bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm"
+                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                        }`}
+                      >
+                        S-Curve
+                      </button>
+                      <button
+                        onClick={() => setChartView("gantt")}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                          chartView === "gantt"
+                            ? "bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm"
+                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                        }`}
+                      >
+                        Gantt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <Suspense
+                    fallback={
+                      <div className="h-80 sm:h-96 flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                      </div>
+                    }
+                  >
+                    {chartView === "s-curve" ? (
+                      <div className="h-80 sm:h-96" ref={chartRef}>
+                        {nivoSCurveData.length > 0 ? (
+                          <ResponsiveLine
+                            data={nivoSCurveData}
+                            margin={{
+                              top: 20,
+                              right: 80,
+                              bottom: 40,
+                              left: 50,
+                            }}
+                            xScale={{ type: "point" }}
+                            yScale={{
+                              type: "linear",
+                              min: 0,
+                              max: 100,
+                              stacked: false,
+                            }}
+                            yFormat=" >-.2f"
+                            axisTop={null}
+                            axisRight={null}
+                            axisBottom={{
+                              tickSize: 5,
+                              tickPadding: 5,
+                              tickRotation: 0,
+                              legend: t.day,
+                              legendOffset: 32,
+                              legendPosition: "middle",
+                            }}
+                            axisLeft={{
+                              tickSize: 5,
+                              tickPadding: 5,
+                              tickRotation: 0,
+                              legend: t.progress_percentage,
+                              legendOffset: -35,
+                              legendPosition: "middle",
+                            }}
+                            pointSize={6}
+                            pointColor={{ theme: "background" }}
+                            pointBorderWidth={2}
+                            pointBorderColor={{ from: "serieColor" }}
+                            pointLabelYOffset={-12}
+                            useMesh={true}
+                            markers={todayMarker}
+                            legends={[
+                              {
+                                anchor: "bottom-right",
+                                direction: "column",
+                                justify: false,
+                                translateX: 80,
+                                translateY: 0,
+                                itemsSpacing: 2,
+                                itemDirection: "left-to-right",
+                                itemWidth: 70,
+                                itemHeight: 16,
+                                itemOpacity: 0.75,
+                                symbolSize: 10,
+                                symbolShape: "circle",
+                                symbolBorderColor: "rgba(0, 0, 0, .5)",
+                                effects: [
+                                  {
+                                    on: "hover",
+                                    style: {
+                                      itemBackground: "rgba(0, 0, 0, .03)",
+                                      itemOpacity: 1,
+                                    },
+                                  },
+                                ],
+                              },
+                            ]}
+                          />
+                        ) : (
+                          <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
+                            <div className="text-center">
+                              <ChartPieIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                              <p className="text-sm">{t.no_data_available}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="h-80 sm:h-96 overflow-x-auto">
+                        <GanttChart
+                          tasks={activeProjectTasks || []}
+                          startDate={
+                            activeProjectTasks && activeProjectTasks.length > 0
+                              ? new Date(
+                                  Math.min(
+                                    ...activeProjectTasks.map((t) =>
+                                      new Date(t.planned_start).getTime()
+                                    )
+                                  )
+                                )
+                              : new Date()
+                          }
+                          duration={projectOverview.duration}
+                          t={t}
+                        />
+                      </div>
+                    )}
+                  </Suspense>
+                </div>
+              </div>
+
+              {/* Tasks Table */}
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                    {t.project_tasks}
+                  </h2>
+                  <div className="flex gap-2">
+                    <EnhancedButton
+                      onClick={handleImportClick}
+                      variant="secondary"
+                      size="md"
+                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                      disabled={isImporting}
+                    >
+                      <DocumentArrowUpIcon className="w-5 h-5" />
+                      <span className="text-sm font-medium">
+                        {isImporting ? "Importing..." : t.import_excel}
+                      </span>
+                    </EnhancedButton>
+                    <EnhancedButton
+                      onClick={handleExport}
+                      variant="secondary"
+                      size="md"
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                      disabled={isExporting}
+                    >
+                      <DocumentArrowDownIcon className="w-5 h-5" />
+                      <span className="text-sm font-medium">
+                        {isExporting ? "Exporting..." : t.export_excel}
+                      </span>
+                    </EnhancedButton>
+                  </div>
+                </div>
+
+                {activeProjectTasks && activeProjectTasks.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                      <thead className="bg-slate-50 dark:bg-slate-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            {t.task_activity}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            {t.task_planned_start}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            {t.task_planned_end}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            {t.task_percent_complete}
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            {t.actions}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                        {activeProjectTasks.map((task) => (
+                          <tr key={task.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                              {task.activity}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                              {formatDate(task.planned_start)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                              {formatDate(task.planned_end)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                              {task.percent_complete}%
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingTask(task);
+                                    setFormModalOpen(true);
+                                  }}
+                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                >
+                                  <EditIcon className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleOpenDeleteModal(task.id)}
+                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-slate-400" />
+                    <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {t.no_tasks_found}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {t.get_started_by_creating_a_task}
+                    </p>
+                    <div className="mt-6">
+                      <EnhancedButton
+                        onClick={() => setFormModalOpen(true)}
+                        variant="primary"
+                        size="sm"
+                        className="flex items-center gap-2 mx-auto"
+                      >
+                        <PlusIcon className="w-4 h-4" />
+                        {t.add_first_task}
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden file input for import */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImport}
+                accept=".xlsx,.xls"
+                className="hidden"
+              />
+
+              {/* Modals */}
+              {isFormModalOpen && (
+                <Modal
+                  isOpen={isFormModalOpen}
+                  onClose={() => {
+                    setFormModalOpen(false);
+                    setEditingTask(null);
+                  }}
+                  title={editingTask ? t.edit_task : t.add_task}
+                >
+                  <ProjectTaskForm
+                    taskToEdit={editingTask}
+                    onSave={handleSaveTask}
+                    onCancel={() => {
+                      setFormModalOpen(false);
+                      setEditingTask(null);
+                    }}
+                    t={t}
+                  />
+                </Modal>
+              )}
+
+              {isDeleteModalOpen && (
+                <Modal
+                  isOpen={isDeleteModalOpen}
+                  onClose={() => setDeleteModalOpen(false)}
+                  title={t.confirm_delete}
+                >
+                  <div className="p-6">
+                    <p className="text-slate-700 dark:text-slate-300 mb-4">
+                      {t.confirm_delete_task_message}
+                    </p>
+                    <div className="flex justify-end gap-3">
+                      <EnhancedButton
+                        onClick={() => setDeleteModalOpen(false)}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        {t.cancel}
+                      </EnhancedButton>
+                      <EnhancedButton
+                        onClick={handleDeleteConfirm}
+                        variant="error"
+                        size="sm"
+                      >
+                        {t.delete}
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                </Modal>
+              )}
+
+              {isImportConfirmModalOpen && (
+                <Modal
+                  isOpen={isImportConfirmModalOpen}
+                  onClose={() => setImportConfirmModalOpen(false)}
+                  title={t.confirm_import}
+                >
+                  <div className="p-6">
+                    <p className="text-slate-700 dark:text-slate-300 mb-4">
+                      {t.confirm_import_message.replace(
+                        "{count}",
+                        pendingImportTasks.length.toString()
+                      )}
+                    </p>
+                    <div className="flex justify-end gap-3">
+                      <EnhancedButton
+                        onClick={() => setImportConfirmModalOpen(false)}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        {t.cancel}
+                      </EnhancedButton>
+                      <EnhancedButton
+                        onClick={handleConfirmImport}
+                        variant="primary"
+                        size="sm"
+                      >
+                        {t.import}
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                </Modal>
+              )}
+
+              {isProjectEditMode && (
+                <Modal
+                  isOpen={isProjectEditMode}
+                  onClose={handleCancelProjectEdit}
+                  title={t.edit_project}
+                >
+                  <div className="p-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                          {t.project_title}
+                        </label>
+                        <input
+                          type="text"
+                          value={editingProjectData.title}
+                          onChange={(e) =>
+                            setEditingProjectData({
+                              ...editingProjectData,
+                              title: e.target.value,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-slate-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                          {t.project_budget}
+                        </label>
+                        <input
+                          type="number"
+                          value={editingProjectData.budget}
+                          onChange={(e) =>
+                            setEditingProjectData({
+                              ...editingProjectData,
+                              budget: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-slate-100"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                      <EnhancedButton
+                        onClick={handleCancelProjectEdit}
+                        variant="secondary"
+                        size="sm"
+                      >
+                        {t.cancel}
+                      </EnhancedButton>
+                      <EnhancedButton
+                        onClick={handleSaveProject}
+                        variant="primary"
+                        size="sm"
+                      >
+                        {t.save}
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                </Modal>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

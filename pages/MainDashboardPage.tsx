@@ -1,18 +1,33 @@
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "fram              <button
+                onClick={onRefresh}
+                className="p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all"
+              >
+                <RefreshCcwIcon className="w-4 h-4 text-white" />
+              </button>
+
+              {onExport && (
+                <button
+                  onClick={onExport}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 border border-green-500 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-white font-semibold"
+                >
+                  <DownloadIcon className="w-5 h-5" />
+                  <span className="text-sm font-medium">Export Data</span>
+                </button>
+              )}ion";
 import { Page } from "../App";
 import {
   TrendingUpIcon,
   TrendingDownIcon,
   RefreshCcwIcon,
   CheckCircleIcon,
-  BellIcon,
   SearchIcon,
   MoreHorizontalIcon,
   PlayIcon,
   PauseIcon,
   ArrowRightIcon,
+  DownloadIcon,
 } from "lucide-react";
 import UserGroupIcon from "../components/icons/UserGroupIcon";
 import UsersOnlineIcon from "../components/icons/UsersOnlineIcon";
@@ -26,6 +41,7 @@ import { useProjects } from "../hooks/useProjects";
 import { usePlantData } from "../hooks/usePlantData";
 import { usePackingPlantStockData } from "../hooks/usePackingPlantStockData";
 import { formatNumber, formatPercentage } from "../utils/formatters";
+import { exportToExcelStyled } from "../utils/excelUtils";
 import {
   InteractiveCardModal,
   BreakdownData,
@@ -38,19 +54,17 @@ import { H1, Body, WhiteText } from "../components/ui/Typography";
 const ModernDashboardHeader: React.FC<{
   currentTime: string;
   onSearch?: (query: string) => void;
-  onNotificationClick?: () => void;
-  notificationCount?: number;
   isAutoRefresh?: boolean;
   onToggleAutoRefresh?: () => void;
   onRefresh?: () => void;
+  onExport?: () => void;
 }> = ({
   currentTime,
   onSearch,
-  onNotificationClick,
-  notificationCount = 0,
   isAutoRefresh = true,
   onToggleAutoRefresh,
   onRefresh,
+  onExport,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -122,18 +136,15 @@ const ModernDashboardHeader: React.FC<{
                 <RefreshCcwIcon className="w-4 h-4" />
               </button>
 
-              {/* Notifications */}
-              <button
-                onClick={onNotificationClick}
-                className="relative p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all"
-              >
-                <BellIcon className="w-4 h-4" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-400 text-amber-900 text-xs font-bold px-2 py-1 rounded-full min-w-[1.5rem] text-center">
-                    {notificationCount > 99 ? "99+" : notificationCount}
-                  </span>
-                )}
-              </button>
+              {onExport && (
+                <button
+                  onClick={onExport}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 border border-green-500 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-white font-semibold"
+                >
+                  <DownloadIcon className="w-5 h-5" />
+                  <span className="text-sm font-medium">Export Data</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -414,6 +425,43 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
     };
   };
 
+  const handleExportDashboardData = async () => {
+    try {
+      const exportData: any[] = [
+        {
+          'Kategori': 'Users',
+          'Total': usersCount,
+          'Online': onlineUsersCount,
+          'Persentase': formatPercentage((onlineUsersCount / usersCount) * 100)
+        },
+        {
+          'Kategori': 'Projects',
+          'Total': activeProjects,
+          'Status': 'Active',
+          'Persentase': '100%'
+        }
+      ];
+
+      // Add production data if available
+      if (productionData && productionData.length > 0) {
+        productionData.forEach((item, index) => {
+          exportData.push({
+            'Kategori': `Production Line ${index + 1}`,
+            'Total': item.output || 0,
+            'Online': item.hour || 0,
+            'Persentase': 'Running'
+          });
+        });
+      }
+
+      const headers = ['Kategori', 'Total', 'Online', 'Persentase'];
+
+      await exportToExcelStyled(exportData, `dashboard_${new Date().toISOString().split('T')[0]}`, 'Dashboard Data', headers);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-screen-2xl mx-auto p-6 space-y-8">
@@ -421,11 +469,10 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
         <ModernDashboardHeader
           currentTime={currentTime}
           onSearch={(query) => console.log("Search:", query)}
-          onNotificationClick={() => console.log("Notifications")}
-          notificationCount={5}
           isAutoRefresh={isAutoRefresh}
           onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
           onRefresh={() => setRefreshKey((prev) => prev + 1)}
+          onExport={handleExportDashboardData}
         />
 
         {/* Enhanced Quick Stats */}

@@ -1511,8 +1511,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 className="hidden"
               />
               <EnhancedButton
-                variant="outline"
-                size="xs"
+                variant="secondary"
+                size="md"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={
                   isImporting ||
@@ -1523,15 +1523,18 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     PermissionLevel.WRITE
                   )
                 }
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 loading={isImporting}
                 aria-label={t.import_excel || "Import Excel file"}
               >
-                <DocumentArrowUpIcon className="w-4 h-4 mr-1" />
-                {isImporting ? "Importing..." : t.import_excel}
+                <DocumentArrowUpIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  {isImporting ? "Importing..." : t.import_excel}
+                </span>
               </EnhancedButton>
               <EnhancedButton
-                variant="outline"
-                size="xs"
+                variant="secondary"
+                size="md"
                 onClick={handleExport}
                 disabled={
                   isExporting ||
@@ -1543,11 +1546,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     PermissionLevel.READ
                   )
                 }
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 loading={isExporting}
                 aria-label={t.export_excel || "Export to Excel"}
               >
-                <DocumentArrowDownIcon className="w-4 h-4 mr-1" />
-                {isExporting ? "Exporting..." : t.export_excel}
+                <DocumentArrowDownIcon className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  {isExporting ? "Exporting..." : t.export_excel}
+                </span>
               </EnhancedButton>
             </div>
 

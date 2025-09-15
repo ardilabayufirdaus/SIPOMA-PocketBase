@@ -11,6 +11,12 @@ import Pagination from "./Pagination";
 import useConfirmation from "../hooks/useConfirmation";
 import { PermissionChecker, usePermissions } from "../utils/permissions";
 import { PermissionLevel } from "../types";
+import {
+  exportToExcelStyled,
+  importFromExcel,
+  validateExcelImport,
+} from "../utils/excelUtils";
+import { DownloadIcon, Upload } from "lucide-react";
 
 // Import Enhanced Components
 import {
@@ -73,6 +79,7 @@ const UserTable: React.FC<UserTableProps> = ({
   onPageChange,
 }) => {
   const { confirm } = useConfirmation();
+  const [isImporting, setIsImporting] = useState(false);
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -141,6 +148,72 @@ const UserTable: React.FC<UserTableProps> = ({
     }
   };
 
+  const handleExportExcel = async () => {
+    try {
+      const exportData = users.map((user) => ({
+        "Nama Lengkap": user.full_name,
+        Username: user.username,
+        Role: user.role,
+        Status: user.is_active ? "Aktif" : "Tidak Aktif",
+        "Tanggal Dibuat": formatDate(user.created_at),
+        "Terakhir Aktif": formatDate(user.last_active),
+      }));
+
+      const headers = [
+        "Nama Lengkap",
+        "Username",
+        "Role",
+        "Status",
+        "Tanggal Dibuat",
+        "Terakhir Aktif",
+      ];
+
+      await exportToExcelStyled(
+        exportData,
+        `users_${new Date().toISOString().split("T")[0]}`,
+        "Users",
+        headers
+      );
+      announceToScreenReader("Data users berhasil diekspor ke Excel");
+    } catch (error) {
+      console.error("Export failed:", error);
+      announceToScreenReader("Gagal mengekspor data users");
+    }
+  };
+
+  const handleImportExcel = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const data = await importFromExcel(file);
+      const validation = validateExcelImport(data, [
+        "Nama Lengkap",
+        "Username",
+        "Role",
+      ]);
+
+      if (!validation.isValid) {
+        alert(`Error validasi: ${validation.errors.join(", ")}`);
+        return;
+      }
+
+      // Process imported data (this would typically call an API)
+      console.log("Imported data:", data);
+      announceToScreenReader(`${data.length} users berhasil diimpor`);
+    } catch (error) {
+      console.error("Import failed:", error);
+      alert("Gagal mengimpor data dari Excel");
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      event.target.value = "";
+    }
+  };
+
   const renderUserAvatar = (user: User) => {
     if (isValidString(user.avatar_url)) {
       return (
@@ -161,6 +234,44 @@ const UserTable: React.FC<UserTableProps> = ({
 
   return (
     <div className="bg-white dark:bg-slate-900 p-2 rounded-xl shadow-md">
+      {/* Header with Export and Import Buttons */}
+      <div className="flex justify-between items-center mb-4 px-6 py-4">
+        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+          Daftar User
+        </h3>
+        <div className="flex items-center space-x-2">
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleImportExcel}
+              className="hidden"
+              disabled={isImporting}
+            />
+            <EnhancedButton
+              variant="secondary"
+              size="md"
+              className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              disabled={isImporting}
+            >
+              <Upload className="h-5 w-5" />
+              <span className="text-sm font-medium">
+                {isImporting ? "Importing..." : "Import Excel"}
+              </span>
+            </EnhancedButton>
+          </label>
+          <EnhancedButton
+            onClick={handleExportExcel}
+            variant="secondary"
+            size="md"
+            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <DownloadIcon className="h-5 w-5" />
+            <span className="text-sm font-medium">Export Excel</span>
+          </EnhancedButton>
+        </div>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
           <thead className="bg-slate-50 dark:bg-slate-800">

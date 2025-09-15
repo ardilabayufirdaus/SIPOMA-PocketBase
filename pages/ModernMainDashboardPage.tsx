@@ -588,8 +588,6 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             role: "Super Administrator",
           }}
           onSearch={(query) => console.log("Search:", query)}
-          onNotificationClick={() => console.log("Notifications")}
-          notificationCount={5}
         />
 
         {/* Key Metrics */}

@@ -94,7 +94,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white dark:bg-slate-900 p-3 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-102 cursor-pointer border border-transparent hover:border-red-200 dark:hover:border-red-800 ${
+        className={`bg-white dark:bg-slate-900 p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-red-200 dark:hover:border-red-800 ${
           isInteractive
             ? "cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 focus:outline-none"
             : ""
@@ -112,7 +112,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className={`p-1.5 rounded-full ${getColorClasses()} mr-2`}>
+            <div className={`p-1 rounded-full ${getColorClasses()} mr-1.5`}>
               {icon}
             </div>
             <div>
@@ -138,15 +138,15 @@ const MetricCard: React.FC<MetricCardProps> = ({
                   </div>
                 )}
               </div>
-              <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {value}
               </p>
               {trend !== undefined && (
-                <div className="flex items-center mt-1">
+                <div className="flex items-center mt-0.5">
                   {trend > 0 ? (
-                    <ArrowTrendingUpIcon className="w-4 h-4 text-green-500 dark:text-green-400 mr-1" />
+                    <ArrowTrendingUpIcon className="w-3 h-3 text-green-500 dark:text-green-400 mr-0.5" />
                   ) : trend < 0 ? (
-                    <ArrowTrendingDownIcon className="w-4 h-4 text-red-500 dark:text-red-400 mr-1" />
+                    <ArrowTrendingDownIcon className="w-3 h-3 text-red-500 dark:text-red-400 mr-0.5" />
                   ) : null}
                   <span
                     className={`text-xs font-medium ${
@@ -242,38 +242,39 @@ const ProgressTrendChart: React.FC<{
 }> = ({ data, t }) => {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+      <div className="flex items-center justify-center h-48 text-slate-500 dark:text-slate-400 text-xs">
         {t.no_data_available || "No data available"}
       </div>
     );
   }
 
   return (
-    <div className="h-64">
+    <div className="h-48">
       <ResponsiveLine
         data={data}
-        margin={{ top: 20, right: 20, bottom: 50, left: 50 }}
+        margin={{ top: 10, right: 10, bottom: 30, left: 35 }}
         xScale={{ type: "point" }}
         yScale={{ type: "linear", min: 0, max: 100 }}
         curve="monotoneX"
         axisTop={null}
         axisRight={null}
         axisBottom={{
-          tickSize: 5,
-          tickPadding: 5,
+          tickSize: 3,
+          tickPadding: 3,
           tickRotation: 0,
+          format: (value) => value.slice(0, 3), // Shorten month names
         }}
         axisLeft={{
-          tickSize: 5,
-          tickPadding: 5,
+          tickSize: 3,
+          tickPadding: 3,
           tickRotation: 0,
           format: (value) => `${value}%`,
         }}
-        pointSize={6}
+        pointSize={4}
         pointColor={{ theme: "background" }}
-        pointBorderWidth={2}
+        pointBorderWidth={1.5}
         pointBorderColor={{ from: "serieColor" }}
-        pointLabelYOffset={-12}
+        pointLabelYOffset={-10}
         useMesh={true}
         colors={["#DC2626", "#16A34A", "#2563EB"]}
         enableGridX={false}
@@ -284,13 +285,14 @@ const ProgressTrendChart: React.FC<{
           grid: {
             line: {
               stroke: "#e2e8f0",
-              strokeWidth: 1,
+              strokeWidth: 0.5,
             },
           },
           axis: {
             ticks: {
               text: {
                 fill: "#64748b",
+                fontSize: 10,
               },
             },
           },
@@ -298,11 +300,12 @@ const ProgressTrendChart: React.FC<{
         tooltip={({ point }) => (
           <div
             style={{
-              padding: 8,
+              padding: 6,
               background: "#1e293b",
               color: "#fff",
-              borderRadius: 4,
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+              borderRadius: 3,
+              boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.1)",
+              fontSize: "11px",
             }}
           >
             <strong>{String(point.seriesId)}</strong>:{" "}
@@ -320,48 +323,50 @@ const ResourceAllocationChart: React.FC<{
 }> = ({ data, t }) => {
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+      <div className="flex items-center justify-center h-48 text-slate-500 dark:text-slate-400 text-xs">
         {t.no_data_available || "No data available"}
       </div>
     );
   }
 
   return (
-    <div className="h-64">
+    <div className="h-48">
       <ResponsiveBar
         data={data}
         keys={["active", "overdue", "completed"]}
         indexBy="month"
-        margin={{ top: 20, right: 20, bottom: 50, left: 50 }}
-        padding={0.3}
+        margin={{ top: 10, right: 10, bottom: 30, left: 35 }}
+        padding={0.2}
         colors={["#2563EB", "#DC2626", "#16A34A"]}
         axisTop={null}
         axisRight={null}
         axisBottom={{
-          tickSize: 5,
-          tickPadding: 5,
+          tickSize: 3,
+          tickPadding: 3,
           tickRotation: 0,
+          format: (value) => value.slice(0, 3), // Shorten month names
         }}
         axisLeft={{
-          tickSize: 5,
-          tickPadding: 5,
+          tickSize: 3,
+          tickPadding: 3,
           tickRotation: 0,
         }}
-        labelSkipWidth={12}
-        labelSkipHeight={12}
-        labelTextColor={{ from: "color", modifiers: [["darker", 1.6]] }}
+        labelSkipWidth={8}
+        labelSkipHeight={8}
+        labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
         theme={{
           background: "transparent",
           grid: {
             line: {
               stroke: "#e2e8f0",
-              strokeWidth: 1,
+              strokeWidth: 0.5,
             },
           },
           axis: {
             ticks: {
               text: {
                 fill: "#64748b",
+                fontSize: 10,
               },
             },
           },
@@ -369,11 +374,12 @@ const ResourceAllocationChart: React.FC<{
         tooltip={({ id, value, indexValue }) => (
           <div
             style={{
-              padding: 8,
+              padding: 6,
               background: "#1e293b",
               color: "#fff",
-              borderRadius: 4,
-              boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+              borderRadius: 3,
+              boxShadow: "0 2px 4px -1px rgba(0, 0, 0, 0.1)",
+              fontSize: "11px",
             }}
           >
             <strong>{indexValue}</strong>
@@ -741,12 +747,12 @@ const ProjectDashboardPage: React.FC<{
   }
 
   return (
-    <div className="space-y-3 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30 p-4 rounded-lg">
-      {/* Header - Compact */}
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <div className="space-y-2 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30 p-2 rounded-lg">
+      {/* Header - Ultra Compact */}
+      <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1">
           <div>
-            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+            <h1 className="text-base font-bold text-slate-900 dark:text-slate-100">
               {t.project_dashboard_title}
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-xs">
@@ -754,8 +760,8 @@ const ProjectDashboardPage: React.FC<{
                 "Comprehensive project overview and analytics"}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-r from-red-500 to-red-600 dark:from-red-900 dark:to-red-800 text-white px-2 py-1 rounded-md text-xs">
+          <div className="flex items-center gap-1">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 dark:from-red-900 dark:to-red-800 text-white px-1.5 py-0.5 rounded text-xs">
               <div className="flex items-center space-x-1">
                 <ShieldCheckIcon className="w-3 h-3" />
                 <span className="font-semibold">
@@ -767,24 +773,24 @@ const ProjectDashboardPage: React.FC<{
         </div>
       </div>
 
-      {/* Search and Filter Controls - Compact */}
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-        <div className="flex flex-col sm:flex-row gap-2 items-center justify-between">
-          <div className="flex flex-col sm:flex-row gap-2 flex-1">
-            <div className="relative flex-1 max-w-sm">
+      {/* Search and Filter Controls - Ultra Compact */}
+      <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+        <div className="flex flex-col xs:flex-row gap-1 items-center justify-between">
+          <div className="flex flex-col xs:flex-row gap-1 flex-1">
+            <div className="relative flex-1 max-w-xs">
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-8 pr-2 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                className="block w-full pl-6 pr-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                 aria-label="Search projects"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-2 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
               aria-label="Filter projects by status"
             >
               <option value="all">All Status</option>
@@ -796,7 +802,7 @@ const ProjectDashboardPage: React.FC<{
           <div className="flex gap-1">
             <EnhancedButton
               variant="primary"
-              size="sm"
+              size="xs"
               onClick={handleRefresh}
               disabled={refreshing}
               loading={refreshing}
@@ -808,7 +814,7 @@ const ProjectDashboardPage: React.FC<{
             </EnhancedButton>
             <EnhancedButton
               variant="success"
-              size="sm"
+              size="xs"
               onClick={handleExport}
               aria-label="Export project data to CSV"
             >
@@ -818,68 +824,53 @@ const ProjectDashboardPage: React.FC<{
         </div>
       </div>
 
-      {/* Enhanced Metric Cards - Compact */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+      {/* Enhanced Metric Cards - Ultra Compact */}
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
         {[
           {
             key: "total",
             title: t.total_projects,
             value: overallMetrics.totalProjects,
-            icon: <ClipboardDocumentListIcon className="w-4 h-4" />,
+            icon: <ClipboardDocumentListIcon className="w-3 h-3" />,
             colorScheme: "default" as const,
           },
           {
             key: "progress",
             title: t.overall_progress_all,
             value: overallMetrics.avgProgress,
-            icon: <PresentationChartLineIcon className="w-4 h-4" />,
+            icon: <PresentationChartLineIcon className="w-3 h-3" />,
             colorScheme: "success" as const,
           },
           {
             key: "completed",
             title: t.projects_completed_count,
             value: overallMetrics.completedProjects,
-            icon: <CheckBadgeIcon className="w-4 h-4" />,
+            icon: <CheckBadgeIcon className="w-3 h-3" />,
             colorScheme: "success" as const,
           },
           {
             key: "delayed",
             title: t.projects_delayed,
             value: overallMetrics.delayedProjects,
-            icon: <ExclamationTriangleIcon className="w-4 h-4" />,
+            icon: <ExclamationTriangleIcon className="w-3 h-3" />,
             colorScheme: "danger" as const,
           },
           {
             key: "tasks",
             title: t.active_tasks || "Active Tasks",
             value: overallMetrics.activeTasks,
-            icon: <ClockIcon className="w-4 h-4" />,
+            icon: <ClockIcon className="w-3 h-3" />,
             colorScheme: "warning" as const,
           },
           {
             key: "overdue",
             title: t.overdue_tasks || "Overdue Tasks",
             value: overallMetrics.overdueTasks,
-            icon: <FireIcon className="w-4 h-4" />,
+            icon: <FireIcon className="w-3 h-3" />,
             colorScheme: "danger" as const,
           },
         ].map((card, index) => (
-          <div
-            key={card.key}
-            className={
-              index < 3
-                ? "opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-300 fill-mode-forwards"
-                : ""
-            }
-            style={
-              index < 3
-                ? {
-                    animationDelay: `${index * 100}ms`,
-                    animationFillMode: "forwards",
-                  }
-                : {}
-            }
-          >
+          <div key={card.key}>
             <MetricCard
               title={card.title}
               value={card.value}
@@ -890,43 +881,43 @@ const ProjectDashboardPage: React.FC<{
         ))}
       </div>
 
-      {/* Financial Overview - Compact */}
+      {/* Financial Overview - Ultra Compact */}
       {overallMetrics.totalBudget > 0 && (
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
-            <CurrencyDollarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <CurrencyDollarIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             {t.financial_overview || "Financial Overview"}
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 p-2 rounded-md border border-green-200 dark:border-green-700">
+          <div className="grid grid-cols-2 xs:grid-cols-4 gap-1">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 p-1.5 rounded border border-green-200 dark:border-green-700">
               <p className="text-xs font-medium text-green-700 dark:text-green-300">
                 {t.total_budget || "Total Budget"}
               </p>
-              <p className="text-sm font-bold text-green-900 dark:text-green-100">
+              <p className="text-xs font-bold text-green-900 dark:text-green-100">
                 {formatRupiah(overallMetrics.totalBudget)}
               </p>
             </div>
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-2 rounded-md border border-blue-200 dark:border-blue-700">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-1.5 rounded border border-blue-200 dark:border-blue-700">
               <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
                 {t.avg_project_budget || "Average Budget"}
               </p>
-              <p className="text-sm font-bold text-blue-900 dark:text-blue-100">
+              <p className="text-xs font-bold text-blue-900 dark:text-blue-100">
                 {formatRupiah(overallMetrics.avgBudget)}
               </p>
             </div>
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-2 rounded-md border border-purple-200 dark:border-purple-700">
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-1.5 rounded border border-purple-200 dark:border-purple-700">
               <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
                 {t.high_budget_projects || "High Budget Projects"}
               </p>
-              <p className="text-sm font-bold text-purple-900 dark:text-purple-100">
+              <p className="text-xs font-bold text-purple-900 dark:text-purple-100">
                 {overallMetrics.highBudgetProjects}
               </p>
             </div>
-            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 p-2 rounded-md border border-yellow-200 dark:border-yellow-700">
+            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 p-1.5 rounded border border-yellow-200 dark:border-yellow-700">
               <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
                 {t.budget_utilization || "Budget Utilization"}
               </p>
-              <p className="text-sm font-bold text-yellow-900 dark:text-yellow-100">
+              <p className="text-xs font-bold text-yellow-900 dark:text-yellow-100">
                 {(
                   (overallMetrics.completedProjects /
                     Math.max(overallMetrics.totalProjects, 1)) *
@@ -939,21 +930,21 @@ const ProjectDashboardPage: React.FC<{
         </div>
       )}
 
-      {/* Critical Issues Alert - Compact */}
+      {/* Critical Issues Alert - Ultra Compact */}
       {criticalIssues.length > 0 && (
-        <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg">
-          <h3 className="text-sm font-semibold text-red-800 dark:text-red-200 mb-2 flex items-center gap-1">
-            <ExclamationTriangleIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+        <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 p-2 rounded-lg">
+          <h3 className="text-xs font-semibold text-red-800 dark:text-red-200 mb-1 flex items-center gap-1">
+            <ExclamationTriangleIcon className="w-3 h-3 text-red-600 dark:text-red-400" />
             {t.critical_issues || "Critical Issues"} ({criticalIssues.length})
           </h3>
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             {criticalIssues.map((issue, index) => (
               <div
                 key={index}
-                className="flex items-start space-x-2 p-2 bg-white dark:bg-slate-800 rounded-md border border-red-100 dark:border-red-700"
+                className="flex items-start space-x-1 p-1.5 bg-white dark:bg-slate-800 rounded border border-red-100 dark:border-red-700"
               >
                 <div
-                  className={`w-2 h-2 rounded-full mt-1.5 ${
+                  className={`w-1.5 h-1.5 rounded-full mt-1 ${
                     issue.severity === "high"
                       ? "bg-red-500"
                       : issue.severity === "medium"
@@ -962,7 +953,7 @@ const ProjectDashboardPage: React.FC<{
                   }`}
                 ></div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-xs font-medium text-slate-900">
                     {issue.title}
                   </p>
                   <p className="text-xs text-slate-600">{issue.description}</p>
@@ -1044,16 +1035,16 @@ const ProjectDashboardPage: React.FC<{
           </div>
         </div>
 
-        {/* Upcoming Deadlines - Compact */}
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50 dark:border-slate-700/50">
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
-            <CalendarDaysIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        {/* Upcoming Deadlines - Ultra Compact */}
+        <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm xl:col-span-1 border border-slate-200/50 dark:border-slate-700/50">
+          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <CalendarDaysIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             {t.upcoming_deadlines}
           </h3>
           {upcomingTasks.length > 0 ? (
             <ul className="divide-y divide-slate-200 dark:divide-slate-700 space-y-0">
               {upcomingTasks.map((task) => (
-                <li key={task.id} className="py-1.5">
+                <li key={task.id} className="py-1">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-xs font-medium text-slate-800 dark:text-slate-200">
@@ -1071,26 +1062,26 @@ const ProjectDashboardPage: React.FC<{
               ))}
             </ul>
           ) : (
-            <p className="text-center text-slate-500 dark:text-slate-400 py-4 text-xs">
+            <p className="text-center text-slate-500 dark:text-slate-400 py-2 text-xs">
               {t.no_upcoming_deadlines}
             </p>
           )}
         </div>
       </div>
 
-      {/* Progress Trends and Resource Allocation Charts - Compact */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
-            <ChartPieIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+      {/* Progress Trends and Resource Allocation Charts - Ultra Compact */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+        <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <ChartPieIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             {t.progress_trends || "Progress Trends"}
           </h3>
           <ProgressTrendChart data={progressTrendData} t={t} />
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
-          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
-            <ChartBarSquareIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
+          <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <ChartBarSquareIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
             {t.resource_allocation || "Resource Allocation"}
           </h3>
           <ResourceAllocationChart data={resourceAllocationData} t={t} />
@@ -1203,19 +1194,19 @@ const ProjectDashboardPage: React.FC<{
         )}
       </div>
 
-      {/* Executive Summary & Recommendations */}
-      <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-          <FireIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+      {/* Executive Summary & Recommendations - Ultra Compact */}
+      <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
+          <FireIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           {t.executive_insights || "Executive Insights & Recommendations"}
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {/* Performance Summary */}
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">
+          <div className="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
+            <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">
               {t.performance_analytics || "Performance Summary"}
             </h4>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">
                   {t.on_time_delivery || "On-Time Delivery"}:
@@ -1259,14 +1250,14 @@ const ProjectDashboardPage: React.FC<{
           </div>
 
           {/* Key Insights */}
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">
+          <div className="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
+            <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">
               {t.recommendations || "Key Insights"}
             </h4>
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1 text-xs">
               {overallMetrics.delayedProjects > 0 && (
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5"></div>
+                <div className="flex items-start gap-1">
+                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-0.5"></div>
                   <span className="text-slate-700 dark:text-slate-300">
                     {overallMetrics.delayedProjects} projects need immediate
                     attention
@@ -1274,24 +1265,24 @@ const ProjectDashboardPage: React.FC<{
                 </div>
               )}
               {overallMetrics.highRiskCount > 0 && (
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5"></div>
+                <div className="flex items-start gap-1">
+                  <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-0.5"></div>
                   <span className="text-slate-700 dark:text-slate-300">
                     {overallMetrics.highRiskCount} projects are at high risk
                   </span>
                 </div>
               )}
               {overallMetrics.overdueTasks > 0 && (
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5"></div>
+                <div className="flex items-start gap-1">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-0.5"></div>
                   <span className="text-slate-700 dark:text-slate-300">
                     {overallMetrics.overdueTasks} tasks are overdue
                   </span>
                 </div>
               )}
               {overallMetrics.projectHealthScore >= 80 && (
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5"></div>
+                <div className="flex items-start gap-1">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-0.5"></div>
                   <span className="text-slate-700 dark:text-slate-300">
                     Overall project health is excellent
                   </span>
@@ -1301,31 +1292,31 @@ const ProjectDashboardPage: React.FC<{
           </div>
 
           {/* Action Items */}
-          <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">
+          <div className="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
+            <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">
               Action Items
             </h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5"></div>
+            <div className="space-y-1 text-xs">
+              <div className="flex items-start gap-1">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-0.5"></div>
                 <span className="text-slate-700 dark:text-slate-300">
                   Review delayed projects weekly
                 </span>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5"></div>
+              <div className="flex items-start gap-1">
+                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-0.5"></div>
                 <span className="text-slate-700 dark:text-slate-300">
                   Optimize resource allocation
                 </span>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-teal-500 rounded-full mt-1.5"></div>
+              <div className="flex items-start gap-1">
+                <div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-0.5"></div>
                 <span className="text-slate-700 dark:text-slate-300">
                   Implement risk mitigation plans
                 </span>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-indigo-500 rounded-full mt-1.5"></div>
+              <div className="flex items-start gap-1">
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-0.5"></div>
                 <span className="text-slate-700 dark:text-slate-300">
                   Monitor budget utilization
                 </span>

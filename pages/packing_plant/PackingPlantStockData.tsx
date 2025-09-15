@@ -525,11 +525,12 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
           <EnhancedButton
             onClick={handleExport}
             variant="secondary"
-            className="inline-flex items-center justify-center gap-2"
+            size="md"
+            className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             aria-label={t.export_excel || "Export to Excel"}
           >
             <DocumentArrowDownIcon className="w-5 h-5" />
-            {t.export_excel}
+            <span className="text-sm font-medium">{t.export_excel}</span>
           </EnhancedButton>
           <input
             type="file"
@@ -542,13 +543,18 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             onClick={() => fileInputRef.current?.click()}
             disabled={isImporting}
             variant="secondary"
+            size="md"
             loading={isImporting}
             loadingText={t.importing || "Importing..."}
-            className="inline-flex items-center justify-center gap-2"
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
             aria-label={t.import_excel || "Import from Excel"}
           >
             <DocumentArrowUpIcon className="w-5 h-5" />
-            {t.import_excel || "Import Excel"}
+            <span className="text-sm font-medium">
+              {isImporting
+                ? t.importing || "Importing..."
+                : t.import_excel || "Import Excel"}
+            </span>
           </EnhancedButton>
           <EnhancedButton
             onClick={handleAddData}

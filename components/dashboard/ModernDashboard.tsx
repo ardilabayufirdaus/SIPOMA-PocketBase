@@ -16,7 +16,6 @@ import {
   UsersIcon,
   FolderIcon,
   SettingsIcon,
-  BellIcon,
   SearchIcon,
   FilterIcon,
   MoreHorizontalIcon,
@@ -355,15 +354,11 @@ interface DashboardHeaderProps {
     avatar?: string;
   };
   onSearch?: (query: string) => void;
-  onNotificationClick?: () => void;
-  notificationCount?: number;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentUser,
   onSearch,
-  onNotificationClick,
-  notificationCount = 0,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const currentTime = new Date().toLocaleString("id-ID", {
@@ -409,30 +404,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 }}
                 className="pl-10 pr-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 w-64"
               />
-            </div>
-
-            {/* Notifications */}
-            <div className="relative">
-              <EnhancedButton
-                variant="ghost"
-                size="sm"
-                onClick={onNotificationClick}
-                ariaLabel={`Notifications ${
-                  notificationCount > 0 ? `(${notificationCount} unread)` : ""
-                }`}
-                className="p-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30"
-                icon={<BellIcon className="w-5 h-5" />}
-              >
-                <span className="sr-only">
-                  Notifications{" "}
-                  {notificationCount > 0 ? `(${notificationCount} unread)` : ""}
-                </span>
-              </EnhancedButton>
-              {notificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-amber-400 text-amber-900 text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
-                  {notificationCount > 99 ? "99+" : notificationCount}
-                </span>
-              )}
             </div>
 
             {/* User Profile */}
