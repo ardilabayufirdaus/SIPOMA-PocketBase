@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { CcrParameterData } from "../types";
 import { useParameterSettings } from "./useParameterSettings";
 import { supabase } from "../utils/supabase";
+import { useCcrDataCache } from "./useDataCache";
 
 // Extend CcrParameterData interface untuk include name property
 interface CcrParameterDataWithName extends CcrParameterData {
@@ -11,9 +12,13 @@ interface CcrParameterDataWithName extends CcrParameterData {
 export const useCcrParameterData = () => {
   const { records: parameters, loading: paramsLoading } =
     useParameterSettings();
+  const cache = useCcrDataCache();
 
   const getDataForDate = useCallback(
-    async (date: string): Promise<CcrParameterDataWithName[]> => {
+    async (
+      date: string,
+      plantUnit?: string
+    ): Promise<CcrParameterDataWithName[]> => {
       // Enhanced validation for date parameter
       if (
         paramsLoading ||
@@ -28,14 +33,56 @@ export const useCcrParameterData = () => {
       }
 
       try {
-        const { data, error } = await supabase
+        // Support both DD/MM/YYYY and YYYY-MM-DD formats
+        let isoDate: string;
+        if (date.includes("/")) {
+          // DD/MM/YYYY format
+          const dateParts = date.split("/");
+          if (dateParts.length !== 3) {
+            console.error("Invalid date format:", date);
+            return [];
+          }
+          const day = dateParts[0].padStart(2, "0");
+          const month = dateParts[1].padStart(2, "0");
+          const year = dateParts[2];
+          isoDate = `${year}-${month}-${day}`;
+        } else if (date.includes("-")) {
+          // YYYY-MM-DD format - already ISO
+          const dateParts = date.split("-");
+          if (dateParts.length !== 3 || dateParts[0].length !== 4) {
+            console.error("Invalid date format:", date);
+            return [];
+          }
+          isoDate = date;
+        } else {
+          console.error("Invalid date format:", date);
+          return [];
+        }
+
+        // Build query with optional plant_unit filter
+        let query = supabase
           .from("ccr_parameter_data")
           .select("*")
-          .eq("date", date);
+          .eq("date", isoDate);
+
+        // Add plant_unit filter if specified
+        if (plantUnit && plantUnit !== "all") {
+          query = query.eq("plant_unit", plantUnit);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
           console.error("Error fetching CCR parameter data:", error);
           return [];
+        }
+
+        // Filter parameters based on plant unit if specified
+        let filteredParameters = parameters;
+        if (plantUnit && plantUnit !== "all") {
+          filteredParameters = parameters.filter(
+            (param) => param.unit === plantUnit
+          );
         }
 
         // Map supabase response to application type with proper error handling
@@ -44,7 +91,7 @@ export const useCcrParameterData = () => {
           supabaseData.map((d) => [d.parameter_id, d])
         );
 
-        return parameters.map((param) => {
+        return filteredParameters.map((param) => {
           const record = dailyRecords.get(param.id);
           if (record) {
             return {
@@ -238,5 +285,165 @@ export const useCcrParameterData = () => {
     []
   );
 
-  return { getDataForDate, updateParameterData, loading: paramsLoading };
+  const getDataForDateRange = useCallback(
+    async (
+      startDate: string,
+      endDate: string,
+      plantUnit?: string
+    ): Promise<CcrParameterDataWithName[]> => {
+      // Enhanced validation for date parameters
+      if (
+        paramsLoading ||
+        parameters.length === 0 ||
+        !startDate ||
+        !endDate ||
+        typeof startDate !== "string" ||
+        typeof endDate !== "string" ||
+        startDate.trim() === "" ||
+        endDate.trim() === ""
+      ) {
+        return [];
+      }
+
+      try {
+        // Convert dates to ISO format for database query
+        const convertToISO = (dateStr: string): string => {
+          if (dateStr.includes("/")) {
+            const dateParts = dateStr.split("/");
+            if (dateParts.length !== 3) {
+              console.error("Invalid date format:", dateStr);
+              return dateStr;
+            }
+            const day = dateParts[0].padStart(2, "0");
+            const month = dateParts[1].padStart(2, "0");
+            const year = dateParts[2];
+            return `${year}-${month}-${day}`;
+          }
+          return dateStr;
+        };
+
+        const isoStartDate = convertToISO(startDate);
+        const isoEndDate = convertToISO(endDate);
+
+        // Check cache first
+        const start = new Date(isoStartDate);
+        const cachedData = cache.getCachedData(
+          start.getMonth() + 1,
+          start.getFullYear(),
+          plantUnit
+        );
+
+        if (cachedData) {
+          console.log("✅ Using cached CCR data for", startDate, "to", endDate);
+          return cachedData;
+        }
+
+        console.log(
+          "🔄 Fetching CCR data from database for",
+          startDate,
+          "to",
+          endDate
+        );
+
+        // Build query with date range and optional plant_unit filter
+        let query = supabase
+          .from("ccr_parameter_data")
+          .select("*")
+          .gte("date", isoStartDate)
+          .lte("date", isoEndDate);
+
+        // Add plant_unit filter if specified
+        if (plantUnit && plantUnit !== "all") {
+          query = query.eq("plant_unit", plantUnit);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error("Error fetching CCR parameter data range:", error);
+          return [];
+        }
+
+        // Filter parameters based on plant unit if specified
+        let filteredParameters = parameters;
+        if (plantUnit && plantUnit !== "all") {
+          filteredParameters = parameters.filter(
+            (param) => param.unit === plantUnit
+          );
+        }
+
+        // Map supabase response to application type with proper error handling
+        const supabaseData = (data || []) as any[];
+        const dailyRecords = new Map(
+          supabaseData.map((d) => [d.parameter_id, d])
+        );
+
+        // For range queries, we need to return data for ALL dates in range,
+        // even if no data exists for some dates
+        const allResults: CcrParameterDataWithName[] = [];
+
+        // Generate all dates in range
+        const startDateObj = new Date(isoStartDate);
+        const endDateObj = new Date(isoEndDate);
+        const datesInRange: string[] = [];
+
+        for (
+          let d = new Date(startDateObj);
+          d <= endDateObj;
+          d.setDate(d.getDate() + 1)
+        ) {
+          datesInRange.push(d.toISOString().split("T")[0]);
+        }
+
+        // For each date and parameter combination, create records
+        datesInRange.forEach((date) => {
+          filteredParameters.forEach((param) => {
+            const recordKey = `${param.id}-${date}`;
+            const record = dailyRecords.get(param.id);
+
+            if (record && record.date === date) {
+              // Data exists for this date and parameter
+              allResults.push({
+                id: record.id,
+                parameter_id: record.parameter_id,
+                date: record.date,
+                hourly_values: record.hourly_values || {},
+                name: record.name ?? undefined,
+              } as CcrParameterDataWithName);
+            } else {
+              // No data for this date and parameter, create empty record
+              allResults.push({
+                id: recordKey,
+                parameter_id: param.id,
+                date: date,
+                hourly_values: {},
+                name: undefined,
+              } as CcrParameterDataWithName);
+            }
+          });
+        });
+
+        // Cache the results
+        cache.setCachedData(
+          start.getMonth() + 1,
+          start.getFullYear(),
+          plantUnit,
+          allResults
+        );
+
+        return allResults;
+      } catch (error) {
+        console.error("Error in getDataForDateRange:", error);
+        return [];
+      }
+    },
+    [parameters, paramsLoading, cache]
+  );
+
+  return {
+    getDataForDate,
+    getDataForDateRange,
+    updateParameterData,
+    loading: paramsLoading,
+  };
 };

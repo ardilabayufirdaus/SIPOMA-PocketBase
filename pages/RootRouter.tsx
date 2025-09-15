@@ -5,8 +5,29 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import App from "../App";
 import LoginPage from "./LoginPage";
+
+// Create a client with optimized settings for Plant Operations Dashboard
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false,
+      refetchOnMount: true,
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error instanceof Error && error.message.includes("4")) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+    },
+  },
+});
 
 const RootRouter: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -69,15 +90,18 @@ const RootRouter: React.FC = () => {
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/*"
-          element={isLoggedIn ? <App /> : <Navigate to="/login" replace />}
-        />
-      </Routes>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/*"
+            element={isLoggedIn ? <App /> : <Navigate to="/login" replace />}
+          />
+        </Routes>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </Router>
+    </QueryClientProvider>
   );
 };
 

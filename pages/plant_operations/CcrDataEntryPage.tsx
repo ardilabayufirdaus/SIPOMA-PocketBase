@@ -1023,7 +1023,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             await updateParameterData(
               selectedDate,
               update.parameterId,
-              currentUser.full_name,
+              update.hour,
+              update.value,
               loggedInUser?.full_name || currentUser.full_name
             );
             successCount++;

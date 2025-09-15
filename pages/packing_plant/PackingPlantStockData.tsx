@@ -560,7 +560,11 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             onClick={handleAddData}
             disabled={quickAddMode}
             variant="success"
-            className="inline-flex items-center justify-center gap-2"
+            className={`inline-flex items-center justify-center gap-2 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-sm sm:text-base ${
+              quickAddMode
+                ? "bg-gray-400 text-gray-200 border-gray-400 cursor-not-allowed opacity-60"
+                : "bg-green-600 hover:bg-green-700 text-white border-green-500 hover:border-green-600"
+            }`}
             aria-label={(() => {
               if (quickAddMode) return "Currently inputting...";
               const nextDate = new Date(getNextDate());

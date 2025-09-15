@@ -1,21 +1,6 @@
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "fram              <button
-                onClick={onRefresh}
-                className="p-3 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl hover:bg-white/30 transition-all"
-              >
-                <RefreshCcwIcon className="w-4 h-4 text-white" />
-              </button>
-
-              {onExport && (
-                <button
-                  onClick={onExport}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 border border-green-500 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 text-white font-semibold"
-                >
-                  <DownloadIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">Export Data</span>
-                </button>
-              )}ion";
+import { motion } from "framer-motion";
 import { Page } from "../App";
 import {
   TrendingUpIcon,
@@ -429,36 +414,41 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
     try {
       const exportData: any[] = [
         {
-          'Kategori': 'Users',
-          'Total': usersCount,
-          'Online': onlineUsersCount,
-          'Persentase': formatPercentage((onlineUsersCount / usersCount) * 100)
+          Kategori: "Users",
+          Total: usersCount,
+          Online: onlineUsersCount,
+          Persentase: formatPercentage((onlineUsersCount / usersCount) * 100),
         },
         {
-          'Kategori': 'Projects',
-          'Total': activeProjects,
-          'Status': 'Active',
-          'Persentase': '100%'
-        }
+          Kategori: "Projects",
+          Total: activeProjects,
+          Status: "Active",
+          Persentase: "100%",
+        },
       ];
 
       // Add production data if available
       if (productionData && productionData.length > 0) {
         productionData.forEach((item, index) => {
           exportData.push({
-            'Kategori': `Production Line ${index + 1}`,
-            'Total': item.output || 0,
-            'Online': item.hour || 0,
-            'Persentase': 'Running'
+            Kategori: `Production Line ${index + 1}`,
+            Total: item.output || 0,
+            Online: item.hour || 0,
+            Persentase: "Running",
           });
         });
       }
 
-      const headers = ['Kategori', 'Total', 'Online', 'Persentase'];
+      const headers = ["Kategori", "Total", "Online", "Persentase"];
 
-      await exportToExcelStyled(exportData, `dashboard_${new Date().toISOString().split('T')[0]}`, 'Dashboard Data', headers);
+      await exportToExcelStyled(
+        exportData,
+        `dashboard_${new Date().toISOString().split("T")[0]}`,
+        "Dashboard Data",
+        headers
+      );
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error("Export failed:", error);
     }
   };
 

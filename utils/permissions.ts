@@ -29,6 +29,9 @@ export class PermissionChecker {
     // Super Admin has all permissions
     if (this.user.role === "Super Admin") return true;
 
+    // Check if permissions object exists
+    if (!this.user.permissions) return false;
+
     const userPermission = this.user.permissions[feature];
 
     // Handle different permission types
@@ -62,6 +65,9 @@ export class PermissionChecker {
 
     // Super Admin has all permissions
     if (this.user.role === "Super Admin") return true;
+
+    // Check if permissions object exists
+    if (!this.user.permissions) return false;
 
     const plantOps = this.user.permissions.plant_operations;
     if (!plantOps || !plantOps[category] || !plantOps[category][unit]) {
@@ -135,6 +141,9 @@ export class PermissionChecker {
 
     // Super Admin has admin level for everything
     if (this.user.role === "Super Admin") return PermissionLevel.ADMIN;
+
+    // Check if permissions object exists
+    if (!this.user.permissions) return PermissionLevel.NONE;
 
     const userPermission = this.user.permissions[feature];
 
