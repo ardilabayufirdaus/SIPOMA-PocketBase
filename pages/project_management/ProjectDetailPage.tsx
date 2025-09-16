@@ -774,7 +774,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       const buffer = e.target?.result;
       const workbook = new ExcelJS.Workbook();
       workbook.xlsx
-        .load(buffer)
+        .load(Buffer.from(buffer))
         .then(() => {
           const worksheet = workbook.worksheets[0];
           const json = [];

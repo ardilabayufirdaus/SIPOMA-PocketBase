@@ -447,7 +447,15 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
   // Hooks for data
   const { projects, tasks, loading: projectsLoading } = useProjects();
-  const { data: productionData, loading: plantLoading } = usePlantData();
+  const {
+    machines,
+    kpis,
+    alerts,
+    productionData,
+    loading: plantLoading,
+    toggleMachineStatus,
+    markAllAlertsAsRead,
+  } = usePlantData();
   const { records: stockRecords, loading: stockLoading } =
     usePackingPlantStockData();
   const { records: packingPlantMasterRecords } = usePackingPlantMasterData();

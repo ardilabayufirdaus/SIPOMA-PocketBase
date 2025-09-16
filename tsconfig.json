@@ -4,26 +4,35 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "types": ["node"],
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
-  }
+    "noEmit": true,
+    // Performance optimizations
+    "incremental": true, // Enable incremental compilation
+    "tsBuildInfoFile": "node_modules/.cache/tsconfig.tsbuildinfo",
+    "composite": false, // Disable composite for faster builds
+    "disableReferencedProjectLoad": true,
+    "disableSolutionSearching": true,
+    "disableSourceOfProjectReferenceRedirect": true,
+    "skipDefaultLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "components/**/*",
+    "hooks/**/*",
+    "pages/**/*",
+    "utils/**/*",
+    "types/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "build", "**/*.spec.ts", "**/*.test.ts"]
 }

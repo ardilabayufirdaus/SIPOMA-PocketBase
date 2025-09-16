@@ -159,6 +159,32 @@ export const OptimizedTableRow = React.memo(
   }
 );
 
+// Optimized table header component
+interface OptimizedTableHeaderProps {
+  fields: string[];
+  renderHeader?: (field: string) => React.ReactNode;
+  className?: string;
+}
+
+export const OptimizedTableHeader = React.memo(
+  ({ fields, renderHeader, className = "" }: OptimizedTableHeaderProps) => {
+    return (
+      <thead className={`bg-gray-50 dark:bg-slate-800 ${className}`}>
+        <tr>
+          {fields.map((field) => (
+            <th
+              key={field}
+              className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+            >
+              {renderHeader ? renderHeader(field) : field}
+            </th>
+          ))}
+        </tr>
+      </thead>
+    );
+  }
+);
+
 OptimizedTableRow.displayName = "OptimizedTableRow";
 
 // Table pagination component

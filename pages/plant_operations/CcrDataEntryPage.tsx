@@ -34,7 +34,7 @@ import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
 import { useDebouncedParameterUpdates } from "../../hooks/useDebouncedParameterUpdates";
 import { useDataFiltering } from "../../hooks/useDataFiltering";
 import { useFooterCalculations } from "../../hooks/useFooterCalculations";
-// import * as XLSX from "xlsx";
+import * as XLSX from "xlsx";
 import {
   DocumentArrowDownIcon,
   DocumentArrowUpIcon,
@@ -44,6 +44,9 @@ import {
 import { usePermissions } from "../../utils/permissions";
 import { PermissionLevel } from "../../types";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+
+// Import Supabase client
+import { supabase } from "../../utils/supabaseClient";
 
 // Import Enhanced Components
 import {
@@ -294,21 +297,27 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         console.log(
           `Found ${legacyRecords.length} legacy records without name, updating...`
         );
-        legacyRecords.forEach((record: any) => {
-          supabase
-            .from("ccr_parameter_data")
-            .update({ name: loggedInUser?.full_name || currentUser.full_name })
-            .eq("id", record.id)
-            .then(() => {
+        legacyRecords.forEach(async (record: any) => {
+          try {
+            const { error } = await supabase
+              .from("ccr_parameter_data")
+              .update({
+                name: loggedInUser?.full_name || currentUser.full_name,
+              })
+              .eq("id", record.id);
+
+            if (error) {
+              console.error("Error updating legacy record:", error);
+            } else {
               console.log(
                 `Updated legacy record ${record.id} with name: ${
                   loggedInUser?.full_name || currentUser.full_name
                 }`
               );
-            })
-            .catch((error: any) => {
-              console.error("Error updating legacy record:", error);
-            });
+            }
+          } catch (error) {
+            console.error("Error updating legacy record:", error);
+          }
         });
       }
     });
@@ -979,7 +988,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       (warningCounts.get("invalidNumbers") || 0) + 1
                     );
                     if (
-                      !import.meta.env.DEV ||
+                      !(import.meta as any).env?.DEV ||
                       warningCounts.get("invalidNumbers") <= 3
                     ) {
                       console.warn(
@@ -1048,7 +1057,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         });
 
         // Add parameter suggestions for not found parameters
-        if (notFoundParameters.size > 0 && import.meta.env.DEV) {
+        if (notFoundParameters.size > 0 && (import.meta as any).env?.DEV) {
           console.log("Parameters not found:", Array.from(notFoundParameters));
           console.log(
             "Suggestion: Check if these parameters exist in Parameter Settings for:"

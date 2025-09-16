@@ -166,7 +166,7 @@ export const useCcrParameterData = () => {
         }
 
         // Only log on development mode
-        if (import.meta.env.DEV) {
+        if ((import.meta as any).env?.DEV) {
           console.log("Attempting to fetch parameter data:", {
             date,
             parameter_id,

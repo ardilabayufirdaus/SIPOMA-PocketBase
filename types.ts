@@ -88,6 +88,7 @@ export interface PlantUnit {
   id: string;
   unit: string;
   category: string;
+  description?: string;
 }
 
 export enum ParameterDataType {

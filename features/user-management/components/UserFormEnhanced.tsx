@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../../utils/supabaseClient";
 import { translations } from "../../../translations";
-import { UserRole } from "../../../types";
+import { UserRole, PermissionMatrix } from "../../../types";
+import PermissionMatrixEditor from "./PermissionMatrixEditor";
 
 // Enhanced Components
 import {
@@ -48,6 +49,15 @@ const UserForm: React.FC<UserFormProps> = ({
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+  const [isPermissionEditorOpen, setIsPermissionEditorOpen] = useState(false);
+  const [userPermissions, setUserPermissions] = useState<PermissionMatrix>({
+    dashboard: "NONE",
+    plant_operations: {},
+    packing_plant: "NONE",
+    project_management: "NONE",
+    system_settings: "NONE",
+    user_management: "NONE",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -187,6 +197,10 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
+
+  const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
+    setUserPermissions(newPermissions);
+  };
 
   return (
     <EnhancedModal
@@ -390,6 +404,55 @@ const UserForm: React.FC<UserFormProps> = ({
           </button>
         </div>
 
+        {/* Permission Management */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                User Permissions
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Configure detailed access permissions for this user
+              </p>
+            </div>
+            <EnhancedButton
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPermissionEditorOpen(true)}
+              icon={<ShieldCheckIcon className="w-4 h-4" />}
+            >
+              Edit Permissions
+            </EnhancedButton>
+          </div>
+
+          {/* Permission Summary */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {Object.entries(userPermissions).map(([key, value]) => {
+              if (key === "plant_operations") {
+                const plantOpsCount = Object.keys(value as any).length;
+                return (
+                  <div
+                    key={key}
+                    className="text-xs text-gray-600 dark:text-gray-400"
+                  >
+                    <span className="font-medium">Plant Operations:</span>{" "}
+                    {plantOpsCount > 0 ? `${plantOpsCount} categories` : "None"}
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={key}
+                  className="text-xs text-gray-600 dark:text-gray-400"
+                >
+                  <span className="font-medium">{key.replace("_", " ")}:</span>{" "}
+                  {value === "NONE" ? "None" : value.toLowerCase()}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Error Message */}
         {error && (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -433,6 +496,16 @@ const UserForm: React.FC<UserFormProps> = ({
           </EnhancedButton>
         </div>
       </form>
+
+      {/* Permission Matrix Editor */}
+      <PermissionMatrixEditor
+        userId={user?.id || ""}
+        currentPermissions={userPermissions}
+        onPermissionsChange={handlePermissionsChange}
+        onClose={() => setIsPermissionEditorOpen(false)}
+        isOpen={isPermissionEditorOpen}
+        language={language}
+      />
     </EnhancedModal>
   );
 };
