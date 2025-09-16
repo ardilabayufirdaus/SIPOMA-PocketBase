@@ -197,12 +197,13 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
 
   const variantClasses = {
     primary:
-      "bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm hover:shadow-md",
+      "bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm hover:shadow-md dark:bg-blue-500 dark:hover:bg-blue-600",
     secondary:
-      "bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500 shadow-sm hover:shadow-md",
-    ghost: "bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500",
+      "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 focus:ring-gray-500 shadow-sm hover:shadow-md dark:bg-gray-500 dark:hover:bg-gray-600 dark:text-gray-900 dark:border-gray-400",
+    ghost:
+      "bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500 dark:hover:bg-gray-800 dark:text-gray-300",
     danger:
-      "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm hover:shadow-md",
+      "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm hover:shadow-md dark:bg-red-500 dark:hover:bg-red-600",
   };
 
   const sizeClasses = {
@@ -293,6 +294,8 @@ interface EnhancedInputProps {
   required?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg";
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
 }
 
 export const EnhancedInput: React.FC<EnhancedInputProps> = ({
@@ -306,6 +309,8 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   required = false,
   className = "",
   size = "md",
+  ariaLabel,
+  ariaDescribedBy,
 }) => {
   const responsiveSize = useResponsiveValue({
     default: size,
@@ -345,6 +350,8 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
         disabled={disabled}
         required={required}
         className={inputClasses}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>

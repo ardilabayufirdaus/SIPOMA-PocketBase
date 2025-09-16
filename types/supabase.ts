@@ -596,34 +596,88 @@ export type Database = {
       };
       users: {
         Row: {
-          avatar_url: string | null;
-          created_at: string;
-          full_name: string;
           id: string;
-          is_active: boolean;
-          last_active: string;
-          role: string;
           username: string;
+          password_hash: string;
+          email?: string;
+          full_name: string | null;
+          role: string;
+          avatar_url?: string;
+          is_active: boolean;
+          last_active?: string;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
-          avatar_url?: string | null;
-          created_at?: string;
-          full_name: string;
           id?: string;
-          is_active?: boolean;
-          last_active: string;
-          role: string;
           username: string;
-        };
-        Update: {
-          avatar_url?: string | null;
-          created_at?: string;
-          full_name?: string;
-          id?: string;
+          password_hash: string;
+          email?: string;
+          full_name?: string | null;
+          role: string;
+          avatar_url?: string;
           is_active?: boolean;
           last_active?: string;
-          role?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
           username?: string;
+          password_hash?: string;
+          email?: string;
+          full_name?: string | null;
+          role?: string;
+          avatar_url?: string;
+          is_active?: boolean;
+          last_active?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      roles: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      permissions: {
+        Row: {
+          id: string;
+          module_name: string;
+          permission_level: string;
+          plant_units: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          module_name: string;
+          permission_level: string;
+          plant_units?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          module_name?: string;
+          permission_level?: string;
+          plant_units?: Json | null;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -631,32 +685,20 @@ export type Database = {
         Row: {
           id: string;
           user_id: string;
-          dashboard: string;
-          user_management: string;
-          plant_operations: Json;
-          packing_plant: string;
-          project_management: string;
-          system_settings: string;
+          permission_id: string;
+          created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
-          dashboard: string;
-          user_management: string;
-          plant_operations: Json;
-          packing_plant: string;
-          project_management: string;
-          system_settings: string;
+          permission_id: string;
+          created_at?: string;
         };
         Update: {
           id?: string;
           user_id?: string;
-          dashboard?: string;
-          user_management?: string;
-          plant_operations?: Json;
-          packing_plant?: string;
-          project_management?: string;
-          system_settings?: string;
+          permission_id?: string;
+          created_at?: string;
         };
         Relationships: [
           {
@@ -664,6 +706,13 @@ export type Database = {
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_permissions_permission_id_fkey";
+            columns: ["permission_id"];
+            isOneToOne: false;
+            referencedRelation: "permissions";
             referencedColumns: ["id"];
           }
         ];

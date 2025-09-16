@@ -266,6 +266,7 @@ export const PasswordInput = forwardRef<
   <Input
     ref={ref}
     type="password"
+    autoComplete="new-password"
     leftIcon={
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path

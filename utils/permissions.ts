@@ -1,9 +1,4 @@
-import {
-  User,
-  PermissionLevel,
-  PermissionMatrix,
-  PlantOperationsPermissions,
-} from "../types";
+import { User, PermissionMatrix, PlantOperationsPermissions } from "../types";
 import React from "react";
 
 /**
@@ -22,7 +17,7 @@ export class PermissionChecker {
    */
   hasPermission(
     feature: keyof PermissionMatrix,
-    requiredLevel: PermissionLevel = PermissionLevel.READ
+    requiredLevel: string = "READ"
   ): boolean {
     if (!this.user) return false;
 
@@ -59,7 +54,7 @@ export class PermissionChecker {
   hasPlantOperationPermission(
     category: string,
     unit: string,
-    requiredLevel: PermissionLevel = PermissionLevel.READ
+    requiredLevel: string = "READ"
   ): boolean {
     if (!this.user) return false;
 
@@ -78,72 +73,65 @@ export class PermissionChecker {
   }
 
   /**
-   * Check if user can access user management features
-   */
-  canManageUsers(): boolean {
-    return this.hasPermission("user_management", PermissionLevel.WRITE);
-  }
-
-  /**
    * Check if user can access system settings
    */
   canAccessSettings(): boolean {
-    return this.hasPermission("system_settings", PermissionLevel.READ);
+    return this.hasPermission("system_settings", "READ");
   }
 
   /**
    * Check if user can access dashboard
    */
   canAccessDashboard(): boolean {
-    return this.hasPermission("dashboard", PermissionLevel.READ);
+    return this.hasPermission("dashboard", "READ");
   }
 
   /**
    * Check if user can access plant operations
    */
   canAccessPlantOperations(): boolean {
-    return this.hasPermission("plant_operations", PermissionLevel.READ);
+    return this.hasPermission("plant_operations", "READ");
   }
 
   /**
    * Check if user can access packing plant features
    */
   canAccessPackingPlant(): boolean {
-    return this.hasPermission("packing_plant", PermissionLevel.READ);
+    return this.hasPermission("packing_plant", "READ");
   }
 
   /**
    * Check if user can access project management
    */
   canAccessProjectManagement(): boolean {
-    return this.hasPermission("project_management", PermissionLevel.READ);
+    return this.hasPermission("project_management", "READ");
   }
 
   /**
    * Check if user can perform admin actions (create, update, delete)
    */
   canPerformAdminActions(feature: keyof PermissionMatrix): boolean {
-    return this.hasPermission(feature, PermissionLevel.ADMIN);
+    return this.hasPermission(feature, "ADMIN");
   }
 
   /**
    * Check if user can perform write actions (create, update)
    */
   canPerformWriteActions(feature: keyof PermissionMatrix): boolean {
-    return this.hasPermission(feature, PermissionLevel.WRITE);
+    return this.hasPermission(feature, "WRITE");
   }
 
   /**
    * Get the highest permission level for a feature
    */
-  getPermissionLevel(feature: keyof PermissionMatrix): PermissionLevel {
-    if (!this.user) return PermissionLevel.NONE;
+  getPermissionLevel(feature: keyof PermissionMatrix): string {
+    if (!this.user) return "NONE";
 
     // Super Admin has admin level for everything
-    if (this.user.role === "Super Admin") return PermissionLevel.ADMIN;
+    if (this.user.role === "Super Admin") return "ADMIN";
 
     // Check if permissions object exists
-    if (!this.user.permissions) return PermissionLevel.NONE;
+    if (!this.user.permissions) return "NONE";
 
     const userPermission = this.user.permissions[feature];
 
@@ -154,7 +142,7 @@ export class PermissionChecker {
     // For plant operations, return the highest permission level across all categories/units
     if (feature === "plant_operations" && typeof userPermission === "object") {
       const plantOps = userPermission as PlantOperationsPermissions;
-      let highestLevel = PermissionLevel.NONE;
+      let highestLevel = "NONE";
 
       Object.values(plantOps).forEach((category) => {
         Object.values(category).forEach((level) => {
@@ -170,21 +158,21 @@ export class PermissionChecker {
       return highestLevel;
     }
 
-    return PermissionLevel.NONE;
+    return "NONE";
   }
 
   /**
    * Compare permission levels (higher levels include lower levels)
    */
   private comparePermissionLevel(
-    userLevel: PermissionLevel,
-    requiredLevel: PermissionLevel
+    userLevel: string,
+    requiredLevel: string
   ): boolean {
     const levelHierarchy = {
-      [PermissionLevel.NONE]: 0,
-      [PermissionLevel.READ]: 1,
-      [PermissionLevel.WRITE]: 2,
-      [PermissionLevel.ADMIN]: 3,
+      NONE: 0,
+      READ: 1,
+      WRITE: 2,
+      ADMIN: 3,
     };
 
     return levelHierarchy[userLevel] >= levelHierarchy[requiredLevel];
@@ -204,7 +192,7 @@ export const usePermissions = (user: User | null) => {
 export const withPermission = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
   feature: keyof PermissionMatrix,
-  requiredLevel: PermissionLevel = PermissionLevel.READ
+  requiredLevel: string = "READ"
 ) => {
   return (props: P & { user?: User | null }) => {
     const { user, ...restProps } = props;
@@ -253,7 +241,7 @@ export const withPermission = <P extends object>(
 export interface PermissionGuardProps {
   user: User | null;
   feature: keyof PermissionMatrix;
-  requiredLevel?: PermissionLevel;
+  requiredLevel?: string;
   category?: string;
   unit?: string;
   fallback?: React.ReactNode;
@@ -263,7 +251,7 @@ export interface PermissionGuardProps {
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   user,
   feature,
-  requiredLevel = PermissionLevel.READ,
+  requiredLevel = "READ",
   category,
   unit,
   fallback = null,

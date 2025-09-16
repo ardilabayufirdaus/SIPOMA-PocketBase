@@ -16,6 +16,13 @@ import HomeIcon from "./icons/HomeIcon";
 import UserGroupIcon from "./icons/UserGroupIcon";
 import FactoryIcon from "./icons/FactoryIcon";
 import ArchiveBoxArrowDownIcon from "./icons/ArchiveBoxArrowDownIcon";
+
+{
+  /* Plant Operations - Only visible if user has permission */
+}
+{
+  /* Plant Operations - Only visible if user has permission */
+}
 import ClipboardDocumentListIcon from "./icons/ClipboardDocumentListIcon";
 import FlagENIcon from "./icons/FlagENIcon";
 import FlagIDIcon from "./icons/FlagIDIcon";
@@ -371,7 +378,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               // TODO: Implement granular permissions for each sub-menu
               return permissionChecker.hasPermission(
                 "plant_operations",
-                PermissionLevel.READ
+                "READ"
               );
             })
             .map((page) => ({
@@ -384,10 +391,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             .filter((page) => {
               // For now, use main packing_plant permission
               // TODO: Implement granular permissions for each sub-menu
-              return permissionChecker.hasPermission(
-                "packing_plant",
-                PermissionLevel.READ
-              );
+              return permissionChecker.hasPermission("packing_plant", "READ");
             })
             .map((page) => ({
               key: page.key,
@@ -401,7 +405,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               // TODO: Implement granular permissions for each sub-menu
               return permissionChecker.hasPermission(
                 "project_management",
-                PermissionLevel.READ
+                "READ"
               );
             })
             .map((page) => ({
@@ -412,16 +416,20 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         case "users":
           return navigationData.userManagementPages
             .filter((page) => {
-              // For now, use main user_management permission
-              // TODO: Implement granular permissions for each sub-menu
+              // For now, use main system_settings permission with ADMIN level
+              // TODO: Implement more granular permissions for user management sub-pages
               return permissionChecker.hasPermission(
-                "user_management",
-                PermissionLevel.READ
+                "system_settings",
+                "ADMIN"
               );
             })
             .map((page) => ({
               key: page.key,
-              label: t[page.key as keyof typeof t] || page.key,
+              label:
+                t[page.key as keyof typeof t] ||
+                page.key
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase()),
               icon: page.icon,
             }));
         default:
@@ -563,10 +571,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 flex flex-col items-center space-y-4 overflow-y-auto">
           {/* Dashboard - Check permission */}
-          {permissionChecker.hasPermission(
-            "dashboard",
-            PermissionLevel.READ
-          ) && (
+          {permissionChecker.hasPermission("dashboard", "READ") && (
             <IconButton
               ref={dashboardButtonRef}
               icon={<HomeIcon className={iconClass} />}
@@ -577,10 +582,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           )}
 
           {/* Plant Operations - Check permission */}
-          {permissionChecker.hasPermission(
-            "plant_operations",
-            PermissionLevel.READ
-          ) && (
+          {permissionChecker.hasPermission("plant_operations", "READ") && (
             <IconButton
               ref={operationsButtonRef}
               icon={<FactoryIcon className={iconClass} />}
@@ -593,10 +595,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           )}
 
           {/* Packing Plant - Check permission */}
-          {permissionChecker.hasPermission(
-            "packing_plant",
-            PermissionLevel.READ
-          ) && (
+          {permissionChecker.hasPermission("packing_plant", "READ") && (
             <IconButton
               ref={packingButtonRef}
               icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
@@ -607,10 +606,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           )}
 
           {/* Project Management - Check permission */}
-          {permissionChecker.hasPermission(
-            "project_management",
-            PermissionLevel.READ
-          ) && (
+          {permissionChecker.hasPermission("project_management", "READ") && (
             <IconButton
               ref={projectsButtonRef}
               icon={<ClipboardDocumentListIcon className={iconClass} />}
@@ -619,20 +615,6 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               onClick={() =>
                 handleDropdownToggle("projects", projectsButtonRef)
               }
-            />
-          )}
-
-          {/* User Management - Only visible if user has permission */}
-          {permissionChecker.hasPermission(
-            "user_management",
-            PermissionLevel.READ
-          ) && (
-            <IconButton
-              ref={usersButtonRef}
-              icon={<UserGroupIcon className={iconClass} />}
-              label={t.userManagement}
-              isActive={currentPage === "users"}
-              onClick={() => handleDropdownToggle("users", usersButtonRef)}
             />
           )}
 
@@ -645,16 +627,24 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           />
 
           {/* Settings - Check permission */}
-          {permissionChecker.hasPermission(
-            "system_settings",
-            PermissionLevel.READ
-          ) && (
+          {permissionChecker.hasPermission("system_settings", "READ") && (
             <IconButton
               ref={settingsButtonRef}
               icon={<CogIcon className={iconClass} />}
               label={t.header_settings}
               isActive={currentPage === "settings"}
               onClick={() => handleNavigate("settings")}
+            />
+          )}
+
+          {/* User Management - Check permission */}
+          {permissionChecker.hasPermission("system_settings", "ADMIN") && (
+            <IconButton
+              ref={usersButtonRef}
+              icon={<UserGroupIcon className={iconClass} />}
+              label={t.userManagement || "User Management"}
+              isActive={currentPage === "users"}
+              onClick={() => handleDropdownToggle("users", usersButtonRef)}
             />
           )}
         </nav>

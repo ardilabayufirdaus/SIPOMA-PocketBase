@@ -577,6 +577,7 @@ interface EnhancedInputProps {
   fullWidth?: boolean;
   autoFocus?: boolean;
   maxLength?: number;
+  autoComplete?: string;
 }
 
 export const EnhancedInput: React.FC<EnhancedInputProps> = ({
@@ -599,6 +600,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   fullWidth = false,
   autoFocus = false,
   maxLength,
+  autoComplete,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [hasValue, setHasValue] = useState(Boolean(value));
@@ -718,6 +720,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
           required={required}
           autoFocus={autoFocus}
           maxLength={maxLength}
+          autoComplete={autoComplete}
         />
 
         {icon && iconPosition === "right" && (
@@ -1065,14 +1068,11 @@ export const EnhancedModal: React.FC<EnhancedModalProps> = ({
         ref={modalRef}
         className={cn(
           "relative w-full rounded-xl shadow-2xl transform transition-all duration-300",
-          "scale-95 opacity-0 animate-in fade-in-0 zoom-in-95",
+          "animate-in fade-in-0 zoom-in-95",
           sizeClasses[size],
           variantClasses[variant],
           className
         )}
-        style={{
-          animation: "fadeIn 0.3s ease-out, scaleIn 0.3s ease-out",
-        }}
       >
         {/* Header */}
         {title && (

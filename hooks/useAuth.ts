@@ -12,24 +12,51 @@ export const useAuth = () => {
     async (identifier, password) => {
       setLoading(true);
       try {
-        // Use raw SQL query with type assertion to bypass type checking
-        const { data, error } = await (supabase as any).rpc(
-          "validate_user_credentials",
-          {
-            input_username: identifier,
-            input_password: password,
-          }
-        );
+        // Query langsung ke tabel users untuk validasi credentials
+        const { data, error } = await (supabase as any)
+          .from("users")
+          .select(
+            `
+            id,
+            username,
+            full_name,
+            role,
+            last_active,
+            is_active,
+            avatar_url,
+            created_at,
+            user_permissions (
+              permissions (
+                module_name,
+                permission_level,
+                plant_units
+              )
+            )
+          `
+          )
+          .eq("username", identifier)
+          .eq("password_hash", password)
+          .eq("is_active", true)
+          .single();
 
         if (error) {
+          if (error.code === "PGRST116") {
+            // No rows returned
+            throw new Error("Invalid username or password");
+          }
           throw error;
         }
 
-        if (!data || data.length === 0) {
+        if (!data) {
           throw new Error("Invalid username or password");
         }
 
-        const userData = data[0];
+        const userData = {
+          ...data,
+          permissions:
+            (data as any).user_permissions?.map((up: any) => up.permissions) ||
+            [],
+        };
 
         // Convert dates
         if (userData.last_active && typeof userData.last_active === "string") {
@@ -38,6 +65,12 @@ export const useAuth = () => {
         if (userData.created_at && typeof userData.created_at === "string") {
           userData.created_at = new Date(userData.created_at);
         }
+
+        // Update last_active
+        await (supabase as any)
+          .from("users")
+          .update({ last_active: new Date().toISOString() })
+          .eq("id", userData.id);
 
         setUser(userData as User);
         localStorage.setItem("currentUser", JSON.stringify(userData));

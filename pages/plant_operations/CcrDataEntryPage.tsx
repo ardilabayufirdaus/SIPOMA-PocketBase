@@ -1519,10 +1519,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   isImporting ||
                   !selectedCategory ||
                   !selectedUnit ||
-                  !permissionChecker.hasPermission(
-                    "plant_operations",
-                    PermissionLevel.WRITE
-                  )
+                  !permissionChecker.hasPermission("plant_operations", "WRITE")
                 }
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 loading={isImporting}
@@ -1542,10 +1539,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   !selectedCategory ||
                   !selectedUnit ||
                   filteredParameterSettings.length === 0 ||
-                  !permissionChecker.hasPermission(
-                    "plant_operations",
-                    PermissionLevel.READ
-                  )
+                  !permissionChecker.hasPermission("plant_operations", "READ")
                 }
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 loading={isExporting}
@@ -1948,10 +1942,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             size="sm"
             onClick={handleOpenAddDowntimeModal}
             disabled={
-              !permissionChecker.hasPermission(
-                "plant_operations",
-                PermissionLevel.WRITE
-              )
+              !permissionChecker.hasPermission("plant_operations", "WRITE")
             }
             aria-label={t.add_downtime_button || "Add new downtime"}
           >

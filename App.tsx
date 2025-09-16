@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect, Suspense, lazy } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Modal from "./components/Modal";
 import ProfileEditModal from "./components/ProfileEditModal";
-import UserForm from "./components/UserForm";
+import UserForm from "./features/user-management/components/UserForm";
 import PasswordDisplay from "./components/PasswordDisplay";
 import Toast from "./components/Toast";
 import LoadingSkeleton, { PageLoading } from "./components/LoadingSkeleton";
@@ -98,22 +98,17 @@ const SettingsPage = lazy(() =>
 
 // User Management Pages
 const UserListPage = lazy(() =>
-  import("./pages/user_management/UserListPage").catch(() => ({
+  import("./features/user-management/pages/UserListPage").catch(() => ({
     default: () => <div>Error loading User List. Please refresh.</div>,
   }))
 );
-const AddUserPage = lazy(() =>
-  import("./pages/user_management/AddUserPage").catch(() => ({
-    default: () => <div>Error loading Add User. Please refresh.</div>,
-  }))
-);
 const UserRolesPage = lazy(() =>
-  import("./pages/user_management/UserRolesPage").catch(() => ({
+  import("./features/user-management/pages/UserRolesPage").catch(() => ({
     default: () => <div>Error loading User Roles. Please refresh.</div>,
   }))
 );
 const UserActivityPage = lazy(() =>
-  import("./pages/user_management/UserActivityPage").catch(() => ({
+  import("./features/user-management/pages/UserActivityPage").catch(() => ({
     default: () => <div>Error loading User Activity. Please refresh.</div>,
   }))
 );
@@ -434,7 +429,7 @@ const App: React.FC = () => {
           >
             <Header
               pageTitle={getPageTitle()}
-              showAddUserButton={currentPage === "users"}
+              showAddUserButton={false}
               onAddUser={handleOpenAddUserModal}
               t={t}
               onNavigate={handleNavigate}
@@ -462,7 +457,7 @@ const App: React.FC = () => {
                   <PermissionGuard
                     user={currentUser}
                     feature="dashboard"
-                    requiredLevel={PermissionLevel.READ}
+                    requiredLevel="READ"
                     fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -504,7 +499,7 @@ const App: React.FC = () => {
                   <PermissionGuard
                     user={currentUser}
                     feature="user_management"
-                    requiredLevel={PermissionLevel.READ}
+                    requiredLevel="READ"
                     fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -542,27 +537,43 @@ const App: React.FC = () => {
                     {currentPage === "users" && (
                       <>
                         {activeSubPages.users === "user_list" && (
-                          <UserListPage
-                            currentUser={currentUser}
-                            onEditUser={handleOpenEditUserModal}
-                            t={t}
-                          />
+                          <UserListPage />
                         )}
                         {activeSubPages.users === "add_user" && (
-                          <AddUserPage
-                            onOpenPasswordDisplay={(
-                              password,
-                              username,
-                              fullName
-                            ) => {
-                              setGeneratedPassword(password);
-                              setNewUsername(username);
-                              setNewUserFullName(fullName);
-                              setShowPasswordDisplay(true);
-                            }}
-                            plantUnits={plantUnits}
-                            t={t}
-                          />
+                          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8 max-w-md">
+                              <div className="mb-4">
+                                <svg
+                                  className="w-16 h-16 text-blue-500 mx-auto"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                  />
+                                </svg>
+                              </div>
+                              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                                Add New User
+                              </h3>
+                              <p className="text-blue-600 dark:text-blue-300 mb-4">
+                                Use the "Add User" button in the header to
+                                create a new user.
+                              </p>
+                              <button
+                                onClick={() =>
+                                  handleNavigate("users", "user_list")
+                                }
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Go to User List
+                              </button>
+                            </div>
+                          </div>
                         )}
                         {activeSubPages.users === "user_roles" && (
                           <UserRolesPage
@@ -581,7 +592,7 @@ const App: React.FC = () => {
                   <PermissionGuard
                     user={currentUser}
                     feature="system_settings"
-                    requiredLevel={PermissionLevel.READ}
+                    requiredLevel="READ"
                     fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -625,7 +636,7 @@ const App: React.FC = () => {
                   <PermissionGuard
                     user={currentUser}
                     feature="plant_operations"
-                    requiredLevel={PermissionLevel.READ}
+                    requiredLevel="READ"
                     fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -673,7 +684,7 @@ const App: React.FC = () => {
                   <PermissionGuard
                     user={currentUser}
                     feature="packing_plant"
-                    requiredLevel={PermissionLevel.READ}
+                    requiredLevel="READ"
                     fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -713,7 +724,7 @@ const App: React.FC = () => {
                   <PermissionGuard
                     user={currentUser}
                     feature="project_management"
-                    requiredLevel={PermissionLevel.READ}
+                    requiredLevel="READ"
                     fallback={
                       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
@@ -764,11 +775,13 @@ const App: React.FC = () => {
           title={editingUser ? t.edit_user_title : t.add_user_title}
         >
           <UserForm
-            userToEdit={editingUser}
-            onSave={handleSaveUser}
-            onCancel={handleCloseUserModal}
-            t={t}
-            plantUnits={plantUnits}
+            user={editingUser}
+            onClose={handleCloseUserModal}
+            onSuccess={() => {
+              handleSaveUser(editingUser || ({} as any));
+              handleCloseUserModal();
+            }}
+            language={language}
           />
         </Modal>
         <ProfileEditModal

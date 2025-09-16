@@ -117,145 +117,147 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
     >
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          {activeTab === "performance" && (
-            <ComposedChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "rgb(15 23 42)",
-                  border: "none",
-                  borderRadius: "12px",
-                  boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.25)",
-                  color: "white",
-                }}
-              />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="production"
-                fill="url(#productionGradient)"
-                stroke={colors.primary}
-                strokeWidth={2}
-                name="Production Rate"
-              />
-              <Line
-                type="monotone"
-                dataKey="efficiency"
-                stroke={colors.secondary}
-                strokeWidth={3}
-                dot={{ r: 4 }}
-                name="Efficiency %"
-              />
-              <Line
-                type="monotone"
-                dataKey="quality"
-                stroke={colors.success}
-                strokeWidth={3}
-                dot={{ r: 4 }}
-                name="Quality Score"
-              />
-              <defs>
-                <linearGradient
-                  id="productionGradient"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor={colors.primary}
-                    stopOpacity={0.3}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor={colors.primary}
-                    stopOpacity={0.05}
-                  />
-                </linearGradient>
-              </defs>
-            </ComposedChart>
-          )}
-          {activeTab === "trends" && (
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="production"
-                stroke={colors.primary}
-                strokeWidth={3}
-              />
-              <Line
-                type="monotone"
-                dataKey="efficiency"
-                stroke={colors.secondary}
-                strokeWidth={3}
-              />
-              <Line
-                type="monotone"
-                dataKey="quality"
-                stroke={colors.success}
-                strokeWidth={3}
-              />
-            </LineChart>
-          )}
-          {activeTab === "comparison" && (
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis
-                dataKey="time"
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="production"
-                fill={colors.primary}
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="efficiency"
-                fill={colors.secondary}
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="quality"
-                fill={colors.success}
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          )}
+          <>
+            {activeTab === "performance" && (
+              <ComposedChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis
+                  dataKey="time"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgb(15 23 42)",
+                    border: "none",
+                    borderRadius: "12px",
+                    boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.25)",
+                    color: "white",
+                  }}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="production"
+                  fill="url(#productionGradient)"
+                  stroke={colors.primary}
+                  strokeWidth={2}
+                  name="Production Rate"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="efficiency"
+                  stroke={colors.secondary}
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  name="Efficiency %"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="quality"
+                  stroke={colors.success}
+                  strokeWidth={3}
+                  dot={{ r: 4 }}
+                  name="Quality Score"
+                />
+                <defs>
+                  <linearGradient
+                    id="productionGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={colors.primary}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={colors.primary}
+                      stopOpacity={0.05}
+                    />
+                  </linearGradient>
+                </defs>
+              </ComposedChart>
+            )}
+            {activeTab === "trends" && (
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis
+                  dataKey="time"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="production"
+                  stroke={colors.primary}
+                  strokeWidth={3}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="efficiency"
+                  stroke={colors.secondary}
+                  strokeWidth={3}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="quality"
+                  stroke={colors.success}
+                  strokeWidth={3}
+                />
+              </LineChart>
+            )}
+            {activeTab === "comparison" && (
+              <BarChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis
+                  dataKey="time"
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  dataKey="production"
+                  fill={colors.primary}
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="efficiency"
+                  fill={colors.secondary}
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="quality"
+                  fill={colors.success}
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            )}
+          </>
         </ResponsiveContainer>
       </div>
     </ChartContainer>

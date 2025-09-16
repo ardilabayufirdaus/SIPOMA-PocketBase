@@ -187,7 +187,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     if (!users) return [];
 
     return users
-      .filter((user) => user.role === UserRole.OPERATOR && user.is_active)
+      .filter((user) => user.role === "Operator" && user.is_active)
       .sort((a, b) => a.full_name.localeCompare(b.full_name));
   }, [users]);
 

@@ -527,7 +527,7 @@ const IndexTab: React.FC<IndexTabProps> = ({
               size="md"
               className="inline-flex items-center"
               ariaLabel={t.apply_filter || "Terapkan Filter"}
-              isLoading={loading}
+              loading={loading}
             >
               <svg
                 className="w-5 h-5 mr-2"

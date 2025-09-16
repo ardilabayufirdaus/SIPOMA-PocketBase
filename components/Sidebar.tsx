@@ -466,6 +466,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         aria-label="Main navigation"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        style={{ touchAction: "none" }}
       >
         <div
           className={`sidebar-modern-header ${

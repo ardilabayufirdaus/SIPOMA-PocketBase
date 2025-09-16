@@ -1,22 +1,19 @@
-import { useState, useMemo, useEffect } from 'react';
 
-export const usePagination = <T,>(data: T[], itemsPerPage: number) => {
+import { useState, useMemo } from 'react';
+
+/**
+ * Hook untuk paginasi sisi klien.
+ * @param data - Array data lengkap yang akan dipaginasi.
+ * @param itemsPerPage - Jumlah item per halaman.
+ * @returns Objek berisi data untuk halaman saat ini dan utilitas paginasi.
+ */
+export const usePagination = <T>(data: T[], itemsPerPage: number) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = useMemo(() => {
+    if (!data || data.length === 0) return 1;
     return Math.ceil(data.length / itemsPerPage);
   }, [data.length, itemsPerPage]);
-  
-  useEffect(() => {
-    // If data changes and current page becomes invalid, go to the last valid page.
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    } else if (totalPages === 0 && currentPage !== 1) {
-      // If all data is removed, reset to page 1.
-      setCurrentPage(1);
-    }
-  }, [totalPages]);
-
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -24,20 +21,16 @@ export const usePagination = <T,>(data: T[], itemsPerPage: number) => {
     return data.slice(startIndex, endIndex);
   }, [data, currentPage, itemsPerPage]);
 
-  const nextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
-  const prevPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
+  // Pastikan currentPage tidak melebihi totalPages
+  if (currentPage > totalPages && totalPages > 0) {
+    setCurrentPage(totalPages);
+  }
 
   return {
-    paginatedData,
     currentPage,
     setCurrentPage,
     totalPages,
-    nextPage,
-    prevPage,
+    paginatedData,
+    totalItems: data.length,
   };
 };

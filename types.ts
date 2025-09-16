@@ -1,20 +1,8 @@
 import React from "react";
 
-export enum UserRole {
-  SUPER_ADMIN = "Super Admin",
-  ADMIN = "Admin",
-  MANAGER = "Manager",
-  SUPERVISOR = "Supervisor",
-  OPERATOR = "Operator",
-  VIEWER = "Viewer",
-}
+export type UserRole = "Super Admin" | "Admin" | "Operator" | "Guest";
 
-export enum PermissionLevel {
-  NONE = "none",
-  READ = "read",
-  WRITE = "write",
-  ADMIN = "admin",
-}
+export type PermissionLevel = "NONE" | "READ" | "WRITE" | "ADMIN";
 
 export interface PlantOperationsPermissions {
   [category: string]: {
@@ -24,29 +12,30 @@ export interface PlantOperationsPermissions {
 
 export interface PermissionMatrix {
   dashboard: PermissionLevel;
-  user_management: PermissionLevel;
   plant_operations: PlantOperationsPermissions;
   packing_plant: PermissionLevel;
   project_management: PermissionLevel;
   system_settings: PermissionLevel;
+  user_management: PermissionLevel;
 }
 
 export interface User {
   id: string;
   username: string;
+  email?: string;
   password?: string; // Optional karena tidak selalu dikirim dari frontend
-  full_name: string;
+  full_name?: string; // Optional karena bisa null di database
   role: UserRole;
   avatar_url?: string;
-  last_active: Date;
   is_active: boolean;
+  last_active?: Date;
   created_at: Date;
+  updated_at: Date;
   permissions: PermissionMatrix;
 }
 
 export interface AddUserData {
   username: string;
-  email?: string;
   full_name: string;
   password?: string; // Optional karena akan di-generate otomatis
   role: UserRole;

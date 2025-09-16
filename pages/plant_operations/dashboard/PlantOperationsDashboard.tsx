@@ -289,7 +289,7 @@ const PlantOperationsDashboard: React.FC = () => {
   // Check permissions using the proper permission system
   const hasDashboardAccess = permissionChecker.hasPermission(
     "plant_operations",
-    PermissionLevel.READ
+    "READ"
   );
 
   // Move all hooks to the top before any conditional returns

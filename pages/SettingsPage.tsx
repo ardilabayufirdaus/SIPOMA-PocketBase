@@ -17,6 +17,10 @@ import {
   useColorScheme,
 } from "../components/ui/EnhancedComponents";
 
+// Import permission utilities
+import { usePermissions } from "../utils/permissions";
+import { PermissionLevel } from "../types";
+
 interface SettingsPageProps {
   t: any;
   user: User | null;
@@ -46,6 +50,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   currentLanguage,
   onLanguageChange,
 }) => {
+  // Permission check
+  const permissionChecker = usePermissions(user);
+  const hasSettingsAccess = permissionChecker.hasPermission(
+    "system_settings",
+    "READ"
+  );
+
   const [passwordData, setPasswordData] = useState({
     current: "",
     new: "",
@@ -108,6 +119,37 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             {t.header_settings}
           </h1>
           <p className="mt-2 text-slate-600">Loading user information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check permission before rendering
+  if (!hasSettingsAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md text-center">
+          <div className="mb-4">
+            <svg
+              className="w-16 h-16 text-red-500 mx-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-red-700 dark:text-red-400 mb-2">
+            Access Denied
+          </h3>
+          <p className="text-red-600 dark:text-red-300">
+            You don't have permission to access system settings.
+          </p>
         </div>
       </div>
     );
@@ -184,6 +226,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   onChange={(e) =>
                     setPasswordData((p) => ({ ...p, current: e.target.value }))
                   }
+                  autoComplete="current-password"
                   className="mt-1 input-style"
                   required
                 />
@@ -198,6 +241,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   onChange={(e) =>
                     setPasswordData((p) => ({ ...p, new: e.target.value }))
                   }
+                  autoComplete="new-password"
                   className="mt-1 input-style"
                   required
                 />
@@ -212,6 +256,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                   onChange={(e) =>
                     setPasswordData((p) => ({ ...p, confirm: e.target.value }))
                   }
+                  autoComplete="new-password"
                   className="mt-1 input-style"
                   required
                 />

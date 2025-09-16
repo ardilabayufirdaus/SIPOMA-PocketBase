@@ -136,6 +136,10 @@ html {
     @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
   }
 
+  .dark .glass-card {
+    @apply bg-slate-800/80 border border-slate-700/50;
+  }
+
   .hover-lift {
     @apply transition-transform duration-200 hover:-translate-y-1;
   }

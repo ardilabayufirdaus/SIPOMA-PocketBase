@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import RegistrationForm from "../components/RegistrationForm";
-import { hashPassword } from "../utils/hashPassword";
 
 const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState("");
@@ -26,9 +25,8 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    // Hash password sebelum login
-    const hashedPassword = hashPassword(password);
-    const loggedInUser = await login(identifier, hashedPassword);
+    // Use plain text password (as stored in database)
+    const loggedInUser = await login(identifier, password);
 
     if (loggedInUser) {
       // Clear any remaining localStorage data from old remember me functionality
