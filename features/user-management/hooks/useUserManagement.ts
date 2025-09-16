@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../utils/supabaseClient";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../../../hooks/useAuth";
 
 interface UserManagementOptions {
   autoFetch?: boolean;

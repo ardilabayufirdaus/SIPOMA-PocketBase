@@ -337,7 +337,8 @@ export const useDashboardDataProcessor = (
     plantCategory,
     plantUnit,
     selectedProductionParameters,
-    cache,
+    // Removed 'cache' from dependencies to prevent infinite re-renders
+    // Cache methods are stable with useCallback, no need to include the object
   ]);
 
   return processedData;

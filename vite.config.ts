@@ -1,34 +1,48 @@
 ﻿import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { splitVendorChunkPlugin } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), splitVendorChunkPlugin()],
+  plugins: [react()],
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "ui-vendor": [
-            "@headlessui/react",
-            "@heroicons/react",
-            "framer-motion",
-          ],
-          "charts-vendor": [
-            "@nivo/bar",
-            "@nivo/core",
-            "@nivo/line",
-            "@nivo/pie",
-            "recharts",
-          ],
-          "data-vendor": ["@supabase/supabase-js", "@tanstack/react-query"],
-          "utils-vendor": ["clsx", "crypto-js", "uuid", "xlsx", "html2canvas"],
+        manualChunks: (id) => {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("react-router")
+            ) {
+              return "react-vendor";
+            }
+            if (
+              id.includes("@heroicons") ||
+              id.includes("lucide-react") ||
+              id.includes("framer-motion")
+            ) {
+              return "ui-vendor";
+            }
+            if (id.includes("@nivo") || id.includes("recharts")) {
+              return "charts-vendor";
+            }
+            if (id.includes("@supabase") || id.includes("@tanstack")) {
+              return "data-vendor";
+            }
+            if (id.includes("crypto-js")) {
+              return "crypto-vendor";
+            }
+            if (id.includes("xlsx") || id.includes("exceljs")) {
+              return "excel-vendor";
+            }
+            if (id.includes("uuid") || id.includes("focus-trap")) {
+              return "utils-light";
+            }
+            return "utils-misc";
+          }
         },
       },
     },
     chunkSizeWarningLimit: 1000,
-    sourcemap: false,
-    reportCompressedSize: false,
   },
 });

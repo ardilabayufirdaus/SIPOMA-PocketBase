@@ -1,7 +1,20 @@
 import React, { useState } from "react";
-import ProjectDashboardPage from "./project_management/ProjectDashboardPage";
-import ProjectDetailPage from "./project_management/ProjectDetailPage";
-import ProjectListPage from "./project_management/ProjectListPage";
+import { lazy, Suspense } from "react";
+import { Routes, Route } from "react-router-dom";
+import LoadingSkeleton from "../components/LoadingSkeleton";
+
+// Lazy load sub-pages
+const ProjectDashboardPage = lazy(
+  () => import("./project_management/ProjectDashboardPage")
+);
+const ProjectDetailPage = lazy(
+  () => import("./project_management/ProjectDetailPage")
+);
+const ProjectListPage = lazy(
+  () => import("./project_management/ProjectListPage")
+);
+
+// ...existing code...
 
 // Import permission utilities
 import { usePermissions } from "../utils/permissions";

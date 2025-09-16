@@ -379,13 +379,7 @@ const PlantOperationsDashboard: React.FC = () => {
       }
     };
     fetchData();
-  }, [
-    selectedMonth,
-    selectedYear,
-    getDataForDateRange,
-    selectedPlantCategory,
-    selectedPlantUnit,
-  ]);
+  }, [selectedMonth, selectedYear, selectedPlantCategory, selectedPlantUnit]);
 
   // Use custom hook for data processing - moved to top with other hooks
   const { chartData, keyMetrics, copAnalysisData, productionTrendData } =
@@ -485,7 +479,7 @@ const PlantOperationsDashboard: React.FC = () => {
     } else if (unitsForCategory.length === 0) {
       setSelectedPlantUnit("all");
     }
-  }, [unitsForCategory, selectedPlantUnit, selectedPlantCategory]);
+  }, [unitsForCategory, selectedPlantCategory]); // Removed selectedPlantUnit to prevent infinite loop
 
   if (userLoading) {
     return (

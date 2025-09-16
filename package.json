@@ -15,10 +15,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
     "@nivo/bar": "^0.99.0",
-    "@nivo/core": "^0.99.0",
     "@nivo/line": "^0.99.0",
     "@nivo/pie": "^0.99.0",
     "@supabase/supabase-js": "^2.45.4",
@@ -28,22 +26,20 @@
     "@types/uuid": "^10.0.0",
     "@types/xlsx": "^0.0.35",
     "@use-gesture/react": "^10.3.1",
-    "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
     "exceljs": "^4.4.0",
     "focus-trap-react": "^11.0.4",
     "framer-motion": "^12.23.12",
-    "html2canvas": "^1.4.1",
     "lucide-react": "^0.542.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "^6.0.0",
     "react-is": "^18.3.1",
     "react-router-dom": "^7.8.2",
-    "react-spring": "^9.7.4",
     "recharts": "^3.1.2",
     "uuid": "^11.1.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",

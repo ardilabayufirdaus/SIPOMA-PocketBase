@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SHA256 } from "crypto-js";
-import { supabase } from "../../../utils/supabaseClient";
+import { useUserStore } from "../../../stores/userStore";
 import { translations } from "../../../translations";
 import { UserRole } from "../../../types";
 
@@ -26,6 +26,7 @@ const UserForm: React.FC<UserFormProps> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const { createUser, updateUser } = useUserStore();
   const t = translations[language];
 
   useEffect(() => {
@@ -46,39 +47,34 @@ const UserForm: React.FC<UserFormProps> = ({
     setError("");
 
     try {
-      if (!formData.username || !formData.password) {
-        setError("Username and password are required");
+      if (!formData.username) {
+        setError("Username is required");
         return;
       }
 
-      const passwordHash = SHA256(formData.password).toString();
+      if (!user && !formData.password) {
+        setError("Password is required for new users");
+        return;
+      }
 
       if (user) {
         // Update user
-        const { error: updateError } = await supabase
-          .from("users")
-          .update({
-            username: formData.username,
-            password_hash: passwordHash,
-            full_name: formData.full_name,
-            role: formData.role,
-            is_active: formData.is_active,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", user.id);
-
-        if (updateError) throw updateError;
+        await updateUser(user.id, {
+          username: formData.username,
+          full_name: formData.full_name,
+          role: formData.role,
+          is_active: formData.is_active,
+          ...(formData.password && { password: formData.password }),
+        });
       } else {
         // Create new user
-        const { error: insertError } = await supabase.from("users").insert({
+        await createUser({
           username: formData.username,
-          password_hash: passwordHash,
+          password: formData.password,
           full_name: formData.full_name,
           role: formData.role,
           is_active: formData.is_active,
         });
-
-        if (insertError) throw insertError;
       }
 
       onSuccess();

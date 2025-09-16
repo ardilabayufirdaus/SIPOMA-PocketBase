@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../../../utils/supabaseClient";
+import { useUserStore } from "../../../stores/userStore";
 import { translations } from "../../../translations";
-import { UserRole } from "../../../types";
-
-interface User {
-  id: string;
-  username: string;
-  full_name: string | null;
-  role: UserRole;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { UserRole, User } from "../../../types";
 
 interface UserTableProps {
   onEditUser: (user: User) => void;
@@ -24,32 +14,20 @@ const UserTable: React.FC<UserTableProps> = ({
   onAddUser,
   language = "en",
 }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const {
+    users,
+    isLoading,
+    error,
+    fetchUsers,
+    deleteUser,
+    updateUser,
+    clearError,
+  } = useUserStore();
   const t = translations[language];
 
   useEffect(() => {
     fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setUsers(data || []);
-    } catch (err: any) {
-      console.error("Error fetching users:", err);
-      setError(err.message || "Failed to fetch users");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [fetchUsers]);
 
   const handleDeleteUser = async (userId: string) => {
     if (
@@ -61,28 +39,17 @@ const UserTable: React.FC<UserTableProps> = ({
     }
 
     try {
-      const { error } = await supabase.from("users").delete().eq("id", userId);
-
-      if (error) throw error;
-      await fetchUsers();
+      await deleteUser(userId);
     } catch (err: any) {
       console.error("Error deleting user:", err);
-      setError(err.message || "Failed to delete user");
     }
   };
 
   const handleToggleActive = async (userId: string, isActive: boolean) => {
     try {
-      const { error } = await supabase
-        .from("users")
-        .update({ is_active: !isActive, updated_at: new Date().toISOString() })
-        .eq("id", userId);
-
-      if (error) throw error;
-      await fetchUsers();
+      await updateUser(userId, { is_active: !isActive });
     } catch (err: any) {
       console.error("Error updating user status:", err);
-      setError(err.message || "Failed to update user status");
     }
   };
 
@@ -91,7 +58,17 @@ const UserTable: React.FC<UserTableProps> = ({
   }
 
   if (error) {
-    return <div className="text-red-600 text-center py-4">{error}</div>;
+    return (
+      <div className="text-red-600 text-center py-4">
+        {error}
+        <button
+          onClick={clearError}
+          className="ml-2 text-blue-600 hover:text-blue-800"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (

@@ -26,8 +26,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
     setError("");
 
     try {
-      // Login berhasil
-      await login(username, password);
+      // Hash password sebelum login
+      const hashedPassword = SHA256(password).toString();
+      await login(username, hashedPassword);
       onLoginSuccess?.();
     } catch (err) {
       console.error("Login error:", err);

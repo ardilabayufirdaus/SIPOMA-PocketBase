@@ -7,7 +7,7 @@ import UserForm from "./features/user-management/components/UserForm";
 import PasswordDisplay from "./components/PasswordDisplay";
 import Toast from "./components/Toast";
 import LoadingSkeleton, { PageLoading } from "./components/LoadingSkeleton";
-import { useUserManagement } from "./hooks/useUserManagement";
+import { useUserStore } from "./stores/userStore";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 import { useOnlineUsers } from "./hooks/useOnlineUsers";
 import { useUserActivity } from "./hooks/useUserActivity";
@@ -145,12 +145,12 @@ const App: React.FC = () => {
   const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
   const {
     users,
-    addUser,
+    createUser: addUser,
     updateUser,
-    deleteUser,
-    toggleUserStatus,
-    loading: usersLoading,
-  } = useUserManagement(currentUser);
+    deleteUser: deleteUserStore,
+    isLoading: usersLoading,
+    error: usersError,
+  } = useUserStore();
   const onlineUsersCount = useOnlineUsers(users);
 
   // Update current user activity
@@ -246,44 +246,6 @@ const App: React.FC = () => {
     setEditingUser(null);
   }, []);
 
-  const handleSaveUser = useCallback(
-    async (user: User | Omit<User, "id" | "created_at" | "last_active">) => {
-      try {
-        if ("id" in user) {
-          // Editing existing user
-          // console.log("Saving edited user:", user.id, user.role); // removed for production
-          await updateUser(user.id, user);
-          setToastMessage(
-            t.user_updated_success || "User updated successfully!"
-          );
-          setToastType("success");
-          setShowToast(true);
-          console.log("User updated successfully");
-        } else {
-          // Creating new user
-          await addUser(user);
-          setToastMessage(
-            t.user_created_success_title || "User created successfully!"
-          );
-          setToastType("success");
-          setShowToast(true);
-        }
-        handleCloseUserModal();
-      } catch (error) {
-        console.error("Error in handleSaveUser:", error);
-        setToastMessage(
-          error instanceof Error
-            ? `Failed to save user: ${error.message}`
-            : "Failed to save user"
-        );
-        setToastType("error");
-        setShowToast(true);
-        // Don't close modal on error so user can retry
-      }
-    },
-    [addUser, updateUser, handleCloseUserModal, plantUnits, t]
-  );
-
   const handleDeleteUser = useCallback(
     async (userId: string) => {
       // Find the user to be deleted
@@ -322,13 +284,13 @@ const App: React.FC = () => {
       if (
         window.confirm(confirmMessage.replace("{name}", userToDelete.full_name))
       ) {
-        await deleteUser(userId);
+        await deleteUserStore(userId);
         setToastMessage(t.user_deleted_success || "User deleted successfully");
         setToastType("success");
         setShowToast(true);
       }
     },
-    [users, currentUser, deleteUser, t]
+    [users, currentUser, deleteUserStore, t]
   );
 
   const handleOpenProfileModal = () => setProfileModalOpen(true);
@@ -777,10 +739,7 @@ const App: React.FC = () => {
           <UserForm
             user={editingUser}
             onClose={handleCloseUserModal}
-            onSuccess={() => {
-              handleSaveUser(editingUser || ({} as any));
-              handleCloseUserModal();
-            }}
+            onSuccess={handleCloseUserModal}
             language={language}
           />
         </Modal>
