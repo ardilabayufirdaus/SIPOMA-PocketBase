@@ -1,5 +1,14 @@
 import { PermissionMatrix } from '../types';
 
+const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
+  dashboard: 'dashboard',
+  plant_operations: 'plant_operations',
+  packing_plant: 'packing_plant',
+  project_management: 'project_management',
+  system_settings: 'system_settings',
+  user_management: 'user_management',
+};
+
 export const buildPermissionMatrix = (userPermissions: any[]): PermissionMatrix => {
   const matrix: PermissionMatrix = {
     dashboard: 'NONE',
@@ -13,11 +22,9 @@ export const buildPermissionMatrix = (userPermissions: any[]): PermissionMatrix 
   userPermissions.forEach((up: any) => {
     const perm = up.permissions;
     if (perm) {
-      switch (perm.module_name) {
-        case 'dashboard':
-          matrix.dashboard = perm.permission_level;
-          break;
-        case 'plant_operations':
+      const moduleKey = permissionModuleMap[perm.module_name];
+      if (moduleKey) {
+        if (moduleKey === 'plant_operations') {
           // Handle plant operations permissions
           if (perm.plant_units && Array.isArray(perm.plant_units)) {
             perm.plant_units.forEach((unit: any) => {
@@ -27,19 +34,9 @@ export const buildPermissionMatrix = (userPermissions: any[]): PermissionMatrix 
               matrix.plant_operations[unit.category][unit.unit] = perm.permission_level;
             });
           }
-          break;
-        case 'packing_plant':
-          matrix.packing_plant = perm.permission_level;
-          break;
-        case 'project_management':
-          matrix.project_management = perm.permission_level;
-          break;
-        case 'system_settings':
-          matrix.system_settings = perm.permission_level;
-          break;
-        case 'user_management':
-          matrix.user_management = perm.permission_level;
-          break;
+        } else {
+          matrix[moduleKey] = perm.permission_level;
+        }
       }
     }
   });

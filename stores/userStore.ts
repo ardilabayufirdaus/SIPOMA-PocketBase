@@ -9,9 +9,15 @@ interface UserManagementState {
   permissions: any[];
   isLoading: boolean;
   error: string | null;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
 
   // Actions
-  fetchUsers: () => Promise<void>;
+  fetchUsers: (page?: number, limit?: number, includePermissions?: boolean) => Promise<void>;
   fetchRoles: () => Promise<void>;
   fetchPermissions: () => Promise<void>;
   createUser: (userData: any) => Promise<User>;
@@ -27,14 +33,24 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
   permissions: [],
   isLoading: false,
   error: null,
+  pagination: {
+    page: 1,
+    limit: 20,
+    total: 0,
+    hasMore: false,
+  },
 
-  fetchUsers: async () => {
+  fetchUsers: async (page = 1, limit = 20, includePermissions = false) => {
     set({ isLoading: true, error: null });
     try {
-      const { data, error } = await supabase
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      let query = supabase
         .from('users')
         .select(
-          `
+          includePermissions
+            ? `
           id,
           username,
           full_name,
@@ -50,8 +66,21 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
             )
           )
         `
+            : `
+          id,
+          username,
+          full_name,
+          role,
+          is_active,
+          created_at,
+          updated_at
+        `,
+          { count: 'exact' }
         )
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
 
@@ -63,22 +92,32 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
         is_active: user.is_active,
         created_at: new Date(user.created_at),
         updated_at: new Date(user.updated_at),
-        permissions:
-          user.user_permissions?.reduce((acc: any, up: any) => {
-            const perm = up.permissions;
-            if (perm) {
-              acc[perm.module_name] = {
-                level: perm.permission_level,
-                plantUnits: perm.plant_units || [],
-              };
-            }
-            return acc;
-          }, {}) || {},
+        permissions: includePermissions
+          ? user.user_permissions?.reduce((acc: Record<string, any>, up: any) => {
+              const perm = up.permissions;
+              if (perm) {
+                acc[perm.module_name] = {
+                  level: perm.permission_level,
+                  plantUnits: perm.plant_units || [],
+                };
+              }
+              return acc;
+            }, {}) || {}
+          : {},
       }));
 
-      set({ users: transformedUsers });
-    } catch (err: any) {
-      set({ error: err.message || 'Failed to fetch users' });
+      set({
+        users: page === 1 ? transformedUsers : [...get().users, ...transformedUsers],
+        pagination: {
+          page,
+          limit,
+          total: count || 0,
+          hasMore: (count || 0) > page * limit,
+        },
+      });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
+      set({ error: errorMessage });
     } finally {
       set({ isLoading: false });
     }

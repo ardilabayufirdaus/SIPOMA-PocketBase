@@ -25,10 +25,10 @@ export const usePlantData = () => {
     setLoading(true);
 
     const [machinesRes, kpisRes, alertsRes, productionRes] = await Promise.all([
-      (supabase.from('machines').select('*')),
-      (supabase.from('kpis').select('*')),
-      (supabase.from('alerts').select('*').order('timestamp', { ascending: false })),
-      (supabase.from('production_data').select('*').limit(24).order('hour', { ascending: false })), // Assuming last 24h data
+      supabase.from('machines').select('*'),
+      supabase.from('kpis').select('*'),
+      supabase.from('alerts').select('*').order('timestamp', { ascending: false }),
+      supabase.from('production_data').select('*').limit(24).order('hour', { ascending: false }), // Assuming last 24h data
     ]);
 
     if (machinesRes.error) {
@@ -69,7 +69,9 @@ export const usePlantData = () => {
       console.error('Error fetching production data:', productionRes.error);
       setProductionData([]);
     } else {
-      setProductionData((productionRes.data || []) as { hour: number; output: number }[]);
+      setProductionData(
+        (productionRes.data || []) as unknown as { hour: number; output: number }[]
+      );
     }
 
     setLoading(false);

@@ -2,7 +2,7 @@ import React from 'react';
 import { CcrDowntimeData } from '../../types';
 
 interface CcrDowntimeDataTableProps {
-  t: any;
+  t: Record<string, string>;
   loading: boolean;
   downtimeData: CcrDowntimeData[];
   handleDowntimeChange: (

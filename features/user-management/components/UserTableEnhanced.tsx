@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabaseClient';
 import { translations } from '../../../translations';
 import { UserRole } from '../../../types';
@@ -48,6 +48,7 @@ type SortDirection = 'asc' | 'desc';
 
 const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language = 'en' }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,63 +63,64 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [currentPage, searchTerm, sortField, sortDirection]);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const subscription = supabase
+      .channel('users_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
+        fetchUsers(); // Refetch on any change
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [currentPage, searchTerm, sortField, sortDirection]); // Depend on same as fetchUsers
 
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let query = supabase.from('users').select('*', { count: 'exact' });
+
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(
+          `username.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%,role.ilike.%${searchTerm}%`
+        );
+      }
+
+      // Apply sorting
+      query = query.order(sortField, { ascending: sortDirection === 'asc' });
+
+      // Apply pagination
+      const from = (currentPage - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
       setUsers(data || []);
-    } catch (err: any) {
+      setTotalUsers(count || 0);
+    } catch (err: unknown) {
       console.error('Error fetching users:', err);
-      setError(err.message || 'Failed to fetch users');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Filter and sort users
-  const filteredAndSortedUsers = useMemo(() => {
-    const filtered = users.filter(
-      (user) =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        user.role.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    filtered.sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
-
-      if (sortField === 'full_name') {
-        aValue = aValue || '';
-        bValue = bValue || '';
-      }
-
-      if (typeof aValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    return filtered;
-  }, [users, searchTerm, sortField, sortDirection]);
+  // Users are already filtered, sorted, and paginated from server
+  const displayedUsers = users;
 
   // Pagination
-  const totalPages = Math.ceil(filteredAndSortedUsers.length / itemsPerPage);
-  const paginatedUsers = filteredAndSortedUsers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(totalUsers / itemsPerPage);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -214,11 +216,11 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   };
 
   const handleSelectAll = () => {
-    if (selectedUsers.size === paginatedUsers.length) {
+    if (selectedUsers.size === displayedUsers.length) {
       setSelectedUsers(new Set());
       setShowBulkActions(false);
     } else {
-      setSelectedUsers(new Set(paginatedUsers.map((user) => user.id)));
+      setSelectedUsers(new Set(displayedUsers.map((user) => user.id)));
       setShowBulkActions(true);
     }
   };
@@ -290,8 +292,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             {t.user_list || 'Users'}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            {filteredAndSortedUsers.length} {filteredAndSortedUsers.length === 1 ? 'user' : 'users'}{' '}
-            total
+            {totalUsers} {totalUsers === 1 ? 'user' : 'users'} total
           </p>
         </div>
 
@@ -379,7 +380,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   <input
                     type="checkbox"
                     checked={
-                      selectedUsers.size === paginatedUsers.length && paginatedUsers.length > 0
+                      selectedUsers.size === displayedUsers.length && displayedUsers.length > 0
                     }
                     onChange={handleSelectAll}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -433,7 +434,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             </thead>
 
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {paginatedUsers.map((user) => (
+              {displayedUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
@@ -532,7 +533,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
         </div>
 
         {/* Empty State */}
-        {paginatedUsers.length === 0 && (
+        {displayedUsers.length === 0 && (
           <div className="text-center py-12">
             <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -585,9 +586,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   Showing{' '}
                   <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
                   <span className="font-medium">
-                    {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)}
+                    {Math.min(currentPage * itemsPerPage, totalUsers)}
                   </span>{' '}
-                  of <span className="font-medium">{filteredAndSortedUsers.length}</span> results
+                  of <span className="font-medium">{totalUsers}</span> results
                 </p>
               </div>
 

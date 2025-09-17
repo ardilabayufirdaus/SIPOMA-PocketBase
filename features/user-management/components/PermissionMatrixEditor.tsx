@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { PermissionMatrix, PlantOperationsPermissions, PermissionLevel } from '../../../types';
 import { supabase } from '../../../utils/supabaseClient';
 import { translations } from '../../../translations';
@@ -19,6 +20,9 @@ import ExclamationTriangleIcon from '../../../components/icons/ExclamationTriang
 import EyeSlashIcon from '../../../components/icons/EyeSlashIcon';
 import EditIcon from '../../../components/icons/EditIcon';
 import CogIcon from '../../../components/icons/CogIcon';
+import VirtualTable from '../../../components/VirtualTable';
+
+const permissionLevels: PermissionLevel[] = ['NONE', 'READ', 'WRITE', 'ADMIN'];
 
 interface PermissionMatrixEditorProps {
   userId: string;
@@ -40,22 +44,37 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   language = 'en',
 }) => {
   const [permissions, setPermissions] = useState<PermissionMatrix>(currentPermissions);
-  const [plantUnits, setPlantUnits] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'plant'>('general');
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [error, setError] = useState('');
 
   const t = translations[language];
 
-  useEffect(() => {
-    setPermissions(currentPermissions);
-    fetchPlantUnits();
-  }, [currentPermissions]);
+  // Helper function to get color for permission level
+  const getPermissionLevelColor = (level: PermissionLevel) => {
+    switch (level) {
+      case 'NONE':
+        return 'secondary';
+      case 'READ':
+        return 'primary';
+      case 'WRITE':
+        return 'warning';
+      case 'ADMIN':
+        return 'error';
+      default:
+        return 'secondary';
+    }
+  };
 
-  const fetchPlantUnits = async () => {
-    try {
+  // Use React Query for caching plant units - lazy load when plant tab is active
+  const {
+    data: plantUnits = [],
+    isLoading: loadingPlantUnits,
+    error: plantUnitsError,
+  } = useQuery({
+    queryKey: ['plant-units'],
+    queryFn: async (): Promise<any[]> => {
       const { data, error } = await supabase
         .from('plant_units')
         .select('*')
@@ -63,42 +82,74 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         .order('unit', { ascending: true });
 
       if (error) throw error;
-      setPlantUnits(data || []);
-    } catch (err: any) {
-      console.error('Error fetching plant units:', err);
-    }
-  };
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled: activeTab === 'plant', // Only fetch when plant tab is active
+  });
 
-  const handlePermissionChange = (feature: keyof PermissionMatrix, level: PermissionLevel) => {
-    const newPermissions = { ...permissions };
+  useEffect(() => {
+    setPermissions(currentPermissions);
+  }, [currentPermissions]);
 
-    if (feature === 'plant_operations') {
-      // Handle plant operations separately
-      if (level === 'NONE') {
-        newPermissions[feature] = {};
-      } else {
-        // Initialize with all plant units if not exists
-        if (!newPermissions[feature] || typeof newPermissions[feature] === 'string') {
-          newPermissions[feature] = {};
+  // Memoize expensive calculations
+  const groupedPlantUnits = useMemo(() => {
+    return plantUnits.reduce((acc: Record<string, any[]>, unit: any) => {
+      if (!acc[unit.category]) {
+        acc[unit.category] = [];
+      }
+      acc[unit.category].push(unit);
+      return acc;
+    }, {});
+  }, [plantUnits]);
+
+  const permissionOptions = useMemo(
+    () =>
+      permissionLevels.map((level) => ({
+        value: level,
+        label: level,
+        color: getPermissionLevelColor(level),
+      })),
+    []
+  );
+
+  const handlePermissionChange = useCallback(
+    (feature: keyof PermissionMatrix, level: PermissionLevel) => {
+      setPermissions((prevPermissions) => {
+        const newPermissions = { ...prevPermissions };
+
+        if (feature === 'plant_operations') {
+          // Handle plant operations separately
+          if (level === 'NONE') {
+            newPermissions[feature] = {};
+          } else {
+            // Initialize with all plant units if not exists
+            if (!newPermissions[feature] || typeof newPermissions[feature] === 'string') {
+              newPermissions[feature] = {};
+            }
+
+            // Set permission for all units
+            const plantOps = newPermissions[feature] as PlantOperationsPermissions;
+            plantUnits.forEach((unit: any) => {
+              if (!plantOps[unit.category]) {
+                plantOps[unit.category] = {};
+              }
+              plantOps[unit.category][unit.unit] = level;
+            });
+          }
+        } else {
+          // Simple permission
+          newPermissions[feature] = level;
         }
 
-        // Set permission for all units
-        const plantOps = newPermissions[feature] as PlantOperationsPermissions;
-        plantUnits.forEach((unit) => {
-          if (!plantOps[unit.category]) {
-            plantOps[unit.category] = {};
-          }
-          plantOps[unit.category][unit.unit] = level;
-        });
-      }
-    } else {
-      // Simple permission
-      newPermissions[feature] = level;
-    }
-
-    setPermissions(newPermissions);
-    onPermissionsChange(newPermissions);
-  };
+        // Update parent immediately without debouncing for save functionality
+        onPermissionsChange(newPermissions);
+        return newPermissions;
+      });
+    },
+    [plantUnits, onPermissionsChange]
+  );
 
   const handlePlantOperationPermissionChange = (
     category: string,
@@ -115,21 +166,6 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
     plantOps[category][unit] = level;
     setPermissions(newPermissions);
     onPermissionsChange(newPermissions);
-  };
-
-  const getPermissionLevelColor = (level: PermissionLevel) => {
-    switch (level) {
-      case 'NONE':
-        return 'secondary';
-      case 'READ':
-        return 'primary';
-      case 'WRITE':
-        return 'warning';
-      case 'ADMIN':
-        return 'error';
-      default:
-        return 'secondary';
-    }
   };
 
   const getPermissionLevelIcon = (level: PermissionLevel) => {
@@ -201,21 +237,76 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
     },
   ];
 
-  const permissionLevels: PermissionLevel[] = ['NONE', 'READ', 'WRITE', 'ADMIN'];
+  const UnitPermissionItem = React.memo<{
+    unit: any;
+    category: string;
+    permissions: PermissionMatrix;
+    onPermissionChange: (category: string, unit: string, level: PermissionLevel) => void;
+    permissionLevels: PermissionLevel[];
+    getPermissionLevelColor: (level: PermissionLevel) => string;
+    getPermissionLevelLabel: (level: PermissionLevel) => string;
+    getPermissionLevelIcon: (level: PermissionLevel) => React.ReactNode;
+  }>(
+    ({
+      unit,
+      category,
+      permissions,
+      onPermissionChange,
+      permissionLevels,
+      getPermissionLevelColor,
+      getPermissionLevelLabel,
+      getPermissionLevelIcon,
+    }) => {
+      const currentLevel =
+        (permissions.plant_operations as PlantOperationsPermissions)?.[category]?.[unit.unit] ||
+        'NONE';
 
-  const groupedPlantUnits = plantUnits.reduce(
-    (acc, unit) => {
-      if (!acc[unit.category]) {
-        acc[unit.category] = [];
-      }
-      acc[unit.category].push(unit);
-      return acc;
-    },
-    {} as Record<string, any[]>
+      return (
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 p-2 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-200">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+              {unit.unit}
+            </span>
+            <EnhancedBadge
+              variant={getPermissionLevelColor(currentLevel) as any}
+              className="text-xs px-1.5 py-0.5"
+            >
+              {getPermissionLevelLabel(currentLevel)}
+            </EnhancedBadge>
+          </div>
+
+          <div className="grid grid-cols-4 gap-1">
+            {permissionLevels.map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => onPermissionChange(category, unit.unit, level)}
+                className={`relative p-1 text-xs font-medium rounded border transition-all duration-150 transform hover:scale-105 ${
+                  currentLevel === level
+                    ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-sm`
+                    : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600`
+                }`}
+                title={`${unit.unit} - ${level}`}
+              >
+                <div className="flex flex-col items-center gap-0.5">
+                  <div className="text-xs">{getPermissionLevelIcon(level)}</div>
+                  <span className="text-xs leading-none">{level}</span>
+                </div>
+                {currentLevel === level && (
+                  <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary-500 rounded-full" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
   );
 
+  UnitPermissionItem.displayName = 'UnitPermissionItem';
+
   const toggleCategoryCollapse = (category: string) => {
-    setCollapsedCategories(prev => {
+    setCollapsedCategories((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(category)) {
         newSet.delete(category);
@@ -227,6 +318,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   };
 
   const handleSave = async () => {
+    setSaving(true);
     try {
       if (onSave) {
         // Use parent save handler
@@ -297,11 +389,10 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         {activeTab === 'general' && (
           <div className="space-y-4">
             <div className="grid gap-4">
-              {permissionFeatures.map((feature, index) => (
+              {permissionFeatures.map((feature) => (
                 <div
                   key={feature.key}
                   className="group relative overflow-hidden bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-lg"
-                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-primary-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -373,13 +464,12 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
             </div>
 
             <div className="max-h-96 overflow-y-auto space-y-3">
-              {Object.entries(groupedPlantUnits).map(([category, units], categoryIndex) => {
+              {Object.entries(groupedPlantUnits).map(([category, units]) => {
                 const isCollapsed = collapsedCategories.has(category);
                 return (
                   <div
                     key={category}
                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-                    style={{ animationDelay: `${categoryIndex * 100}ms` }}
                   >
                     <button
                       onClick={() => toggleCategoryCollapse(category)}
@@ -390,7 +480,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                           <CogIcon className="w-4 h-4 text-white" />
                           <span className="text-sm font-semibold text-white">{category}</span>
                           <span className="text-xs bg-white/20 text-white px-2 py-1 rounded-full">
-                            {(units as any[]).length} units
+                            {(units as Array<any>).length} units
                           </span>
                         </div>
                         <svg
@@ -399,69 +489,54 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </button>
 
                     {!isCollapsed && (
                       <div className="p-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                          {(units as any[]).map((unit, unitIndex) => {
-                            const currentLevel =
-                              (permissions.plant_operations as PlantOperationsPermissions)?.[
-                                category
-                              ]?.[unit.unit] || 'NONE';
-
-                            return (
-                              <div
+                        {(units as Array<any>).length > 50 ? (
+                          <VirtualTable
+                            data={units as Array<any>}
+                            itemHeight={80}
+                            containerHeight={400}
+                            renderRow={(unit) => (
+                              <UnitPermissionItem
                                 key={unit.id}
-                                className="bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 p-2 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-200"
-                                style={{
-                                  animationDelay: `${categoryIndex * 100 + unitIndex * 25}ms`,
-                                }}
-                              >
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
-                                    {unit.unit}
-                                  </span>
-                                  <EnhancedBadge
-                                    variant={getPermissionLevelColor(currentLevel)}
-                                    className="text-xs px-1.5 py-0.5"
-                                  >
-                                    {getPermissionLevelLabel(currentLevel)}
-                                  </EnhancedBadge>
-                                </div>
-
-                                <div className="grid grid-cols-4 gap-1">
-                                  {permissionLevels.map((level) => (
-                                    <button
-                                      key={level}
-                                      type="button"
-                                      onClick={() =>
-                                        handlePlantOperationPermissionChange(category, unit.unit, level)
-                                      }
-                                      className={`relative p-1 text-xs font-medium rounded border transition-all duration-150 transform hover:scale-105 ${
-                                        currentLevel === level
-                                          ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-sm`
-                                          : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600`
-                                      }`}
-                                      title={`${unit.unit} - ${level}`}
-                                    >
-                                      <div className="flex flex-col items-center gap-0.5">
-                                        <div className="text-xs">{getPermissionLevelIcon(level)}</div>
-                                        <span className="text-xs leading-none">{level}</span>
-                                      </div>
-                                      {currentLevel === level && (
-                                        <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary-500 rounded-full" />
-                                      )}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                                unit={unit}
+                                category={category}
+                                permissions={permissions}
+                                onPermissionChange={handlePlantOperationPermissionChange}
+                                permissionLevels={permissionLevels}
+                                getPermissionLevelColor={getPermissionLevelColor}
+                                getPermissionLevelLabel={getPermissionLevelLabel}
+                                getPermissionLevelIcon={getPermissionLevelIcon}
+                              />
+                            )}
+                          />
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                            {(units as Array<any>).map((unit) => (
+                              <UnitPermissionItem
+                                key={unit.id}
+                                unit={unit}
+                                category={category}
+                                permissions={permissions}
+                                onPermissionChange={handlePlantOperationPermissionChange}
+                                permissionLevels={permissionLevels}
+                                getPermissionLevelColor={getPermissionLevelColor}
+                                getPermissionLevelLabel={getPermissionLevelLabel}
+                                getPermissionLevelIcon={getPermissionLevelIcon}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

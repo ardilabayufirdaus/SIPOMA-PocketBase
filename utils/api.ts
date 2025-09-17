@@ -5,11 +5,11 @@ export const api = {
   users: {
     async getByEmail(email: string): Promise<User | null> {
       const users = await apiClient.users.getByEmail(email);
-      return users && users.length > 0 ? (users[0] as User) : null;
+      return users ? (users as any as User) : null;
     },
 
     async getById(id: string): Promise<User> {
-      return apiClient.users.getById(id) as Promise<User>;
+      return apiClient.users.getById(id) as any as Promise<User>;
     },
 
     async updateLastActive(id: string): Promise<void> {

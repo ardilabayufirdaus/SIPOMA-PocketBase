@@ -7,6 +7,7 @@ import React from 'react';
  */
 export class PermissionChecker {
   private user: User | null;
+  private cache: Map<string, boolean> = new Map();
 
   constructor(user: User | null) {
     this.user = user;
@@ -16,6 +17,17 @@ export class PermissionChecker {
    * Check if user has specific permission level for a feature
    */
   hasPermission(feature: keyof PermissionMatrix, requiredLevel: string = 'READ'): boolean {
+    const cacheKey = `${feature}-${requiredLevel}`;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
+    const result = this._hasPermission(feature, requiredLevel);
+    this.cache.set(cacheKey, result);
+    return result;
+  }
+
+  private _hasPermission(feature: keyof PermissionMatrix, requiredLevel: string = 'READ'): boolean {
     if (!this.user) return false;
 
     // Super Admin has all permissions

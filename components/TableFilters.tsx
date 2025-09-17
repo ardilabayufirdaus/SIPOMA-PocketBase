@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { SearchInput } from './ui/Input';
-import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
+import { EnhancedButton } from './ui/EnhancedComponents';
 import { User, UserRole } from '../types';
 
 interface TableFiltersProps {
@@ -119,18 +119,6 @@ const TableFilters: React.FC<TableFiltersProps> = ({
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
     []
-  );
-
-  const handleSortChange = useCallback(
-    (field: keyof User) => {
-      if (field === sortBy) {
-        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-      } else {
-        setSortBy(field);
-        setSortDirection('asc');
-      }
-    },
-    [sortBy]
   );
 
   const clearFilters = useCallback(() => {

@@ -60,20 +60,44 @@ const UserListPage: React.FC = () => {
   const fetchUserStats = async () => {
     try {
       setIsLoadingStats(true);
-      const { data: users, error } = await supabase.from('users').select('*');
-
-      if (error) throw error;
-
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+      // Fetch stats in parallel
+      const [totalRes, activeRes, inactiveRes, adminRes, superAdminRes, recentRes] =
+        await Promise.all([
+          supabase.from('users').select('*', { count: 'exact', head: true }),
+          supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_active', true),
+          supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_active', false),
+          supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'Admin'),
+          supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .eq('role', 'Super Admin'),
+          supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .gte('created_at', thirtyDaysAgo.toISOString()),
+        ]);
+
+      if (
+        totalRes.error ||
+        activeRes.error ||
+        inactiveRes.error ||
+        adminRes.error ||
+        superAdminRes.error ||
+        recentRes.error
+      ) {
+        throw new Error('Failed to fetch stats');
+      }
+
       const stats: UserStats = {
-        total: users?.length || 0,
-        active: users?.filter((u) => u.is_active).length || 0,
-        inactive: users?.filter((u) => !u.is_active).length || 0,
-        admins: users?.filter((u) => u.role === 'Admin').length || 0,
-        superAdmins: users?.filter((u) => u.role === 'Super Admin').length || 0,
-        recent: users?.filter((u) => new Date(u.created_at) > thirtyDaysAgo).length || 0,
+        total: totalRes.count || 0,
+        active: activeRes.count || 0,
+        inactive: inactiveRes.count || 0,
+        admins: adminRes.count || 0,
+        superAdmins: superAdminRes.count || 0,
+        recent: recentRes.count || 0,
       };
 
       setStats(stats);

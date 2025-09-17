@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface CcrDataEntryHeaderProps {
-  t: any;
+  t: Record<string, string>;
   error: string | null;
   selectedCategory: string;
   selectedUnit: string;
