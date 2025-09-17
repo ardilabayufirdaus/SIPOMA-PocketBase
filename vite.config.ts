@@ -9,22 +9,20 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes("node_modules")) {
+            // React ecosystem - keep all React-related packages together
             if (
               id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-router") ||
-              id.includes("react-is") ||
+              id.includes("@react-spring") ||
+              id.includes("@use-gesture") ||
+              id.includes("react-error-boundary") ||
               id.includes("react-transition-group") ||
-              id.includes("scheduler")
-            ) {
-              return "react-vendor";
-            }
-            if (
+              id.includes("react-is") ||
+              id.includes("scheduler") ||
+              id.includes("focus-trap-react") ||
               id.includes("@heroicons") ||
-              id.includes("lucide-react") ||
               id.includes("framer-motion")
             ) {
-              return "ui-vendor";
+              return "react-vendor";
             }
             if (id.includes("@nivo")) {
               return "charts-vendor";
