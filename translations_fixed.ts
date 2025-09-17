@@ -458,6 +458,7 @@ export const translations = {
     save: 'Save',
     select_project: 'Select Project',
     project_overview_title: 'Project Overview',
+    project_tasks: 'Project Tasks',
     proj_duration: 'Project Duration',
     proj_total_tasks: 'Total Tasks',
     proj_budget: 'Budget',

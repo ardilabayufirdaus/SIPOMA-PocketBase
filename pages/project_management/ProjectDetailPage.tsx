@@ -1,20 +1,11 @@
-﻿import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useRef,
-  Suspense,
-  lazy,
-} from "react";
-import { useProjects } from "../../hooks/useProjects";
-import { Project, ProjectTask } from "../../types";
-import { formatDate, formatNumber, formatRupiah } from "../../utils/formatters";
-import {
-  InteractiveCardModal,
-  BreakdownData,
-} from "../../components/InteractiveCardModal";
-import Modal from "../../components/Modal";
-import ProjectTaskForm from "../../components/ProjectTaskForm";
+﻿import React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
+import * as XLSX from 'xlsx';
+import { useProjects } from '../../hooks/useProjects';
+import { Project, ProjectTask } from '../../types';
+import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
+import { InteractiveCardModal, BreakdownData } from '../../components/InteractiveCardModal';
+import Modal from '../../components/Modal';
+import ProjectTaskForm from '../../components/ProjectTaskForm';
 
 // Import Enhanced Components
 import {
@@ -23,24 +14,24 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 // Icons
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
-import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
-import DocumentArrowUpIcon from "../../components/icons/DocumentArrowUpIcon";
-import PresentationChartLineIcon from "../../components/icons/PresentationChartLineIcon";
-import CheckBadgeIcon from "../../components/icons/CheckBadgeIcon";
-import ArrowTrendingUpIcon from "../../components/icons/ArrowTrendingUpIcon";
-import ArrowTrendingDownIcon from "../../components/icons/ArrowTrendingDownIcon";
-import CalendarDaysIcon from "../../components/icons/CalendarDaysIcon";
-import ClipboardDocumentListIcon from "../../components/icons/ClipboardDocumentListIcon";
-import CurrencyDollarIcon from "../../components/icons/CurrencyDollarIcon";
-import XCircleIcon from "../../components/icons/XCircleIcon";
-import ChartPieIcon from "../../components/icons/ChartPieIcon";
-import Bars4Icon from "../../components/icons/Bars4Icon";
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
+import DocumentArrowUpIcon from '../../components/icons/DocumentArrowUpIcon';
+import PresentationChartLineIcon from '../../components/icons/PresentationChartLineIcon';
+import CheckBadgeIcon from '../../components/icons/CheckBadgeIcon';
+import ArrowTrendingUpIcon from '../../components/icons/ArrowTrendingUpIcon';
+import ArrowTrendingDownIcon from '../../components/icons/ArrowTrendingDownIcon';
+import CalendarDaysIcon from '../../components/icons/CalendarDaysIcon';
+import ClipboardDocumentListIcon from '../../components/icons/ClipboardDocumentListIcon';
+import CurrencyDollarIcon from '../../components/icons/CurrencyDollarIcon';
+import XCircleIcon from '../../components/icons/XCircleIcon';
+import ChartPieIcon from '../../components/icons/ChartPieIcon';
+import Bars4Icon from '../../components/icons/Bars4Icon';
 
 // Import Chart.js components
 import {
@@ -52,21 +43,13 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
 // Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-type ChartView = "s-curve" | "gantt";
+type ChartView = 's-curve' | 'gantt';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full p-10">
@@ -77,11 +60,11 @@ const LoadingSpinner: React.FC = () => (
 // Helper function for status classes
 const getStatusClasses = (status: string, t: any) => {
   if (status === t.proj_status_completed) {
-    return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
   } else if (status === t.proj_status_delayed) {
-    return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
   } else {
-    return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
   }
 };
 
@@ -115,16 +98,14 @@ const GanttChart: React.FC<{
 
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Normalize to the beginning of the day for accurate comparison
-  const daysFromStart =
-    (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+  const daysFromStart = (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
   const todayX =
-    (daysFromStart / duration) *
-      (ganttDimensions.width - ganttDimensions.leftPadding) +
+    (daysFromStart / duration) * (ganttDimensions.width - ganttDimensions.leftPadding) +
     ganttDimensions.leftPadding;
 
   const handleMouseMove = (e: React.MouseEvent, task: ProjectTask) => {
     setHoveredTask(task);
-    const svg = e.currentTarget.closest("svg");
+    const svg = e.currentTarget.closest('svg');
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
     setTooltipPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
@@ -132,24 +113,19 @@ const GanttChart: React.FC<{
 
   return (
     <div className="w-full overflow-x-auto relative">
-      <svg
-        width={ganttDimensions.width}
-        height={totalHeight}
-        className="min-w-full"
-      >
+      <svg width={ganttDimensions.width} height={totalHeight} className="min-w-full">
         {/* Today Marker */}
-        {todayX > ganttDimensions.leftPadding &&
-          todayX < ganttDimensions.width && (
-            <line
-              x1={todayX}
-              y1={ganttDimensions.topPadding - 5}
-              x2={todayX}
-              y2={totalHeight}
-              stroke="#DC2626"
-              strokeWidth="1"
-              strokeDasharray="4,2"
-            />
-          )}
+        {todayX > ganttDimensions.leftPadding && todayX < ganttDimensions.width && (
+          <line
+            x1={todayX}
+            y1={ganttDimensions.topPadding - 5}
+            x2={todayX}
+            y2={totalHeight}
+            stroke="#DC2626"
+            strokeWidth="1"
+            strokeDasharray="4,2"
+          />
+        )}
         {tasks.map((task, i) => {
           const taskStart = new Date(task.planned_start);
           const taskEnd = new Date(task.planned_end);
@@ -157,25 +133,21 @@ const GanttChart: React.FC<{
             1,
             (taskEnd.getTime() - taskStart.getTime()) / (1000 * 3600 * 24) + 1
           );
-          const startOffset =
-            (taskStart.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+          const startOffset = (taskStart.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
 
           const x =
-            (startOffset / duration) *
-              (ganttDimensions.width - ganttDimensions.leftPadding) +
+            (startOffset / duration) * (ganttDimensions.width - ganttDimensions.leftPadding) +
             ganttDimensions.leftPadding;
           const y =
-            i * (ganttDimensions.taskHeight + ganttDimensions.taskGap) +
-            ganttDimensions.topPadding;
+            i * (ganttDimensions.taskHeight + ganttDimensions.taskGap) + ganttDimensions.topPadding;
           const width =
-            (taskDuration / duration) *
-            (ganttDimensions.width - ganttDimensions.leftPadding);
+            (taskDuration / duration) * (ganttDimensions.width - ganttDimensions.leftPadding);
           const progressWidth = width * (task.percent_complete / 100);
 
           const isOverdue = taskEnd < today && task.percent_complete < 100;
 
-          const plannedBarColor = isOverdue ? "text-red-200" : "text-blue-200";
-          const progressBarColor = isOverdue ? "text-red-600" : "text-blue-600";
+          const plannedBarColor = isOverdue ? 'text-red-200' : 'text-blue-200';
+          const progressBarColor = isOverdue ? 'text-red-600' : 'text-blue-600';
 
           return (
             <g
@@ -269,7 +241,7 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
     <>
       <div
         className={`bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md flex items-center transition-all duration-300 ${
-          isInteractive ? "cursor-pointer hover:shadow-lg hover:scale-105" : ""
+          isInteractive ? 'cursor-pointer hover:shadow-lg hover:scale-105' : ''
         }`}
         onClick={handleClick}
       >
@@ -278,17 +250,10 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              {title}
-            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
             {isInteractive && (
               <div className="text-slate-400 dark:text-slate-500">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -299,13 +264,11 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
               </div>
             )}
           </div>
-          <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            {value}
-          </p>
+          <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
           {subText && (
             <p
               className={`text-xs font-medium ${
-                subTextColor || "text-slate-500 dark:text-slate-400"
+                subTextColor || 'text-slate-500 dark:text-slate-400'
               }`}
             >
               {subText}
@@ -325,10 +288,7 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
   );
 };
 
-const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
-  t,
-  projectId,
-}) => {
+const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, projectId }) => {
   const {
     projects,
     loading,
@@ -348,11 +308,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [editingProjectData, setEditingProjectData] = useState({
-    title: "",
+    title: '',
     budget: 0,
   });
   const [pendingImportTasks, setPendingImportTasks] = useState<
-    Omit<ProjectTask, "id" | "project_id">[]
+    Omit<ProjectTask, 'id' | 'project_id'>[]
   >([]);
   const [editingTask, setEditingTask] = useState<ProjectTask | null>(null);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
@@ -365,7 +325,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   } | null>(null);
   const [highlightedTaskIds, setHighlightedTaskIds] = useState<string[]>([]);
   const [filteredDate, setFilteredDate] = useState<string | null>(null);
-  const [chartView, setChartView] = useState<ChartView>("s-curve");
+  const [chartView, setChartView] = useState<ChartView>('s-curve');
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -404,12 +364,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
     }
 
     // Optimize date calculations
-    const startDates = activeProjectTasks.map((t) =>
-      new Date(t.planned_start).getTime()
-    );
-    const endDates = activeProjectTasks.map((t) =>
-      new Date(t.planned_end).getTime()
-    );
+    const startDates = activeProjectTasks.map((t) => new Date(t.planned_start).getTime());
+    const endDates = activeProjectTasks.map((t) => new Date(t.planned_end).getTime());
 
     const minDate = Math.min(...startDates);
     const maxDate = Math.max(...endDates);
@@ -455,10 +411,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       return { ...task, duration, plannedStart, plannedEnd };
     });
 
-    const totalWeight = tasksWithDurations.reduce(
-      (sum, task) => sum + task.duration,
-      0
-    );
+    const totalWeight = tasksWithDurations.reduce((sum, task) => sum + task.duration, 0);
 
     if (totalWeight === 0) {
       return {
@@ -488,8 +441,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
         (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
       );
       const totalDuration = projectEndDate
-        ? (projectEndDate.getTime() - projectStartDate.getTime()) /
-          (1000 * 3600 * 24)
+        ? (projectEndDate.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
         : 0;
 
       if (totalDuration > 0) {
@@ -516,10 +468,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
     // Calculate predicted completion
     let predictedCompletion: Date | null = null;
     const elapsedDays = projectStartDate
-      ? Math.max(
-          0,
-          (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24)
-        )
+      ? Math.max(0, (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24))
       : 0;
 
     if (overallProgress > 0 && overallProgress < 100 && elapsedDays > 0) {
@@ -551,29 +500,20 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       actualStart: task.actual_start ? new Date(task.actual_start) : null,
       actualEnd: task.actual_end ? new Date(task.actual_end) : null,
       duration:
-        (new Date(task.planned_end).getTime() -
-          new Date(task.planned_start).getTime()) /
+        (new Date(task.planned_end).getTime() - new Date(task.planned_start).getTime()) /
           (1000 * 3600 * 24) +
         1,
     }));
 
-    const startDate = new Date(
-      Math.min(...tasks.map((t) => t.plannedStart.getTime()))
-    );
-    const endDate = new Date(
-      Math.max(...tasks.map((t) => t.plannedEnd.getTime()))
-    );
-    const duration =
-      Math.ceil(
-        (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
-      ) + 1;
+    const startDate = new Date(Math.min(...tasks.map((t) => t.plannedStart.getTime())));
+    const endDate = new Date(Math.max(...tasks.map((t) => t.plannedEnd.getTime())));
+    const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
     const totalWeight = tasks.reduce(
       (sum, task) => sum + ((task as any).work_hours || task.duration),
       0
     );
 
-    if (duration <= 0 || totalWeight <= 0)
-      return { points: [], duration: 0, startDate };
+    if (duration <= 0 || totalWeight <= 0) return { points: [], duration: 0, startDate };
 
     const points = [];
     for (let i = 0; i < duration; i++) {
@@ -582,10 +522,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
 
       // Planned progress - S-curve distribution
       const normalizedDay = i / (duration - 1);
-      const planned = Math.min(
-        100,
-        100 * (1 / (1 + Math.exp(-8 * (normalizedDay - 0.5))))
-      );
+      const planned = Math.min(100, 100 * (1 / (1 + Math.exp(-8 * (normalizedDay - 0.5)))));
 
       // Baseline progress - linear for comparison
       const baseline = Math.min(100, (i / (duration - 1)) * 100);
@@ -595,10 +532,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
       const activeTasks = [];
 
       tasks.forEach((task) => {
-        if (
-          currentDate >= task.plannedStart &&
-          currentDate <= task.plannedEnd
-        ) {
+        if (currentDate >= task.plannedStart && currentDate <= task.plannedEnd) {
           activeTasks.push(task);
         }
 
@@ -607,19 +541,15 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
           actualCompleted += (task as any).work_hours || task.duration;
         } else if (task.actualStart && currentDate >= task.actualStart) {
           const progress = task.percent_complete || 0;
-          actualCompleted +=
-            (((task as any).work_hours || task.duration) * progress) / 100;
+          actualCompleted += (((task as any).work_hours || task.duration) * progress) / 100;
         }
       });
 
-      const actual =
-        totalWeight > 0
-          ? Math.min(100, (actualCompleted / totalWeight) * 100)
-          : 0;
+      const actual = totalWeight > 0 ? Math.min(100, (actualCompleted / totalWeight) * 100) : 0;
 
       points.push({
         day: i,
-        date: currentDate.toISOString().split("T")[0],
+        date: currentDate.toISOString().split('T')[0],
         planned: Number(planned.toFixed(1)),
         actual: Number(actual.toFixed(1)),
         baseline: Number(baseline.toFixed(1)),
@@ -654,18 +584,18 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
 
     return [
       {
-        id: "Planned Progress",
-        color: "#3B82F6",
+        id: 'Planned Progress',
+        color: '#3B82F6',
         data: plannedData,
       },
       {
-        id: "Actual Progress",
-        color: "#EF4444",
+        id: 'Actual Progress',
+        color: '#EF4444',
         data: actualData,
       },
       {
-        id: "Baseline",
-        color: "#10B981",
+        id: 'Baseline',
+        color: '#10B981',
         data: baselineData,
       },
     ];
@@ -682,28 +612,26 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
     const duration = sCurveData.duration;
 
     // Calculate which day today is in the project timeline
-    const daysFromStart = Math.floor(
-      (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
-    );
+    const daysFromStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
 
     // Check if today is within project duration
     if (daysFromStart >= 0 && daysFromStart < duration) {
       return [
         {
-          axis: "x" as const,
+          axis: 'x' as const,
           value: `Day ${daysFromStart + 1}`,
           lineStyle: {
-            stroke: "#F59E0B", // Amber color for today line
+            stroke: '#F59E0B', // Amber color for today line
             strokeWidth: 2,
-            strokeDasharray: "5,5", // Dashed line
+            strokeDasharray: '5,5', // Dashed line
           },
           textStyle: {
-            fill: "#F59E0B",
+            fill: '#F59E0B',
             fontSize: 12,
-            fontWeight: "bold",
+            fontWeight: 'bold',
           },
-          legend: "Today",
-          legendPosition: "top" as const,
+          legend: 'Today',
+          legendPosition: 'top' as const,
         },
       ];
     }
@@ -713,11 +641,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
 
   // --- Handlers ---
   const handleSaveTask = useCallback(
-    (task: Omit<ProjectTask, "id" | "project_id"> | ProjectTask) => {
-      if ("id" in task) {
+    (task: Omit<ProjectTask, 'id' | 'project_id'> | ProjectTask) => {
+      if ('id' in task) {
         updateTask(task as ProjectTask);
       } else {
-        addTask(projectId, task as Omit<ProjectTask, "id" | "project_id">);
+        addTask(projectId, task as Omit<ProjectTask, 'id' | 'project_id'>);
       }
       setFormModalOpen(false);
       setEditingTask(null);
@@ -743,20 +671,176 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   };
 
   const handleExport = () => {
-    alert(
-      "Export functionality temporarily disabled - implement with xlsx later"
-    );
+    if (!activeProjectTasks || activeProjectTasks.length === 0) {
+      alert('No tasks to export');
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Prepare data for export
+      const exportData = activeProjectTasks.map((task) => ({
+        Activity: task.activity,
+        'Planned Start': task.planned_start ? formatDate(task.planned_start) : '',
+        'Planned End': task.planned_end ? formatDate(task.planned_end) : '',
+        'Percent Complete': task.percent_complete || 0,
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      // Auto-size columns
+      const colWidths = [
+        { wch: 40 }, // Activity
+        { wch: 15 }, // Planned Start
+        { wch: 15 }, // Planned End
+        { wch: 15 }, // Percent Complete
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Project Tasks');
+
+      // Generate filename with project title
+      const projectTitle = activeProject?.title || 'Project';
+      const filename = `${projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_tasks.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Failed to export tasks. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    alert(
-      "Import functionality temporarily disabled - implement with xlsx later"
-    );
+    setIsImporting(true);
 
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+
+          // Get first worksheet
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          if (jsonData.length < 2) {
+            alert('Excel file must contain at least a header row and one data row');
+            setIsImporting(false);
+            return;
+          }
+
+          // Check headers
+          const headers = jsonData[0] as string[];
+          const expectedHeaders = ['Activity', 'Planned Start', 'Planned End', 'Percent Complete'];
+
+          const normalizedHeaders = headers.map((h) => h?.toString().trim());
+          const hasValidHeaders = expectedHeaders.every((expected) =>
+            normalizedHeaders.some((header) => header.toLowerCase() === expected.toLowerCase())
+          );
+
+          if (!hasValidHeaders) {
+            alert(`Invalid Excel format. Expected columns: ${expectedHeaders.join(', ')}`);
+            setIsImporting(false);
+            return;
+          }
+
+          // Parse data rows
+          const parsedTasks: Omit<ProjectTask, 'id' | 'project_id'>[] = [];
+          for (let i = 1; i < jsonData.length; i++) {
+            const row = jsonData[i] as (string | number | null)[];
+
+            if (!row[0]) continue; // Skip empty rows
+
+            const activity = row[0]?.toString().trim();
+            const plannedStartStr = row[1]?.toString().trim();
+            const plannedEndStr = row[2]?.toString().trim();
+            const percentComplete =
+              typeof row[3] === 'number' ? row[3] : parseFloat(row[3]?.toString() || '0') || 0;
+
+            if (!activity) {
+              alert(`Row ${i + 1}: Activity is required`);
+              setIsImporting(false);
+              return;
+            }
+
+            // Parse dates
+            let plannedStart: Date | null = null;
+            let plannedEnd: Date | null = null;
+
+            if (plannedStartStr) {
+              const parsedStart = new Date(plannedStartStr);
+              if (isNaN(parsedStart.getTime())) {
+                alert(`Row ${i + 1}: Invalid Planned Start date format`);
+                setIsImporting(false);
+                return;
+              }
+              plannedStart = parsedStart;
+            }
+
+            if (plannedEndStr) {
+              const parsedEnd = new Date(plannedEndStr);
+              if (isNaN(parsedEnd.getTime())) {
+                alert(`Row ${i + 1}: Invalid Planned End date format`);
+                setIsImporting(false);
+                return;
+              }
+              plannedEnd = parsedEnd;
+            }
+
+            if (percentComplete < 0 || percentComplete > 100) {
+              alert(`Row ${i + 1}: Percent Complete must be between 0 and 100`);
+              setIsImporting(false);
+              return;
+            }
+
+            parsedTasks.push({
+              activity,
+              planned_start: plannedStart ? plannedStart.toISOString().split('T')[0] : null,
+              planned_end: plannedEnd ? plannedEnd.toISOString().split('T')[0] : null,
+              percent_complete: percentComplete,
+              actual_start: null,
+              actual_end: null,
+            });
+          }
+
+          if (parsedTasks.length === 0) {
+            alert('No valid tasks found in the Excel file');
+            setIsImporting(false);
+            return;
+          }
+
+          setPendingImportTasks(parsedTasks);
+          setImportConfirmModalOpen(true);
+        } catch (parseError) {
+          console.error('Parse error:', parseError);
+          alert('Failed to parse Excel file. Please check the format and try again.');
+        } finally {
+          setIsImporting(false);
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error('Import error:', error);
+      alert('Failed to read file. Please try again.');
+      setIsImporting(false);
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleConfirmImport = () => {
@@ -834,17 +918,13 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                 className="text-sm text-slate-600 dark:text-slate-400"
                 aria-describedby="project-meta"
               >
-                {t.project_overview} ΓÇó {projectOverview.totalTasks} tasks ΓÇó{" "}
+                {t.project_overview} ΓÇó {projectOverview.totalTasks} tasks ΓÇó{' '}
                 {projectOverview.duration} days
               </p>
             </div>
 
             {/* Enhanced Action Buttons - Better Mobile Layout */}
-            <div
-              className="flex flex-wrap gap-2"
-              role="toolbar"
-              aria-label="Project actions"
-            >
+            <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Project actions">
               <EnhancedButton
                 onClick={handleEditProject}
                 variant="outline"
@@ -889,7 +969,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                         </div>
                         <div>
                           <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                            {t.project_overview_title || "Project Overview"}
+                            {t.project_overview_title || 'Project Overview'}
                           </h1>
                           <div className="flex items-center gap-2">
                             <div className="h-1 w-8 bg-white/60 rounded-full"></div>
@@ -909,7 +989,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                             </div>
                             <div>
                               <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.total_tasks || "Total Tasks"}
+                                {t.total_tasks || 'Total Tasks'}
                               </p>
                               <p className="text-white text-xl font-bold">
                                 {projectOverview.totalTasks}
@@ -925,12 +1005,12 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                             </div>
                             <div>
                               <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.project_duration || "Duration"}
+                                {t.project_duration || 'Duration'}
                               </p>
                               <p className="text-white text-xl font-bold">
-                                {projectOverview.duration}{" "}
+                                {projectOverview.duration}{' '}
                                 <span className="text-sm font-normal text-white/80">
-                                  {t.days || "days"}
+                                  {t.days || 'days'}
                                 </span>
                               </p>
                             </div>
@@ -944,7 +1024,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                             </div>
                             <div>
                               <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.project_budget || "Budget"}
+                                {t.project_budget || 'Budget'}
                               </p>
                               <p className="text-white text-lg font-bold">
                                 {formatRupiah(projectOverview.budget)}
@@ -960,7 +1040,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                             </div>
                             <div>
                               <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.overall_progress || "Progress"}
+                                {t.overall_progress || 'Progress'}
                               </p>
                               <p className="text-white text-xl font-bold">
                                 {performanceMetrics.overallProgress.toFixed(1)}%
@@ -982,7 +1062,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                      {t.performance_summary_title || "Performance Metrics"}
+                      {t.performance_summary_title || 'Performance Metrics'}
                     </h2>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       Key performance indicators and project status
@@ -995,7 +1075,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                   <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                        {t.deviation_from_plan || "Deviation"}
+                        {t.deviation_from_plan || 'Deviation'}
                       </p>
                       {performanceMetrics.deviation > 0 ? (
                         <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
@@ -1006,53 +1086,50 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     <p
                       className={`text-xl font-bold ${
                         performanceMetrics.deviation > 5
-                          ? "text-green-600 dark:text-green-400"
+                          ? 'text-green-600 dark:text-green-400'
                           : performanceMetrics.deviation < -5
-                          ? "text-red-600 dark:text-red-400"
-                          : "text-slate-900 dark:text-slate-100"
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-slate-900 dark:text-slate-100'
                       }`}
                     >
-                      {performanceMetrics.deviation > 0 ? "+" : ""}
+                      {performanceMetrics.deviation > 0 ? '+' : ''}
                       {performanceMetrics.deviation.toFixed(1)}%
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       {performanceMetrics.deviation > 5
-                        ? t.ahead_of_schedule || "Ahead of schedule"
+                        ? t.ahead_of_schedule || 'Ahead of schedule'
                         : performanceMetrics.deviation < -5
-                        ? t.behind_schedule || "Behind schedule"
-                        : t.on_track || "On track"}
+                          ? t.behind_schedule || 'Behind schedule'
+                          : t.on_track || 'On track'}
                     </p>
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                        {t.predicted_completion || "Predicted Completion"}
+                        {t.predicted_completion || 'Predicted Completion'}
                       </p>
                       <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
                     </div>
                     <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       {performanceMetrics.predictedCompletion
                         ? formatDate(performanceMetrics.predictedCompletion)
-                        : t.not_available || "Not available"}
+                        : t.not_available || 'Not available'}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      {t.estimated_completion_date ||
-                        "Estimated completion date"}
+                      {t.estimated_completion_date || 'Estimated completion date'}
                     </p>
                   </div>
 
                   <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                        {t.tasks_completed || "Tasks Completed"}
+                        {t.tasks_completed || 'Tasks Completed'}
                       </p>
                       <CheckBadgeIcon className="w-4 h-4 text-green-600" />
                     </div>
                     <p className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                      {activeProjectTasks?.filter(
-                        (t) => t.percent_complete === 100
-                      ).length || 0}
+                      {activeProjectTasks?.filter((t) => t.percent_complete === 100).length || 0}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                       dari {projectOverview.totalTasks} total tasks
@@ -1070,7 +1147,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                        {t.project_progress_chart || "Project Progress"}
+                        {t.project_progress_chart || 'Project Progress'}
                       </h2>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
                         Visual representation of project timeline and progress
@@ -1079,21 +1156,21 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                   </div>
                   <div className="flex gap-2 bg-white dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
                     <button
-                      onClick={() => setChartView("s-curve")}
+                      onClick={() => setChartView('s-curve')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        chartView === "s-curve"
-                          ? "bg-red-600 text-white shadow-sm"
-                          : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                        chartView === 's-curve'
+                          ? 'bg-red-600 text-white shadow-sm'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                       }`}
                     >
                       S-Curve
                     </button>
                     <button
-                      onClick={() => setChartView("gantt")}
+                      onClick={() => setChartView('gantt')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        chartView === "gantt"
-                          ? "bg-red-600 text-white shadow-sm"
-                          : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                        chartView === 'gantt'
+                          ? 'bg-red-600 text-white shadow-sm'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
                       }`}
                     >
                       Gantt
@@ -1109,20 +1186,17 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                       </div>
                     }
                   >
-                    {chartView === "s-curve" ? (
+                    {chartView === 's-curve' ? (
                       <div className="h-80 sm:h-96" ref={chartRef}>
                         {nivoSCurveData.length > 0 ? (
                           <Line
                             data={{
-                              labels:
-                                nivoSCurveData[0]?.data.map(
-                                  (point) => point.x
-                                ) || [],
+                              labels: nivoSCurveData[0]?.data.map((point) => point.x) || [],
                               datasets: nivoSCurveData.map((series) => ({
                                 label: series.id,
                                 data: series.data.map((point) => point.y),
                                 borderColor: series.color,
-                                backgroundColor: series.color + "20",
+                                backgroundColor: series.color + '20',
                                 borderWidth: 2,
                                 fill: false,
                                 tension: 0.4,
@@ -1135,7 +1209,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                               maintainAspectRatio: false,
                               plugins: {
                                 legend: {
-                                  position: "top" as const,
+                                  position: 'top' as const,
                                   labels: {
                                     padding: 10,
                                     usePointStyle: true,
@@ -1145,16 +1219,16 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                                   },
                                 },
                                 tooltip: {
-                                  mode: "index" as const,
+                                  mode: 'index' as const,
                                   intersect: false,
                                   callbacks: {
                                     label: function (context: any) {
-                                      let label = context.dataset.label || "";
+                                      let label = context.dataset.label || '';
                                       if (label) {
-                                        label += ": ";
+                                        label += ': ';
                                       }
                                       if (context.parsed.y !== null) {
-                                        label += context.parsed.y + "%";
+                                        label += context.parsed.y + '%';
                                       }
                                       return label;
                                     },
@@ -1166,7 +1240,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                                   display: true,
                                   title: {
                                     display: true,
-                                    text: "Project Timeline",
+                                    text: 'Project Timeline',
                                     font: {
                                       size: 12,
                                     },
@@ -1179,7 +1253,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                                   display: true,
                                   title: {
                                     display: true,
-                                    text: "Progress (%)",
+                                    text: 'Progress (%)',
                                     font: {
                                       size: 12,
                                     },
@@ -1187,7 +1261,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                                   beginAtZero: true,
                                   max: 100,
                                   grid: {
-                                    color: "rgba(0, 0, 0, 0.1)",
+                                    color: 'rgba(0, 0, 0, 0.1)',
                                   },
                                   ticks: {
                                     stepSize: 20,
@@ -1195,8 +1269,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                                 },
                               },
                               interaction: {
-                                mode: "nearest" as const,
-                                axis: "x" as const,
+                                mode: 'nearest' as const,
+                                axis: 'x' as const,
                                 intersect: false,
                               },
                             }}
@@ -1206,7 +1280,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                             <div className="text-center">
                               <ChartPieIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
                               <p className="text-sm">
-                                {t.no_data_available || "No data available"}
+                                {t.no_data_available || 'No data available'}
                               </p>
                             </div>
                           </div>
@@ -1252,7 +1326,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     >
                       <DocumentArrowUpIcon className="w-5 h-5" />
                       <span className="text-sm font-medium">
-                        {isImporting ? "Importing..." : t.import_excel}
+                        {isImporting ? 'Importing...' : t.import_excel}
                       </span>
                     </EnhancedButton>
                     <EnhancedButton
@@ -1264,7 +1338,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     >
                       <DocumentArrowDownIcon className="w-5 h-5" />
                       <span className="text-sm font-medium">
-                        {isExporting ? "Exporting..." : t.export_excel}
+                        {isExporting ? 'Exporting...' : t.export_excel}
                       </span>
                     </EnhancedButton>
                   </div>
@@ -1404,11 +1478,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                       >
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton
-                        onClick={handleDeleteConfirm}
-                        variant="error"
-                        size="sm"
-                      >
+                      <EnhancedButton onClick={handleDeleteConfirm} variant="error" size="sm">
                         {t.delete}
                       </EnhancedButton>
                     </div>
@@ -1425,7 +1495,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                   <div className="p-6">
                     <p className="text-slate-700 dark:text-slate-300 mb-4">
                       {t.confirm_import_message.replace(
-                        "{count}",
+                        '{count}',
                         pendingImportTasks.length.toString()
                       )}
                     </p>
@@ -1437,11 +1507,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                       >
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton
-                        onClick={handleConfirmImport}
-                        variant="primary"
-                        size="sm"
-                      >
+                      <EnhancedButton onClick={handleConfirmImport} variant="primary" size="sm">
                         {t.import}
                       </EnhancedButton>
                     </div>
@@ -1498,11 +1564,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                       >
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton
-                        onClick={handleSaveProject}
-                        variant="primary"
-                        size="sm"
-                      >
+                      <EnhancedButton onClick={handleSaveProject} variant="primary" size="sm">
                         {t.save}
                       </EnhancedButton>
                     </div>
