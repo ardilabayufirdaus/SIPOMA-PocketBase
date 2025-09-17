@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { User } from "../types";
-import { Language } from "../App";
-import CogIcon from "../components/icons/CogIcon";
-import ShieldCheckIcon from "../components/icons/ShieldCheckIcon";
-import LanguageIcon from "../components/icons/LanguageIcon";
-import BellIcon from "../components/icons/BellIcon";
-import { supabase } from "../utils/supabase";
+import React, { useState } from 'react';
+import { User } from '../types';
+import { Language } from '../App';
+import CogIcon from '../components/icons/CogIcon';
+import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
+import LanguageIcon from '../components/icons/LanguageIcon';
+import BellIcon from '../components/icons/BellIcon';
+import { supabase } from '../utils/supabase';
 
 // Import Enhanced Components
 import {
@@ -15,11 +15,11 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../components/ui/EnhancedComponents";
+} from '../components/ui/EnhancedComponents';
 
 // Import permission utilities
-import { usePermissions } from "../utils/permissions";
-import { PermissionLevel } from "../types";
+import { usePermissions } from '../utils/permissions';
+import { PermissionLevel } from '../types';
 
 interface SettingsPageProps {
   t: any;
@@ -52,15 +52,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 }) => {
   // Permission check
   const permissionChecker = usePermissions(user);
-  const hasSettingsAccess = permissionChecker.hasPermission(
-    "system_settings",
-    "READ"
-  );
+  const hasSettingsAccess = permissionChecker.hasPermission('system_settings', 'READ');
 
   const [passwordData, setPasswordData] = useState({
-    current: "",
-    new: "",
-    confirm: "",
+    current: '',
+    new: '',
+    confirm: '',
   });
   const [notificationPrefs, setNotificationPrefs] = useState({
     projectUpdates: false,
@@ -74,12 +71,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
   // Load notification preferences from localStorage
   React.useEffect(() => {
-    const savedPrefs = localStorage.getItem("sipoma_notification_prefs");
+    const savedPrefs = localStorage.getItem('sipoma_notification_prefs');
     if (savedPrefs) {
       try {
         setNotificationPrefs(JSON.parse(savedPrefs));
       } catch (err) {
-        console.error("Failed to load notification preferences:", err);
+        console.error('Failed to load notification preferences:', err);
       }
     }
   }, []);
@@ -87,7 +84,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   // Save notification preferences to localStorage
   const saveNotificationPrefs = (prefs: typeof notificationPrefs) => {
     setNotificationPrefs(prefs);
-    localStorage.setItem("sipoma_notification_prefs", JSON.stringify(prefs));
+    localStorage.setItem('sipoma_notification_prefs', JSON.stringify(prefs));
   };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
@@ -101,13 +98,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         password: passwordData.new,
       });
       if (error) {
-        alert(t.password_update_failed || "Failed to update password");
+        alert(t.password_update_failed || 'Failed to update password');
       } else {
         alert(t.password_updated);
-        setPasswordData({ current: "", new: "", confirm: "" });
+        setPasswordData({ current: '', new: '', confirm: '' });
       }
     } catch (err) {
-      alert(t.password_update_failed || "Failed to update password");
+      alert(t.password_update_failed || 'Failed to update password');
     }
   };
 
@@ -115,9 +112,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     return (
       <div className="p-6 lg:p-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-slate-900">
-            {t.header_settings}
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t.header_settings}</h1>
           <p className="mt-2 text-slate-600">Loading user information...</p>
         </div>
       </div>
@@ -148,7 +143,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             Access Denied
           </h3>
           <p className="text-red-600 dark:text-red-300">
-            You don't have permission to access system settings.
+            You don&apos;t have permission to access system settings.
           </p>
         </div>
       </div>
@@ -159,17 +154,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     <div className="p-6 lg:p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900">
-            {t.header_settings}
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t.header_settings}</h1>
           <p className="mt-2 text-slate-600">{t.settings_page_subtitle}</p>
         </div>
 
         {/* Profile Information */}
-        <SettingsCard
-          title={t.profile_information}
-          icon={<CogIcon className="w-6 h-6" />}
-        >
+        <SettingsCard title={t.profile_information} icon={<CogIcon className="w-6 h-6" />}>
           <div className="flex flex-col sm:flex-row items-center gap-6">
             {user.avatar_url ? (
               <img
@@ -183,17 +173,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               </div>
             )}
             <div className="grid grid-cols-[auto,1fr] gap-x-6 gap-y-2 text-sm">
-              <span className="font-semibold text-slate-600">
-                {t.full_name_label}:
-              </span>
+              <span className="font-semibold text-slate-600">{t.full_name_label}:</span>
               <span className="text-slate-800">{user.full_name}</span>
               <span className="font-semibold text-slate-600">
-                {t.username_label || "Username"}:
+                {t.username_label || 'Username'}:
               </span>
               <span className="text-slate-800">{user.username}</span>
-              <span className="font-semibold text-slate-600">
-                {t.role_label}:
-              </span>
+              <span className="font-semibold text-slate-600">{t.role_label}:</span>
               <span className="text-slate-800">{user.role}</span>
             </div>
           </div>
@@ -202,7 +188,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               variant="primary"
               size="sm"
               onClick={onOpenProfileModal}
-              aria-label={t.edit_profile || "Edit profile"}
+              aria-label={t.edit_profile || 'Edit profile'}
             >
               {t.edit_profile}
             </EnhancedButton>
@@ -210,10 +196,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         </SettingsCard>
 
         {/* Change Password */}
-        <SettingsCard
-          title={t.change_password}
-          icon={<ShieldCheckIcon className="w-6 h-6" />}
-        >
+        <SettingsCard title={t.change_password} icon={<ShieldCheckIcon className="w-6 h-6" />}>
           <form onSubmit={handlePasswordUpdate} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
@@ -223,24 +206,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 <input
                   type="password"
                   value={passwordData.current}
-                  onChange={(e) =>
-                    setPasswordData((p) => ({ ...p, current: e.target.value }))
-                  }
+                  onChange={(e) => setPasswordData((p) => ({ ...p, current: e.target.value }))}
                   autoComplete="current-password"
                   className="mt-1 input-style"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700">
-                  {t.new_password}
-                </label>
+                <label className="block text-sm font-medium text-slate-700">{t.new_password}</label>
                 <input
                   type="password"
                   value={passwordData.new}
-                  onChange={(e) =>
-                    setPasswordData((p) => ({ ...p, new: e.target.value }))
-                  }
+                  onChange={(e) => setPasswordData((p) => ({ ...p, new: e.target.value }))}
                   autoComplete="new-password"
                   className="mt-1 input-style"
                   required
@@ -253,9 +230,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 <input
                   type="password"
                   value={passwordData.confirm}
-                  onChange={(e) =>
-                    setPasswordData((p) => ({ ...p, confirm: e.target.value }))
-                  }
+                  onChange={(e) => setPasswordData((p) => ({ ...p, confirm: e.target.value }))}
                   autoComplete="new-password"
                   className="mt-1 input-style"
                   required
@@ -267,7 +242,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 variant="primary"
                 size="sm"
                 type="submit"
-                aria-label={t.save_password || "Save password"}
+                aria-label={t.save_password || 'Save password'}
               >
                 {t.save_password}
               </EnhancedButton>
@@ -276,15 +251,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         </SettingsCard>
 
         {/* Language */}
-        <SettingsCard
-          title={t.language_settings}
-          icon={<LanguageIcon className="w-6 h-6" />}
-        >
+        <SettingsCard title={t.language_settings} icon={<LanguageIcon className="w-6 h-6" />}>
           <div className="max-w-xs">
-            <label
-              htmlFor="language-select"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="language-select" className="block text-sm font-medium text-slate-700">
               {t.language}
             </label>
             <select
@@ -300,24 +269,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         </SettingsCard>
 
         {/* Notifications */}
-        <SettingsCard
-          title={t.notifications}
-          icon={<BellIcon className="w-6 h-6" />}
-        >
+        <SettingsCard title={t.notifications} icon={<BellIcon className="w-6 h-6" />}>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-800">
-                  {t.push_notifications_project}
-                </p>
-                <p className="text-xs text-slate-500">
-                  {t.push_notifications_project_desc}
-                </p>
+                <p className="font-medium text-slate-800">{t.push_notifications_project}</p>
+                <p className="text-xs text-slate-500">{t.push_notifications_project_desc}</p>
               </div>
               <EnhancedButton
-                variant={
-                  notificationPrefs.projectUpdates ? "primary" : "outline"
-                }
+                variant={notificationPrefs.projectUpdates ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => {
                   const newPrefs = {
@@ -332,8 +292,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 aria-pressed={notificationPrefs.projectUpdates}
               >
                 {notificationPrefs.projectUpdates
-                  ? t.enabled || "Enabled"
-                  : t.disabled || "Disabled"}
+                  ? t.enabled || 'Enabled'
+                  : t.disabled || 'Disabled'}
               </EnhancedButton>
             </div>
           </div>

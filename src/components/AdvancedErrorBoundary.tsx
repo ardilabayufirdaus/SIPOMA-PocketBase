@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 // Error boundary state interface
 interface ErrorBoundaryState {
@@ -21,10 +21,7 @@ interface ErrorBoundaryProps {
 }
 
 // Advanced Error Boundary Component
-export class AdvancedErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private retryTimeouts: NodeJS.Timeout[] = [];
 
   constructor(props: ErrorBoundaryProps) {
@@ -41,9 +38,7 @@ export class AdvancedErrorBoundary extends Component<
 
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     // Generate unique error ID for tracking
-    const errorId = `error_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+    const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     return {
       hasError: true,
@@ -72,7 +67,7 @@ export class AdvancedErrorBoundary extends Component<
     }
 
     // Log error details
-    console.error("🚨 Advanced Error Boundary caught an error:", {
+    console.error('🚨 Advanced Error Boundary caught an error:', {
       error: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -89,11 +84,7 @@ export class AdvancedErrorBoundary extends Component<
   }
 
   // Report error to external service
-  private reportError = (
-    error: Error,
-    errorInfo: ErrorInfo,
-    errorId: string
-  ) => {
+  private reportError = (error: Error, errorInfo: ErrorInfo, errorId: string) => {
     const errorReport = {
       errorId,
       message: error.message,
@@ -116,15 +107,13 @@ export class AdvancedErrorBoundary extends Component<
     // Example: sendToErrorReportingService(errorReport);
 
     // For now, store in localStorage for debugging
-    const existingReports = JSON.parse(
-      localStorage.getItem("error-reports") || "[]"
-    );
+    const existingReports = JSON.parse(localStorage.getItem('error-reports') || '[]');
     existingReports.push(errorReport);
     // Keep only last 50 error reports
     if (existingReports.length > 50) {
       existingReports.shift();
     }
-    localStorage.setItem("error-reports", JSON.stringify(existingReports));
+    localStorage.setItem('error-reports', JSON.stringify(existingReports));
   };
 
   // Retry rendering the component
@@ -147,11 +136,9 @@ export class AdvancedErrorBoundary extends Component<
         onRetry();
       }
 
-      console.log(
-        `🔄 Retrying component render (attempt ${retryCount + 1}/${maxRetries})`
-      );
+      console.log(`🔄 Retrying component render (attempt ${retryCount + 1}/${maxRetries})`);
     } else {
-      console.warn("❌ Max retry attempts reached, cannot retry further");
+      console.warn('❌ Max retry attempts reached, cannot retry further');
     }
   };
 
@@ -165,7 +152,7 @@ export class AdvancedErrorBoundary extends Component<
       retryCount: 0,
     });
 
-    console.log("🔄 Error boundary reset");
+    console.log('🔄 Error boundary reset');
   };
 
   // Reload the page
@@ -180,12 +167,7 @@ export class AdvancedErrorBoundary extends Component<
 
   render() {
     const { hasError, error, errorInfo, errorId, retryCount } = this.state;
-    const {
-      children,
-      fallback,
-      maxRetries = 3,
-      showErrorDetails = false,
-    } = this.props;
+    const { children, fallback, maxRetries = 3, showErrorDetails = false } = this.props;
 
     if (hasError) {
       // Use custom fallback if provided
@@ -216,9 +198,7 @@ export class AdvancedErrorBoundary extends Component<
                 </div>
               </div>
               <div className="ml-4">
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Something went wrong
-                </h1>
+                <h1 className="text-xl font-semibold text-gray-900">Something went wrong</h1>
                 <p className="text-gray-600">
                   An unexpected error occurred while rendering this component.
                 </p>
@@ -302,12 +282,7 @@ export class AdvancedErrorBoundary extends Component<
                 onClick={this.handleReset}
                 className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -323,12 +298,7 @@ export class AdvancedErrorBoundary extends Component<
                 onClick={this.handleGoBack}
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -344,12 +314,7 @@ export class AdvancedErrorBoundary extends Component<
                 onClick={this.handleReload}
                 className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors"
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -363,14 +328,11 @@ export class AdvancedErrorBoundary extends Component<
 
             {/* Additional help text */}
             <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-              <h3 className="text-sm font-medium text-blue-800 mb-2">
-                What happened?
-              </h3>
+              <h3 className="text-sm font-medium text-blue-800 mb-2">What happened?</h3>
               <p className="text-sm text-blue-700">
-                This error has been automatically reported to our development
-                team. We're working to fix this issue. In the meantime, you can
-                try the actions above or contact support if the problem
-                persists.
+                This error has been automatically reported to our development team. We&apos;re
+                working to fix this issue. In the meantime, you can try the actions above or contact
+                support if the problem persists.
               </p>
             </div>
           </div>
@@ -393,7 +355,7 @@ export const useErrorRecovery = () => {
       setLastError(error);
 
       // Log to console with additional context
-      console.error("🚨 Error Recovery Hook:", {
+      console.error('🚨 Error Recovery Hook:', {
         errorId,
         error: error.message,
         componentStack: errorInfo.componentStack,
@@ -419,7 +381,7 @@ export const useErrorRecovery = () => {
 // Higher-order component for wrapping components with error boundary
 export const withAdvancedErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<ErrorBoundaryProps, "children">
+  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
 ) => {
   const WrappedComponent = (props: P) => (
     <AdvancedErrorBoundary {...errorBoundaryProps}>

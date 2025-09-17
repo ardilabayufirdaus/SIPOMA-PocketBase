@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import CheckBadgeIcon from "./icons/CheckBadgeIcon";
-import ClipboardIcon from "./icons/ClipboardIcon";
+import React, { useEffect, useState } from 'react';
+import CheckBadgeIcon from './icons/CheckBadgeIcon';
+import ClipboardIcon from './icons/ClipboardIcon';
 
 interface ToastProps {
   message: string;
-  type: "success" | "error" | "info" | "warning";
+  type: 'success' | 'error' | 'info' | 'warning';
   isVisible: boolean;
   onClose: () => void;
   duration?: number;
@@ -45,16 +45,16 @@ const Toast: React.FC<ToastProps> = ({
 
   const getToastStyles = () => {
     const baseStyles =
-      "fixed top-4 right-4 max-w-md w-full shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 overflow-hidden transform transition-all duration-300 z-50";
+      'fixed top-4 right-4 max-w-md w-full shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 overflow-hidden transform transition-all duration-300 z-50';
 
     switch (type) {
-      case "success":
+      case 'success':
         return `${baseStyles} bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400`;
-      case "error":
+      case 'error':
         return `${baseStyles} bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400`;
-      case "warning":
+      case 'warning':
         return `${baseStyles} bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400`;
-      case "info":
+      case 'info':
         return `${baseStyles} bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400`;
       default:
         return `${baseStyles} bg-white dark:bg-slate-800 border-l-4 border-gray-400 dark:border-slate-600`;
@@ -63,31 +63,31 @@ const Toast: React.FC<ToastProps> = ({
 
   const getIconColor = () => {
     switch (type) {
-      case "success":
-        return "text-green-400 dark:text-green-300";
-      case "error":
-        return "text-red-400 dark:text-red-300";
-      case "warning":
-        return "text-yellow-400 dark:text-yellow-300";
-      case "info":
-        return "text-blue-400 dark:text-blue-300";
+      case 'success':
+        return 'text-green-400 dark:text-green-300';
+      case 'error':
+        return 'text-red-400 dark:text-red-300';
+      case 'warning':
+        return 'text-yellow-400 dark:text-yellow-300';
+      case 'info':
+        return 'text-blue-400 dark:text-blue-300';
       default:
-        return "text-gray-400 dark:text-gray-300";
+        return 'text-gray-400 dark:text-gray-300';
     }
   };
 
   const getTextColor = () => {
     switch (type) {
-      case "success":
-        return "text-green-800 dark:text-green-200";
-      case "error":
-        return "text-red-800 dark:text-red-200";
-      case "warning":
-        return "text-yellow-800 dark:text-yellow-200";
-      case "info":
-        return "text-blue-800 dark:text-blue-200";
+      case 'success':
+        return 'text-green-800 dark:text-green-200';
+      case 'error':
+        return 'text-red-800 dark:text-red-200';
+      case 'warning':
+        return 'text-yellow-800 dark:text-yellow-200';
+      case 'info':
+        return 'text-blue-800 dark:text-blue-200';
       default:
-        return "text-gray-800 dark:text-gray-200";
+        return 'text-gray-800 dark:text-gray-200';
     }
   };
 
@@ -96,7 +96,7 @@ const Toast: React.FC<ToastProps> = ({
   return (
     <div
       className={`${getToastStyles()} ${
-        isAnimating ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+        isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}
     >
       <div className="p-4">
@@ -111,15 +111,13 @@ const Toast: React.FC<ToastProps> = ({
             <div className="ml-4 flex-shrink-0 flex">
               <button
                 className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white ${
-                  type === "success"
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-blue-600 hover:bg-blue-700"
+                  type === 'success'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150`}
                 onClick={actionButton.onClick}
               >
-                {actionButton.icon && (
-                  <actionButton.icon className="h-4 w-4 mr-1" />
-                )}
+                {actionButton.icon && <actionButton.icon className="h-4 w-4 mr-1" />}
                 {actionButton.label}
               </button>
             </div>

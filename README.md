@@ -87,10 +87,6 @@ sipoma-versi-2/
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn
-- Supabase account
-
 ### Installation
 
 1. **Clone repository**
@@ -135,7 +131,16 @@ sipoma-versi-2/
 
 ## 🔧 Configuration
 
+- Otomatis build, lint, test, dan coverage via GitHub Actions (`.github/workflows/ci.yml`).
+- Semua commit ke branch `main` dan PR akan menjalankan pipeline otomatis.
+- Coverage report di-upload sebagai artifact.
+- Deployment opsional (Vercel/Netlify/Custom server).
+- Observability: Integrasi Sentry (error tracking) dan custom logging.
+
 ### Environment Variables
+
+- Semua variabel rahasia diletakkan di `.env` (lihat `.env.example`).
+- File `.env` sudah di-ignore di `.gitignore`.
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
@@ -157,17 +162,25 @@ GEMINI_API_KEY=your_gemini_api_key
 - **Tree Shaking**: Remove unused code secara otomatis
 - **Lazy Loading**: Components dimuat on-demand
 - **Compression**: Gzip compression untuk production builds
+  Report coverage otomatis di pipeline CI/CD.
 
 ### Monitoring
 
 - **Performance Tracking**: Custom performance monitoring utility
-- **Error Logging**: Comprehensive error tracking dan reporting
-- **Memory Management**: Automatic cleanup dan optimization
-- **Bundle Size**: Optimized chunk sizes (<500KB per chunk)
 
 ## 🧪 Testing
 
+- Mengikuti OWASP best practices untuk web app security.
+- Dependency audit otomatis setiap install/update.
+- Tidak ada secrets hardcoded di repo.
+
 ### Unit Tests
+
+- 🛠️ Integrasi CI/CD pipeline (build, lint, test, coverage, deploy)
+- 🔒 Implementasi dotenv & secrets management
+- 🧪 Coverage report otomatis
+- 📦 Dependency audit & auto-fix
+- 🧹 Linting & formatting konsisten
 
 ```bash
 npm run test

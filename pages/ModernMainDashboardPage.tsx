@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Page } from "../App";
+import React, { useState, useEffect, useMemo } from 'react';
+import { Page } from '../App';
 import {
   UsersIcon,
   FolderIcon,
@@ -18,7 +18,7 @@ import {
   ArrowRightIcon,
   FilterIcon,
   ExternalLinkIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 // Import modern components
 import {
@@ -30,25 +30,25 @@ import {
   staggerContainer,
   scaleOnHover,
   colors,
-} from "../components/dashboard/ModernDashboard";
+} from '../components/dashboard/ModernDashboard';
 
 // Import chart components
-import { StockDistributionChart } from "../components/charts/StockDistributionChart";
-import { ProjectStatusChart } from "../components/charts/ProjectStatusChart";
+import { StockDistributionChart } from '../components/charts/StockDistributionChart';
+import { ProjectStatusChart } from '../components/charts/ProjectStatusChart';
 
 // Import existing hooks
-import { useProjects } from "../hooks/useProjects";
-import { usePlantData } from "../hooks/usePlantData";
-import { usePackingPlantStockData } from "../hooks/usePackingPlantStockData";
-import { usePackingPlantMasterData } from "../hooks/usePackingPlantMasterData";
-import { useCcrSiloData } from "../hooks/useCcrSiloData";
-import { formatNumber, formatPercentage } from "../utils/formatters";
+import { useProjects } from '../hooks/useProjects';
+import { usePlantData } from '../hooks/usePlantData';
+import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
+import { usePackingPlantMasterData } from '../hooks/usePackingPlantMasterData';
+import { useCcrSiloData } from '../hooks/useCcrSiloData';
+import { formatNumber, formatPercentage } from '../utils/formatters';
 
 // Import Typography Components
-import { H2, Body, UIText } from "../components/ui/Typography";
+import { H2, Body, UIText } from '../components/ui/Typography';
 
 interface ModernMainDashboardPageProps {
-  language: "en" | "id";
+  language: 'en' | 'id';
   onNavigate: (page: Page, subPage?: string) => void;
   usersCount: number;
   onlineUsersCount: number;
@@ -56,14 +56,14 @@ interface ModernMainDashboardPageProps {
 
 // Enhanced Performance Chart Widget
 const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
-  const [activeTab, setActiveTab] = useState<
-    "performance" | "trends" | "comparison"
-  >("performance");
+  const [activeTab, setActiveTab] = useState<'performance' | 'trends' | 'comparison'>(
+    'performance'
+  );
 
   const tabs = [
-    { key: "performance", label: "Performance", icon: BarChart3Icon },
-    { key: "trends", label: "Trends", icon: TrendingUpIcon },
-    { key: "comparison", label: "Comparison", icon: PieChartIcon },
+    { key: 'performance', label: 'Performance', icon: BarChart3Icon },
+    { key: 'trends', label: 'Trends', icon: TrendingUpIcon },
+    { key: 'comparison', label: 'Comparison', icon: PieChartIcon },
   ];
 
   return (
@@ -81,8 +81,8 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
                   flex items-center space-x-1 px-3 py-1.5 rounded text-xs font-medium transition-all
                   ${
                     activeTab === tab.key
-                      ? "bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                      ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }
                 `}
               >
@@ -110,10 +110,7 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
 // Stock Overview Widget
 const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
   const totalCapacity = stockData.reduce((acc, item) => acc + item.capacity, 0);
-  const totalStock = stockData.reduce(
-    (acc, item) => acc + item.currentStock,
-    0
-  );
+  const totalStock = stockData.reduce((acc, item) => acc + item.currentStock, 0);
   const utilizationRate = (totalStock / totalCapacity) * 100;
 
   const pieData = stockData.map((item, index) => ({
@@ -129,7 +126,7 @@ const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
       actions={
         <div className="flex items-center space-x-2">
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Last updated: {new Date().toLocaleTimeString("id-ID")}
+            Last updated: {new Date().toLocaleTimeString('id-ID')}
           </span>
         </div>
       }
@@ -172,15 +169,15 @@ const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
 // Project Progress Widget
 const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
   const statusCounts = {
-    on_track: projects.filter((p) => p.status === "on_track").length,
-    at_risk: projects.filter((p) => p.status === "at_risk").length,
-    delayed: projects.filter((p) => p.status === "delayed").length,
+    on_track: projects.filter((p) => p.status === 'on_track').length,
+    at_risk: projects.filter((p) => p.status === 'at_risk').length,
+    delayed: projects.filter((p) => p.status === 'delayed').length,
   };
 
   const chartData = [
-    { name: "On Track", value: statusCounts.on_track, fill: colors.success },
-    { name: "At Risk", value: statusCounts.at_risk, fill: colors.warning },
-    { name: "Delayed", value: statusCounts.delayed, fill: colors.danger },
+    { name: 'On Track', value: statusCounts.on_track, fill: colors.success },
+    { name: 'At Risk', value: statusCounts.at_risk, fill: colors.warning },
+    { name: 'Delayed', value: statusCounts.delayed, fill: colors.danger },
   ];
 
   return (
@@ -200,10 +197,7 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
         </div>
         <div className="space-y-3">
           {projects.slice(0, 4).map((project) => (
-            <div
-              key={project.id}
-              className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
-            >
+            <div key={project.id} className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
                   {project.name}
@@ -211,11 +205,11 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
                 <div className="flex items-center space-x-1">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      project.status === "on_track"
-                        ? "bg-green-500"
-                        : project.status === "at_risk"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
+                      project.status === 'on_track'
+                        ? 'bg-green-500'
+                        : project.status === 'at_risk'
+                          ? 'bg-yellow-500'
+                          : 'bg-red-500'
                     }`}
                   />
                   <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
@@ -226,11 +220,11 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
               <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all duration-300 ${
-                    project.status === "on_track"
-                      ? "bg-green-500"
-                      : project.status === "at_risk"
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
+                    project.status === 'on_track'
+                      ? 'bg-green-500'
+                      : project.status === 'at_risk'
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
                   }`}
                   style={{ width: `${project.progress}%` }}
                 />
@@ -264,8 +258,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
     toggleMachineStatus,
     markAllAlertsAsRead,
   } = usePlantData();
-  const { records: stockRecords, loading: stockLoading } =
-    usePackingPlantStockData();
+  const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
   const { records: packingPlantMasterRecords } = usePackingPlantMasterData();
 
   // Auto refresh every 30 seconds
@@ -288,9 +281,9 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
       baseTime.setHours(baseTime.getHours() - (12 - index) * 2);
 
       return {
-        time: baseTime.toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
+        time: baseTime.toLocaleTimeString('id-ID', {
+          hour: '2-digit',
+          minute: '2-digit',
         }),
         production: item.output || 0,
         efficiency: Math.min(100, Math.max(0, (item.output / 100) * 95)),
@@ -302,97 +295,77 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   // Transform project data
   const transformedProjects = useMemo(() => {
     return projects.slice(0, 5).map((project) => {
-      const projectTasks = tasks.filter(
-        (task) => task.project_id === project.id
-      );
+      const projectTasks = tasks.filter((task) => task.project_id === project.id);
       const totalTasks = projectTasks.length;
-      const completedTasks = projectTasks.filter(
-        (task) => task.percent_complete === 100
-      ).length;
-      const progress =
-        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      const completedTasks = projectTasks.filter((task) => task.percent_complete === 100).length;
+      const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-      let status: "on_track" | "at_risk" | "delayed" = "on_track";
-      if (progress < 50) status = "at_risk";
-      if (progress < 25) status = "delayed";
+      let status: 'on_track' | 'at_risk' | 'delayed' = 'on_track';
+      if (progress < 50) status = 'at_risk';
+      if (progress < 25) status = 'delayed';
 
       return {
         id: project.id,
         name: project.title,
         progress,
         status,
-        dueDate:
-          project.end_date ||
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        dueDate: project.end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       };
     });
   }, [projects, tasks]);
 
   // Transform stock data
   const transformedStockData = useMemo(() => {
-    const uniqueAreas = Array.from(
-      new Set(stockRecords.map((record) => record.area))
-    );
+    const uniqueAreas = Array.from(new Set(stockRecords.map((record) => record.area)));
 
     return uniqueAreas.slice(0, 5).map((area) => {
       const latestRecord = stockRecords
         .filter((record) => record.area === area)
-        .sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )[0];
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
-      const masterDataForArea = packingPlantMasterRecords.find(
-        (master) => master.area === area
-      );
+      const masterDataForArea = packingPlantMasterRecords.find((master) => master.area === area);
 
       return {
         area: area,
         currentStock: latestRecord?.closing_stock || 0,
         capacity: masterDataForArea?.silo_capacity || 1000,
-        trend: Math.random() > 0.5 ? "up" : "down",
+        trend: Math.random() > 0.5 ? 'up' : 'down',
       };
     });
   }, [stockRecords, packingPlantMasterRecords, refreshKey]);
 
   // Calculate metrics
-  const activeProjects = projects.filter((p) => p.status === "active").length;
-  const totalCapacity = transformedStockData.reduce(
-    (acc, item) => acc + item.capacity,
-    0
-  );
-  const totalStock = transformedStockData.reduce(
-    (acc, item) => acc + item.currentStock,
-    0
-  );
-  const utilizationRate =
-    totalCapacity > 0 ? (totalStock / totalCapacity) * 100 : 0;
+  const activeProjects = projects.filter((p) => p.status === 'active').length;
+  const totalCapacity = transformedStockData.reduce((acc, item) => acc + item.capacity, 0);
+  const totalStock = transformedStockData.reduce((acc, item) => acc + item.currentStock, 0);
+  const utilizationRate = totalCapacity > 0 ? (totalStock / totalCapacity) * 100 : 0;
 
   // Quick actions data
   const quickActions = [
     {
-      title: "User Management",
-      description: "Manage user accounts, roles, and permissions",
+      title: 'User Management',
+      description: 'Manage user accounts, roles, and permissions',
       icon: <UsersIcon className="w-5 h-5" />,
-      onClick: () => onNavigate("users"),
+      onClick: () => onNavigate('users'),
     },
     {
-      title: "Plant Operations",
-      description: "Monitor production and operational metrics",
+      title: 'Plant Operations',
+      description: 'Monitor production and operational metrics',
       icon: <SettingsIcon className="w-5 h-5" />,
-      onClick: () => onNavigate("operations"),
+      onClick: () => onNavigate('operations'),
     },
     {
-      title: "Project Management",
-      description: "Track project progress and deliverables",
+      title: 'Project Management',
+      description: 'Track project progress and deliverables',
       icon: <FolderIcon className="w-5 h-5" />,
-      onClick: () => onNavigate("projects"),
+      onClick: () => onNavigate('projects'),
     },
     {
-      title: "Analytics Dashboard",
-      description: "View detailed analytics and reports",
+      title: 'Analytics Dashboard',
+      description: 'View detailed analytics and reports',
       icon: <BarChart3Icon className="w-5 h-5" />,
-      onClick: () => onNavigate("operations", "op_dashboard"),
-      variant: "primary" as const,
+      onClick: () => onNavigate('operations', 'op_dashboard'),
+      variant: 'primary' as const,
     },
   ];
 
@@ -402,10 +375,10 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
         {/* Header */}
         <DashboardHeader
           currentUser={{
-            name: "Admin User",
-            role: "Super Administrator",
+            name: 'Admin User',
+            role: 'Super Administrator',
           }}
-          onSearch={(query) => console.log("Search:", query)}
+          onSearch={(query) => console.log('Search:', query)}
         />
 
         {/* Key Metrics */}
@@ -417,10 +390,10 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             variant="primary"
             trend={{
               value: 12.5,
-              direction: "up",
-              period: "vs last month",
+              direction: 'up',
+              period: 'vs last month',
             }}
-            onClick={() => onNavigate("users")}
+            onClick={() => onNavigate('users')}
           />
 
           <ModernMetricCard
@@ -430,10 +403,10 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             variant="success"
             trend={{
               value: 8.3,
-              direction: "up",
-              period: "vs yesterday",
+              direction: 'up',
+              period: 'vs yesterday',
             }}
-            onClick={() => onNavigate("users")}
+            onClick={() => onNavigate('users')}
           />
 
           <ModernMetricCard
@@ -443,10 +416,10 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             variant="default"
             trend={{
               value: 5.7,
-              direction: "up",
-              period: "vs last week",
+              direction: 'up',
+              period: 'vs last week',
             }}
-            onClick={() => onNavigate("projects")}
+            onClick={() => onNavigate('projects')}
           />
 
           <ModernMetricCard
@@ -454,22 +427,20 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             value={utilizationRate.toFixed(1)}
             unit="%"
             icon={<PieChartIcon className="w-6 h-6" />}
-            variant={utilizationRate > 80 ? "warning" : "default"}
+            variant={utilizationRate > 80 ? 'warning' : 'default'}
             trend={{
               value: 3.2,
-              direction: utilizationRate > 75 ? "up" : "down",
-              period: "vs last month",
+              direction: utilizationRate > 75 ? 'up' : 'down',
+              period: 'vs last month',
             }}
-            onClick={() => onNavigate("packing")}
+            onClick={() => onNavigate('packing')}
           />
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Performance Chart - takes 2/3 width */}
-          {performanceData.length > 0 && (
-            <PerformanceOverview data={performanceData} />
-          )}
+          {performanceData.length > 0 && <PerformanceOverview data={performanceData} />}
 
           {/* Stock Insights */}
           <StockInsights stockData={transformedStockData} />
@@ -492,8 +463,8 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
                     flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
                     ${
                       isAutoRefresh
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
                     }
                   `}
                 >
@@ -502,7 +473,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
                   ) : (
                     <PlayIcon className="w-3 h-3" />
                   )}
-                  <span>{isAutoRefresh ? "Auto Refresh" : "Manual Mode"}</span>
+                  <span>{isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}</span>
                 </button>
                 <button
                   onClick={() => setRefreshKey((prev) => prev + 1)}
@@ -536,14 +507,12 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
               <div className="flex items-center space-x-2">
                 <ClockIcon className="w-4 h-4 text-slate-400" />
                 <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Last Updated: {new Date().toLocaleString("id-ID")}
+                  Last Updated: {new Date().toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                SIPOMA
-              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">SIPOMA</span>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>
           </div>

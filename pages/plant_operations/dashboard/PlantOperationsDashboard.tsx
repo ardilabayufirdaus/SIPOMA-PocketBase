@@ -1,27 +1,23 @@
-import React, { useState, useMemo, useEffect, memo } from "react";
-import { useCcrParameterData } from "../../../hooks/useCcrParameterData";
-import { useCopParametersSupabase } from "../../../hooks/useCopParametersSupabase";
-import { useWorkInstructions } from "../../../hooks/useWorkInstructions";
-import { useParameterSettings } from "../../../hooks/useParameterSettings";
-import { usePlantUnits } from "../../../hooks/usePlantUnits";
-import { useCurrentUser } from "../../../hooks/useCurrentUser";
-import { usePermissions } from "../../../utils/permissions";
-import { PermissionLevel } from "../../../types";
-import { useDashboardDataProcessor } from "../../../hooks/useDashboardDataProcessor";
-import { useCcrFooterData } from "../../../hooks/useCcrFooterData";
-import { useProductionTrendData } from "../../../hooks/useProductionTrendData";
-import Modal from "../../../components/Modal";
-import {
-  formatDate,
-  formatNumber,
-  formatDateForDB,
-} from "../../../utils/formatters";
-import { CcrParameterData } from "../../../types";
-import LazyChart from "../../../components/LazyChart";
+import React, { useState, useMemo, useEffect, memo } from 'react';
+import { useCcrParameterData } from '../../../hooks/useCcrParameterData';
+import { useCopParametersSupabase } from '../../../hooks/useCopParametersSupabase';
+import { useWorkInstructions } from '../../../hooks/useWorkInstructions';
+import { useParameterSettings } from '../../../hooks/useParameterSettings';
+import { usePlantUnits } from '../../../hooks/usePlantUnits';
+import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import { usePermissions } from '../../../utils/permissions';
+import { PermissionLevel } from '../../../types';
+import { useDashboardDataProcessor } from '../../../hooks/useDashboardDataProcessor';
+import { useCcrFooterData } from '../../../hooks/useCcrFooterData';
+import { useProductionTrendData } from '../../../hooks/useProductionTrendData';
+import Modal from '../../../components/Modal';
+import { formatDate, formatNumber, formatDateForDB } from '../../../utils/formatters';
+import { CcrParameterData } from '../../../types';
+import LazyChart from '../../../components/LazyChart';
 
 // Import chart components
-import { ProductionTrendChart } from "../../../components/charts/ProductionTrendChart";
-import { COPAnalysisChart } from "../../../components/charts/COPAnalysisChart";
+import { ProductionTrendChart } from '../../../components/charts/ProductionTrendChart';
+import { COPAnalysisChart } from '../../../components/charts/COPAnalysisChart';
 
 interface DashboardData {
   timestamp: string;
@@ -32,7 +28,7 @@ interface DashboardData {
   energy: number;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 interface WorkInstructionsChartProps {
   data: any[];
@@ -44,47 +40,38 @@ const WorkInstructionsChart = memo<WorkInstructionsChartProps>(({ data }) => (
   </div>
 ));
 
-WorkInstructionsChart.displayName = "WorkInstructionsChart";
+WorkInstructionsChart.displayName = 'WorkInstructionsChart';
 
 const PlantOperationsDashboard: React.FC = () => {
   const { currentUser, loading: userLoading } = useCurrentUser();
   const permissionChecker = usePermissions(currentUser);
 
   // Check permissions using the proper permission system
-  const hasDashboardAccess = permissionChecker.hasPermission(
-    "plant_operations",
-    "READ"
-  );
+  const hasDashboardAccess = permissionChecker.hasPermission('plant_operations', 'READ');
 
   // Move all hooks to the top before any conditional returns
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedPlantCategory, setSelectedPlantCategory] =
-    useState<string>("all");
-  const [selectedPlantUnit, setSelectedPlantUnit] = useState<string>("all");
+  const [selectedPlantCategory, setSelectedPlantCategory] = useState<string>('all');
+  const [selectedPlantUnit, setSelectedPlantUnit] = useState<string>('all');
 
   // Production Trend Settings State
-  const [showProductionTrendSettings, setShowProductionTrendSettings] =
-    useState(false);
-  const [selectedProductionParameters, setSelectedProductionParameters] =
-    useState<string[]>([]);
+  const [showProductionTrendSettings, setShowProductionTrendSettings] = useState(false);
+  const [selectedProductionParameters, setSelectedProductionParameters] = useState<string[]>([]);
 
   // Check if user is Super Admin
-  const isSuperAdmin = currentUser?.role === "Super Admin";
+  const isSuperAdmin = currentUser?.role === 'Super Admin';
 
   // Load saved parameter selections from localStorage
   useEffect(() => {
     if (isSuperAdmin) {
-      const saved = localStorage.getItem("productionTrendParameters");
+      const saved = localStorage.getItem('productionTrendParameters');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           setSelectedProductionParameters(parsed);
         } catch (error) {
-          console.error(
-            "Error parsing saved production trend parameters:",
-            error
-          );
+          console.error('Error parsing saved production trend parameters:', error);
         }
       }
     }
@@ -93,10 +80,7 @@ const PlantOperationsDashboard: React.FC = () => {
   // Save parameter selections to localStorage
   const saveProductionParameters = (parameters: string[]) => {
     if (isSuperAdmin) {
-      localStorage.setItem(
-        "productionTrendParameters",
-        JSON.stringify(parameters)
-      );
+      localStorage.setItem('productionTrendParameters', JSON.stringify(parameters));
       setSelectedProductionParameters(parameters);
     }
   };
@@ -128,7 +112,7 @@ const PlantOperationsDashboard: React.FC = () => {
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
 
-        console.log("🔍 Dashboard: Fetching data with filters:", {
+        console.log('🔍 Dashboard: Fetching data with filters:', {
           selectedMonth,
           selectedYear,
           selectedPlantCategory,
@@ -140,23 +124,16 @@ const PlantOperationsDashboard: React.FC = () => {
         const allData: CcrParameterData[] = [];
         const allFooterData: any[] = [];
 
-        for (
-          let d = new Date(startDate);
-          d <= endDate;
-          d.setDate(d.getDate() + 1)
-        ) {
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
           const dateStr = formatDate(d);
           const dbDateStr = formatDateForDB(d); // Use YYYY-MM-DD format for database queries
           const dateData = await getDataForDate(dbDateStr);
-          const footerDateData = await getFooterDataForDate(
-            dbDateStr,
-            selectedPlantUnit
-          );
+          const footerDateData = await getFooterDataForDate(dbDateStr, selectedPlantUnit);
           allData.push(...dateData);
           allFooterData.push(...footerDateData);
         }
 
-        console.log("🔍 Dashboard: Fetched CCR data:", {
+        console.log('🔍 Dashboard: Fetched CCR data:', {
           count: allData.length,
           footerCount: allFooterData.length,
           selectedPlantCategory,
@@ -165,17 +142,15 @@ const PlantOperationsDashboard: React.FC = () => {
           sampleData: allData.slice(0, 3),
           sampleFooterData: allFooterData.slice(0, 3),
           uniqueParameterIds: [...new Set(allData.map((d) => d.parameter_id))],
-          uniqueFooterParameterIds: [
-            ...new Set(allFooterData.map((d) => d.parameter_id)),
-          ],
+          uniqueFooterParameterIds: [...new Set(allFooterData.map((d) => d.parameter_id))],
         });
 
         // Set the fetched data to state
         setCcrData(allData);
         setFooterData(allFooterData);
       } catch (err) {
-        console.error("Error fetching CCR data:", err);
-        setError("Failed to load dashboard data. Please try again.");
+        console.error('Error fetching CCR data:', err);
+        setError('Failed to load dashboard data. Please try again.');
         setCcrData([]);
         setFooterData([]);
       } finally {
@@ -215,10 +190,13 @@ const PlantOperationsDashboard: React.FC = () => {
 
   // Work Instructions summary - moved to top with other hooks
   const workInstructionsSummary = useMemo(() => {
-    const byActivity = workInstructions.reduce((acc, instruction) => {
-      acc[instruction.activity] = (acc[instruction.activity] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const byActivity = workInstructions.reduce(
+      (acc, instruction) => {
+        acc[instruction.activity] = (acc[instruction.activity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     return Object.entries(byActivity).map(([activity, count]) => ({
       name: activity,
@@ -233,10 +211,8 @@ const PlantOperationsDashboard: React.FC = () => {
       if (!param) return false;
 
       const categoryMatch =
-        selectedPlantCategory === "all" ||
-        param.category === selectedPlantCategory;
-      const unitMatch =
-        selectedPlantUnit === "all" || param.unit === selectedPlantUnit;
+        selectedPlantCategory === 'all' || param.category === selectedPlantCategory;
+      const unitMatch = selectedPlantUnit === 'all' || param.unit === selectedPlantUnit;
 
       return categoryMatch && unitMatch;
     });
@@ -249,10 +225,8 @@ const PlantOperationsDashboard: React.FC = () => {
       const hourlyValues = Object.values(item.hourly_values);
       const avgValue =
         hourlyValues.length > 0
-          ? (hourlyValues as number[]).reduce(
-              (sum, val) => sum + (Number(val) || 0),
-              0
-            ) / hourlyValues.length
+          ? (hourlyValues as number[]).reduce((sum, val) => sum + (Number(val) || 0), 0) /
+            hourlyValues.length
           : 0;
       const deviation = param?.max_value
         ? ((avgValue - param.max_value) / param.max_value) * 100
@@ -260,9 +234,9 @@ const PlantOperationsDashboard: React.FC = () => {
 
       return {
         id: item.id,
-        parameter: param?.parameter || "Unknown",
-        unit: param?.unit || "N/A",
-        category: param?.category || "N/A",
+        parameter: param?.parameter || 'Unknown',
+        unit: param?.unit || 'N/A',
+        category: param?.category || 'N/A',
         avgValue,
         target: param?.max_value || 0,
         deviation,
@@ -277,7 +251,7 @@ const PlantOperationsDashboard: React.FC = () => {
   }, [plantUnits]);
 
   const unitsForCategory = useMemo(() => {
-    if (!selectedPlantCategory || selectedPlantCategory === "all")
+    if (!selectedPlantCategory || selectedPlantCategory === 'all')
       return [...new Set(plantUnits.map((unit) => unit.unit))].sort();
     return plantUnits
       .filter((unit) => unit.category === selectedPlantCategory)
@@ -287,16 +261,16 @@ const PlantOperationsDashboard: React.FC = () => {
 
   // Reset unit selection when category changes
   useEffect(() => {
-    if (selectedPlantCategory === "all") {
-      setSelectedPlantUnit("all");
+    if (selectedPlantCategory === 'all') {
+      setSelectedPlantUnit('all');
     } else if (
       unitsForCategory.length > 0 &&
       !unitsForCategory.includes(selectedPlantUnit) &&
-      selectedPlantUnit !== "all"
+      selectedPlantUnit !== 'all'
     ) {
       setSelectedPlantUnit(unitsForCategory[0]);
     } else if (unitsForCategory.length === 0) {
-      setSelectedPlantUnit("all");
+      setSelectedPlantUnit('all');
     }
   }, [unitsForCategory, selectedPlantCategory]); // Removed selectedPlantUnit to prevent infinite loop
 
@@ -312,11 +286,9 @@ const PlantOperationsDashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-red-600 text-lg font-semibold mb-2">
-            Access Denied
-          </div>
+          <div className="text-red-600 text-lg font-semibold mb-2">Access Denied</div>
           <div className="text-gray-600">
-            You don't have permission to view this dashboard.
+            You don&apos;t have permission to view this dashboard.
           </div>
         </div>
       </div>
@@ -335,9 +307,7 @@ const PlantOperationsDashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="text-red-600 text-lg font-semibold mb-2">
-            Error Loading Dashboard
-          </div>
+          <div className="text-red-600 text-lg font-semibold mb-2">Error Loading Dashboard</div>
           <div className="text-gray-600 mb-4">{error}</div>
           <button
             onClick={() => window.location.reload()}
@@ -442,9 +412,7 @@ const PlantOperationsDashboard: React.FC = () => {
                         <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
                           Total Parameters
                         </p>
-                        <p className="text-white text-xl font-bold">
-                          {keyMetrics.totalParameters}
-                        </p>
+                        <p className="text-white text-xl font-bold">{keyMetrics.totalParameters}</p>
                       </div>
                     </div>
                   </div>
@@ -495,11 +463,7 @@ const PlantOperationsDashboard: React.FC = () => {
                         All Categories
                       </option>
                       {plantCategories.map((category) => (
-                        <option
-                          key={category}
-                          value={category}
-                          className="text-slate-900"
-                        >
+                        <option key={category} value={category} className="text-slate-900">
                           {category}
                         </option>
                       ))}
@@ -513,21 +477,14 @@ const PlantOperationsDashboard: React.FC = () => {
                     <select
                       value={selectedPlantUnit}
                       onChange={(e) => setSelectedPlantUnit(e.target.value)}
-                      disabled={
-                        selectedPlantCategory !== "all" &&
-                        unitsForCategory.length === 0
-                      }
+                      disabled={selectedPlantCategory !== 'all' && unitsForCategory.length === 0}
                       className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 disabled:bg-white/5 disabled:cursor-not-allowed text-sm"
                     >
                       <option value="all" className="text-slate-900">
                         All Units
                       </option>
                       {unitsForCategory.map((unit) => (
-                        <option
-                          key={unit}
-                          value={unit}
-                          className="text-slate-900"
-                        >
+                        <option key={unit} value={unit} className="text-slate-900">
                           {unit}
                         </option>
                       ))}
@@ -540,19 +497,13 @@ const PlantOperationsDashboard: React.FC = () => {
                     </label>
                     <select
                       value={selectedMonth}
-                      onChange={(e) =>
-                        setSelectedMonth(parseInt(e.target.value))
-                      }
+                      onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
                       className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                     >
                       {Array.from({ length: 12 }, (_, i) => (
-                        <option
-                          key={i + 1}
-                          value={i + 1}
-                          className="text-slate-900"
-                        >
-                          {new Date(0, i).toLocaleString("default", {
-                            month: "long",
+                        <option key={i + 1} value={i + 1} className="text-slate-900">
+                          {new Date(0, i).toLocaleString('default', {
+                            month: 'long',
                           })}
                         </option>
                       ))}
@@ -565,19 +516,13 @@ const PlantOperationsDashboard: React.FC = () => {
                     </label>
                     <select
                       value={selectedYear}
-                      onChange={(e) =>
-                        setSelectedYear(parseInt(e.target.value))
-                      }
+                      onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                       className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
                     >
                       {Array.from({ length: 5 }, (_, i) => {
                         const year = new Date().getFullYear() - 2 + i;
                         return (
-                          <option
-                            key={year}
-                            value={year}
-                            className="text-slate-900"
-                          >
+                          <option key={year} value={year} className="text-slate-900">
                             {year}
                           </option>
                         );
@@ -587,20 +532,14 @@ const PlantOperationsDashboard: React.FC = () => {
                 </div>
 
                 {/* Filter Status Indicators */}
-                {(selectedPlantCategory !== "all" ||
-                  selectedPlantUnit !== "all") && (
+                {(selectedPlantCategory !== 'all' || selectedPlantUnit !== 'all') && (
                   <div className="flex flex-wrap gap-2 text-xs">
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                      📊{" "}
-                      {selectedPlantCategory === "all"
-                        ? "All Categories"
-                        : selectedPlantCategory}
+                      📊{' '}
+                      {selectedPlantCategory === 'all' ? 'All Categories' : selectedPlantCategory}
                     </span>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
-                      🏭{" "}
-                      {selectedPlantUnit === "all"
-                        ? "All Units"
-                        : selectedPlantUnit}
+                      🏭 {selectedPlantUnit === 'all' ? 'All Units' : selectedPlantUnit}
                     </span>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
                       📅 {selectedMonth}/{selectedYear}
@@ -687,12 +626,8 @@ const PlantOperationsDashboard: React.FC = () => {
                 <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
                   <div className="text-center">
                     <div className="text-6xl mb-4 opacity-50">📊</div>
-                    <div className="text-lg font-semibold mb-2">
-                      No Production Data
-                    </div>
-                    <div className="text-sm">
-                      No data available for the selected filters
-                    </div>
+                    <div className="text-lg font-semibold mb-2">No Production Data</div>
+                    <div className="text-sm">No data available for the selected filters</div>
                   </div>
                 </div>
               )}
@@ -736,12 +671,8 @@ const PlantOperationsDashboard: React.FC = () => {
                 <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
                   <div className="text-center">
                     <div className="text-6xl mb-4 opacity-50">🎯</div>
-                    <div className="text-lg font-semibold mb-2">
-                      No COP Analysis Data
-                    </div>
-                    <div className="text-sm">
-                      No COP parameters found for the selected filters
-                    </div>
+                    <div className="text-lg font-semibold mb-2">No COP Analysis Data</div>
+                    <div className="text-sm">No COP parameters found for the selected filters</div>
                   </div>
                 </div>
               )}
@@ -785,12 +716,8 @@ const PlantOperationsDashboard: React.FC = () => {
                 <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
                   <div className="text-center">
                     <div className="text-6xl mb-4 opacity-50">📋</div>
-                    <div className="text-lg font-semibold mb-2">
-                      No Work Instructions
-                    </div>
-                    <div className="text-sm">
-                      No work instructions available
-                    </div>
+                    <div className="text-lg font-semibold mb-2">No Work Instructions</div>
+                    <div className="text-sm">No work instructions available</div>
                   </div>
                 </div>
               )}
@@ -827,15 +754,10 @@ const PlantOperationsDashboard: React.FC = () => {
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     Parameter kontrol dan monitoring
                   </p>
-                  {selectedPlantCategory !== "all" ||
-                  selectedPlantUnit !== "all" ? (
+                  {selectedPlantCategory !== 'all' || selectedPlantUnit !== 'all' ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 mt-2">
-                      {selectedPlantCategory !== "all"
-                        ? selectedPlantCategory
-                        : "All Categories"}
-                      {selectedPlantUnit !== "all"
-                        ? ` - ${selectedPlantUnit}`
-                        : ""}
+                      {selectedPlantCategory !== 'all' ? selectedPlantCategory : 'All Categories'}
+                      {selectedPlantUnit !== 'all' ? ` - ${selectedPlantUnit}` : ''}
                     </span>
                   ) : null}
                 </div>
@@ -888,11 +810,11 @@ const PlantOperationsDashboard: React.FC = () => {
                         <td
                           className={`px-4 py-3 text-sm font-semibold ${
                             item.deviation > 0
-                              ? "text-red-600 dark:text-red-400"
-                              : "text-green-600 dark:text-green-400"
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-green-600 dark:text-green-400'
                           }`}
                         >
-                          {item.deviation > 0 ? "+" : ""}
+                          {item.deviation > 0 ? '+' : ''}
                           {formatNumber(item.deviation)}%
                         </td>
                       </tr>
@@ -904,12 +826,8 @@ const PlantOperationsDashboard: React.FC = () => {
                           className="px-4 py-12 text-center text-slate-500 dark:text-slate-400"
                         >
                           <div className="text-4xl mb-2 opacity-50">📊</div>
-                          <div className="text-sm font-medium">
-                            No CCR parameters found
-                          </div>
-                          <div className="text-xs">
-                            for the selected filters
-                          </div>
+                          <div className="text-sm font-medium">No CCR parameters found</div>
+                          <div className="text-xs">for the selected filters</div>
                         </td>
                       </tr>
                     )}
@@ -946,11 +864,9 @@ const PlantOperationsDashboard: React.FC = () => {
                   <p className="text-sm text-slate-600 dark:text-slate-400">
                     Instruksi kerja terbaru
                   </p>
-                  {selectedPlantCategory !== "all" ||
-                  selectedPlantUnit !== "all" ? (
+                  {selectedPlantCategory !== 'all' || selectedPlantUnit !== 'all' ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 mt-2">
-                      Viewing all instructions - filters apply to operational
-                      data only
+                      Viewing all instructions - filters apply to operational data only
                     </span>
                   ) : null}
                 </div>
@@ -994,9 +910,7 @@ const PlantOperationsDashboard: React.FC = () => {
                           className="px-4 py-12 text-center text-slate-500 dark:text-slate-400"
                         >
                           <div className="text-4xl mb-2 opacity-50">📋</div>
-                          <div className="text-sm font-medium">
-                            No work instructions available
-                          </div>
+                          <div className="text-sm font-medium">No work instructions available</div>
                         </td>
                       </tr>
                     )}
@@ -1012,19 +926,12 @@ const PlantOperationsDashboard: React.FC = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">
-                  Production Trend Settings
-                </h3>
+                <h3 className="text-lg font-semibold">Production Trend Settings</h3>
                 <button
                   onClick={() => setShowProductionTrendSettings(false)}
                   className="text-gray-400 hover:text-gray-600"
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1036,26 +943,18 @@ const PlantOperationsDashboard: React.FC = () => {
               </div>
               <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-3">
-                  Select which parameters to display in the Production Trend
-                  chart. Parameters are shown with their plant unit for easy
-                  identification.
+                  Select which parameters to display in the Production Trend chart. Parameters are
+                  shown with their plant unit for easy identification.
                 </p>
                 <div className="max-h-60 overflow-y-auto space-y-2">
                   {parameters.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500">
-                      No parameters available
-                    </div>
+                    <div className="text-center py-4 text-gray-500">No parameters available</div>
                   ) : (
                     parameters.map((param) => (
-                      <label
-                        key={param.id}
-                        className="flex items-center space-x-2"
-                      >
+                      <label key={param.id} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
-                          checked={selectedProductionParameters.includes(
-                            param.id
-                          )}
+                          checked={selectedProductionParameters.includes(param.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setSelectedProductionParameters([
@@ -1064,16 +963,14 @@ const PlantOperationsDashboard: React.FC = () => {
                               ]);
                             } else {
                               setSelectedProductionParameters(
-                                selectedProductionParameters.filter(
-                                  (id) => id !== param.id
-                                )
+                                selectedProductionParameters.filter((id) => id !== param.id)
                               );
                             }
                           }}
                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                         <span className="text-sm text-gray-700">
-                          {param.parameter}{" "}
+                          {param.parameter}{' '}
                           <span className="text-xs text-gray-500">
                             ({param.unit} - {param.category})
                           </span>

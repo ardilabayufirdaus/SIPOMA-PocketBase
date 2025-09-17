@@ -3,13 +3,13 @@
  * Menggunakan design system untuk konsistensi UI/UX
  */
 
-import React from "react";
-import { getCardClasses, getAriaProps, cn } from "../../utils/uiUtils";
+import React from 'react';
+import { getCardClasses, getAriaProps, cn } from '../../utils/uiUtils';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: "default" | "elevated" | "outlined";
-  padding?: "sm" | "md" | "lg";
+  variant?: 'default' | 'elevated' | 'outlined';
+  padding?: 'sm' | 'md' | 'lg';
   className?: string;
   onClick?: () => void;
   ariaLabel?: string;
@@ -18,9 +18,9 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({
   children,
-  variant = "default",
-  padding = "md",
-  className = "",
+  variant = 'default',
+  padding = 'md',
+  className = '',
   onClick,
   ariaLabel,
   ariaDescribedBy,
@@ -31,10 +31,10 @@ export const Card: React.FC<CardProps> = ({
   const finalClasses = cn(
     cardClasses,
     className,
-    onClick && "cursor-pointer hover:shadow-md transition-shadow"
+    onClick && 'cursor-pointer hover:shadow-md transition-shadow'
   );
 
-  const Component = onClick ? "button" : "div";
+  const Component = onClick ? 'button' : 'div';
 
   return (
     <Component className={finalClasses} onClick={onClick} {...ariaProps}>
@@ -48,17 +48,9 @@ interface CardHeaderProps {
   className?: string;
 }
 
-export const CardHeader: React.FC<CardHeaderProps> = ({
-  children,
-  className = "",
-}) => {
+export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '' }) => {
   return (
-    <div
-      className={cn(
-        "pb-4 border-b border-slate-200 dark:border-slate-700",
-        className
-      )}
-    >
+    <div className={cn('pb-4 border-b border-slate-200 dark:border-slate-700', className)}>
       {children}
     </div>
   );
@@ -69,11 +61,8 @@ interface CardContentProps {
   className?: string;
 }
 
-export const CardContent: React.FC<CardContentProps> = ({
-  children,
-  className = "",
-}) => {
-  return <div className={cn("pt-4", className)}>{children}</div>;
+export const CardContent: React.FC<CardContentProps> = ({ children, className = '' }) => {
+  return <div className={cn('pt-4', className)}>{children}</div>;
 };
 
 interface CardFooterProps {
@@ -81,17 +70,9 @@ interface CardFooterProps {
   className?: string;
 }
 
-export const CardFooter: React.FC<CardFooterProps> = ({
-  children,
-  className = "",
-}) => {
+export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '' }) => {
   return (
-    <div
-      className={cn(
-        "pt-4 border-t border-slate-200 dark:border-slate-700",
-        className
-      )}
-    >
+    <div className={cn('pt-4 border-t border-slate-200 dark:border-slate-700', className)}>
       {children}
     </div>
   );

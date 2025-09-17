@@ -1,5 +1,5 @@
-import React from "react";
-import { Bar } from "react-chartjs-2";
+import React from 'react';
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,16 +8,9 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
+} from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface COPAnalysisChartProps {
   data: Array<{
@@ -30,21 +23,21 @@ interface COPAnalysisChartProps {
 
 export const COPAnalysisChart: React.FC<COPAnalysisChartProps> = ({ data }) => {
   const colors = [
-    "#3B82F6", // blue-500
-    "#10B981", // emerald-500
-    "#F59E0B", // amber-500
-    "#EF4444", // red-500
-    "#8B5CF6", // violet-500
-    "#06B6D4", // cyan-500
-    "#84CC16", // lime-500
-    "#F97316", // orange-500
+    '#3B82F6', // blue-500
+    '#10B981', // emerald-500
+    '#F59E0B', // amber-500
+    '#EF4444', // red-500
+    '#8B5CF6', // violet-500
+    '#06B6D4', // cyan-500
+    '#84CC16', // lime-500
+    '#F97316', // orange-500
   ];
 
   const chartData = {
     labels: data.map((item) => item.name),
     datasets: [
       {
-        label: "COP Value",
+        label: 'COP Value',
         data: data.map((item) => item.value),
         backgroundColor: data.map((_, index) => colors[index % colors.length]),
         borderColor: data.map((_, index) => colors[index % colors.length]),
@@ -60,7 +53,7 @@ export const COPAnalysisChart: React.FC<COPAnalysisChartProps> = ({ data }) => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: 'top' as const,
         labels: {
           padding: 20,
           usePointStyle: true,
@@ -72,9 +65,9 @@ export const COPAnalysisChart: React.FC<COPAnalysisChartProps> = ({ data }) => {
       tooltip: {
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || "";
+            let label = context.dataset.label || '';
             if (label) {
-              label += ": ";
+              label += ': ';
             }
             if (context.parsed.y !== null) {
               label += context.parsed.y.toFixed(2);
@@ -89,7 +82,7 @@ export const COPAnalysisChart: React.FC<COPAnalysisChartProps> = ({ data }) => {
         display: true,
         title: {
           display: true,
-          text: "Parameters",
+          text: 'Parameters',
         },
         ticks: {
           maxRotation: 45,
@@ -100,7 +93,7 @@ export const COPAnalysisChart: React.FC<COPAnalysisChartProps> = ({ data }) => {
         display: true,
         title: {
           display: true,
-          text: "Value",
+          text: 'Value',
         },
         beginAtZero: true,
       },

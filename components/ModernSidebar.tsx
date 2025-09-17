@@ -1,21 +1,14 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef,
-  forwardRef,
-} from "react";
-import { useDrag } from "@use-gesture/react";
-import { Page, Language } from "../App";
-import { useIsMobile } from "../hooks/useIsMobile";
-import { useSidebarState } from "../hooks/useSidebarState";
-import ChevronDownIcon from "./icons/ChevronDownIcon";
-import SipomaLogo from "./icons/SipomaLogo";
-import HomeIcon from "./icons/HomeIcon";
-import UserGroupIcon from "./icons/UserGroupIcon";
-import FactoryIcon from "./icons/FactoryIcon";
-import ArchiveBoxArrowDownIcon from "./icons/ArchiveBoxArrowDownIcon";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useDrag } from '@use-gesture/react';
+import { Page, Language } from '../App';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { useSidebarState } from '../hooks/useSidebarState';
+import ChevronDownIcon from './icons/ChevronDownIcon';
+import SipomaLogo from './icons/SipomaLogo';
+import HomeIcon from './icons/HomeIcon';
+import UserGroupIcon from './icons/UserGroupIcon';
+import FactoryIcon from './icons/FactoryIcon';
+import ArchiveBoxArrowDownIcon from './icons/ArchiveBoxArrowDownIcon';
 
 {
   /* Plant Operations - Only visible if user has permission */
@@ -23,27 +16,27 @@ import ArchiveBoxArrowDownIcon from "./icons/ArchiveBoxArrowDownIcon";
 {
   /* Plant Operations - Only visible if user has permission */
 }
-import ClipboardDocumentListIcon from "./icons/ClipboardDocumentListIcon";
-import FlagENIcon from "./icons/FlagENIcon";
-import FlagIDIcon from "./icons/FlagIDIcon";
-import ChartBarIcon from "./icons/ChartBarIcon";
-import EditIcon from "./icons/EditIcon";
-import PresentationChartLineIcon from "./icons/PresentationChartLineIcon";
-import ArrowTrendingUpIcon from "./icons/ArrowTrendingUpIcon";
-import CurrencyDollarIcon from "./icons/CurrencyDollarIcon";
-import BuildingLibraryIcon from "./icons/BuildingLibraryIcon";
-import ArchiveBoxIcon from "./icons/ArchiveBoxIcon";
-import TruckIcon from "./icons/TruckIcon";
-import ChartPieIcon from "./icons/ChartPieIcon";
-import Bars4Icon from "./icons/Bars4Icon";
-import CogIcon from "./icons/CogIcon";
-import ClockIcon from "./icons/ClockIcon";
-import PlusIcon from "./icons/PlusIcon";
-import ShieldCheckIcon from "./icons/ShieldCheckIcon";
+import ClipboardDocumentListIcon from './icons/ClipboardDocumentListIcon';
+import FlagENIcon from './icons/FlagENIcon';
+import FlagIDIcon from './icons/FlagIDIcon';
+import ChartBarIcon from './icons/ChartBarIcon';
+import EditIcon from './icons/EditIcon';
+import PresentationChartLineIcon from './icons/PresentationChartLineIcon';
+import ArrowTrendingUpIcon from './icons/ArrowTrendingUpIcon';
+import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
+import BuildingLibraryIcon from './icons/BuildingLibraryIcon';
+import ArchiveBoxIcon from './icons/ArchiveBoxIcon';
+import TruckIcon from './icons/TruckIcon';
+import ChartPieIcon from './icons/ChartPieIcon';
+import Bars4Icon from './icons/Bars4Icon';
+import CogIcon from './icons/CogIcon';
+import ClockIcon from './icons/ClockIcon';
+import PlusIcon from './icons/PlusIcon';
+import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
 // Import permission utilities
-import { usePermissions } from "../utils/permissions";
-import { User, PermissionLevel } from "../types";
+import { usePermissions } from '../utils/permissions';
+import { User, PermissionLevel } from '../types';
 
 // Import Enhanced Components
 import {
@@ -53,11 +46,11 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "./ui/EnhancedComponents";
+} from './ui/EnhancedComponents';
 
-import NavLink from "./atoms/NavLink";
+import NavLink from './atoms/NavLink';
 
-import CollapsibleMenu from "./molecules/CollapsibleMenu";
+import CollapsibleMenu from './molecules/CollapsibleMenu';
 
 interface ModernSidebarProps {
   currentPage: Page;
@@ -78,51 +71,45 @@ interface IconButtonProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
-  tooltipPosition?: "right" | "left" | "top" | "bottom";
+  tooltipPosition?: 'right' | 'left' | 'top' | 'bottom';
 }
 
-const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ icon, label, isActive, onClick, tooltipPosition = "right" }, ref) => {
+const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
+  ({ icon, label, isActive, onClick, tooltipPosition = 'right' }, ref) => {
     const [showTooltip, setShowTooltip] = useState(false);
 
     const handleMouseEnter = () => setShowTooltip(true);
     const handleMouseLeave = () => setShowTooltip(false);
 
     const getTooltipPosition = () => {
-      if (!ref || !(ref as React.RefObject<HTMLButtonElement>).current)
-        return { top: 0, left: 0 };
+      if (!ref || !(ref as React.RefObject<HTMLButtonElement>).current) return { top: 0, left: 0 };
 
-      const rect = (
-        ref as React.RefObject<HTMLButtonElement>
-      ).current!.getBoundingClientRect();
+      const rect = (ref as React.RefObject<HTMLButtonElement>).current!.getBoundingClientRect();
       const tooltipOffset = 8;
 
       switch (tooltipPosition) {
-        case "right":
+        case 'right':
           return {
             top: rect.top + rect.height / 2,
             left: rect.right + tooltipOffset,
           };
-        case "left":
+        case 'left':
           return {
             top: rect.top + rect.height / 2,
             left: rect.left - tooltipOffset,
           };
-        case "top":
+        case 'top':
           return {
             top: rect.top - tooltipOffset,
             left: rect.left + rect.width / 2,
           };
-        case "bottom":
+        case 'bottom':
           return {
             top: rect.bottom + tooltipOffset,
             left: rect.left + rect.width / 2,
           };
         default:
-          return {
-            top: rect.top + rect.height / 2,
-            left: rect.right + tooltipOffset,
-          };
+          return { top: rect.top + rect.height / 2, left: rect.right + tooltipOffset };
       }
     };
 
@@ -135,14 +122,14 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           onMouseLeave={handleMouseLeave}
           className={`w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 group relative ${
             isActive
-              ? "bg-red-500 text-white shadow-lg"
-              : "text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+              ? 'bg-red-500 text-white shadow-lg'
+              : 'text-slate-400 hover:text-red-400 hover:bg-red-500/10'
           }`}
           aria-label={label}
         >
           <div
             className={`transition-transform duration-200 ${
-              isActive ? "scale-110" : "group-hover:scale-105"
+              isActive ? 'scale-110' : 'group-hover:scale-105'
             }`}
           >
             {icon}
@@ -156,9 +143,9 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
               top: `${getTooltipPosition().top}px`,
               left: `${getTooltipPosition().left}px`,
               transform:
-                tooltipPosition === "right" || tooltipPosition === "left"
-                  ? "translateY(-50%)"
-                  : "translateX(-50%) translateY(-100%)",
+                tooltipPosition === 'right' || tooltipPosition === 'left'
+                  ? 'translateY(-50%)'
+                  : 'translateX(-50%) translateY(-100%)',
             }}
           >
             {label}
@@ -168,6 +155,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     );
   }
 );
+IconButton.displayName = 'IconButton';
 
 interface FloatingDropdownItem {
   key: string;
@@ -192,26 +180,23 @@ const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         onClose();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, [onClose]);
 
@@ -270,78 +255,78 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   // Permission checker
   const permissionChecker = usePermissions(currentUser);
 
-  const iconClass = "w-6 h-6";
+  const iconClass = 'w-6 h-6';
 
   // Memoized navigation data
   const navigationData = useMemo(
     () => ({
       plantOperationPages: [
-        { key: "op_dashboard", icon: <ChartBarIcon className={iconClass} /> },
+        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
         {
-          key: "op_report",
+          key: 'op_report',
           icon: <ClipboardDocumentListIcon className={iconClass} />,
         },
-        { key: "op_ccr_data_entry", icon: <EditIcon className={iconClass} /> },
+        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
         {
-          key: "op_autonomous_data_entry",
+          key: 'op_autonomous_data_entry',
           icon: <EditIcon className={iconClass} />,
         },
         {
-          key: "op_monitoring",
+          key: 'op_monitoring',
           icon: <PresentationChartLineIcon className={iconClass} />,
         },
         {
-          key: "op_forecast",
+          key: 'op_forecast',
           icon: <ArrowTrendingUpIcon className={iconClass} />,
         },
         {
-          key: "op_cop_analysis",
+          key: 'op_cop_analysis',
           icon: <CurrencyDollarIcon className={iconClass} />,
         },
         {
-          key: "op_work_instruction_library",
+          key: 'op_work_instruction_library',
           icon: <BuildingLibraryIcon className={iconClass} />,
         },
         {
-          key: "op_master_data",
+          key: 'op_master_data',
           icon: <ArchiveBoxIcon className={iconClass} />,
         },
       ],
       packingPlantPages: [
         {
-          key: "pack_stock_forecast",
+          key: 'pack_stock_forecast',
           icon: <ArrowTrendingUpIcon className={iconClass} />,
         },
         {
-          key: "pack_logistics_performance",
+          key: 'pack_logistics_performance',
           icon: <TruckIcon className={iconClass} />,
         },
         {
-          key: "pack_packer_performance",
+          key: 'pack_packer_performance',
           icon: <ChartBarIcon className={iconClass} />,
         },
         {
-          key: "pack_distributor_warehouse",
+          key: 'pack_distributor_warehouse',
           icon: <BuildingLibraryIcon className={iconClass} />,
         },
         {
-          key: "pack_stock_data_entry",
+          key: 'pack_stock_data_entry',
           icon: <EditIcon className={iconClass} />,
         },
         {
-          key: "pack_master_data",
+          key: 'pack_master_data',
           icon: <ArchiveBoxIcon className={iconClass} />,
         },
       ],
       projectPages: [
-        { key: "proj_dashboard", icon: <ChartPieIcon className={iconClass} /> },
-        { key: "proj_list", icon: <Bars4Icon className={iconClass} /> },
+        { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
+        { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
       ],
       userManagementPages: [
-        { key: "user_list", icon: <UserGroupIcon className={iconClass} /> },
-        { key: "add_user", icon: <PlusIcon className={iconClass} /> },
-        { key: "user_roles", icon: <ShieldCheckIcon className={iconClass} /> },
-        { key: "user_activity", icon: <ClockIcon className={iconClass} /> },
+        { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
+        { key: 'add_user', icon: <PlusIcon className={iconClass} /> },
+        { key: 'user_roles', icon: <ShieldCheckIcon className={iconClass} /> },
+        { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
       ],
     }),
     [iconClass]
@@ -365,71 +350,60 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
 
   const handleDropdownClose = useCallback(() => {
     setActiveDropdown(null);
-    setDropdownPosition(null);
+    setDropdownPosition({ top: 0, left: 0 });
   }, []);
 
   const getDropdownItems = useCallback(
     (module: string) => {
       switch (module) {
-        case "operations":
+        case 'operations':
           return navigationData.plantOperationPages
             .filter((page) => {
               // For now, use main plant_operations permission
               // TODO: Implement granular permissions for each sub-menu
-              return permissionChecker.hasPermission(
-                "plant_operations",
-                "READ"
-              );
+              return permissionChecker.hasPermission('plant_operations', 'READ');
             })
             .map((page) => ({
               key: page.key,
               label: t[page.key as keyof typeof t] || page.key,
               icon: page.icon,
             }));
-        case "packing":
+        case 'packing':
           return navigationData.packingPlantPages
             .filter((page) => {
               // For now, use main packing_plant permission
               // TODO: Implement granular permissions for each sub-menu
-              return permissionChecker.hasPermission("packing_plant", "READ");
+              return permissionChecker.hasPermission('packing_plant', 'READ');
             })
             .map((page) => ({
               key: page.key,
               label: t[page.key as keyof typeof t] || page.key,
               icon: page.icon,
             }));
-        case "projects":
+        case 'projects':
           return navigationData.projectPages
             .filter((page) => {
               // For now, use main project_management permission
               // TODO: Implement granular permissions for each sub-menu
-              return permissionChecker.hasPermission(
-                "project_management",
-                "READ"
-              );
+              return permissionChecker.hasPermission('project_management', 'READ');
             })
             .map((page) => ({
               key: page.key,
               label: t[page.key as keyof typeof t] || page.key,
               icon: page.icon,
             }));
-        case "users":
+        case 'users':
           return navigationData.userManagementPages
             .filter((page) => {
               // For now, use main system_settings permission with ADMIN level
               // TODO: Implement more granular permissions for user management sub-pages
-              return permissionChecker.hasPermission(
-                "system_settings",
-                "ADMIN"
-              );
+              return permissionChecker.hasPermission('system_settings', 'ADMIN');
             })
             .map((page) => ({
               key: page.key,
               label:
                 t[page.key as keyof typeof t] ||
-                page.key
-                  .replace(/_/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase()),
+                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               icon: page.icon,
             }));
         default:
@@ -469,14 +443,14 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   // ESC key handler for mobile
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isMobile && isOpen && onClose) {
+      if (event.key === 'Escape' && isMobile && isOpen && onClose) {
         onClose();
       }
     };
 
     if (isMobile && isOpen) {
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
     }
   }, [isMobile, isOpen, onClose]);
 
@@ -485,8 +459,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
     ({ down, movement: [mx], direction: [xDir], velocity }) => {
       if (!isMobile || !isOpen) return;
 
-      const trigger =
-        Math.abs(mx) > 100 || (Math.abs(mx) > 50 && velocity[0] > 0.5);
+      const trigger = Math.abs(mx) > 100 || (Math.abs(mx) > 50 && velocity[0] > 0.5);
       const dir = xDir < 0 ? -1 : 1;
 
       if (!down && trigger && dir === -1) {
@@ -495,7 +468,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
       }
     },
     {
-      axis: "x",
+      axis: 'x',
       filterTaps: true,
       bounds: { left: -200, right: 0 },
     }
@@ -517,9 +490,9 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 w-20 ${
           isMobile
             ? isOpen
-              ? "translate-x-0 shadow-2xl"
-              : "-translate-x-full"
-            : "translate-x-0 shadow-xl"
+              ? 'translate-x-0 shadow-2xl'
+              : '-translate-x-full'
+            : 'translate-x-0 shadow-xl'
         }`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -538,7 +511,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
                 loading="lazy"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
+                  target.style.display = 'none';
                 }}
               />
             </div>
@@ -551,12 +524,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 rounded-lg hover:bg-white/10 transition-colors relative z-10"
               aria-label="Close sidebar"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -571,50 +539,46 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 flex flex-col items-center space-y-4 overflow-y-auto">
           {/* Dashboard - Check permission */}
-          {permissionChecker.hasPermission("dashboard", "READ") && (
+          {permissionChecker.hasPermission('dashboard', 'READ') && (
             <IconButton
               ref={dashboardButtonRef}
               icon={<HomeIcon className={iconClass} />}
               label={t.mainDashboard}
-              isActive={currentPage === "dashboard"}
-              onClick={() => handleNavigate("dashboard")}
+              isActive={currentPage === 'dashboard'}
+              onClick={() => handleNavigate('dashboard')}
             />
           )}
 
           {/* Plant Operations - Check permission */}
-          {permissionChecker.hasPermission("plant_operations", "READ") && (
+          {permissionChecker.hasPermission('plant_operations', 'READ') && (
             <IconButton
               ref={operationsButtonRef}
               icon={<FactoryIcon className={iconClass} />}
               label={t.plantOperations}
-              isActive={currentPage === "operations"}
-              onClick={() =>
-                handleDropdownToggle("operations", operationsButtonRef)
-              }
+              isActive={currentPage === 'operations'}
+              onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
             />
           )}
 
           {/* Packing Plant - Check permission */}
-          {permissionChecker.hasPermission("packing_plant", "READ") && (
+          {permissionChecker.hasPermission('packing_plant', 'READ') && (
             <IconButton
               ref={packingButtonRef}
               icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
               label={t.packingPlant}
-              isActive={currentPage === "packing"}
-              onClick={() => handleDropdownToggle("packing", packingButtonRef)}
+              isActive={currentPage === 'packing'}
+              onClick={() => handleDropdownToggle('packing', packingButtonRef)}
             />
           )}
 
           {/* Project Management - Check permission */}
-          {permissionChecker.hasPermission("project_management", "READ") && (
+          {permissionChecker.hasPermission('project_management', 'READ') && (
             <IconButton
               ref={projectsButtonRef}
               icon={<ClipboardDocumentListIcon className={iconClass} />}
               label={t.projectManagement}
-              isActive={currentPage === "projects"}
-              onClick={() =>
-                handleDropdownToggle("projects", projectsButtonRef)
-              }
+              isActive={currentPage === 'projects'}
+              onClick={() => handleDropdownToggle('projects', projectsButtonRef)}
             />
           )}
 
@@ -622,29 +586,29 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             ref={slaButtonRef}
             icon={<ClockIcon className={iconClass} />}
             label={t.slaManagement}
-            isActive={currentPage === "sla"}
-            onClick={() => handleNavigate("sla")}
+            isActive={currentPage === 'sla'}
+            onClick={() => handleNavigate('sla')}
           />
 
           {/* Settings - Check permission */}
-          {permissionChecker.hasPermission("system_settings", "READ") && (
+          {permissionChecker.hasPermission('system_settings', 'READ') && (
             <IconButton
               ref={settingsButtonRef}
               icon={<CogIcon className={iconClass} />}
               label={t.header_settings}
-              isActive={currentPage === "settings"}
-              onClick={() => handleNavigate("settings")}
+              isActive={currentPage === 'settings'}
+              onClick={() => handleNavigate('settings')}
             />
           )}
 
           {/* User Management - Check permission */}
-          {permissionChecker.hasPermission("system_settings", "ADMIN") && (
+          {permissionChecker.hasPermission('system_settings', 'ADMIN') && (
             <IconButton
               ref={usersButtonRef}
               icon={<UserGroupIcon className={iconClass} />}
-              label={t.userManagement || "User Management"}
-              isActive={currentPage === "users"}
-              onClick={() => handleDropdownToggle("users", usersButtonRef)}
+              label={t.userManagement || 'User Management'}
+              isActive={currentPage === 'users'}
+              onClick={() => handleDropdownToggle('users', usersButtonRef)}
             />
           )}
         </nav>
@@ -654,22 +618,22 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           {/* Language Switcher - Compact Design */}
           <div className="flex flex-col items-center space-y-3 mb-4">
             <EnhancedButton
-              variant={currentLanguage === "en" ? "primary" : "ghost"}
+              variant={currentLanguage === 'en' ? 'primary' : 'ghost'}
               size="sm"
-              onClick={() => onLanguageChange("en")}
+              onClick={() => onLanguageChange('en')}
               ariaLabel="Switch to English"
-              disabled={currentLanguage === "en"}
+              disabled={currentLanguage === 'en'}
               className="p-1 w-10 h-10"
               icon={<FlagENIcon className="w-6 h-auto rounded-md" />}
             >
               <span className="sr-only">English</span>
             </EnhancedButton>
             <EnhancedButton
-              variant={currentLanguage === "id" ? "primary" : "ghost"}
+              variant={currentLanguage === 'id' ? 'primary' : 'ghost'}
               size="sm"
-              onClick={() => onLanguageChange("id")}
+              onClick={() => onLanguageChange('id')}
               ariaLabel="Switch to Indonesian"
-              disabled={currentLanguage === "id"}
+              disabled={currentLanguage === 'id'}
               className="p-1 w-10 h-10"
               icon={<FlagIDIcon className="w-6 h-auto rounded-md" />}
             >

@@ -1,28 +1,24 @@
-import React from "react";
-import { useServiceWorker, useCacheStatus } from "../hooks/useServiceWorker";
-import { usePerformanceMonitoring } from "../hooks/usePerformanceMonitoring";
+import React from 'react';
+import { useServiceWorker, useCacheStatus } from '../hooks/useServiceWorker';
+import { usePerformanceMonitoring } from '../hooks/usePerformanceMonitoring';
 
 // Performance dashboard component
 export const PerformanceDashboard: React.FC = () => {
-  const {
-    metrics,
-    memorySnapshots,
-    detectMemoryLeaks,
-    getPerformanceRecommendations,
-  } = usePerformanceMonitoring();
+  const { metrics, memorySnapshots, detectMemoryLeaks, getPerformanceRecommendations } =
+    usePerformanceMonitoring();
   const { isOnline } = useServiceWorker();
   const cacheStatus = useCacheStatus();
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 B";
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
+    const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const formatTime = (ms: number) => {
-    return ms.toFixed(2) + "ms";
+    return ms.toFixed(2) + 'ms';
   };
 
   const recommendations = getPerformanceRecommendations();
@@ -31,23 +27,17 @@ export const PerformanceDashboard: React.FC = () => {
   return (
     <div className="performance-dashboard bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Performance Dashboard
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800">Performance Dashboard</h2>
         <div className="flex items-center space-x-4">
           <div
             className={`flex items-center space-x-2 ${
-              isOnline ? "text-green-600" : "text-red-600"
+              isOnline ? 'text-green-600' : 'text-red-600'
             }`}
           >
             <div
-              className={`w-3 h-3 rounded-full ${
-                isOnline ? "bg-green-500" : "bg-red-500"
-              }`}
+              className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}
             ></div>
-            <span className="text-sm font-medium">
-              {isOnline ? "Online" : "Offline"}
-            </span>
+            <span className="text-sm font-medium">{isOnline ? 'Online' : 'Offline'}</span>
           </div>
           {hasMemoryLeak && (
             <div className="flex items-center space-x-2 text-red-600">
@@ -64,7 +54,7 @@ export const PerformanceDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-blue-800 mb-2">LCP</h3>
           <p
             className={`text-2xl font-bold ${
-              metrics.lcp > 2500 ? "text-red-600" : "text-green-600"
+              metrics.lcp > 2500 ? 'text-red-600' : 'text-green-600'
             }`}
           >
             {formatTime(metrics.lcp)}
@@ -76,7 +66,7 @@ export const PerformanceDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-green-800 mb-2">FID</h3>
           <p
             className={`text-2xl font-bold ${
-              metrics.fid > 100 ? "text-red-600" : "text-green-600"
+              metrics.fid > 100 ? 'text-red-600' : 'text-green-600'
             }`}
           >
             {formatTime(metrics.fid)}
@@ -88,7 +78,7 @@ export const PerformanceDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-purple-800 mb-2">CLS</h3>
           <p
             className={`text-2xl font-bold ${
-              metrics.cls > 0.1 ? "text-red-600" : "text-green-600"
+              metrics.cls > 0.1 ? 'text-red-600' : 'text-green-600'
             }`}
           >
             {metrics.cls.toFixed(3)}
@@ -99,21 +89,15 @@ export const PerformanceDashboard: React.FC = () => {
 
       {/* Memory Usage */}
       <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Memory Usage
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Memory Usage</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600">Heap Used</p>
-            <p className="text-xl font-bold text-blue-600">
-              {formatBytes(metrics.memoryUsage)}
-            </p>
+            <p className="text-xl font-bold text-blue-600">{formatBytes(metrics.memoryUsage)}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Heap Limit</p>
-            <p className="text-xl font-bold text-gray-600">
-              {formatBytes(metrics.memoryLimit)}
-            </p>
+            <p className="text-xl font-bold text-gray-600">{formatBytes(metrics.memoryLimit)}</p>
           </div>
         </div>
         <div className="mt-4">
@@ -122,9 +106,7 @@ export const PerformanceDashboard: React.FC = () => {
               className="bg-blue-600 h-2 rounded-full"
               style={{
                 width: `${
-                  metrics.memoryLimit > 0
-                    ? (metrics.memoryUsage / metrics.memoryLimit) * 100
-                    : 0
+                  metrics.memoryLimit > 0 ? (metrics.memoryUsage / metrics.memoryLimit) * 100 : 0
                 }%`,
               }}
             ></div>
@@ -134,9 +116,7 @@ export const PerformanceDashboard: React.FC = () => {
 
       {/* Cache Status */}
       <div className="bg-yellow-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold text-yellow-800 mb-4">
-          Cache Status
-        </h3>
+        <h3 className="text-lg font-semibold text-yellow-800 mb-4">Cache Status</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-gray-600">API Cache</p>
@@ -162,9 +142,7 @@ export const PerformanceDashboard: React.FC = () => {
       {/* Recommendations */}
       {recommendations.length > 0 && (
         <div className="bg-red-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-red-800 mb-4">
-            Performance Recommendations
-          </h3>
+          <h3 className="text-lg font-semibold text-red-800 mb-4">Performance Recommendations</h3>
           <ul className="space-y-2">
             {recommendations.map((rec, index) => (
               <li key={index} className="flex items-start space-x-2">

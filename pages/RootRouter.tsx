@@ -1,14 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import App from "../App";
-import LoginPage from "./LoginPage";
+import React, { useEffect, useState, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import App from '../App';
+import LoginPage from './LoginPage';
 
 // Create a client with optimized settings for Plant Operations Dashboard
 const queryClient = new QueryClient({
@@ -20,7 +15,7 @@ const queryClient = new QueryClient({
       refetchOnMount: true,
       retry: (failureCount, error) => {
         // Don't retry on 4xx errors
-        if (error instanceof Error && error.message.includes("4")) {
+        if (error instanceof Error && error.message.includes('4')) {
           return false;
         }
         return failureCount < 3;
@@ -35,7 +30,7 @@ const RootRouter: React.FC = () => {
 
   const checkAuthStatus = useCallback(() => {
     try {
-      const storedUser = localStorage.getItem("currentUser");
+      const storedUser = localStorage.getItem('currentUser');
       const loggedIn = !!storedUser;
       setIsLoggedIn(loggedIn);
       setChecking(false);
@@ -55,7 +50,7 @@ const RootRouter: React.FC = () => {
     let timeoutId: NodeJS.Timeout;
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "currentUser") {
+      if (e.key === 'currentUser') {
         // Clear previous timeout
         clearTimeout(timeoutId);
 
@@ -71,13 +66,13 @@ const RootRouter: React.FC = () => {
       checkAuthStatus();
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("authStateChanged", handleAuthChange);
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authStateChanged', handleAuthChange);
 
     return () => {
       clearTimeout(timeoutId);
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("authStateChanged", handleAuthChange);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authStateChanged', handleAuthChange);
     };
   }, [checkAuthStatus]);
 
@@ -94,10 +89,7 @@ const RootRouter: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/*"
-            element={isLoggedIn ? <App /> : <Navigate to="/login" replace />}
-          />
+          <Route path="/*" element={isLoggedIn ? <App /> : <Navigate to="/login" replace />} />
         </Routes>
         <ReactQueryDevtools initialIsOpen={false} />
       </Router>

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, memo } from "react";
-import { EnhancedButton } from "../ui/EnhancedComponents";
-import ChevronDownIcon from "../icons/ChevronDownIcon";
+import React, { useState, useEffect, useCallback, memo } from 'react';
+import { EnhancedButton } from '../ui/EnhancedComponents';
+import ChevronDownIcon from '../icons/ChevronDownIcon';
 
 interface CollapsibleMenuProps {
   icon: React.ReactNode;
@@ -26,16 +26,7 @@ interface CollapsibleMenuProps {
  * - isCollapsed?: boolean
  */
 const CollapsibleMenu: React.FC<CollapsibleMenuProps> = memo(
-  ({
-    icon,
-    label,
-    isActive,
-    pages,
-    activeSubPage,
-    onSelect,
-    t,
-    isCollapsed = false,
-  }) => {
+  ({ icon, label, isActive, pages, activeSubPage, onSelect, t, isCollapsed = false }) => {
     const [isOpen, setIsOpen] = useState(isActive && !isCollapsed);
 
     useEffect(() => {
@@ -62,18 +53,18 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = memo(
     return (
       <div className="space-y-1">
         <EnhancedButton
-          variant={isActive ? "primary" : "ghost"}
+          variant={isActive ? 'primary' : 'ghost'}
           size="sm"
           onClick={handleToggle}
           ariaLabel={label}
           className={`w-full ${
-            isCollapsed ? "justify-center" : "justify-between"
-          } ${isActive ? "text-white bg-slate-700/50" : ""}`}
+            isCollapsed ? 'justify-center' : 'justify-between'
+          } ${isActive ? 'bg-red-500/10 text-red-400 border border-red-500/20' : ''}`}
           icon={
-            <div className={`flex items-center ${isCollapsed ? "" : "gap-3"}`}>
+            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
               <div
                 className={`transition-transform duration-200 ${
-                  isActive ? "scale-110" : "group-hover:scale-105"
+                  isActive ? 'scale-110' : 'group-hover:scale-105'
                 }`}
               >
                 {icon}
@@ -84,9 +75,7 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = memo(
         >
           {!isCollapsed && (
             <ChevronDownIcon
-              className={`w-4 h-4 transition-transform duration-200 ${
-                isOpen ? "rotate-180" : ""
-              }`}
+              className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
             />
           )}
           {isCollapsed && (
@@ -101,20 +90,18 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = memo(
             {pages.map((page) => (
               <EnhancedButton
                 key={page.key}
-                variant={activeSubPage === page.key ? "primary" : "ghost"}
+                variant={activeSubPage === page.key ? 'primary' : 'ghost'}
                 size="sm"
                 onClick={() => handleSubItemClick(page.key)}
                 className={`w-full justify-start ${
                   activeSubPage === page.key
-                    ? "text-red-400 bg-red-500/10 border-l-2 border-red-400"
-                    : "text-slate-300 hover:text-white"
+                    ? 'text-red-400 bg-red-500/10 border-l-2 border-red-400'
+                    : 'text-slate-300 hover:text-white'
                 }`}
                 icon={
                   <div
                     className={`transition-transform duration-200 ${
-                      activeSubPage === page.key
-                        ? "scale-110"
-                        : "group-hover:scale-105"
+                      activeSubPage === page.key ? 'scale-110' : 'group-hover:scale-105'
                     }`}
                   >
                     {page.icon}
@@ -130,5 +117,6 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = memo(
     );
   }
 );
+CollapsibleMenu.displayName = 'CollapsibleMenu';
 
 export default CollapsibleMenu;

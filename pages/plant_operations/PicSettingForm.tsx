@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { PicSetting } from "../../types";
+import React, { useState, useEffect } from 'react';
+import { PicSetting } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -8,21 +8,16 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: PicSetting | null;
-  onSave: (record: PicSetting | Omit<PicSetting, "id">) => void;
+  onSave: (record: PicSetting | Omit<PicSetting, 'id'>) => void;
   onCancel: () => void;
   t: any;
 }
 
-const PicSettingForm: React.FC<FormProps> = ({
-  recordToEdit,
-  onSave,
-  onCancel,
-  t,
-}) => {
+const PicSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t }) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
   const isHighContrast = useHighContrast();
@@ -30,14 +25,14 @@ const PicSettingForm: React.FC<FormProps> = ({
   const colorScheme = useColorScheme();
 
   const [formData, setFormData] = useState({
-    pic: "",
+    pic: '',
   });
 
   useEffect(() => {
     if (recordToEdit) {
       setFormData({ pic: recordToEdit.pic });
     } else {
-      setFormData({ pic: "" });
+      setFormData({ pic: '' });
     }
   }, [recordToEdit]);
 
@@ -59,10 +54,7 @@ const PicSettingForm: React.FC<FormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="p-6 space-y-4">
         <div>
-          <label
-            htmlFor="pic"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="pic" className="block text-sm font-medium text-slate-700">
             {t.pic}
           </label>
           <input
@@ -81,7 +73,7 @@ const PicSettingForm: React.FC<FormProps> = ({
           type="submit"
           variant="primary"
           className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || "Save PIC setting"}
+          aria-label={t.save_button || 'Save PIC setting'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -90,7 +82,7 @@ const PicSettingForm: React.FC<FormProps> = ({
           variant="secondary"
           onClick={onCancel}
           className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>

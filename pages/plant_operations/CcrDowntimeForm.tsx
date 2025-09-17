@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { CcrDowntimeData } from "../../types";
-import { usePicSettings } from "../../hooks/usePicSettings";
+import React, { useState, useEffect } from 'react';
+import { CcrDowntimeData } from '../../types';
+import { usePicSettings } from '../../hooks/usePicSettings';
 
 // Import Enhanced Components
 import {
@@ -9,13 +9,11 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
-  onSave: (
-    record: CcrDowntimeData | Omit<CcrDowntimeData, "id" | "date">
-  ) => void;
+  onSave: (record: CcrDowntimeData | Omit<CcrDowntimeData, 'id' | 'date'>) => void;
   onCancel: () => void;
   t: any;
   plantUnits: string[];
@@ -36,11 +34,11 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
 
   const { records: picSettings } = usePicSettings();
   const [formData, setFormData] = useState({
-    start_time: "00:00:00",
-    end_time: "00:00:00",
-    unit: plantUnits[0] || "",
-    pic: picSettings[0]?.pic || "",
-    problem: "",
+    start_time: '00:00:00',
+    end_time: '00:00:00',
+    unit: plantUnits[0] || '',
+    pic: picSettings[0]?.pic || '',
+    problem: '',
   });
 
   useEffect(() => {
@@ -54,35 +52,29 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       });
     } else {
       setFormData({
-        start_time: "00:00:00",
-        end_time: "00:00:00",
-        unit: plantUnits.length > 0 ? plantUnits[0] : "",
-        pic: picSettings.length > 0 ? picSettings[0]?.pic || "" : "",
-        problem: "",
+        start_time: '00:00:00',
+        end_time: '00:00:00',
+        unit: plantUnits.length > 0 ? plantUnits[0] : '',
+        pic: picSettings.length > 0 ? picSettings[0]?.pic || '' : '',
+        problem: '',
       });
     }
   }, [recordToEdit, picSettings, plantUnits]);
 
   // Helper function to convert HH:MM:SS to HH:MM for time input
   const formatTimeForInput = (timeStr: string) => {
-    if (!timeStr) return "";
+    if (!timeStr) return '';
     return timeStr.length > 5 ? timeStr.substring(0, 5) : timeStr;
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
 
     // Convert time input from HH:MM to HH:MM:SS for database consistency
-    if (
-      (name === "start_time" || name === "end_time") &&
-      value &&
-      !value.includes(":00", 5)
-    ) {
-      const timeValue = value + ":00";
+    if ((name === 'start_time' || name === 'end_time') && value && !value.includes(':00', 5)) {
+      const timeValue = value + ':00';
       setFormData((prev) => ({ ...prev, [name]: timeValue }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -96,10 +88,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
     if (startTime && endTime) {
       // Parse time format HH:MM:SS or HH:MM
       const parseTime = (timeStr: string) => {
-        const parts = timeStr.split(":");
+        const parts = timeStr.split(':');
         const hours = parseInt(parts[0], 10);
         const minutes = parseInt(parts[1], 10);
-        const seconds = parseInt(parts[2] || "0", 10);
+        const seconds = parseInt(parts[2] || '0', 10);
         return hours * 3600 + minutes * 60 + seconds;
       };
 
@@ -107,12 +99,12 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       const endSeconds = parseTime(endTime);
 
       if (startSeconds >= endSeconds) {
-        return "End time must be after start time";
+        return 'End time must be after start time';
       }
 
       // Minimum 5 minutes duration
       if (endSeconds - startSeconds < 300) {
-        return "Minimum downtime duration is 5 minutes";
+        return 'Minimum downtime duration is 5 minutes';
       }
     }
     return null;
@@ -130,27 +122,27 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
 
     // Validate required fields
     if (plantUnits.length === 0) {
-      alert("No plant units available. Please configure plant units first.");
+      alert('No plant units available. Please configure plant units first.');
       return;
     }
 
     if (!formData.unit) {
-      alert("Unit is required");
+      alert('Unit is required');
       return;
     }
 
     if (picSettings.length === 0) {
-      alert("No PIC settings available. Please configure PIC settings first.");
+      alert('No PIC settings available. Please configure PIC settings first.');
       return;
     }
 
     if (!formData.pic) {
-      alert("PIC is required");
+      alert('PIC is required');
       return;
     }
 
     if (!formData.problem.trim()) {
-      alert("Problem description is required");
+      alert('Problem description is required');
       return;
     }
 
@@ -166,10 +158,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       <div className="p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label
-              htmlFor="start_time"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="start_time" className="block text-sm font-medium text-slate-700">
               {t.start_time}
             </label>
             <input
@@ -183,10 +172,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
             />
           </div>
           <div>
-            <label
-              htmlFor="end_time"
-              className="block text-sm font-medium text-slate-700"
-            >
+            <label htmlFor="end_time" className="block text-sm font-medium text-slate-700">
               {t.end_time}
             </label>
             <input
@@ -201,10 +187,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           </div>
         </div>
         <div>
-          <label
-            htmlFor="unit"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
             {t.unit}
           </label>
           <select
@@ -228,10 +211,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           </select>
         </div>
         <div>
-          <label
-            htmlFor="pic"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="pic" className="block text-sm font-medium text-slate-700">
             {t.pic}
           </label>
           <select
@@ -254,10 +234,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           </select>
         </div>
         <div>
-          <label
-            htmlFor="problem"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="problem" className="block text-sm font-medium text-slate-700">
             {t.problem}
           </label>
           <textarea
@@ -276,7 +253,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           type="submit"
           variant="primary"
           className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || "Save downtime record"}
+          aria-label={t.save_button || 'Save downtime record'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -285,7 +262,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           variant="secondary"
           onClick={onCancel}
           className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>

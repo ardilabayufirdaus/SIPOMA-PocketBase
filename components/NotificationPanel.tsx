@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { ExtendedAlert, NotificationSettings } from "../hooks/useNotifications";
-import { AlertSeverity } from "../types";
-import { formatTimeSince } from "../utils/formatters";
-import BellIcon from "./icons/BellIcon";
-import BellSlashIcon from "./icons/BellSlashIcon";
-import XMarkIcon from "./icons/XMarkIcon";
-import ClockIcon from "./icons/ClockIcon";
-import CheckIcon from "./icons/CheckIcon";
-import CogIcon from "./icons/CogIcon";
-import EyeSlashIcon from "./icons/EyeSlashIcon";
-import SpeakerWaveIcon from "./icons/SpeakerWaveIcon";
-import SpeakerXMarkIcon from "./icons/SpeakerXMarkIcon";
-import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
+import React, { useState } from 'react';
+import { ExtendedAlert, NotificationSettings } from '../hooks/useNotifications';
+import { AlertSeverity } from '../types';
+import { formatTimeSince } from '../utils/formatters';
+import BellIcon from './icons/BellIcon';
+import BellSlashIcon from './icons/BellSlashIcon';
+import XMarkIcon from './icons/XMarkIcon';
+import ClockIcon from './icons/ClockIcon';
+import CheckIcon from './icons/CheckIcon';
+import CogIcon from './icons/CogIcon';
+import EyeSlashIcon from './icons/EyeSlashIcon';
+import SpeakerWaveIcon from './icons/SpeakerWaveIcon';
+import SpeakerXMarkIcon from './icons/SpeakerXMarkIcon';
+import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 
 interface NotificationPanelProps {
   notifications: ExtendedAlert[];
@@ -45,30 +45,30 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   const [activeSnoozeId, setActiveSnoozeId] = useState<string | null>(null);
 
   const severityColors: { [key in AlertSeverity]: string } = {
-    [AlertSeverity.CRITICAL]: "bg-red-500",
-    [AlertSeverity.WARNING]: "bg-amber-500",
-    [AlertSeverity.INFO]: "bg-blue-500",
+    [AlertSeverity.CRITICAL]: 'bg-red-500',
+    [AlertSeverity.WARNING]: 'bg-amber-500',
+    [AlertSeverity.INFO]: 'bg-blue-500',
   };
 
   const severityIcons: { [key in AlertSeverity]: string } = {
-    [AlertSeverity.CRITICAL]: "🚨",
-    [AlertSeverity.WARNING]: "⚠️",
-    [AlertSeverity.INFO]: "ℹ️",
+    [AlertSeverity.CRITICAL]: '🚨',
+    [AlertSeverity.WARNING]: '⚠️',
+    [AlertSeverity.INFO]: 'ℹ️',
   };
 
   const categoryLabels: { [key: string]: string } = {
-    system: "System",
-    maintenance: "Maintenance",
-    production: "Production",
-    user: "User",
-    security: "Security",
+    system: 'System',
+    maintenance: 'Maintenance',
+    production: 'Production',
+    user: 'User',
+    security: 'Security',
   };
 
   const snoozeOptions = [
-    { label: "15 minutes", value: 15 },
-    { label: "1 hour", value: 60 },
-    { label: "4 hours", value: 240 },
-    { label: "1 day", value: 1440 },
+    { label: '15 minutes', value: 15 },
+    { label: '1 hour', value: 60 },
+    { label: '4 hours', value: 240 },
+    { label: '1 day', value: 1440 },
   ];
 
   const handleSnooze = (notificationId: string, minutes: number) => {
@@ -77,10 +77,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   };
 
   const filteredNotifications = notifications.filter((notification) => {
-    if (
-      settings.showCriticalOnly &&
-      notification.severity !== AlertSeverity.CRITICAL
-    ) {
+    if (settings.showCriticalOnly && notification.severity !== AlertSeverity.CRITICAL) {
       return false;
     }
     return true;
@@ -95,9 +92,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
         size="sm"
         className="p-3 min-h-[44px] min-w-[44px]"
         ariaLabel={`View notifications. ${
-          unreadCount > 0
-            ? `${unreadCount} unread notifications`
-            : "No new notifications"
+          unreadCount > 0 ? `${unreadCount} unread notifications` : 'No new notifications'
         }`}
       >
         {settings.browser ? (
@@ -110,7 +105,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
             className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-red-600 text-xs font-bold text-white ring-2 ring-white dark:ring-slate-800 animate-pulse"
             aria-label={`${unreadCount} unread`}
           >
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </EnhancedButton>
@@ -167,9 +162,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   <input
                     type="checkbox"
                     checked={settings.browser}
-                    onChange={(e) =>
-                      onUpdateSettings({ browser: e.target.checked })
-                    }
+                    onChange={(e) => onUpdateSettings({ browser: e.target.checked })}
                     className="rounded border-slate-300 dark:border-slate-600 text-red-600 focus:ring-red-500"
                   />
                   <BellIcon className="w-3 h-3" />
@@ -179,9 +172,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   <input
                     type="checkbox"
                     checked={settings.sound}
-                    onChange={(e) =>
-                      onUpdateSettings({ sound: e.target.checked })
-                    }
+                    onChange={(e) => onUpdateSettings({ sound: e.target.checked })}
                     className="rounded border-slate-300 dark:border-slate-600 text-red-600 focus:ring-red-500"
                   />
                   {settings.sound ? (
@@ -195,9 +186,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   <input
                     type="checkbox"
                     checked={settings.showCriticalOnly}
-                    onChange={(e) =>
-                      onUpdateSettings({ showCriticalOnly: e.target.checked })
-                    }
+                    onChange={(e) => onUpdateSettings({ showCriticalOnly: e.target.checked })}
                     className="rounded border-slate-300 dark:border-slate-600 text-red-600 focus:ring-red-500"
                   />
                   <span className="text-red-500">🚨</span>
@@ -214,16 +203,14 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                 <div
                   key={notification.id}
                   className={`relative px-4 py-3 border-b border-slate-50 dark:border-slate-700/50 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
-                    !notification.read ? "bg-red-50/50 dark:bg-red-500/5" : ""
+                    !notification.read ? 'bg-red-50/50 dark:bg-red-500/5' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Severity Indicator */}
                     <div className="flex-shrink-0 mt-1">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          severityColors[notification.severity]
-                        }`}
+                        className={`w-2 h-2 rounded-full ${severityColors[notification.severity]}`}
                       />
                     </div>
 
@@ -234,18 +221,14 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                           {/* Category Badge */}
                           {notification.category && (
                             <span className="inline-block px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-md mb-1">
-                              {categoryLabels[notification.category] ||
-                                notification.category}
+                              {categoryLabels[notification.category] || notification.category}
                             </span>
                           )}
 
                           {/* Message */}
                           <p className="text-sm text-slate-800 dark:text-slate-200 mb-1">
-                            <span className="mr-1">
-                              {severityIcons[notification.severity]}
-                            </span>
-                            {t[notification.message as keyof typeof t] ||
-                              notification.message}
+                            <span className="mr-1">{severityIcons[notification.severity]}</span>
+                            {t[notification.message as keyof typeof t] || notification.message}
                           </p>
 
                           {/* Timestamp */}
@@ -273,9 +256,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                             <EnhancedButton
                               onClick={() =>
                                 setActiveSnoozeId(
-                                  activeSnoozeId === notification.id
-                                    ? null
-                                    : notification.id
+                                  activeSnoozeId === notification.id ? null : notification.id
                                 )
                               }
                               variant="ghost"
@@ -292,12 +273,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                                 {snoozeOptions.map((option) => (
                                   <button
                                     key={option.value}
-                                    onClick={() =>
-                                      handleSnooze(
-                                        notification.id,
-                                        option.value
-                                      )
-                                    }
+                                    onClick={() => handleSnooze(notification.id, option.value)}
                                     className="block w-full text-left px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                   >
                                     {option.label}

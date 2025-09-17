@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -20,7 +20,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
   public render() {
@@ -46,12 +46,8 @@ class ErrorBoundary extends Component<Props, State> {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
-            Terjadi Kesalahan
-          </h3>
-          <p className="text-red-700 mb-4">
-            Maaf, terjadi kesalahan saat memuat komponen ini.
-          </p>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Terjadi Kesalahan</h3>
+          <p className="text-red-700 mb-4">Maaf, terjadi kesalahan saat memuat komponen ini.</p>
           <button
             onClick={() => this.setState({ hasError: false, error: undefined })}
             className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"

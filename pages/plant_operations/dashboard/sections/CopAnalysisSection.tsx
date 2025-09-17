@@ -1,14 +1,6 @@
-import React, { memo } from "react";
-import LazyChart from "../../../../components/LazyChart";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import React, { memo } from 'react';
+import LazyChart from '../../../../components/LazyChart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface CopAnalysisChartProps {
   data: any[];
@@ -27,15 +19,13 @@ const CopAnalysisChart = memo<CopAnalysisChartProps>(({ data }) => (
   </ResponsiveContainer>
 ));
 
-CopAnalysisChart.displayName = "CopAnalysisChart";
+CopAnalysisChart.displayName = 'CopAnalysisChart';
 
 interface CopAnalysisSectionProps {
   copAnalysisData: any[];
 }
 
-const CopAnalysisSection: React.FC<CopAnalysisSectionProps> = ({
-  copAnalysisData,
-}) => {
+const CopAnalysisSection: React.FC<CopAnalysisSectionProps> = ({ copAnalysisData }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h3 className="text-xl font-semibold mb-4">COP Analysis</h3>
@@ -48,9 +38,7 @@ const CopAnalysisSection: React.FC<CopAnalysisSectionProps> = ({
           <div className="text-center">
             <div className="text-4xl mb-2">🎯</div>
             <div className="text-lg font-medium">No COP Analysis Data</div>
-            <div className="text-sm">
-              No COP parameters found for the selected filters
-            </div>
+            <div className="text-sm">No COP parameters found for the selected filters</div>
           </div>
         </div>
       )}

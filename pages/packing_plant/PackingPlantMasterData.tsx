@@ -1,12 +1,12 @@
-import React, { useState, useCallback } from "react";
-import { usePackingPlantMasterData } from "../../hooks/usePackingPlantMasterData";
-import { PackingPlantMasterRecord } from "../../types";
-import Modal from "../../components/Modal";
-import PackingPlantDataForm from "./PackingPlantDataForm";
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
-import { formatNumber } from "../../utils/formatters";
+import React, { useState, useCallback } from 'react';
+import { usePackingPlantMasterData } from '../../hooks/usePackingPlantMasterData';
+import { PackingPlantMasterRecord } from '../../types';
+import Modal from '../../components/Modal';
+import PackingPlantDataForm from './PackingPlantDataForm';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import { formatNumber } from '../../utils/formatters';
 
 // Import Enhanced Components
 import {
@@ -15,7 +15,7 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
   // Enhanced accessibility hooks
@@ -24,14 +24,12 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
 
-  const { records, addRecord, updateRecord, deleteRecord } =
-    usePackingPlantMasterData();
+  const { records, addRecord, updateRecord, deleteRecord } = usePackingPlantMasterData();
 
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const [editingRecord, setEditingRecord] =
-    useState<PackingPlantMasterRecord | null>(null);
+  const [editingRecord, setEditingRecord] = useState<PackingPlantMasterRecord | null>(null);
   const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
 
   const handleOpenAddModal = useCallback(() => {
@@ -39,13 +37,10 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
     setFormModalOpen(true);
   }, []);
 
-  const handleOpenEditModal = useCallback(
-    (record: PackingPlantMasterRecord) => {
-      setEditingRecord(record);
-      setFormModalOpen(true);
-    },
-    []
-  );
+  const handleOpenEditModal = useCallback((record: PackingPlantMasterRecord) => {
+    setEditingRecord(record);
+    setFormModalOpen(true);
+  }, []);
 
   const handleOpenDeleteModal = (recordId: string) => {
     setDeletingRecordId(recordId);
@@ -60,10 +55,8 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
   }, []);
 
   const handleSave = useCallback(
-    (
-      record: PackingPlantMasterRecord | Omit<PackingPlantMasterRecord, "id">
-    ) => {
-      if ("id" in record) {
+    (record: PackingPlantMasterRecord | Omit<PackingPlantMasterRecord, 'id'>) => {
+      if ('id' in record) {
         updateRecord(record as PackingPlantMasterRecord);
       } else {
         addRecord(record);
@@ -81,12 +74,12 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
   }, [deletingRecordId, deleteRecord, handleCloseModals]);
 
   const tableHeaders = [
-    "area",
-    "plant_code",
-    "silo_capacity",
-    "dead_stock",
-    "live_stock",
-    "cement_type",
+    'area',
+    'plant_code',
+    'silo_capacity',
+    'dead_stock',
+    'live_stock',
+    'cement_type',
   ];
 
   return (
@@ -100,7 +93,7 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
             onClick={handleOpenAddModal}
             variant="primary"
             className="inline-flex items-center justify-center gap-2"
-            aria-label={t.add_data_button || "Add new packing plant data"}
+            aria-label={t.add_data_button || 'Add new packing plant data'}
           >
             <PlusIcon className="w-5 h-5" />
             {t.add_data_button}
@@ -181,9 +174,7 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
         <Modal
           isOpen={isFormModalOpen}
           onClose={handleCloseModals}
-          title={
-            editingRecord ? t.edit_master_data_title : t.add_master_data_title
-          }
+          title={editingRecord ? t.edit_master_data_title : t.add_master_data_title}
         >
           <PackingPlantDataForm
             recordToEdit={editingRecord}
@@ -208,7 +199,7 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
               onClick={handleDeleteConfirm}
               variant="error"
               className="sm:ml-3 sm:w-auto"
-              aria-label={t.confirm_delete_button || "Confirm delete"}
+              aria-label={t.confirm_delete_button || 'Confirm delete'}
             >
               {t.confirm_delete_button}
             </EnhancedButton>
@@ -216,7 +207,7 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
               onClick={handleCloseModals}
               variant="secondary"
               className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-              aria-label={t.cancel_button || "Cancel"}
+              aria-label={t.cancel_button || 'Cancel'}
             >
               {t.cancel_button}
             </EnhancedButton>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -28,12 +28,12 @@ export const useDataCache = <T>() => {
   const generateKey = useCallback((...args: any[]): string => {
     return args
       .map((arg) => {
-        if (typeof arg === "object") {
+        if (typeof arg === 'object') {
           return JSON.stringify(arg);
         }
         return String(arg);
       })
-      .join("|");
+      .join('|');
   }, []);
 
   // Check if cache item is expired
@@ -131,9 +131,7 @@ export const useDataCache = <T>() => {
   // Get cache statistics
   const getStats = useCallback(() => {
     const hitRate =
-      stats.hits + stats.misses > 0
-        ? (stats.hits / (stats.hits + stats.misses)) * 100
-        : 0;
+      stats.hits + stats.misses > 0 ? (stats.hits / (stats.hits + stats.misses)) * 100 : 0;
 
     return {
       ...stats,
@@ -166,48 +164,28 @@ export const useCcrDataCache = () => {
 
   const getCachedData = useCallback(
     (month: number, year: number, plantUnit?: string) => {
-      const key = cache.generateKey(
-        "ccr_data",
-        month,
-        year,
-        plantUnit || "all"
-      );
+      const key = cache.generateKey('ccr_data', month, year, plantUnit || 'all');
       return cache.get(key);
     },
     [cache]
   );
 
   const setCachedData = useCallback(
-    (
-      month: number,
-      year: number,
-      plantUnit: string | undefined,
-      data: any[]
-    ) => {
-      const key = cache.generateKey(
-        "ccr_data",
-        month,
-        year,
-        plantUnit || "all"
-      );
+    (month: number, year: number, plantUnit: string | undefined, data: any[]) => {
+      const key = cache.generateKey('ccr_data', month, year, plantUnit || 'all');
       cache.set(key, data);
     },
     [cache]
   );
 
   const getCachedProcessedData = useCallback(
-    (
-      month: number,
-      year: number,
-      plantUnit?: string,
-      selectedParams?: string[]
-    ) => {
+    (month: number, year: number, plantUnit?: string, selectedParams?: string[]) => {
       const key = cache.generateKey(
-        "processed_data",
+        'processed_data',
         month,
         year,
-        plantUnit || "all",
-        selectedParams?.join(",") || "all"
+        plantUnit || 'all',
+        selectedParams?.join(',') || 'all'
       );
       return cache.get(key);
     },
@@ -223,11 +201,11 @@ export const useCcrDataCache = () => {
       data: any
     ) => {
       const key = cache.generateKey(
-        "processed_data",
+        'processed_data',
         month,
         year,
-        plantUnit || "all",
-        selectedParams?.join(",") || "all"
+        plantUnit || 'all',
+        selectedParams?.join(',') || 'all'
       );
       cache.set(key, data);
     },

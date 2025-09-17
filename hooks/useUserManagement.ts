@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../utils/supabaseClient";
-import { User } from "../types";
-import { SHA256 } from "crypto-js";
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../utils/supabaseClient';
+import { User } from '../types';
+import { SHA256 } from 'crypto-js';
 
 export const useUserManagement = (currentUser?: User | null) => {
   const [users, setUsers] = useState<User[]>([]);
@@ -12,7 +12,7 @@ export const useUserManagement = (currentUser?: User | null) => {
     setLoading(true);
     try {
       const { data, error } = await (supabase as any)
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -31,7 +31,7 @@ export const useUserManagement = (currentUser?: User | null) => {
           )
         `
         )
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -60,7 +60,7 @@ export const useUserManagement = (currentUser?: User | null) => {
 
       setUsers(transformedUsers);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error('Error fetching users:', error);
       setUsers([]);
     } finally {
       setLoading(false);
@@ -69,18 +69,13 @@ export const useUserManagement = (currentUser?: User | null) => {
 
   // Add new user
   const addUser = useCallback(
-    async (userData: {
-      username: string;
-      password: string;
-      full_name?: string;
-      role: string;
-    }) => {
+    async (userData: { username: string; password: string; full_name?: string; role: string }) => {
       try {
         // Hash the password
         const password_hash = SHA256(userData.password).toString();
 
         const { data, error } = await (supabase as any)
-          .from("users")
+          .from('users')
           .insert([
             {
               username: userData.username,
@@ -100,7 +95,7 @@ export const useUserManagement = (currentUser?: User | null) => {
 
         return data;
       } catch (error) {
-        console.error("Error adding user:", error);
+        console.error('Error adding user:', error);
         throw error;
       }
     },
@@ -123,18 +118,15 @@ export const useUserManagement = (currentUser?: User | null) => {
         const updateData: any = {};
 
         if (userData.username) updateData.username = userData.username;
-        if (userData.password)
-          updateData.password_hash = SHA256(userData.password).toString();
-        if (userData.full_name !== undefined)
-          updateData.full_name = userData.full_name;
+        if (userData.password) updateData.password_hash = SHA256(userData.password).toString();
+        if (userData.full_name !== undefined) updateData.full_name = userData.full_name;
         if (userData.role) updateData.role = userData.role;
-        if (userData.is_active !== undefined)
-          updateData.is_active = userData.is_active;
+        if (userData.is_active !== undefined) updateData.is_active = userData.is_active;
 
         const { data, error } = await (supabase as any)
-          .from("users")
+          .from('users')
           .update(updateData)
-          .eq("id", userId)
+          .eq('id', userId)
           .select()
           .single();
 
@@ -145,7 +137,7 @@ export const useUserManagement = (currentUser?: User | null) => {
 
         return data;
       } catch (error) {
-        console.error("Error updating user:", error);
+        console.error('Error updating user:', error);
         throw error;
       }
     },
@@ -156,17 +148,14 @@ export const useUserManagement = (currentUser?: User | null) => {
   const deleteUser = useCallback(
     async (userId: string) => {
       try {
-        const { error } = await (supabase as any)
-          .from("users")
-          .delete()
-          .eq("id", userId);
+        const { error } = await (supabase as any).from('users').delete().eq('id', userId);
 
         if (error) throw error;
 
         // Refresh users list
         await fetchUsers();
       } catch (error) {
-        console.error("Error deleting user:", error);
+        console.error('Error deleting user:', error);
         throw error;
       }
     },
@@ -179,12 +168,12 @@ export const useUserManagement = (currentUser?: User | null) => {
       try {
         // Get current status
         const user = users.find((u) => u.id === userId);
-        if (!user) throw new Error("User not found");
+        if (!user) throw new Error('User not found');
 
         const { data, error } = await (supabase as any)
-          .from("users")
+          .from('users')
           .update({ is_active: !user.is_active })
-          .eq("id", userId)
+          .eq('id', userId)
           .select()
           .single();
 
@@ -195,7 +184,7 @@ export const useUserManagement = (currentUser?: User | null) => {
 
         return data;
       } catch (error) {
-        console.error("Error toggling user status:", error);
+        console.error('Error toggling user status:', error);
         throw error;
       }
     },

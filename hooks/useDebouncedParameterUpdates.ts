@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from 'react';
 
 interface DebouncedUpdateOptions {
   selectedDate: string;
@@ -23,13 +23,9 @@ export const useDebouncedParameterUpdates = ({
   onSuccess,
   onError,
 }: DebouncedUpdateOptions) => {
-  const [savingParameterId, setSavingParameterId] = useState<string | null>(
-    null
-  );
+  const [savingParameterId, setSavingParameterId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const debouncedUpdates = useRef<
-    Map<string, { value: string; timer: NodeJS.Timeout }>
-  >(new Map());
+  const debouncedUpdates = useRef<Map<string, { value: string; timer: NodeJS.Timeout }>>(new Map());
 
   const updateParameterDataDebounced = useCallback(
     (parameterId: string, hour: number, value: string) => {
@@ -47,21 +43,15 @@ export const useDebouncedParameterUpdates = ({
           setSavingParameterId(parameterId);
           setError(null);
 
-          const finalValue = value === "" ? null : value;
-          await updateParameterData(
-            selectedDate,
-            parameterId,
-            hour,
-            finalValue,
-            currentUserName
-          );
+          const finalValue = value === '' ? null : value;
+          await updateParameterData(selectedDate, parameterId, hour, finalValue, currentUserName);
 
           // Refetch data to ensure consistency
           const updatedData = await getParameterDataForDate(selectedDate);
 
           onSuccess?.(parameterId, hour);
         } catch (error) {
-          console.error("Error updating parameter data:", error);
+          console.error('Error updating parameter data:', error);
           const errorMessage = `Failed to save data for parameter ${parameterId}`;
           setError(errorMessage);
           onError?.(parameterId, errorMessage);
@@ -71,7 +61,7 @@ export const useDebouncedParameterUpdates = ({
             const revertedData = await getParameterDataForDate(selectedDate);
             // Note: The parent component should handle the revert
           } catch (revertError) {
-            console.error("Error reverting data:", revertError);
+            console.error('Error reverting data:', revertError);
           }
         } finally {
           setSavingParameterId(null);

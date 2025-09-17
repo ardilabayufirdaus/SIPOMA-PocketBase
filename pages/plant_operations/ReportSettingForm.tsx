@@ -1,9 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  ReportSetting,
-  ParameterSetting,
-  ParameterDataType,
-} from "../../types";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { ReportSetting, ParameterSetting, ParameterDataType } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -12,11 +8,11 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: ReportSetting | null;
-  onSave: (record: ReportSetting | Omit<ReportSetting, "id">) => void;
+  onSave: (record: ReportSetting | Omit<ReportSetting, 'id'>) => void;
   onCancel: () => void;
   t: any;
   allParameters: ParameterSetting[];
@@ -53,8 +49,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
 
   // State management
   const [formData, setFormData] = useState<FormData>({
-    parameter_id: "",
-    category: "",
+    parameter_id: '',
+    category: '',
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,17 +65,12 @@ const ReportSettingForm: React.FC<FormProps> = ({
         .filter((p) => p.data_type === ParameterDataType.NUMBER)
         // Filter by selected category and unit (if provided)
         .filter((p) => {
-          const categoryMatch =
-            !selectedCategory || p.category === selectedCategory;
+          const categoryMatch = !selectedCategory || p.category === selectedCategory;
           const unitMatch = !selectedUnit || p.unit === selectedUnit;
           return categoryMatch && unitMatch;
         })
         // FIX: Use snake_case for parameter_id
-        .filter(
-          (p) =>
-            !existingParameterIds.includes(p.id) ||
-            p.id === recordToEdit?.parameter_id
-        )
+        .filter((p) => !existingParameterIds.includes(p.id) || p.id === recordToEdit?.parameter_id)
     );
   }, [
     allParameters,
@@ -93,20 +84,18 @@ const ReportSettingForm: React.FC<FormProps> = ({
   const validateField = useCallback(
     (name: keyof FormData, value: string): string => {
       switch (name) {
-        case "parameter_id":
-          if (!value) return "Parameter is required";
+        case 'parameter_id':
+          if (!value) return 'Parameter is required';
           if (!availableParameters.find((p) => p.id === value))
-            return "Selected parameter is not available";
-          return "";
-        case "category":
-          if (!value.trim()) return "Category is required";
-          if (value.trim().length < 2)
-            return "Category must be at least 2 characters";
-          if (value.trim().length > 50)
-            return "Category must be less than 50 characters";
-          return "";
+            return 'Selected parameter is not available';
+          return '';
+        case 'category':
+          if (!value.trim()) return 'Category is required';
+          if (value.trim().length < 2) return 'Category must be at least 2 characters';
+          if (value.trim().length > 50) return 'Category must be less than 50 characters';
+          return '';
         default:
-          return "";
+          return '';
       }
     },
     [availableParameters]
@@ -144,15 +133,11 @@ const ReportSettingForm: React.FC<FormProps> = ({
       // Only set default parameter if current parameter_id is empty or invalid
       setFormData((prev) => {
         const currentParameterId = prev.parameter_id;
-        const isCurrentValid = availableParameters.some(
-          (p) => p.id === currentParameterId
-        );
+        const isCurrentValid = availableParameters.some((p) => p.id === currentParameterId);
 
         return {
-          parameter_id: isCurrentValid
-            ? currentParameterId
-            : availableParameters[0]?.id || "",
-          category: prev.category || "",
+          parameter_id: isCurrentValid ? currentParameterId : availableParameters[0]?.id || '',
+          category: prev.category || '',
         };
       });
       setErrors({});
@@ -165,9 +150,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
     if (!recordToEdit && !isUserInteracting && availableParameters.length > 0) {
       setFormData((prev) => {
         const currentParameterId = prev.parameter_id;
-        const isCurrentValid = availableParameters.some(
-          (p) => p.id === currentParameterId
-        );
+        const isCurrentValid = availableParameters.some((p) => p.id === currentParameterId);
 
         // Only change parameter_id if current selection is invalid AND we have available parameters
         if (!isCurrentValid) {
@@ -247,10 +230,10 @@ const ReportSettingForm: React.FC<FormProps> = ({
           await onSave(formData);
         }
       } catch (error) {
-        console.error("Error saving report setting:", error);
+        console.error('Error saving report setting:', error);
         // Add user-friendly error feedback
         setErrors({
-          parameter_id: "Failed to save report setting. Please try again.",
+          parameter_id: 'Failed to save report setting. Please try again.',
         });
       } finally {
         setIsSubmitting(false);
@@ -265,8 +248,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
         {selectedCategory && selectedUnit && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3 mb-4">
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              <strong>Filter Applied:</strong> Showing parameters for{" "}
-              {selectedCategory} - {selectedUnit}
+              <strong>Filter Applied:</strong> Showing parameters for {selectedCategory} -{' '}
+              {selectedUnit}
             </p>
           </div>
         )}
@@ -287,20 +270,18 @@ const ReportSettingForm: React.FC<FormProps> = ({
             onBlur={handleBlur}
             required
             disabled={availableParameters.length === 0 || isSubmitting}
-            aria-describedby={
-              errors.parameter_id ? "parameter_id-error" : undefined
-            }
+            aria-describedby={errors.parameter_id ? 'parameter_id-error' : undefined}
             aria-invalid={!!errors.parameter_id}
             className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white dark:bg-slate-800 text-base border text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed ${
               errors.parameter_id
-                ? "border-red-500 dark:border-red-500"
-                : "border-slate-300 dark:border-slate-600"
+                ? 'border-red-500 dark:border-red-500'
+                : 'border-slate-300 dark:border-slate-600'
             }`}
           >
             <option value="">
               {availableParameters.length === 0
-                ? "No parameters available"
-                : "Select a parameter..."}
+                ? 'No parameters available'
+                : 'Select a parameter...'}
             </option>
             {availableParameters.map((param) => (
               <option key={param.id} value={param.id}>
@@ -310,8 +291,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
           </select>
           {availableParameters.length === 0 && (
             <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
-              No numeric parameters available for the selected category and
-              unit. Please configure parameters in Master Data first.
+              No numeric parameters available for the selected category and unit. Please configure
+              parameters in Master Data first.
             </p>
           )}
           {errors.parameter_id && touched.parameter_id && (
@@ -342,13 +323,13 @@ const ReportSettingForm: React.FC<FormProps> = ({
             onBlur={handleBlur}
             required
             disabled={isSubmitting}
-            aria-describedby={errors.category ? "category-error" : undefined}
+            aria-describedby={errors.category ? 'category-error' : undefined}
             aria-invalid={!!errors.category}
             placeholder="Enter category name..."
             className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed ${
               errors.category
-                ? "border-red-500 dark:border-red-500"
-                : "border-slate-300 dark:border-slate-600"
+                ? 'border-red-500 dark:border-red-500'
+                : 'border-slate-300 dark:border-slate-600'
             }`}
           />
           {errors.category && touched.category && (
@@ -373,15 +354,11 @@ const ReportSettingForm: React.FC<FormProps> = ({
             !formData.category.trim()
           }
           loading={isSubmitting}
-          loadingText={recordToEdit ? "Updating..." : "Saving..."}
+          loadingText={recordToEdit ? 'Updating...' : 'Saving...'}
           className="sm:ml-3 sm:w-auto"
-          aria-label={
-            recordToEdit
-              ? t.save_button || "Update report setting"
-              : "Add parameter"
-          }
+          aria-label={recordToEdit ? t.save_button || 'Update report setting' : 'Add parameter'}
         >
-          {recordToEdit ? t.save_button : "Add Parameter"}
+          {recordToEdit ? t.save_button : 'Add Parameter'}
         </EnhancedButton>
         <EnhancedButton
           type="button"
@@ -389,7 +366,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
           onClick={onCancel}
           disabled={isSubmitting}
           className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>

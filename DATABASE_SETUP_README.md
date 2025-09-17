@@ -37,8 +37,8 @@ npx supabase gen types typescript --local > types/supabase.ts
 Update `utils/supabase.ts`:
 
 ```typescript
-import { createClient } from "@supabase/supabase-js";
-import { Database } from "../types/supabase";
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '../types/supabase';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;

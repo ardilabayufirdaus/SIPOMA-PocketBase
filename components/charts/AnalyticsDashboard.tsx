@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,8 +13,8 @@ import {
   Tooltip,
   Legend,
   ComposedChart,
-} from "recharts";
-import { EnhancedButton, useAccessibility } from "../ui/EnhancedComponents";
+} from 'recharts';
+import { EnhancedButton, useAccessibility } from '../ui/EnhancedComponents';
 
 interface AnalyticsDashboardProps {
   data: Array<{
@@ -25,8 +25,8 @@ interface AnalyticsDashboardProps {
     downtime: number;
     energy: number;
   }>;
-  timeRange: "1h" | "24h" | "7d" | "30d";
-  onTimeRangeChange: (range: "1h" | "24h" | "7d" | "30d") => void;
+  timeRange: '1h' | '24h' | '7d' | '30d';
+  onTimeRangeChange: (range: '1h' | '24h' | '7d' | '30d') => void;
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
@@ -38,11 +38,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   const formatValue = (value: number, type: string) => {
     switch (type) {
-      case "percentage":
+      case 'percentage':
         return `${value.toFixed(1)}%`;
-      case "hours":
+      case 'hours':
         return `${value.toFixed(1)}h`;
-      case "kwh":
+      case 'kwh':
         return `${value.toFixed(0)} kWh`;
       default:
         return value.toString();
@@ -53,19 +53,17 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
-          <p className="font-medium text-slate-800 dark:text-slate-200 mb-2">
-            {label}
-          </p>
+          <p className="font-medium text-slate-800 dark:text-slate-200 mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}:{" "}
+              {entry.name}:{' '}
               {formatValue(
                 entry.value,
-                entry.dataKey === "energy"
-                  ? "kwh"
-                  : entry.dataKey === "downtime"
-                  ? "hours"
-                  : "percentage"
+                entry.dataKey === 'energy'
+                  ? 'kwh'
+                  : entry.dataKey === 'downtime'
+                    ? 'hours'
+                    : 'percentage'
               )}
             </p>
           ))}
@@ -83,10 +81,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           Production Analytics
         </h2>
         <div className="flex gap-2">
-          {(["1h", "24h", "7d", "30d"] as const).map((range) => (
+          {(['1h', '24h', '7d', '30d'] as const).map((range) => (
             <EnhancedButton
               key={range}
-              variant={timeRange === range ? "primary" : "outline"}
+              variant={timeRange === range ? 'primary' : 'outline'}
               size="sm"
               onClick={() => {
                 onTimeRangeChange(range);
@@ -109,12 +107,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis
-                dataKey="timestamp"
-                fontSize={12}
-                tick={{ fill: "#64748b" }}
-              />
-              <YAxis fontSize={12} tick={{ fill: "#64748b" }} />
+              <XAxis dataKey="timestamp" fontSize={12} tick={{ fill: '#64748b' }} />
+              <YAxis fontSize={12} tick={{ fill: '#64748b' }} />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Area
@@ -156,12 +150,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis
-                  dataKey="timestamp"
-                  fontSize={12}
-                  tick={{ fill: "#64748b" }}
-                />
-                <YAxis fontSize={12} tick={{ fill: "#64748b" }} />
+                <XAxis dataKey="timestamp" fontSize={12} tick={{ fill: '#64748b' }} />
+                <YAxis fontSize={12} tick={{ fill: '#64748b' }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar
                   dataKey="downtime"
@@ -183,12 +173,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis
-                  dataKey="timestamp"
-                  fontSize={12}
-                  tick={{ fill: "#64748b" }}
-                />
-                <YAxis fontSize={12} tick={{ fill: "#64748b" }} />
+                <XAxis dataKey="timestamp" fontSize={12} tick={{ fill: '#64748b' }} />
+                <YAxis fontSize={12} tick={{ fill: '#64748b' }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
@@ -210,19 +196,11 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           (() => {
             const latest = data[data.length - 1];
             const avgProduction =
-              data.reduce((sum, item) => sum + item.production, 0) /
-              data.length;
+              data.reduce((sum, item) => sum + item.production, 0) / data.length;
             const avgEfficiency =
-              data.reduce((sum, item) => sum + item.efficiency, 0) /
-              data.length;
-            const totalDowntime = data.reduce(
-              (sum, item) => sum + item.downtime,
-              0
-            );
-            const totalEnergy = data.reduce(
-              (sum, item) => sum + item.energy,
-              0
-            );
+              data.reduce((sum, item) => sum + item.efficiency, 0) / data.length;
+            const totalDowntime = data.reduce((sum, item) => sum + item.downtime, 0);
+            const totalEnergy = data.reduce((sum, item) => sum + item.energy, 0);
 
             return (
               <>
@@ -230,25 +208,19 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">
                     {avgProduction.toFixed(1)}%
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Avg Production
-                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">Avg Production</div>
                 </div>
                 <div className="glass-card p-4 rounded-xl text-center">
                   <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                     {avgEfficiency.toFixed(1)}%
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Avg Efficiency
-                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">Avg Efficiency</div>
                 </div>
                 <div className="glass-card p-4 rounded-xl text-center">
                   <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                     {totalDowntime.toFixed(1)}h
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Total Downtime
-                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">Total Downtime</div>
                 </div>
                 <div className="glass-card p-4 rounded-xl text-center">
                   <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">

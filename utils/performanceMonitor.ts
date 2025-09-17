@@ -3,13 +3,13 @@
  * Provides comprehensive performance tracking and error monitoring
  */
 
-import React from "react";
+import React from 'react';
 
 interface PerformanceMetric {
   name: string;
   value: number;
   timestamp: number;
-  type: "measure" | "mark" | "navigation" | "resource";
+  type: 'measure' | 'mark' | 'navigation' | 'resource';
 }
 
 interface ErrorLog {
@@ -24,7 +24,7 @@ interface ErrorLog {
 class PerformanceMonitor {
   private metrics: PerformanceMetric[] = [];
   private errors: ErrorLog[] = [];
-  private isEnabled = process.env.NODE_ENV === "production";
+  private isEnabled = process.env.NODE_ENV === 'production';
 
   // Mark performance points
   mark(name: string): void {
@@ -32,7 +32,7 @@ class PerformanceMonitor {
     try {
       performance.mark(name);
     } catch (error) {
-      console.warn("Performance mark failed:", error);
+      console.warn('Performance mark failed:', error);
     }
   }
 
@@ -47,11 +47,11 @@ class PerformanceMonitor {
           name,
           value: measure.duration,
           timestamp: Date.now(),
-          type: "measure",
+          type: 'measure',
         });
       }
     } catch (error) {
-      console.warn("Performance measure failed:", error);
+      console.warn('Performance measure failed:', error);
     }
   }
 
@@ -63,7 +63,7 @@ class PerformanceMonitor {
       name: `render-${componentName}`,
       value: duration,
       timestamp: Date.now(),
-      type: "measure",
+      type: 'measure',
     });
   }
 
@@ -74,7 +74,7 @@ class PerformanceMonitor {
       name: `api-${endpoint}`,
       value: duration,
       timestamp: Date.now(),
-      type: success ? "measure" : "mark",
+      type: success ? 'measure' : 'mark',
     });
   }
 
@@ -93,10 +93,10 @@ class PerformanceMonitor {
 
     // Send to monitoring service in production
     if (this.isEnabled) {
-      this.sendToMonitoringService("error", errorLog);
+      this.sendToMonitoringService('error', errorLog);
     }
 
-    console.error("Logged error:", errorLog);
+    console.error('Logged error:', errorLog);
   }
 
   // Get navigation timing
@@ -108,20 +108,20 @@ class PerformanceMonitor {
 
     const metrics = [
       {
-        name: "dns-lookup",
+        name: 'dns-lookup',
         value: timing.domainLookupEnd - timing.domainLookupStart,
       },
-      { name: "tcp-connect", value: timing.connectEnd - timing.connectStart },
+      { name: 'tcp-connect', value: timing.connectEnd - timing.connectStart },
       {
-        name: "server-response",
+        name: 'server-response',
         value: timing.responseStart - timing.requestStart,
       },
       {
-        name: "page-load",
+        name: 'page-load',
         value: timing.loadEventEnd - timing.navigationStart,
       },
       {
-        name: "dom-ready",
+        name: 'dom-ready',
         value: timing.domContentLoadedEventEnd - timing.navigationStart,
       },
     ];
@@ -131,7 +131,7 @@ class PerformanceMonitor {
         this.metrics.push({
           ...metric,
           timestamp: Date.now(),
-          type: "navigation",
+          type: 'navigation',
         });
       }
     });
@@ -141,15 +141,13 @@ class PerformanceMonitor {
   getResourceTiming(): void {
     if (!this.isEnabled || !performance.getEntriesByType) return;
 
-    const resources = performance.getEntriesByType(
-      "resource"
-    ) as PerformanceResourceTiming[];
+    const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
     resources.forEach((resource) => {
       this.metrics.push({
-        name: `resource-${resource.name.split("/").pop()}`,
+        name: `resource-${resource.name.split('/').pop()}`,
         value: resource.duration,
         timestamp: Date.now(),
-        type: "resource",
+        type: 'resource',
       });
     });
   }
@@ -172,21 +170,21 @@ class PerformanceMonitor {
   }
 
   // Send data to monitoring service
-  private sendToMonitoringService(type: "metric" | "error", data: any): void {
+  private sendToMonitoringService(type: 'metric' | 'error', data: any): void {
     // In production, send to your monitoring service
     // Example: Sentry, DataDog, New Relic, etc.
     try {
       // Placeholder for monitoring service integration
       // console.log(`Sending ${type} to monitoring service:`, data); // removed for production
     } catch (error) {
-      console.error("Failed to send to monitoring service:", error);
+      console.error('Failed to send to monitoring service:', error);
     }
   }
 
   // Get current user ID from localStorage
   private getCurrentUserId(): string | undefined {
     try {
-      const user = localStorage.getItem("currentUser");
+      const user = localStorage.getItem('currentUser');
       return user ? JSON.parse(user).id : undefined;
     } catch {
       return undefined;
@@ -198,11 +196,11 @@ class PerformanceMonitor {
     if (!this.isEnabled) return;
 
     // Track navigation timing
-    if (document.readyState === "complete") {
+    if (document.readyState === 'complete') {
       this.getNavigationTiming();
       this.getResourceTiming();
     } else {
-      window.addEventListener("load", () => {
+      window.addEventListener('load', () => {
         setTimeout(() => {
           this.getNavigationTiming();
           this.getResourceTiming();
@@ -211,7 +209,7 @@ class PerformanceMonitor {
     }
 
     // Global error handler
-    window.addEventListener("error", (event) => {
+    window.addEventListener('error', (event) => {
       this.logError(new Error(event.message), {
         filename: event.filename,
         lineno: event.lineno,
@@ -220,14 +218,17 @@ class PerformanceMonitor {
     });
 
     // Unhandled promise rejection handler
-    window.addEventListener("unhandledrejection", (event) => {
+    window.addEventListener('unhandledrejection', (event) => {
       this.logError(new Error(`Unhandled promise rejection: ${event.reason}`));
     });
 
     // Periodic cleanup
-    setInterval(() => {
-      this.clearOldData();
-    }, 60 * 60 * 1000); // Clean every hour
+    setInterval(
+      () => {
+        this.clearOldData();
+      },
+      60 * 60 * 1000
+    ); // Clean every hour
   }
 }
 

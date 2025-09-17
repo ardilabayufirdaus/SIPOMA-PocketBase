@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useCallback } from "react";
-import { formatNumber } from "../../../../utils/formatters";
+import React, { useMemo, useState, useCallback } from 'react';
+import { formatNumber } from '../../../../utils/formatters';
 
 interface CcrTableRowProps {
   item: {
@@ -21,12 +21,8 @@ const CcrTableRow: React.FC<CcrTableRowProps> = ({ item, index }) => (
     <td className="px-4 py-2">{item.category}</td>
     <td className="px-4 py-2">{formatNumber(item.avgValue)}</td>
     <td className="px-4 py-2">{formatNumber(item.target)}</td>
-    <td
-      className={`px-4 py-2 ${
-        item.deviation > 0 ? "text-red-600" : "text-green-600"
-      }`}
-    >
-      {item.deviation > 0 ? "+" : ""}
+    <td className={`px-4 py-2 ${item.deviation > 0 ? 'text-red-600' : 'text-green-600'}`}>
+      {item.deviation > 0 ? '+' : ''}
       {formatNumber(item.deviation)}%
     </td>
   </tr>
@@ -51,10 +47,7 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   }, []);
 
   const startIndex = Math.floor(scrollTop / itemHeight);
-  const endIndex = Math.min(
-    startIndex + Math.ceil(containerHeight / itemHeight) + 1,
-    data.length
-  );
+  const endIndex = Math.min(startIndex + Math.ceil(containerHeight / itemHeight) + 1, data.length);
 
   const visibleItems = data.slice(startIndex, endIndex);
   const offsetY = startIndex * itemHeight;
@@ -98,20 +91,16 @@ const CcrParametersSection: React.FC<CcrParametersSectionProps> = ({
   selectedPlantCategory,
   selectedPlantUnit,
 }) => {
-  const hasFilters =
-    selectedPlantCategory !== "all" || selectedPlantUnit !== "all";
+  const hasFilters = selectedPlantCategory !== 'all' || selectedPlantUnit !== 'all';
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h3 className="text-xl font-semibold mb-4">
-        CCR Parameters{" "}
+        CCR Parameters{' '}
         {hasFilters && (
           <span className="text-sm font-normal text-gray-500">
-            (
-            {selectedPlantCategory !== "all"
-              ? selectedPlantCategory
-              : "All Categories"}
-            {selectedPlantUnit !== "all" ? ` - ${selectedPlantUnit}` : ""})
+            ({selectedPlantCategory !== 'all' ? selectedPlantCategory : 'All Categories'}
+            {selectedPlantUnit !== 'all' ? ` - ${selectedPlantUnit}` : ''})
           </span>
         )}
       </h3>
@@ -132,9 +121,7 @@ const CcrParametersSection: React.FC<CcrParametersSectionProps> = ({
           <div className="text-center">
             <div className="text-4xl mb-2">📊</div>
             <div className="text-lg font-medium">No CCR Parameters</div>
-            <div className="text-sm">
-              No CCR parameters found for the selected filters
-            </div>
+            <div className="text-sm">No CCR parameters found for the selected filters</div>
           </div>
         </div>
       )}

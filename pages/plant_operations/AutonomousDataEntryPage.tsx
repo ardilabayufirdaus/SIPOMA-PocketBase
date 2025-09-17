@@ -1,24 +1,15 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
-import {
-  CcrDowntimeData,
-  DowntimeStatus,
-  AutonomousRiskData,
-  RiskStatus,
-} from "../../types";
-import { usePlantUnits } from "../../hooks/usePlantUnits";
-import useCcrDowntimeData from "../../hooks/useCcrDowntimeData";
-import { useAutonomousRiskData } from "../../hooks/useAutonomousRiskData";
-import {
-  formatDate,
-  calculateDuration,
-  formatDuration,
-} from "../../utils/formatters";
-import Modal from "../../components/Modal";
-import AutonomousDowntimeForm from "./AutonomousDowntimeForm";
-import AutonomousRiskForm from "./AutonomousRiskForm";
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { CcrDowntimeData, DowntimeStatus, AutonomousRiskData, RiskStatus } from '../../types';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
+import { useAutonomousRiskData } from '../../hooks/useAutonomousRiskData';
+import { formatDate, calculateDuration, formatDuration } from '../../utils/formatters';
+import Modal from '../../components/Modal';
+import AutonomousDowntimeForm from './AutonomousDowntimeForm';
+import AutonomousRiskForm from './AutonomousRiskForm';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
 
 // Import Enhanced Components
 import {
@@ -27,7 +18,7 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const { records: plantUnits } = usePlantUnits();
@@ -49,9 +40,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     deleteRecord: deleteRisk,
   } = useAutonomousRiskData();
   const [isRiskModalOpen, setRiskModalOpen] = useState(false);
-  const [editingRisk, setEditingRisk] = useState<AutonomousRiskData | null>(
-    null
-  );
+  const [editingRisk, setEditingRisk] = useState<AutonomousRiskData | null>(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingRiskId, setDeletingRiskId] = useState<string | null>(null);
 
@@ -62,17 +51,13 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
     [plantUnits]
   );
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const [isDowntimeModalOpen, setDowntimeModalOpen] = useState(false);
-  const [editingDowntime, setEditingDowntime] =
-    useState<CcrDowntimeData | null>(null);
+  const [editingDowntime, setEditingDowntime] = useState<CcrDowntimeData | null>(null);
 
   useEffect(() => {
-    if (
-      plantCategories.length > 0 &&
-      !plantCategories.includes(selectedCategory)
-    ) {
+    if (plantCategories.length > 0 && !plantCategories.includes(selectedCategory)) {
       setSelectedCategory(plantCategories[0]);
     }
   }, [plantCategories, selectedCategory]);
@@ -89,25 +74,16 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         const recordDate = new Date(d.date);
         // Timezone correction to prevent off-by-one day errors
         const userTimezoneOffset = recordDate.getTimezoneOffset() * 60000;
-        const correctedDate = new Date(
-          recordDate.getTime() + userTimezoneOffset
-        );
+        const correctedDate = new Date(recordDate.getTime() + userTimezoneOffset);
         return (
-          correctedDate.getMonth() === filterMonth &&
-          correctedDate.getFullYear() === filterYear
+          correctedDate.getMonth() === filterMonth && correctedDate.getFullYear() === filterYear
         );
       })
       .filter((d) => {
         if (!selectedCategory) return true;
         return unitToCategoryMap.get(d.unit) === selectedCategory;
       });
-  }, [
-    filterMonth,
-    filterYear,
-    getAllDowntime,
-    selectedCategory,
-    unitToCategoryMap,
-  ]);
+  }, [filterMonth, filterYear, getAllDowntime, selectedCategory, unitToCategoryMap]);
 
   const filteredRiskRecords = useMemo(() => {
     return riskRecords.filter((risk) => {
@@ -117,19 +93,12 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       const correctedDate = new Date(recordDate.getTime() + userTimezoneOffset);
 
       const categoryMatch =
-        !selectedCategory ||
-        unitToCategoryMap.get(risk.unit) === selectedCategory;
+        !selectedCategory || unitToCategoryMap.get(risk.unit) === selectedCategory;
       const monthMatch = correctedDate.getMonth() === filterMonth;
       const yearMatch = correctedDate.getFullYear() === filterYear;
       return categoryMatch && monthMatch && yearMatch;
     });
-  }, [
-    riskRecords,
-    selectedCategory,
-    unitToCategoryMap,
-    filterMonth,
-    filterYear,
-  ]);
+  }, [riskRecords, selectedCategory, unitToCategoryMap, filterMonth, filterYear]);
 
   // Downtime Handlers
   const handleOpenEditDowntime = (record: CcrDowntimeData) => {
@@ -153,13 +122,11 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setRiskModalOpen(true);
   };
 
-  const handleSaveRisk = (
-    record: AutonomousRiskData | Omit<AutonomousRiskData, "id">
-  ) => {
-    if ("id" in record) {
+  const handleSaveRisk = (record: AutonomousRiskData | Omit<AutonomousRiskData, 'id'>) => {
+    if ('id' in record) {
       updateRisk(record as AutonomousRiskData);
     } else {
-      addRisk(record as Omit<AutonomousRiskData, "id">);
+      addRisk(record as Omit<AutonomousRiskData, 'id'>);
     }
     setRiskModalOpen(false);
   };
@@ -177,39 +144,23 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setDeletingRiskId(null);
   };
 
-  const yearOptions = Array.from(
-    { length: 5 },
-    (_, i) => new Date().getFullYear() - i
-  );
+  const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => ({
     value: i,
     label:
       t[
         `month_${
-          [
-            "jan",
-            "feb",
-            "mar",
-            "apr",
-            "may",
-            "jun",
-            "jul",
-            "aug",
-            "sep",
-            "oct",
-            "nov",
-            "dec",
-          ][i]
+          ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i]
         }`
       ],
   }));
 
   const statusColors: { [key in DowntimeStatus | RiskStatus]: string } = {
-    [DowntimeStatus.OPEN]: "bg-red-100 text-red-800",
-    [DowntimeStatus.CLOSE]: "bg-green-100 text-green-800",
-    [RiskStatus.IDENTIFIED]: "bg-yellow-100 text-yellow-800",
-    [RiskStatus.IN_PROGRESS]: "bg-blue-100 text-blue-800",
-    [RiskStatus.RESOLVED]: "bg-green-100 text-green-800",
+    [DowntimeStatus.OPEN]: 'bg-red-100 text-red-800',
+    [DowntimeStatus.CLOSE]: 'bg-green-100 text-green-800',
+    [RiskStatus.IDENTIFIED]: 'bg-yellow-100 text-yellow-800',
+    [RiskStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
+    [RiskStatus.RESOLVED]: 'bg-green-100 text-green-800',
   };
 
   return (
@@ -329,10 +280,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {downtimeDataForMonth.length > 0 ? (
                 downtimeDataForMonth.map((d) => {
-                  const { hours, minutes } = calculateDuration(
-                    d.start_time,
-                    d.end_time
-                  );
+                  const { hours, minutes } = calculateDuration(d.start_time, d.end_time);
                   const duration = formatDuration(hours, minutes);
                   return (
                     <tr key={d.id} className="hover:bg-slate-50">
@@ -355,10 +303,10 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         {d.problem}
                       </td>
                       <td className="px-3 py-3 text-sm text-slate-500 max-w-xs truncate">
-                        {d.action || "-"}
+                        {d.action || '-'}
                       </td>
                       <td className="px-3 py-3 text-sm text-slate-500 max-w-xs truncate">
-                        {d.corrective_action || "-"}
+                        {d.corrective_action || '-'}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-sm">
                         <span
@@ -404,7 +352,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             variant="primary"
             size="sm"
             onClick={handleOpenAddRisk}
-            aria-label={t.add_risk_button || "Add new risk"}
+            aria-label={t.add_risk_button || 'Add new risk'}
           >
             <PlusIcon className="w-4 h-4 mr-2" /> {t.add_risk_button}
           </EnhancedButton>
@@ -487,10 +435,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               ))}
               {filteredRiskRecords.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center py-6 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={7} className="text-center py-6 text-slate-500 dark:text-slate-400">
                     No risk data for the selected period.
                   </td>
                 </tr>
@@ -544,7 +489,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             size="sm"
             onClick={handleDeleteRiskConfirm}
             className="sm:ml-3"
-            aria-label={t.confirm_delete_button || "Confirm delete"}
+            aria-label={t.confirm_delete_button || 'Confirm delete'}
           >
             {t.confirm_delete_button}
           </EnhancedButton>
@@ -553,7 +498,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             size="sm"
             onClick={() => setDeleteModalOpen(false)}
             className="mt-3 sm:mt-0 sm:ml-3"
-            aria-label={t.cancel_button || "Cancel delete"}
+            aria-label={t.cancel_button || 'Cancel delete'}
           >
             {t.cancel_button}
           </EnhancedButton>

@@ -1,13 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from 'react';
 
 // Service Worker states
 export type ServiceWorkerState =
-  | "installing"
-  | "installed"
-  | "activating"
-  | "activated"
-  | "redundant"
-  | "error";
+  | 'installing'
+  | 'installed'
+  | 'activating'
+  | 'activated'
+  | 'redundant'
+  | 'error';
 
 export interface ServiceWorkerStatus {
   state: ServiceWorkerState;
@@ -19,7 +19,7 @@ export interface ServiceWorkerStatus {
 // Custom hook for managing Service Worker
 export const useServiceWorker = () => {
   const [status, setStatus] = useState<ServiceWorkerStatus>({
-    state: "installing",
+    state: 'installing',
     isOnline: navigator.onLine,
     isUpdateAvailable: false,
     registration: null,
@@ -27,54 +27,51 @@ export const useServiceWorker = () => {
 
   // Register Service Worker
   const registerServiceWorker = useCallback(async () => {
-    if ("serviceWorker" in navigator) {
+    if ('serviceWorker' in navigator) {
       try {
-        const registration = await navigator.serviceWorker.register("/sw.js", {
-          scope: "/",
+        const registration = await navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
         });
 
-        console.log("✅ Service Worker registered:", registration);
+        console.log('✅ Service Worker registered:', registration);
 
         // Handle updates
-        registration.addEventListener("updatefound", () => {
+        registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           if (newWorker) {
             setStatus((prev) => ({ ...prev, isUpdateAvailable: true }));
 
-            newWorker.addEventListener("statechange", () => {
+            newWorker.addEventListener('statechange', () => {
               setStatus((prev) => ({
                 ...prev,
                 state: newWorker.state as ServiceWorkerState,
               }));
 
-              if (
-                newWorker.state === "installed" &&
-                navigator.serviceWorker.controller
-              ) {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 // New version available
-                console.log("🔄 New Service Worker version available");
+                console.log('🔄 New Service Worker version available');
               }
             });
           }
         });
 
         // Handle controller change (new SW activated)
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          console.log("🎯 Service Worker controller changed");
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('🎯 Service Worker controller changed');
           window.location.reload();
         });
 
         setStatus((prev) => ({
           ...prev,
           registration,
-          state: registration.active ? "activated" : "installing",
+          state: registration.active ? 'activated' : 'installing',
         }));
       } catch (error) {
-        console.error("❌ Service Worker registration failed:", error);
-        setStatus((prev) => ({ ...prev, state: "error" }));
+        console.error('❌ Service Worker registration failed:', error);
+        setStatus((prev) => ({ ...prev, state: 'error' }));
       }
     } else {
-      console.warn("⚠️ Service Worker not supported");
+      console.warn('⚠️ Service Worker not supported');
     }
   }, []);
 
@@ -83,9 +80,9 @@ export const useServiceWorker = () => {
     if (status.registration) {
       try {
         await status.registration.update();
-        console.log("🔄 Service Worker update triggered");
+        console.log('🔄 Service Worker update triggered');
       } catch (error) {
-        console.error("❌ Service Worker update failed:", error);
+        console.error('❌ Service Worker update failed:', error);
       }
     }
   }, [status.registration]);
@@ -93,7 +90,7 @@ export const useServiceWorker = () => {
   // Skip waiting (activate new SW immediately)
   const skipWaiting = useCallback(async () => {
     if (status.registration && status.registration.waiting) {
-      status.registration.waiting.postMessage({ type: "SKIP_WAITING" });
+      status.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
   }, [status.registration]);
 
@@ -108,22 +105,22 @@ export const useServiceWorker = () => {
   useEffect(() => {
     const handleOnline = () => {
       setStatus((prev) => ({ ...prev, isOnline: true }));
-      console.log("🌐 Online - Syncing data...");
+      console.log('🌐 Online - Syncing data...');
       // Trigger background sync
-      sendMessage({ type: "SYNC_DATA" });
+      sendMessage({ type: 'SYNC_DATA' });
     };
 
     const handleOffline = () => {
       setStatus((prev) => ({ ...prev, isOnline: false }));
-      console.log("📴 Offline - Using cached data");
+      console.log('📴 Offline - Using cached data');
     };
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [sendMessage]);
 
@@ -138,24 +135,24 @@ export const useServiceWorker = () => {
       const { type, data } = event.data;
 
       switch (type) {
-        case "CACHE_UPDATED":
-          console.log("📦 Cache updated:", data);
+        case 'CACHE_UPDATED':
+          console.log('📦 Cache updated:', data);
           break;
-        case "SYNC_COMPLETED":
-          console.log("🔄 Sync completed:", data);
+        case 'SYNC_COMPLETED':
+          console.log('🔄 Sync completed:', data);
           break;
-        case "ERROR":
-          console.error("❌ Service Worker error:", data);
+        case 'ERROR':
+          console.error('❌ Service Worker error:', data);
           break;
         default:
-          console.log("📨 Service Worker message:", type, data);
+          console.log('📨 Service Worker message:', type, data);
       }
     };
 
-    navigator.serviceWorker?.addEventListener("message", handleMessage);
+    navigator.serviceWorker?.addEventListener('message', handleMessage);
 
     return () => {
-      navigator.serviceWorker?.removeEventListener("message", handleMessage);
+      navigator.serviceWorker?.removeEventListener('message', handleMessage);
     };
   }, []);
 
@@ -191,14 +188,14 @@ export const useCacheStatus = () => {
         for (const request of keys) {
           const response = await cache.match(request);
           if (response) {
-            const contentLength = response.headers.get("content-length");
+            const contentLength = response.headers.get('content-length');
             if (contentLength) {
               const size = parseInt(contentLength);
               totalSize += size;
 
-              if (cacheName.includes("api")) {
+              if (cacheName.includes('api')) {
                 apiSize += size;
-              } else if (cacheName.includes("static")) {
+              } else if (cacheName.includes('static')) {
                 staticSize += size;
               }
             }
@@ -213,7 +210,7 @@ export const useCacheStatus = () => {
         lastUpdated: new Date(),
       });
     } catch (error) {
-      console.error("❌ Failed to get cache status:", error);
+      console.error('❌ Failed to get cache status:', error);
     }
   }, []);
 
@@ -247,17 +244,17 @@ export const useOfflineData = () => {
 
   // Save queue to localStorage
   useEffect(() => {
-    localStorage.setItem("offline-queue", JSON.stringify(offlineQueue));
+    localStorage.setItem('offline-queue', JSON.stringify(offlineQueue));
   }, [offlineQueue]);
 
   // Load queue from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("offline-queue");
+    const saved = localStorage.getItem('offline-queue');
     if (saved) {
       try {
         setOfflineQueue(JSON.parse(saved));
       } catch (error) {
-        console.error("❌ Failed to load offline queue:", error);
+        console.error('❌ Failed to load offline queue:', error);
       }
     }
   }, []);

@@ -1,14 +1,13 @@
-import React, { forwardRef } from "react";
-import { designSystem } from "../../utils/designSystem";
+import React, { forwardRef } from 'react';
+import { designSystem } from '../../utils/designSystem';
 
-export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: string;
   success?: string;
   helperText?: string;
-  size?: "sm" | "base" | "lg";
-  variant?: "default" | "error" | "success";
+  size?: 'sm' | 'base' | 'lg';
+  variant?: 'default' | 'error' | 'success';
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -23,14 +22,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       error,
       success,
       helperText,
-      size = "base",
-      variant = "default",
+      size = 'base',
+      variant = 'default',
       fullWidth = false,
       leftIcon,
       rightIcon,
       loading = false,
       required = false,
-      className = "",
+      className = '',
       disabled = false,
       id,
       ...props
@@ -40,124 +39,124 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
     // Determine the variant based on error/success states
-    const currentVariant = error ? "error" : success ? "success" : variant;
+    const currentVariant = error ? 'error' : success ? 'success' : variant;
 
     const getInputClasses = () => {
       const baseClasses = [
-        "block",
-        "border",
-        "rounded-md",
-        "shadow-sm",
-        "transition-colors",
-        "duration-200",
-        "focus:outline-none",
-        "focus:ring-2",
-        "focus:ring-offset-1",
-        "disabled:bg-gray-50",
-        "disabled:text-gray-500",
-        "disabled:cursor-not-allowed",
-        fullWidth ? "w-full" : "",
-        leftIcon ? "pl-10" : "",
-        rightIcon || loading ? "pr-10" : "",
+        'block',
+        'border',
+        'rounded-md',
+        'shadow-sm',
+        'transition-colors',
+        'duration-200',
+        'focus:outline-none',
+        'focus:ring-2',
+        'focus:ring-offset-1',
+        'disabled:bg-gray-50',
+        'disabled:text-gray-500',
+        'disabled:cursor-not-allowed',
+        fullWidth ? 'w-full' : '',
+        leftIcon ? 'pl-10' : '',
+        rightIcon || loading ? 'pr-10' : '',
       ].filter(Boolean);
 
       // Size classes
       switch (size) {
-        case "sm":
-          baseClasses.push("px-3", "py-1.5", "text-sm");
+        case 'sm':
+          baseClasses.push('px-3', 'py-1.5', 'text-sm');
           break;
-        case "lg":
-          baseClasses.push("px-4", "py-3", "text-lg");
+        case 'lg':
+          baseClasses.push('px-4', 'py-3', 'text-lg');
           break;
-        case "base":
+        case 'base':
         default:
-          baseClasses.push("px-3", "py-2", "text-base");
+          baseClasses.push('px-3', 'py-2', 'text-base');
           break;
       }
 
       // Variant classes
       switch (currentVariant) {
-        case "error":
+        case 'error':
           baseClasses.push(
-            "border-red-300",
-            "bg-red-50",
-            "text-red-900",
-            "placeholder-red-400",
-            "focus:ring-red-500",
-            "focus:border-red-500"
+            'border-red-300',
+            'bg-red-50',
+            'text-red-900',
+            'placeholder-red-400',
+            'focus:ring-red-500',
+            'focus:border-red-500'
           );
           break;
-        case "success":
+        case 'success':
           baseClasses.push(
-            "border-green-300",
-            "bg-green-50",
-            "text-green-900",
-            "placeholder-green-400",
-            "focus:ring-green-500",
-            "focus:border-green-500"
+            'border-green-300',
+            'bg-green-50',
+            'text-green-900',
+            'placeholder-green-400',
+            'focus:ring-green-500',
+            'focus:border-green-500'
           );
           break;
-        case "default":
+        case 'default':
         default:
           baseClasses.push(
-            "border-gray-300",
-            "bg-white",
-            "text-gray-900",
-            "placeholder-gray-400",
-            "focus:ring-blue-500",
-            "focus:border-blue-500"
+            'border-gray-300',
+            'bg-white',
+            'text-gray-900',
+            'placeholder-gray-400',
+            'focus:ring-blue-500',
+            'focus:border-blue-500'
           );
           break;
       }
 
-      return baseClasses.join(" ");
+      return baseClasses.join(' ');
     };
 
     const getLabelClasses = () => {
-      const baseClasses = ["block", "text-sm", "font-medium", "mb-1"];
+      const baseClasses = ['block', 'text-sm', 'font-medium', 'mb-1'];
 
       switch (currentVariant) {
-        case "error":
-          baseClasses.push("text-red-700");
+        case 'error':
+          baseClasses.push('text-red-700');
           break;
-        case "success":
-          baseClasses.push("text-green-700");
+        case 'success':
+          baseClasses.push('text-green-700');
           break;
-        case "default":
+        case 'default':
         default:
-          baseClasses.push("text-gray-700");
+          baseClasses.push('text-gray-700');
           break;
       }
 
-      return baseClasses.join(" ");
+      return baseClasses.join(' ');
     };
 
     const getIconClasses = () => {
       switch (size) {
-        case "sm":
-          return "h-4 w-4";
-        case "lg":
-          return "h-6 w-6";
-        case "base":
+        case 'sm':
+          return 'h-4 w-4';
+        case 'lg':
+          return 'h-6 w-6';
+        case 'base':
         default:
-          return "h-5 w-5";
+          return 'h-5 w-5';
       }
     };
 
     const getIconColor = () => {
       switch (currentVariant) {
-        case "error":
-          return "text-red-400";
-        case "success":
-          return "text-green-400";
-        case "default":
+        case 'error':
+          return 'text-red-400';
+        case 'success':
+          return 'text-green-400';
+        case 'default':
         default:
-          return "text-gray-400";
+          return 'text-gray-400';
       }
     };
 
     return (
-      <div className={fullWidth ? "w-full" : ""}>
+      <div className={fullWidth ? 'w-full' : ''}>
         {label && (
           <label htmlFor={inputId} className={getLabelClasses()}>
             {label}
@@ -167,12 +166,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {leftIcon && (
-            <div
-              className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none`}
-            >
-              <span className={`${getIconClasses()} ${getIconColor()}`}>
-                {leftIcon}
-              </span>
+            <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none`}>
+              <span className={`${getIconClasses()} ${getIconColor()}`}>{leftIcon}</span>
             </div>
           )}
 
@@ -207,9 +202,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                   />
                 </svg>
               ) : rightIcon ? (
-                <span className={`${getIconClasses()} ${getIconColor()}`}>
-                  {rightIcon}
-                </span>
+                <span className={`${getIconClasses()} ${getIconColor()}`}>{rightIcon}</span>
               ) : null}
             </div>
           )}
@@ -222,9 +215,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 {error}
               </p>
             )}
-            {success && !error && (
-              <p className="text-sm text-green-600">{success}</p>
-            )}
+            {success && !error && <p className="text-sm text-green-600">{success}</p>}
             {helperText && !error && !success && (
               <p className="text-sm text-gray-500">{helperText}</p>
             )}
@@ -235,13 +226,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = "Input";
+Input.displayName = 'Input';
 
 // Specific input variants for common use cases
-export const EmailInput = forwardRef<
-  HTMLInputElement,
-  Omit<InputProps, "type">
->((props, ref) => (
+export const EmailInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>((props, ref) => (
   <Input
     ref={ref}
     type="email"
@@ -259,32 +247,28 @@ export const EmailInput = forwardRef<
   />
 ));
 
-export const PasswordInput = forwardRef<
-  HTMLInputElement,
-  Omit<InputProps, "type">
->((props, ref) => (
-  <Input
-    ref={ref}
-    type="password"
-    autoComplete="new-password"
-    leftIcon={
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-        />
-      </svg>
-    }
-    {...props}
-  />
-));
+export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>(
+  (props, ref) => (
+    <Input
+      ref={ref}
+      type="password"
+      autoComplete="new-password"
+      leftIcon={
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+          />
+        </svg>
+      }
+      {...props}
+    />
+  )
+);
 
-export const SearchInput = forwardRef<
-  HTMLInputElement,
-  Omit<InputProps, "type">
->((props, ref) => (
+export const SearchInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>((props, ref) => (
   <Input
     ref={ref}
     type="search"
@@ -302,8 +286,8 @@ export const SearchInput = forwardRef<
   />
 ));
 
-EmailInput.displayName = "EmailInput";
-PasswordInput.displayName = "PasswordInput";
-SearchInput.displayName = "SearchInput";
+EmailInput.displayName = 'EmailInput';
+PasswordInput.displayName = 'PasswordInput';
+SearchInput.displayName = 'SearchInput';
 
 export default Input;

@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CcrDowntimeData } from "../types";
-import { supabase } from "../utils/supabase";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { CcrDowntimeData } from '../types';
+import { supabase } from '../utils/supabase';
 
 // Query keys for React Query
-const DOWNTIME_QUERY_KEY = ["ccr-downtime-data"];
+const DOWNTIME_QUERY_KEY = ['ccr-downtime-data'];
 
 const useCcrDowntimeData = () => {
   const queryClient = useQueryClient();
@@ -18,13 +18,13 @@ const useCcrDowntimeData = () => {
     queryKey: DOWNTIME_QUERY_KEY,
     queryFn: async (): Promise<CcrDowntimeData[]> => {
       const { data, error } = await supabase
-        .from("ccr_downtime_data")
-        .select("*")
-        .order("date", { ascending: false })
+        .from('ccr_downtime_data')
+        .select('*')
+        .order('date', { ascending: false })
         .limit(1000); // Limit to last 1000 records for performance
 
       if (error) {
-        console.error("Error fetching all downtime data:", error);
+        console.error('Error fetching all downtime data:', error);
         throw new Error(`Failed to fetch downtime data: ${error.message}`);
       }
 
@@ -46,7 +46,7 @@ const useCcrDowntimeData = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors
-      if (error instanceof Error && error.message.includes("4")) {
+      if (error instanceof Error && error.message.includes('4')) {
         return false;
       }
       return failureCount < 3;
@@ -55,12 +55,10 @@ const useCcrDowntimeData = () => {
 
   // Mutations for CRUD operations
   const addDowntimeMutation = useMutation({
-    mutationFn: async (record: Omit<CcrDowntimeData, "id">) => {
+    mutationFn: async (record: Omit<CcrDowntimeData, 'id'>) => {
       const payload = { ...record };
       // @ts-ignore - Supabase typing issue
-      const { error } = await supabase
-        .from("ccr_downtime_data")
-        .insert([payload]);
+      const { error } = await supabase.from('ccr_downtime_data').insert([payload]);
       if (error) {
         throw new Error(`Failed to add downtime: ${error.message}`);
       }
@@ -74,10 +72,7 @@ const useCcrDowntimeData = () => {
     mutationFn: async (updatedRecord: CcrDowntimeData) => {
       const { id, ...payload } = updatedRecord;
       // @ts-ignore - Supabase typing issue
-      const { error } = await supabase
-        .from("ccr_downtime_data")
-        .update(payload)
-        .eq("id", id);
+      const { error } = await supabase.from('ccr_downtime_data').update(payload).eq('id', id);
       if (error) {
         throw new Error(`Failed to update downtime: ${error.message}`);
       }
@@ -89,10 +84,7 @@ const useCcrDowntimeData = () => {
 
   const deleteDowntimeMutation = useMutation({
     mutationFn: async (recordId: string) => {
-      const { error } = await supabase
-        .from("ccr_downtime_data")
-        .delete()
-        .eq("id", recordId);
+      const { error } = await supabase.from('ccr_downtime_data').delete().eq('id', recordId);
       if (error) {
         throw new Error(`Failed to delete downtime: ${error.message}`);
       }
@@ -111,14 +103,14 @@ const useCcrDowntimeData = () => {
     return downtimeData;
   };
 
-  const addDowntime = async (record: Omit<CcrDowntimeData, "id">) => {
+  const addDowntime = async (record: Omit<CcrDowntimeData, 'id'>) => {
     try {
       await addDowntimeMutation.mutateAsync(record);
       return { success: true };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   };
@@ -130,7 +122,7 @@ const useCcrDowntimeData = () => {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   };
@@ -139,7 +131,7 @@ const useCcrDowntimeData = () => {
     try {
       await deleteDowntimeMutation.mutateAsync(recordId);
     } catch (error) {
-      console.error("Error deleting downtime:", error);
+      console.error('Error deleting downtime:', error);
     }
   };
 

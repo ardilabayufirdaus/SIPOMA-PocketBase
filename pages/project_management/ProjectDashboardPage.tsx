@@ -1,11 +1,8 @@
-import React, { useMemo, useState } from "react";
-import { useProjects } from "../../hooks/useProjects";
-import { Project, ProjectTask } from "../../types";
-import { formatDate, formatNumber, formatRupiah } from "../../utils/formatters";
-import {
-  InteractiveCardModal,
-  BreakdownData,
-} from "../../components/InteractiveCardModal";
+import React, { useMemo, useState } from 'react';
+import { useProjects } from '../../hooks/useProjects';
+import { Project, ProjectTask } from '../../types';
+import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
+import { InteractiveCardModal, BreakdownData } from '../../components/InteractiveCardModal';
 
 // Import Enhanced Components
 import {
@@ -14,36 +11,34 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 // Icons
-import PresentationChartLineIcon from "../../components/icons/PresentationChartLineIcon";
-import CheckBadgeIcon from "../../components/icons/CheckBadgeIcon";
-import ExclamationTriangleIcon from "../../components/icons/ExclamationTriangleIcon";
-import ClipboardDocumentListIcon from "../../components/icons/ClipboardDocumentListIcon";
-import CalendarDaysIcon from "../../components/icons/CalendarDaysIcon";
-import CurrencyDollarIcon from "../../components/icons/CurrencyDollarIcon";
-import ChartPieIcon from "../../components/icons/ChartPieIcon";
-import ArrowTrendingUpIcon from "../../components/icons/ArrowTrendingUpIcon";
-import ArrowTrendingDownIcon from "../../components/icons/ArrowTrendingDownIcon";
-import ChartBarSquareIcon from "../../components/icons/ChartBarSquareIcon";
-import ShieldCheckIcon from "../../components/icons/ShieldCheckIcon";
-import FireIcon from "../../components/icons/FireIcon";
-import ClockIcon from "../../components/icons/ClockIcon";
-import ArrowPathRoundedSquareIcon from "../../components/icons/ArrowPathRoundedSquareIcon";
+import PresentationChartLineIcon from '../../components/icons/PresentationChartLineIcon';
+import CheckBadgeIcon from '../../components/icons/CheckBadgeIcon';
+import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
+import ClipboardDocumentListIcon from '../../components/icons/ClipboardDocumentListIcon';
+import CalendarDaysIcon from '../../components/icons/CalendarDaysIcon';
+import CurrencyDollarIcon from '../../components/icons/CurrencyDollarIcon';
+import ChartPieIcon from '../../components/icons/ChartPieIcon';
+import ArrowTrendingUpIcon from '../../components/icons/ArrowTrendingUpIcon';
+import ArrowTrendingDownIcon from '../../components/icons/ArrowTrendingDownIcon';
+import ChartBarSquareIcon from '../../components/icons/ChartBarSquareIcon';
+import ShieldCheckIcon from '../../components/icons/ShieldCheckIcon';
+import FireIcon from '../../components/icons/FireIcon';
+import ClockIcon from '../../components/icons/ClockIcon';
+import ArrowPathRoundedSquareIcon from '../../components/icons/ArrowPathRoundedSquareIcon';
 
 // Import Chart Components
-import { DonutChart } from "../../components/charts/DonutChart";
-import { ProgressTrendChart } from "../../components/charts/ProgressTrendChart";
-import { ResourceAllocationChart } from "../../components/charts/ResourceAllocationChart";
+import { DonutChart } from '../../components/charts/DonutChart';
+import { ProgressTrendChart } from '../../components/charts/ProgressTrendChart';
+import { ResourceAllocationChart } from '../../components/charts/ResourceAllocationChart';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-64">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-      <p className="text-slate-600 dark:text-slate-400">
-        Loading dashboard data...
-      </p>
+      <p className="text-slate-600 dark:text-slate-400">Loading dashboard data...</p>
     </div>
   </div>
 );
@@ -54,7 +49,7 @@ interface MetricCardProps {
   icon: React.ReactNode;
   trend?: number;
   trendLabel?: string;
-  colorScheme?: "default" | "success" | "warning" | "danger";
+  colorScheme?: 'default' | 'success' | 'warning' | 'danger';
   breakdownData?: BreakdownData;
   onClick?: () => void;
 }
@@ -64,7 +59,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   icon,
   trend,
   trendLabel,
-  colorScheme = "default",
+  colorScheme = 'default',
   breakdownData,
   onClick,
 }) => {
@@ -80,14 +75,14 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
   const getColorClasses = () => {
     switch (colorScheme) {
-      case "success":
-        return "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400";
-      case "warning":
-        return "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400";
-      case "danger":
-        return "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+      case 'success':
+        return 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+      case 'danger':
+        return 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400';
       default:
-        return "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+        return 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400';
     }
   };
 
@@ -98,15 +93,15 @@ const MetricCard: React.FC<MetricCardProps> = ({
       <div
         className={`bg-white dark:bg-slate-900 p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-red-200 dark:hover:border-red-800 ${
           isInteractive
-            ? "cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 focus:outline-none"
-            : ""
+            ? 'cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 focus:outline-none'
+            : ''
         }`}
         onClick={handleClick}
-        role={isInteractive ? "button" : undefined}
+        role={isInteractive ? 'button' : undefined}
         tabIndex={isInteractive ? 0 : undefined}
         aria-label={isInteractive ? `View details for ${title}` : undefined}
         onKeyDown={(e) => {
-          if (isInteractive && (e.key === "Enter" || e.key === " ")) {
+          if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             handleClick();
           }
@@ -114,22 +109,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <div className={`p-1 rounded-full ${getColorClasses()} mr-1.5`}>
-              {icon}
-            </div>
+            <div className={`p-1 rounded-full ${getColorClasses()} mr-1.5`}>{icon}</div>
             <div>
               <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {title}
-                </p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{title}</p>
                 {isInteractive && (
                   <div className="ml-1 text-slate-400 dark:text-slate-500">
-                    <svg
-                      className="w-3 h-3"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -140,9 +126,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
                   </div>
                 )}
               </div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {value}
-              </p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</p>
               {trend !== undefined && (
                 <div className="flex items-center mt-0.5">
                   {trend > 0 ? (
@@ -153,13 +137,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
                   <span
                     className={`text-xs font-medium ${
                       trend > 0
-                        ? "text-green-600 dark:text-green-400"
+                        ? 'text-green-600 dark:text-green-400'
                         : trend < 0
-                        ? "text-red-600 dark:text-red-400"
-                        : "text-gray-600 dark:text-gray-400"
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-gray-600 dark:text-gray-400'
                     }`}
                   >
-                    {trend > 0 ? "+" : ""}
+                    {trend > 0 ? '+' : ''}
                     {trend}% {trendLabel}
                   </span>
                 </div>
@@ -185,10 +169,10 @@ const ProjectDashboardPage: React.FC<{
   onNavigateToDetail: (projectId: string) => void;
 }> = ({ t, onNavigateToDetail }) => {
   const { projects, tasks, loading } = useProjects();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("title");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('title');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [refreshing, setRefreshing] = useState(false);
 
   // Enhanced accessibility hooks
@@ -211,25 +195,22 @@ const ProjectDashboardPage: React.FC<{
       Title: p.title,
       Status: p.status,
       Progress: `${p.progress.toFixed(1)}%`,
-      Budget: p.budget ? formatRupiah(p.budget) : "N/A",
+      Budget: p.budget ? formatRupiah(p.budget) : 'N/A',
       Tasks: tasks.filter((t) => t.project_id === p.id).length,
-      CompletedTasks: tasks.filter(
-        (t) => t.project_id === p.id && t.percent_complete === 100
-      ).length,
+      CompletedTasks: tasks.filter((t) => t.project_id === p.id && t.percent_complete === 100)
+        .length,
     }));
 
     const csvContent = [
-      Object.keys(dataToExport[0]).join(","),
-      ...dataToExport.map((row) => Object.values(row).join(",")),
-    ].join("\n");
+      Object.keys(dataToExport[0]).join(','),
+      ...dataToExport.map((row) => Object.values(row).join(',')),
+    ].join('\n');
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `projects_export_${
-      new Date().toISOString().split("T")[0]
-    }.csv`;
+    a.download = `projects_export_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -242,23 +223,19 @@ const ProjectDashboardPage: React.FC<{
           ...project,
           progress: 0,
           status: t.proj_status_on_track,
-          statusColor: "text-slate-600",
+          statusColor: 'text-slate-600',
         };
       }
 
       const tasksWithDurations = projectTasks.map((task) => {
         const duration =
-          (new Date(task.planned_end).getTime() -
-            new Date(task.planned_start).getTime()) /
+          (new Date(task.planned_end).getTime() - new Date(task.planned_start).getTime()) /
             (1000 * 3600 * 24) +
           1;
         return { ...task, duration };
       });
 
-      const totalWeight = tasksWithDurations.reduce(
-        (sum, task) => sum + task.duration,
-        0
-      );
+      const totalWeight = tasksWithDurations.reduce((sum, task) => sum + task.duration, 0);
       const overallProgress =
         tasksWithDurations.reduce((sum, task) => {
           const weight = task.duration / totalWeight;
@@ -266,19 +243,17 @@ const ProjectDashboardPage: React.FC<{
         }, 0) * 100;
 
       const projectEndDate = new Date(
-        Math.max(
-          ...tasksWithDurations.map((t) => new Date(t.planned_end).getTime())
-        )
+        Math.max(...tasksWithDurations.map((t) => new Date(t.planned_end).getTime()))
       );
 
       let status = t.proj_status_on_track,
-        statusColor = "text-green-600";
+        statusColor = 'text-green-600';
       if (overallProgress >= 100) {
         status = t.proj_status_completed;
-        statusColor = "text-blue-600";
+        statusColor = 'text-blue-600';
       } else if (new Date() > projectEndDate) {
         status = t.proj_status_delayed;
-        statusColor = "text-red-600";
+        statusColor = 'text-red-600';
       }
 
       return { ...project, progress: overallProgress, status, statusColor };
@@ -287,12 +262,9 @@ const ProjectDashboardPage: React.FC<{
 
   // Filtered and sorted projects
   const filteredProjectsSummary = useMemo(() => {
-    let filtered = projectsSummary.filter((project) => {
-      const matchesSearch = project.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesStatus =
-        statusFilter === "all" || project.status === statusFilter;
+    const filtered = projectsSummary.filter((project) => {
+      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
 
@@ -301,19 +273,19 @@ const ProjectDashboardPage: React.FC<{
       let aValue: any, bValue: any;
 
       switch (sortBy) {
-        case "title":
+        case 'title':
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
           break;
-        case "progress":
+        case 'progress':
           aValue = a.progress;
           bValue = b.progress;
           break;
-        case "status":
+        case 'status':
           aValue = a.status;
           bValue = b.status;
           break;
-        case "budget":
+        case 'budget':
           aValue = a.budget || 0;
           bValue = b.budget || 0;
           break;
@@ -322,7 +294,7 @@ const ProjectDashboardPage: React.FC<{
           bValue = b.title.toLowerCase();
       }
 
-      if (sortOrder === "asc") {
+      if (sortOrder === 'asc') {
         return aValue > bValue ? 1 : -1;
       } else {
         return aValue < bValue ? 1 : -1;
@@ -334,24 +306,17 @@ const ProjectDashboardPage: React.FC<{
 
   const overallMetrics = useMemo(() => {
     const totalProjects = projects.length;
-    const completedProjects = projectsSummary.filter(
-      (p) => p.progress >= 100
-    ).length;
+    const completedProjects = projectsSummary.filter((p) => p.progress >= 100).length;
     const delayedProjects = projectsSummary.filter(
       (p) => p.status === t.proj_status_delayed
     ).length;
-    const totalProgress = projectsSummary.reduce(
-      (sum, p) => sum + p.progress,
-      0
-    );
+    const totalProgress = projectsSummary.reduce((sum, p) => sum + p.progress, 0);
     const avgProgress = totalProjects > 0 ? totalProgress / totalProjects : 0;
 
     // Financial metrics
     const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
     const avgBudget = totalProjects > 0 ? totalBudget / totalProjects : 0;
-    const highBudgetProjects = projects.filter(
-      (p) => (p.budget || 0) > avgBudget * 1.5
-    ).length;
+    const highBudgetProjects = projects.filter((p) => (p.budget || 0) > avgBudget * 1.5).length;
 
     // Task metrics
     const allTasks = tasks.length;
@@ -363,28 +328,22 @@ const ProjectDashboardPage: React.FC<{
 
     // Risk assessment
     const riskProjects = projectsSummary.map((p) => {
-      let riskLevel = "low";
+      let riskLevel = 'low';
       if (p.status === t.proj_status_delayed || p.progress < 25) {
-        riskLevel = "high";
+        riskLevel = 'high';
       } else if (p.progress < 50) {
-        riskLevel = "medium";
+        riskLevel = 'medium';
       }
       return { ...p, riskLevel };
     });
 
-    const highRiskCount = riskProjects.filter(
-      (p) => p.riskLevel === "high"
-    ).length;
-    const mediumRiskCount = riskProjects.filter(
-      (p) => p.riskLevel === "medium"
-    ).length;
-    const lowRiskCount = riskProjects.filter(
-      (p) => p.riskLevel === "low"
-    ).length;
+    const highRiskCount = riskProjects.filter((p) => p.riskLevel === 'high').length;
+    const mediumRiskCount = riskProjects.filter((p) => p.riskLevel === 'medium').length;
+    const lowRiskCount = riskProjects.filter((p) => p.riskLevel === 'low').length;
 
     return {
       totalProjects,
-      avgProgress: avgProgress.toFixed(1) + "%",
+      avgProgress: avgProgress.toFixed(1) + '%',
       completedProjects,
       delayedProjects,
       totalBudget,
@@ -396,26 +355,18 @@ const ProjectDashboardPage: React.FC<{
       highRiskCount,
       mediumRiskCount,
       lowRiskCount,
-      projectHealthScore: Math.round(
-        100 - (delayedProjects / Math.max(totalProjects, 1)) * 100
-      ),
+      projectHealthScore: Math.round(100 - (delayedProjects / Math.max(totalProjects, 1)) * 100),
     };
   }, [projectsSummary, projects, tasks, t]);
 
   const statusCounts = useMemo(() => {
-    const onTrack = projectsSummary.filter(
-      (p) => p.status === t.proj_status_on_track
-    ).length;
-    const delayed = projectsSummary.filter(
-      (p) => p.status === t.proj_status_delayed
-    ).length;
-    const completed = projectsSummary.filter(
-      (p) => p.status === t.proj_status_completed
-    ).length;
+    const onTrack = projectsSummary.filter((p) => p.status === t.proj_status_on_track).length;
+    const delayed = projectsSummary.filter((p) => p.status === t.proj_status_delayed).length;
+    const completed = projectsSummary.filter((p) => p.status === t.proj_status_completed).length;
     return [
-      { label: t.projects_on_track, value: onTrack, color: "#16A34A" },
-      { label: t.projects_delayed, value: delayed, color: "#DC2626" },
-      { label: t.projects_completed_count, value: completed, color: "#2563EB" },
+      { label: t.projects_on_track, value: onTrack, color: '#16A34A' },
+      { label: t.projects_delayed, value: delayed, color: '#DC2626' },
+      { label: t.projects_completed_count, value: completed, color: '#2563EB' },
     ];
   }, [projectsSummary, t]);
 
@@ -425,39 +376,32 @@ const ProjectDashboardPage: React.FC<{
     return tasks
       .filter((task) => {
         const endDate = new Date(task.planned_end);
-        return (
-          task.percent_complete < 100 &&
-          endDate >= now &&
-          endDate <= oneWeekFromNow
-        );
+        return task.percent_complete < 100 && endDate >= now && endDate <= oneWeekFromNow;
       })
-      .sort(
-        (a, b) =>
-          new Date(a.planned_end).getTime() - new Date(b.planned_end).getTime()
-      )
+      .sort((a, b) => new Date(a.planned_end).getTime() - new Date(b.planned_end).getTime())
       .slice(0, 5); // Limit to 5
   }, [tasks]);
 
   // Progress trend data (simulated monthly data for demonstration)
   const progressTrendData = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return [
       {
-        id: "Overall Progress",
+        id: 'Overall Progress',
         data: months.map((month, index) => ({
           x: month,
           y: Math.min(100, 20 + index * 15 + Math.random() * 10),
         })),
       },
       {
-        id: "On Track Projects",
+        id: 'On Track Projects',
         data: months.map((month, index) => ({
           x: month,
           y: Math.min(100, 15 + index * 12 + Math.random() * 8),
         })),
       },
       {
-        id: "Completed Projects",
+        id: 'Completed Projects',
         data: months.map((month, index) => ({
           x: month,
           y: Math.min(100, 5 + index * 8 + Math.random() * 5),
@@ -468,7 +412,7 @@ const ProjectDashboardPage: React.FC<{
 
   // Resource allocation data (simulated)
   const resourceAllocationData = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return months.map((month) => ({
       month,
       active: Math.floor(Math.random() * 20) + 10,
@@ -483,31 +427,25 @@ const ProjectDashboardPage: React.FC<{
 
     if (overallMetrics.delayedProjects > 0) {
       issues.push({
-        title: `${overallMetrics.delayedProjects} ${
-          t.projects_delayed || "projects delayed"
-        }`,
-        severity: "high",
-        description: "Projects behind schedule require immediate attention",
+        title: `${overallMetrics.delayedProjects} ${t.projects_delayed || 'projects delayed'}`,
+        severity: 'high',
+        description: 'Projects behind schedule require immediate attention',
       });
     }
 
     if (overallMetrics.overdueTasks > 0) {
       issues.push({
-        title: `${overallMetrics.overdueTasks} ${
-          t.overdue_tasks || "overdue tasks"
-        }`,
-        severity: "medium",
-        description: "Tasks past their deadline affecting project timeline",
+        title: `${overallMetrics.overdueTasks} ${t.overdue_tasks || 'overdue tasks'}`,
+        severity: 'medium',
+        description: 'Tasks past their deadline affecting project timeline',
       });
     }
 
     if (overallMetrics.highRiskCount > 0) {
       issues.push({
-        title: `${overallMetrics.highRiskCount} ${
-          t.high_risk_projects || "high risk projects"
-        }`,
-        severity: "high",
-        description: "Projects with high probability of failure or delay",
+        title: `${overallMetrics.highRiskCount} ${t.high_risk_projects || 'high risk projects'}`,
+        severity: 'high',
+        description: 'Projects with high probability of failure or delay',
       });
     }
 
@@ -524,11 +462,10 @@ const ProjectDashboardPage: React.FC<{
       <div className="flex flex-col items-center justify-center h-64 text-center">
         <div className="text-4xl mb-4">📊</div>
         <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-          {t.no_projects_found || "No Projects Found"}
+          {t.no_projects_found || 'No Projects Found'}
         </h3>
         <p className="text-slate-600 dark:text-slate-400">
-          {t.no_projects_message ||
-            "There are no projects to display at the moment."}
+          {t.no_projects_message || 'There are no projects to display at the moment.'}
         </p>
       </div>
     );
@@ -552,14 +489,12 @@ const ProjectDashboardPage: React.FC<{
                   </div>
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                      {t.project_dashboard_title ||
-                        "Project Management Dashboard"}
+                      {t.project_dashboard_title || 'Project Management Dashboard'}
                     </h1>
                     <div className="flex items-center gap-2">
                       <div className="h-1 w-8 bg-white/60 rounded-full"></div>
                       <p className="text-white/80 text-sm lg:text-base">
-                        {t.executive_insights ||
-                          "Comprehensive project overview and analytics"}
+                        {t.executive_insights || 'Comprehensive project overview and analytics'}
                       </p>
                     </div>
                   </div>
@@ -574,7 +509,7 @@ const ProjectDashboardPage: React.FC<{
                       </div>
                       <div>
                         <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                          {t.completed || "Completed"}
+                          {t.completed || 'Completed'}
                         </p>
                         <p className="text-white text-xl font-bold">
                           {overallMetrics.completedProjects}
@@ -590,11 +525,9 @@ const ProjectDashboardPage: React.FC<{
                       </div>
                       <div>
                         <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                          {t.in_progress || "In Progress"}
+                          {t.in_progress || 'In Progress'}
                         </p>
-                        <p className="text-white text-xl font-bold">
-                          {overallMetrics.activeTasks}
-                        </p>
+                        <p className="text-white text-xl font-bold">{overallMetrics.activeTasks}</p>
                       </div>
                     </div>
                   </div>
@@ -606,7 +539,7 @@ const ProjectDashboardPage: React.FC<{
                       </div>
                       <div>
                         <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                          {t.at_risk || "At Risk"}
+                          {t.at_risk || 'At Risk'}
                         </p>
                         <p className="text-white text-xl font-bold">
                           {overallMetrics.delayedProjects}
@@ -627,14 +560,10 @@ const ProjectDashboardPage: React.FC<{
                     disabled={refreshing}
                     loading={refreshing}
                     className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm"
-                    aria-label={
-                      refreshing
-                        ? "Refreshing data..."
-                        : "Refresh dashboard data"
-                    }
+                    aria-label={refreshing ? 'Refreshing data...' : 'Refresh dashboard data'}
                   >
                     <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2" />
-                    {refreshing ? "Refreshing..." : "Refresh"}
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
                   </EnhancedButton>
                   <EnhancedButton
                     variant="success"
@@ -655,7 +584,7 @@ const ProjectDashboardPage: React.FC<{
                       <ShieldCheckIcon className="w-5 h-5 text-green-300" />
                       <div>
                         <p className="text-white/70 text-xs font-medium">
-                          {t.health_score || "Health Score"}
+                          {t.health_score || 'Health Score'}
                         </p>
                         <p className="text-white text-lg font-bold">
                           {overallMetrics.projectHealthScore}%
@@ -703,11 +632,9 @@ const ProjectDashboardPage: React.FC<{
                   onClick={handleRefresh}
                   disabled={refreshing}
                   loading={refreshing}
-                  aria-label={
-                    refreshing ? "Refreshing data..." : "Refresh dashboard data"
-                  }
+                  aria-label={refreshing ? 'Refreshing data...' : 'Refresh dashboard data'}
                 >
-                  {refreshing ? "..." : "Refresh"}
+                  {refreshing ? '...' : 'Refresh'}
                 </EnhancedButton>
                 <EnhancedButton
                   variant="success"
@@ -725,46 +652,46 @@ const ProjectDashboardPage: React.FC<{
           <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
             {[
               {
-                key: "total",
+                key: 'total',
                 title: t.total_projects,
                 value: overallMetrics.totalProjects,
                 icon: <ClipboardDocumentListIcon className="w-3 h-3" />,
-                colorScheme: "default" as const,
+                colorScheme: 'default' as const,
               },
               {
-                key: "progress",
+                key: 'progress',
                 title: t.overall_progress_all,
                 value: overallMetrics.avgProgress,
                 icon: <PresentationChartLineIcon className="w-3 h-3" />,
-                colorScheme: "success" as const,
+                colorScheme: 'success' as const,
               },
               {
-                key: "completed",
+                key: 'completed',
                 title: t.projects_completed_count,
                 value: overallMetrics.completedProjects,
                 icon: <CheckBadgeIcon className="w-3 h-3" />,
-                colorScheme: "success" as const,
+                colorScheme: 'success' as const,
               },
               {
-                key: "delayed",
+                key: 'delayed',
                 title: t.projects_delayed,
                 value: overallMetrics.delayedProjects,
                 icon: <ExclamationTriangleIcon className="w-3 h-3" />,
-                colorScheme: "danger" as const,
+                colorScheme: 'danger' as const,
               },
               {
-                key: "tasks",
-                title: t.active_tasks || "Active Tasks",
+                key: 'tasks',
+                title: t.active_tasks || 'Active Tasks',
                 value: overallMetrics.activeTasks,
                 icon: <ClockIcon className="w-3 h-3" />,
-                colorScheme: "warning" as const,
+                colorScheme: 'warning' as const,
               },
               {
-                key: "overdue",
-                title: t.overdue_tasks || "Overdue Tasks",
+                key: 'overdue',
+                title: t.overdue_tasks || 'Overdue Tasks',
                 value: overallMetrics.overdueTasks,
                 icon: <FireIcon className="w-3 h-3" />,
-                colorScheme: "danger" as const,
+                colorScheme: 'danger' as const,
               },
             ].map((card, index) => (
               <div key={card.key}>
@@ -783,12 +710,12 @@ const ProjectDashboardPage: React.FC<{
             <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
               <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
                 <CurrencyDollarIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                {t.financial_overview || "Financial Overview"}
+                {t.financial_overview || 'Financial Overview'}
               </h3>
               <div className="grid grid-cols-2 xs:grid-cols-4 gap-1">
                 <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 p-1.5 rounded border border-green-200 dark:border-green-700">
                   <p className="text-xs font-medium text-green-700 dark:text-green-300">
-                    {t.total_budget || "Total Budget"}
+                    {t.total_budget || 'Total Budget'}
                   </p>
                   <p className="text-xs font-bold text-green-900 dark:text-green-100">
                     {formatRupiah(overallMetrics.totalBudget)}
@@ -796,7 +723,7 @@ const ProjectDashboardPage: React.FC<{
                 </div>
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-1.5 rounded border border-blue-200 dark:border-blue-700">
                   <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                    {t.avg_project_budget || "Average Budget"}
+                    {t.avg_project_budget || 'Average Budget'}
                   </p>
                   <p className="text-xs font-bold text-blue-900 dark:text-blue-100">
                     {formatRupiah(overallMetrics.avgBudget)}
@@ -804,7 +731,7 @@ const ProjectDashboardPage: React.FC<{
                 </div>
                 <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-1.5 rounded border border-purple-200 dark:border-purple-700">
                   <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                    {t.high_budget_projects || "High Budget Projects"}
+                    {t.high_budget_projects || 'High Budget Projects'}
                   </p>
                   <p className="text-xs font-bold text-purple-900 dark:text-purple-100">
                     {overallMetrics.highBudgetProjects}
@@ -812,7 +739,7 @@ const ProjectDashboardPage: React.FC<{
                 </div>
                 <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 p-1.5 rounded border border-yellow-200 dark:border-yellow-700">
                   <p className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
-                    {t.budget_utilization || "Budget Utilization"}
+                    {t.budget_utilization || 'Budget Utilization'}
                   </p>
                   <p className="text-xs font-bold text-yellow-900 dark:text-yellow-100">
                     {(
@@ -832,8 +759,7 @@ const ProjectDashboardPage: React.FC<{
             <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border border-red-200 dark:border-red-800 p-2 rounded-lg">
               <h3 className="text-xs font-semibold text-red-800 dark:text-red-200 mb-1 flex items-center gap-1">
                 <ExclamationTriangleIcon className="w-3 h-3 text-red-600 dark:text-red-400" />
-                {t.critical_issues || "Critical Issues"} (
-                {criticalIssues.length})
+                {t.critical_issues || 'Critical Issues'} ({criticalIssues.length})
               </h3>
               <div className="space-y-0.5">
                 {criticalIssues.map((issue, index) => (
@@ -843,20 +769,16 @@ const ProjectDashboardPage: React.FC<{
                   >
                     <div
                       className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                        issue.severity === "high"
-                          ? "bg-red-500"
-                          : issue.severity === "medium"
-                          ? "bg-yellow-500"
-                          : "bg-blue-500"
+                        issue.severity === 'high'
+                          ? 'bg-red-500'
+                          : issue.severity === 'medium'
+                            ? 'bg-yellow-500'
+                            : 'bg-blue-500'
                       }`}
                     ></div>
                     <div>
-                      <p className="text-xs font-medium text-slate-900">
-                        {issue.title}
-                      </p>
-                      <p className="text-xs text-slate-600">
-                        {issue.description}
-                      </p>
+                      <p className="text-xs font-medium text-slate-900">{issue.title}</p>
+                      <p className="text-xs text-slate-600">{issue.description}</p>
                     </div>
                   </div>
                 ))}
@@ -874,10 +796,7 @@ const ProjectDashboardPage: React.FC<{
                 <DonutChart data={statusCounts} t={t} />
                 <div className="space-y-1">
                   {statusCounts.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center justify-between text-xs"
-                    >
+                    <div key={item.label} className="flex items-center justify-between text-xs">
                       <div className="flex items-center">
                         <span
                           className="w-2 h-2 rounded-sm mr-1.5"
@@ -896,14 +815,14 @@ const ProjectDashboardPage: React.FC<{
             <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50 dark:border-slate-700/50">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
                 <ShieldCheckIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                {t.risk_assessment || "Risk Assessment"}
+                {t.risk_assessment || 'Risk Assessment'}
               </h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-1.5 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-800">
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="text-xs font-medium text-red-700 dark:text-red-300">
-                      {t.high_risk_projects || "High Risk"}
+                      {t.high_risk_projects || 'High Risk'}
                     </span>
                   </div>
                   <span className="text-sm font-bold text-red-900 dark:text-red-100">
@@ -914,7 +833,7 @@ const ProjectDashboardPage: React.FC<{
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                     <span className="text-xs font-medium text-yellow-700 dark:text-yellow-300">
-                      {t.medium_risk_projects || "Medium Risk"}
+                      {t.medium_risk_projects || 'Medium Risk'}
                     </span>
                   </div>
                   <span className="text-sm font-bold text-yellow-900 dark:text-yellow-100">
@@ -925,7 +844,7 @@ const ProjectDashboardPage: React.FC<{
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                      {t.low_risk_projects || "Low Risk"}
+                      {t.low_risk_projects || 'Low Risk'}
                     </span>
                   </div>
                   <span className="text-sm font-bold text-green-900 dark:text-green-100">
@@ -951,10 +870,7 @@ const ProjectDashboardPage: React.FC<{
                             {task.activity}
                           </p>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {
-                              projects.find((p) => p.id === task.project_id)
-                                ?.title
-                            }
+                            {projects.find((p) => p.id === task.project_id)?.title}
                           </p>
                         </div>
                         <div className="text-xs font-semibold text-red-600 dark:text-red-400">
@@ -977,7 +893,7 @@ const ProjectDashboardPage: React.FC<{
             <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
               <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
                 <ChartPieIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                {t.progress_trends || "Progress Trends"}
+                {t.progress_trends || 'Progress Trends'}
               </h3>
               <ProgressTrendChart data={progressTrendData} t={t} />
             </div>
@@ -985,7 +901,7 @@ const ProjectDashboardPage: React.FC<{
             <div className="bg-white dark:bg-slate-800 p-2 rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50">
               <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
                 <ChartBarSquareIcon className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                {t.resource_allocation || "Resource Allocation"}
+                {t.resource_allocation || 'Resource Allocation'}
               </h3>
               <ResourceAllocationChart data={resourceAllocationData} t={t} />
             </div>
@@ -1004,22 +920,15 @@ const ProjectDashboardPage: React.FC<{
               <div className="text-center py-8 text-slate-500 dark:text-slate-400">
                 <div className="text-2xl mb-2">📋</div>
                 <p className="text-sm">
-                  {searchTerm || statusFilter !== "all"
-                    ? t.no_projects_match_filters ||
-                      "No projects match your current filters."
-                    : t.no_projects_available || "No projects available."}
+                  {searchTerm || statusFilter !== 'all'
+                    ? t.no_projects_match_filters || 'No projects match your current filters.'
+                    : t.no_projects_available || 'No projects available.'}
                 </p>
               </div>
             ) : (
-              <div
-                className="space-y-2"
-                role="list"
-                aria-label="Project summary list"
-              >
+              <div className="space-y-2" role="list" aria-label="Project summary list">
                 {filteredProjectsSummary.map((p) => {
-                  const projectTasks = tasks.filter(
-                    (t) => t.project_id === p.id
-                  );
+                  const projectTasks = tasks.filter((t) => t.project_id === p.id);
                   const completedTasks = projectTasks.filter(
                     (t) => t.percent_complete === 100
                   ).length;
@@ -1044,10 +953,10 @@ const ProjectDashboardPage: React.FC<{
                                 p.statusColor
                               } ${
                                 p.status === t.proj_status_completed
-                                  ? "bg-blue-100 dark:bg-blue-900/50"
+                                  ? 'bg-blue-100 dark:bg-blue-900/50'
                                   : p.status === t.proj_status_delayed
-                                  ? "bg-red-100 dark:bg-red-900/50"
-                                  : "bg-green-100 dark:bg-green-900/50"
+                                    ? 'bg-red-100 dark:bg-red-900/50'
+                                    : 'bg-green-100 dark:bg-green-900/50'
                               }`}
                             >
                               {p.status}
@@ -1062,9 +971,7 @@ const ProjectDashboardPage: React.FC<{
                               </span>
                             )}
                             {p.budget && (
-                              <span className="font-medium">
-                                {formatRupiah(p.budget)}
-                              </span>
+                              <span className="font-medium">{formatRupiah(p.budget)}</span>
                             )}
                           </div>
                         </div>
@@ -1103,24 +1010,23 @@ const ProjectDashboardPage: React.FC<{
           <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
             <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1">
               <FireIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              {t.executive_insights || "Executive Insights & Recommendations"}
+              {t.executive_insights || 'Executive Insights & Recommendations'}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {/* Performance Summary */}
               <div className="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
                 <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">
-                  {t.performance_analytics || "Performance Summary"}
+                  {t.performance_analytics || 'Performance Summary'}
                 </h4>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">
-                      {t.on_time_delivery || "On-Time Delivery"}:
+                      {t.on_time_delivery || 'On-Time Delivery'}:
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
                       {overallMetrics.totalProjects > 0
                         ? (
-                            ((overallMetrics.totalProjects -
-                              overallMetrics.delayedProjects) /
+                            ((overallMetrics.totalProjects - overallMetrics.delayedProjects) /
                               overallMetrics.totalProjects) *
                             100
                           ).toFixed(1)
@@ -1130,13 +1036,12 @@ const ProjectDashboardPage: React.FC<{
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">
-                      {t.completion_rate || "Completion Rate"}:
+                      {t.completion_rate || 'Completion Rate'}:
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
                       {overallMetrics.totalProjects > 0
                         ? (
-                            (overallMetrics.completedProjects /
-                              overallMetrics.totalProjects) *
+                            (overallMetrics.completedProjects / overallMetrics.totalProjects) *
                             100
                           ).toFixed(1)
                         : 0}
@@ -1145,7 +1050,7 @@ const ProjectDashboardPage: React.FC<{
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-600 dark:text-slate-400">
-                      {t.efficiency_score || "Efficiency Score"}:
+                      {t.efficiency_score || 'Efficiency Score'}:
                     </span>
                     <span className="font-medium text-slate-900 dark:text-slate-100">
                       {overallMetrics.projectHealthScore}%
@@ -1157,15 +1062,14 @@ const ProjectDashboardPage: React.FC<{
               {/* Key Insights */}
               <div className="bg-white dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
                 <h4 className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1">
-                  {t.recommendations || "Key Insights"}
+                  {t.recommendations || 'Key Insights'}
                 </h4>
                 <div className="space-y-1 text-xs">
                   {overallMetrics.delayedProjects > 0 && (
                     <div className="flex items-start gap-1">
                       <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-0.5"></div>
                       <span className="text-slate-700 dark:text-slate-300">
-                        {overallMetrics.delayedProjects} projects need immediate
-                        attention
+                        {overallMetrics.delayedProjects} projects need immediate attention
                       </span>
                     </div>
                   )}

@@ -1,24 +1,24 @@
 // Tipe data untuk tabel BOR
 export type BOR = {
   No?: number;
-  "Vessel ID": string;
-  "Vessel Name"?: string;
+  'Vessel ID': string;
+  'Vessel Name'?: string;
   LOA?: number;
   Kade?: string;
-  "Panjang Kade"?: number;
-  "Mulai Tambat"?: string; // timestamp with time zone
-  "Selesai Tambat"?: string; // timestamp with time zone
-  "Waktu Sandar (jam)"?: string;
-  "BOR (%)"?: string;
+  'Panjang Kade'?: number;
+  'Mulai Tambat'?: string; // timestamp with time zone
+  'Selesai Tambat'?: string; // timestamp with time zone
+  'Waktu Sandar (jam)'?: string;
+  'BOR (%)'?: string;
 };
 
 // Tipe data untuk tabel BUP
 export type BUP = {
   No?: number;
   VesID?: string;
-  "Vessel Name"?: string;
-  "Laycan Start"?: string;
-  "Laycan Finish"?: string;
+  'Vessel Name'?: string;
+  'Laycan Start'?: string;
+  'Laycan Finish'?: string;
   ATA?: string;
   ATD?: string;
   AGENT?: string;
@@ -26,16 +26,16 @@ export type BUP = {
   GT?: number;
   LOA?: string;
   KADE?: string;
-  "IKAT TALI"?: string;
-  "COMMENCED LOADING"?: string;
-  "COMPLETED LOADING"?: string;
-  "LEPAS TALI"?: string;
+  'IKAT TALI'?: string;
+  'COMMENCED LOADING'?: string;
+  'COMPLETED LOADING'?: string;
+  'LEPAS TALI'?: string;
   BARANG?: string;
   TONASE?: number;
-  "MULAI TUNDA MASUK"?: string;
-  "SELESAI TUNDA MASUK"?: string;
-  "MULAI TUNDA KELUAR"?: string;
-  "SELESAI TUNDA KELUAR"?: string;
+  'MULAI TUNDA MASUK'?: string;
+  'SELESAI TUNDA MASUK'?: string;
+  'MULAI TUNDA KELUAR'?: string;
+  'SELESAI TUNDA KELUAR'?: string;
   KOMODITAS?: string;
   JENIS?: string;
 };
@@ -43,17 +43,17 @@ export type BUP = {
 // Tipe data untuk tabel SIRANI
 export type SIRANI = {
   No?: number;
-  "Nama Kapal"?: string;
-  "D.W.T"?: string;
-  "G.R.T"?: number;
+  'Nama Kapal'?: string;
+  'D.W.T'?: string;
+  'G.R.T'?: number;
   Kade?: string;
-  "Tanggal Tambat"?: string; // timestamp with time zone
-  "Jenis Muatan"?: string;
-  "QTY DN Bongkar"?: number;
-  "QTY DN Muat"?: string;
-  "QTY LN Bongkar"?: string;
-  "QTY LN Muat"?: string;
-  "Tanggal Bertolak"?: string; // timestamp with time zone
+  'Tanggal Tambat'?: string; // timestamp with time zone
+  'Jenis Muatan'?: string;
+  'QTY DN Bongkar'?: number;
+  'QTY DN Muat'?: string;
+  'QTY LN Bongkar'?: string;
+  'QTY LN Muat'?: string;
+  'Tanggal Bertolak'?: string; // timestamp with time zone
   Asal?: string;
   Tujuan?: string;
   Agen?: string;
@@ -67,13 +67,7 @@ export type Alert = {
   severity: string;
   read: boolean;
 };
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export interface Database {
   public: {
@@ -675,80 +669,74 @@ export interface Database {
 
 export type Tables<
   PublicTableNameOrOptions extends
-    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | keyof (Database['public']['Tables'] & Database['public']['Views'])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never
+    ? keyof (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+        Database[PublicTableNameOrOptions['schema']]['Views'])
+    : never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+      Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
-      Database["public"]["Views"])
-  ? (Database["public"]["Tables"] &
-      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : never;
+  : PublicTableNameOrOptions extends keyof (Database['public']['Tables'] &
+        Database['public']['Views'])
+    ? (Database['public']['Tables'] &
+        Database['public']['Views'])[PublicTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof Database["public"]["Tables"]
-    | { schema: keyof Database },
+  PublicTableNameOrOptions extends keyof Database['public']['Tables'] | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I;
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
-  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : never;
+  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
+    ? Database['public']['Tables'][PublicTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof Database["public"]["Tables"]
-    | { schema: keyof Database },
+  PublicTableNameOrOptions extends keyof Database['public']['Tables'] | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never
+    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U;
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
-  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : never;
+  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
+    ? Database['public']['Tables'][PublicTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof Database["public"]["Enums"]
-    | { schema: keyof Database },
+  PublicEnumNameOrOptions extends keyof Database['public']['Enums'] | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never
+    ? keyof Database[PublicEnumNameOrOptions['schema']]['Enums']
+    : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
-  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
-  : never;
+  ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database['public']['Enums']
+    ? Database['public']['Enums'][PublicEnumNameOrOptions]
+    : never;

@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import Modal from "../../components/Modal";
-import { usePackingPlantMasterData } from "../../hooks/usePackingPlantMasterData";
-import { PackingPlantStockRecord } from "../../types";
-import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
-import DocumentArrowUpIcon from "../../components/icons/DocumentArrowUpIcon";
-import { formatDate, formatNumber } from "../../utils/formatters";
-import { usePackingPlantStockData } from "../../hooks/usePackingPlantStockData";
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import Modal from '../../components/Modal';
+import { usePackingPlantMasterData } from '../../hooks/usePackingPlantMasterData';
+import { PackingPlantStockRecord } from '../../types';
+import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
+import DocumentArrowUpIcon from '../../components/icons/DocumentArrowUpIcon';
+import { formatDate, formatNumber } from '../../utils/formatters';
+import { usePackingPlantStockData } from '../../hooks/usePackingPlantStockData';
 
 // Import Enhanced Components
 import {
@@ -14,18 +14,18 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 // Helper function to format number for display in inputs
 const formatInputNumber = (num: number): string => {
   if (num === null || num === undefined) {
-    return "0,00";
+    return '0,00';
   }
 
   const formatted = num.toFixed(2);
-  const parts = formatted.split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return parts.join(",");
+  const parts = formatted.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
 };
 
 // Helper function to parse formatted number back to number
@@ -33,7 +33,7 @@ const parseFormattedNumber = (str: string): number => {
   if (!str) return 0;
   // Remove thousand separators (dots) and replace comma with dot for decimal
   // Handle both comma and dot as decimal separators
-  const cleaned = str.replace(/\./g, "").replace(",", ".");
+  const cleaned = str.replace(/\./g, '').replace(',', '.');
   const parsed = parseFloat(cleaned);
   return isNaN(parsed) ? 0 : parsed;
 };
@@ -41,25 +41,25 @@ const parseFormattedNumber = (str: string): number => {
 // Helper function to format user input as they type
 const formatUserInput = (value: string): string => {
   // Remove all non-digit characters except comma and dot
-  let cleaned = value.replace(/[^\d,\.]/g, "");
+  let cleaned = value.replace(/[^\d,\.]/g, '');
 
   // If there's a comma, treat it as decimal separator
-  if (cleaned.includes(",")) {
-    const parts = cleaned.split(",");
+  if (cleaned.includes(',')) {
+    const parts = cleaned.split(',');
     // Only keep the first comma, remove others
     if (parts.length > 2) {
-      cleaned = parts[0] + "," + parts.slice(1).join("");
+      cleaned = parts[0] + ',' + parts.slice(1).join('');
     }
     // Limit decimal places to 2
     if (parts[1] && parts[1].length > 2) {
-      cleaned = parts[0] + "," + parts[1].substring(0, 2);
+      cleaned = parts[0] + ',' + parts[1].substring(0, 2);
     }
   }
 
   // Add thousand separators to the integer part
-  const parts = cleaned.split(",");
-  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  const decimalPart = parts[1] !== undefined ? "," + parts[1] : "";
+  const parts = cleaned.split(',');
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const decimalPart = parts[1] !== undefined ? ',' + parts[1] : '';
 
   return integerPart + decimalPart;
 };
@@ -80,15 +80,15 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
   const { records, upsertRecord } = usePackingPlantStockData();
   const { records: masterAreas } = usePackingPlantMasterData();
 
-  const [filterArea, setFilterArea] = useState(areas[0] || "");
+  const [filterArea, setFilterArea] = useState(areas[0] || '');
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
   const [tableData, setTableData] = useState<PackingPlantStockRecord[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [newRecord, setNewRecord] = useState<PackingPlantStockRecord>({
-    id: "",
-    date: "",
+    id: '',
+    date: '',
     area: filterArea,
     opening_stock: 0,
     stock_received: 0,
@@ -100,13 +100,13 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
   const [quickAddMode, setQuickAddMode] = useState(false);
   const [autoContinueMode, setAutoContinueMode] = useState(false);
   const [quickAddData, setQuickAddData] = useState({
-    stock_out: "0,00",
-    closing_stock: "0,00",
+    stock_out: '0,00',
+    closing_stock: '0,00',
   });
 
   // State for formatted input values in modal
-  const [modalStockOut, setModalStockOut] = useState("0,00");
-  const [modalClosingStock, setModalClosingStock] = useState("0,00");
+  const [modalStockOut, setModalStockOut] = useState('0,00');
+  const [modalClosingStock, setModalClosingStock] = useState('0,00');
 
   useEffect(() => {
     if (areas.length > 0 && !areas.includes(filterArea)) {
@@ -134,16 +134,13 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     const filteredByArea = records.filter((r) => r.area === filterArea);
     const filteredByPeriod = filteredByArea.filter((r) => {
       const recordDate = new Date(r.date);
-      return (
-        recordDate.getMonth() === filterMonth &&
-        recordDate.getFullYear() === filterYear
-      );
+      return recordDate.getMonth() === filterMonth && recordDate.getFullYear() === filterYear;
     });
 
     if (filteredByPeriod.length === 0) {
       // If no data for current period, start with the first day of the filter month/year
       const firstDayOfMonth = new Date(filterYear, filterMonth, 1);
-      return firstDayOfMonth.toISOString().split("T")[0];
+      return firstDayOfMonth.toISOString().split('T')[0];
     }
 
     // Sort by date and get the latest within the current period
@@ -154,7 +151,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
     // Add 1 day
     latestDate.setDate(latestDate.getDate() + 1);
-    return latestDate.toISOString().split("T")[0];
+    return latestDate.toISOString().split('T')[0];
   };
 
   const getOpeningStock = (date: string, area: string) => {
@@ -174,8 +171,8 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
   const handleQuickAdd = () => {
     setQuickAddMode(true);
     setQuickAddData({
-      stock_out: "0,00",
-      closing_stock: "0,00",
+      stock_out: '0,00',
+      closing_stock: '0,00',
     });
   };
 
@@ -193,12 +190,10 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     const stock_out = parseFormattedNumber(quickAddData.stock_out);
     const closing_stock = parseFormattedNumber(quickAddData.closing_stock);
 
-    const stock_received = Math.round(
-      closing_stock - (opening_stock - stock_out)
-    );
+    const stock_received = Math.round(closing_stock - (opening_stock - stock_out));
 
     upsertRecord({
-      id: masterId || "",
+      id: masterId || '',
       date: nextDate,
       area: filterArea,
       opening_stock,
@@ -210,8 +205,8 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     // Reset quick add mode and immediately show next quick add
     setQuickAddMode(false);
     setQuickAddData({
-      stock_out: "0,00",
-      closing_stock: "0,00",
+      stock_out: '0,00',
+      closing_stock: '0,00',
     });
 
     // Automatically prepare for next entry after a short delay
@@ -227,8 +222,8 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
       ) {
         setQuickAddMode(true);
         setQuickAddData({
-          stock_out: "0,00",
-          closing_stock: "0,00",
+          stock_out: '0,00',
+          closing_stock: '0,00',
         });
       }
     }, 100);
@@ -237,8 +232,8 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
   const handleQuickAddCancel = () => {
     setQuickAddMode(false);
     setQuickAddData({
-      stock_out: "0,00",
-      closing_stock: "0,00",
+      stock_out: '0,00',
+      closing_stock: '0,00',
     });
   };
 
@@ -249,16 +244,13 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     const filterDate = new Date(filterYear, filterMonth);
 
     // If next date falls within the current filter period, use quick add
-    if (
-      nextDate.getMonth() === filterMonth &&
-      nextDate.getFullYear() === filterYear
-    ) {
+    if (nextDate.getMonth() === filterMonth && nextDate.getFullYear() === filterYear) {
       handleQuickAdd();
     } else {
       // Otherwise use modal
       setIsAddModalOpen(true);
       setNewRecord({
-        id: "",
+        id: '',
         date: getNextDate(),
         area: filterArea,
         opening_stock: 0,
@@ -266,8 +258,8 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
         stock_out: 0,
         closing_stock: 0,
       });
-      setModalStockOut("0,00");
-      setModalClosingStock("0,00");
+      setModalStockOut('0,00');
+      setModalClosingStock('0,00');
     }
   };
 
@@ -286,12 +278,10 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     const stock_out = parseFormattedNumber(modalStockOut);
     const closing_stock = parseFormattedNumber(modalClosingStock);
 
-    const stock_received = Math.round(
-      closing_stock - (opening_stock - stock_out)
-    );
+    const stock_received = Math.round(closing_stock - (opening_stock - stock_out));
     upsertRecord({
       ...newRecord,
-      id: masterId || "", // Use the looked up master ID or empty string
+      id: masterId || '', // Use the looked up master ID or empty string
       opening_stock,
       stock_received,
       stock_out,
@@ -302,7 +292,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
   const handleValueChange = (
     index: number,
-    field: "stock_out" | "closing_stock",
+    field: 'stock_out' | 'closing_stock',
     formattedValue: string
   ) => {
     const updated = [...tableData];
@@ -319,12 +309,10 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
     // Use the new getOpeningStock function
     const opening_stock = getOpeningStock(record.date, record.area);
-    const stock_received = Math.round(
-      record.closing_stock - (opening_stock - record.stock_out)
-    );
+    const stock_received = Math.round(record.closing_stock - (opening_stock - record.stock_out));
     upsertRecord({
       ...record,
-      id: masterId || "", // Use the looked up master ID or empty string
+      id: masterId || '', // Use the looked up master ID or empty string
       opening_stock,
       stock_received,
     });
@@ -332,9 +320,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
   const handleExport = () => {
     // Placeholder: Export functionality temporarily disabled due to security update
-    alert(
-      "Export functionality is temporarily disabled. Please use alternative export method."
-    );
+    alert('Export functionality is temporarily disabled. Please use alternative export method.');
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -343,47 +329,27 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
     setIsImporting(true);
     try {
-      alert(
-        "Import functionality is temporarily disabled. Chart.js implementation pending."
-      );
+      alert('Import functionality is temporarily disabled. Chart.js implementation pending.');
     } catch (error) {
-      console.error("Error processing Excel file:", error);
-      alert(
-        "Error saat memproses file Excel. Pastikan format file sudah benar."
-      );
+      console.error('Error processing Excel file:', error);
+      alert('Error saat memproses file Excel. Pastikan format file sudah benar.');
     } finally {
       setIsImporting(false);
     }
 
     // Clear the file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
-  const yearOptions = Array.from(
-    { length: 5 },
-    (_, i) => new Date().getFullYear() - i
-  );
+  const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => ({
     value: i,
     label:
       t[
         `month_${
-          [
-            "jan",
-            "feb",
-            "mar",
-            "apr",
-            "may",
-            "jun",
-            "jul",
-            "aug",
-            "sep",
-            "oct",
-            "nov",
-            "dec",
-          ][i]
+          ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i]
         }`
       ],
   }));
@@ -400,7 +366,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             variant="secondary"
             size="md"
             className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-            aria-label={t.export_excel || "Export to Excel"}
+            aria-label={t.export_excel || 'Export to Excel'}
           >
             <DocumentArrowDownIcon className="w-5 h-5" />
             <span className="text-sm font-medium">{t.export_excel}</span>
@@ -418,15 +384,13 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             variant="secondary"
             size="md"
             loading={isImporting}
-            loadingText={t.importing || "Importing..."}
+            loadingText={t.importing || 'Importing...'}
             className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-            aria-label={t.import_excel || "Import from Excel"}
+            aria-label={t.import_excel || 'Import from Excel'}
           >
             <DocumentArrowUpIcon className="w-5 h-5" />
             <span className="text-sm font-medium">
-              {isImporting
-                ? t.importing || "Importing..."
-                : t.import_excel || "Import Excel"}
+              {isImporting ? t.importing || 'Importing...' : t.import_excel || 'Import Excel'}
             </span>
           </EnhancedButton>
           <EnhancedButton
@@ -435,29 +399,27 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             variant="success"
             className={`inline-flex items-center justify-center gap-2 font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-2 text-sm sm:text-base ${
               quickAddMode
-                ? "bg-gray-400 text-gray-200 border-gray-400 cursor-not-allowed opacity-60"
-                : "bg-green-600 hover:bg-green-700 text-white border-green-500 hover:border-green-600"
+                ? 'bg-gray-400 text-gray-200 border-gray-400 cursor-not-allowed opacity-60'
+                : 'bg-green-600 hover:bg-green-700 text-white border-green-500 hover:border-green-600'
             }`}
             aria-label={(() => {
-              if (quickAddMode) return "Currently inputting...";
+              if (quickAddMode) return 'Currently inputting...';
               const nextDate = new Date(getNextDate());
               const isInCurrentFilter =
-                nextDate.getMonth() === filterMonth &&
-                nextDate.getFullYear() === filterYear;
+                nextDate.getMonth() === filterMonth && nextDate.getFullYear() === filterYear;
               return isInCurrentFilter
                 ? `Add data for ${formatDate(getNextDate())}`
-                : t.add_data || "Add Data";
+                : t.add_data || 'Add Data';
             })()}
           >
             {(() => {
-              if (quickAddMode) return "Sedang Input...";
+              if (quickAddMode) return 'Sedang Input...';
               const nextDate = new Date(getNextDate());
               const isInCurrentFilter =
-                nextDate.getMonth() === filterMonth &&
-                nextDate.getFullYear() === filterYear;
+                nextDate.getMonth() === filterMonth && nextDate.getFullYear() === filterYear;
               return isInCurrentFilter
                 ? `+ ${formatDate(getNextDate())}`
-                : t.add_data || "Add Data";
+                : t.add_data || 'Add Data';
             })()}
           </EnhancedButton>
         </div>
@@ -532,8 +494,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                Menampilkan data: {filterArea} -{" "}
-                {monthOptions[filterMonth]?.label} {filterYear}
+                Menampilkan data: {filterArea} - {monthOptions[filterMonth]?.label} {filterYear}
               </span>
             </div>
             <span className="text-xs text-blue-600 dark:text-blue-400">
@@ -547,33 +508,25 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
         <Modal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          title={t.add_data_title || "Tambah Data Stock"}
+          title={t.add_data_title || 'Tambah Data Stock'}
         >
           <form onSubmit={handleAddDataSubmit} className="space-y-4 p-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                {t.date || "Tanggal"}
-              </label>
+              <label className="block text-sm font-medium mb-1">{t.date || 'Tanggal'}</label>
               <input
                 type="date"
                 className="input-style w-full"
                 value={newRecord.date}
-                onChange={(e) =>
-                  setNewRecord({ ...newRecord, date: e.target.value })
-                }
+                onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
-                {t.area || "Area"}
-              </label>
+              <label className="block text-sm font-medium mb-1">{t.area || 'Area'}</label>
               <select
                 className="input-style w-full"
                 value={newRecord.area}
-                onChange={(e) =>
-                  setNewRecord({ ...newRecord, area: e.target.value })
-                }
+                onChange={(e) => setNewRecord({ ...newRecord, area: e.target.value })}
                 required
               >
                 {areas.map((area) => (
@@ -584,30 +537,24 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">
-                {t.stock_out || "Stock Out"}
-              </label>
+              <label className="block text-sm font-medium mb-1">{t.stock_out || 'Stock Out'}</label>
               <input
                 type="text"
                 className="input-style w-full"
                 value={modalStockOut}
-                onChange={(e) =>
-                  setModalStockOut(formatUserInput(e.target.value))
-                }
+                onChange={(e) => setModalStockOut(formatUserInput(e.target.value))}
                 required
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t.closing_stock || "Closing Stock"}
+                {t.closing_stock || 'Closing Stock'}
               </label>
               <input
                 type="text"
                 className="input-style w-full"
                 value={modalClosingStock}
-                onChange={(e) =>
-                  setModalClosingStock(formatUserInput(e.target.value))
-                }
+                onChange={(e) => setModalClosingStock(formatUserInput(e.target.value))}
                 required
               />
             </div>
@@ -616,16 +563,12 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
                 variant="secondary"
-                aria-label={t.cancel || "Cancel"}
+                aria-label={t.cancel || 'Cancel'}
               >
-                {t.cancel || "Batal"}
+                {t.cancel || 'Batal'}
               </EnhancedButton>
-              <EnhancedButton
-                type="submit"
-                variant="primary"
-                aria-label={t.save || "Save"}
-              >
-                {t.save || "Simpan"}
+              <EnhancedButton type="submit" variant="primary" aria-label={t.save || 'Save'}>
+                {t.save || 'Simpan'}
               </EnhancedButton>
             </div>
           </form>
@@ -656,19 +599,11 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
           <tbody>
             {tableData.map((record, index) => (
               <tr
-                key={
-                  record.id
-                    ? `${record.id}-${index}`
-                    : `${record.date}-${record.area}-${index}`
-                }
+                key={record.id ? `${record.id}-${index}` : `${record.date}-${record.area}-${index}`}
                 className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700"
               >
-                <td className="px-6 py-2 whitespace-nowrap text-sm">
-                  {formatDate(record.date)}
-                </td>
-                <td className="px-6 py-2 whitespace-nowrap text-sm">
-                  {record.area}
-                </td>
+                <td className="px-6 py-2 whitespace-nowrap text-sm">{formatDate(record.date)}</td>
+                <td className="px-6 py-2 whitespace-nowrap text-sm">{record.area}</td>
                 <td className="px-6 py-2 whitespace-nowrap text-sm text-right">
                   {formatNumber(record.opening_stock)}
                 </td>
@@ -682,7 +617,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                     value={formatInputNumber(record.stock_out)}
                     onChange={(e) => {
                       const formatted = formatUserInput(e.target.value);
-                      handleValueChange(index, "stock_out", formatted);
+                      handleValueChange(index, 'stock_out', formatted);
                     }}
                     onBlur={() => handleSave(index)}
                     aria-label={`Stock Out for ${record.date}`}
@@ -695,7 +630,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                     value={formatInputNumber(record.closing_stock)}
                     onChange={(e) => {
                       const formatted = formatUserInput(e.target.value);
-                      handleValueChange(index, "closing_stock", formatted);
+                      handleValueChange(index, 'closing_stock', formatted);
                     }}
                     onBlur={() => handleSave(index)}
                     aria-label={`Closing Stock for ${record.date}`}
@@ -717,19 +652,10 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                 </td>
                 <td className="px-6 py-2 whitespace-nowrap text-sm text-right text-slate-500">
                   {(() => {
-                    const opening_stock = getOpeningStock(
-                      getNextDate(),
-                      filterArea
-                    );
-                    const stock_out = parseFormattedNumber(
-                      quickAddData.stock_out
-                    );
-                    const closing_stock = parseFormattedNumber(
-                      quickAddData.closing_stock
-                    );
-                    const stock_received = Math.round(
-                      closing_stock - (opening_stock - stock_out)
-                    );
+                    const opening_stock = getOpeningStock(getNextDate(), filterArea);
+                    const stock_out = parseFormattedNumber(quickAddData.stock_out);
+                    const closing_stock = parseFormattedNumber(quickAddData.closing_stock);
+                    const stock_received = Math.round(closing_stock - (opening_stock - stock_out));
                     return formatNumber(stock_received);
                   })()}
                 </td>
@@ -746,15 +672,13 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                       }));
                     }}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         // Move to next input
                         const nextInput = e.currentTarget
-                          .closest("tr")
-                          ?.querySelector(
-                            "td:last-child input"
-                          ) as HTMLInputElement;
+                          .closest('tr')
+                          ?.querySelector('td:last-child input') as HTMLInputElement;
                         nextInput?.focus();
-                      } else if (e.key === "Escape") {
+                      } else if (e.key === 'Escape') {
                         handleQuickAddCancel();
                       }
                     }}
@@ -776,9 +700,9 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                     }}
                     placeholder="0,00"
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         handleQuickAddSubmit();
-                      } else if (e.key === "Escape") {
+                      } else if (e.key === 'Escape') {
                         handleQuickAddCancel();
                       }
                     }}
@@ -793,12 +717,8 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                   onClick={handleQuickAdd}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-green-600 dark:text-green-400 font-medium">
-                      +
-                    </span>
-                    <span>
-                      Tambah data untuk tanggal {formatDate(getNextDate())}
-                    </span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">+</span>
+                    <span>Tambah data untuk tanggal {formatDate(getNextDate())}</span>
                   </div>
                 </td>
               </tr>
@@ -829,9 +749,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
                         <input
                           type="checkbox"
                           checked={autoContinueMode}
-                          onChange={(e) =>
-                            setAutoContinueMode(e.target.checked)
-                          }
+                          onChange={(e) => setAutoContinueMode(e.target.checked)}
                           className="rounded border-slate-300 text-green-600 focus:ring-green-500"
                         />
                         <span>Lanjut otomatis ke tanggal berikutnya</span>
@@ -846,19 +764,14 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
             )}
             {tableData.length === 0 && !quickAddMode && (
               <tr>
-                <td
-                  colSpan={6}
-                  className="text-center py-10 text-slate-500 dark:text-slate-400"
-                >
+                <td colSpan={6} className="text-center py-10 text-slate-500 dark:text-slate-400">
                   <div className="space-y-2">
                     <div>Belum ada data untuk periode ini</div>
                     <EnhancedButton
                       onClick={handleQuickAdd}
                       variant="success"
                       className="inline-flex items-center gap-2"
-                      aria-label={`Add first data for ${formatDate(
-                        getNextDate()
-                      )}`}
+                      aria-label={`Add first data for ${formatDate(getNextDate())}`}
                     >
                       <span className="text-lg">+</span>
                       Tambah data pertama untuk {formatDate(getNextDate())}

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface FiltersProps {
   areas: string[];
@@ -27,10 +27,7 @@ export const Filters: React.FC<FiltersProps> = ({
 }) => (
   <div className="flex flex-col sm:flex-row md:flex-row gap-2 w-full md:w-auto">
     <div className="w-full sm:w-40">
-      <label
-        htmlFor="log-filter-area"
-        className="block text-xs font-medium text-slate-600 mb-1"
-      >
+      <label htmlFor="log-filter-area" className="block text-xs font-medium text-slate-600 mb-1">
         {t.filter_by_area}
       </label>
       <select
@@ -49,10 +46,7 @@ export const Filters: React.FC<FiltersProps> = ({
       </select>
     </div>
     <div className="w-full sm:w-40">
-      <label
-        htmlFor="log-filter-month"
-        className="block text-xs font-medium text-slate-600 mb-1"
-      >
+      <label htmlFor="log-filter-month" className="block text-xs font-medium text-slate-600 mb-1">
         {t.filter_by_month}
       </label>
       <select
@@ -70,10 +64,7 @@ export const Filters: React.FC<FiltersProps> = ({
       </select>
     </div>
     <div className="w-full sm:w-24">
-      <label
-        htmlFor="log-filter-year"
-        className="block text-xs font-medium text-slate-600 mb-1"
-      >
+      <label htmlFor="log-filter-year" className="block text-xs font-medium text-slate-600 mb-1">
         {t.filter_by_year}
       </label>
       <select

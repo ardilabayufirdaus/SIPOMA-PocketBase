@@ -15,8 +15,8 @@ export const useCopParameters = () => {
     setIds(newIds);
   };
 
-  return { 
+  return {
     copParameterIds: ids,
-    setCopParameterIds 
+    setCopParameterIds,
   };
 };

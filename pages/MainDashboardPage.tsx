@@ -1,7 +1,7 @@
-import * as React from "react";
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
-import { Page } from "../App";
+import * as React from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Page } from '../App';
 import {
   TrendingUpIcon,
   TrendingDownIcon,
@@ -13,32 +13,29 @@ import {
   PauseIcon,
   ArrowRightIcon,
   DownloadIcon,
-} from "lucide-react";
-import UserGroupIcon from "../components/icons/UserGroupIcon";
-import UsersOnlineIcon from "../components/icons/UsersOnlineIcon";
-import ClipboardDocumentListIcon from "../components/icons/ClipboardDocumentListIcon";
-import ArchiveBoxArrowDownIcon from "../components/icons/ArchiveBoxArrowDownIcon";
-import ChartBarIcon from "../components/icons/ChartBarIcon";
-import CogIcon from "../components/icons/CogIcon";
-import CheckBadgeIcon from "../components/icons/CheckBadgeIcon";
-import ClockIcon from "../components/icons/ClockIcon";
-import { useProjects } from "../hooks/useProjects";
-import { usePlantData } from "../hooks/usePlantData";
-import { usePackingPlantStockData } from "../hooks/usePackingPlantStockData";
-import { formatNumber, formatPercentage } from "../utils/formatters";
-import { exportToExcelStyled } from "../utils/excelUtils";
-import {
-  InteractiveCardModal,
-  BreakdownData,
-} from "../components/InteractiveCardModal";
+} from 'lucide-react';
+import UserGroupIcon from '../components/icons/UserGroupIcon';
+import UsersOnlineIcon from '../components/icons/UsersOnlineIcon';
+import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
+import ArchiveBoxArrowDownIcon from '../components/icons/ArchiveBoxArrowDownIcon';
+import ChartBarIcon from '../components/icons/ChartBarIcon';
+import CogIcon from '../components/icons/CogIcon';
+import CheckBadgeIcon from '../components/icons/CheckBadgeIcon';
+import ClockIcon from '../components/icons/ClockIcon';
+import { useProjects } from '../hooks/useProjects';
+import { usePlantData } from '../hooks/usePlantData';
+import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
+import { formatNumber, formatPercentage } from '../utils/formatters';
+import { exportToExcelStyled } from '../utils/excelUtils';
+import { InteractiveCardModal, BreakdownData } from '../components/InteractiveCardModal';
 
 // Import Typography Components
-import { H1, Body, WhiteText } from "../components/ui/Typography";
+import { H1, Body, WhiteText } from '../components/ui/Typography';
 
 // Import permission utilities
-import { usePermissions } from "../utils/permissions";
-import { PermissionLevel } from "../types";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { usePermissions } from '../utils/permissions';
+import { PermissionLevel } from '../types';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 // Enhanced Header Component with Modern Design
 const ModernDashboardHeader: React.FC<{
@@ -56,7 +53,7 @@ const ModernDashboardHeader: React.FC<{
   onRefresh,
   onExport,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <motion.div
@@ -102,11 +99,7 @@ const ModernDashboardHeader: React.FC<{
                 onClick={onToggleAutoRefresh}
                 className={`
                   flex items-center space-x-2 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/30 transition-all
-                  ${
-                    isAutoRefresh
-                      ? "bg-green-500/30 text-white"
-                      : "bg-white/20 text-white/80"
-                  }
+                  ${isAutoRefresh ? 'bg-green-500/30 text-white' : 'bg-white/20 text-white/80'}
                 `}
               >
                 {isAutoRefresh ? (
@@ -115,7 +108,7 @@ const ModernDashboardHeader: React.FC<{
                   <PlayIcon className="w-4 h-4" />
                 )}
                 <span className="text-sm font-medium">
-                  {isAutoRefresh ? "Auto Refresh" : "Manual Mode"}
+                  {isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}
                 </span>
               </button>
 
@@ -154,7 +147,7 @@ const ModernDashboardHeader: React.FC<{
 
           <div className="text-right">
             <p className="text-white/90 text-sm font-medium">
-              Last Updated: {new Date().toLocaleTimeString("id-ID")}
+              Last Updated: {new Date().toLocaleTimeString('id-ID')}
             </p>
           </div>
         </div>
@@ -169,7 +162,7 @@ interface QuickStatCardProps {
   value: string | number;
   unit?: string;
   icon: React.ReactNode;
-  variant?: "default" | "online" | "success" | "warning" | "danger";
+  variant?: 'default' | 'online' | 'success' | 'warning' | 'danger';
   trend?: {
     value: number;
     isPositive: boolean;
@@ -183,7 +176,7 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
   value,
   unit,
   icon,
-  variant = "default",
+  variant = 'default',
   trend,
   onClick,
   breakdownData,
@@ -200,31 +193,31 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
   const getVariantClasses = () => {
     switch (variant) {
-      case "online":
-        return "bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-green-950/30 dark:to-green-900/30 dark:border-green-800/30";
-      case "success":
-        return "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-blue-950/30 dark:to-blue-900/30 dark:border-blue-800/30";
-      case "warning":
-        return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/30 dark:border-amber-800/30";
-      case "danger":
-        return "bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30";
+      case 'online':
+        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-green-950/30 dark:to-green-900/30 dark:border-green-800/30';
+      case 'success':
+        return 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-blue-950/30 dark:to-blue-900/30 dark:border-blue-800/30';
+      case 'warning':
+        return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/30 dark:border-amber-800/30';
+      case 'danger':
+        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30';
       default:
-        return "bg-gradient-to-br from-slate-50 to-white border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700";
+        return 'bg-gradient-to-br from-slate-50 to-white border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700';
     }
   };
 
   const getIconBgColor = () => {
     switch (variant) {
-      case "online":
-        return "bg-green-500";
-      case "success":
-        return "bg-blue-500";
-      case "warning":
-        return "bg-amber-500";
-      case "danger":
-        return "bg-red-500";
+      case 'online':
+        return 'bg-green-500';
+      case 'success':
+        return 'bg-blue-500';
+      case 'warning':
+        return 'bg-amber-500';
+      case 'danger':
+        return 'bg-red-500';
       default:
-        return "bg-slate-500";
+        return 'bg-slate-500';
     }
   };
 
@@ -240,11 +233,11 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
           y: isInteractive ? -2 : 0,
         }}
         whileTap={{ scale: isInteractive ? 0.98 : 1 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         className={`
           relative overflow-hidden rounded-2xl border backdrop-blur-sm cursor-pointer transition-all duration-300
           ${getVariantClasses()}
-          ${isInteractive ? "hover:shadow-xl" : ""}
+          ${isInteractive ? 'hover:shadow-xl' : ''}
         `}
         onClick={handleClick}
       >
@@ -254,11 +247,9 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
         <div className="relative p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <div
-              className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}
-            >
+            <div className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}>
               {React.cloneElement(icon as React.ReactElement<any>, {
-                className: "w-5 h-5",
+                className: 'w-5 h-5',
               })}
             </div>
             {isInteractive && (
@@ -276,14 +267,14 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
             <div className="flex items-baseline space-x-2">
               <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {typeof value === "number" ? value.toLocaleString() : value}
+                {typeof value === 'number' ? value.toLocaleString() : value}
               </span>
               {unit && (
                 <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   {unit}
                 </span>
               )}
-              {variant === "online" && (
+              {variant === 'online' && (
                 <div className="ml-2 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               )}
             </div>
@@ -294,8 +285,8 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
                 <div
                   className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
                     trend.isPositive
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                   }`}
                 >
                   {trend.isPositive ? (
@@ -328,17 +319,13 @@ interface QuickLinkCardProps {
   onClick: () => void;
 }
 
-const QuickLinkCard: React.FC<QuickLinkCardProps> = ({
-  title,
-  icon,
-  onClick,
-}) => (
+const QuickLinkCard: React.FC<QuickLinkCardProps> = ({ title, icon, onClick }) => (
   <motion.button
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
     whileHover={{ scale: 1.05, y: -2 }}
     whileTap={{ scale: 0.95 }}
-    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     onClick={onClick}
     className="w-full glass-card p-4 rounded-2xl hover-lift group transition-all duration-300 relative overflow-hidden"
   >
@@ -346,7 +333,7 @@ const QuickLinkCard: React.FC<QuickLinkCardProps> = ({
     <div className="relative z-10 flex flex-col items-center justify-center text-center">
       <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:to-red-600 group-hover:text-white transition-all duration-300 mb-3 group-hover:scale-105">
         {React.cloneElement(icon as React.ReactElement<any>, {
-          className: "w-5 h-5",
+          className: 'w-5 h-5',
         })}
       </div>
       <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300 truncate">
@@ -357,7 +344,7 @@ const QuickLinkCard: React.FC<QuickLinkCardProps> = ({
 );
 
 interface MainDashboardPageProps {
-  language: "en" | "id";
+  language: 'en' | 'id';
   usersCount: number;
   onlineUsersCount: number;
   activeProjects: number;
@@ -379,16 +366,12 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
   const permissionChecker = usePermissions(currentUser);
 
   // Check if user has permission to access dashboard
-  const hasDashboardAccess = permissionChecker.hasPermission(
-    "dashboard",
-    "READ"
-  );
+  const hasDashboardAccess = permissionChecker.hasPermission('dashboard', 'READ');
 
   // Hooks for data
   const { projects, tasks, loading: projectsLoading } = useProjects();
   const { productionData, loading: plantLoading } = usePlantData();
-  const { records: stockRecords, loading: stockLoading } =
-    usePackingPlantStockData();
+  const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
 
   // Auto refresh every 30 seconds
   useEffect(() => {
@@ -401,20 +384,17 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
     return () => clearInterval(interval);
   }, [isAutoRefresh]);
 
-  const currentTime = new Date().toLocaleString("id-ID", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  const currentTime = new Date().toLocaleString('id-ID', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
   const getKPITrend = (currentValue: number, kpiId: string) => {
-    const baseValue =
-      typeof currentValue === "string"
-        ? parseFloat(currentValue)
-        : currentValue;
+    const baseValue = typeof currentValue === 'string' ? parseFloat(currentValue) : currentValue;
 
     const previousValue = baseValue * (0.95 + Math.random() * 0.1);
     const trend = baseValue - previousValue;
@@ -429,16 +409,16 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
     try {
       const exportData: any[] = [
         {
-          Kategori: "Users",
+          Kategori: 'Users',
           Total: usersCount,
           Online: onlineUsersCount,
           Persentase: formatPercentage((onlineUsersCount / usersCount) * 100),
         },
         {
-          Kategori: "Projects",
+          Kategori: 'Projects',
           Total: activeProjects,
-          Status: "Active",
-          Persentase: "100%",
+          Status: 'Active',
+          Persentase: '100%',
         },
       ];
 
@@ -449,21 +429,21 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             Kategori: `Production Line ${index + 1}`,
             Total: item.output || 0,
             Online: item.hour || 0,
-            Persentase: "Running",
+            Persentase: 'Running',
           });
         });
       }
 
-      const headers = ["Kategori", "Total", "Online", "Persentase"];
+      const headers = ['Kategori', 'Total', 'Online', 'Persentase'];
 
       await exportToExcelStyled(
         exportData,
-        `dashboard_${new Date().toISOString().split("T")[0]}`,
-        "Dashboard Data",
+        `dashboard_${new Date().toISOString().split('T')[0]}`,
+        'Dashboard Data',
         headers
       );
     } catch (error) {
-      console.error("Export failed:", error);
+      console.error('Export failed:', error);
     }
   };
 
@@ -491,7 +471,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             Access Denied
           </h3>
           <p className="text-red-600 dark:text-red-300">
-            You don't have permission to access the dashboard.
+            You don&apos;t have permission to access the dashboard.
           </p>
         </div>
       </div>
@@ -504,7 +484,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
         {/* Enhanced Header */}
         <ModernDashboardHeader
           currentTime={currentTime}
-          onSearch={(query) => console.log("Search:", query)}
+          onSearch={(query) => console.log('Search:', query)}
           isAutoRefresh={isAutoRefresh}
           onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
           onRefresh={() => setRefreshKey((prev) => prev + 1)}
@@ -523,8 +503,8 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             value={usersCount}
             icon={<UserGroupIcon className="w-5 h-5" />}
             variant="default"
-            trend={getKPITrend(usersCount, "users")}
-            onClick={() => onNavigate("users")}
+            trend={getKPITrend(usersCount, 'users')}
+            onClick={() => onNavigate('users')}
           />
 
           <QuickStatCard
@@ -532,8 +512,8 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             value={onlineUsersCount}
             icon={<UsersOnlineIcon className="w-5 h-5" />}
             variant="online"
-            trend={getKPITrend(onlineUsersCount, "online")}
-            onClick={() => onNavigate("users")}
+            trend={getKPITrend(onlineUsersCount, 'online')}
+            onClick={() => onNavigate('users')}
           />
 
           <QuickStatCard
@@ -541,8 +521,8 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             value={activeProjects}
             icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
             variant="success"
-            trend={getKPITrend(activeProjects, "projects")}
-            onClick={() => onNavigate("projects", "proj_list")}
+            trend={getKPITrend(activeProjects, 'projects')}
+            onClick={() => onNavigate('projects', 'proj_list')}
           />
 
           <QuickStatCard
@@ -552,52 +532,46 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             icon={<CheckBadgeIcon className="w-5 h-5" />}
             variant="success"
             trend={{ value: 2.1, isPositive: true }}
-            onClick={() => onNavigate("settings")}
+            onClick={() => onNavigate('settings')}
           />
         </motion.div>
 
         {/* Quick Links */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
           <div className="flex items-center gap-3 mb-6">
             <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-              Quick Access
-            </h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Quick Access</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <QuickLinkCard
               title="User Management"
               icon={<UserGroupIcon className="w-5 h-5" />}
-              onClick={() => onNavigate("users")}
+              onClick={() => onNavigate('users')}
             />
             <QuickLinkCard
               title="Plant Dashboard"
               icon={<CogIcon className="w-5 h-5" />}
-              onClick={() => onNavigate("operations", "op_dashboard")}
+              onClick={() => onNavigate('operations', 'op_dashboard')}
             />
             <QuickLinkCard
               title="Packing Data"
               icon={<ArchiveBoxArrowDownIcon className="w-5 h-5" />}
-              onClick={() => onNavigate("packing", "pack_stock_data_entry")}
+              onClick={() => onNavigate('packing', 'pack_stock_data_entry')}
             />
             <QuickLinkCard
               title="Project Board"
               icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
-              onClick={() => onNavigate("projects", "proj_list")}
+              onClick={() => onNavigate('projects', 'proj_list')}
             />
             <QuickLinkCard
               title="Analytics"
               icon={<ChartBarIcon className="w-5 h-5" />}
-              onClick={() => onNavigate("operations", "op_dashboard")}
+              onClick={() => onNavigate('operations', 'op_dashboard')}
             />
             <QuickLinkCard
               title="Settings"
               icon={<CogIcon className="w-5 h-5" />}
-              onClick={() => onNavigate("settings")}
+              onClick={() => onNavigate('settings')}
             />
           </div>
         </motion.div>
@@ -620,14 +594,12 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
               <div className="flex items-center space-x-2">
                 <ClockIcon className="w-4 h-4 text-slate-400" />
                 <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Last Updated: {new Date().toLocaleString("id-ID")}
+                  Last Updated: {new Date().toLocaleString('id-ID')}
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                SIPOMA
-              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">SIPOMA</span>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>
           </div>

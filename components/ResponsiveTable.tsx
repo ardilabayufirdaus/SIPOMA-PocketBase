@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 interface ResponsiveTableProps {
   children: React.ReactNode;
@@ -28,10 +28,7 @@ interface ResponsiveTableCellProps {
   hideOnMobile?: boolean;
 }
 
-export const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
-  children,
-  className = "",
-}) => {
+export const ResponsiveTable: React.FC<ResponsiveTableProps> = ({ children, className = '' }) => {
   return (
     <div className="overflow-hidden">
       {/* Desktop Table */}
@@ -48,18 +45,14 @@ export const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
 
 export const ResponsiveTableHeader: React.FC<ResponsiveTableHeaderProps> = ({
   children,
-  className = "",
+  className = '',
 }) => {
-  return (
-    <thead className={`bg-slate-50 dark:bg-slate-800 ${className}`}>
-      {children}
-    </thead>
-  );
+  return <thead className={`bg-slate-50 dark:bg-slate-800 ${className}`}>{children}</thead>;
 };
 
 export const ResponsiveTableBody: React.FC<ResponsiveTableBodyProps> = ({
   children,
-  className = "",
+  className = '',
 }) => {
   return (
     <>
@@ -84,7 +77,7 @@ export const ResponsiveTableBody: React.FC<ResponsiveTableBodyProps> = ({
 
 export const ResponsiveTableRow: React.FC<ResponsiveTableRowProps> = ({
   children,
-  className = "",
+  className = '',
   mobileLayout,
 }) => {
   return (
@@ -104,41 +97,33 @@ export const ResponsiveTableRow: React.FC<ResponsiveTableRowProps> = ({
 
 export const ResponsiveTableCell: React.FC<ResponsiveTableCellProps> = ({
   children,
-  className = "",
+  className = '',
   label,
   hideOnMobile = false,
 }) => {
   return (
     <>
       {/* Desktop Cell */}
-      <td
-        className={`hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm ${className}`}
-      >
+      <td className={`hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm ${className}`}>
         {children}
       </td>
 
       {/* Mobile Layout */}
       {!hideOnMobile && label && (
         <div className="md:hidden flex justify-between items-center py-2 border-b border-slate-100 dark:border-slate-700 last:border-b-0">
-          <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {label}:
-          </span>
-          <span className="text-sm text-slate-900 dark:text-slate-100">
-            {children}
-          </span>
+          <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}:</span>
+          <span className="text-sm text-slate-900 dark:text-slate-100">{children}</span>
         </div>
       )}
 
-      {!hideOnMobile && !label && (
-        <div className="md:hidden py-2">{children}</div>
-      )}
+      {!hideOnMobile && !label && <div className="md:hidden py-2">{children}</div>}
     </>
   );
 };
 
 export const ResponsiveTableHeaderCell: React.FC<ResponsiveTableCellProps> = ({
   children,
-  className = "",
+  className = '',
 }) => {
   return (
     <th

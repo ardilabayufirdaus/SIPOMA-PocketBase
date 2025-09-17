@@ -1,36 +1,27 @@
-import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useRef,
-  useEffect,
-} from "react";
-import { useReportSettings } from "../../hooks/useReportSettings";
-import { useParameterSettings } from "../../hooks/useParameterSettings";
-import { useCcrParameterData } from "../../hooks/useCcrParameterData";
-import { usePlantUnits } from "../../hooks/usePlantUnits";
-import useCcrDowntimeData from "../../hooks/useCcrDowntimeData";
-import { useCcrSiloData } from "../../hooks/useCcrSiloData";
-import { useSiloCapacities } from "../../hooks/useSiloCapacities";
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useReportSettings } from '../../hooks/useReportSettings';
+import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useCcrParameterData } from '../../hooks/useCcrParameterData';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
+import { useCcrSiloData } from '../../hooks/useCcrSiloData';
+import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import {
   ParameterSetting,
   CcrParameterData,
   ParameterDataType,
   CcrDowntimeData,
   SiloCapacity,
-} from "../../types";
+} from '../../types';
 import {
   formatDate,
   formatNumber,
   calculateDuration,
   formatDuration,
-} from "../../utils/formatters";
-import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
-import ClipboardIcon from "../../components/icons/ClipboardIcon";
-import {
-  EnhancedButton,
-  useAccessibility,
-} from "../../components/ui/EnhancedComponents";
+} from '../../utils/formatters';
+import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
+import ClipboardIcon from '../../components/icons/ClipboardIcon';
+import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 
 declare global {
   interface Window {
@@ -40,23 +31,14 @@ declare global {
 
 // Canvas Drawing Helper
 const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const {
-    groupedHeaders,
-    rows,
-    footer,
-    title,
-    date,
-    downtimeData,
-    siloData,
-    operatorData,
-  } = data;
+  const { groupedHeaders, rows, footer, title, date, downtimeData, siloData, operatorData } = data;
   const allParams = groupedHeaders.flatMap((g: any) => g.parameters);
 
   // --- Configuration (Logical units) ---
-  const FONT_FAMILY = "Inter, sans-serif";
+  const FONT_FAMILY = 'Inter, sans-serif';
   const PADDING = 40;
   const HEADER_HEIGHT = 100;
   const ROW_HEIGHT = 32;
@@ -65,16 +47,12 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   const COL_SHIFT_WIDTH = 110;
   const baseWidth = 2400; // The report's logical width for high quality
 
-  const availableWidth =
-    baseWidth - PADDING * 2 - COL_HOUR_WIDTH - COL_SHIFT_WIDTH;
-  const paramColWidth =
-    allParams.length > 0 ? availableWidth / allParams.length : 100;
+  const availableWidth = baseWidth - PADDING * 2 - COL_HOUR_WIDTH - COL_SHIFT_WIDTH;
+  const paramColWidth = allParams.length > 0 ? availableWidth / allParams.length : 100;
   const tableHeaderHeight = 60;
   const tableStartY = HEADER_HEIGHT + PADDING / 2;
   const totalTableHeight =
-    tableHeaderHeight +
-    rows.length * ROW_HEIGHT +
-    Object.keys(footer).length * FOOTER_ROW_HEIGHT;
+    tableHeaderHeight + rows.length * ROW_HEIGHT + Object.keys(footer).length * FOOTER_ROW_HEIGHT;
 
   // --- Operator Table Configuration ---
   const OPERATOR_SPACING = 40;
@@ -98,10 +76,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 
   const siloTableHeight =
     siloData && siloData.length > 0
-      ? SILO_SPACING +
-        SILO_TITLE_HEIGHT +
-        SILO_HEADER_HEIGHT +
-        siloData.length * SILO_ROW_HEIGHT
+      ? SILO_SPACING + SILO_TITLE_HEIGHT + SILO_HEADER_HEIGHT + siloData.length * SILO_ROW_HEIGHT
       : 0;
 
   // --- Downtime Table Configuration ---
@@ -138,29 +113,29 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 
   // --- Styles ---
   const styles = {
-    headerBg: "#1E293B", // slate-800
-    headerText: "#FFFFFF",
+    headerBg: '#1E293B', // slate-800
+    headerText: '#FFFFFF',
     titleFont: `bold 28px ${FONT_FAMILY}`,
     subtitleFont: `16px ${FONT_FAMILY}`,
-    tableHeaderBg: "#F1F5F9", // slate-100
-    tableHeaderText: "#475569", // slate-600
+    tableHeaderBg: '#F1F5F9', // slate-100
+    tableHeaderText: '#475569', // slate-600
     tableHeaderTextBold: `bold 13px ${FONT_FAMILY}`,
     tableHeaderTextSmall: `11px ${FONT_FAMILY}`,
-    borderColor: "#E2E8F0", // slate-200
+    borderColor: '#E2E8F0', // slate-200
     rowText: `13px ${FONT_FAMILY}`,
     rowTextBold: `bold 13px ${FONT_FAMILY}`,
-    textColor: "#334155", // slate-700
+    textColor: '#334155', // slate-700
   };
 
   // 1. Clear & Draw Background
-  ctx.fillStyle = "#FFFFFF";
+  ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, baseWidth, baseHeight);
 
   // 2. Draw Main Header
   ctx.fillStyle = styles.headerBg;
   ctx.fillRect(0, 0, baseWidth, HEADER_HEIGHT);
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
   ctx.beginPath();
   ctx.moveTo(PADDING, HEADER_HEIGHT - 15);
   ctx.lineTo(PADDING, 15);
@@ -168,7 +143,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   ctx.lineTo(PADDING + 25, HEADER_HEIGHT - 15);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(255, 255, 255, 1)";
+  ctx.fillStyle = 'rgba(255, 255, 255, 1)';
   ctx.beginPath();
   ctx.moveTo(PADDING + 25, HEADER_HEIGHT - 15);
   ctx.lineTo(PADDING + 25, 35);
@@ -179,32 +154,23 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 
   ctx.fillStyle = styles.headerText;
   ctx.font = styles.titleFont;
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
   ctx.fillText(title, PADDING + 65, HEADER_HEIGHT / 2 - 10);
   ctx.font = styles.subtitleFont;
-  ctx.fillText(
-    `SIPOMA - ${t.appSubtitle}`,
-    PADDING + 65,
-    HEADER_HEIGHT / 2 + 15
-  );
+  ctx.fillText(`SIPOMA - ${t.appSubtitle}`, PADDING + 65, HEADER_HEIGHT / 2 + 15);
 
-  ctx.textAlign = "right";
+  ctx.textAlign = 'right';
   ctx.fillText(date, baseWidth - PADDING, HEADER_HEIGHT / 2);
 
   // 3. Draw Parameter Table Headers
   let currentX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
   ctx.fillStyle = styles.tableHeaderBg;
-  ctx.fillRect(
-    PADDING,
-    tableStartY,
-    baseWidth - PADDING * 2,
-    tableHeaderHeight
-  );
+  ctx.fillRect(PADDING, tableStartY, baseWidth - PADDING * 2, tableHeaderHeight);
 
   ctx.font = styles.tableHeaderTextBold;
   ctx.fillStyle = styles.tableHeaderText;
-  ctx.textAlign = "center";
+  ctx.textAlign = 'center';
 
   groupedHeaders.forEach((group: any) => {
     const groupWidth = group.parameters.length * paramColWidth;
@@ -217,21 +183,12 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   let paramX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
   allParams.forEach((param: any) => {
     const text = param.parameter;
-    ctx.fillText(
-      text,
-      paramX + paramColWidth / 2,
-      tableStartY + 45,
-      paramColWidth - 8
-    );
+    ctx.fillText(text, paramX + paramColWidth / 2, tableStartY + 45, paramColWidth - 8);
     paramX += paramColWidth;
   });
 
   ctx.font = styles.tableHeaderTextBold;
-  ctx.fillText(
-    t.hour,
-    PADDING + COL_HOUR_WIDTH / 2,
-    tableStartY + tableHeaderHeight / 2
-  );
+  ctx.fillText(t.hour, PADDING + COL_HOUR_WIDTH / 2, tableStartY + tableHeaderHeight / 2);
   ctx.fillText(
     t.shift,
     PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH / 2,
@@ -244,16 +201,16 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   ctx.fillStyle = styles.textColor;
 
   rows.forEach((row: any, rowIndex: number) => {
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = 'middle';
     if (rowIndex % 2 !== 0) {
-      ctx.fillStyle = "#F8FAFC"; // slate-50
+      ctx.fillStyle = '#F8FAFC'; // slate-50
       ctx.fillRect(PADDING, currentY, baseWidth - PADDING * 2, ROW_HEIGHT);
       ctx.fillStyle = styles.textColor;
     }
 
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
     ctx.fillText(
-      row.hour.toString().padStart(2, "0") + ":00",
+      row.hour.toString().padStart(2, '0') + ':00',
       PADDING + COL_HOUR_WIDTH / 2,
       currentY + ROW_HEIGHT / 2
     );
@@ -266,10 +223,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     paramX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
     allParams.forEach((param: any) => {
       const value = row.values[param.id];
-      const text =
-        typeof value === "number"
-          ? value.toLocaleString("de-DE")
-          : value || "-";
+      const text = typeof value === 'number' ? value.toLocaleString('de-DE') : value || '-';
       ctx.fillText(text, paramX + paramColWidth / 2, currentY + ROW_HEIGHT / 2);
       paramX += paramColWidth;
     });
@@ -282,22 +236,18 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillStyle = styles.tableHeaderBg;
     ctx.fillRect(PADDING, currentY, baseWidth - PADDING * 2, FOOTER_ROW_HEIGHT);
     ctx.fillStyle = styles.tableHeaderText;
-    ctx.textAlign = "right";
+    ctx.textAlign = 'right';
     ctx.fillText(
       statName,
       PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH - 10,
       currentY + FOOTER_ROW_HEIGHT / 2
     );
 
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
     paramX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
     allParams.forEach((param: any) => {
       const value = (values as any)[param.id];
-      ctx.fillText(
-        value || "-",
-        paramX + paramColWidth / 2,
-        currentY + FOOTER_ROW_HEIGHT / 2
-      );
+      ctx.fillText(value || '-', paramX + paramColWidth / 2, currentY + FOOTER_ROW_HEIGHT / 2);
       paramX += paramColWidth;
     });
     currentY += FOOTER_ROW_HEIGHT;
@@ -306,12 +256,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   // 6. Draw Parameter Table Borders
   ctx.strokeStyle = styles.borderColor;
   ctx.lineWidth = 1;
-  ctx.strokeRect(
-    PADDING,
-    tableStartY,
-    baseWidth - PADDING * 2,
-    currentY - tableStartY
-  );
+  ctx.strokeRect(PADDING, tableStartY, baseWidth - PADDING * 2, currentY - tableStartY);
   paramX = PADDING + COL_HOUR_WIDTH;
   ctx.beginPath();
   ctx.moveTo(paramX, tableStartY);
@@ -341,13 +286,9 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     // Draw Title
     ctx.font = `bold 18px ${FONT_FAMILY}`;
     ctx.fillStyle = styles.textColor;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      t.operator_report_title,
-      PADDING,
-      currentY + OPERATOR_TITLE_HEIGHT / 2
-    );
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(t.operator_report_title, PADDING, currentY + OPERATOR_TITLE_HEIGHT / 2);
     currentY += OPERATOR_TITLE_HEIGHT;
 
     // Define columns
@@ -362,12 +303,8 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillRect(PADDING, currentY, operatorTableWidth, OPERATOR_HEADER_HEIGHT);
     ctx.font = styles.tableHeaderTextBold;
     ctx.fillStyle = styles.tableHeaderText;
-    ctx.textAlign = "center";
-    ctx.fillText(
-      t.shift,
-      PADDING + opCols.shift / 2,
-      currentY + OPERATOR_HEADER_HEIGHT / 2
-    );
+    ctx.textAlign = 'center';
+    ctx.fillText(t.shift, PADDING + opCols.shift / 2, currentY + OPERATOR_HEADER_HEIGHT / 2);
     ctx.fillText(
       t.name,
       PADDING + opCols.shift + opCols.name / 2,
@@ -380,22 +317,13 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillStyle = styles.textColor;
     operatorData.forEach((op: any, index: number) => {
       if (index % 2 !== 0) {
-        ctx.fillStyle = "#F8FAFC";
-        ctx.fillRect(
-          PADDING,
-          currentY,
-          operatorTableWidth,
-          OPERATOR_ROW_HEIGHT
-        );
+        ctx.fillStyle = '#F8FAFC';
+        ctx.fillRect(PADDING, currentY, operatorTableWidth, OPERATOR_ROW_HEIGHT);
         ctx.fillStyle = styles.textColor;
       }
 
-      ctx.textAlign = "center";
-      ctx.fillText(
-        op.shift,
-        PADDING + opCols.shift / 2,
-        currentY + OPERATOR_ROW_HEIGHT / 2
-      );
+      ctx.textAlign = 'center';
+      ctx.fillText(op.shift, PADDING + opCols.shift / 2, currentY + OPERATOR_ROW_HEIGHT / 2);
       ctx.fillText(
         op.name,
         PADDING + opCols.shift + opCols.name / 2,
@@ -429,13 +357,9 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     // Draw Title
     ctx.font = `bold 18px ${FONT_FAMILY}`;
     ctx.fillStyle = styles.textColor;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      t.silo_stock_report_title,
-      PADDING,
-      currentY + SILO_TITLE_HEIGHT / 2
-    );
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(t.silo_stock_report_title, PADDING, currentY + SILO_TITLE_HEIGHT / 2);
     currentY += SILO_TITLE_HEIGHT;
 
     // Define columns
@@ -449,10 +373,10 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillRect(PADDING, currentY, siloTableWidth, SILO_HEADER_HEIGHT);
     ctx.font = styles.tableHeaderTextBold;
     ctx.fillStyle = styles.tableHeaderText;
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
 
     let headerX = PADDING + colSiloNameWidth;
-    ["shift_1", "shift_2", "shift_3"].forEach((shiftKey) => {
+    ['shift_1', 'shift_2', 'shift_3'].forEach((shiftKey) => {
       ctx.fillText(t[shiftKey], headerX + shiftColWidth / 2, currentY + 20);
       headerX += shiftColWidth;
     });
@@ -460,31 +384,16 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.font = styles.tableHeaderTextSmall;
     headerX = PADDING + colSiloNameWidth;
     for (let i = 0; i < 3; i++) {
-      ctx.fillText(
-        t.empty_space,
-        headerX + subColWidth / 2,
-        currentY + 45,
-        subColWidth - 4
-      );
+      ctx.fillText(t.empty_space, headerX + subColWidth / 2, currentY + 45, subColWidth - 4);
       headerX += subColWidth;
-      ctx.fillText(
-        t.content,
-        headerX + subColWidth / 2,
-        currentY + 45,
-        subColWidth - 4
-      );
+      ctx.fillText(t.content, headerX + subColWidth / 2, currentY + 45, subColWidth - 4);
       headerX += subColWidth;
-      ctx.fillText(
-        t.percentage,
-        headerX + subColWidth / 2,
-        currentY + 45,
-        subColWidth - 4
-      );
+      ctx.fillText(t.percentage, headerX + subColWidth / 2, currentY + 45, subColWidth - 4);
       headerX += subColWidth;
     }
 
     ctx.font = styles.tableHeaderTextBold;
-    ctx.textAlign = "left";
+    ctx.textAlign = 'left';
     ctx.fillText(t.silo_name, PADDING + 15, currentY + SILO_HEADER_HEIGHT / 2);
     currentY += SILO_HEADER_HEIGHT;
 
@@ -493,12 +402,12 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillStyle = styles.textColor;
     siloData.forEach((sd: any, index: number) => {
       if (index % 2 !== 0) {
-        ctx.fillStyle = "#F8FAFC";
+        ctx.fillStyle = '#F8FAFC';
         ctx.fillRect(PADDING, currentY, siloTableWidth, SILO_ROW_HEIGHT);
         ctx.fillStyle = styles.textColor;
       }
 
-      ctx.textAlign = "left";
+      ctx.textAlign = 'left';
       ctx.fillText(
         sd.master.silo_name,
         PADDING + 15,
@@ -506,31 +415,29 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
         colSiloNameWidth - 20
       );
 
-      ctx.textAlign = "center";
+      ctx.textAlign = 'center';
       let cellX = PADDING + colSiloNameWidth;
-      ["shift1", "shift2", "shift3"].forEach((shiftKey) => {
+      ['shift1', 'shift2', 'shift3'].forEach((shiftKey) => {
         const shiftData = sd[shiftKey];
         const content = shiftData?.content;
         const capacity = sd.master.capacity;
         const percentage =
-          capacity > 0 && typeof content === "number"
-            ? (content / capacity) * 100
-            : 0;
+          capacity > 0 && typeof content === 'number' ? (content / capacity) * 100 : 0;
 
         ctx.fillText(
-          shiftData?.emptySpace?.toLocaleString("de-DE") || "-",
+          shiftData?.emptySpace?.toLocaleString('de-DE') || '-',
           cellX + subColWidth / 2,
           currentY + SILO_ROW_HEIGHT / 2
         );
         cellX += subColWidth;
         ctx.fillText(
-          content?.toLocaleString("de-DE") || "-",
+          content?.toLocaleString('de-DE') || '-',
           cellX + subColWidth / 2,
           currentY + SILO_ROW_HEIGHT / 2
         );
         cellX += subColWidth;
         ctx.fillText(
-          percentage > 0 ? `${percentage.toFixed(1)}%` : "-",
+          percentage > 0 ? `${percentage.toFixed(1)}%` : '-',
           cellX + subColWidth / 2,
           currentY + SILO_ROW_HEIGHT / 2
         );
@@ -543,12 +450,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     // Draw Borders
     ctx.strokeStyle = styles.borderColor;
     ctx.lineWidth = 1;
-    ctx.strokeRect(
-      PADDING,
-      siloTableStartY,
-      siloTableWidth,
-      currentY - siloTableStartY
-    );
+    ctx.strokeRect(PADDING, siloTableStartY, siloTableWidth, currentY - siloTableStartY);
     ctx.beginPath();
     let vLineX = PADDING + colSiloNameWidth;
     ctx.moveTo(vLineX, siloTableStartY + SILO_TITLE_HEIGHT); // Silo Name vertical line
@@ -579,13 +481,9 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     // Draw Title
     ctx.font = `bold 18px ${FONT_FAMILY}`;
     ctx.fillStyle = styles.textColor;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      t.downtime_report_title,
-      PADDING,
-      currentY + DOWNTIME_TITLE_HEIGHT / 2
-    );
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(t.downtime_report_title, PADDING, currentY + DOWNTIME_TITLE_HEIGHT / 2);
     currentY += DOWNTIME_TITLE_HEIGHT;
 
     // Define columns
@@ -597,19 +495,14 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
       pic: 200,
       problem: 0,
     };
-    dtCols.problem =
-      downtimeTableWidth -
-      dtCols.start -
-      dtCols.end -
-      dtCols.duration -
-      dtCols.pic;
+    dtCols.problem = downtimeTableWidth - dtCols.start - dtCols.end - dtCols.duration - dtCols.pic;
 
     const dtHeaders = [
-      { key: "start_time", label: t.start_time, width: dtCols.start },
-      { key: "end_time", label: t.end_time, width: dtCols.end },
-      { key: "duration", label: t.duration, width: dtCols.duration },
-      { key: "pic", label: t.pic, width: dtCols.pic },
-      { key: "problem", label: t.problem, width: dtCols.problem },
+      { key: 'start_time', label: t.start_time, width: dtCols.start },
+      { key: 'end_time', label: t.end_time, width: dtCols.end },
+      { key: 'duration', label: t.duration, width: dtCols.duration },
+      { key: 'pic', label: t.pic, width: dtCols.pic },
+      { key: 'problem', label: t.problem, width: dtCols.problem },
     ];
 
     // Draw Headers
@@ -617,14 +510,10 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillRect(PADDING, currentY, downtimeTableWidth, DOWNTIME_HEADER_HEIGHT);
     ctx.font = styles.tableHeaderTextBold;
     ctx.fillStyle = styles.tableHeaderText;
-    ctx.textAlign = "center";
+    ctx.textAlign = 'center';
     let headerX = PADDING;
     dtHeaders.forEach((header) => {
-      ctx.fillText(
-        header.label,
-        headerX + header.width / 2,
-        currentY + DOWNTIME_HEADER_HEIGHT / 2
-      );
+      ctx.fillText(header.label, headerX + header.width / 2, currentY + DOWNTIME_HEADER_HEIGHT / 2);
       headerX += header.width;
     });
     currentY += DOWNTIME_HEADER_HEIGHT;
@@ -634,13 +523,8 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.fillStyle = styles.textColor;
     downtimeData.forEach((d: CcrDowntimeData, index: number) => {
       if (index % 2 !== 0) {
-        ctx.fillStyle = "#F8FAFC";
-        ctx.fillRect(
-          PADDING,
-          currentY,
-          downtimeTableWidth,
-          DOWNTIME_ROW_HEIGHT
-        );
+        ctx.fillStyle = '#F8FAFC';
+        ctx.fillRect(PADDING, currentY, downtimeTableWidth, DOWNTIME_ROW_HEIGHT);
         ctx.fillStyle = styles.textColor;
       }
 
@@ -649,36 +533,20 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
       const durationText = formatDuration(hours, minutes);
 
       let cellX = PADDING;
-      ctx.textAlign = "center";
+      ctx.textAlign = 'center';
       // FIX: Use snake_case properties `start_time` and `end_time`
-      ctx.fillText(
-        d.start_time,
-        cellX + dtCols.start / 2,
-        currentY + DOWNTIME_ROW_HEIGHT / 2
-      );
+      ctx.fillText(d.start_time, cellX + dtCols.start / 2, currentY + DOWNTIME_ROW_HEIGHT / 2);
       cellX += dtCols.start;
-      ctx.fillText(
-        d.end_time,
-        cellX + dtCols.end / 2,
-        currentY + DOWNTIME_ROW_HEIGHT / 2
-      );
+      ctx.fillText(d.end_time, cellX + dtCols.end / 2, currentY + DOWNTIME_ROW_HEIGHT / 2);
       cellX += dtCols.end;
-      ctx.fillText(
-        durationText,
-        cellX + dtCols.duration / 2,
-        currentY + DOWNTIME_ROW_HEIGHT / 2
-      );
+      ctx.fillText(durationText, cellX + dtCols.duration / 2, currentY + DOWNTIME_ROW_HEIGHT / 2);
       cellX += dtCols.duration;
-      ctx.fillText(
-        d.pic,
-        cellX + dtCols.pic / 2,
-        currentY + DOWNTIME_ROW_HEIGHT / 2
-      );
+      ctx.fillText(d.pic, cellX + dtCols.pic / 2, currentY + DOWNTIME_ROW_HEIGHT / 2);
       cellX += dtCols.pic;
 
-      ctx.textAlign = "left";
+      ctx.textAlign = 'left';
       ctx.fillText(
-        d.problem.replace(/\n/g, " "),
+        d.problem.replace(/\n/g, ' '),
         cellX + 10,
         currentY + DOWNTIME_ROW_HEIGHT / 2,
         dtCols.problem - 20
@@ -709,9 +577,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 
 const ReportPage: React.FC<{ t: any }> = ({ t }) => {
   const { announceToScreenReader } = useAccessibility();
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportImageUrl, setReportImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -719,19 +585,16 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const downloadDropdownRef = useRef<HTMLDivElement>(null);
 
-  const { records: reportSettings, loading: reportSettingsLoading } =
-    useReportSettings();
-  const { records: parameterSettings, loading: parameterSettingsLoading } =
-    useParameterSettings();
+  const { records: reportSettings, loading: reportSettingsLoading } = useReportSettings();
+  const { records: parameterSettings, loading: parameterSettingsLoading } = useParameterSettings();
   const { getDataForDate } = useCcrParameterData();
   const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
   const { getDowntimeForDate } = useCcrDowntimeData();
   const { getDataForDate: getSiloDataForDate } = useCcrSiloData();
-  const { records: siloMasterData, loading: siloMasterLoading } =
-    useSiloCapacities();
+  const { records: siloMasterData, loading: siloMasterLoading } = useSiloCapacities();
 
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('');
 
   const plantCategories = useMemo(() => {
     if (plantUnitsLoading || !plantUnits.length) return [];
@@ -758,8 +621,8 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         setSelectedUnit(unitsForCategory[0]);
       }
     } else {
-      if (selectedUnit !== "") {
-        setSelectedUnit("");
+      if (selectedUnit !== '') {
+        setSelectedUnit('');
       }
     }
   }, [unitsForCategory]); // Simplified dependency
@@ -777,9 +640,9 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         setIsDownloadDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -797,37 +660,29 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
     const filteredSettings = reportSettings.filter((rs) => {
       // FIX: Use snake_case property `parameter_id`
-      const param = paramMap.get(rs.parameter_id) as
-        | ParameterSetting
-        | undefined;
-      return (
-        param &&
-        param.unit === selectedUnit &&
-        param.category === selectedCategory
-      );
+      const param = paramMap.get(rs.parameter_id) as ParameterSetting | undefined;
+      return param && param.unit === selectedUnit && param.category === selectedCategory;
     });
 
     const settingsWithDetails = filteredSettings
       .map((rs) => ({
         ...rs,
         // FIX: Use snake_case property `parameter_id`
-        parameter: paramMap.get(rs.parameter_id) as
-          | ParameterSetting
-          | undefined,
+        parameter: paramMap.get(rs.parameter_id) as ParameterSetting | undefined,
       }))
-      .filter(
-        (rs): rs is typeof rs & { parameter: ParameterSetting } =>
-          !!rs.parameter
-      );
+      .filter((rs): rs is typeof rs & { parameter: ParameterSetting } => !!rs.parameter);
 
-    const grouped = settingsWithDetails.reduce((acc, current) => {
-      const category = current.category;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(current.parameter);
-      return acc;
-    }, {} as Record<string, ParameterSetting[]>);
+    const grouped = settingsWithDetails.reduce(
+      (acc, current) => {
+        const category = current.category;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(current.parameter);
+        return acc;
+      },
+      {} as Record<string, ParameterSetting[]>
+    );
 
     return Object.entries(grouped).map(([category, parameters]) => ({
       category,
@@ -856,9 +711,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
     // Validasi filter sebelum generate
     if (!selectedCategory || !selectedUnit) {
-      console.warn(
-        "Category and unit must be selected before generating report"
-      );
+      console.warn('Category and unit must be selected before generating report');
       return;
     }
 
@@ -871,14 +724,10 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       // FIX: await async data fetching functions
       const ccrDataForDate = await getDataForDate(selectedDate);
       // FIX: Use snake_case property `parameter_id`
-      const ccrDataMap = new Map(
-        ccrDataForDate.map((d) => [d.parameter_id, d])
-      );
+      const ccrDataMap = new Map(ccrDataForDate.map((d) => [d.parameter_id, d]));
 
       const downtimeDataForDate = getDowntimeForDate(selectedDate);
-      const filteredDowntimeData = downtimeDataForDate.filter(
-        (d) => d.unit === selectedUnit
-      );
+      const filteredDowntimeData = downtimeDataForDate.filter((d) => d.unit === selectedUnit);
 
       // FIX: await async data fetching functions
       const allSiloDataForDate = await getSiloDataForDate(selectedDate);
@@ -886,39 +735,29 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       const filteredSiloData = allSiloDataForDate
         .filter((data) => {
           // FIX: Use snake_case property `silo_id`
-          const master = siloMasterMap.get(data.silo_id) as
-            | SiloCapacity
-            | undefined;
+          const master = siloMasterMap.get(data.silo_id) as SiloCapacity | undefined;
           return master && master.unit === selectedUnit;
         })
         .map((data) => ({
           ...data,
           master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
         })) // FIX: Use snake_case property `silo_id`
-        .filter(
-          (data): data is typeof data & { master: SiloCapacity } =>
-            !!data.master
-        );
+        .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
 
-      const operatorParam = parameterSettings.find(
-        (p) => p.parameter === "Operator Name"
-      );
+      const operatorParam = parameterSettings.find((p) => p.parameter === 'Operator Name');
       let operatorData: { shift: string; name: string }[] = [];
 
       if (operatorParam) {
-        const operatorDataRecord = ccrDataMap.get(operatorParam.id) as
-          | CcrParameterData
-          | undefined;
+        const operatorDataRecord = ccrDataMap.get(operatorParam.id) as CcrParameterData | undefined;
 
         const getOperatorForShift = (hours: number[]) => {
-          if (!operatorDataRecord) return "-";
+          if (!operatorDataRecord) return '-';
           for (const hour of hours) {
             // FIX: Use snake_case property `hourly_values`
             const operator = operatorDataRecord.hourly_values[hour];
-            if (operator && String(operator).trim() !== "")
-              return String(operator);
+            if (operator && String(operator).trim() !== '') return String(operator);
           }
-          return "-";
+          return '-';
         };
 
         operatorData = [
@@ -945,10 +784,8 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         const values: Record<string, string | number> = {};
         allParams.forEach((param) => {
           // FIX: Use snake_case property `hourly_values`
-          const paramData = ccrDataMap.get(param.id) as
-            | CcrParameterData
-            | undefined;
-          values[param.id] = paramData?.hourly_values[hour] ?? "";
+          const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
+          values[param.id] = paramData?.hourly_values[hour] ?? '';
         });
         return {
           hour,
@@ -966,21 +803,17 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       allParams.forEach((param) => {
         // FIX: Use snake_case property `data_type`
         if (param.data_type === ParameterDataType.NUMBER) {
-          const values = rows
-            .map((r) => Number(r.values[param.id]))
-            .filter((v) => !isNaN(v));
+          const values = rows.map((r) => Number(r.values[param.id])).filter((v) => !isNaN(v));
           if (values.length > 0) {
             footerStats[t.average][param.id] = (
               values.reduce((a, b) => a + b, 0) / values.length
-            ).toLocaleString("de-DE", { maximumFractionDigits: 2 });
-            footerStats[t.min][param.id] = Math.min(...values).toLocaleString(
-              "de-DE",
-              { maximumFractionDigits: 2 }
-            );
-            footerStats[t.max][param.id] = Math.max(...values).toLocaleString(
-              "de-DE",
-              { maximumFractionDigits: 2 }
-            );
+            ).toLocaleString('de-DE', { maximumFractionDigits: 2 });
+            footerStats[t.min][param.id] = Math.min(...values).toLocaleString('de-DE', {
+              maximumFractionDigits: 2,
+            });
+            footerStats[t.max][param.id] = Math.max(...values).toLocaleString('de-DE', {
+              maximumFractionDigits: 2,
+            });
           }
         }
       });
@@ -998,9 +831,9 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
       drawReportOnCanvas(canvasRef.current, dataForCanvas, t);
 
-      setReportImageUrl(canvasRef.current.toDataURL("image/png"));
+      setReportImageUrl(canvasRef.current.toDataURL('image/png'));
     } catch (error) {
-      console.error("Error generating report:", error);
+      console.error('Error generating report:', error);
       // Could add toast notification here for user feedback
     } finally {
       setIsLoading(false);
@@ -1020,7 +853,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
   const handleDownloadImage = () => {
     if (!reportImageUrl) return;
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.download = `SIPOMA_Report_${selectedUnit}_${selectedDate}.png`;
     link.href = reportImageUrl;
     link.click();
@@ -1032,9 +865,9 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({
-      orientation: "landscape",
-      unit: "px",
-      format: "a4",
+      orientation: 'landscape',
+      unit: 'px',
+      format: 'a4',
     });
 
     const img = new Image();
@@ -1056,12 +889,12 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
       const x = (pdfWidth - imgWidth) / 2;
       const y = (pdfHeight - imgHeight) / 2;
 
-      pdf.addImage(reportImageUrl, "PNG", x, y, imgWidth, imgHeight);
+      pdf.addImage(reportImageUrl, 'PNG', x, y, imgWidth, imgHeight);
 
       // Generate filename with Plant Unit, Date, Month, Year, Hour
       const now = new Date();
-      const [year, month, day] = selectedDate.split("-");
-      const hour = now.getHours().toString().padStart(2, "0");
+      const [year, month, day] = selectedDate.split('-');
+      const hour = now.getHours().toString().padStart(2, '0');
       const filename = `Report_${selectedUnit}_${day}_${month}_${year}_${hour}.pdf`;
 
       pdf.save(filename);
@@ -1074,15 +907,15 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
     canvasRef.current.toBlob(async (blob) => {
       if (blob) {
         try {
-          const item = new ClipboardItem({ "image/png": blob });
+          const item = new ClipboardItem({ 'image/png': blob });
           await navigator.clipboard.write([item]);
           setIsCopied(true);
           setTimeout(() => setIsCopied(false), 2000);
         } catch (error) {
-          console.error("Failed to copy image: ", error);
+          console.error('Failed to copy image: ', error);
         }
       }
-    }, "image/png");
+    }, 'image/png');
   }, []);
 
   return (
@@ -1159,9 +992,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
                 ariaLabel={t.generate_report_button}
                 loading={isLoading}
               >
-                {isLoading
-                  ? t.generating_report_message
-                  : t.generate_report_button}
+                {isLoading ? t.generating_report_message : t.generate_report_button}
               </EnhancedButton>
               {reportImageUrl && (
                 <>
@@ -1171,9 +1002,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
                     variant="secondary"
                     size="md"
                     className="w-full sm:w-auto"
-                    ariaLabel={
-                      isCopied ? t.copied_button_text : t.copy_image_button
-                    }
+                    ariaLabel={isCopied ? t.copied_button_text : t.copy_image_button}
                   >
                     <ClipboardIcon className="w-5 h-5" />
                     {isCopied ? t.copied_button_text : t.copy_image_button}
@@ -1228,8 +1057,8 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
           <div className="text-center text-slate-500 dark:text-slate-400">
             <h3 className="text-lg font-semibold">{t.no_report_parameters}</h3>
             <p>
-              Please configure parameters for the selected unit '{selectedUnit}'
-              in Plant Operations - Master Data.
+              Please configure parameters for the selected unit '&apos;{selectedUnit}&apos;' in
+              Plant Operations - Master Data.
             </p>
           </div>
         )}
@@ -1250,10 +1079,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         )}
         {!isLoading && !reportImageUrl && reportConfig.length > 0 && (
           <div className="text-center text-slate-400 dark:text-slate-500">
-            <p>
-              Select filters and click "Generate Report" to view the daily
-              operational report.
-            </p>
+            <p>Select filters and click "Generate Report" to view the daily operational report.</p>
           </div>
         )}
       </div>

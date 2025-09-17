@@ -1,8 +1,8 @@
-import React, { memo } from "react";
-import LazyChart from "../../../../components/LazyChart";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import React, { memo } from 'react';
+import LazyChart from '../../../../components/LazyChart';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 interface WorkInstructionsChartProps {
   data: any[];
@@ -30,7 +30,7 @@ const WorkInstructionsChart = memo<WorkInstructionsChartProps>(({ data }) => (
   </ResponsiveContainer>
 ));
 
-WorkInstructionsChart.displayName = "WorkInstructionsChart";
+WorkInstructionsChart.displayName = 'WorkInstructionsChart';
 
 interface WorkInstructionsSectionProps {
   workInstructionsSummary: any[];
@@ -41,9 +41,7 @@ const WorkInstructionsSection: React.FC<WorkInstructionsSectionProps> = ({
 }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold mb-4">
-        Work Instructions by Activity
-      </h3>
+      <h3 className="text-xl font-semibold mb-4">Work Instructions by Activity</h3>
       {workInstructionsSummary.length > 0 ? (
         <LazyChart>
           <WorkInstructionsChart data={workInstructionsSummary} />

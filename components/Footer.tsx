@@ -1,13 +1,13 @@
-import React from "react";
-import FlagENIcon from "./icons/FlagENIcon";
-import FlagIDIcon from "./icons/FlagIDIcon";
-import { Language } from "../App";
+import React from 'react';
+import FlagENIcon from './icons/FlagENIcon';
+import FlagIDIcon from './icons/FlagIDIcon';
+import { Language } from '../App';
 
 // Import Design System
-import { designSystem } from "../utils/designSystem";
+import { designSystem } from '../utils/designSystem';
 
 // Import Typography Components
-import { Body, Link } from "./ui/Typography";
+import { Body, Link } from './ui/Typography';
 
 interface FooterProps {
   t: any;
@@ -15,11 +15,7 @@ interface FooterProps {
   onLanguageChange: (lang: Language) => void;
 }
 
-const Footer: React.FC<FooterProps> = ({
-  t,
-  currentLanguage,
-  onLanguageChange,
-}) => {
+const Footer: React.FC<FooterProps> = ({ t, currentLanguage, onLanguageChange }) => {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -50,22 +46,18 @@ const Footer: React.FC<FooterProps> = ({
             </a>
             <div className="flex items-center space-x-2 pl-4 border-l border-slate-200 dark:border-slate-700">
               <button
-                onClick={() => onLanguageChange("en")}
+                onClick={() => onLanguageChange('en')}
                 className={`transition-opacity duration-200 ${
-                  currentLanguage === "en"
-                    ? "opacity-100"
-                    : "opacity-60 hover:opacity-100"
+                  currentLanguage === 'en' ? 'opacity-100' : 'opacity-60 hover:opacity-100'
                 }`}
                 aria-label="Switch to English"
               >
                 <FlagENIcon className="w-6 h-auto rounded-sm" />
               </button>
               <button
-                onClick={() => onLanguageChange("id")}
+                onClick={() => onLanguageChange('id')}
                 className={`transition-opacity duration-200 ${
-                  currentLanguage === "id"
-                    ? "opacity-100"
-                    : "opacity-60 hover:opacity-100"
+                  currentLanguage === 'id' ? 'opacity-100' : 'opacity-60 hover:opacity-100'
                 }`}
                 aria-label="Switch to Indonesian"
               >

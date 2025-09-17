@@ -1,9 +1,9 @@
 export default {
-  testEnvironment: "jsdom",
-  roots: ["<rootDir>/tests"],
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
+  testEnvironment: 'jsdom',
+  roots: ['<rootDir>/tests'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
-    "^.+\\.(ts|tsx)$": "ts-jest",
+    '^.+\\.(ts|tsx)$': 'ts-jest',
   },
-  setupFilesAfterEnv: ["@testing-library/jest-dom"],
+  setupFilesAfterEnv: ['@testing-library/jest-dom'],
 };

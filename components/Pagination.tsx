@@ -1,6 +1,6 @@
-import React from "react";
-import ChevronLeftIcon from "./icons/ChevronLeftIcon";
-import ChevronRightIcon from "./icons/ChevronRightIcon";
+import React from 'react';
+import ChevronLeftIcon from './icons/ChevronLeftIcon';
+import ChevronRightIcon from './icons/ChevronRightIcon';
 
 interface PaginationProps {
   currentPage: number;
@@ -8,11 +8,7 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-}) => {
+const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   if (totalPages <= 1) {
     return null;
   }
@@ -40,7 +36,7 @@ const Pagination: React.FC<PaginationProps> = ({
       if (startPage > 1) {
         pageNumbers.push(1);
         if (startPage > 2) {
-          pageNumbers.push("...");
+          pageNumbers.push('...');
         }
       }
 
@@ -50,7 +46,7 @@ const Pagination: React.FC<PaginationProps> = ({
 
       if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
-          pageNumbers.push("...");
+          pageNumbers.push('...');
         }
         pageNumbers.push(totalPages);
       }
@@ -74,14 +70,14 @@ const Pagination: React.FC<PaginationProps> = ({
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         {pageNumbers.map((page, index) =>
-          typeof page === "number" ? (
+          typeof page === 'number' ? (
             <button
               key={index}
               onClick={() => onPageChange(page)}
               className={`inline-flex items-center px-4 py-2 text-sm font-medium ${
                 currentPage === page
-                  ? "z-10 bg-red-50 dark:bg-red-900/30 border-red-500 dark:border-red-400 text-red-600 dark:text-red-400"
-                  : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  ? 'z-10 bg-red-50 dark:bg-red-900/30 border-red-500 dark:border-red-400 text-red-600 dark:text-red-400'
+                  : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
               } border transition-colors`}
             >
               {page}

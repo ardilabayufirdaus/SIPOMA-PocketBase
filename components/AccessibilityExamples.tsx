@@ -3,7 +3,7 @@
  * Demonstrates WCAG 2.1 AA compliant components and patterns
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   EnhancedButton,
   EnhancedInput,
@@ -18,13 +18,13 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "./ui/EnhancedComponents";
+} from './ui/EnhancedComponents';
 
 export const AccessibilityExamples: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+    name: '',
+    email: '',
+    message: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,23 +38,25 @@ export const AccessibilityExamples: React.FC = () => {
 
   // Enhanced keyboard navigation for menu items
   const menuItems = [
-    { id: "home", label: "Home", href: "#home" },
-    { id: "about", label: "About", href: "#about" },
-    { id: "services", label: "Services", href: "#services" },
-    { id: "contact", label: "Contact", href: "#contact" },
+    { id: 'home', label: 'Home', href: '#home' },
+    { id: 'about', label: 'About', href: '#about' },
+    { id: 'services', label: 'Services', href: '#services' },
+    { id: 'contact', label: 'Contact', href: '#contact' },
   ];
 
-  const { focusedIndex, selectedIndex, isFocused, isSelected } =
-    useEnhancedKeyboardNavigation(menuItems, (item) => {
-      announceToScreenReader(`Navigated to ${item.label}`, "polite");
-    });
+  const { focusedIndex, selectedIndex, isFocused, isSelected } = useEnhancedKeyboardNavigation(
+    menuItems,
+    (item) => {
+      announceToScreenReader(`Navigated to ${item.label}`, 'polite');
+    }
+  );
 
   const handleInputChange = (field: string) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -62,17 +64,17 @@ export const AccessibilityExamples: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = 'Name is required';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = 'Please enter a valid email address';
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = "Message is required";
+      newErrors.message = 'Message is required';
     }
 
     setErrors(newErrors);
@@ -83,10 +85,7 @@ export const AccessibilityExamples: React.FC = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      announceToScreenReader(
-        "Please correct the errors in the form",
-        "assertive"
-      );
+      announceToScreenReader('Please correct the errors in the form', 'assertive');
       return;
     }
 
@@ -99,7 +98,7 @@ export const AccessibilityExamples: React.FC = () => {
         if (prev >= 100) {
           clearInterval(interval);
           setIsSubmitting(false);
-          announceToScreenReader("Form submitted successfully!", "assertive");
+          announceToScreenReader('Form submitted successfully!', 'assertive');
           return 100;
         }
         return prev + 10;
@@ -115,8 +114,8 @@ export const AccessibilityExamples: React.FC = () => {
       {/* Screen Reader Status */}
       <ScreenReaderAnnouncement
         message={`Current theme: ${colorScheme}, High contrast: ${
-          isHighContrast ? "enabled" : "disabled"
-        }, Reduced motion: ${prefersReducedMotion ? "enabled" : "disabled"}`}
+          isHighContrast ? 'enabled' : 'disabled'
+        }, Reduced motion: ${prefersReducedMotion ? 'enabled' : 'disabled'}`}
         priority="polite"
       />
 
@@ -139,11 +138,11 @@ export const AccessibilityExamples: React.FC = () => {
                     href={item.href}
                     role="menuitem"
                     tabIndex={isFocused(index) ? 0 : -1}
-                    aria-current={isSelected(index) ? "page" : undefined}
+                    aria-current={isSelected(index) ? 'page' : undefined}
                     className={cn(
-                      "px-4 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500",
-                      isFocused(index) && "bg-primary-100 text-primary-700",
-                      isSelected(index) && "bg-primary-600 text-white"
+                      'px-4 py-2 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500',
+                      isFocused(index) && 'bg-primary-100 text-primary-700',
+                      isSelected(index) && 'bg-primary-600 text-white'
                     )}
                   >
                     {item.label}
@@ -181,24 +180,24 @@ export const AccessibilityExamples: React.FC = () => {
               <EnhancedInput
                 label="Full Name"
                 value={formData.name}
-                onChange={handleInputChange("name")}
+                onChange={handleInputChange('name')}
                 placeholder="Enter your full name"
                 required={true}
                 error={errors.name}
                 ariaLabel="Enter your full name"
-                ariaDescribedBy={errors.name ? "name-error" : "name-helper"}
+                ariaDescribedBy={errors.name ? 'name-error' : 'name-helper'}
               />
 
               <EnhancedInput
                 label="Email Address"
                 type="email"
                 value={formData.email}
-                onChange={handleInputChange("email")}
+                onChange={handleInputChange('email')}
                 placeholder="Enter your email address"
                 required={true}
                 error={errors.email}
                 ariaLabel="Enter your email address"
-                ariaDescribedBy={errors.email ? "email-error" : "email-helper"}
+                ariaDescribedBy={errors.email ? 'email-error' : 'email-helper'}
               />
             </div>
 
@@ -215,19 +214,17 @@ export const AccessibilityExamples: React.FC = () => {
               <textarea
                 id="message"
                 value={formData.message}
-                onChange={(e) => handleInputChange("message")(e.target.value)}
+                onChange={(e) => handleInputChange('message')(e.target.value)}
                 placeholder="Enter your message"
                 required
                 aria-invalid={!!errors.message}
-                aria-describedby={
-                  errors.message ? "message-error" : "message-helper"
-                }
+                aria-describedby={errors.message ? 'message-error' : 'message-helper'}
                 className={cn(
-                  "w-full px-4 py-3 border rounded-md transition-colors",
-                  "focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500",
+                  'w-full px-4 py-3 border rounded-md transition-colors',
+                  'focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500',
                   errors.message &&
-                    "border-error-500 focus:border-error-500 focus:ring-error-500/20",
-                  "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white"
+                    'border-error-500 focus:border-error-500 focus:ring-error-500/20',
+                  'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white'
                 )}
                 rows={4}
               />
@@ -258,7 +255,7 @@ export const AccessibilityExamples: React.FC = () => {
                 ariaLabel="Submit contact form"
                 className="flex-1"
               >
-                {isSubmitting ? "Submitting..." : "Submit Form"}
+                {isSubmitting ? 'Submitting...' : 'Submit Form'}
               </EnhancedButton>
 
               <EnhancedButton
@@ -266,9 +263,9 @@ export const AccessibilityExamples: React.FC = () => {
                 variant="outline"
                 size="lg"
                 onClick={() => {
-                  setFormData({ name: "", email: "", message: "" });
+                  setFormData({ name: '', email: '', message: '' });
                   setErrors({});
-                  announceToScreenReader("Form cleared", "polite");
+                  announceToScreenReader('Form cleared', 'polite');
                 }}
                 ariaLabel="Clear form"
               >
@@ -292,7 +289,7 @@ export const AccessibilityExamples: React.FC = () => {
               <span className="font-medium">
                 What accessibility features are included?
                 <span className="sr-only">
-                  {isDisclosureOpen ? " Click to collapse" : " Click to expand"}
+                  {isDisclosureOpen ? ' Click to collapse' : ' Click to expand'}
                 </span>
               </span>
             }
@@ -317,26 +314,15 @@ export const AccessibilityExamples: React.FC = () => {
           </h2>
 
           <div className="flex flex-wrap gap-4">
-            <AccessibleTooltip
-              content="This is a primary action button"
-              position="top"
-            >
+            <AccessibleTooltip content="This is a primary action button" position="top">
               <EnhancedButton variant="primary">Primary Action</EnhancedButton>
             </AccessibleTooltip>
 
-            <AccessibleTooltip
-              content="This button performs a secondary action"
-              position="bottom"
-            >
-              <EnhancedButton variant="secondary">
-                Secondary Action
-              </EnhancedButton>
+            <AccessibleTooltip content="This button performs a secondary action" position="bottom">
+              <EnhancedButton variant="secondary">Secondary Action</EnhancedButton>
             </AccessibleTooltip>
 
-            <AccessibleTooltip
-              content="Warning: This action cannot be undone"
-              position="right"
-            >
+            <AccessibleTooltip content="Warning: This action cannot be undone" position="right">
               <EnhancedButton variant="warning">Warning Action</EnhancedButton>
             </AccessibleTooltip>
           </div>
@@ -351,14 +337,9 @@ export const AccessibilityExamples: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <EnhancedCard className="p-6">
               <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 bg-success-500 rounded-full"
-                  aria-hidden="true"
-                ></div>
+                <div className="w-3 h-3 bg-success-500 rounded-full" aria-hidden="true"></div>
                 <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    System Status
-                  </h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">System Status</h3>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     All systems operational
                   </p>
@@ -368,14 +349,9 @@ export const AccessibilityExamples: React.FC = () => {
 
             <EnhancedCard className="p-6">
               <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 bg-warning-500 rounded-full"
-                  aria-hidden="true"
-                ></div>
+                <div className="w-3 h-3 bg-warning-500 rounded-full" aria-hidden="true"></div>
                 <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    Maintenance
-                  </h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">Maintenance</h3>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     Scheduled for tonight
                   </p>
@@ -385,14 +361,9 @@ export const AccessibilityExamples: React.FC = () => {
 
             <EnhancedCard className="p-6">
               <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 bg-error-500 rounded-full"
-                  aria-hidden="true"
-                ></div>
+                <div className="w-3 h-3 bg-error-500 rounded-full" aria-hidden="true"></div>
                 <div>
-                  <h3 className="font-semibold text-neutral-900 dark:text-white">
-                    Alert
-                  </h3>
+                  <h3 className="font-semibold text-neutral-900 dark:text-white">Alert</h3>
                   <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     Check system logs
                   </p>
@@ -408,7 +379,7 @@ export const AccessibilityExamples: React.FC = () => {
 
 // Utility function for className concatenation
 const cn = (...classes: (string | undefined | null | boolean)[]): string => {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 };
 
 export default AccessibilityExamples;

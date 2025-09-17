@@ -1,5 +1,5 @@
-import React from "react";
-import UserPermissionManagerNew from "../components/UserPermissionManagerNew";
+import React from 'react';
+import UserPermissionManagerNew from '../components/UserPermissionManagerNew';
 
 interface UserRolesPageProps {
   users: any[];
@@ -7,11 +7,7 @@ interface UserRolesPageProps {
   t: any;
 }
 
-const UserRolesPage: React.FC<UserRolesPageProps> = ({
-  users,
-  plantUnits,
-  t,
-}) => {
+const UserRolesPage: React.FC<UserRolesPageProps> = ({ users, plantUnits, t }) => {
   return (
     <div className="p-6">
       <UserPermissionManagerNew language="en" />

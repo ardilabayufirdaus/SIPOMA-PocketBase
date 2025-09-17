@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface UserActivityPageProps {
   users: any[];
@@ -14,8 +14,7 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ users, t }) => {
             User Activity Monitoring
           </h2>
           <p className="text-slate-600 dark:text-slate-400">
-            This feature is under development. User activity monitoring will be
-            available soon.
+            This feature is under development. User activity monitoring will be available soon.
           </p>
         </div>
       </div>

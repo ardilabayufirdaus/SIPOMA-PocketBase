@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import { ParameterSetting } from "../../types";
+import React, { useEffect, useRef } from 'react';
+import { ParameterSetting } from '../../types';
 
 interface CcrTableFooterProps {
   filteredParameterSettings: ParameterSetting[];
@@ -34,13 +34,10 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       }
     };
 
-    mainTableScrollElement.addEventListener("scroll", handleMainTableScroll);
+    mainTableScrollElement.addEventListener('scroll', handleMainTableScroll);
 
     return () => {
-      mainTableScrollElement.removeEventListener(
-        "scroll",
-        handleMainTableScroll
-      );
+      mainTableScrollElement.removeEventListener('scroll', handleMainTableScroll);
     };
   }, [mainTableScrollElement]);
 
@@ -50,12 +47,12 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: t.total_shift_3_cont,
       data: parameterShiftFooterData.shift3Cont,
-      className: "border-t-2 border-slate-300",
+      className: 'border-t-2 border-slate-300',
     },
     {
       label: `${t.total_shift_3_cont} Selisih`,
       data: parameterShiftDifferenceData.shift3Cont,
-      className: "bg-slate-50 dark:bg-slate-700",
+      className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
       label: t.total_shift_1,
@@ -64,7 +61,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: `${t.total_shift_1} Selisih`,
       data: parameterShiftDifferenceData.shift1,
-      className: "bg-slate-50 dark:bg-slate-700",
+      className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
       label: t.total_shift_2,
@@ -73,7 +70,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: `${t.total_shift_2} Selisih`,
       data: parameterShiftDifferenceData.shift2,
-      className: "bg-slate-50 dark:bg-slate-700",
+      className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
       label: t.total_shift_3,
@@ -82,33 +79,33 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: `${t.total_shift_3} Selisih`,
       data: parameterShiftDifferenceData.shift3,
-      className: "bg-slate-50 dark:bg-slate-700",
+      className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
       label: t.total,
       data: parameterFooterData,
-      dataKey: "total",
-      className: "border-t-2 border-slate-300",
+      dataKey: 'total',
+      className: 'border-t-2 border-slate-300',
     },
     {
       label: t.average,
       data: parameterFooterData,
-      dataKey: "avg",
+      dataKey: 'avg',
     },
     {
       label: t.min,
       data: parameterFooterData,
-      dataKey: "min",
+      dataKey: 'min',
     },
     {
       label: t.max,
       data: parameterFooterData,
-      dataKey: "max",
+      dataKey: 'max',
     },
     {
-      label: "Counter Total",
+      label: 'Counter Total',
       data: counterTotalData,
-      className: "border-t-2 border-slate-300 bg-blue-50 dark:bg-blue-900/20",
+      className: 'border-t-2 border-slate-300 bg-blue-50 dark:bg-blue-900/20',
     },
   ];
 
@@ -116,16 +113,16 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     <div className="ccr-table-footer-container" ref={footerRef}>
       <table className="ccr-table" style={{ marginBottom: 0 }}>
         <colgroup>
-          <col style={{ width: "90px" }} />
-          <col style={{ width: "140px" }} />
-          <col style={{ width: "200px" }} />
+          <col style={{ width: '90px' }} />
+          <col style={{ width: '140px' }} />
+          <col style={{ width: '200px' }} />
           {filteredParameterSettings.map((_, index) => (
-            <col key={index} style={{ width: "160px" }} />
+            <col key={index} style={{ width: '160px' }} />
           ))}
         </colgroup>
         <tbody role="rowgroup">
           {footerRows.map((row, rowIndex) => (
-            <tr key={rowIndex} className={row.className || ""} role="row">
+            <tr key={rowIndex} className={row.className || ''} role="row">
               <td
                 colSpan={3}
                 className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
@@ -146,10 +143,10 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
                   <td
                     key={param.id}
                     className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
-                    style={{ width: "160px", minWidth: "160px" }}
+                    style={{ width: '160px', minWidth: '160px' }}
                     role="gridcell"
                   >
-                    {value !== undefined ? formatStatValue(value) : "-"}
+                    {value !== undefined ? formatStatValue(value) : '-'}
                   </td>
                 );
               })}

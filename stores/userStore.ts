@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { supabase } from "../utils/supabaseClient";
-import { User } from "../types";
-import { SHA256 } from "crypto-js";
+import { create } from 'zustand';
+import { supabase } from '../utils/supabaseClient';
+import { User } from '../types';
+import { SHA256 } from 'crypto-js';
 
 interface UserManagementState {
   users: User[];
@@ -32,7 +32,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -51,7 +51,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
           )
         `
         )
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -78,7 +78,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
       set({ users: transformedUsers });
     } catch (err: any) {
-      set({ error: err.message || "Failed to fetch users" });
+      set({ error: err.message || 'Failed to fetch users' });
     } finally {
       set({ isLoading: false });
     }
@@ -86,29 +86,23 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
   fetchRoles: async () => {
     try {
-      const { data, error } = await supabase
-        .from("roles")
-        .select("*")
-        .order("name");
+      const { data, error } = await supabase.from('roles').select('*').order('name');
 
       if (error) throw error;
       set({ roles: data || [] });
     } catch (err: any) {
-      set({ error: err.message || "Failed to fetch roles" });
+      set({ error: err.message || 'Failed to fetch roles' });
     }
   },
 
   fetchPermissions: async () => {
     try {
-      const { data, error } = await supabase
-        .from("permissions")
-        .select("*")
-        .order("module_name");
+      const { data, error } = await supabase.from('permissions').select('*').order('module_name');
 
       if (error) throw error;
       set({ permissions: data || [] });
     } catch (err: any) {
-      set({ error: err.message || "Failed to fetch permissions" });
+      set({ error: err.message || 'Failed to fetch permissions' });
     }
   },
 
@@ -116,12 +110,12 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       if (!userData.password) {
-        throw new Error("Password is required for new users");
+        throw new Error('Password is required for new users');
       }
       const passwordHash = SHA256(userData.password).toString();
 
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .insert({
           username: userData.username,
           password_hash: passwordHash,
@@ -137,7 +131,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       await get().fetchUsers();
       return data;
     } catch (err: any) {
-      set({ error: err.message || "Failed to create user" });
+      set({ error: err.message || 'Failed to create user' });
       throw err;
     } finally {
       set({ isLoading: false });
@@ -160,9 +154,9 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       }
 
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .update(updateData)
-        .eq("id", userId)
+        .eq('id', userId)
         .select()
         .single();
 
@@ -171,7 +165,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       await get().fetchUsers();
       return data;
     } catch (err: any) {
-      set({ error: err.message || "Failed to update user" });
+      set({ error: err.message || 'Failed to update user' });
       throw err;
     } finally {
       set({ isLoading: false });
@@ -181,13 +175,13 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
   deleteUser: async (userId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const { error } = await supabase.from("users").delete().eq("id", userId);
+      const { error } = await supabase.from('users').delete().eq('id', userId);
 
       if (error) throw error;
 
       await get().fetchUsers();
     } catch (err: any) {
-      set({ error: err.message || "Failed to delete user" });
+      set({ error: err.message || 'Failed to delete user' });
       throw err;
     } finally {
       set({ isLoading: false });
@@ -198,7 +192,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Remove existing permissions
-      await supabase.from("user_permissions").delete().eq("user_id", userId);
+      await supabase.from('user_permissions').delete().eq('user_id', userId);
 
       // Add new permissions
       if (permissionIds.length > 0) {
@@ -207,16 +201,14 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
           permission_id: permissionId,
         }));
 
-        const { error } = await supabase
-          .from("user_permissions")
-          .insert(permissionInserts);
+        const { error } = await supabase.from('user_permissions').insert(permissionInserts);
 
         if (error) throw error;
       }
 
       await get().fetchUsers();
     } catch (err: any) {
-      set({ error: err.message || "Failed to assign permissions" });
+      set({ error: err.message || 'Failed to assign permissions' });
       throw err;
     } finally {
       set({ isLoading: false });

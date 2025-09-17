@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { CcrSiloData } from "../../types";
+import React, { useCallback } from 'react';
+import { CcrSiloData } from '../../types';
 
 interface CcrSiloDataTableProps {
   t: any;
@@ -10,19 +10,15 @@ interface CcrSiloDataTableProps {
   parseInputValue: (value: string) => number | null;
   handleSiloDataChange: (
     siloId: string,
-    shift: "shift1" | "shift2" | "shift3",
-    field: "emptySpace" | "content",
+    shift: 'shift1' | 'shift2' | 'shift3',
+    field: 'emptySpace' | 'content',
     value: string
   ) => void;
-  getInputRef: (
-    table: "silo" | "parameter",
-    row: number,
-    col: number
-  ) => string;
+  getInputRef: (table: 'silo' | 'parameter', row: number, col: number) => string;
   setInputRef: (key: string, element: HTMLInputElement | null) => void;
   handleKeyDown: (
     e: React.KeyboardEvent,
-    table: "silo" | "parameter",
+    table: 'silo' | 'parameter',
     currentRow: number,
     currentCol: number
   ) => void;
@@ -97,7 +93,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                   <th
                     key={`p-${i}`}
                     className={`px-2 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider ${
-                      i < 2 ? "border-r" : ""
+                      i < 2 ? 'border-r' : ''
                     }`}
                   >
                     {t.percentage}
@@ -108,10 +104,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
             <tbody className="bg-white divide-y divide-slate-200">
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="text-center py-10 text-slate-500 animate-pulse"
-                  >
+                  <td colSpan={10} className="text-center py-10 text-slate-500 animate-pulse">
                     Loading data...
                   </td>
                 </tr>
@@ -120,11 +113,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                   const masterSilo = siloMasterMap.get(siloData.silo_id);
                   if (!masterSilo) return null;
 
-                  const shifts: ("shift1" | "shift2" | "shift3")[] = [
-                    "shift1",
-                    "shift2",
-                    "shift3",
-                  ];
+                  const shifts: ('shift1' | 'shift2' | 'shift3')[] = ['shift1', 'shift2', 'shift3'];
 
                   return (
                     <tr key={siloData.id} className="hover:bg-slate-50">
@@ -135,7 +124,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                         const content = siloData[shift]?.content;
                         const capacity = masterSilo.capacity;
                         const percentage =
-                          capacity > 0 && typeof content === "number"
+                          capacity > 0 && typeof content === 'number'
                             ? (content / capacity) * 100
                             : 0;
 
@@ -143,48 +132,32 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                           <React.Fragment key={shift}>
                             <td
                               className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                siloIndex % 2 === 0 ? "bg-slate-50" : "bg-white"
+                                siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
                               } transition-colors duration-200`}
                             >
                               <input
                                 ref={(el) => {
-                                  const refKey = getInputRef(
-                                    "silo",
-                                    siloIndex,
-                                    i * 2
-                                  );
+                                  const refKey = getInputRef('silo', siloIndex, i * 2);
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
-                                defaultValue={formatInputValue(
-                                  siloData[shift]?.emptySpace,
-                                  1
-                                )}
+                                defaultValue={formatInputValue(siloData[shift]?.emptySpace, 1)}
                                 onChange={(e) => {
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
-                                    "emptySpace",
-                                    parsed !== null ? parsed.toString() : ""
+                                    'emptySpace',
+                                    parsed !== null ? parsed.toString() : ''
                                   );
                                 }}
                                 onBlur={(e) => {
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   if (parsed !== null) {
-                                    e.target.value = formatInputValue(
-                                      parsed,
-                                      1
-                                    );
+                                    e.target.value = formatInputValue(parsed, 1);
                                   }
                                 }}
-                                onKeyDown={(e) =>
-                                  handleKeyDown(e, "silo", siloIndex, i * 2)
-                                }
+                                onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
                                 className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                                 aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi ruang kosong untuk ${
@@ -195,45 +168,32 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                             </td>
                             <td
                               className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                siloIndex % 2 === 0 ? "bg-slate-50" : "bg-white"
+                                siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
                               } transition-colors duration-200`}
                             >
                               <input
                                 ref={(el) => {
-                                  const refKey = getInputRef(
-                                    "silo",
-                                    siloIndex,
-                                    i * 2 + 1
-                                  );
+                                  const refKey = getInputRef('silo', siloIndex, i * 2 + 1);
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
                                 defaultValue={formatInputValue(content, 1)}
                                 onChange={(e) => {
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
-                                    "content",
-                                    parsed !== null ? parsed.toString() : ""
+                                    'content',
+                                    parsed !== null ? parsed.toString() : ''
                                   );
                                 }}
                                 onBlur={(e) => {
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   if (parsed !== null) {
-                                    e.target.value = formatInputValue(
-                                      parsed,
-                                      1
-                                    );
+                                    e.target.value = formatInputValue(parsed, 1);
                                   }
                                 }}
-                                onKeyDown={(e) =>
-                                  handleKeyDown(e, "silo", siloIndex, i * 2 + 1)
-                                }
+                                onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)}
                                 className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                                 aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi konten untuk ${
@@ -244,7 +204,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                             </td>
                             <td
                               className={`px-2 py-2 whitespace-nowrap text-sm text-center text-slate-600 align-middle ${
-                                i < 2 ? "border-r" : ""
+                                i < 2 ? 'border-r' : ''
                               }`}
                             >
                               <div className="relative w-full h-6 bg-slate-200 rounded-full overflow-hidden">
@@ -268,12 +228,9 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
               )}
               {dailySiloData.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={10} className="text-center py-10 text-slate-500 dark:text-slate-400">
                     {!selectedCategory
-                      ? "No plant categories found in Master Data."
+                      ? 'No plant categories found in Master Data.'
                       : `No silo master data found for the category: ${selectedCategory}.`}
                   </td>
                 </tr>
@@ -285,5 +242,6 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
     );
   }
 );
+CcrSiloDataTable.displayName = 'CcrSiloDataTable';
 
 export default CcrSiloDataTable;

@@ -1,14 +1,14 @@
-import React, { lazy, Suspense } from "react";
-import { PlantOperationsDataPoint } from "../../hooks/usePlantOperationsDashboard";
+import React, { lazy, Suspense } from 'react';
+import { PlantOperationsDataPoint } from '../../hooks/usePlantOperationsDashboard';
 
-const ComboChart = lazy(() => import("../charts/ComboChart"));
+const ComboChart = lazy(() => import('../charts/ComboChart'));
 
 interface ChartSectionProps {
   realPlantOperationsData: PlantOperationsDataPoint[];
   selectedMetric: string;
-  timeRange: "1h" | "4h" | "12h" | "24h";
+  timeRange: '1h' | '4h' | '12h' | '24h';
   onMetricChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  onTimeRangeChange: (range: "1h" | "4h" | "12h" | "24h") => void;
+  onTimeRangeChange: (range: '1h' | '4h' | '12h' | '24h') => void;
   copAnalysisData?: any[];
 }
 
@@ -22,19 +22,18 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
     copAnalysisData = [],
   }) => {
     const chartData = React.useMemo(() => {
-      if (selectedMetric === "cop" && copAnalysisData.length > 0) {
+      if (selectedMetric === 'cop' && copAnalysisData.length > 0) {
         return copAnalysisData.map((item) => ({
-          timestamp: new Date(item.created_at).toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
+          timestamp: new Date(item.created_at).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
           }),
           cop: item.average,
         }));
       }
       return realPlantOperationsData.map((item) => ({
         timestamp: item.timestamp,
-        [selectedMetric]:
-          item[selectedMetric as keyof PlantOperationsDataPoint],
+        [selectedMetric]: item[selectedMetric as keyof PlantOperationsDataPoint],
       }));
     }, [realPlantOperationsData, selectedMetric, copAnalysisData]);
 
@@ -65,37 +64,33 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
               fallback={
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-                  <span className="ml-3 text-slate-600 dark:text-slate-400">
-                    Loading chart...
-                  </span>
+                  <span className="ml-3 text-slate-600 dark:text-slate-400">Loading chart...</span>
                 </div>
               }
             >
               <ComboChart
                 data={chartData}
                 lines={
-                  selectedMetric === "cop"
-                    ? [{ dataKey: "cop", stroke: "#dc2626", name: "COP Value" }]
+                  selectedMetric === 'cop'
+                    ? [{ dataKey: 'cop', stroke: '#dc2626', name: 'COP Value' }]
                     : [
                         {
                           dataKey: selectedMetric,
-                          stroke: "#dc2626",
-                          name:
-                            selectedMetric.charAt(0).toUpperCase() +
-                            selectedMetric.slice(1),
+                          stroke: '#dc2626',
+                          name: selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1),
                         },
                       ]
                 }
-                xAxisConfig={{ dataKey: "timestamp", label: "Time" }}
+                xAxisConfig={{ dataKey: 'timestamp', label: 'Time' }}
                 leftYAxisConfig={{
                   label:
-                    selectedMetric === "throughput"
-                      ? "Units/Hour"
-                      : selectedMetric === "downtime"
-                      ? "Hours"
-                      : selectedMetric === "cop"
-                      ? "COP Value"
-                      : "Percentage (%)",
+                    selectedMetric === 'throughput'
+                      ? 'Units/Hour'
+                      : selectedMetric === 'downtime'
+                        ? 'Hours'
+                        : selectedMetric === 'cop'
+                          ? 'COP Value'
+                          : 'Percentage (%)',
                 }}
                 height={320}
               />
@@ -109,14 +104,14 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
             Time Range Selection
           </h3>
           <div className="flex gap-2 flex-wrap">
-            {(["1h", "4h", "12h", "24h"] as const).map((range) => (
+            {(['1h', '4h', '12h', '24h'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => onTimeRangeChange(range)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   timeRange === range
-                    ? "bg-red-600 text-white shadow-lg"
-                    : "bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600"
+                    ? 'bg-red-600 text-white shadow-lg'
+                    : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600'
                 }`}
               >
                 {range}
@@ -124,8 +119,7 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
             ))}
           </div>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-4">
-            Select time range to view historical data and trends for plant
-            operations metrics.
+            Select time range to view historical data and trends for plant operations metrics.
           </p>
         </div>
       </div>
@@ -133,6 +127,6 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
   }
 );
 
-ChartSection.displayName = "ChartSection";
+ChartSection.displayName = 'ChartSection';
 
 export default ChartSection;

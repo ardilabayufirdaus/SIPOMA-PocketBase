@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   User,
   PermissionMatrix,
   PermissionLevel,
   PlantOperationsPermissions,
-} from "../../../types";
-import { supabase } from "../../../utils/supabaseClient";
-import { translations } from "../../../translations";
-import PermissionMatrixEditor from "./PermissionMatrixEditor";
+  UserRole,
+} from '../../../types';
+import { supabase } from '../../../utils/supabaseClient';
+import PermissionMatrixEditor from './PermissionMatrixEditor';
 
 // Enhanced Components
 import {
@@ -15,36 +15,30 @@ import {
   EnhancedButton,
   EnhancedBadge,
   EnhancedInput,
-} from "../../../components/ui/EnhancedComponents";
+} from '../../../components/ui/EnhancedComponents';
 
 // Icons
-import UserIcon from "../../../components/icons/UserIcon";
-import ShieldCheckIcon from "../../../components/icons/ShieldCheckIcon";
-import CheckIcon from "../../../components/icons/CheckIcon";
-import CogIcon from "../../../components/icons/CogIcon";
-import ChartBarIcon from "../../../components/icons/ChartBarIcon";
+import UserIcon from '../../../components/icons/UserIcon';
+import ShieldCheckIcon from '../../../components/icons/ShieldCheckIcon';
+import CogIcon from '../../../components/icons/CogIcon';
+import ChartBarIcon from '../../../components/icons/ChartBarIcon';
 
 interface UserPermissionManagerProps {
-  language?: "en" | "id";
+  language?: 'en' | 'id';
 }
 
-const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
-  language = "en",
-}) => {
+const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language = 'en' }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isPermissionEditorOpen, setIsPermissionEditorOpen] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [pendingPermissions, setPendingPermissions] =
-    useState<PermissionMatrix | null>(null);
-
-  const t = translations[language];
+  const [pendingPermissions, setPendingPermissions] = useState<PermissionMatrix | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -60,12 +54,10 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
 
     try {
       setIsLoading(true);
-      console.log(
-        `📡 Fetching users (attempt ${retryCount + 1}/${maxRetries + 1})...`
-      );
+      console.log(`📡 Fetching users (attempt ${retryCount + 1}/${maxRetries + 1})...`);
 
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -84,78 +76,82 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
           )
         `
         )
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Transform data to match User interface
-      const transformedUsers: User[] = (data || []).map((user: any) => ({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        is_active: user.is_active,
-        last_active: user.last_active,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-        permissions: buildPermissionMatrix(user.user_permissions || []),
+      const transformedUsers: User[] = (data || []).map((user: Record<string, unknown>) => ({
+        id: String(user.id),
+        username: String(user.username),
+        email: user.email ? String(user.email) : undefined,
+        full_name: user.full_name ? String(user.full_name) : undefined,
+        role: ['Super Admin', 'Admin', 'Operator', 'Guest'].includes(String(user.role))
+          ? (String(user.role) as UserRole)
+          : 'Guest',
+        is_active: Boolean(user.is_active),
+        last_active: user.last_active ? new Date(String(user.last_active)) : undefined,
+        created_at: user.created_at ? new Date(String(user.created_at)) : new Date(),
+        updated_at: user.updated_at ? new Date(String(user.updated_at)) : new Date(),
+        permissions: buildPermissionMatrix(
+          (user.user_permissions ?? []) as Array<{ permissions: unknown }>
+        ),
       }));
 
       setUsers(transformedUsers);
       console.log(`✅ Successfully fetched ${transformedUsers.length} users`);
-    } catch (err: any) {
-      console.error(
-        `❌ Error fetching users (attempt ${retryCount + 1}):`,
-        err
-      );
-
+    } catch (err) {
+      console.error(`❌ Error fetching users (attempt ${retryCount + 1}):`, err);
+      const errorMsg =
+        typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message?: string }).message
+          : String(err);
       // Check if it's a network error and we haven't exceeded max retries
       if (
-        (err.message?.includes("Failed to fetch") ||
-          err.message?.includes("ERR_NETWORK_CHANGED")) &&
-        retryCount < maxRetries
+        errorMsg?.includes('Failed to fetch') ||
+        (errorMsg?.includes('ERR_NETWORK_CHANGED') && retryCount < maxRetries)
       ) {
         console.log(`🔄 Retrying in ${retryDelay}ms...`);
         setTimeout(() => fetchUsers(retryCount + 1), retryDelay);
         return;
       }
-
       // If it's not a network error or we've exceeded retries, show the error
-      setError(err.message || "Failed to fetch users");
+      setError(errorMsg || 'Failed to fetch users');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const buildPermissionMatrix = (userPermissions: any[]): PermissionMatrix => {
+  const buildPermissionMatrix = (
+    userPermissions: Array<{ permissions: unknown }>
+  ): PermissionMatrix => {
     const matrix: PermissionMatrix = {
-      dashboard: "NONE",
+      dashboard: 'NONE',
       plant_operations: {},
-      packing_plant: "NONE",
-      project_management: "NONE",
-      system_settings: "NONE",
-      user_management: "NONE",
+      packing_plant: 'NONE',
+      project_management: 'NONE',
+      system_settings: 'NONE',
+      user_management: 'NONE',
     };
 
-    userPermissions.forEach((up: any) => {
-      const perm = up.permissions;
+    userPermissions.forEach((up) => {
+      const perm = up.permissions as {
+        module_name?: keyof PermissionMatrix;
+        permission_level?: PermissionLevel;
+        plant_units?: Array<{ category: string; unit: string }>;
+      };
       if (perm) {
         const moduleName = perm.module_name as keyof PermissionMatrix;
         const level = perm.permission_level as PermissionLevel;
 
-        if (moduleName === "plant_operations") {
-          if (
-            !matrix.plant_operations ||
-            typeof matrix.plant_operations === "string"
-          ) {
+        if (moduleName === 'plant_operations') {
+          if (!matrix.plant_operations || typeof matrix.plant_operations === 'string') {
             matrix.plant_operations = {};
           }
-          const plantOps =
-            matrix.plant_operations as PlantOperationsPermissions;
+          const plantOps = matrix.plant_operations as PlantOperationsPermissions;
 
           if (perm.plant_units && Array.isArray(perm.plant_units)) {
-            perm.plant_units.forEach((unit: any) => {
+            perm.plant_units.forEach((unit) => {
               if (!plantOps[unit.category]) {
                 plantOps[unit.category] = {};
               }
@@ -185,7 +181,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
     }
 
     // Role filter
-    if (roleFilter !== "all") {
+    if (roleFilter !== 'all') {
       filtered = filtered.filter((user) => user.role === roleFilter);
     }
 
@@ -196,8 +192,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
     setSelectedUser(user);
     setPendingPermissions(user.permissions); // Initialize with current permissions
     setIsPermissionEditorOpen(true);
-    setError(""); // Clear any previous errors
-    setSuccessMessage(""); // Clear any previous success messages
+    setError(''); // Clear any previous errors
+    setSuccessMessage(''); // Clear any previous success messages
   };
 
   const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
@@ -209,63 +205,60 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
     if (!selectedUser || !pendingPermissions) return;
 
     try {
-      setError("");
-      console.log(
-        "🔄 Starting permission save for user:",
-        selectedUser.username
-      );
-      console.log("📋 Pending permissions:", pendingPermissions);
+      setError('');
+      console.log('🔄 Starting permission save for user:', selectedUser.username);
+      console.log('📋 Pending permissions:', pendingPermissions);
 
       // Delete existing permissions
-      console.log("🗑️ Deleting existing user permissions...");
+      console.log('🗑️ Deleting existing user permissions...');
       const { error: deleteError } = await supabase
-        .from("user_permissions")
+        .from('user_permissions')
         .delete()
-        .eq("user_id", selectedUser.id);
+        .eq('user_id', selectedUser.id);
 
       if (deleteError) {
-        console.error("❌ Error deleting permissions:", deleteError);
+        console.error('❌ Error deleting permissions:', deleteError);
         throw deleteError;
       }
-      console.log("✅ Existing permissions deleted");
+      console.log('✅ Existing permissions deleted');
 
       // Insert new permissions
       const permissionInserts = [];
 
       // Handle simple permissions
       const simplePermissions = [
-        { module: "dashboard", level: pendingPermissions.dashboard },
-        { module: "packing_plant", level: pendingPermissions.packing_plant },
+        { module: 'dashboard', level: pendingPermissions.dashboard },
+        { module: 'packing_plant', level: pendingPermissions.packing_plant },
         {
-          module: "project_management",
+          module: 'project_management',
           level: pendingPermissions.project_management,
         },
         {
-          module: "system_settings",
+          module: 'system_settings',
           level: pendingPermissions.system_settings,
         },
         {
-          module: "user_management",
+          module: 'user_management',
           level: pendingPermissions.user_management,
         },
       ];
 
-      console.log("🔍 Processing simple permissions...");
+      console.log('🔍 Processing simple permissions...');
       for (const perm of simplePermissions) {
-        if (perm.level !== "NONE") {
+        if (perm.level !== 'NONE') {
           console.log(`📝 Processing ${perm.module} with level ${perm.level}`);
 
           // Check if permission exists
           const { data: existingPerm, error: lookupError } = await supabase
-            .from("permissions")
-            .select("id")
-            .eq("module_name", perm.module)
-            .eq("permission_level", perm.level)
+            .from('permissions')
+            .select('id')
+            .eq('module_name', perm.module)
+            .eq('permission_level', perm.level)
             .single();
 
           let permissionId = existingPerm?.id;
 
-          if (lookupError && lookupError.code !== "PGRST116") {
+          if (lookupError && lookupError.code !== 'PGRST116') {
             // PGRST116 = no rows found
             console.warn(`⚠️ Lookup error for ${perm.module}:`, lookupError);
           }
@@ -273,20 +266,17 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
           if (!permissionId) {
             console.log(`🆕 Creating new permission for ${perm.module}`);
             const { data: newPerm, error: insertError } = await supabase
-              .from("permissions")
+              .from('permissions')
               .insert({
                 module_name: perm.module,
                 permission_level: perm.level,
                 plant_units: [],
               })
-              .select("id")
+              .select('id')
               .single();
 
             if (insertError) {
-              console.error(
-                `❌ Error creating permission for ${perm.module}:`,
-                insertError
-              );
+              console.error(`❌ Error creating permission for ${perm.module}:`, insertError);
               throw insertError;
             }
 
@@ -304,66 +294,62 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
       }
 
       // Handle plant operations permissions
-      console.log("🌱 Processing plant operations permissions...");
+      console.log('🌱 Processing plant operations permissions...');
       if (
         pendingPermissions.plant_operations &&
         Object.keys(pendingPermissions.plant_operations).length > 0
       ) {
         const plantUnits = [];
-        Object.entries(pendingPermissions.plant_operations).forEach(
-          ([category, units]) => {
-            Object.entries(units).forEach(([unit, level]) => {
-              if (level !== "NONE") {
-                plantUnits.push({ category, unit, level });
-              }
-            });
-          }
-        );
+        Object.entries(pendingPermissions.plant_operations).forEach(([category, units]) => {
+          Object.entries(units).forEach(([unit, level]) => {
+            if (level !== 'NONE') {
+              plantUnits.push({ category, unit, level });
+            }
+          });
+        });
 
-        console.log("📊 Plant units to process:", plantUnits);
+        console.log('📊 Plant units to process:', plantUnits);
 
         if (plantUnits.length > 0) {
           // Group by permission level
-          const levelGroups = plantUnits.reduce((acc, unit) => {
-            if (!acc[unit.level]) acc[unit.level] = [];
-            acc[unit.level].push({ category: unit.category, unit: unit.unit });
-            return acc;
-          }, {} as Record<string, any[]>);
+          const levelGroups = plantUnits.reduce(
+            (acc, unit) => {
+              if (!acc[unit.level]) acc[unit.level] = [];
+              acc[unit.level].push({ category: unit.category, unit: unit.unit });
+              return acc;
+            },
+            {} as Record<string, unknown[]>
+          );
 
-          console.log("🎯 Permission level groups:", levelGroups);
+          console.log('🎯 Permission level groups:', levelGroups);
 
           for (const [level, units] of Object.entries(levelGroups)) {
             console.log(`🔧 Processing level ${level} with units:`, units);
 
             // Check if permission exists
             const { data: existingPerm, error: lookupError } = await supabase
-              .from("permissions")
-              .select("id")
-              .eq("module_name", "plant_operations")
-              .eq("permission_level", level)
+              .from('permissions')
+              .select('id')
+              .eq('module_name', 'plant_operations')
+              .eq('permission_level', level)
               .single();
 
             let permissionId = existingPerm?.id;
 
-            if (lookupError && lookupError.code !== "PGRST116") {
-              console.warn(
-                `⚠️ Plant ops lookup error for level ${level}:`,
-                lookupError
-              );
+            if (lookupError && lookupError.code !== 'PGRST116') {
+              console.warn(`⚠️ Plant ops lookup error for level ${level}:`, lookupError);
             }
 
             if (!permissionId) {
-              console.log(
-                `🆕 Creating new plant operations permission for level ${level}`
-              );
+              console.log(`🆕 Creating new plant operations permission for level ${level}`);
               const { data: newPerm, error: insertError } = await supabase
-                .from("permissions")
+                .from('permissions')
                 .insert({
-                  module_name: "plant_operations",
+                  module_name: 'plant_operations',
                   permission_level: level,
                   plant_units: units,
                 })
-                .select("id")
+                .select('id')
                 .single();
 
               if (insertError) {
@@ -375,9 +361,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
               }
 
               permissionId = newPerm?.id;
-              console.log(
-                `✅ Created plant permission with ID: ${permissionId}`
-              );
+              console.log(`✅ Created plant permission with ID: ${permissionId}`);
             }
 
             if (permissionId) {
@@ -391,85 +375,83 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
       }
 
       // Insert user permissions
-      console.log("💾 Inserting user permissions:", permissionInserts);
+      console.log('💾 Inserting user permissions:', permissionInserts);
       if (permissionInserts.length > 0) {
         const { error: insertError } = await supabase
-          .from("user_permissions")
+          .from('user_permissions')
           .insert(permissionInserts);
 
         if (insertError) {
-          console.error("❌ Error inserting user permissions:", insertError);
+          console.error('❌ Error inserting user permissions:', insertError);
           throw insertError;
         }
-        console.log("✅ User permissions inserted successfully");
+        console.log('✅ User permissions inserted successfully');
       }
 
-      console.log("🔄 Refreshing users list...");
+      console.log('🔄 Refreshing users list...');
       try {
         await fetchUsers();
-        console.log("✅ Users list refreshed successfully");
-        setSuccessMessage(""); // Clear success message when refresh succeeds
-      } catch (refreshError: any) {
-        console.warn(
-          "⚠️ Failed to refresh users list after save:",
-          refreshError
-        );
+        console.log('✅ Users list refreshed successfully');
+        setSuccessMessage(''); // Clear success message when refresh succeeds
+      } catch (refreshError) {
+        console.warn('⚠️ Failed to refresh users list after save:', refreshError);
         // Don't throw error here - the save was successful, just the refresh failed
         // Show a warning to the user instead
         setError(
-          "Permissions saved successfully, but failed to refresh the list. Please use the refresh button to see changes."
+          'Permissions saved successfully, but failed to refresh the list. Please use the refresh button to see changes.'
         );
-        setSuccessMessage("✅ Permissions saved successfully!");
+        setSuccessMessage('✅ Permissions saved successfully!');
       }
 
-      console.log("🎉 Permission save completed successfully!");
-      setError(""); // Clear any previous errors on success
+      console.log('🎉 Permission save completed successfully!');
+      setError(''); // Clear any previous errors on success
       // Close modal and reset state
       setIsPermissionEditorOpen(false);
       setSelectedUser(null);
       setPendingPermissions(null);
-    } catch (err: any) {
-      console.error("💥 Error updating permissions:", err);
-      setError(err.message || "Failed to update permissions");
+    } catch (err) {
+      console.error('💥 Error updating permissions:', err);
+      const errorMsg =
+        typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message?: string }).message
+          : String(err);
+      setError(errorMsg || 'Failed to update permissions');
     }
   };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case "Super Admin":
-        return "error";
-      case "Admin":
-        return "warning";
-      case "Operator":
-        return "primary";
-      case "Guest":
-        return "secondary";
+      case 'Super Admin':
+        return 'error';
+      case 'Admin':
+        return 'warning';
+      case 'Operator':
+        return 'primary';
+      case 'Guest':
+        return 'secondary';
       default:
-        return "secondary";
+        return 'secondary';
     }
   };
 
   const getPermissionSummary = (permissions: PermissionMatrix) => {
     const summary = [];
-    if (permissions.dashboard !== "NONE") summary.push("Dashboard");
-    if (permissions.packing_plant !== "NONE") summary.push("Packing Plant");
-    if (permissions.project_management !== "NONE") summary.push("Projects");
-    if (permissions.system_settings !== "NONE") summary.push("Settings");
-    if (permissions.user_management !== "NONE") summary.push("Users");
-    if (Object.keys(permissions.plant_operations).length > 0)
-      summary.push("Plant Ops");
+    if (permissions.dashboard !== 'NONE') summary.push('Dashboard');
+    if (permissions.packing_plant !== 'NONE') summary.push('Packing Plant');
+    if (permissions.project_management !== 'NONE') summary.push('Projects');
+    if (permissions.system_settings !== 'NONE') summary.push('Settings');
+    if (permissions.user_management !== 'NONE') summary.push('Users');
+    if (Object.keys(permissions.plant_operations).length > 0) summary.push('Plant Ops');
 
-    return summary.length > 0 ? summary.join(", ") : "No permissions";
+    return summary.length > 0 ? summary.join(', ') : 'No permissions';
   };
 
   // Statistics
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.is_active).length;
-  const adminUsers = users.filter(
-    (u) => u.role === "Super Admin" || u.role === "Admin"
-  ).length;
+  const adminUsers = users.filter((u) => u.role === 'Super Admin' || u.role === 'Admin').length;
   const usersWithPermissions = users.filter(
-    (u) => getPermissionSummary(u.permissions) !== "No permissions"
+    (u) => getPermissionSummary(u.permissions) !== 'No permissions'
   ).length;
 
   return (
@@ -584,17 +566,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
               </select>
             </div>
 
-            <EnhancedButton
-              variant="outline"
-              onClick={() => fetchUsers()}
-              className="px-4"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+            <EnhancedButton variant="outline" onClick={() => fetchUsers()} className="px-4">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -678,23 +651,14 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                    Error
-                  </p>
-                  <p className="text-sm text-red-700 dark:text-red-300">
-                    {error}
-                  </p>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">Error</p>
+                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
                 </div>
                 <button
-                  onClick={() => setError("")}
+                  onClick={() => setError('')}
                   className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -726,23 +690,14 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                    Success
-                  </p>
-                  <p className="text-sm text-green-700 dark:text-green-300">
-                    {successMessage}
-                  </p>
+                  <p className="text-sm font-medium text-green-800 dark:text-green-200">Success</p>
+                  <p className="text-sm text-green-700 dark:text-green-300">{successMessage}</p>
                 </div>
                 <button
-                  onClick={() => setSuccessMessage("")}
+                  onClick={() => setSuccessMessage('')}
                   className="text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-200"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -762,9 +717,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
         {isLoading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-              Loading users...
-            </p>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">Loading users...</p>
             <p className="text-sm text-gray-500 dark:text-gray-500">
               Please wait while we fetch the latest data
             </p>
@@ -774,13 +727,11 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <UserIcon className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
-              No users found
-            </p>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">No users found</p>
             <p className="text-sm text-gray-500 dark:text-gray-500">
-              {searchTerm || roleFilter !== "all"
-                ? "Try adjusting your search or filter criteria"
-                : "No users have been added yet"}
+              {searchTerm || roleFilter !== 'all'
+                ? 'Try adjusting your search or filter criteria'
+                : 'No users have been added yet'}
             </p>
           </div>
         ) : (
@@ -822,7 +773,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
                             {user.username}
                           </div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {user.full_name || "No name"}
+                            {user.full_name || 'No name'}
                           </div>
                         </div>
                       </div>
@@ -841,26 +792,25 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
                           {getPermissionSummary(user.permissions)}
                         </div>
                         <div className="flex gap-1 mt-1">
-                          {user.permissions.dashboard !== "NONE" && (
+                          {user.permissions.dashboard !== 'NONE' && (
                             <div
                               className="w-2 h-2 bg-blue-500 rounded-full"
                               title="Dashboard"
                             ></div>
                           )}
-                          {user.permissions.packing_plant !== "NONE" && (
+                          {user.permissions.packing_plant !== 'NONE' && (
                             <div
                               className="w-2 h-2 bg-green-500 rounded-full"
                               title="Packing Plant"
                             ></div>
                           )}
-                          {user.permissions.project_management !== "NONE" && (
+                          {user.permissions.project_management !== 'NONE' && (
                             <div
                               className="w-2 h-2 bg-purple-500 rounded-full"
                               title="Projects"
                             ></div>
                           )}
-                          {Object.keys(user.permissions.plant_operations)
-                            .length > 0 && (
+                          {Object.keys(user.permissions.plant_operations).length > 0 && (
                             <div
                               className="w-2 h-2 bg-orange-500 rounded-full"
                               title="Plant Operations"
@@ -873,13 +823,11 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({
                       <div className="flex items-center gap-2">
                         <div
                           className={`w-3 h-3 rounded-full ${
-                            user.is_active ? "bg-green-500" : "bg-red-500"
+                            user.is_active ? 'bg-green-500' : 'bg-red-500'
                           }`}
                         ></div>
-                        <EnhancedBadge
-                          variant={user.is_active ? "success" : "error"}
-                        >
-                          {user.is_active ? "Active" : "Inactive"}
+                        <EnhancedBadge variant={user.is_active ? 'success' : 'error'}>
+                          {user.is_active ? 'Active' : 'Inactive'}
                         </EnhancedBadge>
                       </div>
                     </td>

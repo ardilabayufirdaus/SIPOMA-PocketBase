@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { PlantUnit } from "../../types";
+import React, { useState, useEffect } from 'react';
+import { PlantUnit } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -8,21 +8,16 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: PlantUnit | null;
-  onSave: (record: PlantUnit | Omit<PlantUnit, "id">) => void;
+  onSave: (record: PlantUnit | Omit<PlantUnit, 'id'>) => void;
   onCancel: () => void;
   t: any;
 }
 
-const PlantUnitForm: React.FC<FormProps> = ({
-  recordToEdit,
-  onSave,
-  onCancel,
-  t,
-}) => {
+const PlantUnitForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t }) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
   const isHighContrast = useHighContrast();
@@ -30,8 +25,8 @@ const PlantUnitForm: React.FC<FormProps> = ({
   const colorScheme = useColorScheme();
 
   const [formData, setFormData] = useState({
-    unit: "",
-    category: "",
+    unit: '',
+    category: '',
   });
 
   useEffect(() => {
@@ -42,8 +37,8 @@ const PlantUnitForm: React.FC<FormProps> = ({
       });
     } else {
       setFormData({
-        unit: "",
-        category: "",
+        unit: '',
+        category: '',
       });
     }
   }, [recordToEdit]);
@@ -66,10 +61,7 @@ const PlantUnitForm: React.FC<FormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="p-6 space-y-4">
         <div>
-          <label
-            htmlFor="unit"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
             {t.unit_label}
           </label>
           <input
@@ -83,10 +75,7 @@ const PlantUnitForm: React.FC<FormProps> = ({
           />
         </div>
         <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="category" className="block text-sm font-medium text-slate-700">
             {t.plant_category_label}
           </label>
           <input
@@ -105,7 +94,7 @@ const PlantUnitForm: React.FC<FormProps> = ({
           type="submit"
           variant="primary"
           className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || "Save plant unit"}
+          aria-label={t.save_button || 'Save plant unit'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -114,7 +103,7 @@ const PlantUnitForm: React.FC<FormProps> = ({
           variant="secondary"
           onClick={onCancel}
           className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>

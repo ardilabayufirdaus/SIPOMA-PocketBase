@@ -79,20 +79,16 @@ Pada mode development, tersedia tools testing di bawah header:
 ### Creating Notifications
 
 ```typescript
-import { useNotifications } from "../hooks/useNotifications";
-import { AlertSeverity } from "../types";
+import { useNotifications } from '../hooks/useNotifications';
+import { AlertSeverity } from '../types';
 
 const { createNotification } = useNotifications();
 
 // Simple notification
-await createNotification("System updated", AlertSeverity.INFO);
+await createNotification('System updated', AlertSeverity.INFO);
 
 // With category
-await createNotification(
-  "Maintenance required",
-  AlertSeverity.WARNING,
-  "maintenance"
-);
+await createNotification('Maintenance required', AlertSeverity.WARNING, 'maintenance');
 ```
 
 ### Hook Usage

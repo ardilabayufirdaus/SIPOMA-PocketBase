@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   ComposedChart,
   Area,
@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   Brush,
-} from "recharts";
+} from 'recharts';
 
 interface ComboChartProps {
   data: any[];
@@ -76,27 +76,24 @@ const ComboChart: React.FC<ComboChartProps> = ({
   rightYAxisConfig,
   customTooltip,
 }) => {
-  const xConfig = xAxisConfig || { dataKey: "date" };
+  const xConfig = xAxisConfig || { dataKey: 'date' };
   const leftYConfig = leftYAxisConfig || {};
   const rightYConfig = rightYAxisConfig || {};
   return (
     <div style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-        >
+        <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
 
           <XAxis
             dataKey={xConfig.dataKey}
-            tick={{ fontSize: 12, fill: "#64748b" }}
+            tick={{ fontSize: 12, fill: '#64748b' }}
             tickFormatter={xConfig.formatter}
             label={
               xConfig.label
                 ? {
                     value: xConfig.label,
-                    position: "insideBottom",
+                    position: 'insideBottom',
                     offset: -10,
                   }
                 : undefined
@@ -106,31 +103,31 @@ const ComboChart: React.FC<ComboChartProps> = ({
           <YAxis
             yAxisId="left"
             orientation="left"
-            tick={{ fontSize: 12, fill: "#64748b" }}
+            tick={{ fontSize: 12, fill: '#64748b' }}
             label={
               leftYConfig.label
                 ? {
                     value: leftYConfig.label,
                     angle: -90,
-                    position: "insideLeft",
+                    position: 'insideLeft',
                   }
                 : undefined
             }
             domain={leftYConfig.domain}
           />
 
-          {(bars.some((bar) => bar.yAxisId === "right") ||
-            lines.some((line) => line.yAxisId === "right")) && (
+          {(bars.some((bar) => bar.yAxisId === 'right') ||
+            lines.some((line) => line.yAxisId === 'right')) && (
             <YAxis
               yAxisId="right"
               orientation="right"
-              tick={{ fontSize: 12, fill: "#64748b" }}
+              tick={{ fontSize: 12, fill: '#64748b' }}
               label={
                 rightYConfig.label
                   ? {
                       value: rightYConfig.label,
                       angle: 90,
-                      position: "insideRight",
+                      position: 'insideRight',
                     }
                   : undefined
               }
@@ -144,9 +141,9 @@ const ComboChart: React.FC<ComboChartProps> = ({
               key={index}
               y={refLine.value}
               stroke={refLine.color}
-              strokeDasharray={refLine.strokeDasharray || "8 8"}
+              strokeDasharray={refLine.strokeDasharray || '8 8'}
               yAxisId="left"
-              label={{ value: refLine.label, position: "insideTopRight" }}
+              label={{ value: refLine.label, position: 'insideTopRight' }}
             />
           ))}
 
@@ -170,7 +167,7 @@ const ComboChart: React.FC<ComboChartProps> = ({
           {bars.map((bar, index) => (
             <Bar
               key={index}
-              yAxisId={bar.yAxisId || "left"}
+              yAxisId={bar.yAxisId || 'left'}
               dataKey={bar.dataKey}
               fill={bar.fill}
               name={bar.name}
@@ -182,7 +179,7 @@ const ComboChart: React.FC<ComboChartProps> = ({
           {lines.map((line, index) => (
             <Line
               key={index}
-              yAxisId={line.yAxisId || "left"}
+              yAxisId={line.yAxisId || 'left'}
               type="monotone"
               dataKey={line.dataKey}
               stroke={line.stroke}
@@ -198,24 +195,19 @@ const ComboChart: React.FC<ComboChartProps> = ({
           ) : (
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1e293b",
-                border: "none",
-                borderRadius: "8px",
-                color: "white",
-                boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                backgroundColor: '#1e293b',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
               }}
             />
           )}
 
-          <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="rect" />
+          <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="rect" />
 
           {showBrush && (
-            <Brush
-              dataKey={xConfig.dataKey}
-              height={30}
-              stroke="#6366f1"
-              fill="#f1f5f9"
-            />
+            <Brush dataKey={xConfig.dataKey} height={30} stroke="#6366f1" fill="#f1f5f9" />
           )}
 
           {/* Gradients */}

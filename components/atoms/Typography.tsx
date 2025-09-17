@@ -1,1 +1,1 @@
-export { default } from "../ui/Typography";
+export { default } from '../ui/Typography';

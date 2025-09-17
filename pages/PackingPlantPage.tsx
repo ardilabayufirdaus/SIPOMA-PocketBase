@@ -1,16 +1,16 @@
-import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
-import PackingPlantMasterData from "./packing_plant/PackingPlantMasterData";
-import PackingPlantStockData from "./packing_plant/PackingPlantStockData";
-import PackingPlantStockForecast from "./packing_plant/PackingPlantStockForecast";
-import LogisticsPerformance from "./packing_plant/LogisticsPerformance";
-import { usePackingPlantMasterData } from "../hooks/usePackingPlantMasterData";
-import { usePackingPlantStockData } from "../hooks/usePackingPlantStockData";
+import React from 'react';
+import PlaceholderPage from '../components/PlaceholderPage';
+import PackingPlantMasterData from './packing_plant/PackingPlantMasterData';
+import PackingPlantStockData from './packing_plant/PackingPlantStockData';
+import PackingPlantStockForecast from './packing_plant/PackingPlantStockForecast';
+import LogisticsPerformance from './packing_plant/LogisticsPerformance';
+import { usePackingPlantMasterData } from '../hooks/usePackingPlantMasterData';
+import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
 
 // Import permission utilities
-import { usePermissions } from "../utils/permissions";
-import { PermissionLevel } from "../types";
-import { useCurrentUser } from "../hooks/useCurrentUser";
+import { usePermissions } from '../utils/permissions';
+import { PermissionLevel } from '../types';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full">
@@ -18,21 +18,14 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-const PackingPlantPage: React.FC<{ activePage: string; t: any }> = ({
-  activePage,
-  t,
-}) => {
-  const { records: masterData, loading: masterDataLoading } =
-    usePackingPlantMasterData();
+const PackingPlantPage: React.FC<{ activePage: string; t: any }> = ({ activePage, t }) => {
+  const { records: masterData, loading: masterDataLoading } = usePackingPlantMasterData();
   const stockData = usePackingPlantStockData();
 
   // Permission check
   const { currentUser } = useCurrentUser();
   const permissionChecker = usePermissions(currentUser);
-  const hasPackingPlantAccess = permissionChecker.hasPermission(
-    "packing_plant",
-    "READ"
-  );
+  const hasPackingPlantAccess = permissionChecker.hasPermission('packing_plant', 'READ');
 
   if (masterDataLoading || stockData.loading) {
     return <LoadingSpinner />;
@@ -62,7 +55,7 @@ const PackingPlantPage: React.FC<{ activePage: string; t: any }> = ({
             Access Denied
           </h3>
           <p className="text-red-600 dark:text-red-300">
-            You don't have permission to access packing plant features.
+            You don&apos;t have permission to access packing plant features.
           </p>
         </div>
       </div>
@@ -72,12 +65,12 @@ const PackingPlantPage: React.FC<{ activePage: string; t: any }> = ({
   const uniqueAreas = [...new Set(masterData.map((item) => item.area))];
 
   switch (activePage) {
-    case "pack_master_data":
+    case 'pack_master_data':
       return <PackingPlantMasterData t={t} />;
-    case "pack_stock_data_entry":
+    case 'pack_stock_data_entry':
       // FIX: Removed incorrect props. The PackingPlantStockData component fetches its own data via a hook.
       return <PackingPlantStockData t={t} areas={uniqueAreas} />;
-    case "pack_stock_forecast":
+    case 'pack_stock_forecast':
       return (
         <PackingPlantStockForecast
           t={t}
@@ -86,7 +79,7 @@ const PackingPlantPage: React.FC<{ activePage: string; t: any }> = ({
           masterData={masterData}
         />
       );
-    case "pack_logistics_performance":
+    case 'pack_logistics_performance':
       return (
         <LogisticsPerformance
           t={t}

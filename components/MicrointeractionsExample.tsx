@@ -3,7 +3,7 @@
  * Demonstrating enhanced UX with smooth animations and interactions
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   AnimatedButton,
   AnimatedCard,
@@ -17,12 +17,8 @@ import {
   useHoverInteraction,
   useClickInteraction,
   useLoadingAnimation,
-} from "../utils/Microinteractions";
-import {
-  EnhancedButton,
-  EnhancedCard,
-  EnhancedInput,
-} from "./EnhancedComponents";
+} from '../utils/Microinteractions';
+import { EnhancedButton, EnhancedCard, EnhancedInput } from './EnhancedComponents';
 
 // =============================================================================
 // ENHANCED DASHBOARD WITH MICROINTERACTIONS
@@ -32,12 +28,10 @@ interface EnhancedDashboardProps {
   onAction: (action: string) => void;
 }
 
-export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
-  onAction,
-}) => {
+export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ onAction }) => {
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const [toastMessage, setToastMessage] = useState('');
 
   const handleCardClick = (cardId: string) => {
     setSelectedCard(cardId);
@@ -70,16 +64,11 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
             variant="secondary"
             size="sm"
             animationType="scale"
-            onClick={() => handleAction("Refresh")}
+            onClick={() => handleAction('Refresh')}
           >
             <AnimatedIcon
               icon={
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -98,7 +87,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
             variant="primary"
             size="sm"
             animationType="bounce"
-            onClick={() => handleAction("Create")}
+            onClick={() => handleAction('Create')}
           >
             Create New
           </AnimatedButton>
@@ -109,22 +98,14 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <AnimatedCard
           animationType="lift"
-          className={`${
-            selectedCard === "users" ? "ring-2 ring-blue-500" : ""
-          }`}
-          onClick={() => handleCardClick("users")}
+          className={`${selectedCard === 'users' ? 'ring-2 ring-blue-500' : ''}`}
+          onClick={() => handleCardClick('users')}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total Users
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                2,543
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                +12% from last month
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">2,543</p>
+              <p className="text-xs text-green-600 mt-1">+12% from last month</p>
             </div>
             <AnimatedIcon
               icon={
@@ -150,19 +131,13 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
 
         <AnimatedCard
           animationType="glow"
-          className={`${
-            selectedCard === "revenue" ? "ring-2 ring-green-500" : ""
-          }`}
-          onClick={() => handleCardClick("revenue")}
+          className={`${selectedCard === 'revenue' ? 'ring-2 ring-green-500' : ''}`}
+          onClick={() => handleCardClick('revenue')}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Revenue
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                $45,678
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Revenue</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">$45,678</p>
               <p className="text-xs text-green-600 mt-1">+8% from last month</p>
             </div>
             <AnimatedIcon
@@ -189,19 +164,13 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
 
         <AnimatedCard
           animationType="tilt"
-          className={`${
-            selectedCard === "orders" ? "ring-2 ring-yellow-500" : ""
-          }`}
-          onClick={() => handleCardClick("orders")}
+          className={`${selectedCard === 'orders' ? 'ring-2 ring-yellow-500' : ''}`}
+          onClick={() => handleCardClick('orders')}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Orders
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                1,234
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Orders</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">1,234</p>
               <p className="text-xs text-red-600 mt-1">-3% from last month</p>
             </div>
             <AnimatedIcon
@@ -228,22 +197,14 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
 
         <AnimatedCard
           animationType="bounce"
-          className={`${
-            selectedCard === "conversion" ? "ring-2 ring-purple-500" : ""
-          }`}
-          onClick={() => handleCardClick("conversion")}
+          className={`${selectedCard === 'conversion' ? 'ring-2 ring-purple-500' : ''}`}
+          onClick={() => handleCardClick('conversion')}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Conversion
-              </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                3.24%
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                +0.5% from last month
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Conversion</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">3.24%</p>
+              <p className="text-xs text-green-600 mt-1">+0.5% from last month</p>
             </div>
             <AnimatedIcon
               icon={
@@ -270,9 +231,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
 
       {/* Interactive Form Section */}
       <AnimatedCard animationType="lift" className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Quick Actions
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
@@ -288,7 +247,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
               <AnimatedButton
                 variant="primary"
                 animationType="scale"
-                onClick={() => handleAction("Search")}
+                onClick={() => handleAction('Search')}
               >
                 Search
               </AnimatedButton>
@@ -296,7 +255,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
               <AnimatedButton
                 variant="ghost"
                 animationType="glow"
-                onClick={() => handleAction("Filter")}
+                onClick={() => handleAction('Filter')}
               >
                 Filter
               </AnimatedButton>
@@ -318,9 +277,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
 
             <div className="flex items-center space-x-3">
               <LoadingSpinner size="sm" color="blue" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Processing...
-              </span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Processing...</span>
             </div>
           </div>
         </div>
@@ -351,10 +308,10 @@ interface AnimatedFormProps {
 
 export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -366,23 +323,23 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = 'Name is required';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
+      newErrors.email = 'Email is invalid';
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+      newErrors.password = 'Password must be at least 6 characters';
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -406,10 +363,10 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
     setTimeout(() => {
       setShowSuccess(false);
       setFormData({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
       });
     }, 3000);
 
@@ -420,7 +377,7 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -440,7 +397,7 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
           <AnimatedInput
             label="Full Name"
             value={formData.name}
-            onChange={(value) => handleInputChange("name", value)}
+            onChange={(value) => handleInputChange('name', value)}
             placeholder="Enter your full name"
             error={errors.name}
             animationType="focus"
@@ -451,7 +408,7 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
             label="Email Address"
             type="email"
             value={formData.email}
-            onChange={(value) => handleInputChange("email", value)}
+            onChange={(value) => handleInputChange('email', value)}
             placeholder="Enter your email"
             error={errors.email}
             animationType="glow"
@@ -462,7 +419,7 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
             label="Password"
             type="password"
             value={formData.password}
-            onChange={(value) => handleInputChange("password", value)}
+            onChange={(value) => handleInputChange('password', value)}
             placeholder="Create a password"
             error={errors.password}
             animationType="focus"
@@ -473,7 +430,7 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
             label="Confirm Password"
             type="password"
             value={formData.confirmPassword}
-            onChange={(value) => handleInputChange("confirmPassword", value)}
+            onChange={(value) => handleInputChange('confirmPassword', value)}
             placeholder="Confirm your password"
             error={errors.confirmPassword}
             animationType="focus"
@@ -488,10 +445,8 @@ export const AnimatedForm: React.FC<AnimatedFormProps> = ({ onSubmit }) => {
             disabled={isSubmitting}
             className="mt-6"
           >
-            {showLoader && (
-              <LoadingSpinner size="sm" color="blue" className="mr-2" />
-            )}
-            {isSubmitting ? "Creating Account..." : "Create Account"}
+            {showLoader && <LoadingSpinner size="sm" color="blue" className="mr-2" />}
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </AnimatedButton>
         </form>
 
@@ -517,17 +472,13 @@ interface AnimatedListProps {
     id: string;
     title: string;
     description: string;
-    status: "active" | "inactive" | "pending";
+    status: 'active' | 'inactive' | 'pending';
   }>;
   onItemClick: (item: any) => void;
   onItemDelete: (itemId: string) => void;
 }
 
-export const AnimatedList: React.FC<AnimatedListProps> = ({
-  items,
-  onItemClick,
-  onItemDelete,
-}) => {
+export const AnimatedList: React.FC<AnimatedListProps> = ({ items, onItemClick, onItemDelete }) => {
   const [deletingItem, setDeletingItem] = useState<string | null>(null);
 
   const handleDelete = async (itemId: string) => {
@@ -542,14 +493,14 @@ export const AnimatedList: React.FC<AnimatedListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "inactive":
-        return "bg-gray-100 text-gray-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -560,18 +511,14 @@ export const AnimatedList: React.FC<AnimatedListProps> = ({
           key={item.id}
           animationType="lift"
           className={`p-4 cursor-pointer transition-all duration-200 ${
-            deletingItem === item.id ? "animate-fade-out" : ""
+            deletingItem === item.id ? 'animate-fade-out' : ''
           }`}
           onClick={() => onItemClick(item)}
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                {item.title}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {item.description}
-              </p>
+              <h3 className="font-medium text-gray-900 dark:text-white">{item.title}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{item.description}</p>
             </div>
 
             <div className="flex items-center space-x-3">
@@ -594,12 +541,7 @@ export const AnimatedList: React.FC<AnimatedListProps> = ({
               >
                 <AnimatedIcon
                   icon={
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -642,10 +584,7 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black bg-opacity-50 animate-fade-in" onClick={onClose} />
 
       {/* Modal */}
       <AnimatedCard
@@ -654,23 +593,11 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {title}
-          </h3>
-          <AnimatedButton
-            variant="ghost"
-            size="sm"
-            animationType="scale"
-            onClick={onClose}
-          >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+          <AnimatedButton variant="ghost" size="sm" animationType="scale" onClick={onClose}>
             <AnimatedIcon
               icon={
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -689,18 +616,10 @@ export const AnimatedModal: React.FC<AnimatedModalProps> = ({
 
         {/* Footer */}
         <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700">
-          <AnimatedButton
-            variant="ghost"
-            animationType="scale"
-            onClick={onClose}
-          >
+          <AnimatedButton variant="ghost" animationType="scale" onClick={onClose}>
             Cancel
           </AnimatedButton>
-          <AnimatedButton
-            variant="primary"
-            animationType="bounce"
-            onClick={onClose}
-          >
+          <AnimatedButton variant="primary" animationType="bounce" onClick={onClose}>
             Confirm
           </AnimatedButton>
         </div>

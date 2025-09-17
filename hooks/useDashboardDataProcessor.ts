@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { CcrParameterData, ParameterSetting } from "../types";
-import { useCcrDataCache } from "./useDataCache";
+import { useMemo } from 'react';
+import { CcrParameterData, ParameterSetting } from '../types';
+import { useCcrDataCache } from './useDataCache';
 
 export interface ProcessedDashboardData {
   chartData: Array<{
@@ -54,17 +54,15 @@ export const useDashboardDataProcessor = (
   const filteredParameters = useMemo(() => {
     if (!plantCategory || !plantUnit) return [];
 
-    let filtered = parameters
-      .filter(
-        (param) => param.category === plantCategory && param.unit === plantUnit
-      )
+    const filtered = parameters
+      .filter((param) => param.category === plantCategory && param.unit === plantUnit)
       .sort((a, b) => a.parameter.localeCompare(b.parameter));
 
     return filtered;
   }, [parameters, plantCategory, plantUnit]);
 
   const processedData = useMemo((): ProcessedDashboardData => {
-    console.log("🔍 Dashboard Processor Input:", {
+    console.log('🔍 Dashboard Processor Input:', {
       ccrDataCount: ccrData.length,
       parametersCount: parameters.length,
       filteredParametersCount: filteredParameters.length,
@@ -75,9 +73,7 @@ export const useDashboardDataProcessor = (
       sampleCcrData: ccrData.slice(0, 2),
       sampleFilteredParameters: filteredParameters.slice(0, 5),
       sampleParameters: parameters.slice(0, 5),
-      uniqueParameterIdsInData: [
-        ...new Set(ccrData.map((d) => d.parameter_id)),
-      ],
+      uniqueParameterIdsInData: [...new Set(ccrData.map((d) => d.parameter_id))],
       uniqueParameterIdsInSettings: [...new Set(parameters.map((p) => p.id))],
     });
 
@@ -90,35 +86,31 @@ export const useDashboardDataProcessor = (
     );
 
     if (cachedProcessedData) {
-      console.log("✅ Using cached processed dashboard data");
+      console.log('✅ Using cached processed dashboard data');
       return cachedProcessedData as unknown as ProcessedDashboardData;
     }
 
-    console.log("🔄 Processing dashboard data...");
+    console.log('🔄 Processing dashboard data...');
 
     // Process chart data
     const chartData = ccrData.map((item, index) => {
       const hourlyValues = Object.values(item.hourly_values);
       const avgValue =
         hourlyValues.length > 0
-          ? (hourlyValues as number[]).reduce(
-              (sum, val) => sum + (Number(val) || 0),
-              0
-            ) / hourlyValues.length
+          ? (hourlyValues as number[]).reduce((sum, val) => sum + (Number(val) || 0), 0) /
+            hourlyValues.length
           : 0;
 
       // Find corresponding parameter settings for calculations
-      const parameterSetting = filteredParameters.find(
-        (p) => p.id === item.parameter_id
-      );
+      const parameterSetting = filteredParameters.find((p) => p.id === item.parameter_id);
 
       // Calculate efficiency based on target vs actual
       const efficiency =
         parameterSetting && parameterSetting.max_value
           ? Math.min(100, (avgValue / parameterSetting.max_value) * 100)
           : avgValue > 0
-          ? Math.min(100, avgValue * 10)
-          : 0; // Fallback calculation
+            ? Math.min(100, avgValue * 10)
+            : 0; // Fallback calculation
 
       // Calculate quality based on deviation from target
       const quality =
@@ -127,20 +119,15 @@ export const useDashboardDataProcessor = (
               0,
               100 -
                 Math.abs(
-                  ((avgValue - parameterSetting.max_value) /
-                    parameterSetting.max_value) *
-                    100
+                  ((avgValue - parameterSetting.max_value) / parameterSetting.max_value) * 100
                 )
             )
           : avgValue > 0
-          ? Math.min(100, avgValue * 8)
-          : 0; // Fallback calculation
+            ? Math.min(100, avgValue * 8)
+            : 0; // Fallback calculation
 
       // Calculate downtime based on data availability (lower downtime = more data points)
-      const downtime = Math.max(
-        0,
-        Math.min(24, 24 - hourlyValues.length * 0.5)
-      ); // Estimate based on data availability
+      const downtime = Math.max(0, Math.min(24, 24 - hourlyValues.length * 0.5)); // Estimate based on data availability
 
       // Calculate energy consumption based on production volume
       const energy = avgValue > 0 ? avgValue * 2.5 : 0; // Estimate based on production
@@ -160,10 +147,8 @@ export const useDashboardDataProcessor = (
       const hourlyValues = Object.values(item.hourly_values);
       const avgValue =
         hourlyValues.length > 0
-          ? (hourlyValues as number[]).reduce(
-              (s, val) => s + (Number(val) || 0),
-              0
-            ) / hourlyValues.length
+          ? (hourlyValues as number[]).reduce((s, val) => s + (Number(val) || 0), 0) /
+            hourlyValues.length
           : 0;
       return sum + avgValue;
     }, 0);
@@ -173,26 +158,21 @@ export const useDashboardDataProcessor = (
       const hourlyValues = Object.values(item.hourly_values);
       const avgValue =
         hourlyValues.length > 0
-          ? (hourlyValues as number[]).reduce(
-              (s, val) => s + (Number(val) || 0),
-              0
-            ) / hourlyValues.length
+          ? (hourlyValues as number[]).reduce((s, val) => s + (Number(val) || 0), 0) /
+            hourlyValues.length
           : 0;
 
-      const parameterSetting = filteredParameters.find(
-        (p) => p.id === item.parameter_id
-      );
+      const parameterSetting = filteredParameters.find((p) => p.id === item.parameter_id);
       return parameterSetting && parameterSetting.max_value
         ? Math.min(100, (avgValue / parameterSetting.max_value) * 100)
         : avgValue > 0
-        ? Math.min(100, avgValue * 10)
-        : 0;
+          ? Math.min(100, avgValue * 10)
+          : 0;
     });
 
     const averageEfficiency =
       efficiencyValues.length > 0
-        ? efficiencyValues.reduce((sum, val) => sum + val, 0) /
-          efficiencyValues.length
+        ? efficiencyValues.reduce((sum, val) => sum + val, 0) / efficiencyValues.length
         : 0;
 
     // Process COP analysis data
@@ -203,19 +183,15 @@ export const useDashboardDataProcessor = (
         const hourlyValues = data ? Object.values(data.hourly_values) : [];
         const avgValue =
           hourlyValues.length > 0
-            ? (hourlyValues as number[]).reduce(
-                (sum, val) => sum + (Number(val) || 0),
-                0
-              ) / hourlyValues.length
+            ? (hourlyValues as number[]).reduce((sum, val) => sum + (Number(val) || 0), 0) /
+              hourlyValues.length
             : 0;
 
         return {
           name: param.parameter,
           value: avgValue,
           target: param.max_value || 100,
-          deviation: param.min_value
-            ? ((avgValue - param.min_value) / param.min_value) * 100
-            : 0,
+          deviation: param.min_value ? ((avgValue - param.min_value) / param.min_value) * 100 : 0,
         };
       });
 
@@ -240,12 +216,8 @@ export const useDashboardDataProcessor = (
 
     // Generate all dates in the month
     const datesInMonth: string[] = [];
-    for (
-      let d = new Date(startDate);
-      d <= endDate;
-      d.setDate(d.getDate() + 1)
-    ) {
-      datesInMonth.push(d.toISOString().split("T")[0]);
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      datesInMonth.push(d.toISOString().split('T')[0]);
     }
 
     // Group data by date and use footer totals
@@ -260,7 +232,7 @@ export const useDashboardDataProcessor = (
       .filter((item) => {
         const param = parameters.find((p) => p.id === item.parameter_id);
         if (!param) {
-          console.log("🔍 Parameter not found for item:", {
+          console.log('🔍 Parameter not found for item:', {
             parameterId: item.parameter_id,
             availableParameterIds: parameters.map((p) => p.id).slice(0, 10),
           });
@@ -268,10 +240,7 @@ export const useDashboardDataProcessor = (
         }
 
         // If no parameters selected, show all filtered parameters
-        if (
-          !selectedProductionParameters ||
-          selectedProductionParameters.length === 0
-        ) {
+        if (!selectedProductionParameters || selectedProductionParameters.length === 0) {
           return true;
         }
 
@@ -295,10 +264,9 @@ export const useDashboardDataProcessor = (
           .map((v) => parseFloat(String(v)))
           .filter((v) => !isNaN(v));
 
-        const totalValue =
-          values.length > 0 ? values.reduce((sum, val) => sum + val, 0) : 0;
+        const totalValue = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) : 0;
 
-        console.log("🔍 Processing item:", {
+        console.log('🔍 Processing item:', {
           parameterId: item.parameter_id,
           paramName,
           date: itemDate,
@@ -332,16 +300,13 @@ export const useDashboardDataProcessor = (
           paramNamesWithData.includes(param.parameter)
         );
         console.log(
-          "🔍 Using parameters with data:",
+          '🔍 Using parameters with data:',
           parametersToShow.map((p) => p.parameter)
         );
       }
 
       // If specific parameters are selected, only show those
-      if (
-        selectedProductionParameters &&
-        selectedProductionParameters.length > 0
-      ) {
+      if (selectedProductionParameters && selectedProductionParameters.length > 0) {
         parametersToShow = filteredParameters.filter((param) =>
           selectedProductionParameters.includes(param.id)
         );
@@ -356,11 +321,10 @@ export const useDashboardDataProcessor = (
 
     // Sort by date (already sorted since we used datesInMonth order)
     productionTrendData.sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
-    console.log("🔍 Final Production Trend Data:", {
+    console.log('🔍 Final Production Trend Data:', {
       productionTrendDataCount: productionTrendData.length,
       sampleData: productionTrendData.slice(0, 5),
     });

@@ -1,22 +1,18 @@
-import * as XLSX from "xlsx";
-import ExcelJS from "exceljs";
+import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 /**
  * Utility untuk export data ke Excel menggunakan xlsx
  */
-export const exportToExcel = (
-  data: any[],
-  filename: string,
-  sheetName: string = "Sheet1"
-) => {
+export const exportToExcel = (data: any[], filename: string, sheetName: string = 'Sheet1') => {
   try {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
     XLSX.writeFile(workbook, `${filename}.xlsx`);
   } catch (error) {
-    console.error("Error exporting to Excel:", error);
-    throw new Error("Failed to export data to Excel");
+    console.error('Error exporting to Excel:', error);
+    throw new Error('Failed to export data to Excel');
   }
 };
 
@@ -26,7 +22,7 @@ export const exportToExcel = (
 export const exportToExcelStyled = async (
   data: any[],
   filename: string,
-  sheetName: string = "Sheet1",
+  sheetName: string = 'Sheet1',
   headers?: string[]
 ) => {
   try {
@@ -39,9 +35,9 @@ export const exportToExcelStyled = async (
       headerRow.eachCell((cell) => {
         cell.font = { bold: true };
         cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFE6E6FA" },
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE6E6FA' },
         };
       });
     }
@@ -56,10 +52,28 @@ export const exportToExcelStyled = async (
       column.width = 15;
     });
 
-    await workbook.xlsx.writeFile(`${filename}.xlsx`);
+    // Generate buffer instead of writing file directly
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // Create blob and trigger download
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error("Error exporting styled Excel:", error);
-    throw new Error("Failed to export styled Excel file");
+    console.error('Error exporting styled Excel:', error);
+    throw new Error('Failed to export styled Excel file');
   }
 };
 
@@ -72,17 +86,17 @@ export const importFromExcel = (file: File): Promise<any[]> => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: "array" });
+        const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
         resolve(jsonData);
       } catch (error) {
-        console.error("Error importing from Excel:", error);
-        reject(new Error("Failed to import data from Excel"));
+        console.error('Error importing from Excel:', error);
+        reject(new Error('Failed to import data from Excel'));
       }
     };
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsArrayBuffer(file);
   });
 };
@@ -97,7 +111,7 @@ export const validateExcelImport = (
   const errors: string[] = [];
 
   if (!Array.isArray(data) || data.length === 0) {
-    errors.push("File Excel kosong atau tidak valid");
+    errors.push('File Excel kosong atau tidak valid');
     return { isValid: false, errors };
   }
 

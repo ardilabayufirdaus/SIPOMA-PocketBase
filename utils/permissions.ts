@@ -1,5 +1,5 @@
-import { User, PermissionMatrix, PlantOperationsPermissions } from "../types";
-import React from "react";
+import { User, PermissionMatrix, PlantOperationsPermissions } from '../types';
+import React from 'react';
 
 /**
  * Utility class for role-based access control (RBAC)
@@ -15,14 +15,11 @@ export class PermissionChecker {
   /**
    * Check if user has specific permission level for a feature
    */
-  hasPermission(
-    feature: keyof PermissionMatrix,
-    requiredLevel: string = "READ"
-  ): boolean {
+  hasPermission(feature: keyof PermissionMatrix, requiredLevel: string = 'READ'): boolean {
     if (!this.user) return false;
 
     // Super Admin has all permissions
-    if (this.user.role === "Super Admin") return true;
+    if (this.user.role === 'Super Admin') return true;
 
     // Check if permissions object exists
     if (!this.user.permissions) return false;
@@ -30,18 +27,16 @@ export class PermissionChecker {
     const userPermission = this.user.permissions[feature];
 
     // Handle different permission types
-    if (typeof userPermission === "string") {
+    if (typeof userPermission === 'string') {
       return this.comparePermissionLevel(userPermission, requiredLevel);
     }
 
     // Handle plant operations permissions (object type)
-    if (feature === "plant_operations" && typeof userPermission === "object") {
+    if (feature === 'plant_operations' && typeof userPermission === 'object') {
       // For plant operations, check if user has any access to any category/unit
       const plantOps = userPermission as PlantOperationsPermissions;
       return Object.values(plantOps).some((category) =>
-        Object.values(category).some((level) =>
-          this.comparePermissionLevel(level, requiredLevel)
-        )
+        Object.values(category).some((level) => this.comparePermissionLevel(level, requiredLevel))
       );
     }
 
@@ -54,12 +49,12 @@ export class PermissionChecker {
   hasPlantOperationPermission(
     category: string,
     unit: string,
-    requiredLevel: string = "READ"
+    requiredLevel: string = 'READ'
   ): boolean {
     if (!this.user) return false;
 
     // Super Admin has all permissions
-    if (this.user.role === "Super Admin") return true;
+    if (this.user.role === 'Super Admin') return true;
 
     // Check if permissions object exists
     if (!this.user.permissions) return false;
@@ -76,80 +71,77 @@ export class PermissionChecker {
    * Check if user can access system settings
    */
   canAccessSettings(): boolean {
-    return this.hasPermission("system_settings", "READ");
+    return this.hasPermission('system_settings', 'READ');
   }
 
   /**
    * Check if user can access dashboard
    */
   canAccessDashboard(): boolean {
-    return this.hasPermission("dashboard", "READ");
+    return this.hasPermission('dashboard', 'READ');
   }
 
   /**
    * Check if user can access plant operations
    */
   canAccessPlantOperations(): boolean {
-    return this.hasPermission("plant_operations", "READ");
+    return this.hasPermission('plant_operations', 'READ');
   }
 
   /**
    * Check if user can access packing plant features
    */
   canAccessPackingPlant(): boolean {
-    return this.hasPermission("packing_plant", "READ");
+    return this.hasPermission('packing_plant', 'READ');
   }
 
   /**
    * Check if user can access project management
    */
   canAccessProjectManagement(): boolean {
-    return this.hasPermission("project_management", "READ");
+    return this.hasPermission('project_management', 'READ');
   }
 
   /**
    * Check if user can perform admin actions (create, update, delete)
    */
   canPerformAdminActions(feature: keyof PermissionMatrix): boolean {
-    return this.hasPermission(feature, "ADMIN");
+    return this.hasPermission(feature, 'ADMIN');
   }
 
   /**
    * Check if user can perform write actions (create, update)
    */
   canPerformWriteActions(feature: keyof PermissionMatrix): boolean {
-    return this.hasPermission(feature, "WRITE");
+    return this.hasPermission(feature, 'WRITE');
   }
 
   /**
    * Get the highest permission level for a feature
    */
   getPermissionLevel(feature: keyof PermissionMatrix): string {
-    if (!this.user) return "NONE";
+    if (!this.user) return 'NONE';
 
     // Super Admin has admin level for everything
-    if (this.user.role === "Super Admin") return "ADMIN";
+    if (this.user.role === 'Super Admin') return 'ADMIN';
 
     // Check if permissions object exists
-    if (!this.user.permissions) return "NONE";
+    if (!this.user.permissions) return 'NONE';
 
     const userPermission = this.user.permissions[feature];
 
-    if (typeof userPermission === "string") {
+    if (typeof userPermission === 'string') {
       return userPermission;
     }
 
     // For plant operations, return the highest permission level across all categories/units
-    if (feature === "plant_operations" && typeof userPermission === "object") {
+    if (feature === 'plant_operations' && typeof userPermission === 'object') {
       const plantOps = userPermission as PlantOperationsPermissions;
-      let highestLevel = "NONE";
+      let highestLevel = 'NONE';
 
       Object.values(plantOps).forEach((category) => {
         Object.values(category).forEach((level) => {
-          if (
-            this.comparePermissionLevel(level, highestLevel) &&
-            level !== highestLevel
-          ) {
+          if (this.comparePermissionLevel(level, highestLevel) && level !== highestLevel) {
             highestLevel = level;
           }
         });
@@ -158,16 +150,13 @@ export class PermissionChecker {
       return highestLevel;
     }
 
-    return "NONE";
+    return 'NONE';
   }
 
   /**
    * Compare permission levels (higher levels include lower levels)
    */
-  private comparePermissionLevel(
-    userLevel: string,
-    requiredLevel: string
-  ): boolean {
+  private comparePermissionLevel(userLevel: string, requiredLevel: string): boolean {
     const levelHierarchy = {
       NONE: 0,
       READ: 1,
@@ -192,7 +181,7 @@ export const usePermissions = (user: User | null) => {
 export const withPermission = <P extends object>(
   WrappedComponent: React.ComponentType<P>,
   feature: keyof PermissionMatrix,
-  requiredLevel: string = "READ"
+  requiredLevel: string = 'READ'
 ) => {
   return (props: P & { user?: User | null }) => {
     const { user, ...restProps } = props;
@@ -200,29 +189,29 @@ export const withPermission = <P extends object>(
 
     if (!permissionChecker.hasPermission(feature, requiredLevel)) {
       return React.createElement(
-        "div",
+        'div',
         {
-          className: "flex items-center justify-center min-h-screen",
+          className: 'flex items-center justify-center min-h-screen',
         },
         React.createElement(
-          "div",
+          'div',
           {
-            className: "text-center",
+            className: 'text-center',
           },
           [
             React.createElement(
-              "h2",
+              'h2',
               {
-                key: "title",
-                className: "text-2xl font-bold text-gray-900 mb-4",
+                key: 'title',
+                className: 'text-2xl font-bold text-gray-900 mb-4',
               },
-              "Access Denied"
+              'Access Denied'
             ),
             React.createElement(
-              "p",
+              'p',
               {
-                key: "message",
-                className: "text-gray-600",
+                key: 'message',
+                className: 'text-gray-600',
               },
               "You don't have permission to access this page."
             ),
@@ -251,7 +240,7 @@ export interface PermissionGuardProps {
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   user,
   feature,
-  requiredLevel = "READ",
+  requiredLevel = 'READ',
   category,
   unit,
   fallback = null,
@@ -261,12 +250,8 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 
   let hasAccess = false;
 
-  if (category && unit && feature === "plant_operations") {
-    hasAccess = permissionChecker.hasPlantOperationPermission(
-      category,
-      unit,
-      requiredLevel
-    );
+  if (category && unit && feature === 'plant_operations') {
+    hasAccess = permissionChecker.hasPlantOperationPermission(category, unit, requiredLevel);
   } else {
     hasAccess = permissionChecker.hasPermission(feature, requiredLevel);
   }

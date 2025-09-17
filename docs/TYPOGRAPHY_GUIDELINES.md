@@ -100,11 +100,11 @@ import { H1, H2, Body, Link, StatusText } from '../components/ui/Typography';
 ### Using Utility Functions
 
 ```tsx
-import { getTextColor, getHeadingClasses } from "../utils/typographyUtils";
+import { getTextColor, getHeadingClasses } from '../utils/typographyUtils';
 
 // Direct class generation
-const headingClasses = getHeadingClasses(1, "primary", "light");
-const textColor = getTextColor("accent", "primary", "dark");
+const headingClasses = getHeadingClasses(1, 'primary', 'light');
+const textColor = getTextColor('accent', 'primary', 'dark');
 ```
 
 ## 📊 Contrast Ratio Compliance
@@ -145,9 +145,9 @@ const textColor = getTextColor("accent", "primary", "dark");
 Use the `validateContrast` utility for development:
 
 ```tsx
-import { validateContrast } from "../utils/typographyUtils";
+import { validateContrast } from '../utils/typographyUtils';
 
-const isValid = validateContrast("text-slate-900", "bg-white"); // true
+const isValid = validateContrast('text-slate-900', 'bg-white'); // true
 ```
 
 ### Typography Playground

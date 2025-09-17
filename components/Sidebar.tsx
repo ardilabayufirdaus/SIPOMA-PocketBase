@@ -1,38 +1,32 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
-import { Page, Language } from "../App";
-import { useIsMobile } from "../hooks/useIsMobile";
-import ChevronDownIcon from "./icons/ChevronDownIcon";
-import SipomaLogo from "./icons/SipomaLogo";
-import HomeIcon from "./icons/HomeIcon";
-import UserGroupIcon from "./icons/UserGroupIcon";
-import FactoryIcon from "./icons/FactoryIcon";
-import ArchiveBoxArrowDownIcon from "./icons/ArchiveBoxArrowDownIcon";
-import ClipboardDocumentListIcon from "./icons/ClipboardDocumentListIcon";
-import FlagENIcon from "./icons/FlagENIcon";
-import FlagIDIcon from "./icons/FlagIDIcon";
-import ChartBarIcon from "./icons/ChartBarIcon";
-import EditIcon from "./icons/EditIcon";
-import PresentationChartLineIcon from "./icons/PresentationChartLineIcon";
-import ArrowTrendingUpIcon from "./icons/ArrowTrendingUpIcon";
-import CurrencyDollarIcon from "./icons/CurrencyDollarIcon";
-import BuildingLibraryIcon from "./icons/BuildingLibraryIcon";
-import ArchiveBoxIcon from "./icons/ArchiveBoxIcon";
-import TruckIcon from "./icons/TruckIcon";
-import ChartPieIcon from "./icons/ChartPieIcon";
-import Bars4Icon from "./icons/Bars4Icon";
-import CogIcon from "./icons/CogIcon";
-import ClockIcon from "./icons/ClockIcon";
-import PlusIcon from "./icons/PlusIcon";
-import ShieldCheckIcon from "./icons/ShieldCheckIcon";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Page, Language } from '../App';
+import { useIsMobile } from '../hooks/useIsMobile';
+import ChevronDownIcon from './icons/ChevronDownIcon';
+import SipomaLogo from './icons/SipomaLogo';
+import HomeIcon from './icons/HomeIcon';
+import UserGroupIcon from './icons/UserGroupIcon';
+import FactoryIcon from './icons/FactoryIcon';
+import ArchiveBoxArrowDownIcon from './icons/ArchiveBoxArrowDownIcon';
+import ClipboardDocumentListIcon from './icons/ClipboardDocumentListIcon';
+import FlagENIcon from './icons/FlagENIcon';
+import FlagIDIcon from './icons/FlagIDIcon';
+import ChartBarIcon from './icons/ChartBarIcon';
+import EditIcon from './icons/EditIcon';
+import PresentationChartLineIcon from './icons/PresentationChartLineIcon';
+import ArrowTrendingUpIcon from './icons/ArrowTrendingUpIcon';
+import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
+import BuildingLibraryIcon from './icons/BuildingLibraryIcon';
+import ArchiveBoxIcon from './icons/ArchiveBoxIcon';
+import TruckIcon from './icons/TruckIcon';
+import ChartPieIcon from './icons/ChartPieIcon';
+import Bars4Icon from './icons/Bars4Icon';
+import CogIcon from './icons/CogIcon';
+import ClockIcon from './icons/ClockIcon';
+import PlusIcon from './icons/PlusIcon';
+import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
 // Import Design System
-import { designSystem } from "../utils/designSystem";
+import { designSystem } from '../utils/designSystem';
 
 interface SidebarProps {
   currentPage: Page;
@@ -63,7 +57,7 @@ const NavLink: React.FC<NavLinkProps> = ({
   isCollapsed = false,
 }) => {
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       onClick();
     }
@@ -74,29 +68,25 @@ const NavLink: React.FC<NavLinkProps> = ({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={`w-full flex items-center ${
-        isCollapsed
-          ? "justify-center px-2 py-1.5"
-          : "text-left gap-2 px-2 py-1.5"
+        isCollapsed ? 'justify-center px-2 py-1.5' : 'text-left gap-2 px-2 py-1.5'
       } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px] ${
         isActive
-          ? "bg-red-500/15 text-red-400 shadow-sm border border-red-500/20"
-          : "text-slate-100 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
+          ? 'bg-red-500/15 text-red-400 shadow-sm border border-red-500/20'
+          : 'text-slate-100 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30'
       }`}
       title={isCollapsed ? label : undefined}
       aria-label={label}
-      aria-current={isActive ? "page" : undefined}
+      aria-current={isActive ? 'page' : undefined}
     >
       <div
         className={`transition-all duration-200 ${
-          isActive ? "scale-105" : "group-hover:scale-105"
+          isActive ? 'scale-105' : 'group-hover:scale-105'
         }`}
         aria-hidden="true"
       >
         {icon}
       </div>
-      {!isCollapsed && (
-        <span className="relative text-xs truncate">{label}</span>
-      )}
+      {!isCollapsed && <span className="relative text-xs truncate">{label}</span>}
 
       {/* Tooltip untuk collapsed state */}
       {isCollapsed && <div className="sidebar-tooltip">{label}</div>}
@@ -150,22 +140,19 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
   }, [isCollapsed, isOpen, isTransitioning]);
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleToggle();
     }
   };
 
-  const handleSubItemKeyDown = (
-    event: React.KeyboardEvent,
-    pageKey: string
-  ) => {
-    if (event.key === "Enter" || event.key === " ") {
+  const handleSubItemKeyDown = (event: React.KeyboardEvent, pageKey: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       try {
         onSelect(pageKey);
       } catch (error) {
-        console.error("Error in menu selection:", error);
+        console.error('Error in menu selection:', error);
       }
     }
   };
@@ -176,27 +163,23 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
         className={`w-full flex items-center ${
-          isCollapsed
-            ? "justify-center px-2 py-1.5"
-            : "justify-between text-left gap-1 px-2 py-1.5"
+          isCollapsed ? 'justify-center px-2 py-1.5' : 'justify-between text-left gap-1 px-2 py-1.5'
         } rounded-md text-xs font-semibold transition-all duration-200 group ${
           isActive
-            ? "text-white bg-gradient-to-r from-slate-700/40 to-slate-600/40"
-            : "text-slate-100 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30"
+            ? 'text-white bg-gradient-to-r from-slate-700/40 to-slate-600/40'
+            : 'text-slate-100 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30'
         }`}
         title={isCollapsed ? label : undefined}
         aria-expanded={!isCollapsed ? isOpen : undefined}
         aria-controls={
-          !isCollapsed
-            ? `submenu-${label.replace(/\s+/g, "-").toLowerCase()}`
-            : undefined
+          !isCollapsed ? `submenu-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined
         }
-        aria-label={`${label}${isActive ? " (active)" : ""}`}
+        aria-label={`${label}${isActive ? ' (active)' : ''}`}
       >
-        <div className={`flex items-center ${isCollapsed ? "" : "gap-1"}`}>
+        <div className={`flex items-center ${isCollapsed ? '' : 'gap-1'}`}>
           <div
             className={`transition-all duration-200 ${
-              isActive ? "scale-105" : "group-hover:scale-105"
+              isActive ? 'scale-105' : 'group-hover:scale-105'
             }`}
           >
             {icon}
@@ -205,16 +188,14 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
         </div>
         {!isCollapsed && (
           <ChevronDownIcon
-            className={`w-3 h-3 transition-all duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`w-3 h-3 transition-all duration-200 ${isOpen ? 'rotate-180' : ''}`}
           />
         )}
       </button>
       {isOpen && !isCollapsed && (
         <div
           className="ml-2 flex flex-col gap-2 p-2 rounded-lg border border-slate-700/30 bg-slate-900/80 shadow-lg animate-fade-in-fast"
-          id={`submenu-${label.replace(/\s+/g, "-").toLowerCase()}`}
+          id={`submenu-${label.replace(/\s+/g, '-').toLowerCase()}`}
           role="menu"
           aria-label={`${label} submenu`}
         >
@@ -225,24 +206,20 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
               onKeyDown={(e) => handleSubItemKeyDown(e, page.key)}
               className={`w-full text-left flex items-center gap-3 px-4 py-2 rounded-md text-sm transition-all duration-200 group ${
                 activeSubPage === page.key
-                  ? "text-red-500 font-semibold bg-red-500/10 border-l-4 border-red-500 shadow-md"
-                  : "text-slate-100 hover:text-white hover:bg-slate-800/60 hover:translate-x-1 focus:text-white focus:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                  ? 'text-red-500 font-semibold bg-red-500/10 border-l-4 border-red-500 shadow-md'
+                  : 'text-slate-100 hover:text-white hover:bg-slate-800/60 hover:translate-x-1 focus:text-white focus:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-red-500/50'
               }`}
               role="menuitem"
-              aria-current={activeSubPage === page.key ? "page" : undefined}
+              aria-current={activeSubPage === page.key ? 'page' : undefined}
             >
               <div
                 className={`transition-all duration-200 ${
-                  activeSubPage === page.key
-                    ? "scale-110"
-                    : "group-hover:scale-105"
+                  activeSubPage === page.key ? 'scale-110' : 'group-hover:scale-105'
                 }`}
               >
                 {page.icon}
               </div>
-              <span className="truncate">
-                {t[page.key as keyof typeof t] || page.key}
-              </span>
+              <span className="truncate">{t[page.key as keyof typeof t] || page.key}</span>
             </button>
           ))}
         </div>
@@ -264,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   autoHide = true, // Default true untuk desktop
 }) => {
   const isMobile = useIsMobile();
-  const iconClass = "w-4 h-4";
+  const iconClass = 'w-4 h-4';
   const sidebarRef = useRef<HTMLElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showSidebar, setShowSidebar] = useState(!autoHide || isMobile);
@@ -319,33 +296,33 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Memoize page arrays untuk performa yang lebih baik
   const plantOperationPages = useMemo(
     () => [
-      { key: "op_dashboard", icon: <ChartBarIcon className={iconClass} /> },
+      { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
       {
-        key: "op_report",
+        key: 'op_report',
         icon: <ClipboardDocumentListIcon className={iconClass} />,
       },
-      { key: "op_ccr_data_entry", icon: <EditIcon className={iconClass} /> },
+      { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
       {
-        key: "op_autonomous_data_entry",
+        key: 'op_autonomous_data_entry',
         icon: <EditIcon className={iconClass} />,
       },
       {
-        key: "op_monitoring",
+        key: 'op_monitoring',
         icon: <PresentationChartLineIcon className={iconClass} />,
       },
       {
-        key: "op_forecast",
+        key: 'op_forecast',
         icon: <ArrowTrendingUpIcon className={iconClass} />,
       },
       {
-        key: "op_cop_analysis",
+        key: 'op_cop_analysis',
         icon: <CurrencyDollarIcon className={iconClass} />,
       },
       {
-        key: "op_work_instruction_library",
+        key: 'op_work_instruction_library',
         icon: <BuildingLibraryIcon className={iconClass} />,
       },
-      { key: "op_master_data", icon: <ArchiveBoxIcon className={iconClass} /> },
+      { key: 'op_master_data', icon: <ArchiveBoxIcon className={iconClass} /> },
     ],
     [iconClass]
   );
@@ -353,27 +330,27 @@ const Sidebar: React.FC<SidebarProps> = ({
   const packingPlantPages = useMemo(
     () => [
       {
-        key: "pack_stock_forecast",
+        key: 'pack_stock_forecast',
         icon: <ArrowTrendingUpIcon className={iconClass} />,
       },
       {
-        key: "pack_logistics_performance",
+        key: 'pack_logistics_performance',
         icon: <TruckIcon className={iconClass} />,
       },
       {
-        key: "pack_packer_performance",
+        key: 'pack_packer_performance',
         icon: <ChartBarIcon className={iconClass} />,
       },
       {
-        key: "pack_distributor_warehouse",
+        key: 'pack_distributor_warehouse',
         icon: <BuildingLibraryIcon className={iconClass} />,
       },
       {
-        key: "pack_stock_data_entry",
+        key: 'pack_stock_data_entry',
         icon: <EditIcon className={iconClass} />,
       },
       {
-        key: "pack_master_data",
+        key: 'pack_master_data',
         icon: <ArchiveBoxIcon className={iconClass} />,
       },
     ],
@@ -382,18 +359,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const projectPages = useMemo(
     () => [
-      { key: "proj_dashboard", icon: <ChartPieIcon className={iconClass} /> },
-      { key: "proj_list", icon: <Bars4Icon className={iconClass} /> },
+      { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
+      { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
     ],
     [iconClass]
   );
 
   const userManagementPages = useMemo(
     () => [
-      { key: "user_list", icon: <UserGroupIcon className={iconClass} /> },
-      { key: "add_user", icon: <PlusIcon className={iconClass} /> },
-      { key: "user_roles", icon: <ShieldCheckIcon className={iconClass} /> },
-      { key: "user_activity", icon: <ClockIcon className={iconClass} /> },
+      { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
+      { key: 'add_user', icon: <PlusIcon className={iconClass} /> },
+      { key: 'user_roles', icon: <ShieldCheckIcon className={iconClass} /> },
+      { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
     ],
     [iconClass]
   );
@@ -407,7 +384,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClose();
         }
       } catch (error) {
-        console.error("Navigation error:", error);
+        console.error('Navigation error:', error);
         // Tetap tutup sidebar meskipun ada error navigasi
         if (isMobile && onClose) {
           onClose();
@@ -420,30 +397,30 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Handle ESC key to close sidebar on mobile
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isMobile && isOpen && onClose) {
+      if (event.key === 'Escape' && isMobile && isOpen && onClose) {
         event.preventDefault();
         onClose();
       }
     };
 
     if (isMobile && isOpen) {
-      document.addEventListener("keydown", handleKeyDown, { passive: false });
-      return () => document.removeEventListener("keydown", handleKeyDown);
+      document.addEventListener('keydown', handleKeyDown, { passive: false });
+      return () => document.removeEventListener('keydown', handleKeyDown);
     }
   }, [isMobile, isOpen, onClose]);
 
   const sidebarClasses = `
         ${
-          shouldCollapse ? "w-16" : isMobile ? "w-72" : "w-56"
+          shouldCollapse ? 'w-16' : isMobile ? 'w-72' : 'w-56'
         } bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col flex-shrink-0
         fixed inset-y-0 left-0 z-50 backdrop-blur-xl border-r border-white/10
         transform transition-all duration-300 ease-in-out
         ${
           isMobile
             ? isOpen
-              ? "translate-x-0 shadow-2xl"
-              : "-translate-x-full"
-            : "translate-x-0 shadow-xl"
+              ? 'translate-x-0 shadow-2xl'
+              : '-translate-x-full'
+            : 'translate-x-0 shadow-xl'
         }
         md:shadow-xl md:z-50
     `;
@@ -466,30 +443,26 @@ const Sidebar: React.FC<SidebarProps> = ({
         aria-label="Main navigation"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{ touchAction: "none" }}
+        style={{ touchAction: 'none' }}
       >
         <div
           className={`sidebar-modern-header ${
-            shouldCollapse ? "justify-center px-3" : "justify-between px-4"
+            shouldCollapse ? 'justify-center px-3' : 'justify-between px-4'
           }`}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10"></div>
-          <div
-            className={`flex items-center ${
-              shouldCollapse ? "" : "gap-2"
-            } relative z-10`}
-          >
+          <div className={`flex items-center ${shouldCollapse ? '' : 'gap-2'} relative z-10`}>
             <div className="p-1.5 rounded-lg bg-white/90 dark:bg-slate-800/90 shadow-lg border border-white/20 dark:border-slate-700/50">
               <img
                 src="/sipoma-logo.png"
                 alt="Sipoma Logo"
                 className="w-6 h-6 object-contain"
-                style={{ borderRadius: "4px" }}
+                style={{ borderRadius: '4px' }}
                 loading="lazy"
                 onError={(e) => {
                   // Fallback jika logo tidak bisa dimuat
                   const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
+                  target.style.display = 'none';
                 }}
               />
             </div>
@@ -505,16 +478,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-white/10 transition-colors relative z-10"
-              aria-label={
-                t.navigation?.closeSidebar || t.close || "Close sidebar"
-              }
+              aria-label={t.navigation?.closeSidebar || t.close || 'Close sidebar'}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -530,18 +496,18 @@ const Sidebar: React.FC<SidebarProps> = ({
           <NavLink
             label={t.mainDashboard}
             icon={<HomeIcon className="w-5 h-5" />}
-            isActive={currentPage === "dashboard"}
-            onClick={() => handleNavigate("dashboard")}
+            isActive={currentPage === 'dashboard'}
+            onClick={() => handleNavigate('dashboard')}
             isCollapsed={shouldCollapse}
           />
 
           <CollapsibleMenu
             label={t.plantOperations}
             icon={<FactoryIcon className="w-5 h-5" />}
-            isActive={currentPage === "operations"}
+            isActive={currentPage === 'operations'}
             pages={plantOperationPages}
             activeSubPage={activeSubPages.operations}
-            onSelect={(subPage) => handleNavigate("operations", subPage)}
+            onSelect={(subPage) => handleNavigate('operations', subPage)}
             t={t}
             isCollapsed={shouldCollapse}
           />
@@ -549,10 +515,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <CollapsibleMenu
             label={t.packingPlant}
             icon={<ArchiveBoxArrowDownIcon className="w-5 h-5" />}
-            isActive={currentPage === "packing"}
+            isActive={currentPage === 'packing'}
             pages={packingPlantPages}
             activeSubPage={activeSubPages.packing}
-            onSelect={(subPage) => handleNavigate("packing", subPage)}
+            onSelect={(subPage) => handleNavigate('packing', subPage)}
             t={t}
             isCollapsed={shouldCollapse}
           />
@@ -560,10 +526,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <CollapsibleMenu
             label={t.projectManagement}
             icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
-            isActive={currentPage === "projects"}
+            isActive={currentPage === 'projects'}
             pages={projectPages}
             activeSubPage={activeSubPages.projects}
-            onSelect={(subPage) => handleNavigate("projects", subPage)}
+            onSelect={(subPage) => handleNavigate('projects', subPage)}
             t={t}
             isCollapsed={shouldCollapse}
           />
@@ -571,10 +537,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <CollapsibleMenu
             label={t.userManagement}
             icon={<UserGroupIcon className="w-5 h-5" />}
-            isActive={currentPage === "users"}
+            isActive={currentPage === 'users'}
             pages={userManagementPages}
             activeSubPage={activeSubPages.users}
-            onSelect={(subPage) => handleNavigate("users", subPage)}
+            onSelect={(subPage) => handleNavigate('users', subPage)}
             t={t}
             isCollapsed={shouldCollapse}
           />
@@ -582,22 +548,22 @@ const Sidebar: React.FC<SidebarProps> = ({
           <NavLink
             label={t.slaManagement}
             icon={<ClockIcon className="w-5 h-5" />}
-            isActive={currentPage === "sla"}
-            onClick={() => handleNavigate("sla")}
+            isActive={currentPage === 'sla'}
+            onClick={() => handleNavigate('sla')}
             isCollapsed={shouldCollapse}
           />
           <NavLink
             label={t.header_settings}
             icon={<CogIcon className="w-5 h-5" />}
-            isActive={currentPage === "settings"}
-            onClick={() => handleNavigate("settings")}
+            isActive={currentPage === 'settings'}
+            onClick={() => handleNavigate('settings')}
             isCollapsed={shouldCollapse}
           />
         </nav>
 
         <div
           className={`px-4 py-6 border-t border-white/10 bg-gradient-to-r from-slate-900/50 to-slate-800/50 ${
-            shouldCollapse ? "px-2" : ""
+            shouldCollapse ? 'px-2' : ''
           }`}
         >
           {!shouldCollapse && (
@@ -607,26 +573,26 @@ const Sidebar: React.FC<SidebarProps> = ({
               </p>
               <div className="flex items-center justify-center space-x-3">
                 <button
-                  onClick={() => onLanguageChange("en")}
+                  onClick={() => onLanguageChange('en')}
                   className={`transition-all duration-200 rounded-lg p-1 ${
-                    currentLanguage === "en"
-                      ? "ring-2 ring-red-400 shadow-lg scale-105"
-                      : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                    currentLanguage === 'en'
+                      ? 'ring-2 ring-red-400 shadow-lg scale-105'
+                      : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
                   }`}
                   aria-label="Switch to English"
-                  disabled={currentLanguage === "en"}
+                  disabled={currentLanguage === 'en'}
                 >
                   <FlagENIcon className="w-8 h-auto rounded-md" />
                 </button>
                 <button
-                  onClick={() => onLanguageChange("id")}
+                  onClick={() => onLanguageChange('id')}
                   className={`transition-all duration-200 rounded-lg p-1 ${
-                    currentLanguage === "id"
-                      ? "ring-2 ring-red-400 shadow-lg scale-105"
-                      : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                    currentLanguage === 'id'
+                      ? 'ring-2 ring-red-400 shadow-lg scale-105'
+                      : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
                   }`}
                   aria-label="Switch to Indonesian"
-                  disabled={currentLanguage === "id"}
+                  disabled={currentLanguage === 'id'}
                 >
                   <FlagIDIcon className="w-8 h-auto rounded-md" />
                 </button>
@@ -637,28 +603,28 @@ const Sidebar: React.FC<SidebarProps> = ({
           {shouldCollapse ? (
             <div className="flex flex-col items-center space-y-2">
               <button
-                onClick={() => onLanguageChange("en")}
+                onClick={() => onLanguageChange('en')}
                 className={`transition-all duration-200 rounded-lg p-1 ${
-                  currentLanguage === "en"
-                    ? "ring-2 ring-red-400 shadow-lg scale-105"
-                    : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                  currentLanguage === 'en'
+                    ? 'ring-2 ring-red-400 shadow-lg scale-105'
+                    : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
                 }`}
                 aria-label="Switch to English"
                 title="English"
-                disabled={currentLanguage === "en"}
+                disabled={currentLanguage === 'en'}
               >
                 <FlagENIcon className="w-6 h-auto rounded-md" />
               </button>
               <button
-                onClick={() => onLanguageChange("id")}
+                onClick={() => onLanguageChange('id')}
                 className={`transition-all duration-200 rounded-lg p-1 ${
-                  currentLanguage === "id"
-                    ? "ring-2 ring-red-400 shadow-lg scale-105"
-                    : "opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                  currentLanguage === 'id'
+                    ? 'ring-2 ring-red-400 shadow-lg scale-105'
+                    : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
                 }`}
                 aria-label="Switch to Indonesian"
                 title="Indonesian"
-                disabled={currentLanguage === "id"}
+                disabled={currentLanguage === 'id'}
               >
                 <FlagIDIcon className="w-6 h-auto rounded-md" />
               </button>

@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 // import { Database } from "../types/supabase";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -13,7 +13,7 @@ export const apiClient = {
     // Login dengan username dan password
     async login(username: string, password: string) {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -32,13 +32,13 @@ export const apiClient = {
           )
         `
         )
-        .eq("username", username)
-        .eq("password_hash", password)
-        .eq("is_active", true)
+        .eq('username', username)
+        .eq('password_hash', password)
+        .eq('is_active', true)
         .single();
 
       if (error) throw error;
-      if (!data) throw new Error("User not found");
+      if (!data) throw new Error('User not found');
 
       return data;
     },
@@ -46,7 +46,7 @@ export const apiClient = {
     // Get user by ID dengan permissions
     async getById(id: string) {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -65,11 +65,11 @@ export const apiClient = {
           )
         `
         )
-        .eq("id", id)
+        .eq('id', id)
         .single();
 
       if (error) throw error;
-      if (!data) throw new Error("User not found");
+      if (!data) throw new Error('User not found');
 
       return data;
     },
@@ -77,7 +77,7 @@ export const apiClient = {
     // Get all users dengan permissions
     async getAll() {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -96,7 +96,7 @@ export const apiClient = {
           )
         `
         )
-        .order("created_at", { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -109,11 +109,7 @@ export const apiClient = {
       full_name?: string;
       role: string;
     }) {
-      const { data, error } = await supabase
-        .from("users")
-        .insert([userData])
-        .select()
-        .single();
+      const { data, error } = await supabase.from('users').insert([userData]).select().single();
 
       if (error) throw error;
       return data;
@@ -131,9 +127,9 @@ export const apiClient = {
       }
     ) {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .update(userData)
-        .eq("id", id)
+        .eq('id', id)
         .select()
         .single();
 
@@ -143,7 +139,7 @@ export const apiClient = {
 
     // Delete user
     async delete(id: string) {
-      const { error } = await supabase.from("users").delete().eq("id", id);
+      const { error } = await supabase.from('users').delete().eq('id', id);
 
       if (error) throw error;
     },
@@ -152,18 +148,18 @@ export const apiClient = {
     async toggleActive(id: string) {
       // Get current status
       const { data: currentUser, error: fetchError } = await supabase
-        .from("users")
-        .select("is_active")
-        .eq("id", id)
+        .from('users')
+        .select('is_active')
+        .eq('id', id)
         .single();
 
       if (fetchError) throw fetchError;
 
       // Toggle status
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .update({ is_active: !currentUser.is_active })
-        .eq("id", id)
+        .eq('id', id)
         .select()
         .single();
 
@@ -174,7 +170,7 @@ export const apiClient = {
     // Get user by email
     async getByEmail(email: string) {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
           `
           id,
@@ -193,7 +189,7 @@ export const apiClient = {
           )
         `
         )
-        .eq("email", email)
+        .eq('email', email)
         .single();
 
       if (error) throw error;
@@ -203,9 +199,9 @@ export const apiClient = {
     // Update last active timestamp
     async updateLastActive(id: string) {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .update({ last_active: new Date().toISOString() })
-        .eq("id", id)
+        .eq('id', id)
         .select()
         .single();
 
@@ -214,20 +210,14 @@ export const apiClient = {
     },
 
     // Request user registration
-    async requestRegistration({
-      email,
-      name,
-    }: {
-      email: string;
-      name: string;
-    }) {
+    async requestRegistration({ email, name }: { email: string; name: string }) {
       const { data, error } = await supabase
-        .from("user_requests")
+        .from('user_requests')
         .insert([
           {
             email,
             name,
-            status: "pending",
+            status: 'pending',
           },
         ])
         .select()
@@ -240,10 +230,10 @@ export const apiClient = {
     // Get registration requests
     async getRegistrationRequests() {
       const { data, error } = await supabase
-        .from("user_requests")
-        .select("*")
-        .eq("status", "pending")
-        .order("requested_at", { ascending: false });
+        .from('user_requests')
+        .select('*')
+        .eq('status', 'pending')
+        .order('requested_at', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -253,18 +243,14 @@ export const apiClient = {
     async approveRegistrationRequest(requestId: string, userData: any) {
       // First update the request status
       const { error: requestError } = await supabase
-        .from("user_requests")
-        .update({ status: "approved" })
-        .eq("id", requestId);
+        .from('user_requests')
+        .update({ status: 'approved' })
+        .eq('id', requestId);
 
       if (requestError) throw requestError;
 
       // Then create the user
-      const { data, error } = await supabase
-        .from("users")
-        .insert([userData])
-        .select()
-        .single();
+      const { data, error } = await supabase.from('users').insert([userData]).select().single();
 
       if (error) throw error;
       return data;
@@ -273,9 +259,9 @@ export const apiClient = {
     // Reject registration request
     async rejectRegistrationRequest(requestId: string) {
       const { data, error } = await supabase
-        .from("user_requests")
-        .update({ status: "rejected" })
-        .eq("id", requestId)
+        .from('user_requests')
+        .update({ status: 'rejected' })
+        .eq('id', requestId)
         .select()
         .single();
 
@@ -286,9 +272,9 @@ export const apiClient = {
     // Get user activity logs
     async getActivityLogs() {
       const { data, error } = await supabase
-        .from("user_activity_logs")
-        .select("*")
-        .order("timestamp", { ascending: false });
+        .from('user_activity_logs')
+        .select('*')
+        .order('timestamp', { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -299,10 +285,7 @@ export const apiClient = {
   permissions: {
     // Get all permissions
     async getAll() {
-      const { data, error } = await supabase
-        .from("permissions")
-        .select("*")
-        .order("module_name");
+      const { data, error } = await supabase.from('permissions').select('*').order('module_name');
 
       if (error) throw error;
       return data || [];
@@ -311,9 +294,9 @@ export const apiClient = {
     // Get permissions by module
     async getByModule(moduleName: string) {
       const { data, error } = await supabase
-        .from("permissions")
-        .select("*")
-        .eq("module_name", moduleName);
+        .from('permissions')
+        .select('*')
+        .eq('module_name', moduleName);
 
       if (error) throw error;
       return data || [];
@@ -322,7 +305,7 @@ export const apiClient = {
     // Assign permission to user
     async assignToUser(userId: string, permissionId: string) {
       const { data, error } = await supabase
-        .from("user_permissions")
+        .from('user_permissions')
         .insert([
           {
             user_id: userId,
@@ -339,10 +322,10 @@ export const apiClient = {
     // Remove permission from user
     async removeFromUser(userId: string, permissionId: string) {
       const { error } = await supabase
-        .from("user_permissions")
+        .from('user_permissions')
         .delete()
-        .eq("user_id", userId)
-        .eq("permission_id", permissionId);
+        .eq('user_id', userId)
+        .eq('permission_id', permissionId);
 
       if (error) throw error;
     },
@@ -350,7 +333,7 @@ export const apiClient = {
     // Get user permissions
     async getUserPermissions(userId: string) {
       const { data, error } = await supabase
-        .from("user_permissions")
+        .from('user_permissions')
         .select(
           `
           permissions (
@@ -361,7 +344,7 @@ export const apiClient = {
           )
         `
         )
-        .eq("user_id", userId);
+        .eq('user_id', userId);
 
       if (error) throw error;
       return data || [];
@@ -372,10 +355,7 @@ export const apiClient = {
   roles: {
     // Get all roles
     async getAll() {
-      const { data, error } = await supabase
-        .from("roles")
-        .select("*")
-        .order("name");
+      const { data, error } = await supabase.from('roles').select('*').order('name');
 
       if (error) throw error;
       return data || [];
@@ -383,11 +363,7 @@ export const apiClient = {
 
     // Get role by name
     async getByName(name: string) {
-      const { data, error } = await supabase
-        .from("roles")
-        .select("*")
-        .eq("name", name)
-        .single();
+      const { data, error } = await supabase.from('roles').select('*').eq('name', name).single();
 
       if (error) throw error;
       return data;

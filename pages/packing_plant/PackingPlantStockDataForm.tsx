@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { PackingPlantStockRecord } from "../../types";
+import React, { useState, useEffect } from 'react';
+import { PackingPlantStockRecord } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -8,16 +8,10 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
-type FormRecord = Omit<
-  PackingPlantStockRecord,
-  "id" | "opening_stock" | "stock_received"
->;
-type EditableRecord = Omit<
-  PackingPlantStockRecord,
-  "opening_stock" | "stock_received"
->;
+type FormRecord = Omit<PackingPlantStockRecord, 'id' | 'opening_stock' | 'stock_received'>;
+type EditableRecord = Omit<PackingPlantStockRecord, 'opening_stock' | 'stock_received'>;
 
 interface FormProps {
   recordToEdit: EditableRecord | null;
@@ -41,8 +35,8 @@ const PackingPlantStockDataForm: React.FC<FormProps> = ({
   const colorScheme = useColorScheme();
 
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
-    area: areas[0] || "",
+    date: new Date().toISOString().split('T')[0],
+    area: areas[0] || '',
     stock_out: 0,
     closing_stock: 0,
   });
@@ -57,21 +51,19 @@ const PackingPlantStockDataForm: React.FC<FormProps> = ({
       });
     } else {
       setFormData({
-        date: new Date().toISOString().split("T")[0],
-        area: areas[0] || "",
+        date: new Date().toISOString().split('T')[0],
+        area: areas[0] || '',
         stock_out: 0,
         closing_stock: 0,
       });
     }
   }, [recordToEdit, areas]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
+      [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
 
@@ -165,7 +157,7 @@ const PackingPlantStockDataForm: React.FC<FormProps> = ({
           type="submit"
           variant="primary"
           className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || "Save packing plant stock data"}
+          aria-label={t.save_button || 'Save packing plant stock data'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -174,7 +166,7 @@ const PackingPlantStockDataForm: React.FC<FormProps> = ({
           variant="secondary"
           onClick={onCancel}
           className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>

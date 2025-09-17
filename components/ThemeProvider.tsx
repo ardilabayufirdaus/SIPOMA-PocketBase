@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = "light" | "dark" | "system";
+type Theme = 'light' | 'dark' | 'system';
 
 interface ThemeContextType {
   theme: Theme;
@@ -13,7 +13,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
 };
@@ -25,11 +25,11 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  defaultTheme = "system",
+  defaultTheme = 'system',
 }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     // Get theme from localStorage or use default
-    const savedTheme = localStorage.getItem("sipoma-theme") as Theme;
+    const savedTheme = localStorage.getItem('sipoma-theme') as Theme;
     return savedTheme || defaultTheme;
   });
 
@@ -39,24 +39,22 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     const root = window.document.documentElement;
 
     const updateTheme = () => {
-      root.classList.remove("light", "dark");
+      root.classList.remove('light', 'dark');
 
-      if (theme === "dark") {
-        root.classList.add("dark");
+      if (theme === 'dark') {
+        root.classList.add('dark');
         setIsDark(true);
-      } else if (theme === "light") {
-        root.classList.add("light");
+      } else if (theme === 'light') {
+        root.classList.add('light');
         setIsDark(false);
       } else {
         // System theme
-        const systemDark = window.matchMedia(
-          "(prefers-color-scheme: dark)"
-        ).matches;
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (systemDark) {
-          root.classList.add("dark");
+          root.classList.add('dark');
           setIsDark(true);
         } else {
-          root.classList.add("light");
+          root.classList.add('light');
           setIsDark(false);
         }
       }
@@ -65,19 +63,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     updateTheme();
 
     // Listen for system theme changes when using 'system' theme
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      mediaQuery.addEventListener("change", updateTheme);
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addEventListener('change', updateTheme);
 
       return () => {
-        mediaQuery.removeEventListener("change", updateTheme);
+        mediaQuery.removeEventListener('change', updateTheme);
       };
     }
   }, [theme]);
 
   const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme);
-    localStorage.setItem("sipoma-theme", newTheme);
+    localStorage.setItem('sipoma-theme', newTheme);
   };
 
   const value: ThemeContextType = {
@@ -86,29 +84,25 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     isDark,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 // Theme Toggle Component
-export const ThemeToggle: React.FC<{ className?: string }> = ({
-  className = "",
-}) => {
+export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { theme, setTheme, isDark } = useTheme();
 
   const handleToggle = () => {
-    if (theme === "dark") {
-      setTheme("light");
-    } else if (theme === "light") {
-      setTheme("system");
+    if (theme === 'dark') {
+      setTheme('light');
+    } else if (theme === 'light') {
+      setTheme('system');
     } else {
-      setTheme("dark");
+      setTheme('dark');
     }
   };
 
   const getIcon = () => {
-    if (theme === "dark") {
+    if (theme === 'dark') {
       return (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
@@ -116,7 +110,7 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({
       );
     }
 
-    if (theme === "light") {
+    if (theme === 'light') {
       return (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path
@@ -142,14 +136,14 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({
 
   const getLabel = () => {
     switch (theme) {
-      case "dark":
-        return "Dark mode";
-      case "light":
-        return "Light mode";
-      case "system":
-        return "System theme";
+      case 'dark':
+        return 'Dark mode';
+      case 'light':
+        return 'Light mode';
+      case 'system':
+        return 'System theme';
       default:
-        return "Toggle theme";
+        return 'Toggle theme';
     }
   };
 
@@ -172,16 +166,14 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({
 };
 
 // Theme Selector Dropdown Component
-export const ThemeSelector: React.FC<{ className?: string }> = ({
-  className = "",
-}) => {
+export const ThemeSelector: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { theme, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const themes: { value: Theme; label: string; icon: React.ReactNode }[] = [
     {
-      value: "light",
-      label: "Light",
+      value: 'light',
+      label: 'Light',
       icon: (
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path
@@ -193,8 +185,8 @@ export const ThemeSelector: React.FC<{ className?: string }> = ({
       ),
     },
     {
-      value: "dark",
-      label: "Dark",
+      value: 'dark',
+      label: 'Dark',
       icon: (
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
@@ -202,8 +194,8 @@ export const ThemeSelector: React.FC<{ className?: string }> = ({
       ),
     },
     {
-      value: "system",
-      label: "System",
+      value: 'system',
+      label: 'System',
       icon: (
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path
@@ -236,28 +228,18 @@ export const ThemeSelector: React.FC<{ className?: string }> = ({
         {currentTheme?.icon}
         <span>{currentTheme?.label}</span>
         <svg
-          className={`w-4 h-4 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
           <div
             className="
             absolute right-0 z-20 mt-2 w-40
@@ -280,19 +262,15 @@ export const ThemeSelector: React.FC<{ className?: string }> = ({
                     text-left transition-colors duration-200
                     ${
                       theme === themeOption.value
-                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }
                   `}
                 >
                   {themeOption.icon}
                   <span>{themeOption.label}</span>
                   {theme === themeOption.value && (
-                    <svg
-                      className="w-4 h-4 ml-auto"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"

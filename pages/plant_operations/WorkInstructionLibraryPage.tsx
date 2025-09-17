@@ -1,12 +1,12 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { useWorkInstructions } from "../../hooks/useWorkInstructions";
-import { WorkInstruction } from "../../types";
-import Modal from "../../components/Modal";
-import WorkInstructionForm from "./WorkInstructionForm";
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
-import LinkIcon from "../../components/icons/LinkIcon";
+import React, { useState, useCallback, useMemo } from 'react';
+import { useWorkInstructions } from '../../hooks/useWorkInstructions';
+import { WorkInstruction } from '../../types';
+import Modal from '../../components/Modal';
+import WorkInstructionForm from './WorkInstructionForm';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import LinkIcon from '../../components/icons/LinkIcon';
 
 const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   const { instructions, addInstruction, updateInstruction, deleteInstruction } =
@@ -15,11 +15,8 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const [editingInstruction, setEditingInstruction] =
-    useState<WorkInstruction | null>(null);
-  const [deletingInstructionId, setDeletingInstructionId] = useState<
-    string | null
-  >(null);
+  const [editingInstruction, setEditingInstruction] = useState<WorkInstruction | null>(null);
+  const [deletingInstructionId, setDeletingInstructionId] = useState<string | null>(null);
 
   const handleOpenAddModal = useCallback(() => {
     setEditingInstruction(null);
@@ -44,8 +41,8 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   }, []);
 
   const handleSave = useCallback(
-    (instruction: WorkInstruction | Omit<WorkInstruction, "id">) => {
-      if ("id" in instruction) {
+    (instruction: WorkInstruction | Omit<WorkInstruction, 'id'>) => {
+      if ('id' in instruction) {
         updateInstruction(instruction as WorkInstruction);
       } else {
         addInstruction(instruction);
@@ -63,25 +60,22 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   }, [deletingInstructionId, deleteInstruction, handleCloseModals]);
 
   const groupedInstructions = useMemo(() => {
-    const grouped = instructions.reduce((acc, instruction) => {
-      const activity = instruction.activity;
-      if (!acc[activity]) {
-        acc[activity] = [];
-      }
-      acc[activity].push(instruction);
-      return acc;
-    }, {} as Record<string, WorkInstruction[]>);
+    const grouped = instructions.reduce(
+      (acc, instruction) => {
+        const activity = instruction.activity;
+        if (!acc[activity]) {
+          acc[activity] = [];
+        }
+        acc[activity].push(instruction);
+        return acc;
+      },
+      {} as Record<string, WorkInstruction[]>
+    );
 
     return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));
   }, [instructions]);
 
-  const tableHeaders = [
-    "doc_code",
-    "doc_title",
-    "description",
-    "link",
-    "actions",
-  ];
+  const tableHeaders = ['doc_code', 'doc_title', 'description', 'link', 'actions'];
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
@@ -189,11 +183,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
       <Modal
         isOpen={isFormModalOpen}
         onClose={handleCloseModals}
-        title={
-          editingInstruction
-            ? t.edit_instruction_title
-            : t.add_instruction_title
-        }
+        title={editingInstruction ? t.edit_instruction_title : t.add_instruction_title}
       >
         <WorkInstructionForm
           instructionToEdit={editingInstruction}

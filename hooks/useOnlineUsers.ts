@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { User } from "../types";
+import { useState, useEffect } from 'react';
+import { User } from '../types';
 
 const ONLINE_THRESHOLD_MINUTES = 5; // Consider user online if active within 5 minutes
 
@@ -9,9 +9,7 @@ export const useOnlineUsers = (users: User[]) => {
   useEffect(() => {
     const calculateOnlineUsers = () => {
       const now = new Date();
-      const thresholdTime = new Date(
-        now.getTime() - ONLINE_THRESHOLD_MINUTES * 60 * 1000
-      );
+      const thresholdTime = new Date(now.getTime() - ONLINE_THRESHOLD_MINUTES * 60 * 1000);
 
       const activeUsers = users.filter((u) => u.is_active);
 
@@ -32,10 +30,7 @@ export const useOnlineUsers = (users: User[]) => {
         const baseOnlineRatio = 0.6; // 60% base
         const variation = 0.2; // ±20% variation
         const randomFactor = Math.random() * variation * 2 - variation; // -0.2 to +0.2
-        const finalRatio = Math.max(
-          0.2,
-          Math.min(0.9, baseOnlineRatio + randomFactor)
-        );
+        const finalRatio = Math.max(0.2, Math.min(0.9, baseOnlineRatio + randomFactor));
 
         onlineCount = Math.max(1, Math.floor(activeUsers.length * finalRatio));
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ReactNode } from "react";
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
 
 interface LazyChartProps {
   children: ReactNode;
@@ -15,9 +15,9 @@ const LazyChart: React.FC<LazyChartProps> = ({
       <div className="animate-pulse text-gray-500">Loading chart...</div>
     </div>
   ),
-  rootMargin = "50px",
+  rootMargin = '50px',
   threshold = 0.1,
-  className = "",
+  className = '',
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);

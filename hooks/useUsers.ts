@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../utils/supabase";
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../utils/supabase';
 import {
   User,
   UserRole,
@@ -7,8 +7,8 @@ import {
   PermissionLevel,
   PlantUnit,
   PlantOperationsPermissions,
-} from "../types";
-import useErrorHandler from "./useErrorHandler";
+} from '../types';
+import useErrorHandler from './useErrorHandler';
 
 export const useUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -19,9 +19,9 @@ export const useUsers = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) {
         throw error;
@@ -39,7 +39,7 @@ export const useUsers = () => {
       }));
       setUsers(parsedData);
     } catch (error) {
-      handleError(error, "Error fetching users");
+      handleError(error, 'Error fetching users');
       setUsers([]);
     } finally {
       setLoading(false);
@@ -63,7 +63,7 @@ export const useCurrentUser = () => {
       setLoading(true);
       try {
         // Get user from localStorage (custom auth)
-        const storedUser = localStorage.getItem("currentUser");
+        const storedUser = localStorage.getItem('currentUser');
         if (!storedUser) {
           setCurrentUser(null);
           setLoading(false);
@@ -74,25 +74,25 @@ export const useCurrentUser = () => {
 
         // Verify user is still active by checking database
         const { data: user, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", userData.id)
+          .from('users')
+          .select('*')
+          .eq('id', userData.id)
           .single();
 
         if (userError || !user) {
           // User not found or error, clear localStorage
-          localStorage.removeItem("currentUser");
+          localStorage.removeItem('currentUser');
           setCurrentUser(null);
         } else if (!user.is_active) {
           // User inactive, clear session
-          localStorage.removeItem("currentUser");
+          localStorage.removeItem('currentUser');
           setCurrentUser(null);
         } else {
           // User active, set current user
           setCurrentUser(user as User);
         }
       } catch (error) {
-        handleError(error, "Error fetching current user");
+        handleError(error, 'Error fetching current user');
         setCurrentUser(null);
       } finally {
         setLoading(false);
@@ -103,15 +103,15 @@ export const useCurrentUser = () => {
 
     // Listen for storage changes (for logout in other tabs)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "currentUser" && !e.newValue) {
+      if (e.key === 'currentUser' && !e.newValue) {
         setCurrentUser(null);
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [handleError]);
 

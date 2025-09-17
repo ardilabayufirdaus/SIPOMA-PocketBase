@@ -1,5 +1,5 @@
-import React from "react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import React from 'react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
   ResponsiveContainer,
   LineChart,
@@ -16,7 +16,7 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts";
+} from 'recharts';
 
 export interface BreakdownData {
   title: string;
@@ -31,16 +31,16 @@ export interface BreakdownData {
     };
   }>;
   chartData?: Array<Record<string, any>>;
-  chartType?: "line" | "area" | "bar" | "pie";
+  chartType?: 'line' | 'area' | 'bar' | 'pie';
   details?: Array<{
     label: string;
     value: string | number;
-    status?: "good" | "warning" | "critical" | "neutral";
+    status?: 'good' | 'warning' | 'critical' | 'neutral';
   }>;
   actions?: Array<{
     label: string;
     onClick: () => void;
-    variant?: "primary" | "secondary" | "danger";
+    variant?: 'primary' | 'secondary' | 'danger';
   }>;
 }
 
@@ -50,14 +50,7 @@ interface InteractiveCardModalProps {
   data: BreakdownData;
 }
 
-const CHART_COLORS = [
-  "#ef4444",
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ec4899",
-];
+const CHART_COLORS = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
   isOpen,
@@ -75,7 +68,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
     };
 
     switch (data.chartType) {
-      case "line":
+      case 'line':
         return (
           <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -83,15 +76,15 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
             <YAxis fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "rgb(15 23 42)",
-                border: "1px solid rgb(51 65 85)",
-                borderRadius: "8px",
-                color: "white",
+                backgroundColor: 'rgb(15 23 42)',
+                border: '1px solid rgb(51 65 85)',
+                borderRadius: '8px',
+                color: 'white',
               }}
             />
             <Legend />
             {Object.keys(data.chartData[0] || {})
-              .filter((key) => key !== "name")
+              .filter((key) => key !== 'name')
               .map((key, index) => (
                 <Line
                   key={key}
@@ -105,7 +98,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
           </LineChart>
         );
 
-      case "area":
+      case 'area':
         return (
           <AreaChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -113,15 +106,15 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
             <YAxis fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "rgb(15 23 42)",
-                border: "1px solid rgb(51 65 85)",
-                borderRadius: "8px",
-                color: "white",
+                backgroundColor: 'rgb(15 23 42)',
+                border: '1px solid rgb(51 65 85)',
+                borderRadius: '8px',
+                color: 'white',
               }}
             />
             <Legend />
             {Object.keys(data.chartData[0] || {})
-              .filter((key) => key !== "name")
+              .filter((key) => key !== 'name')
               .map((key, index) => (
                 <Area
                   key={key}
@@ -136,7 +129,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
           </AreaChart>
         );
 
-      case "bar":
+      case 'bar':
         return (
           <BarChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -144,26 +137,22 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
             <YAxis fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "rgb(15 23 42)",
-                border: "1px solid rgb(51 65 85)",
-                borderRadius: "8px",
-                color: "white",
+                backgroundColor: 'rgb(15 23 42)',
+                border: '1px solid rgb(51 65 85)',
+                borderRadius: '8px',
+                color: 'white',
               }}
             />
             <Legend />
             {Object.keys(data.chartData[0] || {})
-              .filter((key) => key !== "name")
+              .filter((key) => key !== 'name')
               .map((key, index) => (
-                <Bar
-                  key={key}
-                  dataKey={key}
-                  fill={CHART_COLORS[index % CHART_COLORS.length]}
-                />
+                <Bar key={key} dataKey={key} fill={CHART_COLORS[index % CHART_COLORS.length]} />
               ))}
           </BarChart>
         );
 
-      case "pie":
+      case 'pie':
         return (
           <PieChart>
             <Pie
@@ -173,15 +162,10 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
-              label={({ name, percent }) =>
-                `${name} ${(percent * 100).toFixed(1)}%`
-              }
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(1)}%`}
             >
               {data.chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={CHART_COLORS[index % CHART_COLORS.length]}
-                />
+                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
@@ -237,19 +221,15 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.metrics.map((metric, index) => (
-                      <div
-                        key={index}
-                        className="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg"
-                      >
+                      <div key={index} className="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
                         <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
                           {metric.label}
                         </div>
                         <div className="flex items-baseline space-x-1 mt-1">
                           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {typeof metric.value === "string" ||
-                            typeof metric.value === "number"
+                            {typeof metric.value === 'string' || typeof metric.value === 'number'
                               ? String(metric.value)
-                              : "[Invalid Value]"}
+                              : '[Invalid Value]'}
                           </div>
                           {metric.unit && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -262,12 +242,11 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                             <span
                               className={`text-xs font-medium ${
                                 metric.trend.isPositive
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-red-600 dark:text-red-400"
+                                  ? 'text-green-600 dark:text-green-400'
+                                  : 'text-red-600 dark:text-red-400'
                               }`}
                             >
-                              {metric.trend.isPositive ? "↗" : "↘"}{" "}
-                              {metric.trend.value}%
+                              {metric.trend.isPositive ? '↗' : '↘'} {metric.trend.value}%
                             </span>
                           </div>
                         )}
@@ -310,21 +289,20 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                         </span>
                         <div className="flex items-center space-x-2">
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {typeof detail.value === "string" ||
-                            typeof detail.value === "number"
+                            {typeof detail.value === 'string' || typeof detail.value === 'number'
                               ? String(detail.value)
-                              : "[Invalid Value]"}
+                              : '[Invalid Value]'}
                           </span>
                           {detail.status && (
                             <span
                               className={`w-2 h-2 rounded-full ${
-                                detail.status === "good"
-                                  ? "bg-green-500"
-                                  : detail.status === "warning"
-                                  ? "bg-yellow-500"
-                                  : detail.status === "critical"
-                                  ? "bg-red-500"
-                                  : "bg-gray-500"
+                                detail.status === 'good'
+                                  ? 'bg-green-500'
+                                  : detail.status === 'warning'
+                                    ? 'bg-yellow-500'
+                                    : detail.status === 'critical'
+                                      ? 'bg-red-500'
+                                      : 'bg-gray-500'
                               }`}
                             ></span>
                           )}
@@ -345,11 +323,11 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                   key={index}
                   onClick={action.onClick}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    action.variant === "primary"
-                      ? "bg-red-600 hover:bg-red-700 text-white"
-                      : action.variant === "danger"
-                      ? "bg-red-600 hover:bg-red-700 text-white"
-                      : "bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-900 dark:text-white"
+                    action.variant === 'primary'
+                      ? 'bg-red-600 hover:bg-red-700 text-white'
+                      : action.variant === 'danger'
+                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : 'bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-900 dark:text-white'
                   }`}
                 >
                   {action.label}

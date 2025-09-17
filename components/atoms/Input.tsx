@@ -1,1 +1,1 @@
-export { default } from "../ui/Input";
+export { default } from '../ui/Input';

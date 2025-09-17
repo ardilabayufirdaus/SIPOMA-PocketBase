@@ -3,13 +3,7 @@
  * Advanced UI components with responsive utilities and design system
  */
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  createContext,
-  useContext,
-} from "react";
+import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
 
 // =============================================================================
 // DESIGN TOKENS
@@ -18,26 +12,26 @@ import React, {
 export const DESIGN_TOKENS = {
   // Spacing (8pt grid system)
   spacing: {
-    xs: "0.5rem", // 8px
-    sm: "0.75rem", // 12px
-    md: "1rem", // 16px
-    lg: "1.5rem", // 24px
-    xl: "2rem", // 32px
-    "2xl": "3rem", // 48px
-    "3xl": "4rem", // 64px
+    xs: '0.5rem', // 8px
+    sm: '0.75rem', // 12px
+    md: '1rem', // 16px
+    lg: '1.5rem', // 24px
+    xl: '2rem', // 32px
+    '2xl': '3rem', // 48px
+    '3xl': '4rem', // 64px
   },
 
   // Typography scale
   typography: {
     fontSize: {
-      xs: "0.75rem", // 12px
-      sm: "0.875rem", // 14px
-      base: "1rem", // 16px
-      lg: "1.125rem", // 18px
-      xl: "1.25rem", // 20px
-      "2xl": "1.5rem", // 24px
-      "3xl": "1.875rem", // 30px
-      "4xl": "2.25rem", // 36px
+      xs: '0.75rem', // 12px
+      sm: '0.875rem', // 14px
+      base: '1rem', // 16px
+      lg: '1.125rem', // 18px
+      xl: '1.25rem', // 20px
+      '2xl': '1.5rem', // 24px
+      '3xl': '1.875rem', // 30px
+      '4xl': '2.25rem', // 36px
     },
     fontWeight: {
       normal: 400,
@@ -50,49 +44,49 @@ export const DESIGN_TOKENS = {
   // Color palette
   colors: {
     primary: {
-      50: "#eff6ff",
-      100: "#dbeafe",
-      500: "#3b82f6",
-      600: "#2563eb",
-      700: "#1d4ed8",
+      50: '#eff6ff',
+      100: '#dbeafe',
+      500: '#3b82f6',
+      600: '#2563eb',
+      700: '#1d4ed8',
     },
     neutral: {
-      50: "#f9fafb",
-      100: "#f3f4f6",
-      200: "#e5e7eb",
-      500: "#6b7280",
-      600: "#4b5563",
-      900: "#111827",
+      50: '#f9fafb',
+      100: '#f3f4f6',
+      200: '#e5e7eb',
+      500: '#6b7280',
+      600: '#4b5563',
+      900: '#111827',
     },
     success: {
-      500: "#10b981",
-      600: "#059669",
+      500: '#10b981',
+      600: '#059669',
     },
     warning: {
-      500: "#f59e0b",
-      600: "#d97706",
+      500: '#f59e0b',
+      600: '#d97706',
     },
     danger: {
-      500: "#ef4444",
-      600: "#dc2626",
+      500: '#ef4444',
+      600: '#dc2626',
     },
   },
 
   // Border radius
   borderRadius: {
-    none: "0",
-    sm: "0.125rem", // 2px
-    md: "0.375rem", // 6px
-    lg: "0.5rem", // 8px
-    xl: "0.75rem", // 12px
-    full: "9999px",
+    none: '0',
+    sm: '0.125rem', // 2px
+    md: '0.375rem', // 6px
+    lg: '0.5rem', // 8px
+    xl: '0.75rem', // 12px
+    full: '9999px',
   },
 
   // Shadows
   shadows: {
-    sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-    md: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-    lg: "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
   },
 
   // Breakpoints
@@ -109,30 +103,28 @@ export const DESIGN_TOKENS = {
 // RESPONSIVE UTILITIES
 // =============================================================================
 
-export const useBreakpoint = (): "xs" | "sm" | "md" | "lg" | "xl" => {
-  const [breakpoint, setBreakpoint] = useState<
-    "xs" | "sm" | "md" | "lg" | "xl"
-  >("md");
+export const useBreakpoint = (): 'xs' | 'sm' | 'md' | 'lg' | 'xl' => {
+  const [breakpoint, setBreakpoint] = useState<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('md');
 
   useEffect(() => {
     const updateBreakpoint = () => {
       const width = window.innerWidth;
       if (width >= DESIGN_TOKENS.breakpoints.xl) {
-        setBreakpoint("xl");
+        setBreakpoint('xl');
       } else if (width >= DESIGN_TOKENS.breakpoints.lg) {
-        setBreakpoint("lg");
+        setBreakpoint('lg');
       } else if (width >= DESIGN_TOKENS.breakpoints.md) {
-        setBreakpoint("md");
+        setBreakpoint('md');
       } else if (width >= DESIGN_TOKENS.breakpoints.sm) {
-        setBreakpoint("sm");
+        setBreakpoint('sm');
       } else {
-        setBreakpoint("xs");
+        setBreakpoint('xs');
       }
     };
 
     updateBreakpoint();
-    window.addEventListener("resize", updateBreakpoint);
-    return () => window.removeEventListener("resize", updateBreakpoint);
+    window.addEventListener('resize', updateBreakpoint);
+    return () => window.removeEventListener('resize', updateBreakpoint);
   }, []);
 
   return breakpoint;
@@ -157,88 +149,74 @@ export const useResponsiveValue = <T,>(values: {
 
 interface EnhancedButtonProps {
   children: React.ReactNode;
-  variant?: "primary" | "secondary" | "ghost" | "danger";
-  size?: "xs" | "sm" | "md" | "lg";
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
   onClick?: () => void;
-  type?: "button" | "submit" | "reset";
+  type?: 'button' | 'submit' | 'reset';
   className?: string;
   icon?: React.ReactNode;
-  iconPosition?: "left" | "right";
+  iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
 }
 
 export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   children,
-  variant = "primary",
-  size = "md",
+  variant = 'primary',
+  size = 'md',
   disabled = false,
   loading = false,
   onClick,
-  type = "button",
-  className = "",
+  type = 'button',
+  className = '',
   icon,
-  iconPosition = "left",
+  iconPosition = 'left',
   fullWidth = false,
 }) => {
   const responsiveSize = useResponsiveValue({
     default: size,
-    xs: size === "lg" ? "md" : size,
+    xs: size === 'lg' ? 'md' : size,
   });
 
   const baseClasses = [
-    "inline-flex items-center justify-center",
-    "font-medium rounded-lg transition-all duration-200",
-    "focus:outline-none focus:ring-2 focus:ring-offset-2",
-    "disabled:opacity-50 disabled:cursor-not-allowed",
-    fullWidth ? "w-full" : "",
+    'inline-flex items-center justify-center',
+    'font-medium rounded-lg transition-all duration-200',
+    'focus:outline-none focus:ring-2 focus:ring-offset-2',
+    'disabled:opacity-50 disabled:cursor-not-allowed',
+    fullWidth ? 'w-full' : '',
   ];
 
   const variantClasses = {
     primary:
-      "bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm hover:shadow-md dark:bg-blue-500 dark:hover:bg-blue-600",
+      'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm hover:shadow-md dark:bg-blue-500 dark:hover:bg-blue-600',
     secondary:
-      "bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 focus:ring-gray-500 shadow-sm hover:shadow-md dark:bg-gray-500 dark:hover:bg-gray-600 dark:text-gray-900 dark:border-gray-400",
+      'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 focus:ring-gray-500 shadow-sm hover:shadow-md dark:bg-gray-500 dark:hover:bg-gray-600 dark:text-gray-900 dark:border-gray-400',
     ghost:
-      "bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500 dark:hover:bg-gray-800 dark:text-gray-300",
+      'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500 dark:hover:bg-gray-800 dark:text-gray-300',
     danger:
-      "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm hover:shadow-md dark:bg-red-500 dark:hover:bg-red-600",
+      'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm hover:shadow-md dark:bg-red-500 dark:hover:bg-red-600',
   };
 
   const sizeClasses = {
-    xs: "px-2.5 py-1.5 text-xs",
-    sm: "px-3 py-2 text-sm",
-    md: "px-4 py-2 text-base",
-    lg: "px-6 py-3 text-lg",
+    xs: 'px-2.5 py-1.5 text-xs',
+    sm: 'px-3 py-2 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-6 py-3 text-lg',
   };
 
-  const classes = [
-    ...baseClasses,
-    variantClasses[variant],
-    sizeClasses[responsiveSize],
-    className,
-  ]
+  const classes = [...baseClasses, variantClasses[variant], sizeClasses[responsiveSize], className]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   return (
-    <button
-      type={type}
-      className={classes}
-      onClick={onClick}
-      disabled={disabled || loading}
-    >
+    <button type={type} className={classes} onClick={onClick} disabled={disabled || loading}>
       {loading && (
         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
       )}
-      {!loading && icon && iconPosition === "left" && (
-        <span className="w-4 h-4 mr-2">{icon}</span>
-      )}
+      {!loading && icon && iconPosition === 'left' && <span className="w-4 h-4 mr-2">{icon}</span>}
       <span>{children}</span>
-      {!loading && icon && iconPosition === "right" && (
-        <span className="w-4 h-4 ml-2">{icon}</span>
-      )}
+      {!loading && icon && iconPosition === 'right' && <span className="w-4 h-4 ml-2">{icon}</span>}
     </button>
   );
 };
@@ -247,38 +225,38 @@ interface EnhancedCardProps {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
-  padding?: "sm" | "md" | "lg";
-  shadow?: "sm" | "md" | "lg";
+  padding?: 'sm' | 'md' | 'lg';
+  shadow?: 'sm' | 'md' | 'lg';
 }
 
 export const EnhancedCard: React.FC<EnhancedCardProps> = ({
   children,
-  className = "",
+  className = '',
   hover = true,
-  padding = "md",
-  shadow = "md",
+  padding = 'md',
+  shadow = 'md',
 }) => {
   const paddingClasses = {
-    sm: "p-4",
-    md: "p-6",
-    lg: "p-8",
+    sm: 'p-4',
+    md: 'p-6',
+    lg: 'p-8',
   };
 
   const shadowClasses = {
-    sm: "shadow-sm",
-    md: "shadow-md",
-    lg: "shadow-lg",
+    sm: 'shadow-sm',
+    md: 'shadow-md',
+    lg: 'shadow-lg',
   };
 
   const classes = [
-    "bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700",
+    'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700',
     paddingClasses[padding],
     shadowClasses[shadow],
-    hover ? "hover:shadow-lg transition-shadow duration-200" : "",
+    hover ? 'hover:shadow-lg transition-shadow duration-200' : '',
     className,
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   return <div className={classes}>{children}</div>;
 };
@@ -287,13 +265,13 @@ interface EnhancedInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  type?: "text" | "email" | "password" | "number" | "tel" | "url";
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url';
   disabled?: boolean;
   error?: string;
   label?: string;
   required?: boolean;
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: 'sm' | 'md' | 'lg';
   ariaLabel?: string;
   ariaDescribedBy?: string;
 }
@@ -302,37 +280,37 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   value,
   onChange,
   placeholder,
-  type = "text",
+  type = 'text',
   disabled = false,
   error,
   label,
   required = false,
-  className = "",
-  size = "md",
+  className = '',
+  size = 'md',
   ariaLabel,
   ariaDescribedBy,
 }) => {
   const responsiveSize = useResponsiveValue({
     default: size,
-    xs: size === "lg" ? "md" : size,
+    xs: size === 'lg' ? 'md' : size,
   });
 
   const sizeClasses = {
-    sm: "px-3 py-2 text-sm",
-    md: "px-4 py-2 text-base",
-    lg: "px-4 py-3 text-lg",
+    sm: 'px-3 py-2 text-sm',
+    md: 'px-4 py-2 text-base',
+    lg: 'px-4 py-3 text-lg',
   };
 
   const inputClasses = [
-    "w-full rounded-lg border transition-colors duration-200",
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
-    error ? "border-red-300 focus:ring-red-500" : "border-gray-300",
-    disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white",
+    'w-full rounded-lg border transition-colors duration-200',
+    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+    error ? 'border-red-300 focus:ring-red-500' : 'border-gray-300',
+    disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white',
     sizeClasses[responsiveSize],
     className,
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   return (
     <div className="space-y-1">
@@ -391,64 +369,51 @@ export const useClickAnimation = () => {
 
 interface GestaltContainerProps {
   children: React.ReactNode;
-  principle?:
-    | "proximity"
-    | "similarity"
-    | "closure"
-    | "continuity"
-    | "figure-ground";
+  principle?: 'proximity' | 'similarity' | 'closure' | 'continuity' | 'figure-ground';
   className?: string;
 }
 
 export const GestaltContainer: React.FC<GestaltContainerProps> = ({
   children,
-  principle = "proximity",
-  className = "",
+  principle = 'proximity',
+  className = '',
 }) => {
   const principleClasses = {
-    proximity: "space-y-4",
-    similarity: "space-y-2 [&>*]:border [&>*]:border-gray-200 [&>*]:rounded",
-    closure: "[&>*]:border [&>*]:border-dashed [&>*]:border-gray-300",
-    continuity:
-      "flex flex-col [&>*]:border-l-2 [&>*]:border-l-blue-500 [&>*]:pl-4",
-    "figure-ground": "relative bg-gray-100 p-8 [&>*]:relative [&>*]:z-10",
+    proximity: 'space-y-4',
+    similarity: 'space-y-2 [&>*]:border [&>*]:border-gray-200 [&>*]:rounded',
+    closure: '[&>*]:border [&>*]:border-dashed [&>*]:border-gray-300',
+    continuity: 'flex flex-col [&>*]:border-l-2 [&>*]:border-l-blue-500 [&>*]:pl-4',
+    'figure-ground': 'relative bg-gray-100 p-8 [&>*]:relative [&>*]:z-10',
   };
 
-  return (
-    <div className={`${principleClasses[principle]} ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`${principleClasses[principle]} ${className}`}>{children}</div>;
 };
 
 // =============================================================================
 // ACCESSIBILITY ENHANCEMENTS
 // =============================================================================
 
-export const useKeyboardNavigation = (
-  items: any[],
-  onSelect: (item: any) => void
-) => {
+export const useKeyboardNavigation = (items: any[], onSelect: (item: any) => void) => {
   const [focusedIndex, setFocusedIndex] = useState(-1);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       switch (event.key) {
-        case "ArrowDown":
+        case 'ArrowDown':
           event.preventDefault();
           setFocusedIndex((prev) => Math.min(prev + 1, items.length - 1));
           break;
-        case "ArrowUp":
+        case 'ArrowUp':
           event.preventDefault();
           setFocusedIndex((prev) => Math.max(prev - 1, 0));
           break;
-        case "Enter":
+        case 'Enter':
           event.preventDefault();
           if (focusedIndex >= 0 && focusedIndex < items.length) {
             onSelect(items[focusedIndex]);
           }
           break;
-        case "Escape":
+        case 'Escape':
           setFocusedIndex(-1);
           break;
       }

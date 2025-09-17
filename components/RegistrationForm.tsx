@@ -1,19 +1,16 @@
-import React, { useState } from "react";
-import { api } from "../utils/api";
-import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
+import React, { useState } from 'react';
+import { api } from '../utils/api';
+import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 
 interface RegistrationFormProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-const RegistrationForm: React.FC<RegistrationFormProps> = ({
-  onClose,
-  onSuccess,
-}) => {
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess }) => {
   const { announceToScreenReader } = useAccessibility();
   const [formData, setFormData] = useState({
-    name: "",
+    name: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,14 +22,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
     setLoading(true);
 
     if (!formData.name.trim()) {
-      setError("Nama lengkap wajib diisi");
+      setError('Nama lengkap wajib diisi');
       setLoading(false);
       return;
     }
 
     try {
       await api.users.requestRegistration({
-        email: "",
+        email: '',
         name: formData.name.trim(),
       });
 
@@ -42,10 +39,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         onClose();
       }, 2000);
     } catch (err: any) {
-      if (err.message?.includes("already exists")) {
-        setError("Nama sudah terdaftar atau sedang dalam proses verifikasi");
+      if (err.message?.includes('already exists')) {
+        setError('Nama sudah terdaftar atau sedang dalam proses verifikasi');
       } else {
-        setError("Gagal mengirim permintaan registrasi. Silakan coba lagi.");
+        setError('Gagal mengirim permintaan registrasi. Silakan coba lagi.');
       }
     } finally {
       setLoading(false);
@@ -83,8 +80,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               Permintaan Registrasi Berhasil!
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
-              Permintaan registrasi Anda telah dikirim. Admin akan memproses
-              permintaan Anda dalam 1-2 hari kerja.
+              Permintaan registrasi Anda telah dikirim. Admin akan memproses permintaan Anda dalam
+              1-2 hari kerja.
             </p>
           </div>
         </div>
@@ -102,18 +99,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <EnhancedButton
             onClick={() => {
               onClose();
-              announceToScreenReader("Registration form closed");
+              announceToScreenReader('Registration form closed');
             }}
             variant="ghost"
             size="sm"
             ariaLabel="Close registration form"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -141,10 +133,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </div>
 
           {error && (
-            <div
-              className="text-red-600 dark:text-red-400 text-sm text-center"
-              role="alert"
-            >
+            <div className="text-red-600 dark:text-red-400 text-sm text-center" role="alert">
               {error}
             </div>
           )}
@@ -154,7 +143,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               type="button"
               onClick={() => {
                 onClose();
-                announceToScreenReader("Registration form cancelled");
+                announceToScreenReader('Registration form cancelled');
               }}
               variant="outline"
               size="md"
@@ -169,14 +158,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               size="md"
               ariaLabel="Submit registration request"
             >
-              {loading ? "Mengirim..." : "Kirim Permintaan"}
+              {loading ? 'Mengirim...' : 'Kirim Permintaan'}
             </EnhancedButton>
           </div>
         </form>
 
         <div className="mt-4 text-xs text-slate-500 dark:text-slate-400 text-center">
-          Setelah mengirim permintaan, admin akan memverifikasi dan membuat akun
-          untuk Anda.
+          Setelah mengirim permintaan, admin akan memverifikasi dan membuat akun untuk Anda.
         </div>
       </div>
     </div>

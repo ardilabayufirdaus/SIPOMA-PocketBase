@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../utils/supabase";
+import { useState, useEffect } from 'react';
+import { supabase } from '../utils/supabase';
 
 export interface CopAnalysisData {
   id: string;
@@ -21,9 +21,9 @@ export const useCopAnalysisData = () => {
       try {
         setLoading(true);
         const { data: copData, error } = await supabase
-          .from("cop_analysis")
-          .select("*")
-          .order("created_at", { ascending: false });
+          .from('cop_analysis')
+          .select('*')
+          .order('created_at', { ascending: false });
 
         if (error) {
           setError(error.message);
@@ -31,7 +31,7 @@ export const useCopAnalysisData = () => {
           setData(copData || []);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
       }

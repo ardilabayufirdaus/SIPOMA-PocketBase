@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { User } from "../types";
-import { api } from "../utils/api";
+import { useState, useEffect, useCallback } from 'react';
+import { User } from '../types';
+import { api } from '../utils/api';
 
 export const useCurrentUser = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -16,7 +16,7 @@ export const useCurrentUser = () => {
         setError(null);
 
         // Get user from localStorage
-        const storedUser = localStorage.getItem("currentUser");
+        const storedUser = localStorage.getItem('currentUser');
         if (!storedUser) {
           if (mounted) {
             setCurrentUser(null);
@@ -31,7 +31,7 @@ export const useCurrentUser = () => {
         const dbUser = await api.users.getById(userData.id);
         if (!dbUser.is_active) {
           // User inactive, clear session
-          localStorage.removeItem("currentUser");
+          localStorage.removeItem('currentUser');
           if (mounted) {
             setCurrentUser(null);
             setLoading(false);
@@ -45,7 +45,7 @@ export const useCurrentUser = () => {
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : "Unknown error");
+          setError(err instanceof Error ? err.message : 'Unknown error');
           setCurrentUser(null);
         }
       } finally {
@@ -59,7 +59,7 @@ export const useCurrentUser = () => {
 
     // Listen for auth state changes
     const handleAuthChange = () => {
-      const storedUser = localStorage.getItem("currentUser");
+      const storedUser = localStorage.getItem('currentUser');
       if (!storedUser) {
         setCurrentUser(null);
         setLoading(false);
@@ -70,23 +70,23 @@ export const useCurrentUser = () => {
       }
     };
 
-    window.addEventListener("authStateChanged", handleAuthChange);
+    window.addEventListener('authStateChanged', handleAuthChange);
 
     return () => {
       mounted = false;
-      window.removeEventListener("authStateChanged", handleAuthChange);
+      window.removeEventListener('authStateChanged', handleAuthChange);
     };
   }, []);
 
   // Function untuk logout - menggunakan useAuth logout
   const logout = useCallback(() => {
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem('currentUser');
     setCurrentUser(null);
     setError(null);
     setLoading(false);
 
     // Dispatch custom event to notify other components
-    window.dispatchEvent(new CustomEvent("authStateChanged"));
+    window.dispatchEvent(new CustomEvent('authStateChanged'));
   }, []);
 
   return { currentUser, loading, error, logout };

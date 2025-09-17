@@ -50,12 +50,12 @@ export function calculateStockPrediction(
   today.setHours(0, 0, 0, 0);
 
   // Validasi input parameters
-  if (!plantParameters || typeof plantParameters.currentStock !== "number") {
-    throw new Error("Invalid plant parameters: currentStock must be a number");
+  if (!plantParameters || typeof plantParameters.currentStock !== 'number') {
+    throw new Error('Invalid plant parameters: currentStock must be a number');
   }
 
   if (projectionPeriodDays <= 0 || historyPeriodDays < 0) {
-    throw new Error("Invalid period parameters");
+    throw new Error('Invalid period parameters');
   }
 
   // Tahap 1: Inisialisasi Data Historis
@@ -89,9 +89,7 @@ export function calculateStockPrediction(
 
   // Tahap 2: Data Hari Ini (Titik Awal Proyeksi)
   const todayDateString = formatDateToYYYYMMDD(today);
-  const todayHistoricalData = historicalStock.find(
-    (h) => h.date === todayDateString
-  );
+  const todayHistoricalData = historicalStock.find((h) => h.date === todayDateString);
   const todayArrivals = Number(todayHistoricalData?.arrivals) || 0;
 
   prognosisData.push({
@@ -132,10 +130,7 @@ export function calculateStockPrediction(
     });
 
     // Tahap 4: Identifikasi Tanggal Kritis
-    if (
-      criticalStockDate === null &&
-      projectedStock < (Number(plantParameters.safetyStock) || 0)
-    ) {
+    if (criticalStockDate === null && projectedStock < (Number(plantParameters.safetyStock) || 0)) {
       criticalStockDate = futureDateString;
     }
   }
@@ -151,19 +146,17 @@ export function calculateStockPrediction(
  */
 function formatDateToYYYYMMDD(date: Date): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
 /**
  * Fungsi untuk mengkonversi data existing ke format yang diperlukan
  */
-export function convertExistingDataToHistoricalStock(
-  stockRecords: any[]
-): HistoricalStock[] {
+export function convertExistingDataToHistoricalStock(stockRecords: any[]): HistoricalStock[] {
   if (!Array.isArray(stockRecords)) {
-    console.warn("Invalid stockRecords provided, returning empty array");
+    console.warn('Invalid stockRecords provided, returning empty array');
     return [];
   }
 
@@ -172,9 +165,9 @@ export function convertExistingDataToHistoricalStock(
       // Basic validation before processing
       return (
         record &&
-        typeof record === "object" &&
+        typeof record === 'object' &&
         record.date &&
-        typeof record.date === "string" &&
+        typeof record.date === 'string' &&
         record.date.length >= 10
       ); // Minimum date string length YYYY-MM-DD
     })
@@ -184,19 +177,11 @@ export function convertExistingDataToHistoricalStock(
       const arrivals = Number(record.stock_received);
 
       return {
-        date: record.date.split("T")[0], // Ensure YYYY-MM-DD format
-        stockLevel:
-          !isNaN(stockLevel) && isFinite(stockLevel) && stockLevel >= 0
-            ? stockLevel
-            : 0,
+        date: record.date.split('T')[0], // Ensure YYYY-MM-DD format
+        stockLevel: !isNaN(stockLevel) && isFinite(stockLevel) && stockLevel >= 0 ? stockLevel : 0,
         consumption:
-          !isNaN(consumption) && isFinite(consumption) && consumption >= 0
-            ? consumption
-            : 0,
-        arrivals:
-          !isNaN(arrivals) && isFinite(arrivals) && arrivals >= 0
-            ? arrivals
-            : 0,
+          !isNaN(consumption) && isFinite(consumption) && consumption >= 0 ? consumption : 0,
+        arrivals: !isNaN(arrivals) && isFinite(arrivals) && arrivals >= 0 ? arrivals : 0,
       };
     })
     .filter((record) => {
@@ -213,7 +198,7 @@ export function convertMasterDataToPlantParameters(
   area: string
 ): PlantParameters {
   if (!Array.isArray(masterData) || masterData.length === 0) {
-    console.warn("No master data available, using fallback parameters");
+    console.warn('No master data available, using fallback parameters');
     return {
       currentStock: 1000, // Reasonable default
       safetyStock: 50,
@@ -239,17 +224,11 @@ export function convertMasterDataToPlantParameters(
 
   return {
     currentStock:
-      !isNaN(currentStock) && isFinite(currentStock) && currentStock >= 0
-        ? currentStock
-        : 1000,
+      !isNaN(currentStock) && isFinite(currentStock) && currentStock >= 0 ? currentStock : 1000,
     safetyStock:
-      !isNaN(safetyStock) && isFinite(safetyStock) && safetyStock >= 0
-        ? safetyStock
-        : 50,
+      !isNaN(safetyStock) && isFinite(safetyStock) && safetyStock >= 0 ? safetyStock : 50,
     avgDailyConsumption:
-      !isNaN(avgDailyConsumption) &&
-      isFinite(avgDailyConsumption) &&
-      avgDailyConsumption > 0
+      !isNaN(avgDailyConsumption) && isFinite(avgDailyConsumption) && avgDailyConsumption > 0
         ? avgDailyConsumption
         : 100,
   };
@@ -267,11 +246,7 @@ export function generatePlannedDeliveries(
 ): PlannedDelivery[] {
   const plannedDeliveries: PlannedDelivery[] = [];
 
-  for (
-    let i = deliveryFrequencyDays;
-    i <= projectionPeriodDays;
-    i += deliveryFrequencyDays
-  ) {
+  for (let i = deliveryFrequencyDays; i <= projectionPeriodDays; i += deliveryFrequencyDays) {
     const deliveryDate = new Date(projectionStartDate);
     deliveryDate.setDate(deliveryDate.getDate() + i);
 
@@ -295,35 +270,23 @@ export function calculatePredictionMetrics(
 
   // Hitung hari sampai stok habis
   const daysUntilEmpty = criticalStockDate
-    ? calculateDaysBetween(
-        prognosisData[prognosisData.length - 1].date,
-        criticalStockDate
-      )
+    ? calculateDaysBetween(prognosisData[prognosisData.length - 1].date, criticalStockDate)
     : Infinity;
 
   // Hitung rata-rata level stok selama periode proyeksi
   const projectionData = prognosisData.filter((d) => !d.isActual);
   const avgProjectedStock =
     projectionData.length > 0
-      ? projectionData.reduce((sum, d) => sum + d.stockLevel, 0) /
-        projectionData.length
+      ? projectionData.reduce((sum, d) => sum + d.stockLevel, 0) / projectionData.length
       : 0;
 
   // Hitung total konsumsi dan kedatangan yang diproyeksikan
-  const totalProjectedConsumption = projectionData.reduce(
-    (sum, d) => sum + d.consumption,
-    0
-  );
-  const totalProjectedArrivals = projectionData.reduce(
-    (sum, d) => sum + d.arrivals,
-    0
-  );
+  const totalProjectedConsumption = projectionData.reduce((sum, d) => sum + d.consumption, 0);
+  const totalProjectedArrivals = projectionData.reduce((sum, d) => sum + d.arrivals, 0);
 
   // Hitung tingkat turn-over stok
   const stockTurnoverRate =
-    plantParameters.currentStock > 0
-      ? totalProjectedConsumption / plantParameters.currentStock
-      : 0;
+    plantParameters.currentStock > 0 ? totalProjectedConsumption / plantParameters.currentStock : 0;
 
   return {
     daysUntilEmpty,
@@ -349,17 +312,14 @@ function calculateDaysBetween(date1: string, date2: string): number {
 /**
  * Fungsi untuk menghitung akurasi proyeksi berdasarkan variance data historis
  */
-function calculateProjectionAccuracy(
-  prognosisData: DailyProjectionData[]
-): number {
+function calculateProjectionAccuracy(prognosisData: DailyProjectionData[]): number {
   const actualData = prognosisData.filter((d) => d.isActual);
 
   if (actualData.length < 2) return 0;
 
   const stockLevels = actualData.map((d) => d.stockLevel);
   const variance = calculateVariance(stockLevels);
-  const mean =
-    stockLevels.reduce((sum, level) => sum + level, 0) / stockLevels.length;
+  const mean = stockLevels.reduce((sum, level) => sum + level, 0) / stockLevels.length;
 
   // Hitung coefficient of variation sebagai indikator akurasi
   const coefficientOfVariation = mean > 0 ? Math.sqrt(variance) / mean : 0;

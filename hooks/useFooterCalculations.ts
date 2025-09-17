@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ParameterSetting, ParameterDataType } from "../types";
+import { useMemo } from 'react';
+import { ParameterSetting, ParameterDataType } from '../types';
 
 interface FooterCalculationOptions {
   filteredParameterSettings: ParameterSetting[];
@@ -11,10 +11,8 @@ export const useFooterCalculations = ({
   parameterDataMap,
 }: FooterCalculationOptions) => {
   const parameterFooterData = useMemo(() => {
-    const footer: Record<
-      string,
-      { total: number; avg: number; min: number; max: number } | null
-    > = {};
+    const footer: Record<string, { total: number; avg: number; min: number; max: number } | null> =
+      {};
 
     filteredParameterSettings.forEach((param) => {
       if (param.data_type !== ParameterDataType.NUMBER) {

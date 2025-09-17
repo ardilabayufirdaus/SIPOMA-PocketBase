@@ -1,5 +1,5 @@
-import React, { Component, ReactNode } from "react";
-import { EnhancedButton } from "./ui/EnhancedComponents";
+import React, { Component, ReactNode } from 'react';
+import { EnhancedButton } from './ui/EnhancedComponents';
 
 interface Props {
   children: ReactNode;
@@ -22,7 +22,7 @@ class ChartErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error("Chart Error Boundary caught an error:", error, errorInfo);
+    console.error('Chart Error Boundary caught an error:', error, errorInfo);
   }
 
   render() {
@@ -49,12 +49,8 @@ class ChartErrorBoundary extends Component<Props, State> {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">
-              Chart Loading Error
-            </h3>
-            <p className="text-sm text-slate-600 mb-4">
-              Unable to render chart visualization
-            </p>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Chart Loading Error</h3>
+            <p className="text-sm text-slate-600 mb-4">Unable to render chart visualization</p>
             <EnhancedButton
               onClick={() => this.setState({ hasError: false })}
               variant="primary"

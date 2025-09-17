@@ -1,6 +1,6 @@
-import React from "react";
-import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import React from 'react';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -38,14 +38,14 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, t }) => {
       tooltip: {
         callbacks: {
           label: function (context: any) {
-            const label = context.label || "";
+            const label = context.label || '';
             const value = context.parsed || 0;
             return `${label}: ${value}`;
           },
         },
       },
     },
-    cutout: "60%", // Creates donut effect
+    cutout: '60%', // Creates donut effect
   };
 
   return (

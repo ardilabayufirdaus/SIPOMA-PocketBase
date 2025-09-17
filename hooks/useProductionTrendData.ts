@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ParameterSetting } from "../types";
+import { useMemo } from 'react';
+import { ParameterSetting } from '../types';
 
 export interface ProductionTrendDataPoint {
   timestamp: string;
@@ -16,7 +16,7 @@ export const useProductionTrendData = (
   plantCategory?: string
 ) => {
   const productionTrendData = useMemo((): ProductionTrendDataPoint[] => {
-    console.log("🔍 Production Trend Data Processor Input:", {
+    console.log('🔍 Production Trend Data Processor Input:', {
       footerDataCount: footerData.length,
       parametersCount: parameters.length,
       selectedProductionParameters,
@@ -33,12 +33,8 @@ export const useProductionTrendData = (
 
     // Generate all dates in the month
     const datesInMonth: string[] = [];
-    for (
-      let d = new Date(startDate);
-      d <= endDate;
-      d.setDate(d.getDate() + 1)
-    ) {
-      datesInMonth.push(d.toISOString().split("T")[0]);
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      datesInMonth.push(d.toISOString().split('T')[0]);
     }
 
     // Group footer data by date and parameter
@@ -52,12 +48,12 @@ export const useProductionTrendData = (
     // Filter footer data based on selected parameters and plant unit
     const filteredFooterData = footerData.filter((item) => {
       // Filter by plant unit if specified
-      if (plantUnit && plantUnit !== "all" && item.plant_unit !== plantUnit) {
+      if (plantUnit && plantUnit !== 'all' && item.plant_unit !== plantUnit) {
         return false;
       }
 
       // Filter by plant category if specified (need to match with parameter category)
-      if (plantCategory && plantCategory !== "all") {
+      if (plantCategory && plantCategory !== 'all') {
         const param = parameters.find((p) => p.id === item.parameter_id);
         if (param && param.category !== plantCategory) {
           return false;
@@ -65,10 +61,7 @@ export const useProductionTrendData = (
       }
 
       // If no parameters selected, show all
-      if (
-        !selectedProductionParameters ||
-        selectedProductionParameters.length === 0
-      ) {
+      if (!selectedProductionParameters || selectedProductionParameters.length === 0) {
         return true;
       }
 
@@ -76,22 +69,20 @@ export const useProductionTrendData = (
       return selectedProductionParameters.includes(item.parameter_id);
     });
 
-    console.log("🔍 Filtered footer data:", {
+    console.log('🔍 Filtered footer data:', {
       filteredCount: filteredFooterData.length,
       selectedProductionParameters,
       plantUnit,
       plantCategory,
       sampleFilteredData: filteredFooterData.slice(0, 3),
-      uniqueParameterIds: [
-        ...new Set(filteredFooterData.map((item) => item.parameter_id)),
-      ],
+      uniqueParameterIds: [...new Set(filteredFooterData.map((item) => item.parameter_id))],
     });
 
     // Group data by date
     filteredFooterData.forEach((item) => {
       const param = parameters.find((p) => p.id === item.parameter_id);
       if (!param) {
-        console.log("🔍 Parameter not found for footer item:", {
+        console.log('🔍 Parameter not found for footer item:', {
           parameterId: item.parameter_id,
           availableParameterIds: parameters.map((p) => p.id).slice(0, 10),
           item,
@@ -111,7 +102,7 @@ export const useProductionTrendData = (
       const totalValue = item.total || 0;
       dataByDate[itemDate][key] = totalValue;
 
-      console.log("🔍 Processing footer item:", {
+      console.log('🔍 Processing footer item:', {
         parameterId: item.parameter_id,
         paramName,
         date: itemDate,
@@ -131,16 +122,13 @@ export const useProductionTrendData = (
       let parametersToShow = parameters;
 
       // If specific parameters are selected, only show those
-      if (
-        selectedProductionParameters &&
-        selectedProductionParameters.length > 0
-      ) {
+      if (selectedProductionParameters && selectedProductionParameters.length > 0) {
         parametersToShow = parameters.filter((param) =>
           selectedProductionParameters.includes(param.id)
         );
       }
 
-      console.log("🔍 Converting data for date:", date, {
+      console.log('🔍 Converting data for date:', date, {
         paramValuesKeys: Object.keys(paramValues),
         parametersToShowCount: parametersToShow.length,
       });
@@ -153,7 +141,7 @@ export const useProductionTrendData = (
       return chartDataPoint;
     });
 
-    console.log("🔍 Final Production Trend Data from Footer:", {
+    console.log('🔍 Final Production Trend Data from Footer:', {
       resultCount: result.length,
       sampleData: result.slice(0, 5),
       dataByDateKeys: Object.keys(dataByDate),

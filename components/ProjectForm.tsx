@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Project, ProjectStatus } from "../types";
+import React, { useState } from 'react';
+import { Project, ProjectStatus } from '../types';
 
 // Import Enhanced Components
 import {
@@ -8,23 +8,18 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "./ui/EnhancedComponents";
+} from './ui/EnhancedComponents';
 
 interface ProjectFormProps {
   t: any;
-  onSave: (project: Omit<Project, "id"> | Project) => void;
+  onSave: (project: Omit<Project, 'id'> | Project) => void;
   onCancel: () => void;
   project?: Project | null;
 }
 
-const ProjectForm: React.FC<ProjectFormProps> = ({
-  t,
-  onSave,
-  onCancel,
-  project,
-}) => {
+const ProjectForm: React.FC<ProjectFormProps> = ({ t, onSave, onCancel, project }) => {
   const [formData, setFormData] = useState({
-    title: project?.title || "",
+    title: project?.title || '',
     budget: project?.budget || 0,
     status: project?.status || ProjectStatus.ACTIVE,
   });
@@ -35,13 +30,11 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
+      [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
 
@@ -57,11 +50,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="title"
-          className="block text-sm font-medium text-slate-700 mb-1"
-        >
-          {t.project_name || "Project Name"}
+        <label htmlFor="title" className="block text-sm font-medium text-slate-700 mb-1">
+          {t.project_name || 'Project Name'}
         </label>
         <input
           type="text"
@@ -71,15 +61,12 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           onChange={handleChange}
           required
           className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-          placeholder={t.project_name_placeholder || "Enter project name..."}
+          placeholder={t.project_name_placeholder || 'Enter project name...'}
         />
       </div>
       <div>
-        <label
-          htmlFor="budget"
-          className="block text-sm font-medium text-slate-700 mb-1"
-        >
-          {t.proj_budget || "Budget"} (Rp)
+        <label htmlFor="budget" className="block text-sm font-medium text-slate-700 mb-1">
+          {t.proj_budget || 'Budget'} (Rp)
         </label>
         <input
           type="number"
@@ -98,19 +85,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           variant="secondary"
           size="sm"
           onClick={onCancel}
-          aria-label={t.cancel || "Cancel project form"}
+          aria-label={t.cancel || 'Cancel project form'}
         >
-          {t.cancel || "Cancel"}
+          {t.cancel || 'Cancel'}
         </EnhancedButton>
         <EnhancedButton
           variant="primary"
           size="sm"
           type="submit"
-          aria-label={
-            project ? t.update || "Update project" : t.add || "Add project"
-          }
+          aria-label={project ? t.update || 'Update project' : t.add || 'Add project'}
         >
-          {project ? t.update || "Update" : t.add || "Add"}
+          {project ? t.update || 'Update' : t.add || 'Add'}
         </EnhancedButton>
       </div>
     </form>

@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
-import PlusIcon from "./icons/PlusIcon";
-import UserIcon from "./icons/UserIcon";
-import BellIcon from "./icons/BellIcon";
-import CogIcon from "./icons/CogIcon";
-import ArrowRightOnRectangleIcon from "./icons/ArrowRightOnRectangleIcon";
-import Bars3Icon from "./icons/Bars3Icon";
-import { Page, Theme } from "../App";
-import { Alert, AlertSeverity, User } from "../types";
-import { formatTimeSince } from "../utils/formatters";
-import ShieldCheckIcon from "./icons/ShieldCheckIcon";
-import QuestionMarkCircleIcon from "./icons/QuestionMarkCircleIcon";
-import SunIcon from "./icons/SunIcon";
-import MoonIcon from "./icons/MoonIcon";
-import { useIsMobile } from "../hooks/useIsMobile";
-import { useNotifications } from "../hooks/useNotifications";
-import NotificationPanel from "./NotificationPanel";
+import React, { useState, useEffect, useRef } from 'react';
+import PlusIcon from './icons/PlusIcon';
+import UserIcon from './icons/UserIcon';
+import BellIcon from './icons/BellIcon';
+import CogIcon from './icons/CogIcon';
+import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
+import Bars3Icon from './icons/Bars3Icon';
+import { Page, Theme } from '../App';
+import { Alert, AlertSeverity, User } from '../types';
+import { formatTimeSince } from '../utils/formatters';
+import ShieldCheckIcon from './icons/ShieldCheckIcon';
+import QuestionMarkCircleIcon from './icons/QuestionMarkCircleIcon';
+import SunIcon from './icons/SunIcon';
+import MoonIcon from './icons/MoonIcon';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { useNotifications } from '../hooks/useNotifications';
+import NotificationPanel from './NotificationPanel';
 
 // Import Enhanced Components
 import {
@@ -25,13 +25,13 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "./ui/EnhancedComponents";
+} from './ui/EnhancedComponents';
 
 // Import Design System
-import { designSystem } from "../utils/designSystem";
+import { designSystem } from '../utils/designSystem';
 
 // Import Typography Components
-import { Body, UIText } from "./ui/Typography";
+import { Body, UIText } from './ui/Typography';
 
 interface HeaderProps {
   pageTitle: string;
@@ -87,16 +87,13 @@ const Header: React.FC<HeaderProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userDropdownRef.current &&
-        !userDropdownRef.current.contains(event.target as Node)
-      ) {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -132,14 +129,13 @@ const Header: React.FC<HeaderProps> = ({
                   src="/sipoma-logo.png"
                   alt="Sipoma Logo"
                   className="h-4 w-4 sm:h-5 sm:w-5 object-contain"
-                  style={{ borderRadius: "3px" }}
+                  style={{ borderRadius: '3px' }}
                 />
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="header-modern-title truncate">{pageTitle}</h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate">
-                  {t.header_welcome},{" "}
-                  {currentUser?.full_name?.split(" ")[0] || "Admin"}! ✨
+                  {t.header_welcome}, {currentUser?.full_name?.split(' ')[0] || 'Admin'}! ✨
                 </p>
               </div>
             </div>
@@ -153,7 +149,7 @@ const Header: React.FC<HeaderProps> = ({
                   variant="primary"
                   size="sm"
                   onClick={onAddUser}
-                  ariaLabel={t.add_user_button || "Add new user"}
+                  ariaLabel={t.add_user_button || 'Add new user'}
                   icon={<PlusIcon className="w-3.5 h-3.5" />}
                   className="hidden sm:flex"
                 >
@@ -166,11 +162,9 @@ const Header: React.FC<HeaderProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={onToggleTheme}
-                ariaLabel={`Switch to ${
-                  theme === "light" ? "dark" : "light"
-                } mode`}
+                ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
                 icon={
-                  theme === "light" ? (
+                  theme === 'light' ? (
                     <MoonIcon className="w-4 h-4" />
                   ) : (
                     <SunIcon className="w-4 h-4" />
@@ -179,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({
                 className="header-button"
               >
                 <span className="sr-only">
-                  Switch to {theme === "light" ? "dark" : "light"} mode
+                  Switch to {theme === 'light' ? 'dark' : 'light'} mode
                 </span>
               </EnhancedButton>
 
@@ -204,9 +198,7 @@ const Header: React.FC<HeaderProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                  ariaLabel={
-                    isUserMenuOpen ? "Close user menu" : "Open user menu"
-                  }
+                  ariaLabel={isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
                   className="p-1.5 rounded-full"
                   icon={
                     currentUser?.avatar_url ? (
@@ -221,7 +213,7 @@ const Header: React.FC<HeaderProps> = ({
                   }
                 >
                   <span className="sr-only">
-                    {isUserMenuOpen ? "Close user menu" : "Open user menu"}
+                    {isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
                   </span>
                 </EnhancedButton>
                 {isUserMenuOpen && (
@@ -248,10 +240,10 @@ const Header: React.FC<HeaderProps> = ({
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                            {currentUser?.full_name || "Admin User"}
+                            {currentUser?.full_name || 'Admin User'}
                           </p>
                           <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                            {currentUser?.username || "admin@sipoma.com"}
+                            {currentUser?.username || 'admin@sipoma.com'}
                           </p>
                         </div>
                       </div>
@@ -261,7 +253,7 @@ const Header: React.FC<HeaderProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            onNavigate("settings");
+                            onNavigate('settings');
                             setIsUserMenuOpen(false);
                           }}
                           className="w-full justify-start"
@@ -273,7 +265,7 @@ const Header: React.FC<HeaderProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            onNavigate("settings");
+                            onNavigate('settings');
                             setIsUserMenuOpen(false);
                           }}
                           className="w-full justify-start"
@@ -287,7 +279,7 @@ const Header: React.FC<HeaderProps> = ({
                           size="sm"
                           onClick={() => {
                             // Open help modal or navigate to help page
-                            window.open("/help", "_blank");
+                            window.open('/help', '_blank');
                             setIsUserMenuOpen(false);
                           }}
                           className="w-full justify-start"
@@ -305,22 +297,18 @@ const Header: React.FC<HeaderProps> = ({
                         <div className="p-2">
                           <div className="grid grid-cols-2 gap-1">
                             <EnhancedButton
-                              variant={theme === "light" ? "primary" : "ghost"}
+                              variant={theme === 'light' ? 'primary' : 'ghost'}
                               size="sm"
-                              onClick={() =>
-                                theme !== "light" && onToggleTheme()
-                              }
+                              onClick={() => theme !== 'light' && onToggleTheme()}
                               icon={<SunIcon className="w-4 h-4" />}
                               className="justify-center"
                             >
                               {t.theme_light}
                             </EnhancedButton>
                             <EnhancedButton
-                              variant={theme === "dark" ? "primary" : "ghost"}
+                              variant={theme === 'dark' ? 'primary' : 'ghost'}
                               size="sm"
-                              onClick={() =>
-                                theme !== "dark" && onToggleTheme()
-                              }
+                              onClick={() => theme !== 'dark' && onToggleTheme()}
                               icon={<MoonIcon className="w-4 h-4" />}
                               className="justify-center"
                             >
@@ -339,9 +327,7 @@ const Header: React.FC<HeaderProps> = ({
                             setIsUserMenuOpen(false);
                           }}
                           className="w-full justify-start text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
-                          icon={
-                            <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                          }
+                          icon={<ArrowRightOnRectangleIcon className="w-4 h-4" />}
                         >
                           {t.header_sign_out}
                         </EnhancedButton>

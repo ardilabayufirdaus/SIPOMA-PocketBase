@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { SiloCapacity, PlantUnit } from "../../types";
+import React, { useState, useEffect, useMemo } from 'react';
+import { SiloCapacity, PlantUnit } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -8,11 +8,11 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: SiloCapacity | null;
-  onSave: (record: SiloCapacity | Omit<SiloCapacity, "id">) => void;
+  onSave: (record: SiloCapacity | Omit<SiloCapacity, 'id'>) => void;
   onCancel: () => void;
   t: any;
   plantUnits: PlantUnit[];
@@ -32,9 +32,9 @@ const SiloCapacityForm: React.FC<FormProps> = ({
   const colorScheme = useColorScheme();
 
   const [formData, setFormData] = useState({
-    plant_category: "",
-    unit: "",
-    silo_name: "",
+    plant_category: '',
+    unit: '',
+    silo_name: '',
     capacity: 0,
     dead_stock: 0,
   });
@@ -54,13 +54,12 @@ const SiloCapacityForm: React.FC<FormProps> = ({
         dead_stock: recordToEdit.dead_stock,
       });
     } else {
-      const firstCategory = uniqueCategories[0] || "";
-      const firstUnit =
-        plantUnits.find((u) => u.category === firstCategory)?.unit || "";
+      const firstCategory = uniqueCategories[0] || '';
+      const firstUnit = plantUnits.find((u) => u.category === firstCategory)?.unit || '';
       setFormData({
         plant_category: firstCategory,
         unit: firstUnit,
-        silo_name: "",
+        silo_name: '',
         capacity: 0,
         dead_stock: 0,
       });
@@ -76,8 +75,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newCategory = e.target.value;
-    const firstUnit =
-      plantUnits.find((u) => u.category === newCategory)?.unit || "";
+    const firstUnit = plantUnits.find((u) => u.category === newCategory)?.unit || '';
     setFormData((prev) => ({
       ...prev,
       plant_category: newCategory,
@@ -85,13 +83,11 @@ const SiloCapacityForm: React.FC<FormProps> = ({
     }));
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
+      [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
 
@@ -108,10 +104,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         <div className="sm:col-span-2">
-          <label
-            htmlFor="plant_category"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="plant_category" className="block text-sm font-medium text-slate-700">
             {t.plant_category_label_silo}
           </label>
           <select
@@ -129,10 +122,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           </select>
         </div>
         <div>
-          <label
-            htmlFor="unit"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
             {t.unit_label}
           </label>
           <select
@@ -152,10 +142,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           </select>
         </div>
         <div>
-          <label
-            htmlFor="silo_name"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="silo_name" className="block text-sm font-medium text-slate-700">
             {t.silo_name_label}
           </label>
           <input
@@ -169,10 +156,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           />
         </div>
         <div>
-          <label
-            htmlFor="capacity"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="capacity" className="block text-sm font-medium text-slate-700">
             {t.capacity_label}
           </label>
           <input
@@ -186,10 +170,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           />
         </div>
         <div>
-          <label
-            htmlFor="dead_stock"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="dead_stock" className="block text-sm font-medium text-slate-700">
             {t.dead_stock_label_silo}
           </label>
           <input
@@ -208,7 +189,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           type="submit"
           variant="primary"
           className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || "Save silo capacity"}
+          aria-label={t.save_button || 'Save silo capacity'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -217,7 +198,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           variant="secondary"
           onClick={onCancel}
           className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>

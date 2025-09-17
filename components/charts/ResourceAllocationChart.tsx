@@ -1,5 +1,5 @@
-import React from "react";
-import { Bar } from "react-chartjs-2";
+import React from 'react';
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,16 +8,9 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
+} from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface ResourceAllocationChartProps {
   data: Array<{
@@ -29,31 +22,29 @@ interface ResourceAllocationChartProps {
   t: any;
 }
 
-export const ResourceAllocationChart: React.FC<
-  ResourceAllocationChartProps
-> = ({ data, t }) => {
+export const ResourceAllocationChart: React.FC<ResourceAllocationChartProps> = ({ data, t }) => {
   const chartData = {
     labels: data.map((item) => item.month),
     datasets: [
       {
-        label: "Active",
+        label: 'Active',
         data: data.map((item) => item.active),
-        backgroundColor: "#3B82F6", // blue-500
-        borderColor: "#3B82F6",
+        backgroundColor: '#3B82F6', // blue-500
+        borderColor: '#3B82F6',
         borderWidth: 1,
       },
       {
-        label: "Overdue",
+        label: 'Overdue',
         data: data.map((item) => item.overdue),
-        backgroundColor: "#EF4444", // red-500
-        borderColor: "#EF4444",
+        backgroundColor: '#EF4444', // red-500
+        borderColor: '#EF4444',
         borderWidth: 1,
       },
       {
-        label: "Completed",
+        label: 'Completed',
         data: data.map((item) => item.completed),
-        backgroundColor: "#10B981", // emerald-500
-        borderColor: "#10B981",
+        backgroundColor: '#10B981', // emerald-500
+        borderColor: '#10B981',
         borderWidth: 1,
       },
     ],
@@ -64,7 +55,7 @@ export const ResourceAllocationChart: React.FC<
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: 'top' as const,
         labels: {
           padding: 10,
           usePointStyle: true,
@@ -74,16 +65,16 @@ export const ResourceAllocationChart: React.FC<
         },
       },
       tooltip: {
-        mode: "index" as const,
+        mode: 'index' as const,
         intersect: false,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || "";
+            let label = context.dataset.label || '';
             if (label) {
-              label += ": ";
+              label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += context.parsed.y + " projects";
+              label += context.parsed.y + ' projects';
             }
             return label;
           },
@@ -95,7 +86,7 @@ export const ResourceAllocationChart: React.FC<
         display: true,
         title: {
           display: true,
-          text: "Month",
+          text: 'Month',
           font: {
             size: 12,
           },
@@ -108,14 +99,14 @@ export const ResourceAllocationChart: React.FC<
         display: true,
         title: {
           display: true,
-          text: "Projects",
+          text: 'Projects',
           font: {
             size: 12,
           },
         },
         beginAtZero: true,
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
           stepSize: 5,
@@ -123,8 +114,8 @@ export const ResourceAllocationChart: React.FC<
       },
     },
     interaction: {
-      mode: "nearest" as const,
-      axis: "x" as const,
+      mode: 'nearest' as const,
+      axis: 'x' as const,
       intersect: false,
     },
   };

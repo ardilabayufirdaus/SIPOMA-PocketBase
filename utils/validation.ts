@@ -2,12 +2,12 @@
 export const validators = {
   email: (email: string): { isValid: boolean; error?: string } => {
     if (!email.trim()) {
-      return { isValid: false, error: "Email is required" };
+      return { isValid: false, error: 'Email is required' };
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return { isValid: false, error: "Please enter a valid email address" };
+      return { isValid: false, error: 'Please enter a valid email address' };
     }
 
     return { isValid: true };
@@ -15,30 +15,27 @@ export const validators = {
 
   password: (password: string): { isValid: boolean; error?: string } => {
     if (!password) {
-      return { isValid: false, error: "Password is required" };
+      return { isValid: false, error: 'Password is required' };
     }
 
     if (password.length < 6) {
       return {
         isValid: false,
-        error: "Password must be at least 6 characters",
+        error: 'Password must be at least 6 characters',
       };
     }
 
     if (password.length > 128) {
       return {
         isValid: false,
-        error: "Password must be less than 128 characters",
+        error: 'Password must be less than 128 characters',
       };
     }
 
     return { isValid: true };
   },
 
-  required: (
-    value: string,
-    fieldName: string
-  ): { isValid: boolean; error?: string } => {
+  required: (value: string, fieldName: string): { isValid: boolean; error?: string } => {
     if (!value?.trim()) {
       return { isValid: false, error: `${fieldName} is required` };
     }
@@ -76,10 +73,7 @@ export const validators = {
     return { isValid: true };
   },
 
-  number: (
-    value: string,
-    fieldName: string
-  ): { isValid: boolean; error?: string } => {
+  number: (value: string, fieldName: string): { isValid: boolean; error?: string } => {
     if (isNaN(Number(value))) {
       return { isValid: false, error: `${fieldName} must be a valid number` };
     }
@@ -87,10 +81,7 @@ export const validators = {
     return { isValid: true };
   },
 
-  positiveNumber: (
-    value: string,
-    fieldName: string
-  ): { isValid: boolean; error?: string } => {
+  positiveNumber: (value: string, fieldName: string): { isValid: boolean; error?: string } => {
     const num = Number(value);
     if (isNaN(num) || num <= 0) {
       return {
@@ -106,29 +97,26 @@ export const validators = {
 // Input sanitization utilities
 export const sanitizers = {
   text: (input: string): string => {
-    return input?.trim().replace(/[<>]/g, "") || "";
+    return input?.trim().replace(/[<>]/g, '') || '';
   },
 
   email: (input: string): string => {
-    return input?.trim().toLowerCase() || "";
+    return input?.trim().toLowerCase() || '';
   },
 
   number: (input: string): string => {
-    return input?.replace(/[^\d.-]/g, "") || "";
+    return input?.replace(/[^\d.-]/g, '') || '';
   },
 
   alphanumeric: (input: string): string => {
-    return input?.replace(/[^a-zA-Z0-9]/g, "") || "";
+    return input?.replace(/[^a-zA-Z0-9]/g, '') || '';
   },
 };
 
 // Form validation helper
 export const validateForm = (
   data: Record<string, any>,
-  rules: Record<
-    string,
-    Array<(value: any) => { isValid: boolean; error?: string }>
-  >
+  rules: Record<string, Array<(value: any) => { isValid: boolean; error?: string }>>
 ): { isValid: boolean; errors: Record<string, string> } => {
   const errors: Record<string, string> = {};
 

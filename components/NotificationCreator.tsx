@@ -1,13 +1,10 @@
-import React, { useState } from "react";
-import { AlertSeverity } from "../types";
-import { useNotifications } from "../hooks/useNotifications";
-import {
-  createDemoNotifications,
-  clearDemoNotifications,
-} from "../utils/demoNotifications";
-import PlusIcon from "./icons/PlusIcon";
-import ExclamationTriangleIcon from "./icons/ExclamationTriangleIcon";
-import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
+import React, { useState } from 'react';
+import { AlertSeverity } from '../types';
+import { useNotifications } from '../hooks/useNotifications';
+import { createDemoNotifications, clearDemoNotifications } from '../utils/demoNotifications';
+import PlusIcon from './icons/PlusIcon';
+import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
+import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 
 interface NotificationCreatorProps {
   t: any;
@@ -16,11 +13,11 @@ interface NotificationCreatorProps {
 const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
   const { announceToScreenReader } = useAccessibility();
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [severity, setSeverity] = useState<AlertSeverity>(AlertSeverity.INFO);
   const [category, setCategory] = useState<
-    "system" | "maintenance" | "production" | "user" | "security"
-  >("system");
+    'system' | 'maintenance' | 'production' | 'user' | 'security'
+  >('system');
 
   const { createNotification } = useNotifications();
 
@@ -29,22 +26,22 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
     if (!message.trim()) return;
 
     await createNotification(message, severity, category);
-    setMessage("");
+    setMessage('');
     setIsOpen(false);
   };
 
   const severityOptions = [
-    { value: AlertSeverity.INFO, label: "Info", color: "text-blue-600" },
-    { value: AlertSeverity.WARNING, label: "Warning", color: "text-amber-600" },
-    { value: AlertSeverity.CRITICAL, label: "Critical", color: "text-red-600" },
+    { value: AlertSeverity.INFO, label: 'Info', color: 'text-blue-600' },
+    { value: AlertSeverity.WARNING, label: 'Warning', color: 'text-amber-600' },
+    { value: AlertSeverity.CRITICAL, label: 'Critical', color: 'text-red-600' },
   ];
 
   const categoryOptions = [
-    { value: "system", label: "System" },
-    { value: "maintenance", label: "Maintenance" },
-    { value: "production", label: "Production" },
-    { value: "user", label: "User" },
-    { value: "security", label: "Security" },
+    { value: 'system', label: 'System' },
+    { value: 'maintenance', label: 'Maintenance' },
+    { value: 'production', label: 'Production' },
+    { value: 'user', label: 'User' },
+    { value: 'security', label: 'Security' },
   ];
 
   if (!isOpen) {

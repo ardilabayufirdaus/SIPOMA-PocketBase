@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface TableData {
   headers: (string | number)[];
@@ -22,19 +22,16 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
   t,
 }) => (
   <div className="bg-white p-6 rounded-lg shadow-md">
-    <h3 className="text-lg font-semibold text-slate-800 mb-4">
-      {t.detailed_stock_out_table}
-    </h3>
+    <h3 className="text-lg font-semibold text-slate-800 mb-4">{t.detailed_stock_out_table}</h3>
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200 text-sm">
         <thead className="bg-slate-50">
           <tr>
             {tableData.headers.map((header, i) => {
-              const isSelected =
-                typeof header === "number" && header === selectedDay;
-              const bgClass = isSelected ? "bg-red-100" : "bg-slate-50";
-              const stickyClass = i === 0 ? "sticky left-0 z-10" : "";
-              const textAlign = i === 0 ? "text-left" : "text-center";
+              const isSelected = typeof header === 'number' && header === selectedDay;
+              const bgClass = isSelected ? 'bg-red-100' : 'bg-slate-50';
+              const stickyClass = i === 0 ? 'sticky left-0 z-10' : '';
+              const textAlign = i === 0 ? 'text-left' : 'text-center';
               return (
                 <th
                   key={i}
@@ -60,10 +57,10 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
                   <td
                     key={i}
                     className={`px-4 py-3 whitespace-nowrap text-slate-500 text-center transition-colors duration-200 ${
-                      isSelected ? "bg-red-50 font-medium text-slate-800" : ""
+                      isSelected ? 'bg-red-50 font-medium text-slate-800' : ''
                     }`}
                   >
-                    {val > 0 ? formatNumber(val) : "-"}
+                    {val > 0 ? formatNumber(val) : '-'}
                   </td>
                 );
               })}
@@ -89,7 +86,7 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
                 <td
                   key={i}
                   className={`px-4 py-3 whitespace-nowrap font-bold text-slate-700 text-center transition-colors duration-200 ${
-                    isSelected ? "bg-red-100" : ""
+                    isSelected ? 'bg-red-100' : ''
                   }`}
                 >
                   {formatNumber(total)}

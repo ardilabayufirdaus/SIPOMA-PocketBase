@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const DashboardLoadingSkeleton: React.FC = React.memo(() => {
   return (
@@ -10,7 +10,7 @@ const DashboardLoadingSkeleton: React.FC = React.memo(() => {
           <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-80 animate-pulse"></div>
         </div>
         <div className="flex gap-2">
-          {["1h", "4h", "12h", "24h"].map((range) => (
+          {['1h', '4h', '12h', '24h'].map((range) => (
             <div
               key={range}
               className="h-10 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"
@@ -99,6 +99,6 @@ const DashboardLoadingSkeleton: React.FC = React.memo(() => {
   );
 });
 
-DashboardLoadingSkeleton.displayName = "DashboardLoadingSkeleton";
+DashboardLoadingSkeleton.displayName = 'DashboardLoadingSkeleton';
 
 export default DashboardLoadingSkeleton;

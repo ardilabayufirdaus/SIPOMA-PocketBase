@@ -53,7 +53,7 @@
   icon={<Icon />}
   label="Menu"
   isActive={true}
-  pages={[{ key: "page1", icon: <Page1Icon /> }]}
+  pages={[{ key: 'page1', icon: <Page1Icon /> }]}
   activeSubPage="page1"
   onSelect={handleSelect}
   t={translations}

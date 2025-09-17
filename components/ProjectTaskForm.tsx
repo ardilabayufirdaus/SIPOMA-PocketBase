@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { ProjectTask } from "../types";
+import React, { useState, useEffect } from 'react';
+import { ProjectTask } from '../types';
 
 // Import Enhanced Components
 import {
@@ -8,9 +8,9 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "./ui/EnhancedComponents";
+} from './ui/EnhancedComponents';
 
-type TaskFormData = Omit<ProjectTask, "id" | "project_id">;
+type TaskFormData = Omit<ProjectTask, 'id' | 'project_id'>;
 
 interface FormProps {
   taskToEdit: ProjectTask | null;
@@ -19,16 +19,11 @@ interface FormProps {
   t: any;
 }
 
-const ProjectTaskForm: React.FC<FormProps> = ({
-  taskToEdit,
-  onSave,
-  onCancel,
-  t,
-}) => {
+const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t }) => {
   const [formData, setFormData] = useState<TaskFormData>({
-    activity: "",
-    planned_start: "",
-    planned_end: "",
+    activity: '',
+    planned_start: '',
+    planned_end: '',
     actual_start: null,
     actual_end: null,
     percent_complete: 0,
@@ -52,9 +47,9 @@ const ProjectTaskForm: React.FC<FormProps> = ({
       });
     } else {
       setFormData({
-        activity: "",
-        planned_start: new Date().toISOString().split("T")[0],
-        planned_end: new Date().toISOString().split("T")[0],
+        activity: '',
+        planned_start: new Date().toISOString().split('T')[0],
+        planned_end: new Date().toISOString().split('T')[0],
         actual_start: null,
         actual_end: null,
         percent_complete: 0,
@@ -64,13 +59,13 @@ const ProjectTaskForm: React.FC<FormProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
-    if (type === "date" && !value) {
+    if (type === 'date' && !value) {
       // Handle empty date fields
       setFormData((prev) => ({ ...prev, [name]: null }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: type === "number" ? parseInt(value, 10) || 0 : value,
+        [name]: type === 'number' ? parseInt(value, 10) || 0 : value,
       }));
     }
   };
@@ -88,10 +83,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
         <div className="sm:col-span-2">
-          <label
-            htmlFor="activity"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="activity" className="block text-sm font-medium text-slate-700">
             {t.activity_label}
           </label>
           <input
@@ -105,10 +97,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({
           />
         </div>
         <div>
-          <label
-            htmlFor="planned_start"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="planned_start" className="block text-sm font-medium text-slate-700">
             {t.planned_start_label}
           </label>
           <input
@@ -122,10 +111,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({
           />
         </div>
         <div>
-          <label
-            htmlFor="planned_end"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="planned_end" className="block text-sm font-medium text-slate-700">
             {t.planned_end_label}
           </label>
           <input
@@ -139,42 +125,33 @@ const ProjectTaskForm: React.FC<FormProps> = ({
           />
         </div>
         <div>
-          <label
-            htmlFor="actual_start"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="actual_start" className="block text-sm font-medium text-slate-700">
             {t.actual_start_label}
           </label>
           <input
             type="date"
             name="actual_start"
             id="actual_start"
-            value={formData.actual_start ?? ""}
+            value={formData.actual_start ?? ''}
             onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
           />
         </div>
         <div>
-          <label
-            htmlFor="actual_end"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="actual_end" className="block text-sm font-medium text-slate-700">
             {t.actual_end_label}
           </label>
           <input
             type="date"
             name="actual_end"
             id="actual_end"
-            value={formData.actual_end ?? ""}
+            value={formData.actual_end ?? ''}
             onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
           />
         </div>
         <div className="sm:col-span-2">
-          <label
-            htmlFor="percent_complete"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <label htmlFor="percent_complete" className="block text-sm font-medium text-slate-700">
             {t.percent_complete_label}
           </label>
           <div className="relative mt-1">
@@ -188,10 +165,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({
               onChange={handleChange}
               className="block w-full pr-10 px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
               onBlur={(e) => {
-                const value = Math.max(
-                  0,
-                  Math.min(100, Number(e.target.value))
-                );
+                const value = Math.max(0, Math.min(100, Number(e.target.value)));
                 setFormData((prev) => ({ ...prev, percent_complete: value }));
               }}
             />
@@ -207,7 +181,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({
           size="sm"
           type="submit"
           className="sm:ml-3"
-          aria-label={t.save_button || "Save task"}
+          aria-label={t.save_button || 'Save task'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -216,7 +190,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({
           size="sm"
           onClick={onCancel}
           className="mt-3 sm:mt-0 sm:ml-3"
-          aria-label={t.cancel_button || "Cancel task form"}
+          aria-label={t.cancel_button || 'Cancel task form'}
         >
           {t.cancel_button}
         </EnhancedButton>

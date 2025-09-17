@@ -1,5 +1,5 @@
-import React from "react";
-import { CcrDowntimeData } from "../../types";
+import React from 'react';
+import { CcrDowntimeData } from '../../types';
 
 interface CcrDowntimeDataTableProps {
   t: any;
@@ -7,7 +7,7 @@ interface CcrDowntimeDataTableProps {
   downtimeData: CcrDowntimeData[];
   handleDowntimeChange: (
     downtimeId: string,
-    field: "start_time" | "end_time" | "problem",
+    field: 'start_time' | 'end_time' | 'problem',
     value: string
   ) => void;
   handleAddDowntime: () => void;
@@ -69,10 +69,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
             <tbody className="bg-white divide-y divide-slate-200">
               {downtimeData.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={5} className="text-center py-10 text-slate-500 dark:text-slate-400">
                     {t.no_downtime_data}
                   </td>
                 </tr>
@@ -91,11 +88,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                           value={formatTimeValue(downtime.start_time)}
                           onChange={(e) => {
                             const parsed = parseTimeValue(e.target.value);
-                            handleDowntimeChange(
-                              downtime.id,
-                              "start_time",
-                              parsed
-                            );
+                            handleDowntimeChange(downtime.id, 'start_time', parsed);
                           }}
                           className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           aria-label={`Start time for downtime ${index + 1}`}
@@ -107,11 +100,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                           value={formatTimeValue(downtime.end_time)}
                           onChange={(e) => {
                             const parsed = parseTimeValue(e.target.value);
-                            handleDowntimeChange(
-                              downtime.id,
-                              "end_time",
-                              parsed
-                            );
+                            handleDowntimeChange(downtime.id, 'end_time', parsed);
                           }}
                           className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           aria-label={`End time for downtime ${index + 1}`}
@@ -119,9 +108,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-600 border-r">
                         <div className="flex items-center">
-                          <span className="font-medium">
-                            {durationHours.toFixed(2)} jam
-                          </span>
+                          <span className="font-medium">{durationHours.toFixed(2)} jam</span>
                         </div>
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm border-r">
@@ -129,11 +116,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                           type="text"
                           value={downtime.problem}
                           onChange={(e) =>
-                            handleDowntimeChange(
-                              downtime.id,
-                              "problem",
-                              e.target.value
-                            )
+                            handleDowntimeChange(downtime.id, 'problem', e.target.value)
                           }
                           className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           placeholder={t.enter_reason}
@@ -173,7 +156,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                   const duration = endTime.getTime() - startTime.getTime();
                   return total + duration / (1000 * 60 * 60);
                 }, 0)
-                .toFixed(2)}{" "}
+                .toFixed(2)}{' '}
               jam
             </span>
           </div>

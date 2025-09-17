@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,8 +9,8 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import { Line, Bar } from "react-chartjs-2";
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -24,7 +24,7 @@ ChartJS.register(
 );
 
 export interface ChartProps {
-  chartType: "line" | "bar" | "combo";
+  chartType: 'line' | 'bar' | 'combo';
   performanceData: any;
   showTrend: boolean;
   showComparison: boolean;
@@ -66,9 +66,7 @@ export const Chart: React.FC<ChartProps> = ({
       <div className="h-80 w-full relative overflow-hidden flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg">
         <div className="text-center text-slate-500 dark:text-slate-400">
           <div className="text-lg font-medium mb-2">No Data Available</div>
-          <div className="text-sm">
-            No stock data found for the selected filters
-          </div>
+          <div className="text-sm">No stock data found for the selected filters</div>
         </div>
       </div>
     );
@@ -90,9 +88,9 @@ export const Chart: React.FC<ChartProps> = ({
       label: area,
       data,
       borderColor: COLORS[index % COLORS.length],
-      backgroundColor: COLORS[index % COLORS.length] + "20",
+      backgroundColor: COLORS[index % COLORS.length] + '20',
       borderWidth: 2,
-      fill: chartType === "bar",
+      fill: chartType === 'bar',
       tension: 0.4,
     };
   });
@@ -110,7 +108,7 @@ export const Chart: React.FC<ChartProps> = ({
         label: `${area} (Prev Month)`,
         data,
         borderColor: COLORS[index % COLORS.length],
-        backgroundColor: COLORS[index % COLORS.length] + "10",
+        backgroundColor: COLORS[index % COLORS.length] + '10',
         borderWidth: 1,
         borderDash: [5, 5],
         fill: false,
@@ -129,7 +127,7 @@ export const Chart: React.FC<ChartProps> = ({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: 'top' as const,
         labels: {
           padding: 20,
           usePointStyle: true,
@@ -139,16 +137,16 @@ export const Chart: React.FC<ChartProps> = ({
         },
       },
       tooltip: {
-        mode: "index" as const,
+        mode: 'index' as const,
         intersect: false,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || "";
+            let label = context.dataset.label || '';
             if (label) {
-              label += ": ";
+              label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += formatNumber(context.parsed.y) + " tons";
+              label += formatNumber(context.parsed.y) + ' tons';
             }
             return label;
           },
@@ -156,10 +154,10 @@ export const Chart: React.FC<ChartProps> = ({
       },
       title: {
         display: true,
-        text: "Daily Stock Out Performance",
+        text: 'Daily Stock Out Performance',
         font: {
           size: 16,
-          weight: "bold" as const,
+          weight: 'bold' as const,
         },
         padding: {
           top: 10,
@@ -172,7 +170,7 @@ export const Chart: React.FC<ChartProps> = ({
         display: true,
         title: {
           display: true,
-          text: "Day of Month",
+          text: 'Day of Month',
         },
         grid: {
           display: false,
@@ -182,17 +180,17 @@ export const Chart: React.FC<ChartProps> = ({
         display: true,
         title: {
           display: true,
-          text: "Stock Out (tons)",
+          text: 'Stock Out (tons)',
         },
         beginAtZero: true,
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: 'rgba(0, 0, 0, 0.1)',
         },
       },
     },
     interaction: {
-      mode: "nearest" as const,
-      axis: "x" as const,
+      mode: 'nearest' as const,
+      axis: 'x' as const,
       intersect: false,
     },
     onClick: (event: any, elements: any[]) => {
@@ -216,9 +214,9 @@ export const Chart: React.FC<ChartProps> = ({
       onMouseMove={handleChartHover}
       onMouseLeave={handleMouseLeaveChart}
     >
-      {chartType === "line" && <Line data={chartData} options={options} />}
-      {chartType === "bar" && <Bar data={chartData} options={options} />}
-      {chartType === "combo" && <Bar data={chartData} options={options} />}
+      {chartType === 'line' && <Line data={chartData} options={options} />}
+      {chartType === 'bar' && <Bar data={chartData} options={options} />}
+      {chartType === 'combo' && <Bar data={chartData} options={options} />}
     </div>
   );
 };

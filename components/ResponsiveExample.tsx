@@ -3,7 +3,7 @@
  * Demonstrating integration of responsive components with existing SIPOMA components
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   ResponsiveContainer,
   ResponsiveGrid,
@@ -16,12 +16,8 @@ import {
   ResponsiveNavigation,
   useResponsiveLayout,
   responsiveUtils,
-} from "../utils/ResponsiveLayout";
-import {
-  EnhancedButton,
-  EnhancedCard,
-  EnhancedInput,
-} from "./EnhancedComponents";
+} from '../utils/ResponsiveLayout';
+import { EnhancedButton, EnhancedCard, EnhancedInput } from './EnhancedComponents';
 
 // =============================================================================
 // RESPONSIVE DASHBOARD EXAMPLE
@@ -31,9 +27,7 @@ interface ResponsiveDashboardProps {
   children?: React.ReactNode;
 }
 
-export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
-  children,
-}) => {
+export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isMobile, isTablet, isDesktop } = useResponsiveLayout();
 
@@ -43,13 +37,11 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
       <ResponsiveSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        width={{ default: "280px", sm: "320px" }}
+        width={{ default: '280px', sm: '320px' }}
         className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"
       >
         <div className="p-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Navigation
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Navigation</h2>
           <nav className="space-y-2">
             <a
               href="#"
@@ -77,7 +69,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
       <div className="flex-1">
         {/* Responsive Header */}
         <ResponsiveHeader
-          height={{ default: "64px", sm: "72px" }}
+          height={{ default: '64px', sm: '72px' }}
           className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
         >
           <div className="flex items-center justify-between w-full">
@@ -87,12 +79,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                   onClick={() => setSidebarOpen(true)}
                   className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -108,9 +95,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
             </div>
 
             <div className="flex items-center space-x-4">
-              <EnhancedButton size={isMobile ? "sm" : "md"}>
-                Action
-              </EnhancedButton>
+              <EnhancedButton size={isMobile ? 'sm' : 'md'}>Action</EnhancedButton>
             </div>
           </div>
         </ResponsiveHeader>
@@ -120,7 +105,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
           <div className="space-y-6">
             {/* Stats Cards */}
             <ResponsiveCardGrid
-              minCardWidth={{ default: "280px", sm: "320px", md: "360px" }}
+              minCardWidth={{ default: '280px', sm: '320px', md: '360px' }}
               gap="md"
             >
               <EnhancedCard className="p-6">
@@ -129,9 +114,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                       Total Users
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      1,234
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">1,234</p>
                   </div>
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                     <svg
@@ -157,9 +140,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                       Active Sessions
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      567
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">567</p>
                   </div>
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
                     <svg
@@ -185,9 +166,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                       System Health
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      98.5%
-                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">98.5%</p>
                   </div>
                   <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
                     <svg
@@ -222,12 +201,8 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                       </span>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        User login detected
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        2 minutes ago
-                      </p>
+                      <p className="text-sm text-gray-900 dark:text-white">User login detected</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">2 minutes ago</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -240,9 +215,7 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                       <p className="text-sm text-gray-900 dark:text-white">
                         System backup completed
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        1 hour ago
-                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">1 hour ago</p>
                     </div>
                   </div>
                 </div>
@@ -271,25 +244,19 @@ export const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Database
-                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Database</span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       Online
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      API
-                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">API</span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       Online
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Cache
-                    </span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Cache</span>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                       Warning
                     </span>
@@ -313,14 +280,11 @@ interface ResponsiveFormProps {
   className?: string;
 }
 
-export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
-  onSubmit,
-  className = "",
-}) => {
+export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({ onSubmit, className = '' }) => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+    name: '',
+    email: '',
+    message: '',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -335,7 +299,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
       <ResponsiveContainer maxWidth="lg" padding="lg">
         <EnhancedCard className="p-6">
           <ResponsiveText
-            size={{ default: "xl", sm: "2xl" }}
+            size={{ default: 'xl', sm: '2xl' }}
             weight="bold"
             className="mb-6 text-center"
           >
@@ -347,9 +311,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
               <EnhancedInput
                 label="Name"
                 value={formData.name}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, name: value }))
-                }
+                onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
                 placeholder="Enter your name"
                 required
               />
@@ -358,9 +320,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
                 label="Email"
                 type="email"
                 value={formData.email}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, email: value }))
-                }
+                onChange={(value) => setFormData((prev) => ({ ...prev, email: value }))}
                 placeholder="Enter your email"
                 required
               />
@@ -372,9 +332,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
               </label>
               <textarea
                 value={formData.message}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, message: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
                 placeholder="Enter your message"
                 rows={4}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
@@ -395,7 +353,7 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
       <ResponsiveModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        size={{ default: "md", sm: "full" }}
+        size={{ default: 'md', sm: 'full' }}
       >
         <div className="p-6">
           <div className="text-center">
@@ -418,11 +376,9 @@ export const ResponsiveForm: React.FC<ResponsiveFormProps> = ({
               Message Sent!
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Thank you for contacting us. We'll get back to you soon.
+              Thank you for contacting us. We&apos;ll get back to you soon.
             </p>
-            <EnhancedButton onClick={() => setIsModalOpen(false)}>
-              Close
-            </EnhancedButton>
+            <EnhancedButton onClick={() => setIsModalOpen(false)}>Close</EnhancedButton>
           </div>
         </div>
       </ResponsiveModal>
@@ -439,30 +395,29 @@ interface ResponsiveNavigationExampleProps {
   onNavigate: (page: string) => void;
 }
 
-export const ResponsiveNavigationExample: React.FC<
-  ResponsiveNavigationExampleProps
-> = ({ currentPage, onNavigate }) => {
+export const ResponsiveNavigationExample: React.FC<ResponsiveNavigationExampleProps> = ({
+  currentPage,
+  onNavigate,
+}) => {
   const { isMobile } = useResponsiveLayout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About" },
-    { id: "services", label: "Services" },
-    { id: "contact", label: "Contact" },
+    { id: 'home', label: 'Home' },
+    { id: 'about', label: 'About' },
+    { id: 'services', label: 'Services' },
+    { id: 'contact', label: 'Contact' },
   ];
 
   return (
     <ResponsiveHeader
-      height={{ default: "64px", sm: "72px" }}
+      height={{ default: '64px', sm: '72px' }}
       className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
     >
       <div className="flex items-center justify-between w-full">
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            SIPOMA
-          </h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">SIPOMA</h1>
         </div>
 
         {/* Desktop Navigation */}
@@ -474,8 +429,8 @@ export const ResponsiveNavigationExample: React.FC<
                 onClick={() => onNavigate(item.id)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   currentPage === item.id
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                    : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                    : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                 }`}
               >
                 {item.label}
@@ -490,12 +445,7 @@ export const ResponsiveNavigationExample: React.FC<
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -525,8 +475,8 @@ export const ResponsiveNavigationExample: React.FC<
                 }}
                 className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
                   currentPage === item.id
-                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700'
                 }`}
               >
                 {item.label}

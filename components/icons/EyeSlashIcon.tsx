@@ -1,9 +1,9 @@
-import React from "react";
+import React from 'react';
 
 const EyeSlashIcon: React.FC<{
   className?: string;
-  "aria-hidden"?: boolean;
-}> = ({ className = "w-6 h-6", "aria-hidden": ariaHidden }) => (
+  'aria-hidden'?: boolean;
+}> = ({ className = 'w-6 h-6', 'aria-hidden': ariaHidden }) => (
   <svg
     className={className}
     fill="none"

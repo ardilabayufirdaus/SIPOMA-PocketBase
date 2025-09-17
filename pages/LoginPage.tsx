@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import RegistrationForm from "../components/RegistrationForm";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import RegistrationForm from '../components/RegistrationForm';
 
 const LoginPage: React.FC = () => {
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const { user, loading, login, logout } = useAuth();
@@ -16,12 +16,12 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     if (!identifier.trim()) {
-      setError("Username is required");
+      setError('Username is required');
       return;
     }
 
     if (!password.trim()) {
-      setError("Password is required");
+      setError('Password is required');
       return;
     }
 
@@ -30,18 +30,18 @@ const LoginPage: React.FC = () => {
 
     if (loggedInUser) {
       // Clear any remaining localStorage data from old remember me functionality
-      localStorage.removeItem("savedIdentifier");
-      localStorage.removeItem("rememberMe");
+      localStorage.removeItem('savedIdentifier');
+      localStorage.removeItem('rememberMe');
 
       // Dispatch auth state change event
-      window.dispatchEvent(new CustomEvent("authStateChanged"));
+      window.dispatchEvent(new CustomEvent('authStateChanged'));
 
       // Small delay to ensure state is updated
       setTimeout(() => {
-        navigate("/", { replace: true });
+        navigate('/', { replace: true });
       }, 100);
     } else {
-      setError("Invalid username or password");
+      setError('Invalid username or password');
     }
   };
 
@@ -56,11 +56,7 @@ const LoginPage: React.FC = () => {
         <div className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center glass-card animate-fadein">
           <div className="mb-6 flex flex-col items-center animate-fadein-logo">
             <div className="p-2 rounded-2xl bg-white/95 dark:bg-slate-800/95 shadow-lg border border-white/30 dark:border-slate-700/50 mb-2">
-              <img
-                src="/sipoma-logo.png"
-                alt="SIPOMA Logo"
-                className="h-14 w-14 object-contain"
-              />
+              <img src="/sipoma-logo.png" alt="SIPOMA Logo" className="h-14 w-14 object-contain" />
             </div>
             <h1 className="text-4xl font-extrabold text-red-600 dark:text-red-400 tracking-wide mb-1 animate-fadein-title">
               SIPOMA
@@ -111,12 +107,12 @@ const LoginPage: React.FC = () => {
               disabled={loading}
               className="w-full py-2 rounded font-semibold bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600 transition-colors text-lg shadow focus:outline-none focus:ring-2 focus:ring-red-500 animate-fadein-btn"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
           <div className="mt-4 text-center">
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              Belum punya akun?{" "}
+              Belum punya akun?{' '}
               <button
                 onClick={() => setShowRegistration(true)}
                 className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium underline focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1"

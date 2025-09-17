@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { ParameterSetting, CcrSiloData } from "../types";
+import { useMemo } from 'react';
+import { ParameterSetting, CcrSiloData } from '../types';
 
 interface DataFilteringOptions {
   parameterSettings: ParameterSetting[];
@@ -34,10 +34,7 @@ export const useDataFiltering = ({
     if (!unitBelongsToCategory) return [];
 
     let filtered = parameterSettings
-      .filter(
-        (param) =>
-          param.category === selectedCategory && param.unit === selectedUnit
-      )
+      .filter((param) => param.category === selectedCategory && param.unit === selectedUnit)
       .sort((a, b) => a.parameter.localeCompare(b.parameter));
 
     // Apply column search filter
@@ -51,13 +48,7 @@ export const useDataFiltering = ({
     }
 
     return filtered;
-  }, [
-    parameterSettings,
-    plantUnits,
-    selectedCategory,
-    selectedUnit,
-    columnSearchQuery,
-  ]);
+  }, [parameterSettings, plantUnits, selectedCategory, selectedUnit, columnSearchQuery]);
 
   const dailySiloData = useMemo(() => {
     if (!selectedCategory) {

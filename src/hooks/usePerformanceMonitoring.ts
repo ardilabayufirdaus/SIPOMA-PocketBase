@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useServiceWorker, useCacheStatus } from "./useServiceWorker";
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useServiceWorker, useCacheStatus } from './useServiceWorker';
 
 // Performance metrics interface
 export interface PerformanceMetrics {
@@ -68,9 +68,9 @@ export const usePerformanceMonitoring = () => {
     });
 
     try {
-      observer.observe({ entryTypes: ["largest-contentful-paint"] });
+      observer.observe({ entryTypes: ['largest-contentful-paint'] });
     } catch (error) {
-      console.warn("LCP observation not supported");
+      console.warn('LCP observation not supported');
     }
 
     // First Input Delay
@@ -85,9 +85,9 @@ export const usePerformanceMonitoring = () => {
     });
 
     try {
-      fidObserver.observe({ entryTypes: ["first-input"] });
+      fidObserver.observe({ entryTypes: ['first-input'] });
     } catch (error) {
-      console.warn("FID observation not supported");
+      console.warn('FID observation not supported');
     }
 
     // Cumulative Layout Shift
@@ -107,9 +107,9 @@ export const usePerformanceMonitoring = () => {
     });
 
     try {
-      clsObserver.observe({ entryTypes: ["layout-shift"] });
+      clsObserver.observe({ entryTypes: ['layout-shift'] });
     } catch (error) {
-      console.warn("CLS observation not supported");
+      console.warn('CLS observation not supported');
     }
 
     return () => {
@@ -121,16 +121,13 @@ export const usePerformanceMonitoring = () => {
 
   // Monitor navigation timing
   useEffect(() => {
-    const navigation = performance.getEntriesByType(
-      "navigation"
-    )[0] as PerformanceNavigationTiming;
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
 
     if (navigation) {
       setMetrics((prev) => ({
         ...prev,
         domContentLoaded:
-          navigation.domContentLoadedEventEnd -
-          navigation.domContentLoadedEventStart,
+          navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
         loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
         ttfb: navigation.responseStart - navigation.requestStart,
       }));
@@ -139,7 +136,7 @@ export const usePerformanceMonitoring = () => {
 
   // Monitor memory usage
   const takeMemorySnapshot = useCallback(() => {
-    if ("memory" in performance) {
+    if ('memory' in performance) {
       const memory = (performance as any).memory;
       const snapshot: MemorySnapshot = {
         timestamp: Date.now(),
@@ -208,10 +205,8 @@ export const usePerformanceMonitoring = () => {
     const recent = memorySnapshots.slice(-10);
     const older = memorySnapshots.slice(-20, -10);
 
-    const recentAvg =
-      recent.reduce((sum, snap) => sum + snap.heapUsed, 0) / recent.length;
-    const olderAvg =
-      older.reduce((sum, snap) => sum + snap.heapUsed, 0) / older.length;
+    const recentAvg = recent.reduce((sum, snap) => sum + snap.heapUsed, 0) / recent.length;
+    const olderAvg = older.reduce((sum, snap) => sum + snap.heapUsed, 0) / older.length;
 
     const growthRate = (recentAvg - olderAvg) / olderAvg;
 
@@ -225,33 +220,25 @@ export const usePerformanceMonitoring = () => {
 
     if (metrics.lcp > 2500) {
       recommendations.push(
-        "Optimize Largest Contentful Paint (LCP) - consider lazy loading images"
+        'Optimize Largest Contentful Paint (LCP) - consider lazy loading images'
       );
     }
 
     if (metrics.fid > 100) {
-      recommendations.push(
-        "Reduce First Input Delay (FID) - optimize JavaScript execution"
-      );
+      recommendations.push('Reduce First Input Delay (FID) - optimize JavaScript execution');
     }
 
     if (metrics.cls > 0.1) {
-      recommendations.push(
-        "Fix Cumulative Layout Shift (CLS) - ensure stable element positioning"
-      );
+      recommendations.push('Fix Cumulative Layout Shift (CLS) - ensure stable element positioning');
     }
 
     if (metrics.memoryUsage > 100 * 1024 * 1024) {
       // 100MB
-      recommendations.push(
-        "High memory usage detected - consider memory optimization"
-      );
+      recommendations.push('High memory usage detected - consider memory optimization');
     }
 
     if (detectMemoryLeaks()) {
-      recommendations.push(
-        "Potential memory leak detected - review component cleanup"
-      );
+      recommendations.push('Potential memory leak detected - review component cleanup');
     }
 
     return recommendations;

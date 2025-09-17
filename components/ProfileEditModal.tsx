@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import Modal from "./Modal";
-import { User } from "../types";
-import UserIcon from "./icons/UserIcon";
-import PhotoIcon from "./icons/PhotoIcon";
-import { supabase } from "../utils/supabase";
-import { v4 as uuidv4 } from "uuid";
+import React, { useState, useRef, useEffect } from 'react';
+import Modal from './Modal';
+import { User } from '../types';
+import UserIcon from './icons/UserIcon';
+import PhotoIcon from './icons/PhotoIcon';
+import { supabase } from '../utils/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -21,11 +21,9 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   onSave,
   t,
 }) => {
-  const [fullName, setFullName] = useState("");
+  const [fullName, setFullName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(
-    null
-  );
+  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,22 +41,13 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     // Check file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
-      return t.upload_avatar_error_size || "File size must be less than 5MB";
+      return t.upload_avatar_error_size || 'File size must be less than 5MB';
     }
 
     // Check file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-    ];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      return (
-        t.upload_avatar_error_type ||
-        "File must be an image (JPEG, PNG, GIF, or WebP)"
-      );
+      return t.upload_avatar_error_type || 'File must be an image (JPEG, PNG, GIF, or WebP)';
     }
 
     return null;
@@ -68,48 +57,46 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     try {
       // Ensure user is logged in (check localStorage)
       if (!user) {
-        throw new Error("User not logged in");
+        throw new Error('User not logged in');
       }
 
-      const fileExt = file.name.split(".").pop();
+      const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
       const filePath = `${fileName}`; // Direct to root of avatars bucket
 
-      console.log("Uploading file to avatars bucket:", filePath);
+      console.log('Uploading file to avatars bucket:', filePath);
 
       // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("avatars")
+        .from('avatars')
         .upload(filePath, file, {
-          cacheControl: "3600",
+          cacheControl: '3600',
           upsert: true,
         });
 
       if (uploadError) {
-        console.error("Upload error details:", uploadError);
+        console.error('Upload error details:', uploadError);
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      console.log("Upload successful:", uploadData);
+      console.log('Upload successful:', uploadData);
 
       // Get public URL
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
       if (!data?.publicUrl) {
-        throw new Error("Failed to get public URL for uploaded file");
+        throw new Error('Failed to get public URL for uploaded file');
       }
 
-      console.log("Public URL generated:", data.publicUrl);
+      console.log('Public URL generated:', data.publicUrl);
       return data.publicUrl;
     } catch (error: any) {
-      console.error("Error uploading file:", error);
+      console.error('Error uploading file:', error);
       throw error;
     }
   };
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -135,12 +122,8 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       const publicUrl = await uploadFileToSupabase(file);
       setUploadedAvatarUrl(publicUrl);
     } catch (error: any) {
-      console.error("Upload failed:", error);
-      setUploadError(
-        error.message ||
-          t.upload_avatar_error_upload ||
-          "Failed to upload image"
-      );
+      console.error('Upload failed:', error);
+      setUploadError(error.message || t.upload_avatar_error_upload || 'Failed to upload image');
       setAvatarPreview(user?.avatar_url || null);
     } finally {
       setIsUploading(false);
@@ -202,7 +185,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             disabled={isUploading}
             className="text-sm font-semibold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isUploading ? t.uploading || "Uploading..." : t.upload_avatar}
+            {isUploading ? t.uploading || 'Uploading...' : t.upload_avatar}
           </button>
           {uploadError && (
             <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
@@ -235,7 +218,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           <input
             type="email"
             id="email"
-            value={user?.email ?? ""}
+            value={user?.email ?? ''}
             disabled
             className="mt-1 input-style bg-slate-100 dark:bg-slate-700 cursor-not-allowed"
           />

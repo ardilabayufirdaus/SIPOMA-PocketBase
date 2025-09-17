@@ -1,5 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
-import { Database } from "../types/supabase";
+import { createClient } from '@supabase/supabase-js';
+import { Database } from '../types/supabase';
 
 // Admin client untuk operasi yang memerlukan service role
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -10,17 +10,14 @@ const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 const isServiceKeyAvailable = !!supabaseServiceKey;
 
 if (import.meta.env.PROD && supabaseServiceKey) {
-  console.warn(
-    "🚨 SECURITY WARNING: Service key detected in production frontend!"
-  );
+  console.warn('🚨 SECURITY WARNING: Service key detected in production frontend!');
 }
 
 // Use service role key for admin operations only
-const supabaseKey =
-  supabaseServiceKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+const supabaseKey = supabaseServiceKey || import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Missing Supabase environment variables");
+  throw new Error('Missing Supabase environment variables');
 }
 
 export const supabaseAdmin = createClient<Database>(supabaseUrl, supabaseKey, {
@@ -47,15 +44,14 @@ export const createUserWithAdmin = async (
   try {
     // Jika menggunakan service key, gunakan admin API
     if (supabaseServiceKey) {
-      const { data: authUser, error: authError } =
-        await supabaseAdmin.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true, // Auto-confirm email
-          user_metadata: {
-            full_name: userData.full_name,
-          },
-        });
+      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // Auto-confirm email
+        user_metadata: {
+          full_name: userData.full_name,
+        },
+      });
 
       if (authError) throw authError;
       return { user: authUser.user, error: null };
@@ -89,16 +85,13 @@ export const updateUserWithAdmin = async (
 ) => {
   try {
     if (supabaseServiceKey) {
-      const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
-        userId,
-        updates
-      );
+      const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, updates);
       return { user: data.user, error };
     } else {
       // Jika tidak ada service key, kembalikan error
       return {
         user: null,
-        error: { message: "Admin operations require service key" },
+        error: { message: 'Admin operations require service key' },
       };
     }
   } catch (error) {
@@ -113,7 +106,7 @@ export const deleteUserWithAdmin = async (userId: string) => {
       const { data, error } = await supabaseAdmin.auth.admin.deleteUser(userId);
       return { error };
     } else {
-      return { error: { message: "Admin operations require service key" } };
+      return { error: { message: 'Admin operations require service key' } };
     }
   } catch (error) {
     return { error };

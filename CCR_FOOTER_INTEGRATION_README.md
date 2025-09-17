@@ -80,15 +80,15 @@ CREATE TABLE ccr_footer_data (
 ### Menggunakan Hook
 
 ```typescript
-import { useCcrFooterData } from "../../hooks/useCcrFooterData";
+import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 
 const { saveFooterData, getFooterDataForDate } = useCcrFooterData();
 
 // Simpan data footer
 await saveFooterData({
-  date: "2025-09-17",
-  parameter_id: "param-uuid",
-  plant_unit: "CCR",
+  date: '2025-09-17',
+  parameter_id: 'param-uuid',
+  plant_unit: 'CCR',
   total: 100,
   average: 25,
   minimum: 10,
@@ -97,7 +97,7 @@ await saveFooterData({
 });
 
 // Ambil data footer untuk tanggal tertentu
-const footerData = await getFooterDataForDate("2025-09-17");
+const footerData = await getFooterDataForDate('2025-09-17');
 ```
 
 ## Keamanan

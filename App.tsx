@@ -1,114 +1,102 @@
-import { useNavigate } from "react-router-dom";
-import React, { useState, useCallback, useEffect, Suspense, lazy } from "react";
-import ErrorBoundary from "./components/ErrorBoundary";
-import Modal from "./components/Modal";
-import ProfileEditModal from "./components/ProfileEditModal";
-import UserForm from "./features/user-management/components/UserForm";
-import PasswordDisplay from "./components/PasswordDisplay";
-import Toast from "./components/Toast";
-import LoadingSkeleton, { PageLoading } from "./components/LoadingSkeleton";
-import { useUserStore } from "./stores/userStore";
-import { useCurrentUser } from "./hooks/useCurrentUser";
-import { useOnlineUsers } from "./hooks/useOnlineUsers";
-import { useUserActivity } from "./hooks/useUserActivity";
-import { usePlantData } from "./hooks/usePlantData";
-import { useProjects } from "./hooks/useProjects";
-import { useIsMobile } from "./hooks/useIsMobile";
-import { User, ProjectStatus } from "./types";
-import { translations } from "./translations";
-import { usePlantUnits } from "./hooks/usePlantUnits";
+import { useNavigate } from 'react-router-dom';
+import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
+import Modal from './components/Modal';
+import ProfileEditModal from './components/ProfileEditModal';
+import UserForm from './features/user-management/components/UserForm';
+import PasswordDisplay from './components/PasswordDisplay';
+import Toast from './components/Toast';
+import LoadingSkeleton, { PageLoading } from './components/LoadingSkeleton';
+import { useUserStore } from './stores/userStore';
+import { useCurrentUser } from './hooks/useCurrentUser';
+import { useOnlineUsers } from './hooks/useOnlineUsers';
+import { useUserActivity } from './hooks/useUserActivity';
+import { usePlantData } from './hooks/usePlantData';
+import { useProjects } from './hooks/useProjects';
+import { useIsMobile } from './hooks/useIsMobile';
+import { User, ProjectStatus } from './types';
+import { translations } from './translations';
+import { usePlantUnits } from './hooks/usePlantUnits';
 
-import Sidebar from "./components/ModernSidebar";
-import Header from "./components/Header";
+import Sidebar from './components/ModernSidebar';
+import Header from './components/Header';
 
 // Import permission utilities
-import { usePermissions, PermissionGuard } from "./utils/permissions";
-import { PermissionLevel } from "./types";
+import { usePermissions, PermissionGuard } from './utils/permissions';
+import { PermissionLevel } from './types';
 
 // Enhanced lazy loading with better error boundaries and retries
 const ModernMainDashboardPage = lazy(() =>
-  import("./pages/ModernMainDashboardPage").catch(() => {
+  import('./pages/ModernMainDashboardPage').catch(() => {
     return {
       default: () =>
         React.createElement(
-          "div",
-          { className: "text-center p-8" },
-          "Error loading Dashboard. Please refresh."
+          'div',
+          { className: 'text-center p-8' },
+          'Error loading Dashboard. Please refresh.'
         ),
     };
   })
 );
 
 // Preload critical routes
-const preloadDashboard = () => import("./pages/ModernMainDashboardPage");
-const preloadPlantOperations = () => import("./pages/PlantOperationsPage");
-const preloadPackingPlant = () => import("./pages/PackingPlantPage");
+const preloadDashboard = () => import('./pages/ModernMainDashboardPage');
+const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
+const preloadPackingPlant = () => import('./pages/PackingPlantPage');
 
 // Heavy components with preload hints
 const PlantOperationsPage = lazy(() =>
-  import("./pages/PlantOperationsPage").catch(() => ({
+  import('./pages/PlantOperationsPage').catch(() => ({
     default: () => (
-      <div className="text-center p-8">
-        Error loading Plant Operations. Please refresh.
-      </div>
+      <div className="text-center p-8">Error loading Plant Operations. Please refresh.</div>
     ),
   }))
 );
 
 const PackingPlantPage = lazy(() =>
-  import("./pages/PackingPlantPage").catch(() => ({
+  import('./pages/PackingPlantPage').catch(() => ({
     default: () => (
-      <div className="text-center p-8">
-        Error loading Packing Plant. Please refresh.
-      </div>
+      <div className="text-center p-8">Error loading Packing Plant. Please refresh.</div>
     ),
   }))
 );
 
 const ProjectManagementPage = lazy(() =>
-  import("./pages/ProjectManagementPage").catch(() => ({
+  import('./pages/ProjectManagementPage').catch(() => ({
     default: () => (
-      <div className="text-center p-8">
-        Error loading Project Management. Please refresh.
-      </div>
+      <div className="text-center p-8">Error loading Project Management. Please refresh.</div>
     ),
   }))
 );
 
 // Lightweight components
 const SLAManagementPage = lazy(() =>
-  import("./pages/SLAManagementPage").catch(() => ({
+  import('./pages/SLAManagementPage').catch(() => ({
     default: () => (
-      <div className="text-center p-8">
-        Error loading SLA Management. Please refresh.
-      </div>
+      <div className="text-center p-8">Error loading SLA Management. Please refresh.</div>
     ),
   }))
 );
 
 const SettingsPage = lazy(() =>
-  import("./pages/SettingsPage").catch(() => ({
-    default: () => (
-      <div className="text-center p-8">
-        Error loading Settings. Please refresh.
-      </div>
-    ),
+  import('./pages/SettingsPage').catch(() => ({
+    default: () => <div className="text-center p-8">Error loading Settings. Please refresh.</div>,
   }))
 );
 
 // User Management Pages
 const UserListPage = lazy(() =>
-  import("./features/user-management/pages/UserListPage").catch(() => ({
+  import('./features/user-management/pages/UserListPage').catch(() => ({
     default: () => <div>Error loading User List. Please refresh.</div>,
   }))
 );
 const UserRolesPage = lazy(() =>
-  import("./features/user-management/pages/UserRolesPage").catch(() => ({
+  import('./features/user-management/pages/UserRolesPage').catch(() => ({
     default: () => <div>Error loading User Roles. Please refresh.</div>,
   }))
 );
 const UserActivityPage = lazy(() =>
-  import("./features/user-management/pages/UserActivityPage").catch(() => ({
+  import('./features/user-management/pages/UserActivityPage').catch(() => ({
     default: () => <div>Error loading User Activity. Please refresh.</div>,
   }))
 );
@@ -121,24 +109,24 @@ const PageLoader = () => (
 );
 
 export type Page =
-  | "dashboard"
-  | "users"
-  | "operations"
-  | "packing"
-  | "projects"
-  | "sla"
-  | "settings";
-export type Language = "en" | "id";
-export type Theme = "light" | "dark";
+  | 'dashboard'
+  | 'users'
+  | 'operations'
+  | 'packing'
+  | 'projects'
+  | 'sla'
+  | 'settings';
+export type Language = 'en' | 'id';
+export type Theme = 'light' | 'dark';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>('en');
   const t = translations[language];
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>('light');
   const isMobile = useIsMobile();
 
-  const [currentPage, setCurrentPage] = useState<Page>("dashboard");
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
   const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
@@ -174,27 +162,25 @@ const App: React.FC = () => {
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [showPasswordDisplay, setShowPasswordDisplay] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState("");
-  const [newUsername, setNewUsername] = useState("");
-  const [newUserFullName, setNewUserFullName] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [newUserFullName, setNewUserFullName] = useState('');
   const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastType, setToastType] = useState<
-    "success" | "error" | "info" | "warning"
-  >("success");
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info' | 'warning'>('success');
 
   const [activeSubPages, setActiveSubPages] = useState({
-    operations: "op_dashboard",
-    packing: "pack_master_data",
-    projects: "proj_dashboard",
-    users: "user_list",
+    operations: 'op_dashboard',
+    packing: 'pack_master_data',
+    projects: 'proj_dashboard',
+    users: 'user_list',
   });
 
   useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
     } else {
-      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.remove('dark');
     }
   }, [theme]);
 
@@ -216,7 +202,7 @@ const App: React.FC = () => {
   // Sidebar keyboard shortcuts removed
 
   const handleToggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   }, []);
 
   const handleToggleSidebar = useCallback(() => {
@@ -251,28 +237,24 @@ const App: React.FC = () => {
       // Find the user to be deleted
       const userToDelete = users.find((u) => u.id === userId);
       if (!userToDelete) {
-        setToastMessage(t.user_not_found || "User not found");
-        setToastType("error");
+        setToastMessage(t.user_not_found || 'User not found');
+        setToastType('error');
         setShowToast(true);
         return;
       }
 
       // Check if user is trying to delete a super admin
-      if (userToDelete.role === "Super Admin") {
-        setToastMessage(
-          t.cannot_delete_super_admin || "Super Admin users cannot be deleted"
-        );
-        setToastType("error");
+      if (userToDelete.role === 'Super Admin') {
+        setToastMessage(t.cannot_delete_super_admin || 'Super Admin users cannot be deleted');
+        setToastType('error');
         setShowToast(true);
         return;
       }
 
       // Check if current user has permission to delete
-      if (!currentUser || currentUser.role !== "Super Admin") {
-        setToastMessage(
-          t.only_super_admin_can_delete || "Only Super Admin can delete users"
-        );
-        setToastType("error");
+      if (!currentUser || currentUser.role !== 'Super Admin') {
+        setToastMessage(t.only_super_admin_can_delete || 'Only Super Admin can delete users');
+        setToastType('error');
         setShowToast(true);
         return;
       }
@@ -281,12 +263,10 @@ const App: React.FC = () => {
       const confirmMessage =
         t.confirm_delete_user ||
         `Are you sure you want to delete ${userToDelete.full_name}? This action cannot be undone.`;
-      if (
-        window.confirm(confirmMessage.replace("{name}", userToDelete.full_name))
-      ) {
+      if (window.confirm(confirmMessage.replace('{name}', userToDelete.full_name))) {
         await deleteUserStore(userId);
-        setToastMessage(t.user_deleted_success || "User deleted successfully");
-        setToastType("success");
+        setToastMessage(t.user_deleted_success || 'User deleted successfully');
+        setToastType('success');
         setShowToast(true);
       }
     },
@@ -308,33 +288,28 @@ const App: React.FC = () => {
   const handleSignOutCancel = () => setIsSignOutModalOpen(false);
   const handleSignOutConfirm = () => {
     logout();
-    navigate("/login");
+    navigate('/login');
   };
 
   const getPageTitle = () => {
     switch (currentPage) {
-      case "dashboard":
+      case 'dashboard':
         return t.mainDashboard;
-      case "users":
+      case 'users':
         return t[activeSubPages.users as keyof typeof t] || t.userManagement;
-      case "settings":
+      case 'settings':
         return t.header_settings;
-      case "sla":
+      case 'sla':
         return t.slaManagement;
-      case "operations":
-        return (
-          t[activeSubPages.operations as keyof typeof t] || t.plantOperations
-        );
-      case "packing":
+      case 'operations':
+        return t[activeSubPages.operations as keyof typeof t] || t.plantOperations;
+      case 'packing':
         return t[activeSubPages.packing as keyof typeof t] || t.packingPlant;
-      case "projects":
-        if (activeSubPages.projects === "proj_detail")
-          return t.project_overview_title;
-        return (
-          t[activeSubPages.projects as keyof typeof t] || t.projectManagement
-        );
+      case 'projects':
+        if (activeSubPages.projects === 'proj_detail') return t.project_overview_title;
+        return t[activeSubPages.projects as keyof typeof t] || t.projectManagement;
       default:
-        return "SIPOMA";
+        return 'SIPOMA';
     }
   };
 
@@ -342,7 +317,7 @@ const App: React.FC = () => {
     usersLoading ||
     plantUnitsLoading ||
     plantDataLoading ||
-    (currentUserLoading && !localStorage.getItem("currentUser"))
+    (currentUserLoading && !localStorage.getItem('currentUser'))
   ) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -352,9 +327,7 @@ const App: React.FC = () => {
             <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300">
               Memuat SIPOMA
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Mohon tunggu sebentar...
-            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Mohon tunggu sebentar...</p>
           </div>
         </div>
       </div>
@@ -386,7 +359,7 @@ const App: React.FC = () => {
           <div
             className="flex flex-col min-h-screen transition-all duration-300"
             style={{
-              marginLeft: isMobile ? "0" : "5rem", // 80px untuk compact sidebar width (w-20)
+              marginLeft: isMobile ? '0' : '5rem', // 80px untuk compact sidebar width (w-20)
             }}
           >
             <Header
@@ -442,13 +415,13 @@ const App: React.FC = () => {
                             Access Denied
                           </h3>
                           <p className="text-red-600 dark:text-red-300">
-                            You don't have permission to access the Dashboard.
+                            You don&apos;t have permission to access the Dashboard.
                           </p>
                         </div>
                       </div>
                     }
                   >
-                    {currentPage === "dashboard" && (
+                    {currentPage === 'dashboard' && (
                       <ModernMainDashboardPage
                         language={language}
                         usersCount={users.filter((u) => u.is_active).length}
@@ -484,10 +457,10 @@ const App: React.FC = () => {
                             Access Denied
                           </h3>
                           <p className="text-red-600 dark:text-red-300 mb-4">
-                            You don't have permission to access User Management.
+                            You don&apos;t have permission to access User Management.
                           </p>
                           <button
-                            onClick={() => handleNavigate("dashboard")}
+                            onClick={() => handleNavigate('dashboard')}
                             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                           >
                             Back to Dashboard
@@ -496,12 +469,10 @@ const App: React.FC = () => {
                       </div>
                     }
                   >
-                    {currentPage === "users" && (
+                    {currentPage === 'users' && (
                       <>
-                        {activeSubPages.users === "user_list" && (
-                          <UserListPage />
-                        )}
-                        {activeSubPages.users === "add_user" && (
+                        {activeSubPages.users === 'user_list' && <UserListPage />}
+                        {activeSubPages.users === 'add_user' && (
                           <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8 max-w-md">
                               <div className="mb-4">
@@ -523,13 +494,11 @@ const App: React.FC = () => {
                                 Add New User
                               </h3>
                               <p className="text-blue-600 dark:text-blue-300 mb-4">
-                                Use the "Add User" button in the header to
-                                create a new user.
+                                Use the &quot;Add User&quot; button in the header to create a new
+                                user.
                               </p>
                               <button
-                                onClick={() =>
-                                  handleNavigate("users", "user_list")
-                                }
+                                onClick={() => handleNavigate('users', 'user_list')}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                               >
                                 Go to User List
@@ -537,14 +506,10 @@ const App: React.FC = () => {
                             </div>
                           </div>
                         )}
-                        {activeSubPages.users === "user_roles" && (
-                          <UserRolesPage
-                            users={users}
-                            plantUnits={plantUnits}
-                            t={t}
-                          />
+                        {activeSubPages.users === 'user_roles' && (
+                          <UserRolesPage users={users} plantUnits={plantUnits} t={t} />
                         )}
-                        {activeSubPages.users === "user_activity" && (
+                        {activeSubPages.users === 'user_activity' && (
                           <UserActivityPage users={users} t={t} />
                         )}
                       </>
@@ -577,13 +542,13 @@ const App: React.FC = () => {
                             Access Denied
                           </h3>
                           <p className="text-red-600 dark:text-red-300">
-                            You don't have permission to access Settings.
+                            You don&apos;t have permission to access Settings.
                           </p>
                         </div>
                       </div>
                     }
                   >
-                    {currentPage === "settings" && (
+                    {currentPage === 'settings' && (
                       <SettingsPage
                         t={t}
                         user={currentUser}
@@ -593,7 +558,7 @@ const App: React.FC = () => {
                       />
                     )}
                   </PermissionGuard>
-                  {currentPage === "sla" && <SLAManagementPage t={t} />}
+                  {currentPage === 'sla' && <SLAManagementPage t={t} />}
                   {/* Plant Operations - Check permission */}
                   <PermissionGuard
                     user={currentUser}
@@ -621,14 +586,13 @@ const App: React.FC = () => {
                             Access Denied
                           </h3>
                           <p className="text-red-600 dark:text-red-300">
-                            You don't have permission to access Plant
-                            Operations.
+                            You don&apos;t have permission to access Plant Operations.
                           </p>
                         </div>
                       </div>
                     }
                   >
-                    {currentPage === "operations" && (
+                    {currentPage === 'operations' && (
                       <PlantOperationsPage
                         activePage={activeSubPages.operations}
                         t={t}
@@ -669,17 +633,14 @@ const App: React.FC = () => {
                             Access Denied
                           </h3>
                           <p className="text-red-600 dark:text-red-300">
-                            You don't have permission to access Packing Plant.
+                            You don&apos;t have permission to access Packing Plant.
                           </p>
                         </div>
                       </div>
                     }
                   >
-                    {currentPage === "packing" && (
-                      <PackingPlantPage
-                        activePage={activeSubPages.packing}
-                        t={t}
-                      />
+                    {currentPage === 'packing' && (
+                      <PackingPlantPage activePage={activeSubPages.packing} t={t} />
                     )}
                   </PermissionGuard>
                   {/* Project Management - Check permission */}
@@ -709,20 +670,17 @@ const App: React.FC = () => {
                             Access Denied
                           </h3>
                           <p className="text-red-600 dark:text-red-300">
-                            You don't have permission to access Project
-                            Management.
+                            You don&apos;t have permission to access Project Management.
                           </p>
                         </div>
                       </div>
                     }
                   >
-                    {currentPage === "projects" && (
+                    {currentPage === 'projects' && (
                       <ProjectManagementPage
                         activePage={activeSubPages.projects}
                         t={t}
-                        onNavigate={(subpage: string) =>
-                          handleNavigate("projects", subpage)
-                        }
+                        onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
                       />
                     )}
                   </PermissionGuard>
@@ -750,10 +708,8 @@ const App: React.FC = () => {
           onSave={(updatedUser) => {
             if (currentUser) {
               updateUser(currentUser.id, updatedUser);
-              setToastMessage(
-                t.avatar_updated || "Profile updated successfully!"
-              );
-              setToastType("success");
+              setToastMessage(t.avatar_updated || 'Profile updated successfully!');
+              setToastType('success');
               setShowToast(true);
               handleCloseProfileModal();
             }
@@ -802,9 +758,7 @@ const App: React.FC = () => {
                 <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                   Konfirmasi Keluar
                 </h4>
-                <p className="text-slate-600 dark:text-slate-400">
-                  {t.confirm_sign_out_message}
-                </p>
+                <p className="text-slate-600 dark:text-slate-400">{t.confirm_sign_out_message}</p>
               </div>
             </div>
           </div>

@@ -1,1 +1,1 @@
-export { default } from "../ui/Badge";
+export { default } from '../ui/Badge';

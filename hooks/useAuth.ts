@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../utils/supabase";
-import { User } from "../types";
-import useErrorHandler from "./useErrorHandler";
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../utils/supabase';
+import { User } from '../types';
+import useErrorHandler from './useErrorHandler';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -14,7 +14,7 @@ export const useAuth = () => {
       try {
         // Query langsung ke tabel users untuk validasi credentials
         const { data, error } = await (supabase as any)
-          .from("users")
+          .from('users')
           .select(
             `
             id,
@@ -34,49 +34,47 @@ export const useAuth = () => {
             )
           `
           )
-          .eq("username", identifier)
-          .eq("password_hash", password)
-          .eq("is_active", true)
+          .eq('username', identifier)
+          .eq('password_hash', password)
+          .eq('is_active', true)
           .single();
 
         if (error) {
-          if (error.code === "PGRST116") {
+          if (error.code === 'PGRST116') {
             // No rows returned
-            throw new Error("Invalid username or password");
+            throw new Error('Invalid username or password');
           }
           throw error;
         }
 
         if (!data) {
-          throw new Error("Invalid username or password");
+          throw new Error('Invalid username or password');
         }
 
         const userData = {
           ...data,
-          permissions:
-            (data as any).user_permissions?.map((up: any) => up.permissions) ||
-            [],
+          permissions: (data as any).user_permissions?.map((up: any) => up.permissions) || [],
         };
 
         // Convert dates
-        if (userData.last_active && typeof userData.last_active === "string") {
+        if (userData.last_active && typeof userData.last_active === 'string') {
           userData.last_active = new Date(userData.last_active);
         }
-        if (userData.created_at && typeof userData.created_at === "string") {
+        if (userData.created_at && typeof userData.created_at === 'string') {
           userData.created_at = new Date(userData.created_at);
         }
 
         // Update last_active
         await (supabase as any)
-          .from("users")
+          .from('users')
           .update({ last_active: new Date().toISOString() })
-          .eq("id", userData.id);
+          .eq('id', userData.id);
 
         setUser(userData as User);
-        localStorage.setItem("currentUser", JSON.stringify(userData));
+        localStorage.setItem('currentUser', JSON.stringify(userData));
         return userData;
       } catch (error) {
-        handleError(error, "Error logging in");
+        handleError(error, 'Error logging in');
         return null;
       } finally {
         setLoading(false);
@@ -88,14 +86,14 @@ export const useAuth = () => {
   const logout = useCallback(() => {
     setUser(null);
     setLoading(false);
-    localStorage.removeItem("currentUser");
+    localStorage.removeItem('currentUser');
 
     // Dispatch custom event to notify other components
-    window.dispatchEvent(new CustomEvent("authStateChanged"));
+    window.dispatchEvent(new CustomEvent('authStateChanged'));
   }, []);
 
   useEffect(() => {
-    const currentUser = localStorage.getItem("currentUser");
+    const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
       setUser(JSON.parse(currentUser));
     }
@@ -103,7 +101,7 @@ export const useAuth = () => {
 
     // Listen for auth state changes
     const handleAuthChange = () => {
-      const storedUser = localStorage.getItem("currentUser");
+      const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       } else {
@@ -112,10 +110,10 @@ export const useAuth = () => {
       setLoading(false);
     };
 
-    window.addEventListener("authStateChanged", handleAuthChange);
+    window.addEventListener('authStateChanged', handleAuthChange);
 
     return () => {
-      window.removeEventListener("authStateChanged", handleAuthChange);
+      window.removeEventListener('authStateChanged', handleAuthChange);
     };
   }, []);
 

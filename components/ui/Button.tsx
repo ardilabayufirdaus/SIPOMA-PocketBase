@@ -1,17 +1,9 @@
-import React from "react";
-import { designSystem } from "../../utils/designSystem";
+import React from 'react';
+import { designSystem } from '../../utils/designSystem';
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?:
-    | "primary"
-    | "secondary"
-    | "success"
-    | "warning"
-    | "error"
-    | "outline"
-    | "ghost";
-  size?: "xs" | "sm" | "base" | "lg" | "xl";
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'outline' | 'ghost';
+  size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -21,15 +13,15 @@ export interface ButtonProps
 }
 
 const Button: React.FC<ButtonProps> = ({
-  variant = "primary",
-  size = "base",
+  variant = 'primary',
+  size = 'base',
   loading = false,
   disabled = false,
   fullWidth = false,
   leftIcon,
   rightIcon,
   children,
-  className = "",
+  className = '',
   onClick,
   ...props
 }) => {
@@ -37,139 +29,129 @@ const Button: React.FC<ButtonProps> = ({
   const sizeConfig = designSystem.buttonVariants.sizes[size];
 
   const baseClasses = [
-    "inline-flex",
-    "items-center",
-    "justify-center",
-    "font-medium",
-    "transition-all",
-    "duration-200",
-    "focus:outline-none",
-    "focus:ring-2",
-    "focus:ring-offset-2",
-    "focus:ring-opacity-50",
-    "disabled:opacity-50",
-    "disabled:cursor-not-allowed",
-    fullWidth ? "w-full" : "",
+    'inline-flex',
+    'items-center',
+    'justify-center',
+    'font-medium',
+    'transition-all',
+    'duration-200',
+    'focus:outline-none',
+    'focus:ring-2',
+    'focus:ring-offset-2',
+    'focus:ring-opacity-50',
+    'disabled:opacity-50',
+    'disabled:cursor-not-allowed',
+    fullWidth ? 'w-full' : '',
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const getVariantClasses = () => {
     if (disabled || loading) {
-      return [
-        "bg-gray-100",
-        "text-gray-400",
-        "border-gray-200",
-        "cursor-not-allowed",
-      ].join(" ");
+      return ['bg-gray-100', 'text-gray-400', 'border-gray-200', 'cursor-not-allowed'].join(' ');
     }
 
     switch (variant) {
-      case "primary":
+      case 'primary':
         return [
-          "bg-red-600",
-          "hover:bg-red-700",
-          "active:bg-red-800",
-          "text-white",
-          "border-transparent",
-          "focus:ring-red-500",
-          "shadow-sm",
-        ].join(" ");
+          'bg-red-600',
+          'hover:bg-red-700',
+          'active:bg-red-800',
+          'text-white',
+          'border-transparent',
+          'focus:ring-red-500',
+          'shadow-sm',
+        ].join(' ');
 
-      case "secondary":
+      case 'secondary':
         return [
-          "bg-gray-100",
-          "hover:bg-gray-200",
-          "active:bg-gray-300",
-          "text-gray-900",
-          "border-gray-300",
-          "focus:ring-gray-500",
-        ].join(" ");
+          'bg-gray-100',
+          'hover:bg-gray-200',
+          'active:bg-gray-300',
+          'text-gray-900',
+          'border-gray-300',
+          'focus:ring-gray-500',
+        ].join(' ');
 
-      case "success":
+      case 'success':
         return [
-          "bg-green-600",
-          "hover:bg-green-700",
-          "active:bg-green-800",
-          "text-white",
-          "border-transparent",
-          "focus:ring-green-500",
-          "shadow-sm",
-        ].join(" ");
+          'bg-green-600',
+          'hover:bg-green-700',
+          'active:bg-green-800',
+          'text-white',
+          'border-transparent',
+          'focus:ring-green-500',
+          'shadow-sm',
+        ].join(' ');
 
-      case "warning":
+      case 'warning':
         return [
-          "bg-yellow-500",
-          "hover:bg-yellow-600",
-          "active:bg-yellow-700",
-          "text-white",
-          "border-transparent",
-          "focus:ring-yellow-500",
-          "shadow-sm",
-        ].join(" ");
+          'bg-yellow-500',
+          'hover:bg-yellow-600',
+          'active:bg-yellow-700',
+          'text-white',
+          'border-transparent',
+          'focus:ring-yellow-500',
+          'shadow-sm',
+        ].join(' ');
 
-      case "error":
+      case 'error':
         return [
-          "bg-red-600",
-          "hover:bg-red-700",
-          "active:bg-red-800",
-          "text-white",
-          "border-transparent",
-          "focus:ring-red-500",
-          "shadow-sm",
-        ].join(" ");
+          'bg-red-600',
+          'hover:bg-red-700',
+          'active:bg-red-800',
+          'text-white',
+          'border-transparent',
+          'focus:ring-red-500',
+          'shadow-sm',
+        ].join(' ');
 
-      case "outline":
+      case 'outline':
         return [
-          "bg-transparent",
-          "hover:bg-gray-50",
-          "active:bg-gray-100",
-          "text-gray-700",
-          "border-gray-300",
-          "focus:ring-gray-500",
-          "border",
-        ].join(" ");
+          'bg-transparent',
+          'hover:bg-gray-50',
+          'active:bg-gray-100',
+          'text-gray-700',
+          'border-gray-300',
+          'focus:ring-gray-500',
+          'border',
+        ].join(' ');
 
-      case "ghost":
+      case 'ghost':
         return [
-          "bg-transparent",
-          "hover:bg-gray-100",
-          "active:bg-gray-200",
-          "text-gray-700",
-          "border-transparent",
-          "focus:ring-gray-500",
-        ].join(" ");
+          'bg-transparent',
+          'hover:bg-gray-100',
+          'active:bg-gray-200',
+          'text-gray-700',
+          'border-transparent',
+          'focus:ring-gray-500',
+        ].join(' ');
 
       default:
-        return "";
+        return '';
     }
   };
 
   const getSizeClasses = () => {
     switch (size) {
-      case "xs":
-        return "px-2 py-1 text-xs rounded-sm";
-      case "sm":
-        return "px-3 py-1.5 text-sm rounded";
-      case "base":
-        return "px-4 py-2 text-base rounded-md";
-      case "lg":
-        return "px-6 py-3 text-lg rounded-lg";
-      case "xl":
-        return "px-8 py-4 text-xl rounded-xl";
+      case 'xs':
+        return 'px-2 py-1 text-xs rounded-sm';
+      case 'sm':
+        return 'px-3 py-1.5 text-sm rounded';
+      case 'base':
+        return 'px-4 py-2 text-base rounded-md';
+      case 'lg':
+        return 'px-6 py-3 text-lg rounded-lg';
+      case 'xl':
+        return 'px-8 py-4 text-xl rounded-xl';
       default:
-        return "px-4 py-2 text-base rounded-md";
+        return 'px-4 py-2 text-base rounded-md';
     }
   };
 
-  const finalClassName = [
-    baseClasses,
-    getVariantClasses(),
-    getSizeClasses(),
-    className,
-  ]
+  const finalClassName = [baseClasses, getVariantClasses(), getSizeClasses(), className]
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled || loading) {
@@ -189,15 +171,15 @@ const Button: React.FC<ButtonProps> = ({
       {loading && (
         <svg
           className={`animate-spin -ml-1 mr-2 ${
-            size === "xs"
-              ? "h-3 w-3"
-              : size === "sm"
-              ? "h-4 w-4"
-              : size === "lg"
-              ? "h-5 w-5"
-              : size === "xl"
-              ? "h-6 w-6"
-              : "h-4 w-4"
+            size === 'xs'
+              ? 'h-3 w-3'
+              : size === 'sm'
+                ? 'h-4 w-4'
+                : size === 'lg'
+                  ? 'h-5 w-5'
+                  : size === 'xl'
+                    ? 'h-6 w-6'
+                    : 'h-4 w-4'
           } text-current`}
           fill="none"
           viewBox="0 0 24 24"
@@ -219,48 +201,44 @@ const Button: React.FC<ButtonProps> = ({
       )}
 
       {!loading && leftIcon && (
-        <span className={`inline-flex ${children ? "mr-2" : ""}`}>
-          {leftIcon}
-        </span>
+        <span className={`inline-flex ${children ? 'mr-2' : ''}`}>{leftIcon}</span>
       )}
 
       {children}
 
       {!loading && rightIcon && (
-        <span className={`inline-flex ${children ? "ml-2" : ""}`}>
-          {rightIcon}
-        </span>
+        <span className={`inline-flex ${children ? 'ml-2' : ''}`}>{rightIcon}</span>
       )}
     </button>
   );
 };
 
 // Specific button variants for common use cases
-export const PrimaryButton: React.FC<Omit<ButtonProps, "variant">> = (
-  props
-) => <Button variant="primary" {...props} />;
+export const PrimaryButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
+  <Button variant="primary" {...props} />
+);
 
-export const SecondaryButton: React.FC<Omit<ButtonProps, "variant">> = (
-  props
-) => <Button variant="secondary" {...props} />;
+export const SecondaryButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
+  <Button variant="secondary" {...props} />
+);
 
-export const SuccessButton: React.FC<Omit<ButtonProps, "variant">> = (
-  props
-) => <Button variant="success" {...props} />;
+export const SuccessButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
+  <Button variant="success" {...props} />
+);
 
-export const WarningButton: React.FC<Omit<ButtonProps, "variant">> = (
-  props
-) => <Button variant="warning" {...props} />;
+export const WarningButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
+  <Button variant="warning" {...props} />
+);
 
-export const ErrorButton: React.FC<Omit<ButtonProps, "variant">> = (props) => (
+export const ErrorButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
   <Button variant="error" {...props} />
 );
 
-export const OutlineButton: React.FC<Omit<ButtonProps, "variant">> = (
-  props
-) => <Button variant="outline" {...props} />;
+export const OutlineButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
+  <Button variant="outline" {...props} />
+);
 
-export const GhostButton: React.FC<Omit<ButtonProps, "variant">> = (props) => (
+export const GhostButton: React.FC<Omit<ButtonProps, 'variant'>> = (props) => (
   <Button variant="ghost" {...props} />
 );
 

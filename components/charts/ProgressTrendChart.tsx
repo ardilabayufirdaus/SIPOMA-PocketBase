@@ -1,5 +1,5 @@
-import React from "react";
-import { Line } from "react-chartjs-2";
+import React from 'react';
+import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,17 +9,9 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
+} from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface ProgressTrendChartProps {
   data: Array<{
@@ -32,14 +24,11 @@ interface ProgressTrendChartProps {
   t: any;
 }
 
-export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
-  data,
-  t,
-}) => {
+export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({ data, t }) => {
   const colors = [
-    "#3B82F6", // blue-500
-    "#10B981", // emerald-500
-    "#F59E0B", // amber-500
+    '#3B82F6', // blue-500
+    '#10B981', // emerald-500
+    '#F59E0B', // amber-500
   ];
 
   const chartData = {
@@ -48,7 +37,7 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
       label: series.id,
       data: series.data.map((point) => point.y),
       borderColor: colors[index % colors.length],
-      backgroundColor: colors[index % colors.length] + "20",
+      backgroundColor: colors[index % colors.length] + '20',
       borderWidth: 2,
       fill: false,
       tension: 0.4,
@@ -62,7 +51,7 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: 'top' as const,
         labels: {
           padding: 10,
           usePointStyle: true,
@@ -72,16 +61,16 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
         },
       },
       tooltip: {
-        mode: "index" as const,
+        mode: 'index' as const,
         intersect: false,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || "";
+            let label = context.dataset.label || '';
             if (label) {
-              label += ": ";
+              label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += context.parsed.y.toFixed(1) + "%";
+              label += context.parsed.y.toFixed(1) + '%';
             }
             return label;
           },
@@ -93,7 +82,7 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
         display: true,
         title: {
           display: true,
-          text: "Month",
+          text: 'Month',
           font: {
             size: 12,
           },
@@ -106,7 +95,7 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
         display: true,
         title: {
           display: true,
-          text: "Progress (%)",
+          text: 'Progress (%)',
           font: {
             size: 12,
           },
@@ -114,18 +103,18 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({
         beginAtZero: true,
         max: 100,
         grid: {
-          color: "rgba(0, 0, 0, 0.1)",
+          color: 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
           callback: function (value: any) {
-            return value + "%";
+            return value + '%';
           },
         },
       },
     },
     interaction: {
-      mode: "nearest" as const,
-      axis: "x" as const,
+      mode: 'nearest' as const,
+      axis: 'x' as const,
       intersect: false,
     },
   };

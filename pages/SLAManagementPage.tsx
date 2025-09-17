@@ -1,5 +1,5 @@
-import React from "react";
-import PlaceholderPage from "../components/PlaceholderPage";
+import React from 'react';
+import PlaceholderPage from '../components/PlaceholderPage';
 
 interface SLAManagementPageProps {
   t: any;

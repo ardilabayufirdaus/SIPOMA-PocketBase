@@ -1,5 +1,5 @@
-import React from "react";
-import { Line } from "react-chartjs-2";
+import React from 'react';
+import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,17 +9,9 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
+} from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface ProductionTrendChartProps {
   data: Array<{
@@ -44,7 +36,7 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
   selectedPlantCategory,
   selectedPlantUnit,
 }) => {
-  console.log("🔍 ProductionTrendChart Input:", {
+  console.log('🔍 ProductionTrendChart Input:', {
     dataCount: data.length,
     parametersCount: parameters.length,
     selectedProductionParameters,
@@ -70,7 +62,7 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
           .map((paramId) => parameters.find((p) => p.id === paramId))
           .filter(Boolean);
 
-  console.log("🔍 Chart displayParameters:", {
+  console.log('🔍 Chart displayParameters:', {
     displayParametersCount: displayParameters.length,
     displayParameters: displayParameters.map((p) => ({
       id: p?.id,
@@ -79,32 +71,32 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
   });
 
   const colors = [
-    "#3B82F6", // blue-500
-    "#10B981", // emerald-500
-    "#F59E0B", // amber-500
-    "#EF4444", // red-500
-    "#8B5CF6", // violet-500
-    "#06B6D4", // cyan-500
-    "#84CC16", // lime-500
-    "#F97316", // orange-500
+    '#3B82F6', // blue-500
+    '#10B981', // emerald-500
+    '#F59E0B', // amber-500
+    '#EF4444', // red-500
+    '#8B5CF6', // violet-500
+    '#06B6D4', // cyan-500
+    '#84CC16', // lime-500
+    '#F97316', // orange-500
   ];
 
   const chartData = {
     labels: data.map((item) => {
       const date = new Date(item.timestamp);
-      return date.toLocaleDateString("id-ID", {
-        month: "short",
-        day: "numeric",
+      return date.toLocaleDateString('id-ID', {
+        month: 'short',
+        day: 'numeric',
       });
     }),
     datasets: displayParameters.map((param, index) => {
       const datasetData = data.map((item) => {
         // Use the parameter name as the key from the data
         const paramValue = item[param?.parameter];
-        return typeof paramValue === "number" ? paramValue : 0;
+        return typeof paramValue === 'number' ? paramValue : 0;
       });
 
-      console.log("🔍 Chart Dataset for parameter:", {
+      console.log('🔍 Chart Dataset for parameter:', {
         parameterId: param?.id,
         parameterName: param?.parameter,
         sampleData: datasetData.slice(0, 5),
@@ -116,7 +108,7 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
         parameterName: param?.parameter || `Parameter ${index + 1}`,
         data: datasetData,
         borderColor: colors[index % colors.length],
-        backgroundColor: colors[index % colors.length] + "20",
+        backgroundColor: colors[index % colors.length] + '20',
         tension: 0.4,
         fill: false,
       };
@@ -128,7 +120,7 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: "top" as const,
+        position: 'top' as const,
         labels: {
           padding: 20,
           usePointStyle: true,
@@ -138,16 +130,16 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
         },
       },
       tooltip: {
-        mode: "index" as const,
+        mode: 'index' as const,
         intersect: false,
         callbacks: {
           label: function (context: any) {
-            let label = context.dataset.label || "";
+            let label = context.dataset.label || '';
             if (context.dataset.parameterName) {
               label += ` (${context.dataset.parameterName})`;
             }
             if (label) {
-              label += ": ";
+              label += ': ';
             }
             if (context.parsed.y !== null) {
               label += context.parsed.y.toFixed(2);
@@ -162,14 +154,14 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
         display: true,
         title: {
           display: true,
-          text: "Date",
+          text: 'Date',
         },
       },
       y: {
         display: true,
         title: {
           display: true,
-          text: "Ton",
+          text: 'Ton',
         },
         beginAtZero: true,
         ticks: {
@@ -183,8 +175,8 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
       },
     },
     interaction: {
-      mode: "nearest" as const,
-      axis: "x" as const,
+      mode: 'nearest' as const,
+      axis: 'x' as const,
       intersect: false,
     },
   };

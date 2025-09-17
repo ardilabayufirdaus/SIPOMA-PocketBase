@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../utils/supabaseClient';
 import { UserRole, PermissionMatrix } from '../types';
@@ -22,10 +21,7 @@ export const useRolePermissions = () => {
   const fetchRolePermissions = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('role_permissions')
-        .select('*')
-        .order('role'); // Urutkan berdasarkan nama peran
+      const { data, error } = await supabase.from('role_permissions').select('*').order('role'); // Urutkan berdasarkan nama peran
 
       if (error) throw error;
       setRolePermissions(data || []);
@@ -44,15 +40,12 @@ export const useRolePermissions = () => {
     async (role: UserRole, updates: Partial<PermissionMatrix>) => {
       setLoading(true);
       try {
-        const { error } = await supabase
-          .from('role_permissions')
-          .update(updates)
-          .eq('role', role);
+        const { error } = await supabase.from('role_permissions').update(updates).eq('role', role);
 
         if (error) throw error;
-        
+
         // Ambil ulang data untuk memastikan UI sinkron
-        await fetchRolePermissions(); 
+        await fetchRolePermissions();
       } catch (err) {
         handleError(err, `Error updating permissions for role: ${role}`);
         // Lemparkan kembali error agar UI bisa menanganinya (misal: menampilkan notifikasi gagal)

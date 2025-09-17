@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { supabase } from "../../../utils/supabaseClient";
-import { translations } from "../../../translations";
-import { UserRole } from "../../../types";
+import React, { useState, useEffect, useMemo } from 'react';
+import { supabase } from '../../../utils/supabaseClient';
+import { translations } from '../../../translations';
+import { UserRole } from '../../../types';
 
 // Enhanced Components
 import {
@@ -11,19 +11,19 @@ import {
   EnhancedBadge,
   EnhancedSpinner,
   cn,
-} from "../../../components/ui/EnhancedComponents";
+} from '../../../components/ui/EnhancedComponents';
 
 // Icons
-import UserIcon from "../../../components/icons/UserIcon";
-import EditIcon from "../../../components/icons/EditIcon";
-import TrashIcon from "../../../components/icons/TrashIcon";
-import CheckIcon from "../../../components/icons/CheckIcon";
-import XCircleIcon from "../../../components/icons/XCircleIcon";
-import EyeSlashIcon from "../../../components/icons/EyeSlashIcon";
-import PlusIcon from "../../../components/icons/PlusIcon";
-import ArrowTrendingUpIcon from "../../../components/icons/ArrowTrendingUpIcon";
-import ArrowTrendingDownIcon from "../../../components/icons/ArrowTrendingDownIcon";
-import ArrowPathRoundedSquareIcon from "../../../components/icons/ArrowPathRoundedSquareIcon";
+import UserIcon from '../../../components/icons/UserIcon';
+import EditIcon from '../../../components/icons/EditIcon';
+import TrashIcon from '../../../components/icons/TrashIcon';
+import CheckIcon from '../../../components/icons/CheckIcon';
+import XCircleIcon from '../../../components/icons/XCircleIcon';
+import EyeSlashIcon from '../../../components/icons/EyeSlashIcon';
+import PlusIcon from '../../../components/icons/PlusIcon';
+import ArrowTrendingUpIcon from '../../../components/icons/ArrowTrendingUpIcon';
+import ArrowTrendingDownIcon from '../../../components/icons/ArrowTrendingDownIcon';
+import ArrowPathRoundedSquareIcon from '../../../components/icons/ArrowPathRoundedSquareIcon';
 
 interface User {
   id: string;
@@ -40,23 +40,19 @@ interface User {
 interface UserTableProps {
   onEditUser: (user: User) => void;
   onAddUser: () => void;
-  language?: "en" | "id";
+  language?: 'en' | 'id';
 }
 
-type SortField = "username" | "full_name" | "role" | "is_active" | "created_at";
-type SortDirection = "asc" | "desc";
+type SortField = 'username' | 'full_name' | 'role' | 'is_active' | 'created_at';
+type SortDirection = 'asc' | 'desc';
 
-const UserTable: React.FC<UserTableProps> = ({
-  onEditUser,
-  onAddUser,
-  language = "en",
-}) => {
+const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language = 'en' }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<SortField>("created_at");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -72,15 +68,15 @@ const UserTable: React.FC<UserTableProps> = ({
     try {
       setIsLoading(true);
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setUsers(data || []);
     } catch (err: any) {
-      console.error("Error fetching users:", err);
-      setError(err.message || "Failed to fetch users");
+      console.error('Error fetching users:', err);
+      setError(err.message || 'Failed to fetch users');
     } finally {
       setIsLoading(false);
     }
@@ -88,11 +84,10 @@ const UserTable: React.FC<UserTableProps> = ({
 
   // Filter and sort users
   const filteredAndSortedUsers = useMemo(() => {
-    let filtered = users.filter(
+    const filtered = users.filter(
       (user) =>
         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.full_name &&
-          user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -100,18 +95,18 @@ const UserTable: React.FC<UserTableProps> = ({
       let aValue: any = a[sortField];
       let bValue: any = b[sortField];
 
-      if (sortField === "full_name") {
-        aValue = aValue || "";
-        bValue = bValue || "";
+      if (sortField === 'full_name') {
+        aValue = aValue || '';
+        bValue = bValue || '';
       }
 
-      if (typeof aValue === "string") {
+      if (typeof aValue === 'string') {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       }
 
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
 
@@ -127,24 +122,20 @@ const UserTable: React.FC<UserTableProps> = ({
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
-      setSortDirection("asc");
+      setSortDirection('asc');
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (
-      !confirm(
-        t.confirm_delete_user || "Are you sure you want to delete this user?"
-      )
-    ) {
+    if (!confirm(t.confirm_delete_user || 'Are you sure you want to delete this user?')) {
       return;
     }
 
     try {
-      const { error } = await supabase.from("users").delete().eq("id", userId);
+      const { error } = await supabase.from('users').delete().eq('id', userId);
 
       if (error) throw error;
       await fetchUsers();
@@ -154,63 +145,58 @@ const UserTable: React.FC<UserTableProps> = ({
         return newSet;
       });
     } catch (err: any) {
-      console.error("Error deleting user:", err);
-      setError(err.message || "Failed to delete user");
+      console.error('Error deleting user:', err);
+      setError(err.message || 'Failed to delete user');
     }
   };
 
   const handleToggleActive = async (userId: string, isActive: boolean) => {
     try {
       const { error } = await supabase
-        .from("users")
+        .from('users')
         .update({ is_active: !isActive, updated_at: new Date().toISOString() })
-        .eq("id", userId);
+        .eq('id', userId);
 
       if (error) throw error;
       await fetchUsers();
     } catch (err: any) {
-      console.error("Error updating user status:", err);
-      setError(err.message || "Failed to update user status");
+      console.error('Error updating user status:', err);
+      setError(err.message || 'Failed to update user status');
     }
   };
 
   const handleBulkToggleActive = async (activate: boolean) => {
     try {
       const { error } = await supabase
-        .from("users")
+        .from('users')
         .update({ is_active: activate, updated_at: new Date().toISOString() })
-        .in("id", Array.from(selectedUsers));
+        .in('id', Array.from(selectedUsers));
 
       if (error) throw error;
       await fetchUsers();
       setSelectedUsers(new Set());
       setShowBulkActions(false);
     } catch (err: any) {
-      console.error("Error bulk updating users:", err);
-      setError(err.message || "Failed to update users");
+      console.error('Error bulk updating users:', err);
+      setError(err.message || 'Failed to update users');
     }
   };
 
   const handleBulkDelete = async () => {
-    if (
-      !confirm(`Are you sure you want to delete ${selectedUsers.size} users?`)
-    ) {
+    if (!confirm(`Are you sure you want to delete ${selectedUsers.size} users?`)) {
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from("users")
-        .delete()
-        .in("id", Array.from(selectedUsers));
+      const { error } = await supabase.from('users').delete().in('id', Array.from(selectedUsers));
 
       if (error) throw error;
       await fetchUsers();
       setSelectedUsers(new Set());
       setShowBulkActions(false);
     } catch (err: any) {
-      console.error("Error bulk deleting users:", err);
-      setError(err.message || "Failed to delete users");
+      console.error('Error bulk deleting users:', err);
+      setError(err.message || 'Failed to delete users');
     }
   };
 
@@ -239,22 +225,22 @@ const UserTable: React.FC<UserTableProps> = ({
 
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
-      case "super admin":
-        return "error";
-      case "admin":
-        return "warning";
-      case "manager":
-        return "primary";
-      case "user":
-        return "secondary";
+      case 'super admin':
+        return 'error';
+      case 'admin':
+        return 'warning';
+      case 'manager':
+        return 'primary';
+      case 'user':
+        return 'secondary';
       default:
-        return "secondary";
+        return 'secondary';
     }
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
+    return sortDirection === 'asc' ? (
       <ArrowTrendingUpIcon className="w-4 h-4 ml-1" />
     ) : (
       <ArrowTrendingDownIcon className="w-4 h-4 ml-1" />
@@ -301,11 +287,11 @@ const UserTable: React.FC<UserTableProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t.user_list || "Users"}
+            {t.user_list || 'Users'}
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            {filteredAndSortedUsers.length}{" "}
-            {filteredAndSortedUsers.length === 1 ? "user" : "users"} total
+            {filteredAndSortedUsers.length} {filteredAndSortedUsers.length === 1 ? 'user' : 'users'}{' '}
+            total
           </p>
         </div>
 
@@ -324,7 +310,7 @@ const UserTable: React.FC<UserTableProps> = ({
             icon={<PlusIcon className="w-4 h-4" />}
             size="sm"
           >
-            {t.add_user_button || "Add User"}
+            {t.add_user_button || 'Add User'}
           </EnhancedButton>
         </div>
       </div>
@@ -336,8 +322,7 @@ const UserTable: React.FC<UserTableProps> = ({
             <div className="flex items-center gap-2">
               <CheckIcon className="w-5 h-5 text-blue-600" />
               <span className="font-medium text-blue-800 dark:text-blue-200">
-                {selectedUsers.size} user{selectedUsers.size !== 1 ? "s" : ""}{" "}
-                selected
+                {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
               </span>
             </div>
 
@@ -394,8 +379,7 @@ const UserTable: React.FC<UserTableProps> = ({
                   <input
                     type="checkbox"
                     checked={
-                      selectedUsers.size === paginatedUsers.length &&
-                      paginatedUsers.length > 0
+                      selectedUsers.size === paginatedUsers.length && paginatedUsers.length > 0
                     }
                     onChange={handleSelectAll}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -404,56 +388,53 @@ const UserTable: React.FC<UserTableProps> = ({
 
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => handleSort("username")}
+                  onClick={() => handleSort('username')}
                 >
                   <div className="flex items-center">
-                    {t.username || "Username"}
+                    {t.username || 'Username'}
                     <SortIcon field="username" />
                   </div>
                 </th>
 
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => handleSort("full_name")}
+                  onClick={() => handleSort('full_name')}
                 >
                   <div className="flex items-center">
-                    {t.full_name_label || "Full Name"}
+                    {t.full_name_label || 'Full Name'}
                     <SortIcon field="full_name" />
                   </div>
                 </th>
 
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => handleSort("role")}
+                  onClick={() => handleSort('role')}
                 >
                   <div className="flex items-center">
-                    {t.role_label || "Role"}
+                    {t.role_label || 'Role'}
                     <SortIcon field="role" />
                   </div>
                 </th>
 
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => handleSort("is_active")}
+                  onClick={() => handleSort('is_active')}
                 >
                   <div className="flex items-center">
-                    {t.status || "Status"}
+                    {t.status || 'Status'}
                     <SortIcon field="is_active" />
                   </div>
                 </th>
 
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t.actions || "Actions"}
+                  {t.actions || 'Actions'}
                 </th>
               </tr>
             </thead>
 
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {paginatedUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
+                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
@@ -490,22 +471,16 @@ const UserTable: React.FC<UserTableProps> = ({
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {user.full_name || "-"}
+                    {user.full_name || '-'}
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <EnhancedBadge variant={getRoleColor(user.role)}>
-                      {user.role}
-                    </EnhancedBadge>
+                    <EnhancedBadge variant={getRoleColor(user.role)}>{user.role}</EnhancedBadge>
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <EnhancedBadge
-                      variant={user.is_active ? "success" : "error"}
-                    >
-                      {user.is_active
-                        ? t.active || "Active"
-                        : t.inactive || "Inactive"}
+                    <EnhancedBadge variant={user.is_active ? 'success' : 'error'}>
+                      {user.is_active ? t.active || 'Active' : t.inactive || 'Inactive'}
                     </EnhancedBadge>
                   </td>
 
@@ -517,15 +492,13 @@ const UserTable: React.FC<UserTableProps> = ({
                       icon={<EditIcon className="w-4 h-4" />}
                       className="text-blue-600 hover:text-blue-800"
                     >
-                      {t.edit || "Edit"}
+                      {t.edit || 'Edit'}
                     </EnhancedButton>
 
                     <EnhancedButton
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        handleToggleActive(user.id, user.is_active)
-                      }
+                      onClick={() => handleToggleActive(user.id, user.is_active)}
                       icon={
                         user.is_active ? (
                           <XCircleIcon className="w-4 h-4" />
@@ -535,11 +508,11 @@ const UserTable: React.FC<UserTableProps> = ({
                       }
                       className={
                         user.is_active
-                          ? "text-red-600 hover:text-red-800"
-                          : "text-green-600 hover:text-green-800"
+                          ? 'text-red-600 hover:text-red-800'
+                          : 'text-green-600 hover:text-green-800'
                       }
                     >
-                      {user.is_active ? "Deactivate" : "Activate"}
+                      {user.is_active ? 'Deactivate' : 'Activate'}
                     </EnhancedButton>
 
                     <EnhancedButton
@@ -549,7 +522,7 @@ const UserTable: React.FC<UserTableProps> = ({
                       icon={<TrashIcon className="w-4 h-4" />}
                       className="text-red-600 hover:text-red-800"
                     >
-                      {t.delete || "Delete"}
+                      {t.delete || 'Delete'}
                     </EnhancedButton>
                   </td>
                 </tr>
@@ -563,12 +536,12 @@ const UserTable: React.FC<UserTableProps> = ({
           <div className="text-center py-12">
             <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              {searchTerm ? "No users found" : "No users"}
+              {searchTerm ? 'No users found' : 'No users'}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {searchTerm
-                ? "Try adjusting your search terms."
-                : "Get started by adding a new user."}
+                ? 'Try adjusting your search terms.'
+                : 'Get started by adding a new user.'}
             </p>
             {!searchTerm && (
               <div className="mt-6">
@@ -577,7 +550,7 @@ const UserTable: React.FC<UserTableProps> = ({
                   onClick={onAddUser}
                   icon={<PlusIcon className="w-4 h-4" />}
                 >
-                  {t.add_user_button || "Add User"}
+                  {t.add_user_button || 'Add User'}
                 </EnhancedButton>
               </div>
             )}
@@ -599,9 +572,7 @@ const UserTable: React.FC<UserTableProps> = ({
               <EnhancedButton
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
-                }
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -611,22 +582,12 @@ const UserTable: React.FC<UserTableProps> = ({
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing{" "}
+                  Showing{' '}
+                  <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
                   <span className="font-medium">
-                    {(currentPage - 1) * itemsPerPage + 1}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-medium">
-                    {Math.min(
-                      currentPage * itemsPerPage,
-                      filteredAndSortedUsers.length
-                    )}
-                  </span>{" "}
-                  of{" "}
-                  <span className="font-medium">
-                    {filteredAndSortedUsers.length}
-                  </span>{" "}
-                  results
+                    {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)}
+                  </span>{' '}
+                  of <span className="font-medium">{filteredAndSortedUsers.length}</span> results
                 </p>
               </div>
 
@@ -643,17 +604,13 @@ const UserTable: React.FC<UserTableProps> = ({
                   </EnhancedButton>
 
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageNum =
-                      Math.max(1, Math.min(totalPages - 4, currentPage - 2)) +
-                      i;
+                    const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
                     if (pageNum > totalPages) return null;
 
                     return (
                       <EnhancedButton
                         key={pageNum}
-                        variant={
-                          pageNum === currentPage ? "primary" : "outline"
-                        }
+                        variant={pageNum === currentPage ? 'primary' : 'outline'}
                         size="sm"
                         onClick={() => setCurrentPage(pageNum)}
                         className="rounded-none"
@@ -666,9 +623,7 @@ const UserTable: React.FC<UserTableProps> = ({
                   <EnhancedButton
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setCurrentPage(Math.min(totalPages, currentPage + 1))
-                    }
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
                     className="rounded-r-md"
                   >

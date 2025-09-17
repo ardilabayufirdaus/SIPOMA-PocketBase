@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef } from 'react';
 import {
   ComposedChart,
   Bar,
@@ -12,23 +12,16 @@ import {
   Cell,
   ReferenceLine,
   Brush,
-} from "recharts";
-import { PackingPlantStockRecord, PackingPlantMasterRecord } from "../../types";
-import {
-  formatDate,
-  formatNumber,
-  formatPercentage,
-} from "../../utils/formatters";
-import ArchiveBoxIcon from "../../components/icons/ArchiveBoxIcon";
-import ArrowTrendingDownIcon from "../../components/icons/ArrowTrendingDownIcon";
-import ClockIcon from "../../components/icons/ClockIcon";
-import ArrowTrendingUpIcon from "../../components/icons/ArrowTrendingUpIcon";
-import ExclamationTriangleIcon from "../../components/icons/ExclamationTriangleIcon";
-import ChartErrorBoundary from "../../components/ChartErrorBoundary";
-import {
-  InteractiveCardModal,
-  BreakdownData,
-} from "../../components/InteractiveCardModal";
+} from 'recharts';
+import { PackingPlantStockRecord, PackingPlantMasterRecord } from '../../types';
+import { formatDate, formatNumber, formatPercentage } from '../../utils/formatters';
+import ArchiveBoxIcon from '../../components/icons/ArchiveBoxIcon';
+import ArrowTrendingDownIcon from '../../components/icons/ArrowTrendingDownIcon';
+import ClockIcon from '../../components/icons/ClockIcon';
+import ArrowTrendingUpIcon from '../../components/icons/ArrowTrendingUpIcon';
+import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
+import ChartErrorBoundary from '../../components/ChartErrorBoundary';
+import { InteractiveCardModal, BreakdownData } from '../../components/InteractiveCardModal';
 import {
   calculateStockPrediction,
   convertExistingDataToHistoricalStock,
@@ -37,7 +30,7 @@ import {
   calculatePredictionMetrics,
   PredictionResult,
   DailyProjectionData,
-} from "../../utils/stockPrediction";
+} from '../../utils/stockPrediction';
 
 /**
  * Helper function untuk menghitung 7 days moving average
@@ -82,7 +75,7 @@ const calculate7DayMovingAverage = (
       return (
         itemDate >= sevenDaysAgo &&
         itemDate < currentDate &&
-        typeof item.predictedStockOut === "number" &&
+        typeof item.predictedStockOut === 'number' &&
         !isNaN(item.predictedStockOut)
       );
     })
@@ -134,9 +127,7 @@ const ForecastMetricCard: React.FC<ForecastMetricCardProps> = ({
     <>
       <div
         className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all duration-200 ${
-          isInteractive
-            ? "cursor-pointer hover:shadow-md hover:scale-105"
-            : "hover:shadow-md"
+          isInteractive ? 'cursor-pointer hover:shadow-md hover:scale-105' : 'hover:shadow-md'
         }`}
         onClick={handleClick}
       >
@@ -146,17 +137,10 @@ const ForecastMetricCard: React.FC<ForecastMetricCardProps> = ({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-600 truncate">
-                {title}
-              </p>
+              <p className="text-sm font-medium text-slate-600 truncate">{title}</p>
               {isInteractive && (
                 <div className="text-slate-400 dark:text-slate-500">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -168,14 +152,8 @@ const ForecastMetricCard: React.FC<ForecastMetricCardProps> = ({
               )}
             </div>
             <div className="flex items-baseline space-x-2 mt-1">
-              <p className="text-2xl font-bold text-slate-900 truncate">
-                {value}
-              </p>
-              {unit && (
-                <p className="text-sm font-medium text-slate-500 flex-shrink-0">
-                  {unit}
-                </p>
-              )}
+              <p className="text-2xl font-bold text-slate-900 truncate">{value}</p>
+              {unit && <p className="text-sm font-medium text-slate-500 flex-shrink-0">{unit}</p>}
             </div>
           </div>
         </div>
@@ -199,41 +177,20 @@ interface PageProps {
   masterData: PackingPlantMasterRecord[];
 }
 
-const PackingPlantStockForecast: React.FC<PageProps> = ({
-  t,
-  areas,
-  stockRecords,
-  masterData,
-}) => {
+const PackingPlantStockForecast: React.FC<PageProps> = ({ t, areas, stockRecords, masterData }) => {
   // State untuk filter dan chart
-  const [filterArea, setFilterArea] = useState(areas[0] || "");
+  const [filterArea, setFilterArea] = useState(areas[0] || '');
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
   // Opsi tahun dan bulan
-  const yearOptions = Array.from(
-    { length: 5 },
-    (_, i) => new Date().getFullYear() - i
-  );
+  const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
   const monthOptions = Array.from({ length: 12 }, (_, i) => ({
     value: i,
     label:
       t[
         `month_${
-          [
-            "jan",
-            "feb",
-            "mar",
-            "apr",
-            "may",
-            "jun",
-            "jul",
-            "aug",
-            "sep",
-            "oct",
-            "nov",
-            "dec",
-          ][i]
+          ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][i]
         }`
       ],
   }));
@@ -249,9 +206,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         monthSupabase = parseInt(r.date.substring(5, 7), 10) - 1;
       }
       const matches =
-        r.area === filterArea &&
-        monthSupabase === filterMonth &&
-        yearSupabase === filterYear;
+        r.area === filterArea && monthSupabase === filterMonth && yearSupabase === filterYear;
       return matches;
     });
 
@@ -276,21 +231,17 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
     try {
       // Konversi data existing ke format yang diperlukan untuk prediksi
-      const historicalStock =
-        convertExistingDataToHistoricalStock(filteredRecords);
-      const plantParameters = convertMasterDataToPlantParameters(
-        masterData,
-        filterArea
-      );
+      const historicalStock = convertExistingDataToHistoricalStock(filteredRecords);
+      const plantParameters = convertMasterDataToPlantParameters(masterData, filterArea);
 
       // Validasi plant parameters dengan better fallback
       if (
         !plantParameters ||
-        typeof plantParameters.currentStock !== "number" ||
+        typeof plantParameters.currentStock !== 'number' ||
         isNaN(plantParameters.currentStock) ||
         plantParameters.currentStock <= 0
       ) {
-        console.warn("Invalid plant parameters, using fallback values");
+        console.warn('Invalid plant parameters, using fallback values');
 
         // Calculate better fallback from actual data
         const lastValidStock =
@@ -300,36 +251,29 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
         const avgClosingStock =
           filteredRecords.length > 0
-            ? filteredRecords.reduce(
-                (sum, r) => sum + (Number(r.closing_stock) || 0),
-                0
-              ) / filteredRecords.length
+            ? filteredRecords.reduce((sum, r) => sum + (Number(r.closing_stock) || 0), 0) /
+              filteredRecords.length
             : 1000;
 
         plantParameters.currentStock =
           !isNaN(lastValidStock) && lastValidStock > 0
             ? lastValidStock
             : !isNaN(avgClosingStock) && avgClosingStock > 0
-            ? avgClosingStock
-            : 1000;
+              ? avgClosingStock
+              : 1000;
 
         plantParameters.avgDailyConsumption =
           filteredRecords.length > 0
             ? Math.max(
                 1,
                 Math.round(
-                  filteredRecords.reduce(
-                    (sum, r) => sum + Number(r.stock_out || 0),
-                    0
-                  ) / filteredRecords.length
+                  filteredRecords.reduce((sum, r) => sum + Number(r.stock_out || 0), 0) /
+                    filteredRecords.length
                 )
               )
             : 100;
 
-        plantParameters.safetyStock = Math.max(
-          50,
-          plantParameters.currentStock * 0.1
-        );
+        plantParameters.safetyStock = Math.max(50, plantParameters.currentStock * 0.1);
       }
 
       // Set parameter prediksi
@@ -355,10 +299,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
       );
 
       // Hitung metrik tambahan
-      const predictionMetrics = calculatePredictionMetrics(
-        predictionResult,
-        plantParameters
-      );
+      const predictionMetrics = calculatePredictionMetrics(predictionResult, plantParameters);
 
       // Hitung data legacy untuk kompatibilitas dengan chart yang ada
       const latestClosingStock = plantParameters.currentStock;
@@ -366,17 +307,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
       const avgDailyStockReceived =
         filteredRecords.length > 0
           ? Math.round(
-              filteredRecords.reduce(
-                (sum, r) => sum + Number(r.stock_received || 0),
-                0
-              ) / filteredRecords.length
+              filteredRecords.reduce((sum, r) => sum + Number(r.stock_received || 0), 0) /
+                filteredRecords.length
             )
           : 0;
 
       // Calculate trends dari data historis
-      const sortedRecords = [...filteredRecords].sort((a, b) =>
-        a.date.localeCompare(b.date)
-      );
+      const sortedRecords = [...filteredRecords].sort((a, b) => a.date.localeCompare(b.date));
       const trendAnalysis = {
         stockOutTrend: 0,
         closingStockTrend: 0,
@@ -384,41 +321,27 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
       };
 
       if (sortedRecords.length >= 2) {
-        const firstHalf = sortedRecords.slice(
-          0,
-          Math.floor(sortedRecords.length / 2)
-        );
-        const secondHalf = sortedRecords.slice(
-          Math.floor(sortedRecords.length / 2)
-        );
+        const firstHalf = sortedRecords.slice(0, Math.floor(sortedRecords.length / 2));
+        const secondHalf = sortedRecords.slice(Math.floor(sortedRecords.length / 2));
 
         const firstHalfAvgOut =
-          firstHalf.reduce((sum, r) => sum + Number(r.stock_out || 0), 0) /
-          firstHalf.length;
+          firstHalf.reduce((sum, r) => sum + Number(r.stock_out || 0), 0) / firstHalf.length;
         const secondHalfAvgOut =
-          secondHalf.reduce((sum, r) => sum + Number(r.stock_out || 0), 0) /
-          secondHalf.length;
+          secondHalf.reduce((sum, r) => sum + Number(r.stock_out || 0), 0) / secondHalf.length;
 
         const firstHalfAvgStock =
-          firstHalf.reduce((sum, r) => sum + Number(r.closing_stock || 0), 0) /
-          firstHalf.length;
+          firstHalf.reduce((sum, r) => sum + Number(r.closing_stock || 0), 0) / firstHalf.length;
         const secondHalfAvgStock =
-          secondHalf.reduce((sum, r) => sum + Number(r.closing_stock || 0), 0) /
-          secondHalf.length;
+          secondHalf.reduce((sum, r) => sum + Number(r.closing_stock || 0), 0) / secondHalf.length;
 
         trendAnalysis.stockOutTrend =
-          firstHalfAvgOut > 0
-            ? ((secondHalfAvgOut - firstHalfAvgOut) / firstHalfAvgOut) * 100
-            : 0;
+          firstHalfAvgOut > 0 ? ((secondHalfAvgOut - firstHalfAvgOut) / firstHalfAvgOut) * 100 : 0;
         trendAnalysis.closingStockTrend =
           firstHalfAvgStock > 0
-            ? ((secondHalfAvgStock - firstHalfAvgStock) / firstHalfAvgStock) *
-              100
+            ? ((secondHalfAvgStock - firstHalfAvgStock) / firstHalfAvgStock) * 100
             : 0;
         trendAnalysis.efficiency =
-          avgDailyStockReceived > 0
-            ? (avgDailyStockOut / avgDailyStockReceived) * 100
-            : 0;
+          avgDailyStockReceived > 0 ? (avgDailyStockOut / avgDailyStockReceived) * 100 : 0;
       }
 
       return {
@@ -433,7 +356,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         predictionMetrics,
       };
     } catch (error) {
-      console.error("Error in stock prediction calculation:", error);
+      console.error('Error in stock prediction calculation:', error);
       // Return safe fallback data
       return {
         latestClosingStock: 0,
@@ -477,16 +400,12 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         yearSupabase = parseInt(r.date.substring(0, 4), 10);
         monthSupabase = parseInt(r.date.substring(5, 7), 10) - 1;
       }
-      return (
-        r.area === filterArea &&
-        monthSupabase === filterMonth &&
-        yearSupabase === filterYear
-      );
+      return r.area === filterArea && monthSupabase === filterMonth && yearSupabase === filterYear;
     });
 
     // Build map dengan key tanggal untuk data aktual
     filteredActualRecords.forEach((record) => {
-      const dateKey = record.date.split("T")[0]; // Get YYYY-MM-DD format
+      const dateKey = record.date.split('T')[0]; // Get YYYY-MM-DD format
       actualDataMap.set(dateKey, {
         stockOut: Number(record.stock_out) || 0,
         stockReceived: Number(record.stock_received) || 0,
@@ -502,7 +421,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(filterYear, filterMonth, day);
-      const dateKey = currentDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+      const dateKey = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD format
 
       // Check if we have actual data for this date
       const actualData = actualDataMap.get(dateKey);
@@ -521,18 +440,14 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         // Get baseline values from historical data or use defaults
         const avgStockOut =
           filteredActualRecords.length > 0
-            ? filteredActualRecords.reduce(
-                (sum, r) => sum + (Number(r.stock_out) || 0),
-                0
-              ) / filteredActualRecords.length
+            ? filteredActualRecords.reduce((sum, r) => sum + (Number(r.stock_out) || 0), 0) /
+              filteredActualRecords.length
             : forecastData.avgDailyStockOut || 100;
 
         const avgStockReceived =
           filteredActualRecords.length > 0
-            ? filteredActualRecords.reduce(
-                (sum, r) => sum + (Number(r.stock_received) || 0),
-                0
-              ) / filteredActualRecords.length
+            ? filteredActualRecords.reduce((sum, r) => sum + (Number(r.stock_received) || 0), 0) /
+              filteredActualRecords.length
             : forecastData.avgDailyStockReceived || 120;
 
         // Use prediction logic with deterministic variation based on day
@@ -547,9 +462,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         const deterministicFactor2 = (Math.cos(seed * 0.02) + 1) * 0.2; // Range: 0 to 0.4
 
         stockOut = Math.round(avgStockOut * (0.8 + deterministicFactor1)); // ±20% variation
-        stockReceived = Math.round(
-          avgStockReceived * (0.8 + deterministicFactor2)
-        ); // ±20% variation
+        stockReceived = Math.round(avgStockReceived * (0.8 + deterministicFactor2)); // ±20% variation
         openingStock = previousClosing;
         closingStock = Math.max(0, openingStock + stockReceived - stockOut);
         isActual = false;
@@ -559,10 +472,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
       // Prioritas data aktual stok keluar, jika belum ada gunakan prediksi stok keluar
       const avgStockOut =
         filteredActualRecords.length > 0
-          ? filteredActualRecords.reduce(
-              (sum, r) => sum + (Number(r.stock_out) || 0),
-              0
-            ) / filteredActualRecords.length
+          ? filteredActualRecords.reduce((sum, r) => sum + (Number(r.stock_out) || 0), 0) /
+            filteredActualRecords.length
           : forecastData.avgDailyStockOut || 100;
 
       // Gunakan 7 days moving average untuk prediksi stok keluar
@@ -577,19 +488,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
       // Calculate deviation and achievement percentage
       const deviation = isActual ? stockOut - predictedStockOut : 0;
       const achievementPercentage =
-        isActual && predictedStockOut > 0
-          ? Math.round((stockOut / predictedStockOut) * 100)
-          : 0;
+        isActual && predictedStockOut > 0 ? Math.round((stockOut / predictedStockOut) * 100) : 0;
 
       // Calculate efficiency and safety metrics
-      const turnoverRatio =
-        openingStock > 0 ? (stockOut / openingStock) * 100 : 0;
-      const safetyLevel =
-        closingStock > 100 ? "Normal" : closingStock > 50 ? "Low" : "Critical";
+      const turnoverRatio = openingStock > 0 ? (stockOut / openingStock) * 100 : 0;
+      const safetyLevel = closingStock > 100 ? 'Normal' : closingStock > 50 ? 'Low' : 'Critical';
       const stockVariance =
-        day > 1 && monthData[day - 2]
-          ? closingStock - monthData[day - 2].closingStock
-          : 0;
+        day > 1 && monthData[day - 2] ? closingStock - monthData[day - 2].closingStock : 0;
 
       monthData.push({
         date: currentDate.toISOString(),
@@ -609,8 +514,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         turnoverRatio: Math.round(turnoverRatio * 10) / 10,
         safetyLevel,
         stockVariance,
-        efficiency:
-          stockReceived > 0 ? Math.round((stockOut / stockReceived) * 100) : 0,
+        efficiency: stockReceived > 0 ? Math.round((stockOut / stockReceived) * 100) : 0,
         isActual,
         trendClosingStock: closingStock,
         trendStockOut: stockOut,
@@ -644,9 +548,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           netFlow: Number(item.netFlow) || 0,
           day: Number(item.day) || 1,
           predictedStockOut: Number(item.predictedStockOut) || 0,
-          actualStockOut: item.actualStockOut
-            ? Number(item.actualStockOut)
-            : null,
+          actualStockOut: item.actualStockOut ? Number(item.actualStockOut) : null,
           deviation: Number(item.deviation) || 0,
           achievementPercentage: Number(item.achievementPercentage) || 0,
         };
@@ -657,13 +559,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         const windowData = chartData.slice(start, end);
 
         const avgClosingStock =
-          windowData.reduce(
-            (sum, d) => sum + (Number(d.closingStock) || 0),
-            0
-          ) / windowData.length;
+          windowData.reduce((sum, d) => sum + (Number(d.closingStock) || 0), 0) / windowData.length;
         const avgStockOut =
-          windowData.reduce((sum, d) => sum + (Number(d.stockOut) || 0), 0) /
-          windowData.length;
+          windowData.reduce((sum, d) => sum + (Number(d.stockOut) || 0), 0) / windowData.length;
 
         return {
           ...baseItem,
@@ -676,34 +574,34 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
       const validatedData = processed.filter((item) => {
         // Check all required numeric properties
         const numericProps = [
-          "closingStock",
-          "projectedClosingStock",
-          "day",
-          "stockOut",
-          "stockReceived",
-          "openingStock",
-          "netFlow",
-          "predictedStockOut",
-          "deviation",
-          "achievementPercentage",
-          "trendClosingStock",
-          "trendStockOut",
+          'closingStock',
+          'projectedClosingStock',
+          'day',
+          'stockOut',
+          'stockReceived',
+          'openingStock',
+          'netFlow',
+          'predictedStockOut',
+          'deviation',
+          'achievementPercentage',
+          'trendClosingStock',
+          'trendStockOut',
         ];
 
         const hasValidNumbers = numericProps.every((prop) => {
           const value = item[prop];
-          return typeof value === "number" && !isNaN(value) && isFinite(value);
+          return typeof value === 'number' && !isNaN(value) && isFinite(value);
         });
 
         // Check required string properties
         const hasValidStrings =
-          typeof item.date === "string" &&
+          typeof item.date === 'string' &&
           item.date.length > 0 &&
-          typeof item.dateFormatted === "string" &&
+          typeof item.dateFormatted === 'string' &&
           item.dateFormatted.length > 0;
 
         // Check boolean properties
-        const hasValidBooleans = typeof item.isActual === "boolean";
+        const hasValidBooleans = typeof item.isActual === 'boolean';
 
         // Additional safety checks
         const hasSafeValues =
@@ -714,14 +612,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           item.day >= 1 &&
           item.day <= 31;
 
-        const isValid =
-          hasValidNumbers &&
-          hasValidStrings &&
-          hasValidBooleans &&
-          hasSafeValues;
+        const isValid = hasValidNumbers && hasValidStrings && hasValidBooleans && hasSafeValues;
 
         if (!isValid) {
-          console.warn("Invalid data point filtered out:", {
+          console.warn('Invalid data point filtered out:', {
             item,
             hasValidNumbers,
             hasValidStrings,
@@ -733,12 +627,12 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         return isValid;
       });
 
-      console.log("Processed chart data sample:", validatedData.slice(0, 3));
-      console.log("Total data points:", validatedData.length);
+      console.log('Processed chart data sample:', validatedData.slice(0, 3));
+      console.log('Total data points:', validatedData.length);
 
       return validatedData;
     } catch (error) {
-      console.error("Error processing chart data:", error);
+      console.error('Error processing chart data:', error);
       return [];
     }
   }, [chartData]);
@@ -755,7 +649,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(filterYear, filterMonth, day);
-      const dateKey = currentDate.toISOString().split("T")[0];
+      const dateKey = currentDate.toISOString().split('T')[0];
 
       // Find matching data from chartData
       const matchingData = chartData.find((item) => {
@@ -779,8 +673,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           netFlow: Number(matchingData.netFlow) || 0,
           predictedStockOut: Number(matchingData.predictedStockOut) || 0,
           deviation: Number(matchingData.deviation) || 0,
-          achievementPercentage:
-            Number(matchingData.achievementPercentage) || 0,
+          achievementPercentage: Number(matchingData.achievementPercentage) || 0,
           efficiency: Number(matchingData.efficiency) || 0,
           turnoverRatio: Number(matchingData.turnoverRatio) || 0,
           day: day,
@@ -802,7 +695,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           netFlow: 0,
           turnoverRatio: 0,
           efficiency: 0,
-          safetyLevel: "Normal",
+          safetyLevel: 'Normal',
           stockVariance: 0,
           isActual: false,
           actualStockOut: null,
@@ -838,7 +731,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
         avgDailyStockOut: 0,
         avgDailyStockReceived: 0,
         daysUntilEmpty: 0,
-        criticalDate: "N/A",
+        criticalDate: 'N/A',
         stockOutTrend: 0,
         closingStockTrend: 0,
         efficiency: 0,
@@ -846,8 +739,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
     }
 
     // Calculate latest closing stock (from the most recent entry)
-    const latestClosingStock =
-      tableData[tableData.length - 1]?.closingStock || 0;
+    const latestClosingStock = tableData[tableData.length - 1]?.closingStock || 0;
 
     // Calculate averages from actual data only
     const actualData = tableData.filter((item) => item.isActual);
@@ -859,40 +751,29 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
     if (actualData.length > 0) {
       totalStockOut = actualData.reduce((sum, item) => sum + item.stockOut, 0);
-      totalStockReceived = actualData.reduce(
-        (sum, item) => sum + item.stockReceived,
-        0
-      );
+      totalStockReceived = actualData.reduce((sum, item) => sum + item.stockReceived, 0);
       avgDailyStockOut = totalStockOut / actualData.length;
       avgDailyStockReceived = totalStockReceived / actualData.length;
     }
 
     // Calculate days until empty
-    const daysUntilEmpty =
-      avgDailyStockOut > 0 ? latestClosingStock / avgDailyStockOut : Infinity;
+    const daysUntilEmpty = avgDailyStockOut > 0 ? latestClosingStock / avgDailyStockOut : Infinity;
 
     // Calculate critical date
     const today = new Date();
-    const criticalDate = new Date(
-      today.getTime() + daysUntilEmpty * 24 * 60 * 60 * 1000
-    );
+    const criticalDate = new Date(today.getTime() + daysUntilEmpty * 24 * 60 * 60 * 1000);
     const criticalDateStr = isFinite(daysUntilEmpty)
       ? formatDate(criticalDate.toISOString())
-      : "N/A";
+      : 'N/A';
 
     // Calculate trends (simple linear regression slope)
     const stockOutTrend =
-      actualData.length > 1
-        ? calculateTrend(actualData.map((item) => item.stockOut))
-        : 0;
+      actualData.length > 1 ? calculateTrend(actualData.map((item) => item.stockOut)) : 0;
     const closingStockTrend =
-      tableData.length > 1
-        ? calculateTrend(tableData.map((item) => item.closingStock))
-        : 0;
+      tableData.length > 1 ? calculateTrend(tableData.map((item) => item.closingStock)) : 0;
 
     // Calculate overall efficiency
-    const efficiency =
-      totalStockReceived > 0 ? (totalStockOut / totalStockReceived) * 100 : 0;
+    const efficiency = totalStockReceived > 0 ? (totalStockOut / totalStockReceived) * 100 : 0;
 
     return {
       latestClosingStock,
@@ -947,12 +828,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
     const calculateStats = (values: number[]) => {
       // Enhanced filtering for valid numeric values
       const validValues = values.filter(
-        (v) =>
-          typeof v === "number" &&
-          !isNaN(v) &&
-          isFinite(v) &&
-          v !== null &&
-          v !== undefined
+        (v) => typeof v === 'number' && !isNaN(v) && isFinite(v) && v !== null && v !== undefined
       );
 
       if (validValues.length === 0) {
@@ -980,107 +856,71 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
 
     return {
       openingStock: calculateStats(tableData.map((item) => item.openingStock)),
-      stockReceived: calculateStats(
-        tableData.map((item) => item.stockReceived)
-      ),
+      stockReceived: calculateStats(tableData.map((item) => item.stockReceived)),
       stockOut: calculateStats(tableData.map((item) => item.stockOut)),
-      predictedStockOut: calculateStats(
-        tableData.map((item) => item.predictedStockOut)
-      ),
+      predictedStockOut: calculateStats(tableData.map((item) => item.predictedStockOut)),
       deviation: calculateStats(tableData.map((item) => item.deviation)),
-      achievementPercentage: calculateStats(
-        tableData.map((item) => item.achievementPercentage)
-      ),
+      achievementPercentage: calculateStats(tableData.map((item) => item.achievementPercentage)),
       closingStock: calculateStats(tableData.map((item) => item.closingStock)),
       netFlow: calculateStats(tableData.map((item) => item.netFlow)),
       efficiency: calculateStats(tableData.map((item) => item.efficiency)),
       // Separate calculations for actual and predicted data
       actualData: {
         openingStock: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.openingStock)
+          tableData.filter((item) => item.isActual).map((item) => item.openingStock)
         ),
         stockReceived: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.stockReceived)
+          tableData.filter((item) => item.isActual).map((item) => item.stockReceived)
         ),
         stockOut: calculateStats(
           tableData.filter((item) => item.isActual).map((item) => item.stockOut)
         ),
         predictedStockOut: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.predictedStockOut)
+          tableData.filter((item) => item.isActual).map((item) => item.predictedStockOut)
         ),
         deviation: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.deviation)
+          tableData.filter((item) => item.isActual).map((item) => item.deviation)
         ),
         achievementPercentage: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.achievementPercentage)
+          tableData.filter((item) => item.isActual).map((item) => item.achievementPercentage)
         ),
         closingStock: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.closingStock)
+          tableData.filter((item) => item.isActual).map((item) => item.closingStock)
         ),
         netFlow: calculateStats(
           tableData.filter((item) => item.isActual).map((item) => item.netFlow)
         ),
         efficiency: calculateStats(
-          tableData
-            .filter((item) => item.isActual)
-            .map((item) => item.efficiency)
+          tableData.filter((item) => item.isActual).map((item) => item.efficiency)
         ),
       },
       predictedData: {
         openingStock: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.openingStock)
+          tableData.filter((item) => !item.isActual).map((item) => item.openingStock)
         ),
         stockReceived: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.stockReceived)
+          tableData.filter((item) => !item.isActual).map((item) => item.stockReceived)
         ),
         stockOut: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.stockOut)
+          tableData.filter((item) => !item.isActual).map((item) => item.stockOut)
         ),
         predictedStockOut: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.predictedStockOut)
+          tableData.filter((item) => !item.isActual).map((item) => item.predictedStockOut)
         ),
         deviation: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.deviation)
+          tableData.filter((item) => !item.isActual).map((item) => item.deviation)
         ),
         achievementPercentage: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.achievementPercentage)
+          tableData.filter((item) => !item.isActual).map((item) => item.achievementPercentage)
         ),
         closingStock: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.closingStock)
+          tableData.filter((item) => !item.isActual).map((item) => item.closingStock)
         ),
         netFlow: calculateStats(
           tableData.filter((item) => !item.isActual).map((item) => item.netFlow)
         ),
         efficiency: calculateStats(
-          tableData
-            .filter((item) => !item.isActual)
-            .map((item) => item.efficiency)
+          tableData.filter((item) => !item.isActual).map((item) => item.efficiency)
         ),
       },
     };
@@ -1096,8 +936,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
   // Calculate today's day in the selected month for vertical line
   const today = new Date();
   const todayDay = today.getDate();
-  const isCurrentMonth =
-    today.getMonth() === filterMonth && today.getFullYear() === filterYear;
+  const isCurrentMonth = today.getMonth() === filterMonth && today.getFullYear() === filterYear;
   const todayLinePosition = isCurrentMonth ? todayDay : null;
 
   // Render
@@ -1192,17 +1031,12 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
           <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
             No Data Available
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-4">
-            {t.forecast_no_data}
-          </p>
+          <p className="text-slate-500 dark:text-slate-400 mb-4">{t.forecast_no_data}</p>
           <div className="text-sm text-slate-400 dark:text-slate-500">
             <p>
-              Filter aktif: {filterArea} - {monthOptions[filterMonth]?.label}{" "}
-              {filterYear}
+              Filter aktif: {filterArea} - {monthOptions[filterMonth]?.label} {filterYear}
             </p>
-            <p>
-              Silakan pilih periode yang berbeda atau pastikan data tersedia
-            </p>
+            <p>Silakan pilih periode yang berbeda atau pastikan data tersedia</p>
           </div>
         </div>
       ) : (
@@ -1213,8 +1047,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                  Prediksi untuk: {filterArea} -{" "}
-                  {monthOptions[filterMonth]?.label} {filterYear}
+                  Prediksi untuk: {filterArea} - {monthOptions[filterMonth]?.label} {filterYear}
                 </span>
               </div>
               <span className="text-xs text-green-600 dark:text-green-400">
@@ -1239,9 +1072,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
             />
             <ForecastMetricCard
               title="Avg Daily Received"
-              value={formatNumber(
-                Math.round(tableMetrics.avgDailyStockReceived)
-              )}
+              value={formatNumber(Math.round(tableMetrics.avgDailyStockReceived))}
               unit="Ton/Day"
               icon={<ArrowTrendingUpIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
             />
@@ -1250,7 +1081,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
               value={
                 isFinite(tableMetrics.daysUntilEmpty)
                   ? formatNumber(Math.floor(tableMetrics.daysUntilEmpty))
-                  : "∞"
+                  : '∞'
               }
               unit="Days"
               icon={
@@ -1289,22 +1120,19 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <p
                         className={`text-lg sm:text-xl font-bold ${
                           tableMetrics.stockOutTrend > 0
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-green-600 dark:text-green-400"
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-green-600 dark:text-green-400'
                         }`}
                       >
-                        {tableMetrics.stockOutTrend > 0 ? "+" : ""}
-                        {formatPercentage(
-                          Math.abs(tableMetrics.stockOutTrend) * 10
-                        )}
-                        %
+                        {tableMetrics.stockOutTrend > 0 ? '+' : ''}
+                        {formatPercentage(Math.abs(tableMetrics.stockOutTrend) * 10)}%
                       </p>
                     </div>
                     <div
                       className={`p-2 rounded-full flex-shrink-0 ${
                         tableMetrics.stockOutTrend > 0
-                          ? "bg-red-100 dark:bg-red-900/30"
-                          : "bg-green-100 dark:bg-green-900/30"
+                          ? 'bg-red-100 dark:bg-red-900/30'
+                          : 'bg-green-100 dark:bg-green-900/30'
                       }`}
                     >
                       {tableMetrics.stockOutTrend > 0 ? (
@@ -1325,22 +1153,19 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <p
                         className={`text-lg sm:text-xl font-bold ${
                           tableMetrics.closingStockTrend > 0
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
                         }`}
                       >
-                        {tableMetrics.closingStockTrend > 0 ? "+" : ""}
-                        {formatPercentage(
-                          Math.abs(tableMetrics.closingStockTrend) * 10
-                        )}
-                        %
+                        {tableMetrics.closingStockTrend > 0 ? '+' : ''}
+                        {formatPercentage(Math.abs(tableMetrics.closingStockTrend) * 10)}%
                       </p>
                     </div>
                     <div
                       className={`p-2 rounded-full flex-shrink-0 ${
                         tableMetrics.closingStockTrend > 0
-                          ? "bg-green-100 dark:bg-green-900/30"
-                          : "bg-red-100 dark:bg-red-900/30"
+                          ? 'bg-green-100 dark:bg-green-900/30'
+                          : 'bg-red-100 dark:bg-red-900/30'
                       }`}
                     >
                       {tableMetrics.closingStockTrend > 0 ? (
@@ -1361,10 +1186,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <p
                         className={`text-lg sm:text-xl font-bold ${
                           tableMetrics.efficiency > 100
-                            ? "text-red-600 dark:text-red-400"
+                            ? 'text-red-600 dark:text-red-400'
                             : tableMetrics.efficiency > 80
-                            ? "text-yellow-600 dark:text-yellow-400"
-                            : "text-green-600 dark:text-green-400"
+                              ? 'text-yellow-600 dark:text-yellow-400'
+                              : 'text-green-600 dark:text-green-400'
                         }`}
                       >
                         {formatPercentage(tableMetrics.efficiency)}%
@@ -1389,8 +1214,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                         {t.forecast_stock_projection_chart}
                       </h3>
                       <p className="text-xs text-slate-600 dark:text-slate-400">
-                        {filterArea} - {monthOptions[filterMonth]?.label}{" "}
-                        {filterYear} | {tableData.length} data points
+                        {filterArea} - {monthOptions[filterMonth]?.label} {filterYear} |{' '}
+                        {tableData.length} data points
                       </p>
                     </div>
                   </div>
@@ -1411,35 +1236,32 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   bottom: 15,
                                 }}
                               >
-                                <CartesianGrid
-                                  strokeDasharray="3 3"
-                                  stroke="#f1f5f9"
-                                />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                                 <XAxis
                                   dataKey="day"
-                                  tick={{ fontSize: 12, fill: "#64748b" }}
+                                  tick={{ fontSize: 12, fill: '#64748b' }}
                                   tickFormatter={(value) => `Day ${value}`}
-                                  domain={["dataMin", "dataMax"]}
+                                  domain={['dataMin', 'dataMax']}
                                 />
                                 <YAxis
                                   yAxisId="stock"
                                   orientation="left"
-                                  tick={{ fontSize: 12, fill: "#64748b" }}
+                                  tick={{ fontSize: 12, fill: '#64748b' }}
                                   label={{
-                                    value: "Stock (Ton)",
+                                    value: 'Stock (Ton)',
                                     angle: -90,
-                                    position: "insideLeft",
+                                    position: 'insideLeft',
                                   }}
-                                  domain={[0, "dataMax + 50"]}
+                                  domain={[0, 'dataMax + 50']}
                                 />
                                 <YAxis
                                   yAxisId="flow"
                                   orientation="right"
-                                  tick={{ fontSize: 12, fill: "#64748b" }}
+                                  tick={{ fontSize: 12, fill: '#64748b' }}
                                   label={{
-                                    value: "Daily Flow (Ton)",
+                                    value: 'Daily Flow (Ton)',
                                     angle: 90,
-                                    position: "insideRight",
+                                    position: 'insideRight',
                                   }}
                                 />
 
@@ -1450,8 +1272,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   strokeDasharray="8 8"
                                   yAxisId="stock"
                                   label={{
-                                    value: "Critical Level",
-                                    position: "insideTopRight",
+                                    value: 'Critical Level',
+                                    position: 'insideTopRight',
                                   }}
                                 />
                                 <ReferenceLine
@@ -1460,8 +1282,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   strokeDasharray="5 5"
                                   yAxisId="stock"
                                   label={{
-                                    value: "Low Level",
-                                    position: "insideTopRight",
+                                    value: 'Low Level',
+                                    position: 'insideTopRight',
                                   }}
                                 />
 
@@ -1473,11 +1295,11 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     strokeWidth={2}
                                     strokeDasharray="5 5"
                                     label={{
-                                      value: "Today",
-                                      position: "top",
-                                      fill: "#10b981",
+                                      value: 'Today',
+                                      position: 'top',
+                                      fill: '#10b981',
                                       fontSize: 12,
-                                      fontWeight: "bold",
+                                      fontWeight: 'bold',
                                     }}
                                   />
                                 )}
@@ -1489,7 +1311,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   dataKey="closingStock"
                                   stroke="#0ea5e9"
                                   strokeWidth={3}
-                                  dot={{ r: 3, fill: "#0ea5e9" }}
+                                  dot={{ r: 3, fill: '#0ea5e9' }}
                                   name="Closing Stock"
                                 />
                                 <Line
@@ -1499,7 +1321,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   stroke="#6366f1"
                                   strokeWidth={2}
                                   strokeDasharray="8 4"
-                                  dot={{ r: 2, fill: "#6366f1" }}
+                                  dot={{ r: 2, fill: '#6366f1' }}
                                   name="Projected Stock"
                                 />
 
@@ -1516,10 +1338,9 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       key={`cell-actual-out-${index}`}
                                       fill={
                                         entry.actualStockOut &&
-                                        entry.actualStockOut >
-                                          forecastData.avgDailyStockOut * 1.2
-                                          ? "#dc2626"
-                                          : "#ef4444"
+                                        entry.actualStockOut > forecastData.avgDailyStockOut * 1.2
+                                          ? '#dc2626'
+                                          : '#ef4444'
                                       }
                                     />
                                   ))}
@@ -1538,12 +1359,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       fill={
                                         entry.predictedStockOut >
                                         forecastData.avgDailyStockOut * 1.2
-                                          ? "#ea580c"
-                                          : "#f97316"
+                                          ? '#ea580c'
+                                          : '#f97316'
                                       }
-                                      fillOpacity={
-                                        entry.actualStockOut ? 0.4 : 0.8
-                                      }
+                                      fillOpacity={entry.actualStockOut ? 0.4 : 0.8}
                                     />
                                   ))}
                                 </Bar>
@@ -1560,8 +1379,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       fill={
                                         entry.stockReceived >
                                         forecastData.avgDailyStockReceived * 1.2
-                                          ? "#059669"
-                                          : "#10b981"
+                                          ? '#059669'
+                                          : '#10b981'
                                       }
                                     />
                                   ))}
@@ -1587,7 +1406,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   stroke="#f59e0b"
                                   strokeWidth={3}
                                   strokeDasharray="8 8"
-                                  dot={{ r: 3, fill: "#f59e0b" }}
+                                  dot={{ r: 3, fill: '#f59e0b' }}
                                   name="Predicted Stock Out (7-day MA)"
                                 />
 
@@ -1604,41 +1423,27 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                             <span
                                               className={`px-2 py-1 rounded-full text-xs font-bold ${
                                                 data.isActual
-                                                  ? "bg-green-600 text-green-100"
-                                                  : "bg-blue-600 text-blue-100"
+                                                  ? 'bg-green-600 text-green-100'
+                                                  : 'bg-blue-600 text-blue-100'
                                               }`}
                                             >
-                                              {data.isActual
-                                                ? "Actual"
-                                                : "Predicted"}
+                                              {data.isActual ? 'Actual' : 'Predicted'}
                                             </span>
                                           </div>
                                           <div className="grid grid-cols-2 gap-4 text-sm">
                                             <div>
-                                              <p className="text-slate-300 mb-1">
-                                                Stock Levels
-                                              </p>
+                                              <p className="text-slate-300 mb-1">Stock Levels</p>
                                               <div className="space-y-1">
                                                 <p className="flex justify-between">
-                                                  <span className="text-blue-300">
-                                                    Opening:
-                                                  </span>
+                                                  <span className="text-blue-300">Opening:</span>
                                                   <span className="font-bold">
-                                                    {formatNumber(
-                                                      data.openingStock
-                                                    )}{" "}
-                                                    T
+                                                    {formatNumber(data.openingStock)} T
                                                   </span>
                                                 </p>
                                                 <p className="flex justify-between">
-                                                  <span className="text-blue-400">
-                                                    Closing:
-                                                  </span>
+                                                  <span className="text-blue-400">Closing:</span>
                                                   <span className="font-bold">
-                                                    {formatNumber(
-                                                      data.closingStock
-                                                    )}{" "}
-                                                    T
+                                                    {formatNumber(data.closingStock)} T
                                                   </span>
                                                 </p>
                                                 <p className="flex justify-between">
@@ -1646,28 +1451,18 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                                     Projected:
                                                   </span>
                                                   <span className="font-bold">
-                                                    {formatNumber(
-                                                      data.projectedClosingStock
-                                                    )}{" "}
-                                                    T
+                                                    {formatNumber(data.projectedClosingStock)} T
                                                   </span>
                                                 </p>
                                               </div>
                                             </div>
                                             <div>
-                                              <p className="text-slate-300 mb-1">
-                                                Daily Flow
-                                              </p>
+                                              <p className="text-slate-300 mb-1">Daily Flow</p>
                                               <div className="space-y-1">
                                                 <p className="flex justify-between">
-                                                  <span className="text-green-300">
-                                                    Received:
-                                                  </span>
+                                                  <span className="text-green-300">Received:</span>
                                                   <span className="font-bold text-green-400">
-                                                    {formatNumber(
-                                                      data.stockReceived
-                                                    )}{" "}
-                                                    T
+                                                    {formatNumber(data.stockReceived)} T
                                                   </span>
                                                 </p>
                                                 {data.actualStockOut && (
@@ -1676,10 +1471,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                                       Actual Out:
                                                     </span>
                                                     <span className="font-bold text-red-400">
-                                                      {formatNumber(
-                                                        data.actualStockOut
-                                                      )}{" "}
-                                                      T
+                                                      {formatNumber(data.actualStockOut)} T
                                                     </span>
                                                   </p>
                                                 )}
@@ -1688,28 +1480,20 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                                     Predicted Out:
                                                   </span>
                                                   <span className="font-bold text-orange-400">
-                                                    {formatNumber(
-                                                      data.predictedStockOut
-                                                    )}{" "}
-                                                    T
+                                                    {formatNumber(data.predictedStockOut)} T
                                                   </span>
                                                 </p>
                                                 <p className="flex justify-between">
-                                                  <span className="text-yellow-300">
-                                                    Net:
-                                                  </span>
+                                                  <span className="text-yellow-300">Net:</span>
                                                   <span
                                                     className={`font-bold ${
                                                       data.netFlow >= 0
-                                                        ? "text-green-400"
-                                                        : "text-red-400"
+                                                        ? 'text-green-400'
+                                                        : 'text-red-400'
                                                     }`}
                                                   >
-                                                    {data.netFlow >= 0
-                                                      ? "+"
-                                                      : ""}
-                                                    {formatNumber(data.netFlow)}{" "}
-                                                    T
+                                                    {data.netFlow >= 0 ? '+' : ''}
+                                                    {formatNumber(data.netFlow)} T
                                                   </span>
                                                 </p>
                                               </div>
@@ -1717,41 +1501,29 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                           </div>
                                           <div className="mt-3 pt-3 border-t border-slate-600">
                                             <div className="flex justify-between items-center">
-                                              <span className="text-slate-300">
-                                                Safety Level:
-                                              </span>
+                                              <span className="text-slate-300">Safety Level:</span>
                                               <span
                                                 className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                                  data.safetyLevel === "Normal"
-                                                    ? "bg-green-600 text-green-100"
-                                                    : data.safetyLevel === "Low"
-                                                    ? "bg-yellow-600 text-yellow-100"
-                                                    : "bg-red-600 text-red-100"
+                                                  data.safetyLevel === 'Normal'
+                                                    ? 'bg-green-600 text-green-100'
+                                                    : data.safetyLevel === 'Low'
+                                                      ? 'bg-yellow-600 text-yellow-100'
+                                                      : 'bg-red-600 text-red-100'
                                                 }`}
                                               >
                                                 {data.safetyLevel}
                                               </span>
                                             </div>
                                             <div className="flex justify-between items-center mt-1">
-                                              <span className="text-slate-300">
-                                                Turnover:
-                                              </span>
+                                              <span className="text-slate-300">Turnover:</span>
                                               <span className="font-bold text-purple-300">
-                                                {formatPercentage(
-                                                  data.turnoverRatio
-                                                )}
-                                                %
+                                                {formatPercentage(data.turnoverRatio)}%
                                               </span>
                                             </div>
                                             <div className="flex justify-between items-center mt-1">
-                                              <span className="text-slate-300">
-                                                Efficiency:
-                                              </span>
+                                              <span className="text-slate-300">Efficiency:</span>
                                               <span className="font-bold text-cyan-300">
-                                                {formatPercentage(
-                                                  data.efficiency
-                                                )}
-                                                %
+                                                {formatPercentage(data.efficiency)}%
                                               </span>
                                             </div>
                                             {/* 7-day Moving Average Prediction Info */}
@@ -1760,29 +1532,21 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                                 Predicted Out (7-day MA):
                                               </span>
                                               <span className="font-bold text-yellow-300">
-                                                {formatNumber(
-                                                  data.predictedStockOut
-                                                )}{" "}
-                                                T
+                                                {formatNumber(data.predictedStockOut)} T
                                               </span>
                                             </div>
                                             {data.isActual && (
                                               <div className="flex justify-between items-center mt-1">
-                                                <span className="text-slate-300">
-                                                  Deviation:
-                                                </span>
+                                                <span className="text-slate-300">Deviation:</span>
                                                 <span
                                                   className={`font-bold ${
                                                     data.deviation >= 0
-                                                      ? "text-red-300"
-                                                      : "text-green-300"
+                                                      ? 'text-red-300'
+                                                      : 'text-green-300'
                                                   }`}
                                                 >
-                                                  {data.deviation >= 0
-                                                    ? "+"
-                                                    : ""}
-                                                  {formatNumber(data.deviation)}{" "}
-                                                  T
+                                                  {data.deviation >= 0 ? '+' : ''}
+                                                  {formatNumber(data.deviation)} T
                                                 </span>
                                               </div>
                                             )}
@@ -1794,37 +1558,15 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   }}
                                 />
 
-                                <Legend
-                                  wrapperStyle={{ paddingTop: "20px" }}
-                                  iconType="rect"
-                                />
+                                <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="rect" />
 
-                                <Brush
-                                  dataKey="day"
-                                  height={30}
-                                  stroke="#6366f1"
-                                  fill="#f1f5f9"
-                                />
+                                <Brush dataKey="day" height={30} stroke="#6366f1" fill="#f1f5f9" />
 
                                 {/* Gradients */}
                                 <defs>
-                                  <linearGradient
-                                    id="stockGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="5%"
-                                      stopColor="#0ea5e9"
-                                      stopOpacity={0.8}
-                                    />
-                                    <stop
-                                      offset="95%"
-                                      stopColor="#0ea5e9"
-                                      stopOpacity={0.1}
-                                    />
+                                  <linearGradient id="stockGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.1} />
                                   </linearGradient>
                                   <linearGradient
                                     id="projectedGradient"
@@ -1833,16 +1575,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     x2="0"
                                     y2="1"
                                   >
-                                    <stop
-                                      offset="5%"
-                                      stopColor="#6366f1"
-                                      stopOpacity={0.6}
-                                    />
-                                    <stop
-                                      offset="95%"
-                                      stopColor="#6366f1"
-                                      stopOpacity={0.1}
-                                    />
+                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.6} />
+                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1} />
                                   </linearGradient>
                                 </defs>
                               </ComposedChart>
@@ -1862,14 +1596,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                               <div className="w-full h-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <ComposedChart data={tableData}>
-                                    <CartesianGrid
-                                      strokeDasharray="3 3"
-                                      stroke="#f1f5f9"
-                                    />
-                                    <XAxis
-                                      dataKey="day"
-                                      tick={{ fontSize: 10 }}
-                                    />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                    <XAxis dataKey="day" tick={{ fontSize: 10 }} />
                                     <YAxis tick={{ fontSize: 10 }} />
                                     {/* Actual closing stock line */}
                                     <Line
@@ -1877,7 +1605,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       dataKey="closingStock"
                                       stroke="#3b82f6"
                                       strokeWidth={2}
-                                      dot={{ r: 2, fill: "#3b82f6" }}
+                                      dot={{ r: 2, fill: '#3b82f6' }}
                                       name="Actual/Projected Stock"
                                     />
                                     {/* Predicted stock out line for comparison */}
@@ -1887,7 +1615,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       stroke="#8b5cf6"
                                       strokeWidth={2}
                                       strokeDasharray="5 5"
-                                      dot={{ r: 2, fill: "#8b5cf6" }}
+                                      dot={{ r: 2, fill: '#8b5cf6' }}
                                       name="Predicted Stock Out (7-day MA)"
                                     />
                                     <ReferenceLine
@@ -1895,8 +1623,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       stroke="#ef4444"
                                       strokeDasharray="5 5"
                                       label={{
-                                        value: "Critical",
-                                        position: "insideTopRight",
+                                        value: 'Critical',
+                                        position: 'insideTopRight',
                                       }}
                                     />
                                     <ReferenceLine
@@ -1904,8 +1632,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       stroke="#f59e0b"
                                       strokeDasharray="5 5"
                                       label={{
-                                        value: "Low",
-                                        position: "insideTopRight",
+                                        value: 'Low',
+                                        position: 'insideTopRight',
                                       }}
                                     />
 
@@ -1917,20 +1645,20 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                         strokeWidth={2}
                                         strokeDasharray="5 5"
                                         label={{
-                                          value: "Today",
-                                          position: "top",
-                                          fill: "#10b981",
+                                          value: 'Today',
+                                          position: 'top',
+                                          fill: '#10b981',
                                           fontSize: 10,
-                                          fontWeight: "bold",
+                                          fontWeight: 'bold',
                                         }}
                                       />
                                     )}
                                     <Tooltip
                                       formatter={(value, name) => [
                                         formatNumber(Number(value)),
-                                        name === "predictedStockOut"
-                                          ? "Predicted Stock Out (7-day MA)"
-                                          : "Stock Level (Ton)",
+                                        name === 'predictedStockOut'
+                                          ? 'Predicted Stock Out (7-day MA)'
+                                          : 'Stock Level (Ton)',
                                       ]}
                                     />
                                     <Legend fontSize={9} />
@@ -1949,14 +1677,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                             <ChartErrorBoundary>
                               <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={tableData}>
-                                  <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    stroke="#f1f5f9"
-                                  />
-                                  <XAxis
-                                    dataKey="day"
-                                    tick={{ fontSize: 10 }}
-                                  />
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                  <XAxis dataKey="day" tick={{ fontSize: 10 }} />
                                   <YAxis tick={{ fontSize: 10 }} />
                                   {/* Stock received bars */}
                                   <Bar
@@ -1979,7 +1701,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     stroke="#8b5cf6"
                                     strokeWidth={2}
                                     strokeDasharray="5 5"
-                                    dot={{ r: 2, fill: "#8b5cf6" }}
+                                    dot={{ r: 2, fill: '#8b5cf6' }}
                                     name="Predicted Stock Out (7-day MA)"
                                   />
                                   {/* Net flow line */}
@@ -2001,22 +1723,22 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                       strokeWidth={2}
                                       strokeDasharray="5 5"
                                       label={{
-                                        value: "Today",
-                                        position: "top",
-                                        fill: "#10b981",
+                                        value: 'Today',
+                                        position: 'top',
+                                        fill: '#10b981',
                                         fontSize: 10,
-                                        fontWeight: "bold",
+                                        fontWeight: 'bold',
                                       }}
                                     />
                                   )}
                                   <Tooltip
                                     formatter={(value, name) => [
                                       formatNumber(Number(value)),
-                                      name === "predictedStockOut"
-                                        ? "Predicted Stock Out (7-day MA)"
-                                        : name === "netFlow"
-                                        ? "Net Flow (Ton)"
-                                        : `${name} (Ton)`,
+                                      name === 'predictedStockOut'
+                                        ? 'Predicted Stock Out (7-day MA)'
+                                        : name === 'netFlow'
+                                          ? 'Net Flow (Ton)'
+                                          : `${name} (Ton)`,
                                     ]}
                                   />
                                   <Legend fontSize={9} />
@@ -2031,12 +1753,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                     <div className="flex items-center justify-center h-48 text-slate-500 bg-slate-50 rounded-lg">
                       <div className="text-center">
                         <ArchiveBoxIcon className="w-12 h-12 mx-auto text-slate-300 mb-2" />
-                        <p className="text-base font-medium">
-                          No Data Available
-                        </p>
-                        <p className="text-xs mt-1">
-                          Please select a different date range or area
-                        </p>
+                        <p className="text-base font-medium">No Data Available</p>
+                        <p className="text-xs mt-1">Please select a different date range or area</p>
                       </div>
                     </div>
                   )}
@@ -2049,8 +1767,8 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       {t.forecast_this_month_projection_table}
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                      {filterArea} - {monthOptions[filterMonth]?.label}{" "}
-                      {filterYear} | {tableData.length} entri
+                      {filterArea} - {monthOptions[filterMonth]?.label} {filterYear} |{' '}
+                      {tableData.length} entri
                     </p>
                   </div>
                   <div className="overflow-x-auto">
@@ -2058,7 +1776,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <thead className="bg-slate-50 sticky top-0">
                         <tr>
                           <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                            {t.forecast_projected_date || "Date"}
+                            {t.forecast_projected_date || 'Date'}
                           </th>
                           <th className="px-2 py-1 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                             Opening Stock (Ton)
@@ -2092,15 +1810,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <tbody className="bg-white divide-y divide-slate-200">
                         {tableData.length === 0 ? (
                           <tr>
-                            <td
-                              colSpan={10}
-                              className="px-6 py-12 text-center text-slate-500"
-                            >
+                            <td colSpan={10} className="px-6 py-12 text-center text-slate-500">
                               <div className="flex flex-col items-center">
                                 <ArchiveBoxIcon className="w-12 h-12 text-slate-300 mb-3" />
-                                <p className="text-sm">
-                                  Tidak ada data untuk filter ini
-                                </p>
+                                <p className="text-sm">Tidak ada data untuk filter ini</p>
                               </div>
                             </td>
                           </tr>
@@ -2109,11 +1822,11 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                             <tr
                               key={`${item.date}-${index}`}
                               className={`hover:bg-slate-50 transition-colors duration-150 ${
-                                index % 2 === 0 ? "bg-white" : "bg-slate-25"
+                                index % 2 === 0 ? 'bg-white' : 'bg-slate-25'
                               } ${
                                 item.isActual
-                                  ? "border-l-4 border-green-500"
-                                  : "border-l-4 border-blue-500"
+                                  ? 'border-l-4 border-green-500'
+                                  : 'border-l-4 border-blue-500'
                               }`}
                             >
                               <td className="px-2 py-1 whitespace-nowrap text-xs font-medium text-slate-900">
@@ -2123,9 +1836,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.openingStock)}
-                                    <span className="text-xs text-green-600">
-                                      ●
-                                    </span>
+                                    <span className="text-xs text-green-600">●</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2135,9 +1846,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.stockReceived)}
-                                    <span className="text-xs text-green-600">
-                                      ●
-                                    </span>
+                                    <span className="text-xs text-green-600">●</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2145,17 +1854,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                               </td>
                               <td
                                 className={`px-2 py-1 whitespace-nowrap text-xs font-medium ${
-                                  item.isActual
-                                    ? "text-red-700 bg-red-50"
-                                    : "text-slate-400"
+                                  item.isActual ? 'text-red-700 bg-red-50' : 'text-slate-400'
                                 }`}
                               >
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.stockOut)}
-                                    <span className="text-xs text-green-600">
-                                      ●
-                                    </span>
+                                    <span className="text-xs text-green-600">●</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2168,12 +1873,10 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                 {item.isActual ? (
                                   <span
                                     className={`${
-                                      item.deviation >= 0
-                                        ? "text-red-600"
-                                        : "text-green-600"
+                                      item.deviation >= 0 ? 'text-red-600' : 'text-green-600'
                                     }`}
                                   >
-                                    {item.deviation >= 0 ? "+" : ""}
+                                    {item.deviation >= 0 ? '+' : ''}
                                     {formatNumber(item.deviation)}
                                   </span>
                                 ) : (
@@ -2186,17 +1889,14 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     className={`inline-flex items-center px-1 py-0.5 rounded-full text-xs font-bold ${
                                       item.achievementPercentage >= 90 &&
                                       item.achievementPercentage <= 110
-                                        ? "bg-green-100 text-green-800"
+                                        ? 'bg-green-100 text-green-800'
                                         : item.achievementPercentage >= 80 &&
-                                          item.achievementPercentage <= 120
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-red-100 text-red-800"
+                                            item.achievementPercentage <= 120
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : 'bg-red-100 text-red-800'
                                     }`}
                                   >
-                                    {formatPercentage(
-                                      item.achievementPercentage
-                                    )}
-                                    %
+                                    {formatPercentage(item.achievementPercentage)}%
                                   </span>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2204,17 +1904,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                               </td>
                               <td
                                 className={`px-3 py-2 whitespace-nowrap text-xs font-bold ${
-                                  item.isActual
-                                    ? "text-slate-900 bg-green-50"
-                                    : "text-slate-400"
+                                  item.isActual ? 'text-slate-900 bg-green-50' : 'text-slate-400'
                                 }`}
                               >
                                 {item.isActual ? (
                                   <div className="flex items-center gap-1">
                                     {formatNumber(item.closingStock)}
-                                    <span className="text-xs text-green-600">
-                                      ●
-                                    </span>
+                                    <span className="text-xs text-green-600">●</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2225,17 +1921,13 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                   <div className="flex items-center gap-1">
                                     <span
                                       className={`${
-                                        item.netFlow >= 0
-                                          ? "text-green-600"
-                                          : "text-red-600"
+                                        item.netFlow >= 0 ? 'text-green-600' : 'text-red-600'
                                       }`}
                                     >
-                                      {item.netFlow >= 0 ? "+" : ""}
+                                      {item.netFlow >= 0 ? '+' : ''}
                                       {formatNumber(item.netFlow)}
                                     </span>
-                                    <span className="text-xs text-green-600">
-                                      ●
-                                    </span>
+                                    <span className="text-xs text-green-600">●</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2247,17 +1939,15 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                                     <span
                                       className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                                         item.efficiency <= 80
-                                          ? "bg-green-100 text-green-800"
+                                          ? 'bg-green-100 text-green-800'
                                           : item.efficiency <= 100
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-red-100 text-red-800"
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-red-100 text-red-800'
                                       }`}
                                     >
                                       {formatPercentage(item.efficiency)}%
                                     </span>
-                                    <span className="text-xs text-green-600">
-                                      ●
-                                    </span>
+                                    <span className="text-xs text-green-600">●</span>
                                   </div>
                                 ) : (
                                   <span className="text-slate-400">-</span>
@@ -2270,9 +1960,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                       <tfoot className="bg-slate-100 border-t-2 border-slate-300">
                         {/* Average Row */}
                         <tr className="font-semibold text-slate-700">
-                          <td className="px-3 py-2 text-xs font-bold">
-                            Average
-                          </td>
+                          <td className="px-3 py-2 text-xs font-bold">Average</td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.openingStock.avg)}
                           </td>
@@ -2289,10 +1977,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                             {formatNumber(tableStats.deviation.avg)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatPercentage(
-                              tableStats.achievementPercentage.avg
-                            )}
-                            %
+                            {formatPercentage(tableStats.achievementPercentage.avg)}%
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.closingStock.avg)}
@@ -2323,10 +2008,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                             {formatNumber(tableStats.deviation.min)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatPercentage(
-                              tableStats.achievementPercentage.min
-                            )}
-                            %
+                            {formatPercentage(tableStats.achievementPercentage.min)}%
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.closingStock.min)}
@@ -2357,10 +2039,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                             {formatNumber(tableStats.deviation.max)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatPercentage(
-                              tableStats.achievementPercentage.max
-                            )}
-                            %
+                            {formatPercentage(tableStats.achievementPercentage.max)}%
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.closingStock.max)}
@@ -2374,98 +2053,65 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({
                         </tr>
                         {/* Predicted Total Row */}
                         <tr className="font-bold text-blue-800 border-t border-slate-300">
-                          <td className="px-3 py-2 text-xs font-bold">
-                            Predicted Total
+                          <td className="px-3 py-2 text-xs font-bold">Predicted Total</td>
+                          <td className="px-3 py-2 text-xs">
+                            {formatNumber(tableStats.predictedData.openingStock.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.openingStock.total
-                            )}
+                            {formatNumber(tableStats.predictedData.stockReceived.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.stockReceived.total
-                            )}
+                            {formatNumber(tableStats.predictedData.stockOut.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.stockOut.total
-                            )}
+                            {formatNumber(tableStats.predictedData.predictedStockOut.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.predictedStockOut.total
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.deviation.total
-                            )}
+                            {formatNumber(tableStats.predictedData.deviation.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">-</td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.closingStock.total
-                            )}
+                            {formatNumber(tableStats.predictedData.closingStock.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.predictedData.netFlow.total
-                            )}
+                            {formatNumber(tableStats.predictedData.netFlow.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">-</td>
                         </tr>
                         {/* Actual Total Row */}
                         <tr className="font-bold text-green-800 border-t border-slate-300">
-                          <td className="px-3 py-2 text-xs font-bold">
-                            Actual Total
+                          <td className="px-3 py-2 text-xs font-bold">Actual Total</td>
+                          <td className="px-3 py-2 text-xs">
+                            {formatNumber(tableStats.actualData.openingStock.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.actualData.openingStock.total
-                            )}
-                          </td>
-                          <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.actualData.stockReceived.total
-                            )}
+                            {formatNumber(tableStats.actualData.stockReceived.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.actualData.stockOut.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.actualData.predictedStockOut.total
-                            )}
+                            {formatNumber(tableStats.actualData.predictedStockOut.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.actualData.deviation.total
-                            )}
+                            {formatNumber(tableStats.actualData.deviation.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {tableStats.actualData.achievementPercentage.total >
-                            0
-                              ? formatPercentage(
-                                  tableStats.actualData.achievementPercentage
-                                    .avg
-                                ) + "%"
-                              : "-"}
+                            {tableStats.actualData.achievementPercentage.total > 0
+                              ? formatPercentage(tableStats.actualData.achievementPercentage.avg) +
+                                '%'
+                              : '-'}
                           </td>
                           <td className="px-3 py-2 text-xs">
-                            {formatNumber(
-                              tableStats.actualData.closingStock.total
-                            )}
+                            {formatNumber(tableStats.actualData.closingStock.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {formatNumber(tableStats.actualData.netFlow.total)}
                           </td>
                           <td className="px-3 py-2 text-xs">
                             {tableStats.actualData.efficiency.total > 0
-                              ? formatPercentage(
-                                  tableStats.actualData.efficiency.avg
-                                ) + "%"
-                              : "-"}
+                              ? formatPercentage(tableStats.actualData.efficiency.avg) + '%'
+                              : '-'}
                           </td>
                         </tr>
                       </tfoot>

@@ -107,7 +107,7 @@ interface NotificationSettings {
 }
 
 interface ExtendedAlert extends Alert {
-  category?: "system" | "maintenance" | "production" | "user" | "security";
+  category?: 'system' | 'maintenance' | 'production' | 'user' | 'security';
   actionUrl?: string;
   dismissed?: boolean;
   snoozedUntil?: Date;
@@ -162,8 +162,8 @@ interface ExtendedAlert extends Alert {
 ### 1. Basic Usage (di Header)
 
 ```tsx
-import { useNotifications } from "../hooks/useNotifications";
-import NotificationPanel from "./NotificationPanel";
+import { useNotifications } from '../hooks/useNotifications';
+import NotificationPanel from './NotificationPanel';
 
 const {
   notifications,
@@ -197,17 +197,17 @@ const {
 const { createNotification } = useNotifications();
 
 // Buat notifikasi sederhana
-await createNotification("Server restart required", AlertSeverity.WARNING);
+await createNotification('Server restart required', AlertSeverity.WARNING);
 
 // Buat notifikasi dengan kategori
-await createNotification("New user registered", AlertSeverity.INFO, "user");
+await createNotification('New user registered', AlertSeverity.INFO, 'user');
 
 // Buat notifikasi dengan action URL
 await createNotification(
-  "Critical system error detected",
+  'Critical system error detected',
   AlertSeverity.CRITICAL,
-  "system",
-  "/dashboard/system"
+  'system',
+  '/dashboard/system'
 );
 ```
 

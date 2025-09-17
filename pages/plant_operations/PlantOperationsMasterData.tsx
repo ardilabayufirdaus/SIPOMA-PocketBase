@@ -1,28 +1,22 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useEffect,
-  useRef,
-} from "react";
-import { useCopParametersSupabase } from "../../hooks/useCopParametersSupabase";
-import Modal from "../../components/Modal";
-import { SearchInput } from "../../components/ui/Input";
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
-import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
-import DocumentArrowUpIcon from "../../components/icons/DocumentArrowUpIcon";
-import { formatNumber } from "../../utils/formatters";
-import { usePagination } from "../../hooks/usePagination";
-import Pagination from "../../components/Pagination";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
+import Modal from '../../components/Modal';
+import { SearchInput } from '../../components/ui/Input';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
+import DocumentArrowUpIcon from '../../components/icons/DocumentArrowUpIcon';
+import { formatNumber } from '../../utils/formatters';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../../components/Pagination';
 
 // Hooks
-import { usePlantUnits } from "../../hooks/usePlantUnits";
-import { useParameterSettings } from "../../hooks/useParameterSettings";
-import { useSiloCapacities } from "../../hooks/useSiloCapacities";
-import { useReportSettings } from "../../hooks/useReportSettings";
-import { usePicSettings } from "../../hooks/usePicSettings";
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useSiloCapacities } from '../../hooks/useSiloCapacities';
+import { useReportSettings } from '../../hooks/useReportSettings';
+import { usePicSettings } from '../../hooks/usePicSettings';
 
 // Types
 import {
@@ -32,21 +26,21 @@ import {
   SiloCapacity,
   ReportSetting,
   PicSetting,
-} from "../../types";
+} from '../../types';
 
 // Forms
-import PlantUnitForm from "./PlantUnitForm";
-import ParameterSettingForm from "./ParameterSettingForm";
-import SiloCapacityForm from "./SiloCapacityForm";
-import ReportSettingForm from "./ReportSettingForm";
-import PicSettingForm from "./PicSettingForm";
+import PlantUnitForm from './PlantUnitForm';
+import ParameterSettingForm from './ParameterSettingForm';
+import SiloCapacityForm from './SiloCapacityForm';
+import ReportSettingForm from './ReportSettingForm';
+import PicSettingForm from './PicSettingForm';
 
 type ModalType =
-  | "plantUnit"
-  | "parameterSetting"
-  | "siloCapacity"
-  | "reportSetting"
-  | "picSetting"
+  | 'plantUnit'
+  | 'parameterSetting'
+  | 'siloCapacity'
+  | 'reportSetting'
+  | 'picSetting'
   | null;
 
 const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
@@ -60,9 +54,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     deleteRecord: deletePlantUnit,
     setAllRecords: setAllPlantUnits,
   } = usePlantUnits();
-  const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(
-    null
-  );
+  const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(null);
   const {
     paginatedData: paginatedPlantUnits,
     currentPage: puCurrentPage,
@@ -78,8 +70,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     deleteRecord: deleteParameter,
     setAllRecords: setAllParameterSettings,
   } = useParameterSettings();
-  const [editingParameter, setEditingParameter] =
-    useState<ParameterSetting | null>(null);
+  const [editingParameter, setEditingParameter] = useState<ParameterSetting | null>(null);
 
   // Silo Capacity State
   const {
@@ -99,8 +90,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     deleteRecord: deleteReportSetting,
     setAllRecords: setAllReportSettings,
   } = useReportSettings();
-  const [editingReportSetting, setEditingReportSetting] =
-    useState<ReportSetting | null>(null);
+  const [editingReportSetting, setEditingReportSetting] = useState<ReportSetting | null>(null);
 
   // PIC Settings State
   const {
@@ -129,23 +119,22 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   const [isExporting, setIsExporting] = useState(false);
 
   // Filter States
-  const [parameterCategoryFilter, setParameterCategoryFilter] = useState("");
-  const [parameterUnitFilter, setParameterUnitFilter] = useState("");
-  const [parameterSearchQuery, setParameterSearchQuery] = useState("");
-  const [siloCategoryFilter, setSiloCategoryFilter] = useState("");
-  const [siloUnitFilter, setSiloUnitFilter] = useState("");
-  const [copCategoryFilter, setCopCategoryFilter] = useState("");
-  const [copUnitFilter, setCopUnitFilter] = useState("");
-  const [reportCategoryFilter, setReportCategoryFilter] = useState("");
-  const [reportUnitFilter, setReportUnitFilter] = useState("");
+  const [parameterCategoryFilter, setParameterCategoryFilter] = useState('');
+  const [parameterUnitFilter, setParameterUnitFilter] = useState('');
+  const [parameterSearchQuery, setParameterSearchQuery] = useState('');
+  const [siloCategoryFilter, setSiloCategoryFilter] = useState('');
+  const [siloUnitFilter, setSiloUnitFilter] = useState('');
+  const [copCategoryFilter, setCopCategoryFilter] = useState('');
+  const [copUnitFilter, setCopUnitFilter] = useState('');
+  const [reportCategoryFilter, setReportCategoryFilter] = useState('');
+  const [reportUnitFilter, setReportUnitFilter] = useState('');
 
   // COP Parameters State
   const allParametersMap = useMemo(
     () => new Map(parameterSettings.map((p) => [p.id, p])),
     [parameterSettings]
   );
-  const { copParameterIds, setCopParameterIds, loading } =
-    useCopParametersSupabase();
+  const { copParameterIds, setCopParameterIds, loading } = useCopParametersSupabase();
   const [isCopModalOpen, setIsCopModalOpen] = useState(false);
   const [tempCopSelection, setTempCopSelection] = useState<string[]>([]);
 
@@ -177,9 +166,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   const handleCloseCopModal = () => setIsCopModalOpen(false);
   const handleCopSelectionChange = (paramId: string) => {
     setTempCopSelection((prev) =>
-      prev.includes(paramId)
-        ? prev.filter((id) => id !== paramId)
-        : [...prev, paramId]
+      prev.includes(paramId) ? prev.filter((id) => id !== paramId) : [...prev, paramId]
     );
   };
   const handleSaveCopSelection = () => {
@@ -192,7 +179,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   // Parameter Search Handlers
   const clearParameterSearch = useCallback(() => {
-    setParameterSearchQuery("");
+    setParameterSearchQuery('');
   }, []);
 
   const isParameterSearchActive = useMemo(
@@ -208,28 +195,16 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   useEffect(() => {
     if (uniquePlantCategories.length > 0) {
-      if (
-        !parameterCategoryFilter ||
-        !uniquePlantCategories.includes(parameterCategoryFilter)
-      ) {
+      if (!parameterCategoryFilter || !uniquePlantCategories.includes(parameterCategoryFilter)) {
         setParameterCategoryFilter(uniquePlantCategories[0]);
       }
-      if (
-        !siloCategoryFilter ||
-        !uniquePlantCategories.includes(siloCategoryFilter)
-      ) {
+      if (!siloCategoryFilter || !uniquePlantCategories.includes(siloCategoryFilter)) {
         setSiloCategoryFilter(uniquePlantCategories[0]);
       }
-      if (
-        !copCategoryFilter ||
-        !uniquePlantCategories.includes(copCategoryFilter)
-      ) {
+      if (!copCategoryFilter || !uniquePlantCategories.includes(copCategoryFilter)) {
         setCopCategoryFilter(uniquePlantCategories[0]);
       }
-      if (
-        !reportCategoryFilter ||
-        !uniquePlantCategories.includes(reportCategoryFilter)
-      ) {
+      if (!reportCategoryFilter || !uniquePlantCategories.includes(reportCategoryFilter)) {
         setReportCategoryFilter(uniquePlantCategories[0]);
       }
     }
@@ -244,23 +219,23 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   // Keyboard shortcuts for parameter search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "f") {
+      if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         const searchInput = document.querySelector(
-          ".parameter-search-input input"
+          '.parameter-search-input input'
         ) as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
           searchInput.select();
         }
       }
-      if (e.key === "Escape" && parameterSearchQuery) {
+      if (e.key === 'Escape' && parameterSearchQuery) {
         clearParameterSearch();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [parameterSearchQuery, clearParameterSearch]);
 
   const unitsForParameterFilter = useMemo(() => {
@@ -297,14 +272,11 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   useEffect(() => {
     if (unitsForParameterFilter.length > 0) {
-      if (
-        !parameterUnitFilter ||
-        !unitsForParameterFilter.includes(parameterUnitFilter)
-      ) {
+      if (!parameterUnitFilter || !unitsForParameterFilter.includes(parameterUnitFilter)) {
         setParameterUnitFilter(unitsForParameterFilter[0]);
       }
     } else {
-      setParameterUnitFilter("");
+      setParameterUnitFilter('');
     }
   }, [unitsForParameterFilter, parameterUnitFilter]);
 
@@ -314,7 +286,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         setSiloUnitFilter(unitsForSiloFilter[0]);
       }
     } else {
-      setSiloUnitFilter("");
+      setSiloUnitFilter('');
     }
   }, [unitsForSiloFilter, siloUnitFilter]);
 
@@ -324,32 +296,25 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         setCopUnitFilter(unitsForCopFilter[0]);
       }
     } else {
-      setCopUnitFilter("");
+      setCopUnitFilter('');
     }
   }, [unitsForCopFilter, copUnitFilter]);
 
   useEffect(() => {
     if (unitsForReportFilter.length > 0) {
-      if (
-        !reportUnitFilter ||
-        !unitsForReportFilter.includes(reportUnitFilter)
-      ) {
+      if (!reportUnitFilter || !unitsForReportFilter.includes(reportUnitFilter)) {
         setReportUnitFilter(unitsForReportFilter[0]);
       }
     } else {
-      setReportUnitFilter("");
+      setReportUnitFilter('');
     }
   }, [unitsForReportFilter, reportUnitFilter]);
 
-  const handleParameterCategoryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleParameterCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setParameterCategoryFilter(e.target.value);
   };
 
-  const handleReportCategoryChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleReportCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setReportCategoryFilter(e.target.value);
   };
 
@@ -377,12 +342,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     }
 
     return filtered;
-  }, [
-    parameterSettings,
-    parameterCategoryFilter,
-    parameterUnitFilter,
-    parameterSearchQuery,
-  ]);
+  }, [parameterSettings, parameterCategoryFilter, parameterUnitFilter, parameterSearchQuery]);
 
   const {
     paginatedData: paginatedParams,
@@ -394,9 +354,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   const filteredSiloCapacities = useMemo(() => {
     if (!siloCategoryFilter || !siloUnitFilter) return [];
     return siloCapacities.filter(
-      (silo) =>
-        silo.plant_category === siloCategoryFilter &&
-        silo.unit === siloUnitFilter
+      (silo) => silo.plant_category === siloCategoryFilter && silo.unit === siloUnitFilter
     );
   }, [siloCapacities, siloCategoryFilter, siloUnitFilter]);
 
@@ -419,12 +377,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       const unitMatch = parameter.unit === reportUnitFilter;
       return categoryMatch && unitMatch;
     });
-  }, [
-    reportSettings,
-    reportCategoryFilter,
-    reportUnitFilter,
-    allParametersMap,
-  ]);
+  }, [reportSettings, reportCategoryFilter, reportUnitFilter, allParametersMap]);
 
   const {
     paginatedData: paginatedReportSettings,
@@ -435,20 +388,20 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   // Generic Handlers
   const handleOpenAddModal = (type: ModalType) => {
-    if (type === "plantUnit") setEditingPlantUnit(null);
-    if (type === "parameterSetting") setEditingParameter(null);
-    if (type === "siloCapacity") setEditingSilo(null);
-    if (type === "reportSetting") setEditingReportSetting(null);
-    if (type === "picSetting") setEditingPic(null);
+    if (type === 'plantUnit') setEditingPlantUnit(null);
+    if (type === 'parameterSetting') setEditingParameter(null);
+    if (type === 'siloCapacity') setEditingSilo(null);
+    if (type === 'reportSetting') setEditingReportSetting(null);
+    if (type === 'picSetting') setEditingPic(null);
     setActiveModal(type);
   };
 
   const handleOpenEditModal = (type: ModalType, record: any) => {
-    if (type === "plantUnit") setEditingPlantUnit(record);
-    if (type === "parameterSetting") setEditingParameter(record);
-    if (type === "siloCapacity") setEditingSilo(record);
-    if (type === "reportSetting") setEditingReportSetting(record);
-    if (type === "picSetting") setEditingPic(record);
+    if (type === 'plantUnit') setEditingPlantUnit(record);
+    if (type === 'parameterSetting') setEditingParameter(record);
+    if (type === 'siloCapacity') setEditingSilo(record);
+    if (type === 'reportSetting') setEditingReportSetting(record);
+    if (type === 'picSetting') setEditingPic(record);
     setActiveModal(type);
   };
 
@@ -470,15 +423,11 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   const handleDeleteConfirm = useCallback(() => {
     if (deletingRecord) {
-      if (deletingRecord.type === "plantUnit")
-        deletePlantUnit(deletingRecord.id);
-      if (deletingRecord.type === "parameterSetting")
-        deleteParameter(deletingRecord.id);
-      if (deletingRecord.type === "siloCapacity") deleteSilo(deletingRecord.id);
-      if (deletingRecord.type === "reportSetting")
-        deleteReportSetting(deletingRecord.id);
-      if (deletingRecord.type === "picSetting")
-        deletePicSetting(deletingRecord.id);
+      if (deletingRecord.type === 'plantUnit') deletePlantUnit(deletingRecord.id);
+      if (deletingRecord.type === 'parameterSetting') deleteParameter(deletingRecord.id);
+      if (deletingRecord.type === 'siloCapacity') deleteSilo(deletingRecord.id);
+      if (deletingRecord.type === 'reportSetting') deleteReportSetting(deletingRecord.id);
+      if (deletingRecord.type === 'picSetting') deletePicSetting(deletingRecord.id);
     }
     handleCloseModals();
   }, [
@@ -491,16 +440,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
   ]);
 
   const handleSave = (type: ModalType, record: any) => {
-    if (type === "plantUnit")
-      "id" in record ? updatePlantUnit(record) : addPlantUnit(record);
-    if (type === "parameterSetting")
-      "id" in record ? updateParameter(record) : addParameter(record);
-    if (type === "siloCapacity")
-      "id" in record ? updateSilo(record) : addSilo(record);
-    if (type === "reportSetting")
-      "id" in record ? updateReportSetting(record) : addReportSetting(record);
-    if (type === "picSetting")
-      "id" in record ? updatePicSetting(record) : addPicSetting(record);
+    if (type === 'plantUnit') 'id' in record ? updatePlantUnit(record) : addPlantUnit(record);
+    if (type === 'parameterSetting')
+      'id' in record ? updateParameter(record) : addParameter(record);
+    if (type === 'siloCapacity') 'id' in record ? updateSilo(record) : addSilo(record);
+    if (type === 'reportSetting')
+      'id' in record ? updateReportSetting(record) : addReportSetting(record);
+    if (type === 'picSetting') 'id' in record ? updatePicSetting(record) : addPicSetting(record);
     handleCloseModals();
   };
 
@@ -510,14 +456,12 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     setIsExporting(true);
     try {
       // Placeholder: Export functionality temporarily disabled due to security update
-      alert(
-        "Export functionality is temporarily disabled. Please use alternative export method."
-      );
+      alert('Export functionality is temporarily disabled. Please use alternative export method.');
     } catch (error) {
-      console.error("Failed to export master data:", error);
+      console.error('Failed to export master data:', error);
       alert(
         `An error occurred during export: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`
       );
     } finally {
@@ -527,19 +471,17 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
   const handleImportAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     // Placeholder: Import functionality temporarily disabled due to security update
-    alert(
-      "Import functionality is temporarily disabled. Please use alternative import method."
-    );
+    alert('Import functionality is temporarily disabled. Please use alternative import method.');
   };
 
   // Removed incomplete import implementation code that was causing syntax errors
 
   const handleDelete = (type: ModalType, id: string) => {
-    if (type === "plantUnit") deletePlantUnit(id);
-    if (type === "parameterSetting") deleteParameter(id);
-    if (type === "siloCapacity") deleteSilo(id);
-    if (type === "reportSetting") deleteReportSetting(id);
-    if (type === "picSetting") deletePicSetting(id);
+    if (type === 'plantUnit') deletePlantUnit(id);
+    if (type === 'parameterSetting') deleteParameter(id);
+    if (type === 'siloCapacity') deleteSilo(id);
+    if (type === 'reportSetting') deleteReportSetting(id);
+    if (type === 'picSetting') deletePicSetting(id);
     handleCloseModals();
   };
 
@@ -564,7 +506,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <DocumentArrowUpIcon className="w-5 h-5" />
-              {isImporting ? t.importing || "Importing..." : t.import_all}
+              {isImporting ? t.importing || 'Importing...' : t.import_all}
             </button>
             <button
               onClick={handleExportAll}
@@ -572,7 +514,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <DocumentArrowDownIcon className="w-5 h-5" />
-              {isExporting ? t.exporting || "Exporting..." : t.export_all}
+              {isExporting ? t.exporting || 'Exporting...' : t.export_all}
             </button>
           </div>
         </div>
@@ -585,7 +527,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             {t.plant_unit_title}
           </h2>
           <button
-            onClick={() => handleOpenAddModal("plantUnit")}
+            onClick={() => handleOpenAddModal('plantUnit')}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
           >
             <PlusIcon className="w-5 h-5" /> {t.add_data_button}
@@ -608,10 +550,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {paginatedPlantUnits.map((unit) => (
-                <tr
-                  key={unit.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
+                <tr key={unit.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {unit.unit}
                   </td>
@@ -621,15 +560,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
-                        onClick={() => handleOpenEditModal("plantUnit", unit)}
+                        onClick={() => handleOpenEditModal('plantUnit', unit)}
                         className="p-2 text-slate-400 hover:text-red-600"
                       >
                         <EditIcon />
                       </button>
                       <button
-                        onClick={() =>
-                          handleOpenDeleteModal(unit.id, "plantUnit")
-                        }
+                        onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
                         className="p-2 text-slate-400 hover:text-red-600"
                       >
                         <TrashIcon />
@@ -655,7 +592,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             {t.pic_setting_title}
           </h2>
           <button
-            onClick={() => handleOpenAddModal("picSetting")}
+            onClick={() => handleOpenAddModal('picSetting')}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
           >
             <PlusIcon className="w-5 h-5" /> {t.add_data_button}
@@ -675,25 +612,20 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {paginatedPicSettings.map((pic) => (
-                <tr
-                  key={pic.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
+                <tr key={pic.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {pic.pic}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
-                        onClick={() => handleOpenEditModal("picSetting", pic)}
+                        onClick={() => handleOpenEditModal('picSetting', pic)}
                         className="p-2 text-slate-400 hover:text-red-600"
                       >
                         <EditIcon />
                       </button>
                       <button
-                        onClick={() =>
-                          handleOpenDeleteModal(pic.id, "picSetting")
-                        }
+                        onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
                         className="p-2 text-slate-400 hover:text-red-600"
                       >
                         <TrashIcon />
@@ -761,7 +693,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               </select>
             </div>
             <button
-              onClick={() => handleOpenAddModal("parameterSetting")}
+              onClick={() => handleOpenAddModal('parameterSetting')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
               <PlusIcon className="w-5 h-5" /> {t.add_data_button}
@@ -785,7 +717,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           {isParameterSearchActive && (
             <div className="flex items-center gap-3">
               <div className="text-sm text-slate-600 dark:text-slate-400">
-                {filteredParameterSettings.length}{" "}
+                {filteredParameterSettings.length}{' '}
                 {filteredParameterSettings.length === 1
                   ? t.parameter_search_results
                   : t.parameter_search_results_plural}
@@ -832,10 +764,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {paginatedParams.map((param) => (
-                <tr
-                  key={param.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
+                <tr key={param.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-500 dark:text-slate-400">
                     {param.id}
                   </td>
@@ -852,29 +781,21 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                     {param.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER
-                      ? param.min_value ?? "-"
-                      : "-"}
+                    {param.data_type === ParameterDataType.NUMBER ? (param.min_value ?? '-') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER
-                      ? param.max_value ?? "-"
-                      : "-"}
+                    {param.data_type === ParameterDataType.NUMBER ? (param.max_value ?? '-') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
-                        onClick={() =>
-                          handleOpenEditModal("parameterSetting", param)
-                        }
+                        onClick={() => handleOpenEditModal('parameterSetting', param)}
                         className="p-2 text-slate-400 hover:text-red-600"
                       >
                         <EditIcon />
                       </button>
                       <button
-                        onClick={() =>
-                          handleOpenDeleteModal(param.id, "parameterSetting")
-                        }
+                        onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
                         className="p-2 text-slate-400 hover:text-red-600"
                       >
                         <TrashIcon />
@@ -885,10 +806,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               ))}
               {filteredParameterSettings.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={8} className="text-center py-10 text-slate-500 dark:text-slate-400">
                     No parameters match the selected filters.
                   </td>
                 </tr>
@@ -952,7 +870,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               </select>
             </div>
             <button
-              onClick={() => handleOpenAddModal("siloCapacity")}
+              onClick={() => handleOpenAddModal('siloCapacity')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
               <PlusIcon className="w-5 h-5" /> {t.add_data_button}
@@ -990,10 +908,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               {paginatedSilos.map((silo) => {
                 const lifestock = silo.capacity - silo.dead_stock;
                 return (
-                  <tr
-                    key={silo.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                  >
+                  <tr key={silo.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {silo.plant_category}
                     </td>
@@ -1015,17 +930,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
-                          onClick={() =>
-                            handleOpenEditModal("siloCapacity", silo)
-                          }
+                          onClick={() => handleOpenEditModal('siloCapacity', silo)}
                           className="p-2 text-slate-400 hover:text-red-600"
                         >
                           <EditIcon />
                         </button>
                         <button
-                          onClick={() =>
-                            handleOpenDeleteModal(silo.id, "siloCapacity")
-                          }
+                          onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
                           className="p-2 text-slate-400 hover:text-red-600"
                         >
                           <TrashIcon />
@@ -1128,10 +1039,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
               {paginatedCopParams.map((param) => (
-                <tr
-                  key={param.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                >
+                <tr key={param.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {param.parameter}
                   </td>
@@ -1153,10 +1061,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               ))}
               {copParameters.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={4} className="text-center py-10 text-slate-500 dark:text-slate-400">
                     No COP parameters selected.
                   </td>
                 </tr>
@@ -1220,7 +1125,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               </select>
             </div>
             <button
-              onClick={() => handleOpenAddModal("reportSetting")}
+              onClick={() => handleOpenAddModal('reportSetting')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
               <PlusIcon className="w-5 h-5" /> {t.add_data_button}
@@ -1252,18 +1157,15 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               {paginatedReportSettings.map((setting) => {
                 const parameter = allParametersMap.get(setting.parameter_id);
                 return (
-                  <tr
-                    key={setting.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700"
-                  >
+                  <tr key={setting.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {parameter?.parameter || "Unknown Parameter"}
+                      {parameter?.parameter || 'Unknown Parameter'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {parameter?.category || "-"}
+                      {parameter?.category || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {parameter?.unit || "-"}
+                      {parameter?.unit || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {setting.category}
@@ -1271,17 +1173,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
-                          onClick={() =>
-                            handleOpenEditModal("reportSetting", setting)
-                          }
+                          onClick={() => handleOpenEditModal('reportSetting', setting)}
                           className="p-2 text-slate-400 hover:text-red-600"
                         >
                           <EditIcon />
                         </button>
                         <button
-                          onClick={() =>
-                            handleOpenDeleteModal(setting.id, "reportSetting")
-                          }
+                          onClick={() => handleOpenDeleteModal(setting.id, 'reportSetting')}
                           className="p-2 text-slate-400 hover:text-red-600"
                         >
                           <TrashIcon />
@@ -1306,58 +1204,58 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         isOpen={activeModal !== null && !isDeleteModalOpen}
         onClose={handleCloseModals}
         title={
-          activeModal === "plantUnit"
+          activeModal === 'plantUnit'
             ? editingPlantUnit
               ? t.edit_plant_unit_title
               : t.add_plant_unit_title
-            : activeModal === "parameterSetting"
-            ? editingParameter
-              ? t.edit_parameter_title
-              : t.add_parameter_title
-            : activeModal === "siloCapacity"
-            ? editingSilo
-              ? t.edit_silo_title
-              : t.add_silo_title
-            : activeModal === "reportSetting"
-            ? editingReportSetting
-              ? t.edit_report_parameter_title
-              : t.add_report_parameter_title
-            : activeModal === "picSetting"
-            ? editingPic
-              ? t.edit_pic_title
-              : t.add_pic_title
-            : ""
+            : activeModal === 'parameterSetting'
+              ? editingParameter
+                ? t.edit_parameter_title
+                : t.add_parameter_title
+              : activeModal === 'siloCapacity'
+                ? editingSilo
+                  ? t.edit_silo_title
+                  : t.add_silo_title
+                : activeModal === 'reportSetting'
+                  ? editingReportSetting
+                    ? t.edit_report_parameter_title
+                    : t.add_report_parameter_title
+                  : activeModal === 'picSetting'
+                    ? editingPic
+                      ? t.edit_pic_title
+                      : t.add_pic_title
+                    : ''
         }
       >
-        {activeModal === "plantUnit" && (
+        {activeModal === 'plantUnit' && (
           <PlantUnitForm
             recordToEdit={editingPlantUnit}
-            onSave={(r) => handleSave("plantUnit", r)}
+            onSave={(r) => handleSave('plantUnit', r)}
             onCancel={handleCloseModals}
             t={t}
           />
         )}
-        {activeModal === "parameterSetting" && (
+        {activeModal === 'parameterSetting' && (
           <ParameterSettingForm
             recordToEdit={editingParameter}
-            onSave={(r) => handleSave("parameterSetting", r)}
+            onSave={(r) => handleSave('parameterSetting', r)}
             onCancel={handleCloseModals}
             t={t}
           />
         )}
-        {activeModal === "siloCapacity" && (
+        {activeModal === 'siloCapacity' && (
           <SiloCapacityForm
             recordToEdit={editingSilo}
-            onSave={(r) => handleSave("siloCapacity", r)}
+            onSave={(r) => handleSave('siloCapacity', r)}
             onCancel={handleCloseModals}
             t={t}
             plantUnits={plantUnits}
           />
         )}
-        {activeModal === "reportSetting" && (
+        {activeModal === 'reportSetting' && (
           <ReportSettingForm
             recordToEdit={editingReportSetting}
-            onSave={(r) => handleSave("reportSetting", r)}
+            onSave={(r) => handleSave('reportSetting', r)}
             onCancel={handleCloseModals}
             t={t}
             allParameters={parameterSettings}
@@ -1366,10 +1264,10 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             selectedUnit={reportUnitFilter}
           />
         )}
-        {activeModal === "picSetting" && (
+        {activeModal === 'picSetting' && (
           <PicSettingForm
             recordToEdit={editingPic}
-            onSave={(r) => handleSave("picSetting", r)}
+            onSave={(r) => handleSave('picSetting', r)}
             onCancel={handleCloseModals}
             t={t}
           />
@@ -1403,16 +1301,11 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       </Modal>
 
       {/* COP Selection Modal */}
-      <Modal
-        isOpen={isCopModalOpen}
-        onClose={handleCloseCopModal}
-        title={t.cop_parameters_title}
-      >
+      <Modal isOpen={isCopModalOpen} onClose={handleCloseCopModal} title={t.cop_parameters_title}>
         <div className="border-b border-slate-200 dark:border-slate-700 p-6">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Select the parameters from Parameter Settings to be included in the
-            COP (Cost of Production) analysis. Only numerical parameters are
-            shown.
+            Select the parameters from Parameter Settings to be included in the COP (Cost of
+            Production) analysis. Only numerical parameters are shown.
           </p>
           <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0 mt-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1480,10 +1373,8 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                     className="h-4 w-4 text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600 rounded"
                   />
                   <span className="ml-3 text-sm text-slate-700 dark:text-slate-300 select-none">
-                    {param.parameter}{" "}
-                    <span className="text-slate-400 dark:text-slate-500">
-                      ({param.category})
-                    </span>
+                    {param.parameter}{' '}
+                    <span className="text-slate-400 dark:text-slate-500">({param.category})</span>
                   </span>
                 </label>
               ))}

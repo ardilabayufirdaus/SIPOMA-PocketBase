@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import ArrowPathRoundedSquareIcon from "../../components/icons/ArrowPathRoundedSquareIcon";
-import ChartBarSquareIcon from "../../components/icons/ChartBarSquareIcon";
-import ExclamationTriangleIcon from "../../components/icons/ExclamationTriangleIcon";
-import TruckIcon from "../../components/icons/TruckIcon";
-import BuildingLibraryIcon from "../../components/icons/BuildingLibraryIcon";
-import ArchiveBoxXMarkIcon from "../../components/icons/ArchiveBoxXMarkIcon";
-import ScaleIcon from "../../components/icons/ScaleIcon";
-import { InteractiveCardModal, BreakdownData } from "../InteractiveCardModal";
+import React, { useState } from 'react';
+import ArrowPathRoundedSquareIcon from '../../components/icons/ArrowPathRoundedSquareIcon';
+import ChartBarSquareIcon from '../../components/icons/ChartBarSquareIcon';
+import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
+import TruckIcon from '../../components/icons/TruckIcon';
+import BuildingLibraryIcon from '../../components/icons/BuildingLibraryIcon';
+import ArchiveBoxXMarkIcon from '../../components/icons/ArchiveBoxXMarkIcon';
+import ScaleIcon from '../../components/icons/ScaleIcon';
+import { InteractiveCardModal, BreakdownData } from '../InteractiveCardModal';
 
 export interface MetricCardProps {
   title: string;
   value: string;
   unit?: string;
   icon: React.ReactNode;
-  trend?: "good" | "warning" | "critical" | "neutral";
+  trend?: 'good' | 'warning' | 'critical' | 'neutral';
   breakdownData?: BreakdownData;
   onClick?: () => void;
 }
@@ -23,7 +23,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   value,
   unit,
   icon,
-  trend = "neutral",
+  trend = 'neutral',
   breakdownData,
   onClick,
 }) => {
@@ -39,27 +39,27 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
   const getTrendColor = () => {
     switch (trend) {
-      case "good":
-        return "bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400";
-      case "warning":
-        return "bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400";
-      case "critical":
-        return "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+      case 'good':
+        return 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+      case 'critical':
+        return 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400';
       default:
-        return "bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400";
+        return 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400';
     }
   };
 
   const getTrendBorder = () => {
     switch (trend) {
-      case "good":
-        return "border-l-4 border-green-500";
-      case "warning":
-        return "border-l-4 border-yellow-500";
-      case "critical":
-        return "border-l-4 border-red-500";
+      case 'good':
+        return 'border-l-4 border-green-500';
+      case 'warning':
+        return 'border-l-4 border-yellow-500';
+      case 'critical':
+        return 'border-l-4 border-red-500';
       default:
-        return "";
+        return '';
     }
   };
 
@@ -70,22 +70,20 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       <div
         className={`bg-white dark:bg-slate-900 p-3 rounded-lg shadow-md flex items-start gap-2 transition hover:shadow-lg focus-within:ring-2 focus-within:ring-red-400 dark:focus-within:ring-red-300 ${getTrendBorder()} ${
           isInteractive
-            ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transform hover:scale-[1.02]"
-            : ""
+            ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transform hover:scale-[1.02]'
+            : ''
         }`}
         tabIndex={isInteractive ? 0 : -1}
-        aria-label={title + (unit ? ` (${unit})` : "")}
+        aria-label={title + (unit ? ` (${unit})` : '')}
         onClick={handleClick}
         onKeyDown={(e) => {
-          if (isInteractive && (e.key === "Enter" || e.key === " ")) {
+          if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             handleClick();
           }
         }}
       >
-        <div
-          className={`p-2 rounded-lg flex items-center justify-center ${getTrendColor()}`}
-        >
+        <div className={`p-2 rounded-lg flex items-center justify-center ${getTrendColor()}`}>
           {icon}
         </div>
         <div className="flex-1 min-w-0">
@@ -97,34 +95,29 @@ export const MetricCard: React.FC<MetricCardProps> = ({
               {title}
             </p>
             <div className="flex items-center space-x-1">
-              {trend !== "neutral" && (
+              {trend !== 'neutral' && (
                 <span
                   className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                    trend === "good"
-                      ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
-                      : trend === "warning"
-                      ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400"
-                      : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400"
+                    trend === 'good'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                      : trend === 'warning'
+                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
+                        : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
                   }`}
                   title={
-                    trend === "good"
-                      ? "Optimal"
-                      : trend === "warning"
-                      ? "Attention"
-                      : "Action Required"
+                    trend === 'good'
+                      ? 'Optimal'
+                      : trend === 'warning'
+                        ? 'Attention'
+                        : 'Action Required'
                   }
                 >
-                  {trend === "good" ? "✓" : trend === "warning" ? "!" : "⚠"}
+                  {trend === 'good' ? '✓' : trend === 'warning' ? '!' : '⚠'}
                 </span>
               )}
               {isInteractive && (
                 <div className="text-slate-400 dark:text-slate-500">
-                  <svg
-                    className="w-3 h-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -140,19 +133,17 @@ export const MetricCard: React.FC<MetricCardProps> = ({
             <p
               className="text-lg font-semibold text-slate-900 dark:text-slate-100"
               aria-label={
-                typeof value === "string" || typeof value === "number"
+                typeof value === 'string' || typeof value === 'number'
                   ? String(value)
                   : JSON.stringify(value)
               }
             >
-              {typeof value === "string" || typeof value === "number"
+              {typeof value === 'string' || typeof value === 'number'
                 ? String(value)
-                : "[Invalid Value]"}
+                : '[Invalid Value]'}
             </p>
             {unit && (
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                {unit}
-              </p>
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{unit}</p>
             )}
           </div>
         </div>

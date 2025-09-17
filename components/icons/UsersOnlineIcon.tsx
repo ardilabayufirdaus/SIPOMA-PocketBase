@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
 interface IconProps {
   className?: string;
 }
 
-const UsersOnlineIcon: React.FC<IconProps> = ({ className = "w-6 h-6" }) => (
+const UsersOnlineIcon: React.FC<IconProps> = ({ className = 'w-6 h-6' }) => (
   <div className="relative">
     <svg
       xmlns="http://www.w3.org/2000/svg"

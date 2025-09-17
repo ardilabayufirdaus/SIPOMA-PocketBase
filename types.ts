@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-export type UserRole = "Super Admin" | "Admin" | "Operator" | "Guest";
+export type UserRole = 'Super Admin' | 'Admin' | 'Operator' | 'Guest';
 
-export type PermissionLevel = "NONE" | "READ" | "WRITE" | "ADMIN";
+export type PermissionLevel = 'NONE' | 'READ' | 'WRITE' | 'ADMIN';
 
 export interface PlantOperationsPermissions {
   [category: string]: {
@@ -46,9 +46,9 @@ export interface AddUserData {
 
 // Plant Operations Types
 export enum MachineStatus {
-  RUNNING = "Running",
-  STOPPED = "Stopped",
-  MAINTENANCE = "Maintenance",
+  RUNNING = 'Running',
+  STOPPED = 'Stopped',
+  MAINTENANCE = 'Maintenance',
 }
 
 export interface Machine {
@@ -70,9 +70,9 @@ export interface Kpi {
 }
 
 export enum AlertSeverity {
-  INFO = "Info",
-  WARNING = "Warning",
-  CRITICAL = "Critical",
+  INFO = 'Info',
+  WARNING = 'Warning',
+  CRITICAL = 'Critical',
 }
 
 export interface Alert {
@@ -92,8 +92,8 @@ export interface PlantUnit {
 }
 
 export enum ParameterDataType {
-  NUMBER = "Number",
-  TEXT = "Text",
+  NUMBER = 'Number',
+  TEXT = 'Text',
 }
 
 export interface ParameterSetting {
@@ -153,8 +153,8 @@ export interface CcrParameterData {
 }
 
 export enum DowntimeStatus {
-  OPEN = "Open",
-  CLOSE = "Close",
+  OPEN = 'Open',
+  CLOSE = 'Close',
 }
 
 export interface CcrDowntimeData {
@@ -172,9 +172,9 @@ export interface CcrDowntimeData {
 
 // Autonomous Data Entry
 export enum RiskStatus {
-  IDENTIFIED = "Identified",
-  IN_PROGRESS = "In Progress",
-  RESOLVED = "Resolved",
+  IDENTIFIED = 'Identified',
+  IN_PROGRESS = 'In Progress',
+  RESOLVED = 'Resolved',
 }
 
 export interface AutonomousRiskData {
@@ -222,14 +222,14 @@ export interface ProjectTask {
 }
 
 export enum ProjectStatus {
-  ACTIVE = "active",
-  IN_PROGRESS = "In Progress",
-  COMPLETED = "completed",
-  ON_HOLD = "on_hold",
-  CANCELLED = "cancelled",
-  ON_TRACK = "on_track",
-  AT_RISK = "at_risk",
-  DELAYED = "delayed",
+  ACTIVE = 'active',
+  IN_PROGRESS = 'In Progress',
+  COMPLETED = 'completed',
+  ON_HOLD = 'on_hold',
+  CANCELLED = 'cancelled',
+  ON_TRACK = 'on_track',
+  AT_RISK = 'at_risk',
+  DELAYED = 'delayed',
 }
 
 export interface Project {

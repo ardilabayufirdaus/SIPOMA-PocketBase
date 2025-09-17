@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 interface UseErrorHandlerReturn {
   error: string | null;
@@ -16,12 +16,12 @@ export const useErrorHandler = (): UseErrorHandlerReturn => {
   }, []);
 
   const handleError = useCallback(
-    (error: unknown, defaultMessage = "An unexpected error occurred") => {
-      console.error("Error handled:", error);
+    (error: unknown, defaultMessage = 'An unexpected error occurred') => {
+      console.error('Error handled:', error);
 
-      if (error && typeof error === "object" && "message" in error) {
+      if (error && typeof error === 'object' && 'message' in error) {
         setError((error as Error).message);
-      } else if (typeof error === "string") {
+      } else if (typeof error === 'string') {
         setError(error);
       } else {
         setError(defaultMessage);

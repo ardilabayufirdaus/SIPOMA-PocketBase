@@ -1,52 +1,38 @@
-﻿import React, {
-  useState,
-  useMemo,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
-import { useSiloCapacities } from "../../hooks/useSiloCapacities";
-import { useCcrSiloData } from "../../hooks/useCcrSiloData";
-import { useParameterSettings } from "../../hooks/useParameterSettings";
-import { useCcrParameterData } from "../../hooks/useCcrParameterData";
-import useCcrDowntimeData from "../../hooks/useCcrDowntimeData";
-import { useUsers } from "../../hooks/useUsers";
-import {
-  ParameterDataType,
-  CcrDowntimeData,
-  CcrSiloData,
-  CcrParameterData,
-} from "../../types";
-import { usePlantUnits } from "../../hooks/usePlantUnits";
-import Modal from "../../components/Modal";
-import CcrDowntimeForm from "./CcrDowntimeForm";
-import CcrTableFooter from "../../components/ccr/CcrTableFooter";
-import CcrTableSkeleton from "../../components/ccr/CcrTableSkeleton";
-import CcrNavigationHelp from "../../components/ccr/CcrNavigationHelp";
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
-import {
-  formatNumber,
-  formatNumberWithPrecision,
-} from "../../utils/formatters";
-import { useKeyboardNavigation } from "../../hooks/useKeyboardNavigation";
-import { useDebouncedParameterUpdates } from "../../hooks/useDebouncedParameterUpdates";
-import { useDataFiltering } from "../../hooks/useDataFiltering";
-import { useFooterCalculations } from "../../hooks/useFooterCalculations";
-import { useCcrFooterData } from "../../hooks/useCcrFooterData";
+﻿import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useSiloCapacities } from '../../hooks/useSiloCapacities';
+import { useCcrSiloData } from '../../hooks/useCcrSiloData';
+import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useCcrParameterData } from '../../hooks/useCcrParameterData';
+import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
+import { useUsers } from '../../hooks/useUsers';
+import { ParameterDataType, CcrDowntimeData, CcrSiloData, CcrParameterData } from '../../types';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import Modal from '../../components/Modal';
+import CcrDowntimeForm from './CcrDowntimeForm';
+import CcrTableFooter from '../../components/ccr/CcrTableFooter';
+import CcrTableSkeleton from '../../components/ccr/CcrTableSkeleton';
+import CcrNavigationHelp from '../../components/ccr/CcrNavigationHelp';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import { formatNumber, formatNumberWithPrecision } from '../../utils/formatters';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useDebouncedParameterUpdates } from '../../hooks/useDebouncedParameterUpdates';
+import { useDataFiltering } from '../../hooks/useDataFiltering';
+import { useFooterCalculations } from '../../hooks/useFooterCalculations';
+import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import {
   DocumentArrowDownIcon,
   DocumentArrowUpIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-} from "@heroicons/react/24/outline";
-import { usePermissions } from "../../utils/permissions";
-import { PermissionLevel } from "../../types";
-import { useCurrentUser } from "../../hooks/useCurrentUser";
+} from '@heroicons/react/24/outline';
+import { usePermissions } from '../../utils/permissions';
+import { PermissionLevel } from '../../types';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Import Supabase client
-import { supabase } from "../../utils/supabaseClient";
+import { supabase } from '../../utils/supabaseClient';
 
 // Import Enhanced Components
 import {
@@ -55,7 +41,7 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 // Enhanced Debounce utility function with cancel capability
 const useDebounce = (value: any, delay: number) => {
@@ -89,15 +75,13 @@ const useDebounce = (value: any, delay: number) => {
 };
 
 const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showNavigationHelp, setShowNavigationHelp] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [columnSearchQuery, setColumnSearchQuery] = useState("");
+  const [columnSearchQuery, setColumnSearchQuery] = useState('');
   const [isFooterVisible, setIsFooterVisible] = useState(false);
 
   // New state for undo stack
@@ -131,10 +115,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const permissionChecker = usePermissions(loggedInUser);
 
   // Function to check if we're in search mode
-  const isSearchActive = useMemo(
-    () => columnSearchQuery.trim().length > 0,
-    [columnSearchQuery]
-  );
+  const isSearchActive = useMemo(() => columnSearchQuery.trim().length > 0, [columnSearchQuery]);
 
   // Function to check if a parameter column should be highlighted
   const shouldHighlightColumn = useCallback(
@@ -151,50 +132,46 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   // Enhanced clear search function
   const clearColumnSearch = useCallback(() => {
-    setColumnSearchQuery("");
+    setColumnSearchQuery('');
   }, []);
 
   // Keyboard shortcut for search (Ctrl+F)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "f") {
+      if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
-        const searchInput = document.querySelector(
-          ".ccr-column-search input"
-        ) as HTMLInputElement;
+        const searchInput = document.querySelector('.ccr-column-search input') as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
           searchInput.select();
         }
       }
-      if (e.key === "Escape" && columnSearchQuery) {
+      if (e.key === 'Escape' && columnSearchQuery) {
         clearColumnSearch();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [columnSearchQuery, clearColumnSearch]);
 
   // Enhanced keyboard navigation state
   const [focusedCell, setFocusedCell] = useState<{
-    table: "silo" | "parameter";
+    table: 'silo' | 'parameter';
     row: number;
     col: number;
   } | null>(null);
 
   // Improved inputRefs management with cleanup
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
-  const debouncedUpdates = useRef<
-    Map<string, { value: string; timer: NodeJS.Timeout }>
-  >(new Map());
+  const debouncedUpdates = useRef<Map<string, { value: string; timer: NodeJS.Timeout }>>(new Map());
 
   // Ref for main table wrapper to sync scroll with footer
   const tableWrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { users } = useUsers();
-  const currentUser = users[0] || { full_name: "Operator" };
+  const currentUser = users[0] || { full_name: 'Operator' };
 
   // Filter state and options from Plant Units master data
   const { records: plantUnits } = usePlantUnits();
@@ -202,21 +179,18 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
     [plantUnits]
   );
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('');
   const unitToCategoryMap = useMemo(
     () => new Map(plantUnits.map((pu) => [pu.unit, pu.category])),
     [plantUnits]
   );
 
   useEffect(() => {
-    if (
-      plantCategories.length > 0 &&
-      !plantCategories.includes(selectedCategory)
-    ) {
+    if (plantCategories.length > 0 && !plantCategories.includes(selectedCategory)) {
       setSelectedCategory(plantCategories[0]);
     } else if (plantCategories.length === 0) {
-      setSelectedCategory("");
+      setSelectedCategory('');
     }
   }, [plantCategories, selectedCategory]);
 
@@ -229,25 +203,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   }, [plantUnits, selectedCategory]);
 
   useEffect(() => {
-    if (
-      unitsForCategory.length > 0 &&
-      !unitsForCategory.includes(selectedUnit)
-    ) {
+    if (unitsForCategory.length > 0 && !unitsForCategory.includes(selectedUnit)) {
       setSelectedUnit(unitsForCategory[0]);
     } else if (unitsForCategory.length === 0) {
-      setSelectedUnit("");
+      setSelectedUnit('');
     }
   }, [unitsForCategory, selectedUnit]);
 
   // Silo Data Hooks and Filtering
   const { records: siloMasterData } = useSiloCapacities();
-  const { getDataForDate: getSiloDataForDate, updateSiloData } =
-    useCcrSiloData();
+  const { getDataForDate: getSiloDataForDate, updateSiloData } = useCcrSiloData();
   const [allDailySiloData, setAllDailySiloData] = useState<CcrSiloData[]>([]);
 
   useEffect(() => {
     // Don't fetch data if selectedDate is not properly initialized
-    if (!selectedDate || selectedDate.trim() === "") {
+    if (!selectedDate || selectedDate.trim() === '') {
       return;
     }
 
@@ -262,25 +232,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const { records: parameterSettings } = useParameterSettings();
 
   // Use custom hook for data filtering
-  const { filteredParameterSettings, dailySiloData, siloMasterMap } =
-    useDataFiltering({
-      parameterSettings,
-      plantUnits,
-      selectedCategory,
-      selectedUnit,
-      columnSearchQuery,
-      allDailySiloData,
-      siloMasterData,
-    });
+  const { filteredParameterSettings, dailySiloData, siloMasterMap } = useDataFiltering({
+    parameterSettings,
+    plantUnits,
+    selectedCategory,
+    selectedUnit,
+    columnSearchQuery,
+    allDailySiloData,
+    siloMasterData,
+  });
 
-  const { getDataForDate: getParameterDataForDate, updateParameterData } =
-    useCcrParameterData();
-  const [dailyParameterData, setDailyParameterData] = useState<
-    CcrParameterData[]
-  >([]);
+  const { getDataForDate: getParameterDataForDate, updateParameterData } = useCcrParameterData();
+  const [dailyParameterData, setDailyParameterData] = useState<CcrParameterData[]>([]);
   useEffect(() => {
     // Don't fetch data if selectedDate is not properly initialized
-    if (!selectedDate || selectedDate.trim() === "") {
+    if (!selectedDate || selectedDate.trim() === '') {
       return;
     }
 
@@ -291,24 +257,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
       // Update legacy records that don't have name field
       const legacyRecords = data.filter(
-        (record: any) =>
-          !record.name && Object.keys(record.hourly_values).length > 0
+        (record: any) => !record.name && Object.keys(record.hourly_values).length > 0
       );
       if (legacyRecords.length > 0) {
-        console.log(
-          `Found ${legacyRecords.length} legacy records without name, updating...`
-        );
+        console.log(`Found ${legacyRecords.length} legacy records without name, updating...`);
         legacyRecords.forEach(async (record: any) => {
           try {
             const { error } = await supabase
-              .from("ccr_parameter_data")
+              .from('ccr_parameter_data')
               .update({
                 name: loggedInUser?.full_name || currentUser.full_name,
               })
-              .eq("id", record.id);
+              .eq('id', record.id);
 
             if (error) {
-              console.error("Error updating legacy record:", error);
+              console.error('Error updating legacy record:', error);
             } else {
               console.log(
                 `Updated legacy record ${record.id} with name: ${
@@ -317,17 +280,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               );
             }
           } catch (error) {
-            console.error("Error updating legacy record:", error);
+            console.error('Error updating legacy record:', error);
           }
         });
       }
     });
-  }, [
-    selectedDate,
-    getParameterDataForDate,
-    loggedInUser?.full_name,
-    currentUser.full_name,
-  ]);
+  }, [selectedDate, getParameterDataForDate, loggedInUser?.full_name, currentUser.full_name]);
 
   const parameterDataMap = useMemo(
     () => new Map(dailyParameterData.map((p) => [p.parameter_id, p])),
@@ -351,11 +309,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   // Auto-save footer data when it changes
   useEffect(() => {
     const saveFooterDataAsync = async () => {
-      if (
-        !parameterFooterData ||
-        !parameterShiftFooterData ||
-        !parameterShiftDifferenceData
-      ) {
+      if (!parameterFooterData || !parameterShiftFooterData || !parameterShiftDifferenceData) {
         return;
       }
 
@@ -370,7 +324,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             await saveFooterData({
               date: selectedDate,
               parameter_id: param.id,
-              plant_unit: selectedCategory || "CCR",
+              plant_unit: selectedCategory || 'CCR',
               total: footerData.total,
               average: footerData.avg,
               minimum: footerData.min,
@@ -387,9 +341,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           }
         }
 
-        console.log("Footer data saved to Supabase for date:", selectedDate);
+        console.log('Footer data saved to Supabase for date:', selectedDate);
       } catch (error) {
-        console.error("Error saving footer data:", error);
+        console.error('Error saving footer data:', error);
       }
     };
 
@@ -422,15 +376,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   // Input ref management function
-  const getInputRef = useCallback(
-    (table: "silo" | "parameter", row: number, col: number) => {
-      return `${table}-${row}-${col}`;
-    },
-    []
-  );
+  const getInputRef = useCallback((table: 'silo' | 'parameter', row: number, col: number) => {
+    return `${table}-${row}-${col}`;
+  }, []);
 
   const focusCell = useCallback(
-    (table: "silo" | "parameter", row: number, col: number) => {
+    (table: 'silo' | 'parameter', row: number, col: number) => {
       const refKey = getInputRef(table, row, col);
       const input = inputRefs.current.get(refKey);
       if (input) {
@@ -439,7 +390,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           input.select(); // Select text for better UX
           setFocusedCell({ table, row, col });
         } catch (error) {
-          console.warn("Error focusing cell:", error);
+          console.warn('Error focusing cell:', error);
         }
       }
     },
@@ -454,30 +405,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   });
 
   // Downtime Data Hooks and State
-  const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime } =
-    useCcrDowntimeData();
+  const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime } = useCcrDowntimeData();
   const dailyDowntimeData = useMemo(() => {
     const allDowntimeForDate = getDowntimeForDate(selectedDate);
     if (!selectedCategory) {
       return allDowntimeForDate;
     }
     return allDowntimeForDate.filter((downtime) => {
-      const categoryMatch =
-        unitToCategoryMap.get(downtime.unit) === selectedCategory;
+      const categoryMatch = unitToCategoryMap.get(downtime.unit) === selectedCategory;
       const unitMatch = !selectedUnit || downtime.unit === selectedUnit;
       return categoryMatch && unitMatch;
     });
-  }, [
-    getDowntimeForDate,
-    selectedDate,
-    selectedCategory,
-    selectedUnit,
-    unitToCategoryMap,
-  ]);
+  }, [getDowntimeForDate, selectedDate, selectedCategory, selectedUnit, unitToCategoryMap]);
 
   const [isDowntimeModalOpen, setDowntimeModalOpen] = useState(false);
-  const [editingDowntime, setEditingDowntime] =
-    useState<CcrDowntimeData | null>(null);
+  const [editingDowntime, setEditingDowntime] = useState<CcrDowntimeData | null>(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletingRecord, setDeletingRecord] = useState<{
     id: string;
@@ -485,7 +427,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   } | null>(null);
 
   const formatStatValue = (value: number | undefined, precision = 1) => {
-    if (value === undefined || value === null) return "-";
+    if (value === undefined || value === null) return '-';
     return formatNumber(value);
   };
 
@@ -494,31 +436,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     if (!unit) return 1;
 
     // Units that typically need 2 decimal places
-    const highPrecisionUnits = [
-      "bar",
-      "psi",
-      "kPa",
-      "MPa",
-      "m³/h",
-      "kg/h",
-      "t/h",
-      "L/h",
-      "mL/h",
-    ];
+    const highPrecisionUnits = ['bar', 'psi', 'kPa', 'MPa', 'm³/h', 'kg/h', 't/h', 'L/h', 'mL/h'];
     // Units that typically need 1 decimal place
-    const mediumPrecisionUnits = [
-      "°C",
-      "°F",
-      "°K",
-      "%",
-      "kg",
-      "ton",
-      "m³",
-      "L",
-      "mL",
-    ];
+    const mediumPrecisionUnits = ['°C', '°F', '°K', '%', 'kg', 'ton', 'm³', 'L', 'mL'];
     // Units that typically need 0 decimal places (whole numbers)
-    const lowPrecisionUnits = ["unit", "pcs", "buah", "batch", "shift"];
+    const lowPrecisionUnits = ['unit', 'pcs', 'buah', 'batch', 'shift'];
 
     const lowerUnit = unit.toLowerCase();
 
@@ -541,27 +463,27 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     value: number | string | null | undefined,
     precision: number = 1
   ): string => {
-    if (value === null || value === undefined || value === "") {
-      return "";
+    if (value === null || value === undefined || value === '') {
+      return '';
     }
-    const numValue = typeof value === "string" ? parseFloat(value) : value;
-    if (isNaN(numValue)) return "";
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(numValue)) return '';
     return formatNumberWithPrecision(numValue, precision);
   };
 
   const parseInputValue = (formattedValue: string): number | null => {
-    if (!formattedValue || formattedValue.trim() === "") return null;
+    if (!formattedValue || formattedValue.trim() === '') return null;
     // Convert formatted value back to number
     // Replace dots (thousands) and comma (decimal) back to standard format
-    const normalized = formattedValue.replace(/\./g, "").replace(",", ".");
+    const normalized = formattedValue.replace(/\./g, '').replace(',', '.');
     const parsed = parseFloat(normalized);
     return isNaN(parsed) ? null : parsed;
   };
 
   const handleSiloDataChange = (
     siloId: string,
-    shift: "shift1" | "shift2" | "shift3",
-    field: "emptySpace" | "content",
+    shift: 'shift1' | 'shift2' | 'shift3',
+    field: 'emptySpace' | 'content',
     value: string
   ) => {
     // Update ke database
@@ -629,7 +551,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
         const previousValue = newHourlyValues[hour] ?? null;
 
-        if (value === "" || value === null) {
+        if (value === '' || value === null) {
           delete newHourlyValues[hour];
         } else {
           newHourlyValues[hour] = value;
@@ -664,11 +586,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   const handleSaveDowntime = async (
-    record: CcrDowntimeData | Omit<CcrDowntimeData, "id" | "date">
+    record: CcrDowntimeData | Omit<CcrDowntimeData, 'id' | 'date'>
   ) => {
     try {
       let result;
-      if ("id" in record) {
+      if ('id' in record) {
         result = await updateDowntime(record);
       } else {
         result = await addDowntime({ ...record, date: selectedDate });
@@ -682,8 +604,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       setDowntimeModalOpen(false);
       setEditingDowntime(null);
     } catch (error) {
-      console.error("Error in handleSaveDowntime:", error);
-      alert("Failed to save downtime data. Please try again.");
+      console.error('Error in handleSaveDowntime:', error);
+      alert('Failed to save downtime data. Please try again.');
     }
   };
 
@@ -710,25 +632,17 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const handleExport = async () => {
     if (isExporting) return;
 
-    if (
-      !selectedCategory ||
-      !selectedUnit ||
-      filteredParameterSettings.length === 0
-    ) {
-      alert(
-        "Please select a plant category and unit with available parameters before exporting."
-      );
+    if (!selectedCategory || !selectedUnit || filteredParameterSettings.length === 0) {
+      alert('Please select a plant category and unit with available parameters before exporting.');
       return;
     }
 
     setIsExporting(true);
     try {
-      alert(
-        "Export functionality is temporarily disabled. Chart.js implementation pending."
-      );
+      alert('Export functionality is temporarily disabled. Chart.js implementation pending.');
     } catch (error) {
-      console.error("Error exporting CCR parameter data:", error);
-      alert("An error occurred while exporting data. Please try again.");
+      console.error('Error exporting CCR parameter data:', error);
+      alert('An error occurred while exporting data. Please try again.');
     } finally {
       setIsExporting(false);
     }
@@ -740,27 +654,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     if (!file) return;
 
     if (!selectedCategory || !selectedUnit) {
-      alert("Please select a plant category and unit before importing.");
+      alert('Please select a plant category and unit before importing.');
       return;
     }
 
     setIsImporting(true);
     try {
-      alert(
-        "Import functionality is temporarily disabled. Chart.js implementation pending."
-      );
+      alert('Import functionality is temporarily disabled. Chart.js implementation pending.');
     } catch (error) {
-      console.error("Error processing Excel file:", error);
-      alert(
-        "Error processing Excel file. Please check the file format and try again."
-      );
+      console.error('Error processing Excel file:', error);
+      alert('Error processing Excel file. Please check the file format and try again.');
     } finally {
       setIsImporting(false);
     }
 
     // Clear the file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -790,11 +700,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 max-w-md">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-red-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -803,9 +709,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </svg>
                 </div>
                 <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                    {error}
-                  </p>
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
                   <EnhancedButton
                     variant="ghost"
                     size="xs"
@@ -937,7 +841,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   <th
                     key={`p-${i}`}
                     className={`px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider ${
-                      i < 2 ? "border-r" : ""
+                      i < 2 ? 'border-r' : ''
                     }`}
                   >
                     {t.percentage}
@@ -948,10 +852,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             <tbody className="bg-white divide-y divide-slate-200">
               {loading ? (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="text-center py-10 text-slate-500 animate-pulse"
-                  >
+                  <td colSpan={10} className="text-center py-10 text-slate-500 animate-pulse">
                     Loading data...
                   </td>
                 </tr>
@@ -960,11 +861,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   const masterSilo = siloMasterMap.get(siloData.silo_id);
                   if (!masterSilo) return null;
 
-                  const shifts: ("shift1" | "shift2" | "shift3")[] = [
-                    "shift1",
-                    "shift2",
-                    "shift3",
-                  ];
+                  const shifts: ('shift1' | 'shift2' | 'shift3')[] = ['shift1', 'shift2', 'shift3'];
 
                   return (
                     <tr key={siloData.id} className="hover:bg-slate-50">
@@ -975,7 +872,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         const content = siloData[shift]?.content;
                         const capacity = masterSilo.capacity;
                         const percentage =
-                          capacity > 0 && typeof content === "number"
+                          capacity > 0 && typeof content === 'number'
                             ? (content / capacity) * 100
                             : 0;
 
@@ -983,49 +880,33 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           <React.Fragment key={shift}>
                             <td
                               className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                siloIndex % 2 === 0 ? "bg-slate-50" : "bg-white"
+                                siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
                               } transition-colors duration-200`}
                             >
                               <input
                                 ref={(el) => {
-                                  const refKey = getInputRef(
-                                    "silo",
-                                    siloIndex,
-                                    i * 2
-                                  );
+                                  const refKey = getInputRef('silo', siloIndex, i * 2);
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
-                                defaultValue={formatInputValue(
-                                  siloData[shift]?.emptySpace,
-                                  1
-                                )}
+                                defaultValue={formatInputValue(siloData[shift]?.emptySpace, 1)}
                                 onChange={(e) => {
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
-                                    "emptySpace",
-                                    parsed !== null ? parsed.toString() : ""
+                                    'emptySpace',
+                                    parsed !== null ? parsed.toString() : ''
                                   );
                                 }}
                                 onBlur={(e) => {
                                   // Reformat on blur to ensure consistent display
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   if (parsed !== null) {
-                                    e.target.value = formatInputValue(
-                                      parsed,
-                                      1
-                                    );
+                                    e.target.value = formatInputValue(parsed, 1);
                                   }
                                 }}
-                                onKeyDown={(e) =>
-                                  handleKeyDown(e, "silo", siloIndex, i * 2)
-                                }
+                                onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
                                 className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
                                 aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi ruang kosong untuk ${
@@ -1036,46 +917,33 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             </td>
                             <td
                               className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                siloIndex % 2 === 0 ? "bg-slate-50" : "bg-white"
+                                siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
                               } transition-colors duration-200`}
                             >
                               <input
                                 ref={(el) => {
-                                  const refKey = getInputRef(
-                                    "silo",
-                                    siloIndex,
-                                    i * 2 + 1
-                                  );
+                                  const refKey = getInputRef('silo', siloIndex, i * 2 + 1);
                                   setInputRef(refKey, el);
                                 }}
                                 type="text"
                                 defaultValue={formatInputValue(content, 1)}
                                 onChange={(e) => {
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   handleSiloDataChange(
                                     siloData.silo_id,
                                     shift,
-                                    "content",
-                                    parsed !== null ? parsed.toString() : ""
+                                    'content',
+                                    parsed !== null ? parsed.toString() : ''
                                   );
                                 }}
                                 onBlur={(e) => {
                                   // Reformat on blur to ensure consistent display
-                                  const parsed = parseInputValue(
-                                    e.target.value
-                                  );
+                                  const parsed = parseInputValue(e.target.value);
                                   if (parsed !== null) {
-                                    e.target.value = formatInputValue(
-                                      parsed,
-                                      1
-                                    );
+                                    e.target.value = formatInputValue(parsed, 1);
                                   }
                                 }}
-                                onKeyDown={(e) =>
-                                  handleKeyDown(e, "silo", siloIndex, i * 2 + 1)
-                                }
+                                onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)}
                                 className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
                                 aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi konten untuk ${
@@ -1086,7 +954,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             </td>
                             <td
                               className={`px-2 py-2 whitespace-nowrap text-sm text-center text-slate-600 align-middle ${
-                                i < 2 ? "border-r" : ""
+                                i < 2 ? 'border-r' : ''
                               }`}
                             >
                               <div className="relative w-full h-6 bg-slate-200 rounded-full overflow-hidden">
@@ -1110,12 +978,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               )}
               {dailySiloData.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={10}
-                    className="text-center py-6 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={10} className="text-center py-6 text-slate-500 dark:text-slate-400">
                     {!selectedCategory
-                      ? "No plant categories found in Master Data."
+                      ? 'No plant categories found in Master Data.'
                       : `No silo master data found for the category: ${selectedCategory}.`}
                   </td>
                 </tr>
@@ -1157,15 +1022,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   isImporting ||
                   !selectedCategory ||
                   !selectedUnit ||
-                  !permissionChecker.hasPermission("plant_operations", "WRITE")
+                  !permissionChecker.hasPermission('plant_operations', 'WRITE')
                 }
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 loading={isImporting}
-                aria-label={t.import_excel || "Import Excel file"}
+                aria-label={t.import_excel || 'Import Excel file'}
               >
                 <DocumentArrowUpIcon className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {isImporting ? "Importing..." : t.import_excel}
+                  {isImporting ? 'Importing...' : t.import_excel}
                 </span>
               </EnhancedButton>
               <EnhancedButton
@@ -1177,15 +1042,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   !selectedCategory ||
                   !selectedUnit ||
                   filteredParameterSettings.length === 0 ||
-                  !permissionChecker.hasPermission("plant_operations", "READ")
+                  !permissionChecker.hasPermission('plant_operations', 'READ')
                 }
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                 loading={isExporting}
-                aria-label={t.export_excel || "Export to Excel"}
+                aria-label={t.export_excel || 'Export to Excel'}
               >
                 <DocumentArrowDownIcon className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {isExporting ? "Exporting..." : t.export_excel}
+                  {isExporting ? 'Exporting...' : t.export_excel}
                 </span>
               </EnhancedButton>
             </div>
@@ -1202,9 +1067,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               variant="primary"
               size="xs"
               onClick={() => setIsFooterVisible(!isFooterVisible)}
-              aria-label={isFooterVisible ? "Hide footer" : "Show footer"}
+              aria-label={isFooterVisible ? 'Hide footer' : 'Show footer'}
             >
-              {isFooterVisible ? "Hide Footer" : "Show Footer"}
+              {isFooterVisible ? 'Hide Footer' : 'Show Footer'}
             </EnhancedButton>
           </div>
         </div>
@@ -1223,7 +1088,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 onChange={(e) => setColumnSearchQuery(e.target.value)}
                 placeholder={t.ccr_search_placeholder}
                 className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400 transition-all duration-200"
-                style={{ width: "320px" }}
+                style={{ width: '320px' }}
                 autoComplete="off"
                 title="Search columns by parameter name or unit. Use Ctrl+F to focus, Escape to clear."
               />
@@ -1233,7 +1098,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   size="xs"
                   onClick={clearColumnSearch}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  aria-label={t.ccr_clear_search || "Clear search"}
+                  aria-label={t.ccr_clear_search || 'Clear search'}
                 >
                   <XMarkIcon className="w-4 h-4" />
                 </EnhancedButton>
@@ -1246,7 +1111,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <div className="flex items-center gap-2">
             {isSearchActive && (
               <div className="ccr-search-results-indicator">
-                {filteredParameterSettings.length}{" "}
+                {filteredParameterSettings.length}{' '}
                 {filteredParameterSettings.length === 1
                   ? t.ccr_search_results
                   : t.ccr_search_results_plural}
@@ -1274,30 +1139,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         {loading ? (
           <CcrTableSkeleton />
         ) : (
-          <div
-            className="ccr-table-container"
-            role="grid"
-            aria-label="Parameter Data Entry Table"
-          >
+          <div className="ccr-table-container" role="grid" aria-label="Parameter Data Entry Table">
             {/* Scrollable Table Content */}
             <div className="ccr-table-wrapper" ref={tableWrapperRef}>
               <table className="ccr-table" role="grid">
                 <colgroup>
-                  <col style={{ width: "90px" }} />
-                  <col style={{ width: "140px" }} />
-                  <col style={{ width: "200px" }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '140px' }} />
+                  <col style={{ width: '200px' }} />
                   {filteredParameterSettings.map((_, index) => (
-                    <col key={index} style={{ width: "160px" }} />
+                    <col key={index} style={{ width: '160px' }} />
                   ))}
                 </colgroup>
-                <thead
-                  className="bg-slate-50 text-center sticky top-0 z-20"
-                  role="rowgroup"
-                >
+                <thead className="bg-slate-50 text-center sticky top-0 z-20" role="rowgroup">
                   <tr className="border-b" role="row">
                     <th
                       className="px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
-                      style={{ width: "90px" }}
+                      style={{ width: '90px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -1305,7 +1163,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     </th>
                     <th
                       className="px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-24 bg-slate-50 z-30 sticky-col-header"
-                      style={{ width: "140px" }}
+                      style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -1313,7 +1171,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     </th>
                     <th
                       className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-56 bg-slate-50 z-30 sticky-col-header"
-                      style={{ width: "200px" }}
+                      style={{ width: '200px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -1323,9 +1181,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       <th
                         key={param.id}
                         className={`px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center ${
-                          shouldHighlightColumn(param) ? "filtered-column" : ""
+                          shouldHighlightColumn(param) ? 'filtered-column' : ''
                         }`}
-                        style={{ width: "160px", minWidth: "160px" }}
+                        style={{ width: '160px', minWidth: '160px' }}
                         role="columnheader"
                         scope="col"
                       >
@@ -1358,52 +1216,44 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       <tr
                         key={hour}
                         className={`border-b group ${
-                          hour % 2 === 0 ? "bg-slate-25" : "bg-white"
+                          hour % 2 === 0 ? 'bg-slate-25' : 'bg-white'
                         } hover:bg-slate-100 transition-colors duration-200`}
                         role="row"
                       >
                         <td
                           className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
-                          style={{ width: "90px" }}
+                          style={{ width: '90px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center justify-center h-8">
-                            {String(hour).padStart(2, "0")}:00
+                            {String(hour).padStart(2, '0')}:00
                           </div>
                         </td>
                         <td
                           className="px-3 py-2 whitespace-nowrap text-xs text-slate-600 border-r sticky left-24 bg-white group-hover:bg-slate-100 z-30 sticky-col"
-                          style={{ width: "140px" }}
+                          style={{ width: '140px' }}
                           role="gridcell"
                         >
-                          <div className="flex items-center h-8">
-                            {getShiftForHour(hour)}
-                          </div>
+                          <div className="flex items-center h-8">{getShiftForHour(hour)}</div>
                         </td>
                         <td
                           className="px-3 py-2 whitespace-nowrap text-xs text-slate-800 border-r sticky left-56 bg-white group-hover:bg-slate-100 z-30 overflow-hidden text-ellipsis sticky-col"
-                          style={{ width: "200px" }}
+                          style={{ width: '200px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
                             {/* Enhanced name display with better logic */}
                             {(() => {
-                              const filledParam =
-                                filteredParameterSettings.find((param) => {
-                                  const paramData = parameterDataMap.get(
-                                    param.id
-                                  );
-                                  return (
-                                    paramData &&
-                                    paramData.hourly_values[hour] !==
-                                      undefined &&
-                                    paramData.hourly_values[hour] !== ""
-                                  );
-                                });
-                              if (filledParam) {
-                                const paramData = parameterDataMap.get(
-                                  filledParam.id
+                              const filledParam = filteredParameterSettings.find((param) => {
+                                const paramData = parameterDataMap.get(param.id);
+                                return (
+                                  paramData &&
+                                  paramData.hourly_values[hour] !== undefined &&
+                                  paramData.hourly_values[hour] !== ''
                                 );
+                              });
+                              if (filledParam) {
+                                const paramData = parameterDataMap.get(filledParam.id);
                                 return (
                                   <span
                                     className="truncate"
@@ -1419,84 +1269,53 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   </span>
                                 );
                               }
-                              return (
-                                <span className="text-slate-400 italic">-</span>
-                              );
+                              return <span className="text-slate-400 italic">-</span>;
                             })()}
                           </div>
                         </td>
                         {filteredParameterSettings.map((param, paramIndex) => {
-                          const value =
-                            parameterDataMap.get(param.id)?.hourly_values[
-                              hour
-                            ] ?? "";
-                          const isCurrentlySaving =
-                            savingParameterId === param.id;
+                          const value = parameterDataMap.get(param.id)?.hourly_values[hour] ?? '';
+                          const isCurrentlySaving = savingParameterId === param.id;
 
                           return (
                             <td
                               key={param.id}
                               className={`p-1 border-r bg-white relative ${
-                                shouldHighlightColumn(param)
-                                  ? "filtered-column"
-                                  : ""
+                                shouldHighlightColumn(param) ? 'filtered-column' : ''
                               }`}
-                              style={{ width: "160px", minWidth: "160px" }}
+                              style={{ width: '160px', minWidth: '160px' }}
                               role="gridcell"
                             >
                               <div className="relative">
                                 <input
                                   ref={(el) => {
-                                    const refKey = getInputRef(
-                                      "parameter",
-                                      hour - 1,
-                                      paramIndex
-                                    );
+                                    const refKey = getInputRef('parameter', hour - 1, paramIndex);
                                     setInputRef(refKey, el);
                                   }}
                                   type={
-                                    param.data_type === ParameterDataType.NUMBER
-                                      ? "text"
-                                      : "text"
+                                    param.data_type === ParameterDataType.NUMBER ? 'text' : 'text'
                                   }
                                   defaultValue={
                                     param.data_type === ParameterDataType.NUMBER
-                                      ? formatInputValue(
-                                          value,
-                                          getPrecisionForUnit(param.unit)
-                                        )
+                                      ? formatInputValue(value, getPrecisionForUnit(param.unit))
                                       : value
                                   }
                                   onChange={(e) => {
-                                    if (
-                                      param.data_type ===
-                                      ParameterDataType.NUMBER
-                                    ) {
-                                      const parsed = parseInputValue(
-                                        e.target.value
-                                      );
+                                    if (param.data_type === ParameterDataType.NUMBER) {
+                                      const parsed = parseInputValue(e.target.value);
                                       handleParameterDataChange(
                                         param.id,
                                         hour,
-                                        parsed !== null ? parsed.toString() : ""
+                                        parsed !== null ? parsed.toString() : ''
                                       );
                                     } else {
-                                      handleParameterDataChange(
-                                        param.id,
-                                        hour,
-                                        e.target.value
-                                      );
+                                      handleParameterDataChange(param.id, hour, e.target.value);
                                     }
                                   }}
                                   onBlur={(e) => {
                                     // Reformat numerical values on blur
-                                    if (
-                                      param.data_type ===
-                                      ParameterDataType.NUMBER
-                                    ) {
-                                      const parsed = parseInputValue(
-                                        e.target.value
-                                      );
+                                    if (param.data_type === ParameterDataType.NUMBER) {
+                                      const parsed = parseInputValue(e.target.value);
                                       if (parsed !== null) {
                                         e.target.value = formatInputValue(
                                           parsed,
@@ -1506,30 +1325,25 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                     }
                                   }}
                                   onKeyDown={(e) =>
-                                    handleKeyDown(
-                                      e,
-                                      "parameter",
-                                      hour - 1,
-                                      paramIndex
-                                    )
+                                    handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                   }
                                   disabled={isCurrentlySaving}
                                   className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
                                     isCurrentlySaving
-                                      ? "opacity-50 cursor-not-allowed bg-slate-100"
-                                      : ""
+                                      ? 'opacity-50 cursor-not-allowed bg-slate-100'
+                                      : ''
                                   }`}
                                   style={{
-                                    fontSize: "12px",
-                                    minHeight: "32px",
-                                    maxWidth: "150px",
+                                    fontSize: '12px',
+                                    minHeight: '32px',
+                                    maxWidth: '150px',
                                   }}
                                   aria-label={`Parameter ${param.parameter} jam ${hour}`}
                                   title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
                                   placeholder={
                                     param.data_type === ParameterDataType.NUMBER
-                                      ? "0,0"
-                                      : "Enter text"
+                                      ? '0,0'
+                                      : 'Enter text'
                                   }
                                 />
                                 {isCurrentlySaving && (
@@ -1555,7 +1369,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         className="text-center py-10 text-slate-500"
                       >
                         {!selectedCategory || !selectedUnit
-                          ? "Please select a plant category and unit."
+                          ? 'Please select a plant category and unit.'
                           : `No parameter master data found for the unit: ${selectedUnit}.`}
                       </td>
                     </tr>
@@ -1591,10 +1405,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             variant="primary"
             size="sm"
             onClick={handleOpenAddDowntimeModal}
-            disabled={
-              !permissionChecker.hasPermission("plant_operations", "WRITE")
-            }
-            aria-label={t.add_downtime_button || "Add new downtime"}
+            disabled={!permissionChecker.hasPermission('plant_operations', 'WRITE')}
+            aria-label={t.add_downtime_button || 'Add new downtime'}
           >
             <PlusIcon className="w-4 h-4 mr-2" />
             {t.add_downtime_button}
@@ -1639,9 +1451,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   <tr
                     key={downtime.id}
                     className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
-                      idx % 2 === 0
-                        ? "bg-slate-50 dark:bg-slate-700"
-                        : "bg-white dark:bg-slate-800"
+                      idx % 2 === 0 ? 'bg-slate-50 dark:bg-slate-700' : 'bg-white dark:bg-slate-800'
                     } transition-colors duration-200`}
                   >
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
@@ -1672,9 +1482,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         <EnhancedButton
                           variant="ghost"
                           size="xs"
-                          onClick={() =>
-                            handleOpenDeleteModal(downtime.id, downtime.date)
-                          }
+                          onClick={() => handleOpenDeleteModal(downtime.id, downtime.date)}
                           aria-label={`Delete downtime for ${downtime.unit}`}
                         >
                           <TrashIcon />
@@ -1716,16 +1524,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         title={t.delete_confirmation_title}
       >
         <div className="p-6">
-          <p className="text-sm text-slate-600">
-            {t.delete_confirmation_message}
-          </p>
+          <p className="text-sm text-slate-600">{t.delete_confirmation_message}</p>
         </div>
         <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
           <EnhancedButton
             variant="error"
             onClick={handleDeleteConfirm}
             className="sm:ml-3 sm:w-auto"
-            aria-label={t.confirm_delete_button || "Confirm delete"}
+            aria-label={t.confirm_delete_button || 'Confirm delete'}
           >
             {t.confirm_delete_button}
           </EnhancedButton>
@@ -1733,7 +1539,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             variant="secondary"
             onClick={handleCloseDeleteModal}
             className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
-            aria-label={t.cancel_button || "Cancel"}
+            aria-label={t.cancel_button || 'Cancel'}
           >
             {t.cancel_button}
           </EnhancedButton>

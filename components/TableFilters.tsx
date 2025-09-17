@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { SearchInput } from "./ui/Input";
-import { EnhancedButton, useAccessibility } from "./ui/EnhancedComponents";
-import { User, UserRole } from "../types";
+import React, { useState, useCallback, useMemo } from 'react';
+import { SearchInput } from './ui/Input';
+import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
+import { User, UserRole } from '../types';
 
 interface TableFiltersProps {
   users: User[];
@@ -11,8 +11,8 @@ interface TableFiltersProps {
 
 interface FilterState {
   search: string;
-  role: UserRole | "all";
-  status: "active" | "inactive" | "all";
+  role: UserRole | 'all';
+  status: 'active' | 'inactive' | 'all';
   dateRange: {
     start: string;
     end: string;
@@ -22,21 +22,21 @@ interface FilterState {
 const TableFilters: React.FC<TableFiltersProps> = ({
   users,
   onFilteredDataChange,
-  className = "",
+  className = '',
 }) => {
   const [filters, setFilters] = useState<FilterState>({
-    search: "",
-    role: "all",
-    status: "all",
+    search: '',
+    role: 'all',
+    status: 'all',
     dateRange: {
-      start: "",
-      end: "",
+      start: '',
+      end: '',
     },
   });
 
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [sortBy, setSortBy] = useState<keyof User>("full_name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<keyof User>('full_name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Get unique values for filter options
   const filterOptions = useMemo(() => {
@@ -47,13 +47,11 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
   // Apply filters and sorting
   const filteredAndSortedUsers = useMemo(() => {
-    let filtered = users.filter((user) => {
+    const filtered = users.filter((user) => {
       // Search filter
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
-        const searchableFields = [user.full_name, user.role]
-          .join(" ")
-          .toLowerCase();
+        const searchableFields = [user.full_name, user.role].join(' ').toLowerCase();
 
         if (!searchableFields.includes(searchTerm)) {
           return false;
@@ -61,26 +59,22 @@ const TableFilters: React.FC<TableFiltersProps> = ({
       }
 
       // Role filter
-      if (filters.role !== "all" && user.role !== filters.role) {
+      if (filters.role !== 'all' && user.role !== filters.role) {
         return false;
       }
 
       // Status filter
-      if (filters.status !== "all") {
+      if (filters.status !== 'all') {
         const isActive = user.is_active;
-        if (filters.status === "active" && !isActive) return false;
-        if (filters.status === "inactive" && isActive) return false;
+        if (filters.status === 'active' && !isActive) return false;
+        if (filters.status === 'inactive' && isActive) return false;
       }
 
       // Date range filter
       if (filters.dateRange.start || filters.dateRange.end) {
         const userDate = new Date(user.created_at);
-        const startDate = filters.dateRange.start
-          ? new Date(filters.dateRange.start)
-          : null;
-        const endDate = filters.dateRange.end
-          ? new Date(filters.dateRange.end)
-          : null;
+        const startDate = filters.dateRange.start ? new Date(filters.dateRange.start) : null;
+        const endDate = filters.dateRange.end ? new Date(filters.dateRange.end) : null;
 
         if (startDate && userDate < startDate) return false;
         if (endDate && userDate > endDate) return false;
@@ -94,19 +88,19 @@ const TableFilters: React.FC<TableFiltersProps> = ({
       const aValue = a[sortBy];
       const bValue = b[sortBy];
 
-      if (typeof aValue === "string" && typeof bValue === "string") {
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
         const comparison = aValue.localeCompare(bValue);
-        return sortDirection === "asc" ? comparison : -comparison;
+        return sortDirection === 'asc' ? comparison : -comparison;
       }
 
       if (aValue instanceof Date && bValue instanceof Date) {
         const comparison = aValue.getTime() - bValue.getTime();
-        return sortDirection === "asc" ? comparison : -comparison;
+        return sortDirection === 'asc' ? comparison : -comparison;
       }
 
-      if (typeof aValue === "boolean" && typeof bValue === "boolean") {
+      if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
         const comparison = Number(aValue) - Number(bValue);
-        return sortDirection === "asc" ? comparison : -comparison;
+        return sortDirection === 'asc' ? comparison : -comparison;
       }
 
       return 0;
@@ -130,10 +124,10 @@ const TableFilters: React.FC<TableFiltersProps> = ({
   const handleSortChange = useCallback(
     (field: keyof User) => {
       if (field === sortBy) {
-        setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
       } else {
         setSortBy(field);
-        setSortDirection("asc");
+        setSortDirection('asc');
       }
     },
     [sortBy]
@@ -141,56 +135,51 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
   const clearFilters = useCallback(() => {
     setFilters({
-      search: "",
-      role: "all",
-      status: "all",
-      dateRange: { start: "", end: "" },
+      search: '',
+      role: 'all',
+      status: 'all',
+      dateRange: { start: '', end: '' },
     });
-    setSortBy("full_name");
-    setSortDirection("asc");
+    setSortBy('full_name');
+    setSortDirection('asc');
   }, []);
 
   const exportData = useCallback(() => {
     // Convert filtered data to CSV
-    const headers = ["Name", "Role", "Status", "Created Date"];
+    const headers = ['Name', 'Role', 'Status', 'Created Date'];
     const csvData = [
-      headers.join(","),
+      headers.join(','),
       ...filteredAndSortedUsers.map((user) =>
         [
           `"${user.full_name}"`,
           `"${user.role}"`,
-          user.is_active ? "Active" : "Inactive",
+          user.is_active ? 'Active' : 'Inactive',
           new Date(user.created_at).toLocaleDateString(),
-        ].join(",")
+        ].join(',')
       ),
-    ].join("\n");
+    ].join('\n');
 
     // Download CSV file
-    const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `users_export_${new Date().toISOString().split("T")[0]}.csv`
-    );
-    link.style.visibility = "hidden";
+    link.setAttribute('href', url);
+    link.setAttribute('download', `users_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }, [filteredAndSortedUsers]);
 
   return (
-    <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}
-    >
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
       {/* Search and Quick Actions */}
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <div className="flex-1">
           <SearchInput
             placeholder="Search users by name, email, role, or department..."
             value={filters.search}
-            onChange={(e) => handleFilterChange("search", e.target.value)}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
             fullWidth
           />
         </div>
@@ -202,12 +191,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
             ariaLabel="Toggle advanced filters"
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -224,12 +208,7 @@ const TableFilters: React.FC<TableFiltersProps> = ({
             onClick={exportData}
             ariaLabel="Export filtered data to CSV"
           >
-            <svg
-              className="w-4 h-4 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -248,14 +227,10 @@ const TableFilters: React.FC<TableFiltersProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             {/* Role Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Role
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
               <select
                 value={filters.role}
-                onChange={(e) =>
-                  handleFilterChange("role", e.target.value as UserRole | "all")
-                }
+                onChange={(e) => handleFilterChange('role', e.target.value as UserRole | 'all')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Roles</option>
@@ -269,16 +244,11 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) =>
-                  handleFilterChange(
-                    "status",
-                    e.target.value as "active" | "inactive" | "all"
-                  )
+                  handleFilterChange('status', e.target.value as 'active' | 'inactive' | 'all')
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -290,15 +260,13 @@ const TableFilters: React.FC<TableFiltersProps> = ({
 
             {/* Sort Options */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sort By
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
               <select
                 value={`${sortBy}-${sortDirection}`}
                 onChange={(e) => {
-                  const [field, direction] = e.target.value.split("-");
+                  const [field, direction] = e.target.value.split('-');
                   setSortBy(field as keyof User);
-                  setSortDirection(direction as "asc" | "desc");
+                  setSortDirection(direction as 'asc' | 'desc');
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
@@ -319,14 +287,12 @@ const TableFilters: React.FC<TableFiltersProps> = ({
           {/* Date Range Filter */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Created From
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Created From</label>
               <input
                 type="date"
                 value={filters.dateRange.start}
                 onChange={(e) =>
-                  handleFilterChange("dateRange", {
+                  handleFilterChange('dateRange', {
                     ...filters.dateRange,
                     start: e.target.value,
                   })
@@ -336,14 +302,12 @@ const TableFilters: React.FC<TableFiltersProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Created To
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Created To</label>
               <input
                 type="date"
                 value={filters.dateRange.end}
                 onChange={(e) =>
-                  handleFilterChange("dateRange", {
+                  handleFilterChange('dateRange', {
                     ...filters.dateRange,
                     end: e.target.value,
                   })

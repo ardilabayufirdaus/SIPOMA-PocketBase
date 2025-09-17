@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 export interface PlantOperationsStats {
   totalUnits: number;
@@ -34,14 +34,14 @@ export interface DashboardKPI {
   value: number;
   unit: string;
   trend: {
-    direction: "up" | "down" | "stable";
+    direction: 'up' | 'down' | 'stable';
     percentage: number;
   };
 }
 
 export const usePlantOperationsDashboard = () => {
-  const [timeRange, setTimeRange] = useState("24h");
-  const [selectedMetric, setSelectedMetric] = useState("efficiency");
+  const [timeRange, setTimeRange] = useState('24h');
+  const [selectedMetric, setSelectedMetric] = useState('efficiency');
 
   // Mock data for now
   const plantOperationsStats: PlantOperationsStats = {
@@ -61,7 +61,7 @@ export const usePlantOperationsDashboard = () => {
 
   const realPlantOperationsData: PlantOperationsDataPoint[] = [
     {
-      timestamp: "2024-01-01T00:00:00Z",
+      timestamp: '2024-01-01T00:00:00Z',
       efficiency: 85,
       availability: 90,
       quality: 95,

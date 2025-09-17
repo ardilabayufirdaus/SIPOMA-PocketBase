@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 
 interface VirtualTableProps<T> {
   data: T[];
@@ -22,7 +16,7 @@ function VirtualTable<T>({
   containerHeight,
   renderRow,
   renderHeader,
-  className = "",
+  className = '',
   overscan = 5,
 }: VirtualTableProps<T>) {
   const [scrollTop, setScrollTop] = useState(0);
@@ -59,7 +53,7 @@ function VirtualTable<T>({
       style={{ height: containerHeight }}
       onScroll={handleScroll}
     >
-      <div style={{ height: totalHeight, position: "relative" }}>
+      <div style={{ height: totalHeight, position: 'relative' }}>
         {/* Sticky Header */}
         {renderHeader && (
           <div className="sticky top-0 z-10 bg-white dark:bg-slate-800 border-b border-gray-300 dark:border-slate-600">
@@ -76,7 +70,7 @@ function VirtualTable<T>({
             key={startIndex + index}
             style={{
               height: itemHeight,
-              position: "absolute",
+              position: 'absolute',
               top: offsetY + index * itemHeight,
               left: 0,
               right: 0,
@@ -110,8 +104,7 @@ export const useVirtualTablePerformance = () => {
         renderCount: prev.renderCount + 1,
         lastRenderTime: renderTime,
         averageRenderTime:
-          (prev.averageRenderTime * prev.renderCount + renderTime) /
-          (prev.renderCount + 1),
+          (prev.averageRenderTime * prev.renderCount + renderTime) / (prev.renderCount + 1),
         memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
       }));
     };
@@ -137,7 +130,7 @@ export const OptimizedTableRow = React.memo(
     renderCell,
     fields,
     onRowClick,
-    className = "",
+    className = '',
   }: OptimizedTableRowProps<T>) => {
     const handleClick = useCallback(() => {
       onRowClick?.(item, index);
@@ -147,7 +140,7 @@ export const OptimizedTableRow = React.memo(
       <tr
         className={`border-t hover:bg-gray-50 dark:hover:bg-slate-700 ${className}`}
         onClick={handleClick}
-        style={{ cursor: onRowClick ? "pointer" : "default" }}
+        style={{ cursor: onRowClick ? 'pointer' : 'default' }}
       >
         {fields.map((field) => (
           <td key={field} className="px-4 py-2">
@@ -167,7 +160,7 @@ interface OptimizedTableHeaderProps {
 }
 
 export const OptimizedTableHeader = React.memo(
-  ({ fields, renderHeader, className = "" }: OptimizedTableHeaderProps) => {
+  ({ fields, renderHeader, className = '' }: OptimizedTableHeaderProps) => {
     return (
       <thead className={`bg-gray-50 dark:bg-slate-800 ${className}`}>
         <tr>
@@ -185,7 +178,8 @@ export const OptimizedTableHeader = React.memo(
   }
 );
 
-OptimizedTableRow.displayName = "OptimizedTableRow";
+OptimizedTableRow.displayName = 'OptimizedTableRow';
+OptimizedTableHeader.displayName = 'OptimizedTableHeader';
 
 // Table pagination component
 interface TablePaginationProps {
@@ -245,8 +239,8 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
               onClick={() => handlePageChange(page)}
               className={`px-3 py-1 text-sm border rounded-md ${
                 currentPage === page
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
               }`}
             >
               {page}

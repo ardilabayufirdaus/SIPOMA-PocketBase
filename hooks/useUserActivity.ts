@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { supabase } from "../utils/supabase";
+import { useEffect } from 'react';
+import { supabase } from '../utils/supabase';
 
 export const useUserActivity = (userId?: string) => {
   useEffect(() => {
@@ -8,11 +8,11 @@ export const useUserActivity = (userId?: string) => {
     const updateLastActive = async () => {
       try {
         await supabase
-          .from("users")
+          .from('users')
           .update({ last_active: new Date().toISOString() })
-          .eq("id", userId);
+          .eq('id', userId);
       } catch (error) {
-        console.error("Error updating last_active:", error);
+        console.error('Error updating last_active:', error);
       }
     };
 

@@ -1,5 +1,5 @@
-import React, { memo, useState, useMemo, useEffect } from "react";
-import LazyChart from "../../../../components/LazyChart";
+import React, { memo, useState, useMemo, useEffect } from 'react';
+import LazyChart from '../../../../components/LazyChart';
 import {
   LineChart,
   Line,
@@ -9,9 +9,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from "recharts";
+} from 'recharts';
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 interface ProductionTrendChartProps {
   data: any[];
@@ -35,10 +35,8 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
     const filteredParameters = useMemo(() => {
       return parameters.filter((param) => {
         const categoryMatch =
-          selectedPlantCategory === "all" ||
-          param.category === selectedPlantCategory;
-        const unitMatch =
-          selectedPlantUnit === "all" || param.unit === selectedPlantUnit;
+          selectedPlantCategory === 'all' || param.category === selectedPlantCategory;
+        const unitMatch = selectedPlantUnit === 'all' || param.unit === selectedPlantUnit;
         return categoryMatch && unitMatch;
       });
     }, [parameters, selectedPlantCategory, selectedPlantUnit]);
@@ -63,11 +61,7 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
 
     useEffect(() => {
       setCurrentPage(1);
-    }, [
-      selectedPlantCategory,
-      selectedPlantUnit,
-      selectedProductionParameters,
-    ]);
+    }, [selectedPlantCategory, selectedPlantUnit, selectedProductionParameters]);
 
     const handlePageChange = (page: number) => {
       setCurrentPage(Math.max(1, Math.min(page, totalPages)));
@@ -92,9 +86,7 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
               <select
                 id="items-per-page"
                 value={itemsPerPage}
-                onChange={(e) =>
-                  handleItemsPerPageChange(Number(e.target.value))
-                }
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
                 className="px-2 py-1 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
               >
                 <option value={5}>5 days</option>
@@ -105,8 +97,7 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
               </select>
             </div>
             <div className="text-sm text-gray-600 dark:text-slate-400">
-              Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
-              {totalItems} days
+              Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} days
             </div>
           </div>
 
@@ -121,8 +112,7 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
 
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum =
-                  Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
                 if (pageNum > totalPages) return null;
 
                 return (
@@ -131,8 +121,8 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
                     onClick={() => handlePageChange(pageNum)}
                     className={`px-3 py-1 text-sm border rounded-md ${
                       currentPage === pageNum
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700"
+                        ? 'bg-blue-600 text-white border-blue-600'
+                        : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
                     }`}
                   >
                     {pageNum}
@@ -158,9 +148,9 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
               dataKey="timestamp"
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
+                return date.toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
                 });
               }}
             />
@@ -168,11 +158,11 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
             <Tooltip
               labelFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString("id-ID", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
+                return date.toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
                 });
               }}
             />
@@ -196,7 +186,7 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
   }
 );
 
-ProductionTrendChart.displayName = "ProductionTrendChart";
+ProductionTrendChart.displayName = 'ProductionTrendChart';
 
 interface ProductionTrendSectionProps {
   productionTrendData: any[];
@@ -235,12 +225,7 @@ const ProductionTrendSection: React.FC<ProductionTrendSectionProps> = ({
             className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
             title="Configure Production Trend Parameters"
           >
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -274,9 +259,7 @@ const ProductionTrendSection: React.FC<ProductionTrendSectionProps> = ({
           <div className="text-center">
             <div className="text-4xl mb-2">📊</div>
             <div className="text-lg font-medium">No Production Data</div>
-            <div className="text-sm">
-              No data available for the selected filters
-            </div>
+            <div className="text-sm">No data available for the selected filters</div>
           </div>
         </div>
       )}

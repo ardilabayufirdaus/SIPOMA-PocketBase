@@ -1,11 +1,11 @@
-import * as React from "react";
-import { useMemo, useState } from "react";
-import { usePlantUnits } from "../../hooks/usePlantUnits";
-import IndexTab from "./IndexTab";
-import ComboChart from "../charts/ComboChart";
-import { CcrDowntimeData, AutonomousRiskData } from "../../types";
-import { ResponsiveTable } from "../ResponsiveTable";
-import { calculateDuration, formatDuration } from "../../utils/formatters";
+import * as React from 'react';
+import { useMemo, useState } from 'react';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import IndexTab from './IndexTab';
+import ComboChart from '../charts/ComboChart';
+import { CcrDowntimeData, AutonomousRiskData } from '../../types';
+import { ResponsiveTable } from '../ResponsiveTable';
+import { calculateDuration, formatDuration } from '../../utils/formatters';
 
 interface MonitoringProps {
   downtimeData: CcrDowntimeData[];
@@ -13,11 +13,7 @@ interface MonitoringProps {
   t: any;
 }
 
-const Monitoring: React.FC<MonitoringProps> = ({
-  downtimeData,
-  riskData,
-  t,
-}) => {
+const Monitoring: React.FC<MonitoringProps> = ({ downtimeData, riskData, t }) => {
   // Gunakan kunci dari translations.ts, fallback tetap Bahasa Indonesia
 
   const tf = (key: string, fallback: string) => t?.[key] || fallback;
@@ -29,10 +25,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
   const validateData = useMemo(() => {
     const errors: string[] = [];
     if (!Array.isArray(downtimeData)) {
-      errors.push("Downtime data is not in correct format");
+      errors.push('Downtime data is not in correct format');
     }
     if (!Array.isArray(riskData)) {
-      errors.push("Risk data is not in correct format");
+      errors.push('Risk data is not in correct format');
     }
     return errors;
   }, [downtimeData, riskData]);
@@ -40,7 +36,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
     () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
     [plantUnits]
   );
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const unitsForCategory = useMemo(
     () =>
       selectedCategory
@@ -51,7 +47,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
         : [],
     [plantUnits, selectedCategory]
   );
-  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<string>('');
 
   // Set default category/unit on load
   React.useEffect(() => {
@@ -60,13 +56,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
     }
   }, [plantCategories, selectedCategory]);
   React.useEffect(() => {
-    if (
-      unitsForCategory.length > 0 &&
-      !unitsForCategory.includes(selectedUnit)
-    ) {
+    if (unitsForCategory.length > 0 && !unitsForCategory.includes(selectedUnit)) {
       setSelectedUnit(unitsForCategory[0]);
     } else if (unitsForCategory.length === 0) {
-      setSelectedUnit("");
+      setSelectedUnit('');
     }
   }, [unitsForCategory, selectedUnit]);
 
@@ -91,10 +84,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
 
   // Helper function for duration calculation to avoid code duplication
   // Using the same calculation method as Autonomous Data Entry for consistency
-  const calculateDurationInMinutes = (
-    startTime: string,
-    endTime: string
-  ): number => {
+  const calculateDurationInMinutes = (startTime: string, endTime: string): number => {
     if (!startTime || !endTime) return 0;
 
     const { hours, minutes } = calculateDuration(startTime, endTime);
@@ -115,10 +105,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
       }
       problemMap[d.problem].count++;
       // Use Autonomous Data Entry duration calculation method
-      const duration = calculateDurationInMinutes(
-        d.start_time || "0:0",
-        d.end_time || "0:0"
-      );
+      const duration = calculateDurationInMinutes(d.start_time || '0:0', d.end_time || '0:0');
       problemMap[d.problem].duration += duration;
       problemMap[d.problem].details.push(d);
     });
@@ -156,7 +143,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
     return Array.isArray(filteredRiskData) ? filteredRiskData : [];
   }, [filteredRiskData]);
 
-  const [activeTab, setActiveTab] = useState("availability");
+  const [activeTab, setActiveTab] = useState('availability');
 
   // Show loading state
   if (plantUnitsLoading) {
@@ -164,7 +151,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
         <span className="ml-2 text-slate-600 dark:text-slate-400 text-sm">
-          {tf("loading_plant_data", "Memuat data plant...")}
+          {tf('loading_plant_data', 'Memuat data plant...')}
         </span>
       </div>
     );
@@ -190,7 +177,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
           </svg>
           <div>
             <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-              {tf("data_validation_error", "Error Validasi Data")}
+              {tf('data_validation_error', 'Error Validasi Data')}
             </h3>
             <ul className="mt-1 text-sm text-red-700 dark:text-red-300">
               {validateData.map((error, index) => (
@@ -223,12 +210,12 @@ const Monitoring: React.FC<MonitoringProps> = ({
           </svg>
         </div>
         <h3 className="text-base font-medium text-slate-700 dark:text-slate-300 mb-1">
-          {tf("no_plant_units", "Tidak Ada Unit Plant Tersedia")}
+          {tf('no_plant_units', 'Tidak Ada Unit Plant Tersedia')}
         </h3>
         <p className="text-slate-500 dark:text-slate-400 text-sm">
           {tf(
-            "add_plant_units_first",
-            "Silahkan tambahkan unit plant di Master Data terlebih dahulu."
+            'add_plant_units_first',
+            'Silahkan tambahkan unit plant di Master Data terlebih dahulu.'
           )}
         </p>
       </div>
@@ -242,13 +229,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
-              {tf("monitoring_title", "Monitoring Plant Operations")}
+              {tf('monitoring_title', 'Monitoring Plant Operations')}
             </h1>
             <p className="text-slate-600 dark:text-slate-400 text-sm">
-              {tf(
-                "monitoring_subtitle",
-                "Pantau performa dan downtime operasi pabrik"
-              )}
+              {tf('monitoring_subtitle', 'Pantau performa dan downtime operasi pabrik')}
             </p>
           </div>
 
@@ -259,7 +243,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 htmlFor="monitoring-category-filter"
                 className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
-                {tf("plant_category", "Kategori Plant")}
+                {tf('plant_category', 'Kategori Plant')}
               </label>
               <select
                 id="monitoring-category-filter"
@@ -279,7 +263,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 htmlFor="monitoring-unit-filter"
                 className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1"
               >
-                {tf("plant_unit", "Unit Plant")}
+                {tf('plant_unit', 'Unit Plant')}
               </label>
               <select
                 id="monitoring-unit-filter"
@@ -308,23 +292,18 @@ const Monitoring: React.FC<MonitoringProps> = ({
         >
           <button
             role="tab"
-            aria-selected={activeTab === "availability"}
+            aria-selected={activeTab === 'availability'}
             aria-controls="availability-panel"
             id="availability-tab"
             className={`flex-1 px-4 py-3 font-medium text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 text-sm ${
-              activeTab === "availability"
-                ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500"
-                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200"
+              activeTab === 'availability'
+                ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
-            onClick={() => setActiveTab("availability")}
+            onClick={() => setActiveTab('availability')}
           >
             <div className="flex items-center justify-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -332,28 +311,23 @@ const Monitoring: React.FC<MonitoringProps> = ({
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              {tf("availability_tab", "Availability")}
+              {tf('availability_tab', 'Availability')}
             </div>
           </button>
           <button
             role="tab"
-            aria-selected={activeTab === "index"}
+            aria-selected={activeTab === 'index'}
             aria-controls="index-panel"
             id="index-tab"
             className={`flex-1 px-4 py-3 font-medium text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset transition-all duration-200 text-sm ${
-              activeTab === "index"
-                ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500"
-                : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200"
+              activeTab === 'index'
+                ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-b-2 border-red-500'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
-            onClick={() => setActiveTab("index")}
+            onClick={() => setActiveTab('index')}
           >
             <div className="flex items-center justify-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -361,22 +335,18 @@ const Monitoring: React.FC<MonitoringProps> = ({
                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 />
               </svg>
-              {tf("index_tab", "Index")}
+              {tf('index_tab', 'Index')}
             </div>
           </button>
         </div>
 
         <div
           role="tabpanel"
-          id={
-            activeTab === "availability" ? "availability-panel" : "index-panel"
-          }
-          aria-labelledby={
-            activeTab === "availability" ? "availability-tab" : "index-tab"
-          }
+          id={activeTab === 'availability' ? 'availability-panel' : 'index-panel'}
+          aria-labelledby={activeTab === 'availability' ? 'availability-tab' : 'index-tab'}
           className="p-4"
         >
-          {activeTab === "availability" && (
+          {activeTab === 'availability' && (
             <div className="space-y-4">
               {/* Charts Section - Grid Layout */}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -384,7 +354,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                      {tf("downtime_pareto_chart", "Grafik Pareto Downtime")}
+                      {tf('downtime_pareto_chart', 'Grafik Pareto Downtime')}
                     </h2>
                     <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                       <svg
@@ -400,7 +370,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                         />
                       </svg>
-                      {tf("chart", "Grafik")}
+                      {tf('chart', 'Grafik')}
                     </div>
                   </div>
                   {filteredDowntimeData.length > 0 ? (
@@ -408,16 +378,16 @@ const Monitoring: React.FC<MonitoringProps> = ({
                       data={calculateProblemMap(filteredDowntimeData)}
                       bars={[
                         {
-                          dataKey: "duration",
-                          fill: "#ef4444",
-                          name: tf("duration", "Durasi"),
+                          dataKey: 'duration',
+                          fill: '#ef4444',
+                          name: tf('duration', 'Durasi'),
                         },
                       ]}
                       xAxisConfig={{
-                        dataKey: "problem",
-                        label: tf("problem", "Masalah"),
+                        dataKey: 'problem',
+                        label: tf('problem', 'Masalah'),
                       }}
-                      leftYAxisConfig={{ label: tf("duration", "Durasi") }}
+                      leftYAxisConfig={{ label: tf('duration', 'Durasi') }}
                       height={350}
                     />
                   ) : (
@@ -436,13 +406,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
                         />
                       </svg>
                       <h3 className="text-base font-medium mb-1">
-                        {tf("no_data_available", "Tidak Ada Data Tersedia")}
+                        {tf('no_data_available', 'Tidak Ada Data Tersedia')}
                       </h3>
                       <p className="text-center text-xs">
-                        {tf(
-                          "no_downtime_data",
-                          "Data downtime tidak tersedia."
-                        )}
+                        {tf('no_downtime_data', 'Data downtime tidak tersedia.')}
                       </p>
                     </div>
                   )}
@@ -452,7 +419,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                 <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                      {tf("pic_bar_chart", "Grafik PIC")}
+                      {tf('pic_bar_chart', 'Grafik PIC')}
                     </h2>
                     <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                       <svg
@@ -468,7 +435,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                         />
                       </svg>
-                      {tf("personnel", "Personil")}
+                      {tf('personnel', 'Personil')}
                     </div>
                   </div>
                   {filteredDowntimeData.length > 0 ? (
@@ -476,13 +443,13 @@ const Monitoring: React.FC<MonitoringProps> = ({
                       data={picChartData}
                       bars={[
                         {
-                          dataKey: "count",
-                          fill: "#3b82f6",
-                          name: tf("count", "Jumlah"),
+                          dataKey: 'count',
+                          fill: '#3b82f6',
+                          name: tf('count', 'Jumlah'),
                         },
                       ]}
-                      xAxisConfig={{ dataKey: "pic", label: tf("pic", "PIC") }}
-                      leftYAxisConfig={{ label: tf("count", "Jumlah") }}
+                      xAxisConfig={{ dataKey: 'pic', label: tf('pic', 'PIC') }}
+                      leftYAxisConfig={{ label: tf('count', 'Jumlah') }}
                       height={350}
                     />
                   ) : (
@@ -501,10 +468,10 @@ const Monitoring: React.FC<MonitoringProps> = ({
                         />
                       </svg>
                       <h3 className="text-base font-medium mb-1">
-                        {tf("no_data_available", "Tidak Ada Data Tersedia")}
+                        {tf('no_data_available', 'Tidak Ada Data Tersedia')}
                       </h3>
                       <p className="text-center text-xs">
-                        {tf("no_pic_data", "Data PIC tidak tersedia.")}
+                        {tf('no_pic_data', 'Data PIC tidak tersedia.')}
                       </p>
                     </div>
                   )}
@@ -518,7 +485,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                   <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                        {tf("top_3_problems", "3 Masalah Teratas")}
+                        {tf('top_3_problems', '3 Masalah Teratas')}
                       </h2>
                       <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                         <svg
@@ -534,7 +501,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.924-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
                           />
                         </svg>
-                        {tf("issues", "Masalah")}
+                        {tf('issues', 'Masalah')}
                       </div>
                     </div>
                   </div>
@@ -543,28 +510,26 @@ const Monitoring: React.FC<MonitoringProps> = ({
                       <thead className="bg-slate-50 dark:bg-slate-800">
                         <tr>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("problem", "Masalah")}
+                            {tf('problem', 'Masalah')}
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("duration", "Durasi")}
+                            {tf('duration', 'Durasi')}
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("pic", "PIC")}
+                            {tf('pic', 'PIC')}
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("correction_action", "Tindakan Koreksi")}
+                            {tf('correction_action', 'Tindakan Koreksi')}
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("corrective_action", "Tindakan Perbaikan")}
+                            {tf('corrective_action', 'Tindakan Perbaikan')}
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                         {(() => {
                           // Top 3 problems from filteredDowntimeData using helper function
-                          const topProblems = calculateProblemMap(
-                            filteredDowntimeData
-                          ).slice(0, 3);
+                          const topProblems = calculateProblemMap(filteredDowntimeData).slice(0, 3);
                           return topProblems.length > 0 ? (
                             topProblems.flatMap((p) =>
                               p.details.map((d, idx) => (
@@ -615,8 +580,8 @@ const Monitoring: React.FC<MonitoringProps> = ({
                                     />
                                   </svg>
                                   {tf(
-                                    "no_downtime_problem_data",
-                                    "Data masalah downtime tidak tersedia."
+                                    'no_downtime_problem_data',
+                                    'Data masalah downtime tidak tersedia.'
                                   )}
                                 </div>
                               </td>
@@ -633,7 +598,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                   <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                     <div className="flex items-center justify-between">
                       <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
-                        {tf("upcoming_events", "Event Mendatang")}
+                        {tf('upcoming_events', 'Event Mendatang')}
                       </h2>
                       <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
                         <svg
@@ -649,7 +614,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
-                        {tf("events", "Event")}
+                        {tf('events', 'Event')}
                       </div>
                     </div>
                   </div>
@@ -658,16 +623,13 @@ const Monitoring: React.FC<MonitoringProps> = ({
                       <thead className="bg-slate-50 dark:bg-slate-800">
                         <tr>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("upcoming_event", "Event Mendatang")}
+                            {tf('upcoming_event', 'Event Mendatang')}
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf(
-                              "potential_counter_measures",
-                              "Tindakan Pencegahan"
-                            )}
+                            {tf('potential_counter_measures', 'Tindakan Pencegahan')}
                           </th>
                           <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            {tf("risk_mitigation", "Mitigasi Risiko")}
+                            {tf('risk_mitigation', 'Mitigasi Risiko')}
                           </th>
                         </tr>
                       </thead>
@@ -710,8 +672,8 @@ const Monitoring: React.FC<MonitoringProps> = ({
                                   />
                                 </svg>
                                 {tf(
-                                  "no_upcoming_event_data",
-                                  "Data event mendatang tidak tersedia."
+                                  'no_upcoming_event_data',
+                                  'Data event mendatang tidak tersedia.'
                                 )}
                               </div>
                             </td>
@@ -724,7 +686,7 @@ const Monitoring: React.FC<MonitoringProps> = ({
               </div>
             </div>
           )}
-          {activeTab === "index" && (
+          {activeTab === 'index' && (
             <IndexTab
               t={t}
               selectedCategory={selectedCategory}

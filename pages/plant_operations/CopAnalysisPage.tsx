@@ -1,19 +1,19 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useCopParametersSupabase } from "../../hooks/useCopParametersSupabase";
-import { useParameterSettings } from "../../hooks/useParameterSettings";
-import { useCcrParameterData } from "../../hooks/useCcrParameterData";
-import { ParameterDataType, ParameterSetting, UserRole } from "../../types";
-import { formatDate } from "../../utils/formatters";
-import { usePlantUnits } from "../../hooks/usePlantUnits";
-import { useUsers } from "../../hooks/useUsers";
-import Modal from "../../components/Modal";
+import React, { useState, useMemo, useEffect } from 'react';
+import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
+import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useCcrParameterData } from '../../hooks/useCcrParameterData';
+import { ParameterDataType, ParameterSetting, UserRole } from '../../types';
+import { formatDate } from '../../utils/formatters';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useUsers } from '../../hooks/useUsers';
+import Modal from '../../components/Modal';
 
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) {
-    return "-";
+    return '-';
   }
-  return num.toLocaleString("de-DE", {
+  return num.toLocaleString('de-DE', {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
@@ -24,38 +24,38 @@ const getPercentageColor = (
 ): { bg: string; text: string; darkBg: string; status: string } => {
   if (percentage === null)
     return {
-      bg: "bg-slate-50",
-      text: "text-slate-500",
-      darkBg: "bg-slate-700",
-      status: "N/A",
+      bg: 'bg-slate-50',
+      text: 'text-slate-500',
+      darkBg: 'bg-slate-700',
+      status: 'N/A',
     };
   if (percentage < 0)
     return {
-      bg: "bg-red-100",
-      text: "text-red-800",
-      darkBg: "bg-red-500",
-      status: "Low",
+      bg: 'bg-red-100',
+      text: 'text-red-800',
+      darkBg: 'bg-red-500',
+      status: 'Low',
     };
   if (percentage > 100)
     return {
-      bg: "bg-amber-100",
-      text: "text-amber-800",
-      darkBg: "bg-amber-500",
-      status: "High",
+      bg: 'bg-amber-100',
+      text: 'text-amber-800',
+      darkBg: 'bg-amber-500',
+      status: 'High',
     };
   return {
-    bg: "bg-emerald-100",
-    text: "text-emerald-800",
-    darkBg: "bg-emerald-500",
-    status: "Normal",
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-800',
+    darkBg: 'bg-emerald-500',
+    status: 'Normal',
   };
 };
 
 const getQafColor = (qaf: number | null): { bg: string; text: string } => {
-  if (qaf === null) return { bg: "bg-slate-100", text: "text-slate-600" };
-  if (qaf >= 95) return { bg: "bg-emerald-100", text: "text-emerald-800" };
-  if (qaf >= 85) return { bg: "bg-amber-100", text: "text-amber-800" };
-  return { bg: "bg-red-100", text: "text-red-800" };
+  if (qaf === null) return { bg: 'bg-slate-100', text: 'text-slate-600' };
+  if (qaf >= 95) return { bg: 'bg-emerald-100', text: 'text-emerald-800' };
+  if (qaf >= 85) return { bg: 'bg-amber-100', text: 'text-amber-800' };
+  return { bg: 'bg-red-100', text: 'text-red-800' };
 };
 
 interface AnalysisDataRow {
@@ -74,9 +74,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
   const { records: plantUnits } = usePlantUnits();
   const { users } = useUsers();
   // Set default filter so not all parameters are shown for all categories/units
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState("");
-  const [selectedOperator, setSelectedOperator] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('');
+  const [selectedOperator, setSelectedOperator] = useState('');
   const [selectedParameterStats, setSelectedParameterStats] = useState<{
     parameter: string;
     avg: number | null;
@@ -94,7 +94,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     data: AnalysisDataRow | null;
   }>({
     isOpen: false,
-    parameter: "",
+    parameter: '',
     data: null,
   });
 
@@ -105,7 +105,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     data: { hour: number; value: number | null; isOutOfRange: boolean }[];
   }>({
     isOpen: false,
-    parameter: "",
+    parameter: '',
     dayIndex: -1,
     data: [],
   });
@@ -121,9 +121,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
   useEffect(() => {
     if (plantUnits && plantUnits.length > 0 && selectedCategory) {
-      const units = plantUnits
-        .filter((u) => u.category === selectedCategory)
-        .map((u) => u.unit);
+      const units = plantUnits.filter((u) => u.category === selectedCategory).map((u) => u.unit);
       if (units.length > 0 && !selectedUnit) {
         setSelectedUnit(units[0]);
       }
@@ -140,22 +138,14 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
   // Memoize filtered parameters to avoid recalculating on every render
   const filteredCopParameters = useMemo(() => {
-    if (
-      !allParameters.length ||
-      !copParameterIds.length ||
-      !selectedCategory ||
-      !selectedUnit
-    ) {
+    if (!allParameters.length || !copParameterIds.length || !selectedCategory || !selectedUnit) {
       return [];
     }
 
     return copParameterIds
       .map((paramId) => allParameters.find((p) => p.id === paramId))
       .filter((param): param is ParameterSetting => param !== undefined)
-      .filter(
-        (param) =>
-          param.category === selectedCategory && param.unit === selectedUnit
-      );
+      .filter((param) => param.category === selectedCategory && param.unit === selectedUnit);
   }, [allParameters, copParameterIds, selectedCategory, selectedUnit]);
 
   useEffect(() => {
@@ -164,7 +154,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         setSelectedUnit(unitsForCategory[0]);
       }
     } else {
-      setSelectedUnit("");
+      setSelectedUnit('');
     }
   }, [unitsForCategory, selectedUnit]);
 
@@ -178,7 +168,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     if (!users) return [];
 
     return users
-      .filter((user) => user.role === "Operator" && user.is_active)
+      .filter((user) => user.role === 'Operator' && user.is_active)
       .sort((a, b) => a.full_name.localeCompare(b.full_name));
   }, [users]);
 
@@ -198,11 +188,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
       try {
         // Validate required data
-        if (
-          !selectedCategory ||
-          !selectedUnit ||
-          filteredCopParameters.length === 0
-        ) {
+        if (!selectedCategory || !selectedUnit || filteredCopParameters.length === 0) {
           setAnalysisData([]);
           setIsLoading(false);
           return;
@@ -211,26 +197,19 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
         const dates = Array.from({ length: daysInMonth }, (_, i) => {
           const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
-          return date.toISOString().split("T")[0];
+          return date.toISOString().split('T')[0];
         });
 
         const dailyAverages = new Map<string, Map<string, number>>();
 
-        const dataPromises = dates.map((dateString) =>
-          getDataForDate(dateString)
-        );
+        const dataPromises = dates.map((dateString) => getDataForDate(dateString));
         const allDataForMonth = await Promise.all(dataPromises);
 
         allDataForMonth.flat().forEach((paramData) => {
           // FIX: Use snake_case property `parameter_id`
-          const paramSetting = allParameters.find(
-            (p) => p.id === paramData.parameter_id
-          );
+          const paramSetting = allParameters.find((p) => p.id === paramData.parameter_id);
           // FIX: Use snake_case property `data_type`
-          if (
-            paramSetting &&
-            paramSetting.data_type === ParameterDataType.NUMBER
-          ) {
+          if (paramSetting && paramSetting.data_type === ParameterDataType.NUMBER) {
             // FIX: Use snake_case property `hourly_values`
             const values = Object.values(paramData.hourly_values || {})
               .map((v) => Number(v))
@@ -243,9 +222,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 dailyAverages.set(paramData.parameter_id, new Map());
               }
               // FIX: Use snake_case property `parameter_id`
-              dailyAverages
-                .get(paramData.parameter_id)!
-                .set(paramData.date, avg);
+              dailyAverages.get(paramData.parameter_id)!.set(paramData.date, avg);
             }
           }
         });
@@ -266,8 +243,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 return { value: null, raw: avg };
               }
 
-              const percentage =
-                ((avg - min_value) / (max_value - min_value)) * 100;
+              const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
               return { value: percentage, raw: avg };
             });
 
@@ -276,19 +252,15 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
               .filter((v): v is number => v !== null && !isNaN(v));
             const monthlyAverage =
               validDailyPercentages.length > 0
-                ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                  validDailyPercentages.length
+                ? validDailyPercentages.reduce((a, b) => a + b, 0) / validDailyPercentages.length
                 : null;
 
             const validDailyRaw = dailyValues
               .map((d) => d.raw)
-              .filter(
-                (v): v is number => v !== undefined && v !== null && !isNaN(v)
-              );
+              .filter((v): v is number => v !== undefined && v !== null && !isNaN(v));
             const monthlyAverageRaw =
               validDailyRaw.length > 0
-                ? validDailyRaw.reduce((a, b) => a + b, 0) /
-                  validDailyRaw.length
+                ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
                 : null;
 
             return {
@@ -302,7 +274,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
         setAnalysisData(data);
       } catch (err) {
-        setError("Failed to load COP analysis data. Please try again.");
+        setError('Failed to load COP analysis data. Please try again.');
         setAnalysisData([]);
       } finally {
         setIsLoading(false);
@@ -367,9 +339,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     }
 
     const monthlyQafValue =
-      totalWithValueMonthly > 0
-        ? (totalInRangeMonthly / totalWithValueMonthly) * 100
-        : null;
+      totalWithValueMonthly > 0 ? (totalInRangeMonthly / totalWithValueMonthly) * 100 : null;
 
     return {
       daily: dailyStats,
@@ -409,8 +379,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
     // Calculate standard deviation
     const variance =
-      validValues.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) /
-      validValues.length;
+      validValues.reduce((acc, val) => acc + Math.pow(val - avg, 2), 0) / validValues.length;
     const stdev = Math.sqrt(variance);
 
     return {
@@ -419,9 +388,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
       min: Math.round(min * 100) / 100,
       max: Math.round(max * 100) / 100,
       stdev: Math.round(stdev * 100) / 100,
-      qaf: row.monthlyAverage
-        ? Math.round(row.monthlyAverage * 100) / 100
-        : null,
+      qaf: row.monthlyAverage ? Math.round(row.monthlyAverage * 100) / 100 : null,
     };
   };
 
@@ -441,8 +408,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         const outOfRangeDays = row.dailyValues.filter(
           (day) => day.value === null || day.value < 0 || day.value > 100
         ).length;
-        const percentage =
-          totalDays > 0 ? (outOfRangeDays / totalDays) * 100 : 0;
+        const percentage = totalDays > 0 ? (outOfRangeDays / totalDays) * 100 : 0;
 
         return {
           parameter: row.parameter.parameter,
@@ -480,20 +446,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         label:
           t[
             `month_${
-              [
-                "jan",
-                "feb",
-                "mar",
-                "apr",
-                "may",
-                "jun",
-                "jul",
-                "aug",
-                "sep",
-                "oct",
-                "nov",
-                "dec",
-              ][i]
+              ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][
+                i
+              ]
             }`
           ],
       })),
@@ -503,10 +458,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
   const daysHeader = useMemo(
     () =>
       analysisData[0]?.dailyValues.map((_, index) => index + 1) ||
-      Array.from(
-        { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-        (_, i) => i + 1
-      ),
+      Array.from({ length: new Date(filterYear, filterMonth + 1, 0).getDate() }, (_, i) => i + 1),
     [analysisData, filterYear, filterMonth]
   );
 
@@ -661,9 +613,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                {error}
-              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{error}</p>
             </div>
           </div>
         )}
@@ -675,8 +625,8 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             aria-label="COP Analysis Data Table"
             tabIndex={0}
             style={{
-              scrollbarWidth: "thin",
-              scrollbarColor: "#cbd5e1 #f1f5f9",
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#cbd5e1 #f1f5f9',
             }}
           >
             <table
@@ -738,9 +688,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                           className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
                         >
                           <div className="relative group/cell h-full w-full flex items-center justify-center">
-                            <span
-                              className={`font-medium text-xs ${colors.text}`}
-                            >
+                            <span className={`font-medium text-xs ${colors.text}`}>
                               {formatCopNumber(day.raw)}
                             </span>
                             {day.raw !== undefined && (
@@ -748,13 +696,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="font-bold text-xs">
                                     {formatDate(
-                                      new Date(
-                                        Date.UTC(
-                                          filterYear,
-                                          filterMonth,
-                                          dayIndex + 1
-                                        )
-                                      )
+                                      new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1))
                                     )}
                                   </span>
                                   <span
@@ -765,26 +707,23 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                                 </div>
                                 <hr className="border-slate-600 my-1" />
                                 <p className="text-xs">
-                                  <strong>{t.average}:</strong>{" "}
+                                  <strong>{t.average}:</strong>{' '}
                                   <span className="font-mono">
-                                    {formatCopNumber(day.raw)}{" "}
-                                    {row.parameter.unit}
+                                    {formatCopNumber(day.raw)} {row.parameter.unit}
                                   </span>
                                 </p>
                                 {/* FIX: Use snake_case properties `min_value` and `max_value` */}
                                 <p className="text-xs">
-                                  <strong>Target:</strong>{" "}
+                                  <strong>Target:</strong>{' '}
                                   <span className="font-mono text-xs">
-                                    {formatCopNumber(row.parameter.min_value)} -{" "}
+                                    {formatCopNumber(row.parameter.min_value)} -{' '}
                                     {formatCopNumber(row.parameter.max_value)}
                                   </span>
                                 </p>
                                 {day.value !== null && (
                                   <p className="text-xs">
-                                    <strong>Normalized:</strong>{" "}
-                                    <span className="font-mono">
-                                      {day.value.toFixed(1)}%
-                                    </span>
+                                    <strong>Normalized:</strong>{' '}
+                                    <span className="font-mono">{day.value.toFixed(1)}%</span>
                                   </p>
                                 )}
                               </div>
@@ -814,10 +753,10 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                       className="text-center py-10 text-slate-500 dark:text-slate-400"
                     >
                       {!selectedCategory || !selectedUnit
-                        ? "Please select both Category and Unit to view COP analysis data."
+                        ? 'Please select both Category and Unit to view COP analysis data.'
                         : filteredCopParameters.length === 0
-                        ? "No COP parameters found for the selected Category and Unit."
-                        : "No data available for the selected period."}
+                          ? 'No COP parameters found for the selected Category and Unit.'
+                          : 'No data available for the selected period.'}
                     </td>
                   </tr>
                 )}
@@ -841,13 +780,13 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                           <span className="text-xs font-bold">
                             {qaf.value !== null && !isNaN(qaf.value)
                               ? `${formatCopNumber(qaf.value)}%`
-                              : "-"}
+                              : '-'}
                           </span>
                           {qaf.total > 0 && (
                             <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                               {t.qaf_tooltip
-                                ?.replace("{inRange}", qaf.inRange)
-                                .replace("{total}", qaf.total)}
+                                ?.replace('{inRange}', qaf.inRange)
+                                .replace('{total}', qaf.total)}
                             </div>
                           )}
                         </div>
@@ -865,13 +804,13 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                           <span>
                             {qaf.value !== null && !isNaN(qaf.value)
                               ? `${formatCopNumber(qaf.value)}%`
-                              : "-"}
+                              : '-'}
                           </span>
                           {qaf.total > 0 && (
                             <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                               {t.qaf_tooltip
-                                ?.replace("{inRange}", qaf.inRange)
-                                .replace("{total}", qaf.total)}
+                                ?.replace('{inRange}', qaf.inRange)
+                                .replace('{total}', qaf.total)}
                             </div>
                           )}
                         </div>
@@ -915,8 +854,8 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             </div>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
-            Diagram batang menunjukkan persentase hari dimana operator tidak
-            mencapai parameter target (di luar range 0-100%).
+            Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
+            target (di luar range 0-100%).
           </p>
           <div className="h-64">
             <div className="flex items-center justify-center h-full text-slate-500">
@@ -924,10 +863,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             </div>
           </div>
           <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
-            <p>
-              Total parameter yang tidak mencapai target:{" "}
-              {operatorAchievementData.length}
-            </p>
+            <p>Total parameter yang tidak mencapai target: {operatorAchievementData.length}</p>
           </div>
           {selectedParameterStats && (
             <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 max-h-80 overflow-y-auto">
@@ -940,12 +876,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   onClick={() => setSelectedParameterStats(null)}
                   aria-label="Close stats"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -961,7 +892,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   <span className="font-mono">
                     {selectedParameterStats.avg !== null
                       ? selectedParameterStats.avg.toFixed(2)
-                      : "-"}
+                      : '-'}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -969,7 +900,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   <span className="font-mono">
                     {selectedParameterStats.median !== null
                       ? selectedParameterStats.median.toFixed(2)
-                      : "-"}
+                      : '-'}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -977,7 +908,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   <span className="font-mono">
                     {selectedParameterStats.min !== null
                       ? selectedParameterStats.min.toFixed(2)
-                      : "-"}
+                      : '-'}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -985,7 +916,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   <span className="font-mono">
                     {selectedParameterStats.max !== null
                       ? selectedParameterStats.max.toFixed(2)
-                      : "-"}
+                      : '-'}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -993,7 +924,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   <span className="font-mono">
                     {selectedParameterStats.stdev !== null
                       ? selectedParameterStats.stdev.toFixed(2)
-                      : "-"}
+                      : '-'}
                   </span>
                 </li>
                 <li className="flex justify-between">
@@ -1001,7 +932,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                   <span className="font-mono">
                     {selectedParameterStats.qaf !== null
                       ? `${selectedParameterStats.qaf.toFixed(2)}%`
-                      : "-"}
+                      : '-'}
                   </span>
                 </li>
               </ul>
@@ -1013,9 +944,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
       {/* Modal Breakdown Harian */}
       <Modal
         isOpen={breakdownModal.isOpen}
-        onClose={() =>
-          setBreakdownModal({ isOpen: false, parameter: "", data: null })
-        }
+        onClose={() => setBreakdownModal({ isOpen: false, parameter: '', data: null })}
         title={`Breakdown Harian - ${breakdownModal.parameter}`}
       >
         <div className="p-6 max-h-96 overflow-y-auto">
@@ -1023,25 +952,17 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="space-y-4">
               <div className="grid grid-cols-7 gap-2">
                 {breakdownModal.data.dailyValues.map((day, index) => {
-                  const isOutOfRange =
-                    day.value === null || day.value < 0 || day.value > 100;
+                  const isOutOfRange = day.value === null || day.value < 0 || day.value > 100;
                   return (
                     <button
                       key={index}
                       onClick={() => {
                         // Simulasi data jam-jam (24 jam)
-                        const hourlyData = Array.from(
-                          { length: 24 },
-                          (_, hour) => ({
-                            hour,
-                            value: day.value
-                              ? day.value + (Math.random() - 0.5) * 20
-                              : null,
-                            isOutOfRange: day.value
-                              ? Math.random() > 0.8
-                              : true,
-                          })
-                        );
+                        const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
+                          hour,
+                          value: day.value ? day.value + (Math.random() - 0.5) * 20 : null,
+                          isOutOfRange: day.value ? Math.random() > 0.8 : true,
+                        }));
                         setHourlyBreakdownModal({
                           isOpen: true,
                           parameter: breakdownModal.parameter,
@@ -1051,16 +972,14 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                       }}
                       className={`p-3 rounded-lg text-sm font-medium transition-colors ${
                         isOutOfRange
-                          ? "bg-red-100 text-red-800 hover:bg-red-200"
-                          : "bg-green-100 text-green-800 hover:bg-green-200"
+                          ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                          : 'bg-green-100 text-green-800 hover:bg-green-200'
                       }`}
                     >
                       <div className="text-center">
                         <div className="text-xs">Hari {index + 1}</div>
                         <div className="text-lg font-bold">
-                          {day.value !== null
-                            ? `${day.value.toFixed(1)}%`
-                            : "-"}
+                          {day.value !== null ? `${day.value.toFixed(1)}%` : '-'}
                         </div>
                       </div>
                     </button>
@@ -1068,8 +987,8 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 })}
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-400 mt-4">
-                Klik pada hari untuk melihat breakdown jam-jam. Hari berwarna
-                merah menunjukkan parameter di luar range (0-100%).
+                Klik pada hari untuk melihat breakdown jam-jam. Hari berwarna merah menunjukkan
+                parameter di luar range (0-100%).
               </div>
             </div>
           )}
@@ -1082,7 +1001,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
         onClose={() =>
           setHourlyBreakdownModal({
             isOpen: false,
-            parameter: "",
+            parameter: '',
             dayIndex: -1,
             data: [],
           })
@@ -1098,22 +1017,21 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                 key={hour.hour}
                 className={`p-3 rounded-lg text-sm transition-colors ${
                   hour.isOutOfRange
-                    ? "bg-red-100 text-red-800 border-2 border-red-300"
-                    : "bg-green-100 text-green-800"
+                    ? 'bg-red-100 text-red-800 border-2 border-red-300'
+                    : 'bg-green-100 text-green-800'
                 }`}
               >
                 <div className="text-center">
                   <div className="text-xs">Jam {hour.hour}:00</div>
                   <div className="text-lg font-bold">
-                    {hour.value !== null ? `${hour.value.toFixed(1)}%` : "-"}
+                    {hour.value !== null ? `${hour.value.toFixed(1)}%` : '-'}
                   </div>
                 </div>
               </div>
             ))}
           </div>
           <div className="text-xs text-slate-600 dark:text-slate-400 mt-4">
-            Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar
-            range target.
+            Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
           </div>
         </div>
       </Modal>

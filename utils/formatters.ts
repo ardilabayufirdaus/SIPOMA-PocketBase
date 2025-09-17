@@ -1,21 +1,18 @@
 // Function to format date to DD/MM/YYYY
 export const formatDate = (dateInput: Date | string): string => {
-  if (
-    !dateInput ||
-    (typeof dateInput !== "string" && !(dateInput instanceof Date))
-  ) {
-    return "[Invalid Date]";
+  if (!dateInput || (typeof dateInput !== 'string' && !(dateInput instanceof Date))) {
+    return '[Invalid Date]';
   }
   const date = new Date(dateInput);
   if (isNaN(date.getTime())) {
-    return "[Invalid Date]";
+    return '[Invalid Date]';
   }
   // Adjust for timezone offset to prevent day-before issues
   const userTimezoneOffset = date.getTimezoneOffset() * 60000;
   const correctedDate = new Date(date.getTime() + userTimezoneOffset);
 
-  const day = String(correctedDate.getDate()).padStart(2, "0");
-  const month = String(correctedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(correctedDate.getDate()).padStart(2, '0');
+  const month = String(correctedDate.getMonth() + 1).padStart(2, '0');
   const year = correctedDate.getFullYear();
 
   return `${day}/${month}/${year}`;
@@ -23,22 +20,19 @@ export const formatDate = (dateInput: Date | string): string => {
 
 // Function to format date for database queries (YYYY-MM-DD)
 export const formatDateForDB = (dateInput: Date | string): string => {
-  if (
-    !dateInput ||
-    (typeof dateInput !== "string" && !(dateInput instanceof Date))
-  ) {
-    return "[Invalid Date]";
+  if (!dateInput || (typeof dateInput !== 'string' && !(dateInput instanceof Date))) {
+    return '[Invalid Date]';
   }
   const date = new Date(dateInput);
   if (isNaN(date.getTime())) {
-    return "[Invalid Date]";
+    return '[Invalid Date]';
   }
   // Adjust for timezone offset to prevent day-before issues
   const userTimezoneOffset = date.getTimezoneOffset() * 60000;
   const correctedDate = new Date(date.getTime() + userTimezoneOffset);
 
-  const day = String(correctedDate.getDate()).padStart(2, "0");
-  const month = String(correctedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(correctedDate.getDate()).padStart(2, '0');
+  const month = String(correctedDate.getMonth() + 1).padStart(2, '0');
   const year = correctedDate.getFullYear();
 
   return `${year}-${month}-${day}`;
@@ -47,38 +41,35 @@ export const formatDateForDB = (dateInput: Date | string): string => {
 // Function to format number with dot as thousand separator and 1 decimal place
 export const formatNumber = (num: number): string => {
   if (num === null || num === undefined) {
-    return "0,0";
+    return '0,0';
   }
 
   // Format to 1 decimal place and use dot as thousand separator
   const formatted = num.toFixed(1);
-  const parts = formatted.split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return parts.join(",");
+  const parts = formatted.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
 };
 
 // Function to format number with dot as thousand separator and configurable decimal places
-export const formatNumberWithPrecision = (
-  num: number,
-  precision: number = 1
-): string => {
+export const formatNumberWithPrecision = (num: number, precision: number = 1): string => {
   if (num === null || num === undefined) {
-    return precision > 0 ? "0," + "0".repeat(precision) : "0";
+    return precision > 0 ? '0,' + '0'.repeat(precision) : '0';
   }
 
   // Format to specified decimal places and use dot as thousand separator
   const formatted = num.toFixed(precision);
-  const parts = formatted.split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return precision > 0 ? parts.join(",") : parts[0];
+  const parts = formatted.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return precision > 0 ? parts.join(',') : parts[0];
 };
 
 // Function to format percentage with 1 decimal place
 export const formatPercentage = (num: number): string => {
   if (num === null || num === undefined) {
-    return "0,0";
+    return '0,0';
   }
-  return num.toFixed(1).replace(".", ",");
+  return num.toFixed(1).replace('.', ',');
 };
 
 // Calculates duration between two HH:MM time strings
@@ -88,11 +79,11 @@ export const calculateDuration = (
 ): { hours: number; minutes: number } => {
   if (!startTime || !endTime) return { hours: 0, minutes: 0 };
 
-  const [startHours, startMinutes] = startTime.split(":").map(Number);
-  const [endHours, endMinutes] = endTime.split(":").map(Number);
+  const [startHours, startMinutes] = startTime.split(':').map(Number);
+  const [endHours, endMinutes] = endTime.split(':').map(Number);
 
-  let start = new Date(0, 0, 0, startHours, startMinutes);
-  let end = new Date(0, 0, 0, endHours, endMinutes);
+  const start = new Date(0, 0, 0, startHours, startMinutes);
+  const end = new Date(0, 0, 0, endHours, endMinutes);
 
   // Handle overnight duration
   if (end < start) {
@@ -109,7 +100,7 @@ export const calculateDuration = (
 };
 
 export const formatDuration = (hours: number, minutes: number): string => {
-  let result = "";
+  let result = '';
   if (hours > 0) {
     result += `${hours}h `;
   }
@@ -135,20 +126,20 @@ export const formatTimeSince = (date: Date): string => {
 // Function to format currency in Indonesian Rupiah
 export const formatRupiah = (amount: number): string => {
   if (amount === null || amount === undefined) {
-    return "Rp 0";
+    return 'Rp 0';
   }
 
   // Format number with dot as thousand separator
   const formatted = Math.round(amount)
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   return `Rp ${formatted}`;
 };
 
 // Function to format budget in millions for compact display
 export const formatBudgetCompact = (amount: number): string => {
   if (amount === null || amount === undefined) {
-    return "Rp 0";
+    return 'Rp 0';
   }
 
   if (amount >= 1000000000) {

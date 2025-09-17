@@ -3,7 +3,7 @@
  * Demonstrates seamless integration between new enhanced components and existing SIPOMA components
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   EnhancedButton,
   EnhancedInput,
@@ -18,17 +18,17 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "./ui/EnhancedComponents";
+} from './ui/EnhancedComponents';
 
 // Import existing SIPOMA components for comparison
-import { ModernButton } from "./ModernComponents";
+import { ModernButton } from './ModernComponents';
 
 export const IntegrationTest: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"enhanced" | "modern">("enhanced");
+  const [activeTab, setActiveTab] = useState<'enhanced' | 'modern'>('enhanced');
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    feedback: "",
+    name: '',
+    email: '',
+    feedback: '',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,9 +37,9 @@ export const IntegrationTest: React.FC = () => {
   const prefersReducedMotion = useReducedMotion();
   const colorScheme = useColorScheme();
 
-  const handleTabChange = (tab: "enhanced" | "modern") => {
+  const handleTabChange = (tab: 'enhanced' | 'modern') => {
     setActiveTab(tab);
-    announceToScreenReader(`Switched to ${tab} components`, "polite");
+    announceToScreenReader(`Switched to ${tab} components`, 'polite');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,20 +50,17 @@ export const IntegrationTest: React.FC = () => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     setIsLoading(false);
-    announceToScreenReader("Form submitted successfully!", "assertive");
+    announceToScreenReader('Form submitted successfully!', 'assertive');
   };
 
   const tabs = [
-    { id: "enhanced", label: "Enhanced Components", component: "enhanced" },
-    { id: "modern", label: "Modern Components", component: "modern" },
+    { id: 'enhanced', label: 'Enhanced Components', component: 'enhanced' },
+    { id: 'modern', label: 'Modern Components', component: 'modern' },
   ];
 
-  const { focusedIndex, isFocused } = useEnhancedKeyboardNavigation(
-    tabs,
-    (tab) => {
-      handleTabChange(tab.component as "enhanced" | "modern");
-    }
-  );
+  const { focusedIndex, isFocused } = useEnhancedKeyboardNavigation(tabs, (tab) => {
+    handleTabChange(tab.component as 'enhanced' | 'modern');
+  });
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
@@ -73,7 +70,7 @@ export const IntegrationTest: React.FC = () => {
       {/* Screen Reader Status */}
       <ScreenReaderAnnouncement
         message={`Integration test loaded. Theme: ${colorScheme}, High contrast: ${
-          isHighContrast ? "enabled" : "disabled"
+          isHighContrast ? 'enabled' : 'disabled'
         }`}
         priority="polite"
       />
@@ -84,18 +81,14 @@ export const IntegrationTest: React.FC = () => {
             Component Integration Test
           </h1>
           <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-            This page demonstrates the seamless integration between our new
-            enhanced components and existing SIPOMA components, showcasing
-            backward compatibility and migration paths.
+            This page demonstrates the seamless integration between our new enhanced components and
+            existing SIPOMA components, showcasing backward compatibility and migration paths.
           </p>
         </div>
 
         {/* Tab Navigation */}
         <section aria-labelledby="tab-section" className="mb-8">
-          <h2
-            id="tab-section"
-            className="text-2xl font-semibold mb-6 text-center"
-          >
+          <h2 id="tab-section" className="text-2xl font-semibold mb-6 text-center">
             Component Comparison
           </h2>
 
@@ -112,15 +105,13 @@ export const IntegrationTest: React.FC = () => {
                   aria-selected={activeTab === tab.component}
                   aria-controls={`${tab.id}-panel`}
                   tabIndex={isFocused(index) ? 0 : -1}
-                  onClick={() =>
-                    handleTabChange(tab.component as "enhanced" | "modern")
-                  }
+                  onClick={() => handleTabChange(tab.component as 'enhanced' | 'modern')}
                   className={cn(
-                    "px-6 py-3 rounded-md font-medium transition-all duration-200",
-                    "focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
+                    'px-6 py-3 rounded-md font-medium transition-all duration-200',
+                    'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
                     activeTab === tab.component
-                      ? "bg-white dark:bg-neutral-700 text-primary-600 shadow-sm"
-                      : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                      ? 'bg-white dark:bg-neutral-700 text-primary-600 shadow-sm'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   )}
                 >
                   {tab.label}
@@ -136,16 +127,16 @@ export const IntegrationTest: React.FC = () => {
               id="enhanced-panel"
               role="tabpanel"
               aria-labelledby="enhanced-tab"
-              hidden={activeTab !== "enhanced"}
-              className={activeTab === "enhanced" ? "block" : "hidden"}
+              hidden={activeTab !== 'enhanced'}
+              className={activeTab === 'enhanced' ? 'block' : 'hidden'}
             >
               <div className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-xl p-8">
                 <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
                   ✨ Enhanced Components (New)
                 </h3>
                 <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-                  Our latest components with WCAG 2.1 AA compliance, advanced
-                  accessibility features, and modern design patterns.
+                  Our latest components with WCAG 2.1 AA compliance, advanced accessibility
+                  features, and modern design patterns.
                 </p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -156,9 +147,7 @@ export const IntegrationTest: React.FC = () => {
                       <EnhancedInput
                         label="Full Name"
                         value={formData.name}
-                        onChange={(value) =>
-                          setFormData((prev) => ({ ...prev, name: value }))
-                        }
+                        onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
                         placeholder="Enter your name"
                         required
                       />
@@ -167,17 +156,13 @@ export const IntegrationTest: React.FC = () => {
                         label="Email"
                         type="email"
                         value={formData.email}
-                        onChange={(value) =>
-                          setFormData((prev) => ({ ...prev, email: value }))
-                        }
+                        onChange={(value) => setFormData((prev) => ({ ...prev, email: value }))}
                         placeholder="Enter your email"
                         required
                       />
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Feedback
-                        </label>
+                        <label className="block text-sm font-medium mb-2">Feedback</label>
                         <textarea
                           value={formData.feedback}
                           onChange={(e) =>
@@ -199,15 +184,13 @@ export const IntegrationTest: React.FC = () => {
                           loading={isLoading}
                           className="flex-1"
                         >
-                          {isLoading ? "Submitting..." : "Submit"}
+                          {isLoading ? 'Submitting...' : 'Submit'}
                         </EnhancedButton>
 
                         <EnhancedButton
                           type="button"
                           variant="ghost"
-                          onClick={() =>
-                            setFormData({ name: "", email: "", feedback: "" })
-                          }
+                          onClick={() => setFormData({ name: '', email: '', feedback: '' })}
                         >
                           Clear
                         </EnhancedButton>
@@ -218,24 +201,16 @@ export const IntegrationTest: React.FC = () => {
                   {/* Interactive Elements */}
                   <div className="space-y-6">
                     <EnhancedCard className="p-6">
-                      <h4 className="text-lg font-semibold mb-4">
-                        Interactive Elements
-                      </h4>
+                      <h4 className="text-lg font-semibold mb-4">Interactive Elements</h4>
                       <div className="space-y-4">
                         <div className="flex gap-3">
-                          <AccessibleTooltip
-                            content="Primary action tooltip"
-                            position="top"
-                          >
+                          <AccessibleTooltip content="Primary action tooltip" position="top">
                             <EnhancedButton variant="primary" size="sm">
                               Primary
                             </EnhancedButton>
                           </AccessibleTooltip>
 
-                          <AccessibleTooltip
-                            content="Secondary action tooltip"
-                            position="bottom"
-                          >
+                          <AccessibleTooltip content="Secondary action tooltip" position="bottom">
                             <EnhancedButton variant="secondary" size="sm">
                               Secondary
                             </EnhancedButton>
@@ -253,9 +228,7 @@ export const IntegrationTest: React.FC = () => {
                     </EnhancedCard>
 
                     <EnhancedCard className="p-6">
-                      <h4 className="text-lg font-semibold mb-4">
-                        Disclosure Component
-                      </h4>
+                      <h4 className="text-lg font-semibold mb-4">Disclosure Component</h4>
                       <Disclosure
                         id="integration-faq"
                         isOpen={false}
@@ -281,29 +254,25 @@ export const IntegrationTest: React.FC = () => {
               id="modern-panel"
               role="tabpanel"
               aria-labelledby="modern-tab"
-              hidden={activeTab !== "modern"}
-              className={activeTab === "modern" ? "block" : "hidden"}
+              hidden={activeTab !== 'modern'}
+              className={activeTab === 'modern' ? 'block' : 'hidden'}
             >
               <div className="bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 rounded-xl p-8">
                 <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6">
                   🔄 Modern Components (Existing)
                 </h3>
                 <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-                  Your existing SIPOMA components that have been working
-                  reliably. These remain fully functional and compatible.
+                  Your existing SIPOMA components that have been working reliably. These remain
+                  fully functional and compatible.
                 </p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Form Example with Modern Components */}
                   <EnhancedCard className="p-6">
-                    <h4 className="text-lg font-semibold mb-4">
-                      Contact Form (Modern Style)
-                    </h4>
+                    <h4 className="text-lg font-semibold mb-4">Contact Form (Modern Style)</h4>
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Full Name
-                        </label>
+                        <label className="block text-sm font-medium mb-2">Full Name</label>
                         <input
                           type="text"
                           value={formData.name}
@@ -320,9 +289,7 @@ export const IntegrationTest: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Email
-                        </label>
+                        <label className="block text-sm font-medium mb-2">Email</label>
                         <input
                           type="email"
                           value={formData.email}
@@ -339,9 +306,7 @@ export const IntegrationTest: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Feedback
-                        </label>
+                        <label className="block text-sm font-medium mb-2">Feedback</label>
                         <textarea
                           value={formData.feedback}
                           onChange={(e) =>
@@ -357,19 +322,13 @@ export const IntegrationTest: React.FC = () => {
                       </div>
 
                       <div className="flex gap-3">
-                        <ModernButton
-                          variant="primary"
-                          className="flex-1"
-                          disabled={isLoading}
-                        >
-                          {isLoading ? "Submitting..." : "Submit"}
+                        <ModernButton variant="primary" className="flex-1" disabled={isLoading}>
+                          {isLoading ? 'Submitting...' : 'Submit'}
                         </ModernButton>
 
                         <ModernButton
                           variant="ghost"
-                          onClick={() =>
-                            setFormData({ name: "", email: "", feedback: "" })
-                          }
+                          onClick={() => setFormData({ name: '', email: '', feedback: '' })}
                         >
                           Clear
                         </ModernButton>
@@ -379,55 +338,37 @@ export const IntegrationTest: React.FC = () => {
 
                   {/* Feature Comparison */}
                   <EnhancedCard className="p-6">
-                    <h4 className="text-lg font-semibold mb-4">
-                      Feature Comparison
-                    </h4>
+                    <h4 className="text-lg font-semibold mb-4">Feature Comparison</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
                         <span className="text-sm">WCAG 2.1 AA Compliance</span>
                         <div className="flex gap-2">
-                          <span className="text-green-600 text-sm">
-                            ✓ Enhanced
-                          </span>
-                          <span className="text-yellow-600 text-sm">
-                            ○ Modern
-                          </span>
+                          <span className="text-green-600 text-sm">✓ Enhanced</span>
+                          <span className="text-yellow-600 text-sm">○ Modern</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
                         <span className="text-sm">Screen Reader Support</span>
                         <div className="flex gap-2">
-                          <span className="text-green-600 text-sm">
-                            ✓ Enhanced
-                          </span>
-                          <span className="text-neutral-400 text-sm">
-                            ○ Modern
-                          </span>
+                          <span className="text-green-600 text-sm">✓ Enhanced</span>
+                          <span className="text-neutral-400 text-sm">○ Modern</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
                         <span className="text-sm">Keyboard Navigation</span>
                         <div className="flex gap-2">
-                          <span className="text-green-600 text-sm">
-                            ✓ Enhanced
-                          </span>
-                          <span className="text-neutral-400 text-sm">
-                            ○ Modern
-                          </span>
+                          <span className="text-green-600 text-sm">✓ Enhanced</span>
+                          <span className="text-neutral-400 text-sm">○ Modern</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between py-2 border-b border-neutral-200 dark:border-neutral-700">
                         <span className="text-sm">Microinteractions</span>
                         <div className="flex gap-2">
-                          <span className="text-green-600 text-sm">
-                            ✓ Enhanced
-                          </span>
-                          <span className="text-neutral-400 text-sm">
-                            ○ Modern
-                          </span>
+                          <span className="text-green-600 text-sm">✓ Enhanced</span>
+                          <span className="text-neutral-400 text-sm">○ Modern</span>
                         </div>
                       </div>
 
@@ -454,32 +395,25 @@ export const IntegrationTest: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Phase 1: Gradual Adoption
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Phase 1: Gradual Adoption</h3>
                 <p className="text-sm opacity-90">
-                  Start using enhanced components in new features while keeping
-                  existing components functional.
+                  Start using enhanced components in new features while keeping existing components
+                  functional.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Phase 2: Component Updates
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Phase 2: Component Updates</h3>
                 <p className="text-sm opacity-90">
-                  Gradually replace existing components with enhanced versions,
-                  testing thoroughly at each step.
+                  Gradually replace existing components with enhanced versions, testing thoroughly
+                  at each step.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Phase 3: Full Migration
-                </h3>
+                <h3 className="text-lg font-semibold mb-2">Phase 3: Full Migration</h3>
                 <p className="text-sm opacity-90">
-                  Complete migration with comprehensive testing and
-                  accessibility validation.
+                  Complete migration with comprehensive testing and accessibility validation.
                 </p>
               </div>
             </div>
@@ -492,7 +426,7 @@ export const IntegrationTest: React.FC = () => {
 
 // Utility function for className concatenation
 const cn = (...classes: (string | undefined | null | boolean)[]): string => {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 };
 
 export default IntegrationTest;

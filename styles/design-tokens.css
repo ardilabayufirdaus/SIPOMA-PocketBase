@@ -5,7 +5,7 @@
   --color-surface: #1e293b;
   --color-text: #f1f5f9;
   --color-accent: #eab308;
-  --font-family-base: "Inter", "Roboto", sans-serif;
+  --font-family-base: 'Inter', 'Roboto', sans-serif;
   --font-size-base: 16px;
   --border-radius: 8px;
   --transition-fast: 0.2s;

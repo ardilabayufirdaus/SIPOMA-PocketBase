@@ -1,9 +1,5 @@
-import React from "react";
-import {
-  ParameterSetting,
-  CcrParameterData,
-  ParameterDataType,
-} from "../../types";
+import React from 'react';
+import { ParameterSetting, CcrParameterData, ParameterDataType } from '../../types';
 
 interface CcrParameterDataTableProps {
   t: any;
@@ -11,28 +7,17 @@ interface CcrParameterDataTableProps {
   filteredParameterSettings: ParameterSetting[];
   parameterDataMap: Map<string, CcrParameterData>;
   savingParameterId: string | null;
-  handleParameterDataChange: (
-    parameterId: string,
-    hour: number,
-    value: string
-  ) => void;
-  getInputRef: (
-    table: "silo" | "parameter",
-    row: number,
-    col: number
-  ) => string;
+  handleParameterDataChange: (parameterId: string, hour: number, value: string) => void;
+  getInputRef: (table: 'silo' | 'parameter', row: number, col: number) => string;
   setInputRef: (key: string, element: HTMLInputElement | null) => void;
   handleKeyDown: (
     e: React.KeyboardEvent,
-    table: "silo" | "parameter",
+    table: 'silo' | 'parameter',
     currentRow: number,
     currentCol: number
   ) => void;
   shouldHighlightColumn: (param: ParameterSetting) => boolean;
-  formatInputValue: (
-    value: number | string | null | undefined,
-    precision?: number
-  ) => string;
+  formatInputValue: (value: number | string | null | undefined, precision?: number) => string;
   parseInputValue: (value: string) => number | null;
   formatStatValue: (value: number | undefined, precision?: number) => string;
   parameterShiftFooterData: any;
@@ -69,40 +54,18 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
       if (!unit) return 1;
 
       // Units that typically need 2 decimal places
-      const highPrecisionUnits = [
-        "bar",
-        "psi",
-        "kPa",
-        "MPa",
-        "m³/h",
-        "kg/h",
-        "t/h",
-        "L/h",
-        "mL/h",
-      ];
+      const highPrecisionUnits = ['bar', 'psi', 'kPa', 'MPa', 'm³/h', 'kg/h', 't/h', 'L/h', 'mL/h'];
       // Units that typically need 1 decimal place
-      const mediumPrecisionUnits = [
-        "°C",
-        "°F",
-        "°K",
-        "%",
-        "kg",
-        "ton",
-        "m³",
-        "L",
-        "mL",
-      ];
+      const mediumPrecisionUnits = ['°C', '°F', '°K', '%', 'kg', 'ton', 'm³', 'L', 'mL'];
       // Units that typically need 0 decimal places (whole numbers)
-      const lowPrecisionUnits = ["unit", "pcs", "buah", "batch", "shift"];
+      const lowPrecisionUnits = ['unit', 'pcs', 'buah', 'batch', 'shift'];
 
       const lowerUnit = unit.toLowerCase();
 
       if (highPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
         return 2;
       }
-      if (
-        mediumPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))
-      ) {
+      if (mediumPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
         return 1;
       }
       if (lowPrecisionUnits.some((u) => lowerUnit.includes(u.toLowerCase()))) {
@@ -136,9 +99,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
         {/* Column Search Filter and Export/Import controls should be handled outside this component */}
 
         {loading ? (
-          <div className="text-center py-10 text-slate-500 animate-pulse">
-            Loading data...
-          </div>
+          <div className="text-center py-10 text-slate-500 animate-pulse">Loading data...</div>
         ) : (
           <div
             className="ccr-table-container overflow-x-auto"
@@ -148,21 +109,18 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
             <div className="ccr-table-wrapper min-w-[600px]">
               <table className="ccr-table text-xs" role="grid">
                 <colgroup>
-                  <col style={{ width: "90px" }} />
-                  <col style={{ width: "140px" }} />
-                  <col style={{ width: "200px" }} />
+                  <col style={{ width: '90px' }} />
+                  <col style={{ width: '140px' }} />
+                  <col style={{ width: '200px' }} />
                   {filteredParameterSettings.map((_, index) => (
-                    <col key={index} style={{ width: "160px" }} />
+                    <col key={index} style={{ width: '160px' }} />
                   ))}
                 </colgroup>
-                <thead
-                  className="bg-slate-50 text-center sticky top-0 z-20"
-                  role="rowgroup"
-                >
+                <thead className="bg-slate-50 text-center sticky top-0 z-20" role="rowgroup">
                   <tr className="border-b" role="row">
                     <th
                       className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
-                      style={{ width: "90px" }}
+                      style={{ width: '90px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -170,7 +128,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                     </th>
                     <th
                       className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-24 bg-slate-50 z-30 sticky-col-header"
-                      style={{ width: "140px" }}
+                      style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -178,7 +136,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                     </th>
                     <th
                       className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-56 bg-slate-50 z-30 sticky-col-header"
-                      style={{ width: "200px" }}
+                      style={{ width: '200px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -188,9 +146,9 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       <th
                         key={param.id}
                         className={`px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center ${
-                          shouldHighlightColumn(param) ? "filtered-column" : ""
+                          shouldHighlightColumn(param) ? 'filtered-column' : ''
                         }`}
-                        style={{ width: "160px", minWidth: "160px" }}
+                        style={{ width: '160px', minWidth: '160px' }}
                         role="columnheader"
                         scope="col"
                       >
@@ -212,137 +170,95 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       <tr
                         key={hour}
                         className={`border-b group ${
-                          hour % 2 === 0 ? "bg-slate-25" : "bg-white"
+                          hour % 2 === 0 ? 'bg-slate-25' : 'bg-white'
                         } hover:bg-slate-100 transition-colors duration-200`}
                         role="row"
                       >
                         <td
                           className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
-                          style={{ width: "90px" }}
+                          style={{ width: '90px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center justify-center h-8">
-                            {String(hour).padStart(2, "0")}:00
+                            {String(hour).padStart(2, '0')}:00
                           </div>
                         </td>
                         <td
                           className="px-3 py-2 whitespace-nowrap text-xs text-slate-600 border-r sticky left-24 bg-white group-hover:bg-slate-100 z-30 sticky-col"
-                          style={{ width: "140px" }}
+                          style={{ width: '140px' }}
                           role="gridcell"
                         >
-                          <div className="flex items-center h-8">
-                            {getShiftForHour(hour)}
-                          </div>
+                          <div className="flex items-center h-8">{getShiftForHour(hour)}</div>
                         </td>
                         <td
                           className="px-3 py-2 whitespace-nowrap text-xs text-slate-800 border-r sticky left-56 bg-white group-hover:bg-slate-100 z-30 overflow-hidden text-ellipsis sticky-col"
-                          style={{ width: "200px" }}
+                          style={{ width: '200px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
                             {(() => {
-                              const filledParam =
-                                filteredParameterSettings.find((param) => {
-                                  const paramData = parameterDataMap.get(
-                                    param.id
-                                  );
-                                  return (
-                                    paramData &&
-                                    paramData.hourly_values[hour] !==
-                                      undefined &&
-                                    paramData.hourly_values[hour] !== ""
-                                  );
-                                });
-                              if (filledParam) {
-                                const paramData = parameterDataMap.get(
-                                  filledParam.id
-                                );
+                              const filledParam = filteredParameterSettings.find((param) => {
+                                const paramData = parameterDataMap.get(param.id);
                                 return (
-                                  <span
-                                    className="truncate"
-                                    title={(paramData as any)?.name || ""}
-                                  >
-                                    {(paramData as any)?.name || ""}
+                                  paramData &&
+                                  paramData.hourly_values[hour] !== undefined &&
+                                  paramData.hourly_values[hour] !== ''
+                                );
+                              });
+                              if (filledParam) {
+                                const paramData = parameterDataMap.get(filledParam.id);
+                                return (
+                                  <span className="truncate" title={(paramData as any)?.name || ''}>
+                                    {(paramData as any)?.name || ''}
                                   </span>
                                 );
                               }
-                              return (
-                                <span className="text-slate-400 italic">-</span>
-                              );
+                              return <span className="text-slate-400 italic">-</span>;
                             })()}
                           </div>
                         </td>
                         {filteredParameterSettings.map((param, paramIndex) => {
-                          const value =
-                            parameterDataMap.get(param.id)?.hourly_values[
-                              hour
-                            ] ?? "";
-                          const isCurrentlySaving =
-                            savingParameterId === param.id;
+                          const value = parameterDataMap.get(param.id)?.hourly_values[hour] ?? '';
+                          const isCurrentlySaving = savingParameterId === param.id;
 
                           return (
                             <td
                               key={param.id}
                               className={`p-1 border-r bg-white relative ${
-                                shouldHighlightColumn(param)
-                                  ? "filtered-column"
-                                  : ""
+                                shouldHighlightColumn(param) ? 'filtered-column' : ''
                               }`}
-                              style={{ width: "160px", minWidth: "160px" }}
+                              style={{ width: '160px', minWidth: '160px' }}
                               role="gridcell"
                             >
                               <div className="relative">
                                 <input
                                   ref={(el) => {
-                                    const refKey = getInputRef(
-                                      "parameter",
-                                      hour - 1,
-                                      paramIndex
-                                    );
+                                    const refKey = getInputRef('parameter', hour - 1, paramIndex);
                                     setInputRef(refKey, el);
                                   }}
                                   type={
-                                    param.data_type === ParameterDataType.NUMBER
-                                      ? "text"
-                                      : "text"
+                                    param.data_type === ParameterDataType.NUMBER ? 'text' : 'text'
                                   }
                                   defaultValue={
                                     param.data_type === ParameterDataType.NUMBER
-                                      ? formatInputValue(
-                                          value,
-                                          getPrecisionForUnit(param.unit)
-                                        )
+                                      ? formatInputValue(value, getPrecisionForUnit(param.unit))
                                       : value
                                   }
                                   onChange={(e) => {
-                                    if (
-                                      param.data_type ===
-                                      ParameterDataType.NUMBER
-                                    ) {
-                                      const parsed = parseInputValue(
-                                        e.target.value
-                                      );
+                                    if (param.data_type === ParameterDataType.NUMBER) {
+                                      const parsed = parseInputValue(e.target.value);
                                       handleParameterDataChange(
                                         param.id,
                                         hour,
-                                        parsed !== null ? parsed.toString() : ""
+                                        parsed !== null ? parsed.toString() : ''
                                       );
                                     } else {
-                                      handleParameterDataChange(
-                                        param.id,
-                                        hour,
-                                        e.target.value
-                                      );
+                                      handleParameterDataChange(param.id, hour, e.target.value);
                                     }
                                   }}
                                   onBlur={(e) => {
-                                    if (
-                                      param.data_type ===
-                                      ParameterDataType.NUMBER
-                                    ) {
-                                      const parsed = parseInputValue(
-                                        e.target.value
-                                      );
+                                    if (param.data_type === ParameterDataType.NUMBER) {
+                                      const parsed = parseInputValue(e.target.value);
                                       if (parsed !== null) {
                                         e.target.value = formatInputValue(
                                           parsed,
@@ -352,30 +268,25 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                                     }
                                   }}
                                   onKeyDown={(e) =>
-                                    handleKeyDown(
-                                      e,
-                                      "parameter",
-                                      hour - 1,
-                                      paramIndex
-                                    )
+                                    handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                   }
                                   disabled={isCurrentlySaving}
                                   className={`w-full text-center px-1 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 text-xs ${
                                     isCurrentlySaving
-                                      ? "opacity-50 cursor-not-allowed bg-slate-100"
-                                      : ""
+                                      ? 'opacity-50 cursor-not-allowed bg-slate-100'
+                                      : ''
                                   }`}
                                   style={{
-                                    fontSize: "11px",
-                                    minHeight: "24px",
-                                    maxWidth: "120px",
+                                    fontSize: '11px',
+                                    minHeight: '24px',
+                                    maxWidth: '120px',
                                   }}
                                   aria-label={`Parameter ${param.parameter} jam ${hour}`}
                                   title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
                                   placeholder={
                                     param.data_type === ParameterDataType.NUMBER
-                                      ? "0,0"
-                                      : "Enter text"
+                                      ? '0,0'
+                                      : 'Enter text'
                                   }
                                 />
                                 {isCurrentlySaving && (
@@ -401,8 +312,8 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                         className="text-center py-10 text-slate-500"
                       >
                         {!filteredParameterSettings.length
-                          ? "No parameters available."
-                          : "No data available."}
+                          ? 'No parameters available.'
+                          : 'No data available.'}
                       </td>
                     </tr>
                   )}
@@ -415,5 +326,6 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     );
   }
 );
+CcrParameterDataTable.displayName = 'CcrParameterDataTable';
 
 export default CcrParameterDataTable;

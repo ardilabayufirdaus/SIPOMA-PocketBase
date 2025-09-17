@@ -1,41 +1,36 @@
-import React, { useState, useEffect } from "react";
-import { SHA256 } from "crypto-js";
-import { useUserStore } from "../../../stores/userStore";
-import { translations } from "../../../translations";
-import { UserRole } from "../../../types";
+import React, { useState, useEffect } from 'react';
+import { SHA256 } from 'crypto-js';
+import { useUserStore } from '../../../stores/userStore';
+import { translations } from '../../../translations';
+import { UserRole } from '../../../types';
 
 interface UserFormProps {
   user?: any; // For editing
   onClose: () => void;
   onSuccess: () => void;
-  language?: "en" | "id";
+  language?: 'en' | 'id';
 }
 
-const UserForm: React.FC<UserFormProps> = ({
-  user,
-  onClose,
-  onSuccess,
-  language = "en",
-}) => {
+const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language = 'en' }) => {
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    full_name: "",
-    role: "Guest" as UserRole,
+    username: '',
+    password: '',
+    full_name: '',
+    role: 'Guest' as UserRole,
     is_active: true,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const { createUser, updateUser } = useUserStore();
   const t = translations[language];
 
   useEffect(() => {
     if (user) {
       setFormData({
-        username: user.username || "",
-        password: "", // Don't show existing password
-        full_name: user.full_name || "",
-        role: user.role || "Guest",
+        username: user.username || '',
+        password: '', // Don't show existing password
+        full_name: user.full_name || '',
+        role: user.role || 'Guest',
         is_active: user.is_active ?? true,
       });
     }
@@ -44,16 +39,16 @@ const UserForm: React.FC<UserFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     try {
       if (!formData.username) {
-        setError("Username is required");
+        setError('Username is required');
         return;
       }
 
       if (!user && !formData.password) {
-        setError("Password is required for new users");
+        setError('Password is required for new users');
         return;
       }
 
@@ -80,21 +75,18 @@ const UserForm: React.FC<UserFormProps> = ({
       onSuccess();
       onClose();
     } catch (err: any) {
-      console.error("User save error:", err);
-      setError(err.message || "Failed to save user");
+      console.error('User save error:', err);
+      setError(err.message || 'Failed to save user');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -103,15 +95,13 @@ const UserForm: React.FC<UserFormProps> = ({
       <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div className="mt-3">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            {user
-              ? t.edit_user_title || "Edit User"
-              : t.add_user_title || "Add New User"}
+            {user ? t.edit_user_title || 'Edit User' : t.add_user_title || 'Add New User'}
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t.username || "Username"}
+                {t.username || 'Username'}
               </label>
               <input
                 type="text"
@@ -126,7 +116,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t.password || "Password"}
+                {t.password || 'Password'}
               </label>
               <input
                 type="password"
@@ -141,7 +131,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t.full_name_label || "Full Name"}
+                {t.full_name_label || 'Full Name'}
               </label>
               <input
                 type="text"
@@ -155,7 +145,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t.role_label || "Role"}
+                {t.role_label || 'Role'}
               </label>
               <select
                 name="role"
@@ -179,7 +169,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                {t.user_is_active_label || "User is Active"}
+                {t.user_is_active_label || 'User is Active'}
               </label>
             </div>
 
@@ -191,14 +181,14 @@ const UserForm: React.FC<UserFormProps> = ({
                 onClick={onClose}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-500"
               >
-                {t.cancel_button || "Cancel"}
+                {t.cancel_button || 'Cancel'}
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
                 className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
-                {isLoading ? t.loading || "Saving..." : t.save_button || "Save"}
+                {isLoading ? t.loading || 'Saving...' : t.save_button || 'Save'}
               </button>
             </div>
           </form>

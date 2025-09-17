@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { Project, ProjectTask, ProjectStatus } from "../types";
-import { supabase } from "../utils/supabase";
+import { useState, useCallback, useEffect } from 'react';
+import { Project, ProjectTask, ProjectStatus } from '../types';
+import { supabase } from '../utils/supabase';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -10,13 +10,11 @@ export const useProjects = () => {
   const fetchProjectsAndTasks = useCallback(async () => {
     setLoading(true);
     const { data: projectsData, error: projectsError } = await supabase
-      .from("projects")
-      .select("*");
-    const { data: tasksData, error: tasksError } = await supabase
-      .from("project_tasks")
-      .select("*");
+      .from('projects')
+      .select('*');
+    const { data: tasksData, error: tasksError } = await supabase.from('project_tasks').select('*');
 
-    if (projectsError) console.error("Error fetching projects:", projectsError);
+    if (projectsError) console.error('Error fetching projects:', projectsError);
     else {
       // Map projects data to include required status field
       const mappedProjects = (projectsData || []).map((project: any) => ({
@@ -34,7 +32,7 @@ export const useProjects = () => {
     }
 
     if (tasksError) {
-      console.error("Error fetching tasks:", tasksError);
+      console.error('Error fetching tasks:', tasksError);
       setTasks([]);
     } else {
       const mappedTasks = (tasksData || []).map((task: any) => ({
@@ -61,19 +59,12 @@ export const useProjects = () => {
     (projectId: string) =>
       tasks
         .filter((task) => task.project_id === projectId)
-        .sort(
-          (a, b) =>
-            new Date(a.planned_start).getTime() -
-            new Date(b.planned_start).getTime()
-        ),
+        .sort((a, b) => new Date(a.planned_start).getTime() - new Date(b.planned_start).getTime()),
     [tasks]
   );
 
   const addTask = useCallback(
-    async (
-      projectId: string,
-      taskData: Omit<ProjectTask, "id" | "project_id">
-    ) => {
+    async (projectId: string, taskData: Omit<ProjectTask, 'id' | 'project_id'>) => {
       const payload = {
         activity: taskData.activity,
         planned_start: taskData.planned_start,
@@ -83,10 +74,8 @@ export const useProjects = () => {
         percent_complete: taskData.percent_complete,
         project_id: projectId,
       };
-      const { error } = await supabase
-        .from("project_tasks")
-        .insert([payload as any]);
-      if (error) console.error("Error adding task:", error);
+      const { error } = await supabase.from('project_tasks').insert([payload as any]);
+      if (error) console.error('Error adding task:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
@@ -105,10 +94,10 @@ export const useProjects = () => {
         project_id: rest.project_id,
       };
       const { error } = await supabase
-        .from("project_tasks")
+        .from('project_tasks')
         .update(updateData as any)
-        .eq("id", id);
-      if (error) console.error("Error updating task:", error);
+        .eq('id', id);
+      if (error) console.error('Error updating task:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
@@ -116,21 +105,15 @@ export const useProjects = () => {
 
   const deleteTask = useCallback(
     async (taskId: string) => {
-      const { error } = await supabase
-        .from("project_tasks")
-        .delete()
-        .eq("id", taskId);
-      if (error) console.error("Error deleting task:", error);
+      const { error } = await supabase.from('project_tasks').delete().eq('id', taskId);
+      if (error) console.error('Error deleting task:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
 
   const addBulkTasks = useCallback(
-    async (
-      projectId: string,
-      newTasks: Omit<ProjectTask, "id" | "project_id">[]
-    ) => {
+    async (projectId: string, newTasks: Omit<ProjectTask, 'id' | 'project_id'>[]) => {
       const tasksToAdd = newTasks.map((task) => ({
         activity: task.activity,
         planned_start: task.planned_start,
@@ -140,27 +123,22 @@ export const useProjects = () => {
         percent_complete: task.percent_complete,
         project_id: projectId,
       }));
-      const { error } = await supabase
-        .from("project_tasks")
-        .insert(tasksToAdd as any);
-      if (error) console.error("Error bulk adding tasks:", error);
+      const { error } = await supabase.from('project_tasks').insert(tasksToAdd as any);
+      if (error) console.error('Error bulk adding tasks:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
 
   const replaceBulkTasks = useCallback(
-    async (
-      projectId: string,
-      newTasks: Omit<ProjectTask, "id" | "project_id">[]
-    ) => {
+    async (projectId: string, newTasks: Omit<ProjectTask, 'id' | 'project_id'>[]) => {
       // First, delete all existing tasks for this project
       const { error: deleteError } = await supabase
-        .from("project_tasks")
+        .from('project_tasks')
         .delete()
-        .eq("project_id", projectId);
+        .eq('project_id', projectId);
       if (deleteError) {
-        console.error("Error deleting existing tasks:", deleteError);
+        console.error('Error deleting existing tasks:', deleteError);
         return;
       }
 
@@ -175,19 +153,17 @@ export const useProjects = () => {
         project_id: projectId,
       }));
 
-      const { error: insertError } = await supabase
-        .from("project_tasks")
-        .insert(tasksToAdd as any);
-      if (insertError) console.error("Error replacing tasks:", insertError);
+      const { error: insertError } = await supabase.from('project_tasks').insert(tasksToAdd as any);
+      if (insertError) console.error('Error replacing tasks:', insertError);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
 
   const addProject = useCallback(
-    async (projectData: Omit<Project, "id">) => {
-      const { error } = await supabase.from("projects").insert([projectData]);
-      if (error) console.error("Error adding project:", error);
+    async (projectData: Omit<Project, 'id'>) => {
+      const { error } = await supabase.from('projects').insert([projectData]);
+      if (error) console.error('Error adding project:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
@@ -196,11 +172,8 @@ export const useProjects = () => {
   const updateProject = useCallback(
     async (updatedProject: Project) => {
       const { id, ...rest } = updatedProject;
-      const { error } = await supabase
-        .from("projects")
-        .update(rest)
-        .eq("id", id);
-      if (error) console.error("Error updating project:", error);
+      const { error } = await supabase.from('projects').update(rest).eq('id', id);
+      if (error) console.error('Error updating project:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
@@ -209,14 +182,11 @@ export const useProjects = () => {
   const deleteProject = useCallback(
     async (projectId: string) => {
       // Delete all tasks first
-      await supabase.from("project_tasks").delete().eq("project_id", projectId);
+      await supabase.from('project_tasks').delete().eq('project_id', projectId);
 
       // Then delete the project
-      const { error } = await supabase
-        .from("projects")
-        .delete()
-        .eq("id", projectId);
-      if (error) console.error("Error deleting project:", error);
+      const { error } = await supabase.from('projects').delete().eq('id', projectId);
+      if (error) console.error('Error deleting project:', error);
       else fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]

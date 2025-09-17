@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from "react";
-import { useProjects } from "../../hooks/useProjects";
-import { formatDate, formatBudgetCompact } from "../../utils/formatters";
-import { usePagination } from "../../hooks/usePagination";
-import Pagination from "../../components/Pagination";
-import Modal from "../../components/Modal";
-import ProjectForm from "../../components/ProjectForm";
-import PlusIcon from "../../components/icons/PlusIcon";
-import EditIcon from "../../components/icons/EditIcon";
-import TrashIcon from "../../components/icons/TrashIcon";
-import { Project } from "../../types";
+import React, { useMemo, useState } from 'react';
+import { useProjects } from '../../hooks/useProjects';
+import { formatDate, formatBudgetCompact } from '../../utils/formatters';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../../components/Pagination';
+import Modal from '../../components/Modal';
+import ProjectForm from '../../components/ProjectForm';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import { Project } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -17,7 +17,7 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full">
@@ -30,18 +30,12 @@ interface ProjectListPageProps {
   onNavigateToDetail: (projectId: string) => void;
 }
 
-const ProjectListPage: React.FC<ProjectListPageProps> = ({
-  t,
-  onNavigateToDetail,
-}) => {
-  const { projects, tasks, loading, addProject, updateProject, deleteProject } =
-    useProjects();
+const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail }) => {
+  const { projects, tasks, loading, addProject, updateProject, deleteProject } = useProjects();
   const [isProjectFormModalOpen, setProjectFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
-    null
-  );
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -57,26 +51,22 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
           ...project,
           progress: 0,
           status: t.proj_status_on_track,
-          statusKey: "on_track",
-          startDate: "-",
-          endDate: "-",
+          statusKey: 'on_track',
+          startDate: '-',
+          endDate: '-',
           totalTasks: 0,
         };
       }
 
       const tasksWithDurations = projectTasks.map((task) => {
         const duration =
-          (new Date(task.planned_end).getTime() -
-            new Date(task.planned_start).getTime()) /
+          (new Date(task.planned_end).getTime() - new Date(task.planned_start).getTime()) /
             (1000 * 3600 * 24) +
           1;
         return { ...task, duration };
       });
 
-      const totalWeight = tasksWithDurations.reduce(
-        (sum, task) => sum + task.duration,
-        0
-      );
+      const totalWeight = tasksWithDurations.reduce((sum, task) => sum + task.duration, 0);
       const overallProgress =
         totalWeight > 0
           ? tasksWithDurations.reduce((sum, task) => {
@@ -85,23 +75,19 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
             }, 0) * 100
           : 0;
 
-      const startDates = projectTasks.map((t) =>
-        new Date(t.planned_start).getTime()
-      );
-      const endDates = projectTasks.map((t) =>
-        new Date(t.planned_end).getTime()
-      );
+      const startDates = projectTasks.map((t) => new Date(t.planned_start).getTime());
+      const endDates = projectTasks.map((t) => new Date(t.planned_end).getTime());
       const projectStartDate = new Date(Math.min(...startDates));
       const projectEndDate = new Date(Math.max(...endDates));
 
       let status = t.proj_status_on_track;
-      let statusKey = "on_track";
+      let statusKey = 'on_track';
       if (overallProgress >= 100) {
         status = t.proj_status_completed;
-        statusKey = "completed";
+        statusKey = 'completed';
       } else if (new Date() > projectEndDate && overallProgress < 100) {
         status = t.proj_status_delayed;
-        statusKey = "delayed";
+        statusKey = 'delayed';
       }
 
       return {
@@ -123,11 +109,11 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
     setCurrentPage,
   } = usePagination(projectsData, 10);
 
-  const handleSaveProject = (project: Omit<Project, "id"> | Project) => {
-    if ("id" in project) {
+  const handleSaveProject = (project: Omit<Project, 'id'> | Project) => {
+    if ('id' in project) {
       updateProject(project as Project);
     } else {
-      addProject(project as Omit<Project, "id">);
+      addProject(project as Omit<Project, 'id'>);
     }
     setProjectFormModalOpen(false);
     setEditingProject(null);
@@ -165,11 +151,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
   }
 
   const statusColorMap: { [key: string]: string } = {
-    on_track:
-      "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-    delayed: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
-    completed:
-      "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+    on_track: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+    delayed: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+    completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
   };
 
   const tableHeaders = [
@@ -195,10 +179,10 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
             variant="primary"
             size="sm"
             onClick={handleAddProject}
-            aria-label={t.add_project || "Add new project"}
+            aria-label={t.add_project || 'Add new project'}
           >
             <PlusIcon className="w-4 h-4 mr-2" />
-            {t.add_project || "Add Project"}
+            {t.add_project || 'Add Project'}
           </EnhancedButton>
         </div>
         <div className="overflow-x-auto">
@@ -235,7 +219,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
                     <span
                       className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         statusColorMap[p.statusKey] ||
-                        "bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200"
+                        'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
                       }`}
                     >
                       {p.status}
@@ -269,7 +253,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
                         variant="ghost"
                         size="xs"
                         onClick={() => handleEditProject(p)}
-                        aria-label={`${t.edit || "Edit"} ${p.title}`}
+                        aria-label={`${t.edit || 'Edit'} ${p.title}`}
                       >
                         <EditIcon className="w-4 h-4" />
                       </EnhancedButton>
@@ -285,7 +269,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
                         variant="ghost"
                         size="xs"
                         onClick={() => handleOpenDeleteModal(p.id)}
-                        aria-label={`${t.delete || "Delete"} ${p.title}`}
+                        aria-label={`${t.delete || 'Delete'} ${p.title}`}
                       >
                         <TrashIcon className="w-4 h-4" />
                       </EnhancedButton>
@@ -307,11 +291,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
       <Modal
         isOpen={isProjectFormModalOpen}
         onClose={() => setProjectFormModalOpen(false)}
-        title={
-          editingProject
-            ? t.edit_project || "Edit Project"
-            : t.add_project || "Add Project"
-        }
+        title={editingProject ? t.edit_project || 'Edit Project' : t.add_project || 'Add Project'}
       >
         <ProjectForm
           t={t}
@@ -325,29 +305,29 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        title={t.confirm_delete || "Confirm Delete"}
+        title={t.confirm_delete || 'Confirm Delete'}
       >
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {t.confirm_delete_project_message ||
-              "Are you sure you want to delete this project? This action cannot be undone and will also delete all associated tasks."}
+              'Are you sure you want to delete this project? This action cannot be undone and will also delete all associated tasks.'}
           </p>
           <div className="flex justify-end gap-3">
             <EnhancedButton
               variant="secondary"
               size="sm"
               onClick={() => setDeleteModalOpen(false)}
-              aria-label={t.cancel || "Cancel delete"}
+              aria-label={t.cancel || 'Cancel delete'}
             >
-              {t.cancel || "Cancel"}
+              {t.cancel || 'Cancel'}
             </EnhancedButton>
             <EnhancedButton
               variant="error"
               size="sm"
               onClick={handleDeleteConfirm}
-              aria-label={t.delete || "Confirm delete"}
+              aria-label={t.delete || 'Confirm delete'}
             >
-              {t.delete || "Delete"}
+              {t.delete || 'Delete'}
             </EnhancedButton>
           </div>
         </div>

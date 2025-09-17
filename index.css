@@ -1,5 +1,5 @@
 /* Import design tokens untuk konsistensi styling */
-@import url("./styles/design-tokens.css");
+@import url('./styles/design-tokens.css');
 
 /* Enhanced SIPOMA UI/UX Styles */
 
@@ -55,12 +55,9 @@
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
@@ -480,13 +477,13 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 /* Remove spinner for number inputs */
-.ccr-table input[type="number"]::-webkit-outer-spin-button,
-.ccr-table input[type="number"]::-webkit-inner-spin-button {
+.ccr-table input[type='number']::-webkit-outer-spin-button,
+.ccr-table input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.ccr-table input[type="number"] {
+.ccr-table input[type='number'] {
   -moz-appearance: textfield;
 }
 
@@ -928,11 +925,7 @@ html.dark .ccr-table input:hover:not(:focus) {
   font-size: 0.7rem;
   font-weight: 600;
   color: white;
-  background: linear-gradient(
-    to right,
-    var(--color-primary-500),
-    var(--color-primary-600)
-  );
+  background: linear-gradient(to right, var(--color-primary-500), var(--color-primary-600));
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   transition: var(--transition-normal);
@@ -944,18 +937,16 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 .btn-primary:hover {
-  background: linear-gradient(
-    to right,
-    var(--color-primary-600),
-    var(--color-primary-700)
-  );
+  background: linear-gradient(to right, var(--color-primary-600), var(--color-primary-700));
   box-shadow: var(--shadow-lg);
   transform: scale(1.02);
 }
 
 .btn-primary:focus {
   outline: none;
-  box-shadow: var(--shadow-md), 0 0 0 3px rgba(239, 68, 68, 0.2);
+  box-shadow:
+    var(--shadow-md),
+    0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 .btn-primary:active {
@@ -995,7 +986,9 @@ html.dark .ccr-table input:hover:not(:focus) {
 
 .btn-secondary:focus {
   outline: none;
-  box-shadow: var(--shadow-sm), 0 0 0 3px rgba(239, 68, 68, 0.2);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 .btn-secondary:active {
@@ -1029,11 +1022,7 @@ html.dark .ccr-table input:hover:not(:focus) {
   font-size: 0.875rem;
   font-weight: 600;
   color: white;
-  background: linear-gradient(
-    to right,
-    var(--color-primary-600),
-    var(--color-primary-700)
-  );
+  background: linear-gradient(to right, var(--color-primary-600), var(--color-primary-700));
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   transition: var(--transition-normal);
@@ -1044,19 +1033,18 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 .btn-danger:hover {
-  background: linear-gradient(
-    to right,
-    var(--color-primary-700),
-    var(--color-primary-800)
-  );
-  box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.1),
+  background: linear-gradient(to right, var(--color-primary-700), var(--color-primary-800));
+  box-shadow:
+    0 20px 25px -5px rgba(239, 68, 68, 0.1),
     0 10px 10px -5px rgba(239, 68, 68, 0.04);
   transform: scale(1.02);
 }
 
 .btn-danger:focus {
   outline: none;
-  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(239, 68, 68, 0.2);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 .btn-danger:active {
@@ -1090,7 +1078,9 @@ html.dark .ccr-table input:hover:not(:focus) {
 
 .form-input:focus {
   border-color: var(--color-primary-500);
-  box-shadow: var(--shadow-sm), 0 0 0 3px rgba(239, 68, 68, 0.1);
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .form-input:hover:not(:focus) {
@@ -1111,7 +1101,9 @@ html.dark .ccr-table input:hover:not(:focus) {
 
   .form-input:focus {
     border-color: var(--color-primary-400);
-    box-shadow: var(--shadow-sm), 0 0 0 3px rgba(248, 113, 113, 0.1);
+    box-shadow:
+      var(--shadow-sm),
+      0 0 0 3px rgba(248, 113, 113, 0.1);
   }
 
   .form-input:hover:not(:focus) {
@@ -1195,7 +1187,7 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 .nav-item::before {
-  content: "";
+  content: '';
   @apply absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-500 to-red-600 rounded-r-full opacity-0 transition-opacity duration-300;
 }
 
@@ -1398,7 +1390,7 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 .sidebar-tooltip::before {
-  content: "";
+  content: '';
   position: absolute;
   right: 100%;
   top: 50%;
@@ -1457,11 +1449,7 @@ html.dark .ccr-table input:hover:not(:focus) {
 /* Header Styling - Consistent with App Theme */
 .header-modern {
   @apply sticky top-0 z-40 w-full border-b border-white/10 dark:border-slate-700/50;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -1474,22 +1462,14 @@ html.dark .ccr-table input:hover:not(:focus) {
 
 .header-modern-title {
   @apply text-lg sm:text-xl font-bold leading-tight;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-accent) 100%
-  );
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .text-gradient-modern {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-accent) 100%
-  );
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

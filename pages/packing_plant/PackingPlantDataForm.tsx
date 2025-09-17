@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { PackingPlantMasterRecord } from "../../types";
+import React, { useState, useEffect } from 'react';
+import { PackingPlantMasterRecord } from '../../types';
 
 // Import Enhanced Components
 import {
@@ -8,23 +8,16 @@ import {
   useHighContrast,
   useReducedMotion,
   useColorScheme,
-} from "../../components/ui/EnhancedComponents";
+} from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: PackingPlantMasterRecord | null;
-  onSave: (
-    record: PackingPlantMasterRecord | Omit<PackingPlantMasterRecord, "id">
-  ) => void;
+  onSave: (record: PackingPlantMasterRecord | Omit<PackingPlantMasterRecord, 'id'>) => void;
   onCancel: () => void;
   t: any;
 }
 
-const PackingPlantDataForm: React.FC<FormProps> = ({
-  recordToEdit,
-  onSave,
-  onCancel,
-  t,
-}) => {
+const PackingPlantDataForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t }) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
   const isHighContrast = useHighContrast();
@@ -32,11 +25,11 @@ const PackingPlantDataForm: React.FC<FormProps> = ({
   const colorScheme = useColorScheme();
 
   const [formData, setFormData] = useState({
-    area: "",
-    plant_code: "",
+    area: '',
+    plant_code: '',
     silo_capacity: 0,
     dead_stock: 0,
-    cement_type: "",
+    cement_type: '',
   });
 
   useEffect(() => {
@@ -50,11 +43,11 @@ const PackingPlantDataForm: React.FC<FormProps> = ({
       });
     } else {
       setFormData({
-        area: "",
-        plant_code: "",
+        area: '',
+        plant_code: '',
         silo_capacity: 0,
         dead_stock: 0,
-        cement_type: "",
+        cement_type: '',
       });
     }
   }, [recordToEdit]);
@@ -63,7 +56,7 @@ const PackingPlantDataForm: React.FC<FormProps> = ({
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
+      [name]: type === 'number' ? parseFloat(value) || 0 : value,
     }));
   };
 
@@ -170,7 +163,7 @@ const PackingPlantDataForm: React.FC<FormProps> = ({
           type="submit"
           variant="primary"
           className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || "Save packing plant data"}
+          aria-label={t.save_button || 'Save packing plant data'}
         >
           {t.save_button}
         </EnhancedButton>
@@ -179,7 +172,7 @@ const PackingPlantDataForm: React.FC<FormProps> = ({
           variant="secondary"
           onClick={onCancel}
           className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || "Cancel"}
+          aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
         </EnhancedButton>
