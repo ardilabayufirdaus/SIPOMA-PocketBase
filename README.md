@@ -253,7 +253,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Ardila Bayu Firdaus**
+### Ardila Bayu Firdaus
 
 - GitHub: [@ardilabayufirdaus](https://github.com/ardilabayufirdaus)
 - LinkedIn: [Ardila Bayu Firdaus](https://linkedin.com/in/ardilabayufirdaus)
