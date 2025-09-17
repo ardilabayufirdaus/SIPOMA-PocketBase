@@ -41,7 +41,46 @@ export const useDashboardDataProcessor = (
 ) => {
   const cache = useCcrDataCache();
 
+  // Create parameter data map for footer calculations
+  const parameterDataMap = useMemo(() => {
+    const map = new Map<string, any>();
+    ccrData.forEach((item) => {
+      map.set(item.parameter_id, item);
+    });
+    return map;
+  }, [ccrData]);
+
+  // Filter parameters based on plant category and unit (similar to CCR Data Entry)
+  const filteredParameters = useMemo(() => {
+    if (!plantCategory || !plantUnit) return [];
+
+    let filtered = parameters
+      .filter(
+        (param) => param.category === plantCategory && param.unit === plantUnit
+      )
+      .sort((a, b) => a.parameter.localeCompare(b.parameter));
+
+    return filtered;
+  }, [parameters, plantCategory, plantUnit]);
+
   const processedData = useMemo((): ProcessedDashboardData => {
+    console.log("🔍 Dashboard Processor Input:", {
+      ccrDataCount: ccrData.length,
+      parametersCount: parameters.length,
+      filteredParametersCount: filteredParameters.length,
+      plantCategory,
+      plantUnit,
+      selectedProductionParameters,
+      copParameterIdsCount: copParameterIds.length,
+      sampleCcrData: ccrData.slice(0, 2),
+      sampleFilteredParameters: filteredParameters.slice(0, 5),
+      sampleParameters: parameters.slice(0, 5),
+      uniqueParameterIdsInData: [
+        ...new Set(ccrData.map((d) => d.parameter_id)),
+      ],
+      uniqueParameterIdsInSettings: [...new Set(parameters.map((p) => p.id))],
+    });
+
     // Check cache first
     const cachedProcessedData = cache.getCachedProcessedData(
       selectedMonth || new Date().getMonth() + 1,
@@ -56,16 +95,6 @@ export const useDashboardDataProcessor = (
     }
 
     console.log("🔄 Processing dashboard data...");
-    // Filter parameters based on plant category and unit
-    const filteredParameters = parameters.filter((param) => {
-      const categoryMatch =
-        !plantCategory ||
-        plantCategory === "all" ||
-        param.category === plantCategory;
-      const unitMatch =
-        !plantUnit || plantUnit === "all" || param.unit === plantUnit;
-      return categoryMatch && unitMatch;
-    });
 
     // Process chart data
     const chartData = ccrData.map((item, index) => {
@@ -190,8 +219,8 @@ export const useDashboardDataProcessor = (
         };
       });
 
-    // Process Production Trend data based on selected parameters
-    // Calculate total values per day for the selected month
+    // Process Production Trend data using aggregated totals per date
+    // This matches the footer calculations used in the CCR Data Entry table
     const productionTrendData: Array<{
       timestamp: string;
       [key: string]: string | number;
@@ -219,7 +248,7 @@ export const useDashboardDataProcessor = (
       datesInMonth.push(d.toISOString().split("T")[0]);
     }
 
-    // Group data by date and calculate totals
+    // Group data by date and use footer totals
     const dataByDate: { [date: string]: { [paramName: string]: number } } = {};
 
     // Initialize all dates with empty data
@@ -230,7 +259,13 @@ export const useDashboardDataProcessor = (
     ccrData
       .filter((item) => {
         const param = parameters.find((p) => p.id === item.parameter_id);
-        if (!param) return false;
+        if (!param) {
+          console.log("🔍 Parameter not found for item:", {
+            parameterId: item.parameter_id,
+            availableParameterIds: parameters.map((p) => p.id).slice(0, 10),
+          });
+          return false;
+        }
 
         // If no parameters selected, show all filtered parameters
         if (
@@ -248,26 +283,31 @@ export const useDashboardDataProcessor = (
         if (!param) return;
 
         const paramName = param.parameter;
-        const hourlyValues = Object.values(item.hourly_values);
-
-        // Use the actual date from the data
         const itemDate = item.date;
 
         if (!dataByDate[itemDate]) {
           dataByDate[itemDate] = {};
         }
 
-        // Calculate total for the day (sum of all hourly values)
-        const totalValue =
-          hourlyValues.length > 0
-            ? (hourlyValues as number[]).reduce(
-                (sum, val) => sum + (Number(val) || 0),
-                0
-              )
-            : 0;
+        // Calculate total for the day using EXACT same logic as CCR Data Entry footer
+        // This matches the "Total" calculation in CCR Data Entry table footer
+        const values = Object.values(item.hourly_values)
+          .map((v) => parseFloat(String(v)))
+          .filter((v) => !isNaN(v));
 
-        dataByDate[itemDate][paramName] =
-          (dataByDate[itemDate][paramName] || 0) + totalValue;
+        const totalValue =
+          values.length > 0 ? values.reduce((sum, val) => sum + val, 0) : 0;
+
+        console.log("🔍 Processing item:", {
+          parameterId: item.parameter_id,
+          paramName,
+          date: itemDate,
+          hourlyValues: item.hourly_values,
+          values,
+          totalValue,
+        });
+
+        dataByDate[itemDate][paramName] = totalValue;
       });
 
     // Convert grouped data to chart format - include all dates in month
@@ -284,6 +324,18 @@ export const useDashboardDataProcessor = (
 
       // Add values for all parameters, defaulting to 0 if no data
       let parametersToShow = filteredParameters;
+
+      // If no filtered parameters, use all parameters that have data
+      if (parametersToShow.length === 0) {
+        const paramNamesWithData = Object.keys(paramValues);
+        parametersToShow = parameters.filter((param) =>
+          paramNamesWithData.includes(param.parameter)
+        );
+        console.log(
+          "🔍 Using parameters with data:",
+          parametersToShow.map((p) => p.parameter)
+        );
+      }
 
       // If specific parameters are selected, only show those
       if (
@@ -307,6 +359,11 @@ export const useDashboardDataProcessor = (
       (a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
+
+    console.log("🔍 Final Production Trend Data:", {
+      productionTrendDataCount: productionTrendData.length,
+      sampleData: productionTrendData.slice(0, 5),
+    });
 
     const result = {
       chartData,

@@ -67,7 +67,6 @@ export type Alert = {
   severity: string;
   read: boolean;
 };
-// ...existing code...
 export type Json =
   | string
   | number
@@ -76,336 +75,560 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
-      user_requests: {
+      users: {
         Row: {
           id: string;
-          email: string;
-          name: string;
-          status: string;
-          requested_at: string;
+          username: string;
+          email: string | null;
+          password: string | null;
+          full_name: string | null;
+          role: string;
+          avatar_url: string | null;
+          is_active: boolean;
+          last_active: string | null;
+          created_at: string;
+          updated_at: string;
+          permissions: any;
         };
         Insert: {
           id?: string;
-          email: string;
-          name: string;
-          status?: string;
-          requested_at?: string;
+          username: string;
+          email?: string | null;
+          password?: string | null;
+          full_name?: string | null;
+          role: string;
+          avatar_url?: string | null;
+          is_active?: boolean;
+          last_active?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          permissions?: any;
         };
         Update: {
           id?: string;
-          email?: string;
-          name?: string;
-          status?: string;
-          requested_at?: string;
+          username?: string;
+          email?: string | null;
+          password?: string | null;
+          full_name?: string | null;
+          role?: string;
+          avatar_url?: string | null;
+          is_active?: boolean;
+          last_active?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          permissions?: any;
         };
-        Relationships: [];
       };
-      cop_parameters: {
+      parameter_settings: {
         Row: {
           id: string;
-          parameter_ids: string[];
+          parameter: string;
+          data_type: string;
+          unit: string;
+          category: string;
+          min_value: number | null;
+          max_value: number | null;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
-          parameter_ids: string[];
+          parameter: string;
+          data_type: string;
+          unit: string;
+          category: string;
+          min_value?: number | null;
+          max_value?: number | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
-          parameter_ids?: string[];
+          parameter?: string;
+          data_type?: string;
+          unit?: string;
+          category?: string;
+          min_value?: number | null;
+          max_value?: number | null;
+          created_at?: string;
+          updated_at?: string;
         };
-        Relationships: [];
+      };
+      ccr_footer_data: {
+        Row: {
+          id: string;
+          date: string;
+          parameter_id: string;
+          plant_unit: string | null;
+          total: number | null;
+          average: number | null;
+          minimum: number | null;
+          maximum: number | null;
+          shift1_total: number | null;
+          shift2_total: number | null;
+          shift3_total: number | null;
+          shift3_cont_total: number | null;
+          shift1_difference: number | null;
+          shift2_difference: number | null;
+          shift3_difference: number | null;
+          shift3_cont_difference: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          date: string;
+          parameter_id: string;
+          plant_unit?: string | null;
+          total?: number | null;
+          average?: number | null;
+          minimum?: number | null;
+          maximum?: number | null;
+          shift1_total?: number | null;
+          shift2_total?: number | null;
+          shift3_total?: number | null;
+          shift3_cont_total?: number | null;
+          shift1_difference?: number | null;
+          shift2_difference?: number | null;
+          shift3_difference?: number | null;
+          shift3_cont_difference?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          date?: string;
+          parameter_id?: string;
+          plant_unit?: string | null;
+          total?: number | null;
+          average?: number | null;
+          minimum?: number | null;
+          maximum?: number | null;
+          shift1_total?: number | null;
+          shift2_total?: number | null;
+          shift3_total?: number | null;
+          shift3_cont_total?: number | null;
+          shift1_difference?: number | null;
+          shift2_difference?: number | null;
+          shift3_difference?: number | null;
+          shift3_cont_difference?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      plant_units: {
+        Row: {
+          id: string;
+          unit: string;
+          category: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          unit: string;
+          category: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          unit?: string;
+          category?: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      autonomous_risk_data: {
+        Row: {
+          id: string;
+          unit: string;
+          potential_disruption: string;
+          preventive_action: string;
+          mitigation_plan: string;
+          status: string;
+          date: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          unit: string;
+          potential_disruption: string;
+          preventive_action: string;
+          mitigation_plan: string;
+          status: string;
+          date: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          unit?: string;
+          potential_disruption?: string;
+          preventive_action?: string;
+          mitigation_plan?: string;
+          status?: string;
+          date?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      ccr_downtime_data: {
+        Row: {
+          id: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          pic: string;
+          problem: string;
+          unit: string;
+          action: string | null;
+          corrective_action: string | null;
+          status: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          pic: string;
+          problem: string;
+          unit: string;
+          action?: string | null;
+          corrective_action?: string | null;
+          status?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          date?: string;
+          start_time?: string;
+          end_time?: string;
+          pic?: string;
+          problem?: string;
+          unit?: string;
+          action?: string | null;
+          corrective_action?: string | null;
+          status?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
       };
       alerts: {
         Row: {
           id: string;
           message: string;
-          read: boolean;
           severity: string;
           timestamp: string;
+          read: boolean;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
           message: string;
-          read?: boolean;
           severity: string;
           timestamp: string;
+          read?: boolean;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
           message?: string;
-          read?: boolean;
           severity?: string;
           timestamp?: string;
+          read?: boolean;
+          created_at?: string;
+          updated_at?: string;
         };
-        Relationships: [];
-      };
-      autonomous_risk_data: {
-        Row: {
-          date: string;
-          id: string;
-          mitigation_plan: string;
-          potential_disruption: string;
-          preventive_action: string;
-          status: string;
-          unit: string;
-        };
-        Insert: {
-          date: string;
-          id?: string;
-          mitigation_plan: string;
-          potential_disruption: string;
-          preventive_action: string;
-          status: string;
-          unit: string;
-        };
-        Update: {
-          date?: string;
-          id?: string;
-          mitigation_plan?: string;
-          potential_disruption?: string;
-          preventive_action?: string;
-          status?: string;
-          unit?: string;
-        };
-        Relationships: [];
-      };
-      ccr_downtime_data: {
-        Row: {
-          action: string | null;
-          corrective_action: string | null;
-          date: string;
-          end_time: string;
-          id: string;
-          pic: string;
-          problem: string;
-          start_time: string;
-          status: string | null;
-          unit: string;
-        };
-        Insert: {
-          action?: string | null;
-          corrective_action?: string | null;
-          date: string;
-          end_time: string;
-          id?: string;
-          pic: string;
-          problem: string;
-          start_time: string;
-          status?: string | null;
-          unit: string;
-        };
-        Update: {
-          action?: string | null;
-          corrective_action?: string | null;
-          date?: string;
-          end_time?: string;
-          id?: string;
-          pic?: string;
-          problem?: string;
-          start_time?: string;
-          status?: string | null;
-          unit?: string;
-        };
-        Relationships: [];
-      };
-      ccr_parameter_data: {
-        Row: {
-          date: string;
-          hourly_values: Json | null;
-          id: string;
-          parameter_id: string;
-        };
-        Insert: {
-          date: string;
-          hourly_values?: Json | null;
-          id?: string;
-          parameter_id: string;
-        };
-        Update: {
-          date?: string;
-          hourly_values?: Json | null;
-          id?: string;
-          parameter_id?: string;
-        };
-        Relationships: [];
-      };
-      ccr_silo_data: {
-        Row: {
-          date: string;
-          id: string;
-          shift1: Json | null;
-          shift2: Json | null;
-          shift3: Json | null;
-          siloId: string;
-        };
-        Insert: {
-          date: string;
-          id?: string;
-          shift1?: Json | null;
-          shift2?: Json | null;
-          shift3?: Json | null;
-          siloId: string;
-        };
-        Update: {
-          date?: string;
-          id?: string;
-          shift1?: Json | null;
-          shift2?: Json | null;
-          shift3?: Json | null;
-          siloId?: string;
-        };
-        Relationships: [];
-      };
-      kpis: {
-        Row: {
-          icon: string;
-          id: string;
-          title: string;
-          trend: number;
-          unit: string;
-          value: string;
-        };
-        Insert: {
-          icon: string;
-          id?: string;
-          title: string;
-          trend: number;
-          unit: string;
-          value: string;
-        };
-        Update: {
-          icon?: string;
-          id?: string;
-          title?: string;
-          trend?: number;
-          unit?: string;
-          value?: string;
-        };
-        Relationships: [];
-      };
-      machines: {
-        Row: {
-          id: string;
-          name: string;
-          output: number;
-          status: string;
-          temperature: number;
-          uptime: number;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          output: number;
-          status: string;
-          temperature: number;
-          uptime: number;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          output?: number;
-          status?: string;
-          temperature?: number;
-          uptime?: number;
-        };
-        Relationships: [];
       };
       packing_plant_master: {
         Row: {
-          area: string;
-          cement_type: string;
-          dead_stock: number;
           id: string;
+          area: string;
           plant_code: string;
           silo_capacity: number;
+          dead_stock: number;
+          cement_type: string;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
-          area: string;
-          cement_type: string;
-          dead_stock: number;
           id?: string;
+          area: string;
           plant_code: string;
           silo_capacity: number;
+          dead_stock: number;
+          cement_type: string;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
-          area?: string;
-          cement_type?: string;
-          dead_stock?: number;
           id?: string;
+          area?: string;
           plant_code?: string;
           silo_capacity?: number;
+          dead_stock?: number;
+          cement_type?: string;
+          created_at?: string;
+          updated_at?: string;
         };
-        Relationships: [];
       };
       packing_plant_stock: {
         Row: {
-          area: string;
-          closing_stock: number;
-          date: string;
           id: string;
+          record_id: string | null;
+          date: string;
+          area: string;
           opening_stock: number;
-          stock_out: number;
           stock_received: number;
+          stock_out: number;
+          closing_stock: number;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
-          area: string;
-          closing_stock: number;
-          date: string;
           id?: string;
+          record_id?: string | null;
+          date: string;
+          area: string;
           opening_stock: number;
-          stock_out: number;
           stock_received: number;
+          stock_out: number;
+          closing_stock: number;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
-          area?: string;
-          closing_stock?: number;
+          id?: string;
+          record_id?: string | null;
           date?: string;
-          id?: string;
+          area?: string;
           opening_stock?: number;
-          stock_out?: number;
           stock_received?: number;
+          stock_out?: number;
+          closing_stock?: number;
+          created_at?: string;
+          updated_at?: string;
         };
-        Relationships: [];
       };
-      parameter_settings: {
+      pic_settings: {
         Row: {
-          category: string;
-          data_type: string;
           id: string;
-          max_value: number | null;
-          min_value: number | null;
-          parameter: string;
-          unit: string;
+          pic: string;
+          created_at: string;
+          updated_at: string;
         };
         Insert: {
-          category: string;
-          data_type: string;
           id?: string;
-          max_value?: number | null;
-          min_value?: number | null;
-          parameter: string;
-          unit: string;
+          pic: string;
+          created_at?: string;
+          updated_at?: string;
         };
         Update: {
-          category?: string;
-          data_type?: string;
           id?: string;
-          max_value?: number | null;
-          min_value?: number | null;
-          parameter?: string;
-          unit?: string;
+          pic?: string;
+          created_at?: string;
+          updated_at?: string;
         };
-        Relationships: [];
+      };
+      report_settings: {
+        Row: {
+          id: string;
+          parameter_id: string;
+          category: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parameter_id: string;
+          category: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          parameter_id?: string;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      silo_capacities: {
+        Row: {
+          id: string;
+          plant_category: string;
+          unit: string;
+          silo_name: string;
+          capacity: number;
+          dead_stock: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          plant_category: string;
+          unit: string;
+          silo_name: string;
+          capacity: number;
+          dead_stock: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          plant_category?: string;
+          unit?: string;
+          silo_name?: string;
+          capacity?: number;
+          dead_stock?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      work_instructions: {
+        Row: {
+          id: string;
+          activity: string;
+          doc_code: string;
+          doc_title: string;
+          description: string;
+          link: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          activity: string;
+          doc_code: string;
+          doc_title: string;
+          description: string;
+          link: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          activity?: string;
+          doc_code?: string;
+          doc_title?: string;
+          description?: string;
+          link?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      projects: {
+        Row: {
+          id: string;
+          title: string;
+          budget: number | null;
+          status: string;
+          description: string | null;
+          start_date: string | null;
+          end_date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          budget?: number | null;
+          status: string;
+          description?: string | null;
+          start_date?: string | null;
+          end_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          budget?: number | null;
+          status?: string;
+          description?: string | null;
+          start_date?: string | null;
+          end_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      project_tasks: {
+        Row: {
+          id: string;
+          project_id: string;
+          activity: string;
+          planned_start: string;
+          planned_end: string;
+          actual_start: string | null;
+          actual_end: string | null;
+          percent_complete: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          activity: string;
+          planned_start: string;
+          planned_end: string;
+          actual_start?: string | null;
+          actual_end?: string | null;
+          percent_complete: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          activity?: string;
+          planned_start?: string;
+          planned_end?: string;
+          actual_start?: string | null;
+          actual_end?: string | null;
+          percent_complete?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      cop_parameters: {
+        Row: {
+          id: string;
+          parameter_ids: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          parameter_ids: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          parameter_ids?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
       };
       global_parameter_settings: {
         Row: {
           id: string;
-          user_id: string | null;
-          plant_category: string | null;
-          plant_unit: string | null;
+          user_id: string;
+          plant_category: string;
+          plant_unit: string;
           selected_parameters: string[];
           is_global: boolean;
           created_at: string;
@@ -414,352 +637,32 @@ export type Database = {
         };
         Insert: {
           id?: string;
-          user_id?: string | null;
-          plant_category?: string | null;
-          plant_unit?: string | null;
+          user_id: string;
+          plant_category: string;
+          plant_unit: string;
           selected_parameters: string[];
-          is_global?: boolean;
+          is_global: boolean;
           created_at?: string;
           updated_at?: string;
           updated_by: string;
         };
         Update: {
           id?: string;
-          user_id?: string | null;
-          plant_category?: string | null;
-          plant_unit?: string | null;
+          user_id?: string;
+          plant_category?: string;
+          plant_unit?: string;
           selected_parameters?: string[];
           is_global?: boolean;
           created_at?: string;
           updated_at?: string;
           updated_by?: string;
         };
-        Relationships: [];
       };
-      pic_settings: {
-        Row: {
-          id: string;
-          pic: string;
-        };
-        Insert: {
-          id?: string;
-          pic: string;
-        };
-        Update: {
-          id?: string;
-          pic?: string;
-        };
-        Relationships: [];
-      };
-      plant_units: {
-        Row: {
-          category: string;
-          id: string;
-          unit: string;
-        };
-        Insert: {
-          category: string;
-          id?: string;
-          unit: string;
-        };
-        Update: {
-          category?: string;
-          id?: string;
-          unit?: string;
-        };
-        Relationships: [];
-      };
-      production_data: {
-        Row: {
-          created_at: string;
-          hour: number;
-          id: string;
-          output: number;
-        };
-        Insert: {
-          created_at?: string;
-          hour: number;
-          id?: string;
-          output: number;
-        };
-        Update: {
-          created_at?: string;
-          hour?: number;
-          id?: string;
-          output?: number;
-        };
-        Relationships: [];
-      };
-      project_tasks: {
-        Row: {
-          activity: string;
-          actualEnd: string | null;
-          actualStart: string | null;
-          id: string;
-          percentComplete: number;
-          plannedEnd: string;
-          plannedStart: string;
-          projectId: string;
-        };
-        Insert: {
-          activity: string;
-          actualEnd?: string | null;
-          actualStart?: string | null;
-          id?: string;
-          percentComplete: number;
-          plannedEnd: string;
-          plannedStart: string;
-          projectId: string;
-        };
-        Update: {
-          activity?: string;
-          actualEnd?: string | null;
-          actualStart?: string | null;
-          id?: string;
-          percentComplete?: number;
-          plannedEnd?: string;
-          plannedStart?: string;
-          projectId?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "project_tasks_projectId_fkey";
-            columns: ["projectId"];
-            isOneToOne: false;
-            referencedRelation: "projects";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
-      projects: {
-        Row: {
-          id: string;
-          title: string;
-          budget: number | null;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          budget?: number | null;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          budget?: number | null;
-        };
-        Relationships: [];
-      };
-      report_settings: {
-        Row: {
-          category: string;
-          id: string;
-          parameter_id: string;
-        };
-        Insert: {
-          category: string;
-          id?: string;
-          parameter_id: string;
-        };
-        Update: {
-          category?: string;
-          id?: string;
-          parameter_id?: string;
-        };
-        Relationships: [];
-      };
-      silo_capacities: {
-        Row: {
-          capacity: number;
-          dead_stock: number;
-          id: string;
-          plant_category: string;
-          silo_name: string;
-          unit: string;
-        };
-        Insert: {
-          capacity: number;
-          dead_stock: number;
-          id?: string;
-          plant_category: string;
-          silo_name: string;
-          unit: string;
-        };
-        Update: {
-          capacity?: number;
-          dead_stock?: number;
-          id?: string;
-          plant_category?: string;
-          silo_name?: string;
-          unit?: string;
-        };
-        Relationships: [];
-      };
-      users: {
-        Row: {
-          id: string;
-          username: string;
-          password_hash: string;
-          email?: string;
-          full_name: string | null;
-          role: string;
-          avatar_url?: string;
-          is_active: boolean;
-          last_active?: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          username: string;
-          password_hash: string;
-          email?: string;
-          full_name?: string | null;
-          role: string;
-          avatar_url?: string;
-          is_active?: boolean;
-          last_active?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          username?: string;
-          password_hash?: string;
-          email?: string;
-          full_name?: string | null;
-          role?: string;
-          avatar_url?: string;
-          is_active?: boolean;
-          last_active?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      roles: {
-        Row: {
-          id: string;
-          name: string;
-          description: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          description?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          description?: string | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      permissions: {
-        Row: {
-          id: string;
-          module_name: string;
-          permission_level: string;
-          plant_units: Json | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          module_name: string;
-          permission_level: string;
-          plant_units?: Json | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          module_name?: string;
-          permission_level?: string;
-          plant_units?: Json | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      user_permissions: {
-        Row: {
-          id: string;
-          user_id: string;
-          permission_id: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          permission_id: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          permission_id?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_permissions_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "user_permissions_permission_id_fkey";
-            columns: ["permission_id"];
-            isOneToOne: false;
-            referencedRelation: "permissions";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
-      work_instructions: {
-        Row: {
-          activity: string;
-          description: string;
-          doc_code: string;
-          doc_title: string;
-          id: string;
-          link: string;
-        };
-        Insert: {
-          activity: string;
-          description: string;
-          doc_code: string;
-          doc_title: string;
-          id?: string;
-          link: string;
-        };
-        Update: {
-          activity?: string;
-          description?: string;
-          doc_code?: string;
-          doc_title?: string;
-          id?: string;
-          link?: string;
-        };
-        Relationships: [];
-      };
+      // Add more table definitions as needed
+      [key: string]: any;
     };
     Views: {
-      user_list: {
-        Row: {
-          id: string;
-          username: string;
-          full_name: string;
-          role: string;
-          avatar_url: string | null;
-          last_active: string;
-          is_active: boolean;
-          created_at: string;
-          updated_at: string;
-          permissions: Json;
-        };
-      };
+      [_ in never]: never;
     };
     Functions: {
       [_ in never]: never;
@@ -767,11 +670,8 @@ export type Database = {
     Enums: {
       [_ in never]: never;
     };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
   };
-};
+}
 
 export type Tables<
   PublicTableNameOrOptions extends
@@ -780,7 +680,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never
+    : never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {

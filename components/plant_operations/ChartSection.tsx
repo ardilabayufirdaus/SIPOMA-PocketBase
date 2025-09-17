@@ -9,6 +9,7 @@ interface ChartSectionProps {
   timeRange: "1h" | "4h" | "12h" | "24h";
   onMetricChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   onTimeRangeChange: (range: "1h" | "4h" | "12h" | "24h") => void;
+  copAnalysisData?: any[];
 }
 
 const ChartSection: React.FC<ChartSectionProps> = React.memo(
@@ -18,14 +19,24 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
     timeRange,
     onMetricChange,
     onTimeRangeChange,
+    copAnalysisData = [],
   }) => {
     const chartData = React.useMemo(() => {
+      if (selectedMetric === "cop" && copAnalysisData.length > 0) {
+        return copAnalysisData.map((item) => ({
+          timestamp: new Date(item.created_at).toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          cop: item.average,
+        }));
+      }
       return realPlantOperationsData.map((item) => ({
         timestamp: item.timestamp,
         [selectedMetric]:
           item[selectedMetric as keyof PlantOperationsDataPoint],
       }));
-    }, [realPlantOperationsData, selectedMetric]);
+    }, [realPlantOperationsData, selectedMetric, copAnalysisData]);
 
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -45,6 +56,7 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
               <option value="quality">Quality (%)</option>
               <option value="throughput">Throughput</option>
               <option value="downtime">Downtime (hours)</option>
+              <option value="cop">COP Analysis</option>
             </select>
           </div>
 
@@ -61,15 +73,19 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
             >
               <ComboChart
                 data={chartData}
-                lines={[
-                  {
-                    dataKey: selectedMetric,
-                    stroke: "#dc2626",
-                    name:
-                      selectedMetric.charAt(0).toUpperCase() +
-                      selectedMetric.slice(1),
-                  },
-                ]}
+                lines={
+                  selectedMetric === "cop"
+                    ? [{ dataKey: "cop", stroke: "#dc2626", name: "COP Value" }]
+                    : [
+                        {
+                          dataKey: selectedMetric,
+                          stroke: "#dc2626",
+                          name:
+                            selectedMetric.charAt(0).toUpperCase() +
+                            selectedMetric.slice(1),
+                        },
+                      ]
+                }
                 xAxisConfig={{ dataKey: "timestamp", label: "Time" }}
                 leftYAxisConfig={{
                   label:
@@ -77,6 +93,8 @@ const ChartSection: React.FC<ChartSectionProps> = React.memo(
                       ? "Units/Hour"
                       : selectedMetric === "downtime"
                       ? "Hours"
+                      : selectedMetric === "cop"
+                      ? "COP Value"
                       : "Percentage (%)",
                 }}
                 height={320}

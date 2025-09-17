@@ -4,32 +4,24 @@ import { useCopParametersSupabase } from "../../../hooks/useCopParametersSupabas
 import { useWorkInstructions } from "../../../hooks/useWorkInstructions";
 import { useParameterSettings } from "../../../hooks/useParameterSettings";
 import { usePlantUnits } from "../../../hooks/usePlantUnits";
-import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  ComposedChart,
-} from "recharts";
 import { useCurrentUser } from "../../../hooks/useCurrentUser";
 import { usePermissions } from "../../../utils/permissions";
 import { PermissionLevel } from "../../../types";
 import { useDashboardDataProcessor } from "../../../hooks/useDashboardDataProcessor";
+import { useCcrFooterData } from "../../../hooks/useCcrFooterData";
+import { useProductionTrendData } from "../../../hooks/useProductionTrendData";
 import Modal from "../../../components/Modal";
-import { formatDate, formatNumber } from "../../../utils/formatters";
+import {
+  formatDate,
+  formatNumber,
+  formatDateForDB,
+} from "../../../utils/formatters";
 import { CcrParameterData } from "../../../types";
 import LazyChart from "../../../components/LazyChart";
+
+// Import chart components
+import { ProductionTrendChart } from "../../../components/charts/ProductionTrendChart";
+import { COPAnalysisChart } from "../../../components/charts/COPAnalysisChart";
 
 interface DashboardData {
   timestamp: string;
@@ -42,242 +34,14 @@ interface DashboardData {
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-// Memoized Chart Components for better performance
-interface ProductionTrendChartProps {
-  data: any[];
-  parameters: any[];
-  selectedProductionParameters: string[];
-  selectedPlantCategory: string;
-  selectedPlantUnit: string;
-}
-
-const ProductionTrendChart = memo<ProductionTrendChartProps>(
-  ({
-    data,
-    parameters,
-    selectedProductionParameters,
-    selectedPlantCategory,
-    selectedPlantUnit,
-  }) => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10); // Default 10 days per page
-
-    const filteredParameters = useMemo(() => {
-      return parameters.filter((param) => {
-        const categoryMatch =
-          selectedPlantCategory === "all" ||
-          param.category === selectedPlantCategory;
-        const unitMatch =
-          selectedPlantUnit === "all" || param.unit === selectedPlantUnit;
-        return categoryMatch && unitMatch;
-      });
-    }, [parameters, selectedPlantCategory, selectedPlantUnit]);
-
-    const displayParameters = useMemo(() => {
-      return selectedProductionParameters.length === 0
-        ? filteredParameters.slice(0, 5) // Limit to 5 parameters for readability
-        : selectedProductionParameters
-            .map((paramId) => {
-              return parameters.find((p) => p.id === paramId);
-            })
-            .filter(Boolean);
-    }, [selectedProductionParameters, filteredParameters, parameters]);
-
-    // Calculate pagination
-    const totalItems = data.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-
-    // Paginated data
-    const paginatedData = useMemo(() => {
-      return data.slice(startIndex, endIndex);
-    }, [data, startIndex, endIndex]);
-
-    // Reset to first page when filters change
-    useEffect(() => {
-      setCurrentPage(1);
-    }, [
-      selectedPlantCategory,
-      selectedPlantUnit,
-      selectedProductionParameters,
-    ]);
-
-    const handlePageChange = (page: number) => {
-      setCurrentPage(Math.max(1, Math.min(page, totalPages)));
-    };
-
-    const handleItemsPerPageChange = (newItemsPerPage: number) => {
-      setItemsPerPage(newItemsPerPage);
-      setCurrentPage(1); // Reset to first page
-    };
-
-    return (
-      <div className="space-y-4">
-        {/* Pagination Controls */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="items-per-page"
-                className="text-sm font-medium text-gray-700 dark:text-slate-300"
-              >
-                Show:
-              </label>
-              <select
-                id="items-per-page"
-                value={itemsPerPage}
-                onChange={(e) =>
-                  handleItemsPerPageChange(Number(e.target.value))
-                }
-                className="px-2 py-1 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100"
-              >
-                <option value={5}>5 days</option>
-                <option value={10}>10 days</option>
-                <option value={15}>15 days</option>
-                <option value={20}>20 days</option>
-                <option value={31}>31 days</option>
-              </select>
-            </div>
-            <div className="text-sm text-gray-600 dark:text-slate-400">
-              Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
-              {totalItems} days
-            </div>
-          </div>
-
-          {/* Page Navigation */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ← Prev
-            </button>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum =
-                  Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                if (pageNum > totalPages) return null;
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-1 text-sm border rounded-md ${
-                      currentPage === pageNum
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
-
-        {/* Chart */}
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={paginatedData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="timestamp"
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                });
-              }}
-            />
-            <YAxis />
-            <Tooltip
-              labelFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("id-ID", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                });
-              }}
-            />
-            <Legend />
-            {displayParameters.map((param, index) => (
-              <Line
-                key={param.id}
-                type="monotone"
-                dataKey={param.parameter}
-                stroke={`hsl(${index * 60}, 70%, 50%)`}
-                strokeWidth={2}
-                name={`${param.parameter} (${param.unit})`}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    );
-  }
-);
-
-ProductionTrendChart.displayName = "ProductionTrendChart";
-
-interface CopAnalysisChartProps {
-  data: any[];
-}
-
-const CopAnalysisChart = memo<CopAnalysisChartProps>(({ data }) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
-      <YAxis />
-      <Tooltip />
-      <Bar dataKey="value" fill="#8884d8" name="Actual" />
-      <Bar dataKey="target" fill="#82ca9d" name="Target" />
-    </BarChart>
-  </ResponsiveContainer>
-));
-
-CopAnalysisChart.displayName = "CopAnalysisChart";
-
 interface WorkInstructionsChartProps {
   data: any[];
 }
 
 const WorkInstructionsChart = memo<WorkInstructionsChartProps>(({ data }) => (
-  <ResponsiveContainer width="100%" height={300}>
-    <PieChart>
-      <Pie
-        data={data}
-        cx="50%"
-        cy="50%"
-        labelLine={false}
-        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-        outerRadius={80}
-        fill="#8884d8"
-        dataKey="value"
-      >
-        {data.map((entry, index) => (
-          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-        ))}
-      </Pie>
-      <Tooltip />
-    </PieChart>
-  </ResponsiveContainer>
+  <div className="flex items-center justify-center h-80 text-slate-500">
+    Pie Chart - implement with Chart.js
+  </div>
 ));
 
 WorkInstructionsChart.displayName = "WorkInstructionsChart";
@@ -339,12 +103,14 @@ const PlantOperationsDashboard: React.FC = () => {
 
   // Data hooks
   const { getDataForDate, getDataForDateRange } = useCcrParameterData();
+  const { getFooterDataForDate } = useCcrFooterData();
   const { copParameterIds } = useCopParametersSupabase();
   const { instructions: workInstructions } = useWorkInstructions();
   const { records: parameters } = useParameterSettings();
   const { records: plantUnits } = usePlantUnits();
 
   const [ccrData, setCcrData] = useState<CcrParameterData[]>([]);
+  const [footerData, setFooterData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -355,25 +121,63 @@ const PlantOperationsDashboard: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Get data for the entire selected month using batch query
+        // Get data for the entire selected month using individual date queries
+        // This matches how CCR Data Entry fetches data
         const startDate = new Date(selectedYear, selectedMonth - 1, 1);
         const endDate = new Date(selectedYear, selectedMonth, 0);
-
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
 
-        // Single batch query for entire month - much more efficient!
-        const allData = await getDataForDateRange(
-          startDateStr,
-          endDateStr,
-          selectedPlantUnit
-        );
+        console.log("🔍 Dashboard: Fetching data with filters:", {
+          selectedMonth,
+          selectedYear,
+          selectedPlantCategory,
+          selectedPlantUnit,
+          startDate: startDateStr,
+          endDate: endDateStr,
+        });
 
+        const allData: CcrParameterData[] = [];
+        const allFooterData: any[] = [];
+
+        for (
+          let d = new Date(startDate);
+          d <= endDate;
+          d.setDate(d.getDate() + 1)
+        ) {
+          const dateStr = formatDate(d);
+          const dbDateStr = formatDateForDB(d); // Use YYYY-MM-DD format for database queries
+          const dateData = await getDataForDate(dbDateStr);
+          const footerDateData = await getFooterDataForDate(
+            dbDateStr,
+            selectedPlantUnit
+          );
+          allData.push(...dateData);
+          allFooterData.push(...footerDateData);
+        }
+
+        console.log("🔍 Dashboard: Fetched CCR data:", {
+          count: allData.length,
+          footerCount: allFooterData.length,
+          selectedPlantCategory,
+          selectedPlantUnit,
+          dateRange: `${startDateStr} to ${endDateStr}`,
+          sampleData: allData.slice(0, 3),
+          sampleFooterData: allFooterData.slice(0, 3),
+          uniqueParameterIds: [...new Set(allData.map((d) => d.parameter_id))],
+          uniqueFooterParameterIds: [
+            ...new Set(allFooterData.map((d) => d.parameter_id)),
+          ],
+        });
+
+        // Set the fetched data to state
         setCcrData(allData);
+        setFooterData(allFooterData);
       } catch (err) {
         console.error("Error fetching CCR data:", err);
         setError("Failed to load dashboard data. Please try again.");
         setCcrData([]);
+        setFooterData([]);
       } finally {
         setLoading(false);
       }
@@ -382,17 +186,32 @@ const PlantOperationsDashboard: React.FC = () => {
   }, [selectedMonth, selectedYear, selectedPlantCategory, selectedPlantUnit]);
 
   // Use custom hook for data processing - moved to top with other hooks
-  const { chartData, keyMetrics, copAnalysisData, productionTrendData } =
-    useDashboardDataProcessor(
-      ccrData,
-      parameters,
-      copParameterIds,
-      selectedPlantCategory,
-      selectedPlantUnit,
-      selectedProductionParameters,
-      selectedMonth,
-      selectedYear
-    );
+  const {
+    chartData,
+    keyMetrics,
+    copAnalysisData,
+    productionTrendData: originalProductionTrendData,
+  } = useDashboardDataProcessor(
+    ccrData,
+    parameters,
+    copParameterIds,
+    selectedPlantCategory,
+    selectedPlantUnit,
+    selectedProductionParameters,
+    selectedMonth,
+    selectedYear
+  );
+
+  // Use production trend data from footer
+  const { productionTrendData } = useProductionTrendData(
+    footerData,
+    parameters,
+    selectedProductionParameters,
+    selectedMonth,
+    selectedYear,
+    selectedPlantUnit,
+    selectedPlantCategory
+  );
 
   // Work Instructions summary - moved to top with other hooks
   const workInstructionsSummary = useMemo(() => {
@@ -532,482 +351,768 @@ const PlantOperationsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header with Standard Filter Layout */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-              Plant Operations Dashboard
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-              Monitor performa pabrik dan analisis data operasional
-            </p>
-            {/* Filter Status Indicators */}
-            {(selectedPlantCategory !== "all" ||
-              selectedPlantUnit !== "all") && (
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  📊 Category:{" "}
-                  {selectedPlantCategory === "all"
-                    ? "All"
-                    : selectedPlantCategory}
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  🏭 Unit:{" "}
-                  {selectedPlantUnit === "all" ? "All" : selectedPlantUnit}
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                  📅 Month: {selectedMonth}/{selectedYear}
-                </span>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="plant-category"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <select
-                id="plant-category"
-                value={selectedPlantCategory}
-                onChange={(e) => setSelectedPlantCategory(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                <option value="all">All Categories</option>
-                {plantCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="plant-unit"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <select
-                id="plant-unit"
-                value={selectedPlantUnit}
-                onChange={(e) => setSelectedPlantUnit(e.target.value)}
-                disabled={
-                  selectedPlantCategory !== "all" &&
-                  unitsForCategory.length === 0
-                }
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-              >
-                <option value="all">All Units</option>
-                {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="select-month"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Select Month:
-              </label>
-              <select
-                id="select-month"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {new Date(0, i).toLocaleString("default", {
-                      month: "long",
-                    })}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="select-year"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Select Year:
-              </label>
-              <select
-                id="select-year"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {Array.from({ length: 5 }, (_, i) => {
-                  const year = new Date().getFullYear() - 2 + i;
-                  return (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+        {/* Modern Plant Operations Header */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-green-700 to-green-800 dark:from-green-800 dark:via-green-900 dark:to-green-900 rounded-2xl shadow-2xl">
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/20"></div>
+          <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
 
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Total Production
-          </h3>
-          <p className="text-3xl font-bold text-blue-600">
-            {formatNumber(keyMetrics.totalProduction)}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Average Efficiency
-          </h3>
-          <p className="text-3xl font-bold text-green-600">
-            {formatNumber(keyMetrics.averageEfficiency)}%
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Total Parameters
-          </h3>
-          <p className="text-3xl font-bold text-red-600">
-            {keyMetrics.totalParameters}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Active COP Parameters
-          </h3>
-          <p className="text-3xl font-bold text-purple-600">
-            {keyMetrics.activeCopParameters}
-          </p>
-        </div>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Production Trend */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold">Production Trend</h3>
-            {isSuperAdmin && (
-              <button
-                onClick={() => setShowProductionTrendSettings(true)}
-                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                title="Configure Production Trend Parameters"
-              >
-                <svg
-                  className="w-4 h-4 mr-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Settings
-              </button>
-            )}
-          </div>
-          {productionTrendData.length > 0 ? (
-            <LazyChart>
-              <ProductionTrendChart
-                data={productionTrendData}
-                parameters={parameters}
-                selectedProductionParameters={selectedProductionParameters}
-                selectedPlantCategory={selectedPlantCategory}
-                selectedPlantUnit={selectedPlantUnit}
-              />
-            </LazyChart>
-          ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              <div className="text-center">
-                <div className="text-4xl mb-2">📊</div>
-                <div className="text-lg font-medium">No Production Data</div>
-                <div className="text-sm">
-                  No data available for the selected filters
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* COP Analysis */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-4">COP Analysis</h3>
-          {copAnalysisData.length > 0 ? (
-            <LazyChart>
-              <CopAnalysisChart data={copAnalysisData} />
-            </LazyChart>
-          ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              <div className="text-center">
-                <div className="text-4xl mb-2">🎯</div>
-                <div className="text-lg font-medium">No COP Analysis Data</div>
-                <div className="text-sm">
-                  No COP parameters found for the selected filters
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Work Instructions Distribution */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-4">
-            Work Instructions by Activity
-          </h3>
-          {workInstructionsSummary.length > 0 ? (
-            <LazyChart>
-              <WorkInstructionsChart data={workInstructionsSummary} />
-            </LazyChart>
-          ) : (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              <div className="text-center">
-                <div className="text-4xl mb-2">📋</div>
-                <div className="text-lg font-medium">No Work Instructions</div>
-                <div className="text-sm">No work instructions available</div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Detailed Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* CCR Parameters Table */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-4">
-            CCR Parameters{" "}
-            {selectedPlantCategory !== "all" || selectedPlantUnit !== "all" ? (
-              <span className="text-sm font-normal text-gray-500">
-                (
-                {selectedPlantCategory !== "all"
-                  ? selectedPlantCategory
-                  : "All Categories"}
-                {selectedPlantUnit !== "all" ? ` - ${selectedPlantUnit}` : ""})
-              </span>
-            ) : null}
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-left">Parameter</th>
-                  <th className="px-4 py-2 text-left">Unit</th>
-                  <th className="px-4 py-2 text-left">Category</th>
-                  <th className="px-4 py-2 text-left">Actual</th>
-                  <th className="px-4 py-2 text-left">Target</th>
-                  <th className="px-4 py-2 text-left">Deviation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ccrTableData.map((item, index) => (
-                  <tr key={item.id} className="border-t">
-                    <td className="px-4 py-2">{item.parameter}</td>
-                    <td className="px-4 py-2">{item.unit}</td>
-                    <td className="px-4 py-2">{item.category}</td>
-                    <td className="px-4 py-2">{formatNumber(item.avgValue)}</td>
-                    <td className="px-4 py-2">{formatNumber(item.target)}</td>
-                    <td
-                      className={`px-4 py-2 ${
-                        item.deviation > 0 ? "text-red-600" : "text-green-600"
-                      }`}
+          <div className="relative p-6 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                    <svg
+                      className="w-8 h-8 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      {item.deviation > 0 ? "+" : ""}
-                      {formatNumber(item.deviation)}%
-                    </td>
-                  </tr>
-                ))}
-                {ccrTableData.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-4 py-8 text-center text-gray-500"
-                    >
-                      No CCR parameters found for the selected filters
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Work Instructions Table */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-4">
-            Recent Work Instructions{" "}
-            {selectedPlantCategory !== "all" || selectedPlantUnit !== "all" ? (
-              <span className="text-sm font-normal text-gray-500">
-                (Viewing all instructions - filters apply to operational data
-                only)
-              </span>
-            ) : null}
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-2 text-left">Activity</th>
-                  <th className="px-4 py-2 text-left">Document Title</th>
-                  <th className="px-4 py-2 text-left">Doc Code</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workInstructions.slice(0, 10).map((instruction, index) => (
-                  <tr key={instruction.id} className="border-t">
-                    <td className="px-4 py-2">{instruction.activity}</td>
-                    <td className="px-4 py-2">{instruction.doc_title}</td>
-                    <td className="px-4 py-2">{instruction.doc_code}</td>
-                  </tr>
-                ))}
-                {workInstructions.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="px-4 py-8 text-center text-gray-500"
-                    >
-                      No work instructions available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Production Trend Settings Modal */}
-      {showProductionTrendSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                Production Trend Settings
-              </h3>
-              <button
-                onClick={() => setShowProductionTrendSettings(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-3">
-                Select which parameters to display in the Production Trend
-                chart. Parameters are shown with their plant unit for easy
-                identification.
-              </p>
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {parameters
-                  .filter((param) => {
-                    const categoryMatch =
-                      selectedPlantCategory === "all" ||
-                      param.category === selectedPlantCategory;
-                    const unitMatch =
-                      selectedPlantUnit === "all" ||
-                      param.unit === selectedPlantUnit;
-                    return categoryMatch && unitMatch;
-                  })
-                  .map((param) => (
-                    <label
-                      key={param.id}
-                      className="flex items-center space-x-2"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedProductionParameters.includes(
-                          param.id
-                        )}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedProductionParameters([
-                              ...selectedProductionParameters,
-                              param.id,
-                            ]);
-                          } else {
-                            setSelectedProductionParameters(
-                              selectedProductionParameters.filter(
-                                (id) => id !== param.id
-                              )
-                            );
-                          }
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                       />
-                      <span className="text-sm text-gray-700">
-                        {param.parameter}{" "}
-                        <span className="text-xs text-gray-500">
-                          ({param.unit})
-                        </span>
-                      </span>
-                    </label>
-                  ))}
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
+                      Plant Operations Dashboard
+                    </h1>
+                    <div className="flex items-center gap-2">
+                      <div className="h-1 w-8 bg-white/60 rounded-full"></div>
+                      <p className="text-white/80 text-sm lg:text-base">
+                        Monitor performa pabrik dan analisis data operasional
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Stats in Header */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white/20 rounded-lg">
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                          Total Production
+                        </p>
+                        <p className="text-white text-xl font-bold">
+                          {formatNumber(keyMetrics.totalProduction)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-500/20 rounded-lg">
+                        <svg
+                          className="w-5 h-5 text-red-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                          Total Parameters
+                        </p>
+                        <p className="text-white text-xl font-bold">
+                          {keyMetrics.totalParameters}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-500/20 rounded-lg">
+                        <svg
+                          className="w-5 h-5 text-purple-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                          Active COP
+                        </p>
+                        <p className="text-white text-xl font-bold">
+                          {keyMetrics.activeCopParameters}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setSelectedProductionParameters([]);
-                  setShowProductionTrendSettings(false);
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-              >
-                Clear All
-              </button>
-              <button
-                onClick={() => setShowProductionTrendSettings(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  saveProductionParameters(selectedProductionParameters);
-                  setShowProductionTrendSettings(false);
-                }}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-              >
-                Save Settings
-              </button>
+
+              {/* Filter Controls */}
+              <div className="flex flex-col gap-4 lg:flex-shrink-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                      Category:
+                    </label>
+                    <select
+                      value={selectedPlantCategory}
+                      onChange={(e) => setSelectedPlantCategory(e.target.value)}
+                      className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                    >
+                      <option value="all" className="text-slate-900">
+                        All Categories
+                      </option>
+                      {plantCategories.map((category) => (
+                        <option
+                          key={category}
+                          value={category}
+                          className="text-slate-900"
+                        >
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                      Unit:
+                    </label>
+                    <select
+                      value={selectedPlantUnit}
+                      onChange={(e) => setSelectedPlantUnit(e.target.value)}
+                      disabled={
+                        selectedPlantCategory !== "all" &&
+                        unitsForCategory.length === 0
+                      }
+                      className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 disabled:bg-white/5 disabled:cursor-not-allowed text-sm"
+                    >
+                      <option value="all" className="text-slate-900">
+                        All Units
+                      </option>
+                      {unitsForCategory.map((unit) => (
+                        <option
+                          key={unit}
+                          value={unit}
+                          className="text-slate-900"
+                        >
+                          {unit}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                      Month:
+                    </label>
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) =>
+                        setSelectedMonth(parseInt(e.target.value))
+                      }
+                      className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <option
+                          key={i + 1}
+                          value={i + 1}
+                          className="text-slate-900"
+                        >
+                          {new Date(0, i).toLocaleString("default", {
+                            month: "long",
+                          })}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm font-semibold text-white/90 whitespace-nowrap">
+                      Year:
+                    </label>
+                    <select
+                      value={selectedYear}
+                      onChange={(e) =>
+                        setSelectedYear(parseInt(e.target.value))
+                      }
+                      className="px-3 py-2 bg-white/10 backdrop-blur-sm text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50 text-sm"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => {
+                        const year = new Date().getFullYear() - 2 + i;
+                        return (
+                          <option
+                            key={year}
+                            value={year}
+                            className="text-slate-900"
+                          >
+                            {year}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Filter Status Indicators */}
+                {(selectedPlantCategory !== "all" ||
+                  selectedPlantUnit !== "all") && (
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
+                      📊{" "}
+                      {selectedPlantCategory === "all"
+                        ? "All Categories"
+                        : selectedPlantCategory}
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
+                      🏭{" "}
+                      {selectedPlantUnit === "all"
+                        ? "All Units"
+                        : selectedPlantUnit}
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm text-white border border-white/30">
+                      📅 {selectedMonth}/{selectedYear}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Production Trend */}
+          <div className="relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/10 dark:to-indigo-900/10"></div>
+            <div className="relative p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                      Production Trend
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Monitor produksi harian
+                    </p>
+                  </div>
+                </div>
+                {isSuperAdmin && (
+                  <button
+                    onClick={() => setShowProductionTrendSettings(true)}
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                    title="Configure Production Trend Parameters"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    Settings
+                  </button>
+                )}
+              </div>
+              {productionTrendData.length > 0 ? (
+                <LazyChart>
+                  <ProductionTrendChart
+                    data={productionTrendData}
+                    parameters={parameters}
+                    selectedProductionParameters={selectedProductionParameters}
+                    selectedPlantCategory={selectedPlantCategory}
+                    selectedPlantUnit={selectedPlantUnit}
+                  />
+                </LazyChart>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4 opacity-50">📊</div>
+                    <div className="text-lg font-semibold mb-2">
+                      No Production Data
+                    </div>
+                    <div className="text-sm">
+                      No data available for the selected filters
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* COP Analysis */}
+          <div className="relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/10 dark:to-pink-900/10"></div>
+            <div className="relative p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                    COP Analysis
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Analisis parameter kontrol operasional
+                  </p>
+                </div>
+              </div>
+              {copAnalysisData.length > 0 ? (
+                <LazyChart>
+                  <COPAnalysisChart data={copAnalysisData} />
+                </LazyChart>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4 opacity-50">🎯</div>
+                    <div className="text-lg font-semibold mb-2">
+                      No COP Analysis Data
+                    </div>
+                    <div className="text-sm">
+                      No COP parameters found for the selected filters
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Work Instructions Distribution */}
+          <div className="relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/10 dark:to-teal-900/10"></div>
+            <div className="relative p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                    Work Instructions
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Distribusi instruksi kerja berdasarkan aktivitas
+                  </p>
+                </div>
+              </div>
+              {workInstructionsSummary.length > 0 ? (
+                <LazyChart>
+                  <WorkInstructionsChart data={workInstructionsSummary} />
+                </LazyChart>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4 opacity-50">📋</div>
+                    <div className="text-lg font-semibold mb-2">
+                      No Work Instructions
+                    </div>
+                    <div className="text-sm">
+                      No work instructions available
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Detailed Tables */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* CCR Parameters Table */}
+          <div className="relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-red-50/50 dark:from-orange-900/10 dark:to-red-900/10"></div>
+            <div className="relative p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl shadow-lg">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                    CCR Parameters
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Parameter kontrol dan monitoring
+                  </p>
+                  {selectedPlantCategory !== "all" ||
+                  selectedPlantUnit !== "all" ? (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 mt-2">
+                      {selectedPlantCategory !== "all"
+                        ? selectedPlantCategory
+                        : "All Categories"}
+                      {selectedPlantUnit !== "all"
+                        ? ` - ${selectedPlantUnit}`
+                        : ""}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-700/50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Parameter
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Unit
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Actual
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Target
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Deviation
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-600">
+                    {ccrTableData.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {item.parameter}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                          {item.unit}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                          {item.category}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {formatNumber(item.avgValue)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                          {formatNumber(item.target)}
+                        </td>
+                        <td
+                          className={`px-4 py-3 text-sm font-semibold ${
+                            item.deviation > 0
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-green-600 dark:text-green-400"
+                          }`}
+                        >
+                          {item.deviation > 0 ? "+" : ""}
+                          {formatNumber(item.deviation)}%
+                        </td>
+                      </tr>
+                    ))}
+                    {ccrTableData.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={6}
+                          className="px-4 py-12 text-center text-slate-500 dark:text-slate-400"
+                        >
+                          <div className="text-4xl mb-2 opacity-50">📊</div>
+                          <div className="text-sm font-medium">
+                            No CCR parameters found
+                          </div>
+                          <div className="text-xs">
+                            for the selected filters
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Work Instructions Table */}
+          <div className="relative overflow-hidden bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/50 to-blue-50/50 dark:from-cyan-900/10 dark:to-blue-900/10"></div>
+            <div className="relative p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl shadow-lg">
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                    Work Instructions
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Instruksi kerja terbaru
+                  </p>
+                  {selectedPlantCategory !== "all" ||
+                  selectedPlantUnit !== "all" ? (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 mt-2">
+                      Viewing all instructions - filters apply to operational
+                      data only
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full table-auto">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-slate-700/50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Activity
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Document Title
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                        Doc Code
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-600">
+                    {workInstructions.slice(0, 10).map((instruction, index) => (
+                      <tr
+                        key={instruction.id}
+                        className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100">
+                          {instruction.activity}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                          {instruction.doc_title}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-mono text-slate-600 dark:text-slate-400">
+                          {instruction.doc_code}
+                        </td>
+                      </tr>
+                    ))}
+                    {workInstructions.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={3}
+                          className="px-4 py-12 text-center text-slate-500 dark:text-slate-400"
+                        >
+                          <div className="text-4xl mb-2 opacity-50">📋</div>
+                          <div className="text-sm font-medium">
+                            No work instructions available
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Production Trend Settings Modal */}
+        {showProductionTrendSettings && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">
+                  Production Trend Settings
+                </h3>
+                <button
+                  onClick={() => setShowProductionTrendSettings(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-3">
+                  Select which parameters to display in the Production Trend
+                  chart. Parameters are shown with their plant unit for easy
+                  identification.
+                </p>
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {parameters.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500">
+                      No parameters available
+                    </div>
+                  ) : (
+                    parameters.map((param) => (
+                      <label
+                        key={param.id}
+                        className="flex items-center space-x-2"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedProductionParameters.includes(
+                            param.id
+                          )}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedProductionParameters([
+                                ...selectedProductionParameters,
+                                param.id,
+                              ]);
+                            } else {
+                              setSelectedProductionParameters(
+                                selectedProductionParameters.filter(
+                                  (id) => id !== param.id
+                                )
+                              );
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          {param.parameter}{" "}
+                          <span className="text-xs text-gray-500">
+                            ({param.unit} - {param.category})
+                          </span>
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setSelectedProductionParameters([]);
+                    setShowProductionTrendSettings(false);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  Clear All
+                </button>
+                <button
+                  onClick={() => setShowProductionTrendSettings(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    saveProductionParameters(selectedProductionParameters);
+                    setShowProductionTrendSettings(false);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                >
+                  Save Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

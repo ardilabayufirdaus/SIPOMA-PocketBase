@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Page } from "../App";
 import {
   UsersIcon,
@@ -33,6 +32,10 @@ import {
   colors,
 } from "../components/dashboard/ModernDashboard";
 
+// Import chart components
+import { StockDistributionChart } from "../components/charts/StockDistributionChart";
+import { ProjectStatusChart } from "../components/charts/ProjectStatusChart";
+
 // Import existing hooks
 import { useProjects } from "../hooks/useProjects";
 import { usePlantData } from "../hooks/usePlantData";
@@ -43,26 +46,6 @@ import { formatNumber, formatPercentage } from "../utils/formatters";
 
 // Import Typography Components
 import { H2, Body, UIText } from "../components/ui/Typography";
-
-// Chart components
-import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  ComposedChart,
-} from "recharts";
 
 interface ModernMainDashboardPageProps {
   language: "en" | "id";
@@ -116,149 +99,9 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
       className="col-span-2"
     >
       <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <>
-            {activeTab === "performance" && (
-              <ComposedChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgb(15 23 42)",
-                    border: "none",
-                    borderRadius: "12px",
-                    boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.25)",
-                    color: "white",
-                  }}
-                />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="production"
-                  fill="url(#productionGradient)"
-                  stroke={colors.primary}
-                  strokeWidth={2}
-                  name="Production Rate"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="efficiency"
-                  stroke={colors.secondary}
-                  strokeWidth={3}
-                  dot={{ r: 4 }}
-                  name="Efficiency %"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="quality"
-                  stroke={colors.success}
-                  strokeWidth={3}
-                  dot={{ r: 4 }}
-                  name="Quality Score"
-                />
-                <defs>
-                  <linearGradient
-                    id="productionGradient"
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor={colors.primary}
-                      stopOpacity={0.3}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={colors.primary}
-                      stopOpacity={0.05}
-                    />
-                  </linearGradient>
-                </defs>
-              </ComposedChart>
-            )}
-            {activeTab === "trends" && (
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="production"
-                  stroke={colors.primary}
-                  strokeWidth={3}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="efficiency"
-                  stroke={colors.secondary}
-                  strokeWidth={3}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="quality"
-                  stroke={colors.success}
-                  strokeWidth={3}
-                />
-              </LineChart>
-            )}
-            {activeTab === "comparison" && (
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis
-                  dataKey="time"
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip />
-                <Legend />
-                <Bar
-                  dataKey="production"
-                  fill={colors.primary}
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="efficiency"
-                  fill={colors.secondary}
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="quality"
-                  fill={colors.success}
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            )}
-          </>
-        </ResponsiveContainer>
+        <div className="flex items-center justify-center h-full text-slate-500">
+          Chart will be implemented with Chart.js
+        </div>
       </div>
     </ChartContainer>
   );
@@ -293,25 +136,7 @@ const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
     >
       <div className="grid grid-cols-2 gap-6">
         <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                innerRadius={40}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          <StockDistributionChart stockData={stockData} />
         </div>
         <div className="space-y-3">
           {stockData.slice(0, 5).map((item, index) => (
@@ -371,24 +196,7 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
     >
       <div className="grid grid-cols-2 gap-6">
         <div className="h-48">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                outerRadius={60}
-                innerRadius={25}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <ProjectStatusChart projects={projects} />
         </div>
         <div className="space-y-3">
           {projects.slice(0, 4).map((project) => (
@@ -601,12 +409,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
         />
 
         {/* Key Metrics */}
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="grid grid-cols-2 md:grid-cols-4 gap-3"
-        >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <ModernMetricCard
             title="Active Users"
             value={usersCount}
@@ -659,15 +462,10 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             }}
             onClick={() => onNavigate("packing")}
           />
-        </motion.div>
+        </div>
 
         {/* Charts Section */}
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Performance Chart - takes 2/3 width */}
           {performanceData.length > 0 && (
             <PerformanceOverview data={performanceData} />
@@ -675,15 +473,10 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
           {/* Stock Insights */}
           <StockInsights stockData={transformedStockData} />
-        </motion.div>
+        </div>
 
         {/* Secondary Widgets */}
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="grid grid-cols-1 md:grid-cols-2 gap-3"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <ProjectInsights projects={transformedProjects} />
 
           {/* Quick Actions */}
@@ -722,23 +515,16 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               {quickActions.map((action, index) => (
-                <motion.div
-                  key={action.title}
-                  variants={fadeInUp}
-                  transition={{ delay: index * 0.1 }}
-                >
+                <div key={action.title}>
                   <QuickAction {...action} />
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Status Bar */}
-        <motion.div
-          {...fadeInUp}
-          className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4"
-        >
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-2">
@@ -761,7 +547,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

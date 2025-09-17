@@ -32,7 +32,8 @@
     "hooks/**/*",
     "pages/**/*",
     "utils/**/*",
-    "types/**/*"
+    "types/**/*",
+    "vite-env.d.ts"
   ],
   "exclude": ["node_modules", "dist", "build", "**/*.spec.ts", "**/*.test.ts"]
 }

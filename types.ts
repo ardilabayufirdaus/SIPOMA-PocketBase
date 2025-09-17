@@ -243,3 +243,23 @@ export interface Project {
   created_at?: string;
   updated_at?: string;
 }
+
+// CCR Footer Data
+export interface CcrFooterData {
+  id?: string;
+  date: string;
+  parameter_id: string;
+  plant_unit?: string;
+  total: number;
+  average: number;
+  minimum: number;
+  maximum: number;
+  shift1_total: number;
+  shift2_total: number;
+  shift3_total: number;
+  shift3_cont_total: number;
+  shift1_difference: number;
+  shift2_difference: number;
+  shift3_difference: number;
+  shift3_cont_difference: number;
+}

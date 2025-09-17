@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from "react";
 import { formatNumber } from "../../utils/formatters";
-import { usePlantOperationsDashboard } from "../../hooks/usePlantOperationsDashboard";
+// import { usePlantOperationsDashboard } from "../../hooks/usePlantOperationsDashboard";
+import { useCopAnalysisData } from "../../hooks/useCopAnalysisData";
 import KPIGrid from "./KPIGrid";
 import ChartSection from "./ChartSection";
 import SummarySection from "./SummarySection";
@@ -14,15 +15,45 @@ interface PlantOperationsDashboardProps {
 
 const PlantOperationsDashboard: React.FC<PlantOperationsDashboardProps> =
   React.memo(({ t, plantData }) => {
-    const {
-      timeRange,
-      selectedMetric,
-      plantOperationsStats,
-      realPlantOperationsData,
-      isLoading,
-      handleTimeRangeChange,
-      handleMetricChange,
-    } = usePlantOperationsDashboard();
+    // Mock data for now
+    const stats = {
+      totalUnits: 5,
+      totalCategories: 3,
+      totalParameters: 25,
+      totalCopParameters: 5,
+      totalDowntimeRecords: 12,
+      todayDowntime: 2,
+      openDowntime: 1,
+      totalRiskRecords: 8,
+      inProgressRisks: 3,
+      identifiedRisks: 5,
+      totalCopAnalysisRecords: 15,
+      averageCopValue: 85.5,
+    };
+
+    const kpis = [
+      {
+        id: "efficiency",
+        title: "Efficiency",
+        value: 85,
+        unit: "%",
+        trend: { direction: "up" as const, percentage: 5 },
+      },
+    ];
+
+    const alerts = [];
+    const machines = [];
+    const isLoading = false;
+
+    const timeRange = "24h";
+    const selectedMetric = "efficiency";
+    const plantOperationsStats = stats;
+    const realPlantOperationsData = [];
+
+    const handleTimeRangeChange = (range: string) => {};
+    const handleMetricChange = (e: React.ChangeEvent<HTMLSelectElement>) => {};
+
+    const { data: copAnalysisData } = useCopAnalysisData();
 
     // Show loading state with skeleton
     if (isLoading) {
@@ -57,6 +88,7 @@ const PlantOperationsDashboard: React.FC<PlantOperationsDashboardProps> =
           timeRange={timeRange}
           onMetricChange={handleMetricChange}
           onTimeRangeChange={handleTimeRangeChange}
+          copAnalysisData={copAnalysisData}
         />
 
         {/* Performance Summary */}

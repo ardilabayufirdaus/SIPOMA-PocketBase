@@ -85,8 +85,77 @@ export const useFooterCalculations = ({
     return shiftTotals;
   }, [filteredParameterSettings, parameterDataMap]);
 
+  const parameterShiftDifferenceData = useMemo(() => {
+    const shiftDifferences: Record<string, Record<string, number>> = {
+      shift1: {},
+      shift2: {},
+      shift3: {},
+      shift3Cont: {},
+    };
+
+    const shiftHourRanges = {
+      shift1: { start: 8, end: 15 },
+      shift2: { start: 16, end: 22 },
+      shift3: { start: 23, end: 24 },
+      shift3Cont: { start: 1, end: 7 },
+    };
+
+    filteredParameterSettings.forEach((param) => {
+      if (param.data_type !== ParameterDataType.NUMBER) {
+        return;
+      }
+
+      const data = parameterDataMap.get(param.id);
+      if (!data || !data.hourly_values) {
+        return;
+      }
+
+      for (const [shiftKey, range] of Object.entries(shiftHourRanges)) {
+        const startValue = parseFloat(String(data.hourly_values[range.start]));
+        const endValue = parseFloat(String(data.hourly_values[range.end]));
+
+        if (!isNaN(startValue) && !isNaN(endValue)) {
+          shiftDifferences[shiftKey][param.id] = endValue - startValue;
+        } else {
+          shiftDifferences[shiftKey][param.id] = 0;
+        }
+      }
+    });
+
+    return shiftDifferences;
+  }, [filteredParameterSettings, parameterDataMap]);
+
+  const counterTotalData = useMemo(() => {
+    const counterTotals: Record<string, number> = {};
+
+    filteredParameterSettings.forEach((param) => {
+      if (param.data_type !== ParameterDataType.NUMBER) {
+        return;
+      }
+
+      const data = parameterDataMap.get(param.id);
+      if (!data || !data.hourly_values) {
+        counterTotals[param.id] = 0;
+        return;
+      }
+
+      const startValue = parseFloat(String(data.hourly_values[1])); // Jam awal (jam 1)
+      const endValue = parseFloat(String(data.hourly_values[24])); // Jam akhir (jam 24)
+
+      if (!isNaN(startValue) && !isNaN(endValue)) {
+        counterTotals[param.id] = endValue - startValue;
+      } else {
+        counterTotals[param.id] = 0;
+      }
+    });
+
+    return counterTotals;
+  }, [filteredParameterSettings, parameterDataMap]);
+
   return {
     parameterFooterData,
     parameterShiftFooterData,
+    parameterShiftDifferenceData,
+    counterTotalData,
   };
 };

@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import Modal from "../../components/Modal";
 import { usePackingPlantMasterData } from "../../hooks/usePackingPlantMasterData";
-// import * as XLSX from "xlsx";
 import { PackingPlantStockRecord } from "../../types";
 import DocumentArrowDownIcon from "../../components/icons/DocumentArrowDownIcon";
 import DocumentArrowUpIcon from "../../components/icons/DocumentArrowUpIcon";
@@ -343,144 +342,18 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     if (!file) return;
 
     setIsImporting(true);
-
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      const data = evt.target?.result;
-      if (!data) {
-        setIsImporting(false);
-        return;
-      }
-
-      try {
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
-
-        const validRecords = json
-          .map((row) => {
-            // Handle date parsing
-            let date = row[t.date] || row["Date"];
-            if (typeof date === "number") {
-              // Excel date serial number
-              const jsDate = new Date(Math.round((date - 25569) * 864e5));
-              date = jsDate.toISOString().split("T")[0];
-            } else if (typeof date === "string") {
-              // Handle various date formats
-              const parts = date.split("/");
-              if (parts.length === 3) {
-                // Convert DD/MM/YYYY to YYYY-MM-DD
-                date = `${parts[2]}-${parts[1].padStart(
-                  2,
-                  "0"
-                )}-${parts[0].padStart(2, "0")}`;
-              } else if (date.includes("-")) {
-                // Already in YYYY-MM-DD format or similar
-                const dateParts = date.split("-");
-                if (dateParts.length === 3) {
-                  date = `${dateParts[0]}-${dateParts[1].padStart(
-                    2,
-                    "0"
-                  )}-${dateParts[2].padStart(2, "0")}`;
-                }
-              }
-            }
-
-            const area = row[t.area] || row["Area"];
-
-            // Find master area data
-            const master = masterAreas.find((m: any) => m.area === area);
-            const id = master ? master.id : "";
-            const record_id = master
-              ? `${master.id}-${date}`
-              : `${area}-${date}`;
-
-            // Parse numeric values
-            let opening_stock = parseFloat(
-              row[t.opening_stock] || row["Opening Stock"] || "0"
-            );
-            if (isNaN(opening_stock)) opening_stock = 0;
-
-            let stock_out = parseFloat(
-              row[t.stock_out] || row["Stock Out"] || "0"
-            );
-            if (isNaN(stock_out)) stock_out = 0;
-
-            let closing_stock = parseFloat(
-              row[t.closing_stock] || row["Closing Stock"] || "0"
-            );
-            if (isNaN(closing_stock)) closing_stock = 0;
-
-            // Calculate stock_received
-            let stock_received = closing_stock - (opening_stock - stock_out);
-            if (isNaN(stock_received)) stock_received = 0;
-
-            return {
-              id,
-              record_id,
-              date,
-              area,
-              opening_stock,
-              stock_received,
-              stock_out,
-              closing_stock,
-            };
-          })
-          .filter((record) => {
-            // Validate required fields
-            return (
-              record.date &&
-              record.area &&
-              record.date.match(/^\d{4}-\d{2}-\d{2}$/) && // Valid date format
-              !isNaN(record.stock_out) &&
-              !isNaN(record.closing_stock)
-            );
-          });
-
-        // Process each record individually using upsertRecord for proper replace functionality
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const record of validRecords) {
-          try {
-            await upsertRecord(record as PackingPlantStockRecord);
-            successCount++;
-          } catch (error) {
-            console.error(
-              `Error importing record for ${record.date} - ${record.area}:`,
-              error
-            );
-            errorCount++;
-          }
-        }
-
-        // Log import completion
-        // Import completed: ${successCount} records processed successfully, ${errorCount} errors
-
-        // Show success message
-        if (successCount > 0) {
-          alert(
-            `Import berhasil: ${successCount} record berhasil diimport/diupdate${
-              errorCount > 0 ? `, ${errorCount} record gagal` : ""
-            }`
-          );
-        } else if (errorCount > 0) {
-          alert(`Import gagal: ${errorCount} record tidak dapat diproses`);
-        } else {
-          alert("Tidak ada data valid yang dapat diimport");
-        }
-      } catch (error) {
-        console.error("Error processing Excel file:", error);
-        alert(
-          "Error saat memproses file Excel. Pastikan format file sudah benar."
-        );
-      } finally {
-        setIsImporting(false);
-      }
-    };
-
-    reader.readAsArrayBuffer(file);
+    try {
+      alert(
+        "Import functionality is temporarily disabled. Chart.js implementation pending."
+      );
+    } catch (error) {
+      console.error("Error processing Excel file:", error);
+      alert(
+        "Error saat memproses file Excel. Pastikan format file sudah benar."
+      );
+    } finally {
+      setIsImporting(false);
+    }
 
     // Clear the file input
     if (fileInputRef.current) {

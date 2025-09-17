@@ -6,7 +6,6 @@ import React, {
   useRef,
 } from "react";
 import { useCopParametersSupabase } from "../../hooks/useCopParametersSupabase";
-// import * as XLSX from "xlsx";
 import Modal from "../../components/Modal";
 import { SearchInput } from "../../components/ui/Input";
 import PlusIcon from "../../components/icons/PlusIcon";
@@ -806,6 +805,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t.parameter_id}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.parameter}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
@@ -834,6 +836,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                   key={param.id}
                   className="hover:bg-slate-50 dark:hover:bg-slate-700"
                 >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-500 dark:text-slate-400">
+                    {param.id}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
                     {param.parameter}
                   </td>
@@ -881,7 +886,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               {filteredParameterSettings.length === 0 && (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center py-10 text-slate-500 dark:text-slate-400"
                   >
                     No parameters match the selected filters.

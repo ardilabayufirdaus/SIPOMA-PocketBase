@@ -6,7 +6,6 @@ import React, {
   Suspense,
   lazy,
 } from "react";
-import ExcelJS from "exceljs";
 import { useProjects } from "../../hooks/useProjects";
 import { Project, ProjectTask } from "../../types";
 import { formatDate, formatNumber, formatRupiah } from "../../utils/formatters";
@@ -41,8 +40,31 @@ import ClipboardDocumentListIcon from "../../components/icons/ClipboardDocumentL
 import CurrencyDollarIcon from "../../components/icons/CurrencyDollarIcon";
 import XCircleIcon from "../../components/icons/XCircleIcon";
 import ChartPieIcon from "../../components/icons/ChartPieIcon";
-import { ResponsiveLine } from "@nivo/line";
 import Bars4Icon from "../../components/icons/Bars4Icon";
+
+// Import Chart.js components
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 type ChartView = "s-curve" | "gantt";
 
@@ -721,106 +743,19 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
   };
 
   const handleExport = () => {
-    const dataToExport = activeProjectTasks.map((task) => ({
-      [t.task_activity]: task.activity,
-      [t.task_planned_start]: task.planned_start,
-      [t.task_planned_end]: task.planned_end,
-      [t.task_actual_start]: task.actual_start || "",
-      [t.task_actual_end]: task.actual_end || "",
-      [t.task_percent_complete]: task.percent_complete,
-    }));
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Tasks");
-
-    // Add headers
-    worksheet.columns = [
-      { header: t.task_name || "Task Name", key: "task_name" },
-      { header: t.task_description || "Description", key: "description" },
-      { header: t.task_planned_start || "Planned Start", key: "planned_start" },
-      { header: t.task_planned_end || "Planned End", key: "planned_end" },
-      { header: t.task_actual_start || "Actual Start", key: "actual_start" },
-      { header: t.task_actual_end || "Actual End", key: "actual_end" },
-      {
-        header: t.task_percent_complete || "Percent Complete",
-        key: "percent_complete",
-      },
-    ];
-
-    // Add data
-    dataToExport.forEach((row) => {
-      worksheet.addRow(row);
-    });
-
-    // Generate buffer and download
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${activeProject?.title || "Project"}_Tasks.xlsx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    });
+    alert(
+      "Export functionality temporarily disabled - implement with xlsx later"
+    );
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const buffer = e.target?.result;
-      const workbook = new ExcelJS.Workbook();
-      workbook.xlsx
-        .load(Buffer.from(buffer))
-        .then(() => {
-          const worksheet = workbook.worksheets[0];
-          const json = [];
-          worksheet.eachRow((row, rowNumber) => {
-            if (rowNumber > 1) {
-              // Skip header
-              const rowData = {};
-              row.eachCell((cell, colNumber) => {
-                const header =
-                  worksheet.getCell(1, colNumber).value?.toString() || "";
-                rowData[header] = cell.value;
-              });
-              json.push(rowData);
-            }
-          });
+    alert(
+      "Import functionality temporarily disabled - implement with xlsx later"
+    );
 
-          // Process imported data
-          const importedTasks = json
-            .map((row: any) => ({
-              activity: row[t.task_activity] || row["Task Name"] || "",
-              planned_start:
-                row[t.task_planned_start] || row["Planned Start"] || "",
-              planned_end: row[t.task_planned_end] || row["Planned End"] || "",
-              actual_start:
-                row[t.task_actual_start] || row["Actual Start"] || "",
-              actual_end: row[t.task_actual_end] || row["Actual End"] || "",
-              percent_complete: parseInt(
-                row[t.task_percent_complete] || row["Percent Complete"] || "0"
-              ),
-            }))
-            .filter((task) => task.activity);
-
-          if (importedTasks.length > 0) {
-            setPendingImportTasks(importedTasks);
-            setImportConfirmModalOpen(true);
-          } else {
-            alert("No valid tasks found in the Excel file.");
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to import Excel file:", error);
-          alert("Failed to import Excel file. Please check the file format.");
-        });
-    };
-
-    reader.readAsArrayBuffer(file);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -939,241 +874,234 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
             <LoadingSpinner />
           ) : (
             <>
-              {/* Project Overview Section Header */}
-              <div className="mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                  {t.project_overview_title}
-                </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Key metrics and information about this project
-                </p>
+              {/* Modern Project Overview Header */}
+              <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-blue-800 dark:via-blue-900 dark:to-blue-900 rounded-2xl shadow-2xl mb-8">
+                <div className="absolute inset-0 bg-black/10 dark:bg-black/20"></div>
+                <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+
+                <div className="relative p-6 lg:p-8">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                          <PresentationChartLineIcon className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
+                            {t.project_overview_title || "Project Overview"}
+                          </h1>
+                          <div className="flex items-center gap-2">
+                            <div className="h-1 w-8 bg-white/60 rounded-full"></div>
+                            <p className="text-white/80 text-sm lg:text-base">
+                              Key metrics and performance insights
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Stats in Header */}
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white/20 rounded-lg">
+                              <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                                {t.total_tasks || "Total Tasks"}
+                              </p>
+                              <p className="text-white text-xl font-bold">
+                                {projectOverview.totalTasks}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-500/20 rounded-lg">
+                              <CalendarDaysIcon className="w-5 h-5 text-green-300" />
+                            </div>
+                            <div>
+                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                                {t.project_duration || "Duration"}
+                              </p>
+                              <p className="text-white text-xl font-bold">
+                                {projectOverview.duration}{" "}
+                                <span className="text-sm font-normal text-white/80">
+                                  {t.days || "days"}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-yellow-500/20 rounded-lg">
+                              <CurrencyDollarIcon className="w-5 h-5 text-yellow-300" />
+                            </div>
+                            <div>
+                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                                {t.project_budget || "Budget"}
+                              </p>
+                              <p className="text-white text-lg font-bold">
+                                {formatRupiah(projectOverview.budget)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-500/20 rounded-lg">
+                              <ChartPieIcon className="w-5 h-5 text-red-300" />
+                            </div>
+                            <div>
+                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
+                                {t.overall_progress || "Progress"}
+                              </p>
+                              <p className="text-white text-xl font-bold">
+                                {performanceMetrics.overallProgress.toFixed(1)}%
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Enhanced Overview Cards - Better Responsive Grid */}
-              <div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
-                role="region"
-                aria-labelledby="overview-metrics"
-              >
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
-                        {t.total_tasks}
-                      </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {loading ? (
-                          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                        ) : (
-                          projectOverview.totalTasks
-                        )}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg ml-3">
-                      <ClipboardDocumentListIcon
-                        className="w-6 h-6 text-blue-600 dark:text-blue-400"
-                        aria-hidden="true"
-                      />
-                    </div>
+              {/* Modern Performance Metrics Section */}
+              <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-slate-700/50">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
+                    <Bars4Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      {t.performance_summary_title || "Performance Metrics"}
+                    </h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Key performance indicators and project status
+                    </p>
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
-                        {t.project_duration}
+                {/* Performance Metrics Grid - Ultra Compact */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        {t.deviation_from_plan || "Deviation"}
                       </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {loading ? (
-                          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                        ) : (
-                          projectOverview.duration
-                        )}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {t.days}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg ml-3">
-                      <CalendarDaysIcon
-                        className="w-6 h-6 text-green-600 dark:text-green-400"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
-                        {t.project_budget}
-                      </p>
-                      <p className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
-                        {loading ? (
-                          <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                        ) : (
-                          formatRupiah(projectOverview.budget)
-                        )}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg ml-3">
-                      <CurrencyDollarIcon
-                        className="w-6 h-6 text-yellow-600 dark:text-yellow-400"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-1">
-                        {t.overall_progress}
-                      </p>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                        {loading ? (
-                          <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                        ) : (
-                          `${performanceMetrics.overallProgress.toFixed(1)}%`
-                        )}
-                      </p>
-                      {!loading && (
-                        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2">
-                          <div
-                            className="bg-red-600 h-2 rounded-full transition-all duration-500 ease-out"
-                            style={{
-                              width: `${performanceMetrics.overallProgress}%`,
-                            }}
-                            role="progressbar"
-                            aria-valuenow={performanceMetrics.overallProgress}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                          ></div>
-                        </div>
+                      {performanceMetrics.deviation > 0 ? (
+                        <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <ArrowTrendingDownIcon className="w-4 h-4 text-red-600" />
                       )}
                     </div>
-                    <div className="p-3 bg-red-50 dark:bg-red-900/30 rounded-lg ml-3">
-                      <ChartPieIcon
-                        className="w-6 h-6 text-red-600 dark:text-red-400"
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Performance Metrics Section Header */}
-              <div className="mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                  {t.performance_summary_title}
-                </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Key performance indicators and project status metrics
-                </p>
-              </div>
-
-              {/* Performance Metrics - More Compact */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                      {t.deviation_from_plan}
+                    <p
+                      className={`text-xl font-bold ${
+                        performanceMetrics.deviation > 5
+                          ? "text-green-600 dark:text-green-400"
+                          : performanceMetrics.deviation < -5
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-slate-900 dark:text-slate-100"
+                      }`}
+                    >
+                      {performanceMetrics.deviation > 0 ? "+" : ""}
+                      {performanceMetrics.deviation.toFixed(1)}%
                     </p>
-                    {performanceMetrics.deviation > 0 ? (
-                      <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <ArrowTrendingDownIcon className="w-4 h-4 text-red-600" />
-                    )}
-                  </div>
-                  <p
-                    className={`text-lg font-bold ${
-                      performanceMetrics.deviation > 5
-                        ? "text-green-600"
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      {performanceMetrics.deviation > 5
+                        ? t.ahead_of_schedule || "Ahead of schedule"
                         : performanceMetrics.deviation < -5
-                        ? "text-red-600"
-                        : "text-slate-900 dark:text-slate-100"
-                    }`}
-                  >
-                    {performanceMetrics.deviation > 0 ? "+" : ""}
-                    {performanceMetrics.deviation.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    {performanceMetrics.deviation > 5
-                      ? t.ahead_of_schedule
-                      : performanceMetrics.deviation < -5
-                      ? t.behind_schedule
-                      : t.on_track}
-                  </p>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                      {t.predicted_completion}
+                        ? t.behind_schedule || "Behind schedule"
+                        : t.on_track || "On track"}
                     </p>
-                    <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
-                    {performanceMetrics.predictedCompletion
-                      ? formatDate(performanceMetrics.predictedCompletion)
-                      : t.not_available}
-                  </p>
-                </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                      {t.tasks_completed}
+                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        {t.predicted_completion || "Predicted Completion"}
+                      </p>
+                      <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                      {performanceMetrics.predictedCompletion
+                        ? formatDate(performanceMetrics.predictedCompletion)
+                        : t.not_available || "Not available"}
                     </p>
-                    <CheckBadgeIcon className="w-4 h-4 text-green-600" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      {t.estimated_completion_date ||
+                        "Estimated completion date"}
+                    </p>
                   </div>
-                  <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    {activeProjectTasks?.filter(
-                      (t) => t.percent_complete === 100
-                    ).length || 0}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    dari {projectOverview.totalTasks} total
-                  </p>
+
+                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        {t.tasks_completed || "Tasks Completed"}
+                      </p>
+                      <CheckBadgeIcon className="w-4 h-4 text-green-600" />
+                    </div>
+                    <p className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      {activeProjectTasks?.filter(
+                        (t) => t.percent_complete === 100
+                      ).length || 0}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      dari {projectOverview.totalTasks} total tasks
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Compact Chart Section with Better Controls */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                      {t.project_progress_chart}
-                    </h2>
-                    <div className="flex gap-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
-                      <button
-                        onClick={() => setChartView("s-curve")}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                          chartView === "s-curve"
-                            ? "bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm"
-                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
-                        }`}
-                      >
-                        S-Curve
-                      </button>
-                      <button
-                        onClick={() => setChartView("gantt")}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                          chartView === "gantt"
-                            ? "bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm"
-                            : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
-                        }`}
-                      >
-                        Gantt
-                      </button>
+              {/* Modern Chart Section */}
+              <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg">
+                      <ChartPieIcon className="w-5 h-5 text-white" />
                     </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                        {t.project_progress_chart || "Project Progress"}
+                      </h2>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Visual representation of project timeline and progress
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 bg-white dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                    <button
+                      onClick={() => setChartView("s-curve")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        chartView === "s-curve"
+                          ? "bg-red-600 text-white shadow-sm"
+                          : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                      }`}
+                    >
+                      S-Curve
+                    </button>
+                    <button
+                      onClick={() => setChartView("gantt")}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        chartView === "gantt"
+                          ? "bg-red-600 text-white shadow-sm"
+                          : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
+                      }`}
+                    >
+                      Gantt
+                    </button>
                   </div>
                 </div>
 
-                <div className="p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
                   <Suspense
                     fallback={
                       <div className="h-80 sm:h-96 flex items-center justify-center">
@@ -1184,79 +1112,102 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({
                     {chartView === "s-curve" ? (
                       <div className="h-80 sm:h-96" ref={chartRef}>
                         {nivoSCurveData.length > 0 ? (
-                          <ResponsiveLine
-                            data={nivoSCurveData}
-                            margin={{
-                              top: 20,
-                              right: 80,
-                              bottom: 40,
-                              left: 50,
+                          <Line
+                            data={{
+                              labels:
+                                nivoSCurveData[0]?.data.map(
+                                  (point) => point.x
+                                ) || [],
+                              datasets: nivoSCurveData.map((series) => ({
+                                label: series.id,
+                                data: series.data.map((point) => point.y),
+                                borderColor: series.color,
+                                backgroundColor: series.color + "20",
+                                borderWidth: 2,
+                                fill: false,
+                                tension: 0.4,
+                                pointRadius: 3,
+                                pointHoverRadius: 5,
+                              })),
                             }}
-                            xScale={{ type: "point" }}
-                            yScale={{
-                              type: "linear",
-                              min: 0,
-                              max: 100,
-                              stacked: false,
-                            }}
-                            yFormat=" >-.2f"
-                            axisTop={null}
-                            axisRight={null}
-                            axisBottom={{
-                              tickSize: 5,
-                              tickPadding: 5,
-                              tickRotation: 0,
-                              legend: t.day,
-                              legendOffset: 32,
-                              legendPosition: "middle",
-                            }}
-                            axisLeft={{
-                              tickSize: 5,
-                              tickPadding: 5,
-                              tickRotation: 0,
-                              legend: t.progress_percentage,
-                              legendOffset: -35,
-                              legendPosition: "middle",
-                            }}
-                            pointSize={6}
-                            pointColor={{ theme: "background" }}
-                            pointBorderWidth={2}
-                            pointBorderColor={{ from: "serieColor" }}
-                            pointLabelYOffset={-12}
-                            useMesh={true}
-                            markers={todayMarker}
-                            legends={[
-                              {
-                                anchor: "bottom-right",
-                                direction: "column",
-                                justify: false,
-                                translateX: 80,
-                                translateY: 0,
-                                itemsSpacing: 2,
-                                itemDirection: "left-to-right",
-                                itemWidth: 70,
-                                itemHeight: 16,
-                                itemOpacity: 0.75,
-                                symbolSize: 10,
-                                symbolShape: "circle",
-                                symbolBorderColor: "rgba(0, 0, 0, .5)",
-                                effects: [
-                                  {
-                                    on: "hover",
-                                    style: {
-                                      itemBackground: "rgba(0, 0, 0, .03)",
-                                      itemOpacity: 1,
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              plugins: {
+                                legend: {
+                                  position: "top" as const,
+                                  labels: {
+                                    padding: 10,
+                                    usePointStyle: true,
+                                    font: {
+                                      size: 11,
                                     },
                                   },
-                                ],
+                                },
+                                tooltip: {
+                                  mode: "index" as const,
+                                  intersect: false,
+                                  callbacks: {
+                                    label: function (context: any) {
+                                      let label = context.dataset.label || "";
+                                      if (label) {
+                                        label += ": ";
+                                      }
+                                      if (context.parsed.y !== null) {
+                                        label += context.parsed.y + "%";
+                                      }
+                                      return label;
+                                    },
+                                  },
+                                },
                               },
-                            ]}
+                              scales: {
+                                x: {
+                                  display: true,
+                                  title: {
+                                    display: true,
+                                    text: "Project Timeline",
+                                    font: {
+                                      size: 12,
+                                    },
+                                  },
+                                  grid: {
+                                    display: false,
+                                  },
+                                },
+                                y: {
+                                  display: true,
+                                  title: {
+                                    display: true,
+                                    text: "Progress (%)",
+                                    font: {
+                                      size: 12,
+                                    },
+                                  },
+                                  beginAtZero: true,
+                                  max: 100,
+                                  grid: {
+                                    color: "rgba(0, 0, 0, 0.1)",
+                                  },
+                                  ticks: {
+                                    stepSize: 20,
+                                  },
+                                },
+                              },
+                              interaction: {
+                                mode: "nearest" as const,
+                                axis: "x" as const,
+                                intersect: false,
+                              },
+                            }}
                           />
                         ) : (
                           <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
                             <div className="text-center">
                               <ChartPieIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                              <p className="text-sm">{t.no_data_available}</p>
+                              <p className="text-sm">
+                                {t.no_data_available || "No data available"}
+                              </p>
                             </div>
                           </div>
                         )}

@@ -1,6 +1,27 @@
 import React from "react";
-import { ResponsiveLine } from "@nivo/line";
-import { ResponsiveBar } from "@nivo/bar";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export interface ChartProps {
   chartType: "line" | "bar" | "combo";
@@ -34,272 +55,170 @@ export const Chart: React.FC<ChartProps> = ({
   hoveredInfo,
   formatDate,
   formatNumber,
-}) => (
-  <div
-    className="h-80 w-full relative cursor-pointer overflow-hidden"
-    ref={chartRef}
-    onClick={handleDaySelection}
-    onMouseMove={handleChartHover}
-    onMouseLeave={handleMouseLeaveChart}
-    style={{ position: "relative" }}
-  >
-    {chartType === "line" || chartType === "combo" ? (
-      <ResponsiveLine
-        data={[
-          ...performanceData.displayedAreas.map((area, index) => ({
-            id: area || `Area ${index}`,
-            data:
-              performanceData.chartData[area]?.map((d) => ({
-                x: d?.day || 0,
-                y: d?.stock_out || 0,
-              })) || [],
-          })),
-          ...(showTrend
-            ? performanceData.displayedAreas.map((area, index) => ({
-                id: `${area || `Area ${index}`} (Trend)`,
-                data:
-                  performanceData.trendData[area]?.map((d) => ({
-                    x: d?.day || 0,
-                    y: d?.moving_average || 0,
-                  })) || [],
-              }))
-            : []),
-          ...(showComparison
-            ? performanceData.displayedAreas.map((area, index) => ({
-                id: `${area || `Area ${index}`} (Prev Month)`,
-                data:
-                  performanceData.comparisonData[area]?.map((d, dayIndex) => ({
-                    x: dayIndex + 1,
-                    y: d?.stock_out || 0,
-                  })) || [],
-              }))
-            : []),
-        ]}
-        margin={{ top: 20, right: 30, bottom: 60, left: 70 }}
-        xScale={{ type: "point" }}
-        yScale={{
-          type: "linear",
-          min: "auto",
-          max: "auto",
-          stacked: false,
-        }}
-        axisBottom={{
-          legend: "Day of Month",
-          legendPosition: "middle",
-          legendOffset: 40,
-          tickRotation: -45,
-        }}
-        axisLeft={{
-          legend: "Stock Out (Ton)",
-          legendPosition: "middle",
-          legendOffset: -50,
-        }}
-        colors={(serie) => {
-          const serieIdStr = serie.id?.toString() || "";
-          const areaIndex = performanceData.displayedAreas.findIndex((area) =>
-            serieIdStr.startsWith(area || "")
-          );
-          const validAreaIndex = areaIndex >= 0 ? areaIndex : 0;
-          if (serieIdStr.includes("(Trend)")) return "#64748B";
-          if (serieIdStr.includes("(Prev Month)"))
-            return COLORS[validAreaIndex % COLORS.length] + "80";
-          return COLORS[validAreaIndex % COLORS.length];
-        }}
-        pointSize={chartType === "combo" ? 4 : 6}
-        pointColor={{ theme: "background" }}
-        pointBorderWidth={2}
-        pointBorderColor={{ from: "serieColor" }}
-        enableArea={!showComparison}
-        areaOpacity={0.1}
-        useMesh={true}
-        enableSlices="x"
-        sliceTooltip={({ slice }) => (
-          <div
-            style={{
-              padding: 8,
-              background: "#1E293B",
-              color: "#fff",
-              borderRadius: 4,
-              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-              maxWidth: "200px",
-              fontSize: "12px",
-              zIndex: 1000,
-            }}
-          >
-            <div className="font-semibold mb-1 text-xs">
-              Day {slice.points[0].data.x}
-            </div>
-            <div className="max-h-32 overflow-y-auto">
-              {[...slice.points]
-                .sort((a, b) => (b.data.y as number) - (a.data.y as number))
-                .slice(0, 6)
-                .map((point) => {
-                  const serieId = point.seriesId?.toString() || "Unknown";
-                  return (
-                    <div
-                      key={point.id}
-                      style={{
-                        color: point.seriesColor,
-                        marginBottom: 2,
-                        fontSize: "11px",
-                      }}
-                    >
-                      <div className="flex justify-between items-center">
-                        <span
-                          className="truncate mr-2"
-                          style={{ maxWidth: "80px" }}
-                        >
-                          {serieId.length > 10
-                            ? serieId.substring(0, 10) + "..."
-                            : serieId}
-                        </span>
-                        <span className="font-semibold text-right">
-                          {formatNumber(point.data.y as number)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              {slice.points.length > 6 && (
-                <div className="text-xs text-gray-400 mt-1">
-                  +{slice.points.length - 6} more areas...
-                </div>
-              )}
-            </div>
+}) => {
+  // Check if we have data to display
+  if (
+    performanceData.noData ||
+    !performanceData.chartData ||
+    Object.keys(performanceData.chartData).length === 0
+  ) {
+    return (
+      <div className="h-80 w-full relative overflow-hidden flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg">
+        <div className="text-center text-slate-500 dark:text-slate-400">
+          <div className="text-lg font-medium mb-2">No Data Available</div>
+          <div className="text-sm">
+            No stock data found for the selected filters
           </div>
-        )}
-        theme={{
-          background: "#FFFFFF",
-          text: { fill: "#374151", fontSize: 12 },
-          axis: {
-            domain: { line: { stroke: "#D1D5DB", strokeWidth: 1 } },
-            ticks: {
-              line: { stroke: "#D1D5DB", strokeWidth: 1 },
-              text: { fill: "#374151" },
-            },
-            legend: { text: { fill: "#374151" } },
-          },
-          grid: { line: { stroke: "#E5E7EB", strokeWidth: 1 } },
-          legends: { text: { fill: "#374151" } },
-          tooltip: {
-            container: {
-              background: "#1E293B",
-              color: "#FFFFFF",
-              fontSize: 12,
-              borderRadius: 4,
-              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-            },
-          },
-          crosshair: {
-            line: { stroke: "#DC2626", strokeWidth: 2, strokeOpacity: 0.5 },
-          },
-        }}
-      />
-    ) : (
-      <ResponsiveBar
-        data={performanceData.chartData[performanceData.displayedAreas[0]]?.map(
-          (d, index) => {
-            const result: any = { day: `Day ${d?.day || index + 1}` };
-            performanceData.displayedAreas.forEach((area) => {
-              const areaData = performanceData.chartData[area]?.[index];
-              result[area || `Area_${index}`] = areaData?.stock_out || 0;
-            });
-            return result;
-          }
-        )}
-        keys={performanceData.displayedAreas}
-        indexBy="day"
-        margin={{ top: 20, right: 30, bottom: 60, left: 70 }}
-        padding={0.3}
-        valueScale={{ type: "linear" }}
-        colors={COLORS}
-        borderColor={{ from: "color", modifiers: [["darker", 1.6]] }}
-        axisBottom={{
-          legend: "Day of Month",
-          legendPosition: "middle",
-          legendOffset: 40,
-          tickRotation: -45,
-        }}
-        axisLeft={{
-          legend: "Stock Out (Ton)",
-          legendPosition: "middle",
-          legendOffset: -50,
-        }}
-        tooltip={({ id, value, indexValue, color }) => {
-          const serieId = id?.toString() || "Unknown";
-          return (
-            <div
-              style={{
-                padding: 6,
-                background: "#1E293B",
-                color: "#fff",
-                borderRadius: 4,
-                fontSize: "12px",
-                maxWidth: "150px",
-              }}
-            >
-              <div className="font-semibold text-xs">
-                {serieId.length > 12
-                  ? serieId.substring(0, 12) + "..."
-                  : serieId}
-              </div>
-              <div className="text-xs">{formatNumber(value || 0)} Ton</div>
-              <div className="text-xs text-gray-300">{indexValue || "N/A"}</div>
-            </div>
-          );
-        }}
-        theme={{ grid: { line: { stroke: "#E5E7EB", strokeWidth: 1 } } }}
-      />
-    )}
-    {hoveredInfo && (
-      <div
-        className="absolute p-2 text-xs text-white bg-slate-800 rounded-md shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full z-20"
-        style={{
-          left: `${hoveredInfo.x}px`,
-          top: `${hoveredInfo.y}px`,
-          maxWidth: "180px",
-          fontSize: "11px",
-        }}
-      >
-        <div className="font-semibold text-center mb-1 text-xs">
-          {formatDate(new Date(filterYear, filterMonth, hoveredInfo.day))}
-        </div>
-        <div className="max-h-24 overflow-y-auto space-y-0.5">
-          {Object.entries(hoveredInfo.values)
-            .sort(([, a], [, b]) => (b as number) - (a as number))
-            .slice(0, 5)
-            .map(([area, value]) => (
-              <div
-                key={area}
-                className="flex items-center justify-between gap-2"
-              >
-                <div className="flex items-center flex-1 min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-sm mr-1.5 flex-shrink-0"
-                    style={{
-                      backgroundColor:
-                        COLORS[
-                          performanceData.displayedAreas.indexOf(area) %
-                            COLORS.length
-                        ],
-                    }}
-                  ></span>
-                  <span className="text-slate-300 truncate text-xs">
-                    {area.length > 8 ? area.substring(0, 8) + "..." : area}:
-                  </span>
-                </div>
-                <span className="font-bold text-right text-xs flex-shrink-0">
-                  {formatNumber(Math.round(value as number))}
-                </span>
-              </div>
-            ))}
-          {Object.keys(hoveredInfo.values).length > 5 && (
-            <div className="text-xs text-slate-400 text-center mt-1">
-              +{Object.keys(hoveredInfo.values).length - 5} more
-            </div>
-          )}
         </div>
       </div>
-    )}
-  </div>
-);
+    );
+  }
+
+  // Prepare chart data
+  const daysInMonth = performanceData.daysInMonth;
+  const displayedAreas = performanceData.displayedAreas || [];
+  const labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
+
+  const datasets = displayedAreas.map((area: string, index: number) => {
+    const areaData = performanceData.chartData[area] || [];
+    const data = labels.map((_, dayIndex) => {
+      const dayData = areaData.find((d: any) => d.day === dayIndex + 1);
+      return dayData ? dayData.stock_out : 0;
+    });
+
+    return {
+      label: area,
+      data,
+      borderColor: COLORS[index % COLORS.length],
+      backgroundColor: COLORS[index % COLORS.length] + "20",
+      borderWidth: 2,
+      fill: chartType === "bar",
+      tension: 0.4,
+    };
+  });
+
+  // Add comparison data if enabled
+  if (showComparison && performanceData.comparisonData) {
+    displayedAreas.forEach((area: string, index: number) => {
+      const comparisonData = performanceData.comparisonData[area] || [];
+      const data = labels.map((_, dayIndex) => {
+        const dayData = comparisonData.find((d: any) => d.day === dayIndex + 1);
+        return dayData ? dayData.stock_out : 0;
+      });
+
+      datasets.push({
+        label: `${area} (Prev Month)`,
+        data,
+        borderColor: COLORS[index % COLORS.length],
+        backgroundColor: COLORS[index % COLORS.length] + "10",
+        borderWidth: 1,
+        borderDash: [5, 5],
+        fill: false,
+        tension: 0.4,
+      });
+    });
+  }
+
+  const chartData = {
+    labels,
+    datasets,
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top" as const,
+        labels: {
+          padding: 20,
+          usePointStyle: true,
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        mode: "index" as const,
+        intersect: false,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += formatNumber(context.parsed.y) + " tons";
+            }
+            return label;
+          },
+        },
+      },
+      title: {
+        display: true,
+        text: "Daily Stock Out Performance",
+        font: {
+          size: 16,
+          weight: "bold" as const,
+        },
+        padding: {
+          top: 10,
+          bottom: 30,
+        },
+      },
+    },
+    scales: {
+      x: {
+        display: true,
+        title: {
+          display: true,
+          text: "Day of Month",
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        display: true,
+        title: {
+          display: true,
+          text: "Stock Out (tons)",
+        },
+        beginAtZero: true,
+        grid: {
+          color: "rgba(0, 0, 0, 0.1)",
+        },
+      },
+    },
+    interaction: {
+      mode: "nearest" as const,
+      axis: "x" as const,
+      intersect: false,
+    },
+    onClick: (event: any, elements: any[]) => {
+      if (elements.length > 0) {
+        const dataIndex = elements[0].index;
+        const day = dataIndex + 1;
+        // Create a synthetic mouse event for day selection
+        const syntheticEvent = {
+          clientX: event.x,
+          clientY: event.y,
+        } as React.MouseEvent;
+        handleDaySelection(syntheticEvent);
+      }
+    },
+  };
+
+  return (
+    <div
+      className="h-80 w-full relative overflow-hidden bg-white dark:bg-slate-800 rounded-lg p-4"
+      ref={chartRef}
+      onMouseMove={handleChartHover}
+      onMouseLeave={handleMouseLeaveChart}
+    >
+      {chartType === "line" && <Line data={chartData} options={options} />}
+      {chartType === "bar" && <Bar data={chartData} options={options} />}
+      {chartType === "combo" && <Bar data={chartData} options={options} />}
+    </div>
+  );
+};

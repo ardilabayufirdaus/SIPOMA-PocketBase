@@ -73,6 +73,18 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({
 
           <div>
             <strong className="text-slate-800 dark:text-slate-200">
+              Search & Filtering:
+            </strong>
+            <ul className="mt-2 space-y-1 ml-4">
+              <li>• Use search bar to filter parameters by name or unit</li>
+              <li>• Real-time results update as you type</li>
+              <li>• Clear search to reset filters</li>
+              <li>• Search supports partial matches</li>
+            </ul>
+          </div>
+
+          <div>
+            <strong className="text-slate-800 dark:text-slate-200">
               Data Entry Tips:
             </strong>
             <ul className="mt-2 space-y-1 ml-4">
@@ -80,6 +92,19 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({
               <li>• Values are auto-saved on change</li>
               <li>• Invalid values are highlighted in red</li>
               <li>• Footer shows real-time calculations</li>
+              <li>• Press Enter to confirm entry</li>
+            </ul>
+          </div>
+
+          <div>
+            <strong className="text-slate-800 dark:text-slate-200">
+              Error Handling:
+            </strong>
+            <ul className="mt-2 space-y-1 ml-4">
+              <li>• Network errors show retry options</li>
+              <li>• Invalid data triggers validation messages</li>
+              <li>• Auto-recovery for temporary connection issues</li>
+              <li>• Error boundaries prevent app crashes</li>
             </ul>
           </div>
 
@@ -92,6 +117,20 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({
               <li>• Fixed footer always visible</li>
               <li>• Horizontal & vertical scrolling</li>
               <li>• Auto-calculation of statistics</li>
+              <li>• Responsive design for mobile devices</li>
+              <li>• Dark mode support</li>
+            </ul>
+          </div>
+
+          <div>
+            <strong className="text-slate-800 dark:text-slate-200">
+              Accessibility:
+            </strong>
+            <ul className="mt-2 space-y-1 ml-4">
+              <li>• Screen reader compatible</li>
+              <li>• High contrast mode support</li>
+              <li>• Keyboard-only navigation</li>
+              <li>• ARIA labels for all interactive elements</li>
             </ul>
           </div>
         </div>

@@ -6,15 +6,6 @@ import { ParameterDataType, ParameterSetting, UserRole } from "../../types";
 import { formatDate } from "../../utils/formatters";
 import { usePlantUnits } from "../../hooks/usePlantUnits";
 import { useUsers } from "../../hooks/useUsers";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import Modal from "../../components/Modal";
 
 // Utility functions for better maintainability
@@ -928,74 +919,9 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             mencapai parameter target (di luar range 0-100%).
           </p>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={
-                  selectedOperator
-                    ? operatorAchievementData.filter(
-                        (item) =>
-                          item.operatorId &&
-                          item.operatorId === selectedOperator
-                      )
-                    : operatorAchievementData
-                }
-                margin={{ top: 10, right: 10, left: 10, bottom: 40 }}
-                onClick={(data: any) => {
-                  if (
-                    data &&
-                    data.activePayload &&
-                    data.activePayload.length > 0
-                  ) {
-                    const paramName = data.activePayload[0].payload.parameter;
-                    const paramStats = operatorAchievementData.find(
-                      (item) => item.parameter === paramName
-                    );
-                    if (paramStats && paramStats.onClick) {
-                      paramStats.onClick();
-                    }
-                  }
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="parameter"
-                  tick={{ fontSize: 10, fill: "#64748b" }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: "#64748b" }}
-                  label={{
-                    value: "Persentase (%)",
-                    angle: -90,
-                    position: "insideLeft",
-                    style: { fontSize: 11 },
-                  }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "none",
-                    borderRadius: "6px",
-                    color: "white",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    fontSize: "11px",
-                  }}
-                  formatter={(value: number, name: string) => [
-                    `${value}%`,
-                    "Persentase Tidak Capai",
-                  ]}
-                  labelFormatter={(label: string) => `Parameter: ${label}`}
-                />
-                <Bar
-                  dataKey="percentage"
-                  fill="#ef4444"
-                  name="Persentase Tidak Capai"
-                  radius={[2, 2, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="flex items-center justify-center h-full text-slate-500">
+              Bar Chart - implement with Chart.js
+            </div>
           </div>
           <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
             <p>

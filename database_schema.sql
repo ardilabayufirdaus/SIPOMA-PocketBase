@@ -177,6 +177,30 @@ CREATE TABLE IF NOT EXISTS cop_parameters (
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
+-- CCR Footer Data table
+CREATE TABLE IF NOT EXISTS ccr_footer_data (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    date DATE NOT NULL,
+    parameter_id UUID NOT NULL,
+    plant_unit VARCHAR(100),
+    total NUMERIC,
+    average NUMERIC,
+    minimum NUMERIC,
+    maximum NUMERIC,
+    shift1_total NUMERIC DEFAULT 0,
+    shift2_total NUMERIC DEFAULT 0,
+    shift3_total NUMERIC DEFAULT 0,
+    shift3_cont_total NUMERIC DEFAULT 0,
+    shift1_difference NUMERIC DEFAULT 0,
+    shift2_difference NUMERIC DEFAULT 0,
+    shift3_difference NUMERIC DEFAULT 0,
+    shift3_cont_difference NUMERIC DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(date, parameter_id, plant_unit)
+);
+
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_ccr_parameter_data_date ON ccr_parameter_data(date);
 CREATE INDEX IF NOT EXISTS idx_ccr_parameter_data_parameter_id ON ccr_parameter_data(parameter_id);
 CREATE INDEX IF NOT EXISTS idx_ccr_downtime_data_date ON ccr_downtime_data(date);

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUpIcon,
   TrendingDownIcon,
@@ -128,9 +127,7 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
   };
 
   return (
-    <motion.div
-      {...fadeInUp}
-      {...scaleOnHover}
+    <div
       className={`
         relative overflow-hidden rounded-2xl border backdrop-blur-sm
         ${getVariantClasses()}
@@ -216,7 +213,7 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -239,8 +236,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
   className = "",
 }) => {
   return (
-    <motion.div
-      {...fadeInUp}
+    <div
       className={`
         bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700
         shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden
@@ -274,7 +270,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
           children
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -371,10 +367,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   });
 
   return (
-    <motion.div
-      {...fadeInUp}
-      className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl p-6 text-white relative overflow-hidden"
-    >
+    <div className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl p-6 text-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10" />
       <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
@@ -439,7 +432,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

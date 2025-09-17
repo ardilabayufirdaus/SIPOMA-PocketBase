@@ -23,7 +23,7 @@ export default defineConfig({
             ) {
               return "ui-vendor";
             }
-            if (id.includes("@nivo") || id.includes("recharts")) {
+            if (id.includes("@nivo")) {
               return "charts-vendor";
             }
             if (id.includes("@supabase") || id.includes("@tanstack")) {

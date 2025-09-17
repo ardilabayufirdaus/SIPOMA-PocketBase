@@ -4,7 +4,9 @@ import { ParameterSetting } from "../../types";
 interface CcrTableFooterProps {
   filteredParameterSettings: ParameterSetting[];
   parameterShiftFooterData: any;
+  parameterShiftDifferenceData: any;
   parameterFooterData: any;
+  counterTotalData: any;
   formatStatValue: (value: number) => string;
   t: any;
   mainTableScrollElement?: HTMLElement | null;
@@ -13,7 +15,9 @@ interface CcrTableFooterProps {
 const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
   filteredParameterSettings,
   parameterShiftFooterData,
+  parameterShiftDifferenceData,
   parameterFooterData,
+  counterTotalData,
   formatStatValue,
   t,
   mainTableScrollElement,
@@ -49,16 +53,36 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: "border-t-2 border-slate-300",
     },
     {
+      label: `${t.total_shift_3_cont} Selisih`,
+      data: parameterShiftDifferenceData.shift3Cont,
+      className: "bg-slate-50 dark:bg-slate-700",
+    },
+    {
       label: t.total_shift_1,
       data: parameterShiftFooterData.shift1,
+    },
+    {
+      label: `${t.total_shift_1} Selisih`,
+      data: parameterShiftDifferenceData.shift1,
+      className: "bg-slate-50 dark:bg-slate-700",
     },
     {
       label: t.total_shift_2,
       data: parameterShiftFooterData.shift2,
     },
     {
+      label: `${t.total_shift_2} Selisih`,
+      data: parameterShiftDifferenceData.shift2,
+      className: "bg-slate-50 dark:bg-slate-700",
+    },
+    {
       label: t.total_shift_3,
       data: parameterShiftFooterData.shift3,
+    },
+    {
+      label: `${t.total_shift_3} Selisih`,
+      data: parameterShiftDifferenceData.shift3,
+      className: "bg-slate-50 dark:bg-slate-700",
     },
     {
       label: t.total,
@@ -80,6 +104,11 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       label: t.max,
       data: parameterFooterData,
       dataKey: "max",
+    },
+    {
+      label: "Counter Total",
+      data: counterTotalData,
+      className: "border-t-2 border-slate-300 bg-blue-50 dark:bg-blue-900/20",
     },
   ];
 
