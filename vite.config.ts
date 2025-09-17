@@ -41,6 +41,10 @@ export default defineConfig({
             }
             return 'utils-misc';
           }
+          // Handle utils files that contain React components
+          if (id.includes('/utils/') && (id.includes('ResponsiveLayout') || id.includes('Microinteractions'))) {
+            return 'react-vendor';
+          }
         },
       },
     },
