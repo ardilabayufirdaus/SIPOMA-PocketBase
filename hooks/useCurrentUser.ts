@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '../types';
 import { api } from '../utils/api';
+import { buildPermissionMatrix } from '../utils/permissionUtils';
 
 export const useCurrentUser = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -28,7 +29,11 @@ export const useCurrentUser = () => {
         const userData = JSON.parse(storedUser);
 
         // Verify user is still active by checking database
-        const dbUser = await api.users.getById(userData.id);
+        const dbUserRaw = await api.users.getById(userData.id);
+        const dbUser = {
+          ...dbUserRaw,
+          permissions: buildPermissionMatrix((dbUserRaw as any).user_permissions || []),
+        };
         if (!dbUser.is_active) {
           // User inactive, clear session
           localStorage.removeItem('currentUser');

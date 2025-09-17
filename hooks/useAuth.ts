@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabase';
 import { User } from '../types';
 import useErrorHandler from './useErrorHandler';
+import { buildPermissionMatrix } from '../utils/permissionUtils';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -53,7 +54,7 @@ export const useAuth = () => {
 
         const userData = {
           ...data,
-          permissions: (data as any).user_permissions?.map((up: any) => up.permissions) || [],
+          permissions: buildPermissionMatrix((data as any).user_permissions || []),
         };
 
         // Convert dates

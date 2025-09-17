@@ -45,6 +45,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'plant'>('general');
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   const t = translations[language];
 
@@ -213,8 +214,19 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
     {} as Record<string, any[]>
   );
 
+  const toggleCategoryCollapse = (category: string) => {
+    setCollapsedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
+
   const handleSave = async () => {
-    setSaving(true);
     try {
       if (onSave) {
         // Use parent save handler
@@ -239,6 +251,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
       size="xl"
       closeOnBackdrop={false}
       closeOnEscape={false}
+      className="max-h-[90vh]"
     >
       <div className="space-y-6">
         {/* Tab Navigation */}
@@ -349,92 +362,111 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
 
         {/* Plant Operations Tab */}
         {activeTab === 'plant' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                 Plant Operations Access Control
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Configure granular permissions for each plant unit
               </p>
             </div>
 
-            <div className="space-y-6">
-              {Object.entries(groupedPlantUnits).map(([category, units], categoryIndex) => (
-                <div
-                  key={category}
-                  className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-                  style={{ animationDelay: `${categoryIndex * 150}ms` }}
-                >
-                  <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4">
-                    <h4 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <CogIcon className="w-5 h-5" />
-                      {category}
-                    </h4>
-                  </div>
+            <div className="max-h-96 overflow-y-auto space-y-3">
+              {Object.entries(groupedPlantUnits).map(([category, units], categoryIndex) => {
+                const isCollapsed = collapsedCategories.has(category);
+                return (
+                  <div
+                    key={category}
+                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                    style={{ animationDelay: `${categoryIndex * 100}ms` }}
+                  >
+                    <button
+                      onClick={() => toggleCategoryCollapse(category)}
+                      className="w-full bg-gradient-to-r from-primary-600 to-primary-700 p-3 text-left hover:from-primary-700 hover:to-primary-800 transition-colors duration-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CogIcon className="w-4 h-4 text-white" />
+                          <span className="text-sm font-semibold text-white">{category}</span>
+                          <span className="text-xs bg-white/20 text-white px-2 py-1 rounded-full">
+                            {(units as any[]).length} units
+                          </span>
+                        </div>
+                        <svg
+                          className={`w-4 h-4 text-white transform transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </button>
 
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {(units as any[]).map((unit, unitIndex) => {
-                        const currentLevel =
-                          (permissions.plant_operations as PlantOperationsPermissions)?.[
-                            category
-                          ]?.[unit.unit] || 'NONE';
+                    {!isCollapsed && (
+                      <div className="p-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                          {(units as any[]).map((unit, unitIndex) => {
+                            const currentLevel =
+                              (permissions.plant_operations as PlantOperationsPermissions)?.[
+                                category
+                              ]?.[unit.unit] || 'NONE';
 
-                        return (
-                          <div
-                            key={unit.id}
-                            className="group bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-md p-4"
-                            style={{
-                              animationDelay: `${categoryIndex * 150 + unitIndex * 50}ms`,
-                            }}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="font-semibold text-gray-900 dark:text-white">
-                                {unit.unit}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {getPermissionLevelIcon(currentLevel)}
-                                <EnhancedBadge
-                                  variant={getPermissionLevelColor(currentLevel)}
-                                  className="text-xs"
-                                >
-                                  {getPermissionLevelLabel(currentLevel)}
-                                </EnhancedBadge>
+                            return (
+                              <div
+                                key={unit.id}
+                                className="bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 p-2 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-200"
+                                style={{
+                                  animationDelay: `${categoryIndex * 100 + unitIndex * 25}ms`,
+                                }}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                    {unit.unit}
+                                  </span>
+                                  <EnhancedBadge
+                                    variant={getPermissionLevelColor(currentLevel)}
+                                    className="text-xs px-1.5 py-0.5"
+                                  >
+                                    {getPermissionLevelLabel(currentLevel)}
+                                  </EnhancedBadge>
+                                </div>
+
+                                <div className="grid grid-cols-4 gap-1">
+                                  {permissionLevels.map((level) => (
+                                    <button
+                                      key={level}
+                                      type="button"
+                                      onClick={() =>
+                                        handlePlantOperationPermissionChange(category, unit.unit, level)
+                                      }
+                                      className={`relative p-1 text-xs font-medium rounded border transition-all duration-150 transform hover:scale-105 ${
+                                        currentLevel === level
+                                          ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-sm`
+                                          : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600`
+                                      }`}
+                                      title={`${unit.unit} - ${level}`}
+                                    >
+                                      <div className="flex flex-col items-center gap-0.5">
+                                        <div className="text-xs">{getPermissionLevelIcon(level)}</div>
+                                        <span className="text-xs leading-none">{level}</span>
+                                      </div>
+                                      {currentLevel === level && (
+                                        <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-primary-500 rounded-full" />
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                              {permissionLevels.map((level) => (
-                                <button
-                                  key={level}
-                                  type="button"
-                                  onClick={() =>
-                                    handlePlantOperationPermissionChange(category, unit.unit, level)
-                                  }
-                                  className={`relative p-2 text-xs font-medium rounded-md border transition-all duration-200 transform hover:scale-105 ${
-                                    currentLevel === level
-                                      ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-md`
-                                      : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`
-                                  }`}
-                                >
-                                  <div className="flex flex-col items-center gap-1">
-                                    {getPermissionLevelIcon(level)}
-                                    <span>{level}</span>
-                                  </div>
-                                  {currentLevel === level && (
-                                    <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary-500 rounded-full animate-pulse" />
-                                  )}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

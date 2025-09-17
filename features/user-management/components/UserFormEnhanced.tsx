@@ -61,6 +61,75 @@ const UserForm: React.FC<UserFormProps> = ({
 
   const t = translations[language];
 
+  const fetchUserPermissions = async () => {
+    if (!user?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_permissions')
+        .select(
+          `
+          permissions (
+            module_name,
+            permission_level,
+            plant_units
+          )
+        `
+        )
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Build permission matrix from data
+      const matrix: PermissionMatrix = {
+        dashboard: 'NONE',
+        plant_operations: {},
+        packing_plant: 'NONE',
+        project_management: 'NONE',
+        system_settings: 'NONE',
+        user_management: 'NONE',
+      };
+
+      (data || []).forEach((up: any) => {
+        const perm = up.permissions;
+        if (perm) {
+          switch (perm.module_name) {
+            case 'dashboard':
+              matrix.dashboard = perm.permission_level;
+              break;
+            case 'plant_operations':
+              if (perm.plant_units && Array.isArray(perm.plant_units)) {
+                perm.plant_units.forEach((unit: any) => {
+                  if (!matrix.plant_operations[unit.category]) {
+                    matrix.plant_operations[unit.category] = {};
+                  }
+                  matrix.plant_operations[unit.category][unit.unit] = perm.permission_level;
+                });
+              }
+              break;
+            case 'packing_plant':
+              matrix.packing_plant = perm.permission_level;
+              break;
+            case 'project_management':
+              matrix.project_management = perm.permission_level;
+              break;
+            case 'system_settings':
+              matrix.system_settings = perm.permission_level;
+              break;
+            case 'user_management':
+              matrix.user_management = perm.permission_level;
+              break;
+          }
+        }
+      });
+
+      setUserPermissions(matrix);
+    } catch (err: any) {
+      console.error('Error fetching user permissions:', err);
+      setError(err.message || 'Failed to fetch user permissions');
+    }
+  };
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -70,6 +139,17 @@ const UserForm: React.FC<UserFormProps> = ({
         full_name: user.full_name || '',
         role: user.role || 'Guest',
         is_active: user.is_active ?? true,
+      });
+      fetchUserPermissions();
+    } else {
+      // Reset permissions for new user
+      setUserPermissions({
+        dashboard: 'NONE',
+        plant_operations: {},
+        packing_plant: 'NONE',
+        project_management: 'NONE',
+        system_settings: 'NONE',
+        user_management: 'NONE',
       });
     }
   }, [user]);
@@ -135,6 +215,8 @@ const UserForm: React.FC<UserFormProps> = ({
         submitData.password_hash = formData.password; // Plain text as per requirements
       }
 
+      let userId = user?.id;
+
       if (user) {
         // Update user
         const { error: updateError } = await supabase
@@ -145,9 +227,19 @@ const UserForm: React.FC<UserFormProps> = ({
         if (updateError) throw updateError;
       } else {
         // Create new user
-        const { error: insertError } = await supabase.from('users').insert(submitData);
+        const { data: newUser, error: insertError } = await supabase
+          .from('users')
+          .insert(submitData)
+          .select('id')
+          .single();
 
         if (insertError) throw insertError;
+        userId = newUser?.id;
+      }
+
+      // Save permissions if userId exists
+      if (userId) {
+        await saveUserPermissions(userId);
       }
 
       onSuccess();
@@ -157,6 +249,121 @@ const UserForm: React.FC<UserFormProps> = ({
       setError(err.message || 'Failed to save user');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const saveUserPermissions = async (userId: string) => {
+    // Delete existing permissions
+    await supabase.from('user_permissions').delete().eq('user_id', userId);
+
+    // Insert new permissions
+    const permissionInserts = [];
+
+    // Handle simple permissions
+    const simplePermissions = [
+      { module: 'dashboard', level: userPermissions.dashboard },
+      { module: 'packing_plant', level: userPermissions.packing_plant },
+      { module: 'project_management', level: userPermissions.project_management },
+      { module: 'system_settings', level: userPermissions.system_settings },
+      { module: 'user_management', level: userPermissions.user_management },
+    ];
+
+    for (const perm of simplePermissions) {
+      if (perm.level !== 'NONE') {
+        // Get or create permission record
+        const { data: existingPerm } = await supabase
+          .from('permissions')
+          .select('id')
+          .eq('module_name', perm.module)
+          .eq('permission_level', perm.level)
+          .single();
+
+        let permissionId;
+        if (existingPerm) {
+          permissionId = existingPerm.id;
+        } else {
+          const { data: newPerm } = await supabase
+            .from('permissions')
+            .insert({
+              module_name: perm.module,
+              permission_level: perm.level,
+              plant_units: [],
+            })
+            .select('id')
+            .single();
+          permissionId = newPerm?.id;
+        }
+
+        if (permissionId) {
+          permissionInserts.push({
+            user_id: userId,
+            permission_id: permissionId,
+          });
+        }
+      }
+    }
+
+    // Handle plant operations permissions
+    if (
+      userPermissions.plant_operations &&
+      Object.keys(userPermissions.plant_operations).length > 0
+    ) {
+      const plantUnits = [];
+      Object.entries(userPermissions.plant_operations).forEach(([category, units]) => {
+        Object.entries(units).forEach(([unit, level]) => {
+          if (level !== 'NONE') {
+            plantUnits.push({ category, unit, level });
+          }
+        });
+      });
+
+      if (plantUnits.length > 0) {
+        // Group by permission level
+        const levelGroups = plantUnits.reduce(
+          (acc, record) => {
+            if (!acc[record.level]) acc[record.level] = [];
+            acc[record.level].push({ category: record.category, unit: record.unit });
+            return acc;
+          },
+          {} as Record<string, any[]>
+        );
+
+        for (const [level, units] of Object.entries(levelGroups)) {
+          const { data: existingPerm } = await supabase
+            .from('permissions')
+            .select('id')
+            .eq('module_name', 'plant_operations')
+            .eq('permission_level', level)
+            .single();
+
+          let permissionId;
+          if (existingPerm) {
+            permissionId = existingPerm.id;
+          } else {
+            const { data: newPerm } = await supabase
+              .from('permissions')
+              .insert({
+                module_name: 'plant_operations',
+                permission_level: level,
+                plant_units: units,
+              })
+              .select('id')
+              .single();
+            permissionId = newPerm?.id;
+          }
+
+          if (permissionId) {
+            permissionInserts.push({
+              user_id: userId,
+              permission_id: permissionId,
+            });
+          }
+        }
+      }
+    }
+
+    if (permissionInserts.length > 0) {
+      await supabase.from('user_permissions').insert(permissionInserts);
     }
   };
 
@@ -195,6 +402,18 @@ const UserForm: React.FC<UserFormProps> = ({
 
   const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
     setUserPermissions(newPermissions);
+  };
+
+  const handleSavePermissions = async () => {
+    if (!user?.id) return;
+
+    try {
+      await saveUserPermissions(user.id);
+      setIsPermissionEditorOpen(false);
+    } catch (err: any) {
+      console.error('Error saving permissions:', err);
+      setError(err.message || 'Failed to save permissions');
+    }
   };
 
   return (
@@ -474,6 +693,7 @@ const UserForm: React.FC<UserFormProps> = ({
         userId={user?.id || ''}
         currentPermissions={userPermissions}
         onPermissionsChange={handlePermissionsChange}
+        onSave={handleSavePermissions}
         onClose={() => setIsPermissionEditorOpen(false)}
         isOpen={isPermissionEditorOpen}
         language={language}
