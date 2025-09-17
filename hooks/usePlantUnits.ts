@@ -33,13 +33,13 @@ export const usePlantUnits = () => {
       .select('*')
       .order('category')
       .order('unit')
-      .limit(500); // Limit for performance, plant units shouldn't be too many
+      .limit(500) as { data: any; error: any }; // Limit for performance, plant units shouldn't be too many
 
     if (error) {
       console.error('Error fetching plant units:', error);
       setRecords([]);
     } else {
-      setRecords(data || []);
+      setRecords((data || []) as PlantUnit[]);
       // Cache the data
       try {
         localStorage.setItem(cacheKey, JSON.stringify(data || []));
@@ -94,7 +94,7 @@ export const usePlantUnits = () => {
         // First, get all existing records to delete them properly
         const { data: existingRecords, error: fetchError } = await supabase
           .from('plant_units')
-          .select('id');
+          .select('id') as { data: any; error: any };
 
         if (fetchError) {
           console.error('Error fetching existing plant units:', fetchError);
@@ -108,7 +108,7 @@ export const usePlantUnits = () => {
             .delete()
             .in(
               'id',
-              existingRecords.map((r) => r.id)
+              (existingRecords as { id: string }[]).map((r) => r.id)
             );
 
           if (deleteError) {

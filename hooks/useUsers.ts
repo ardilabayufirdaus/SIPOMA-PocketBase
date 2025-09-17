@@ -21,13 +21,14 @@ export const useUsers = () => {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as { data: any; error: any };
 
       if (error) {
         throw error;
       }
-      const parsedData = (data || []).map((user) => ({
+      const parsedData = (data || []).map((user: any) => ({
         id: user.id,
+        username: user.username,
         email: user.email,
         full_name: user.full_name,
         role: user.role as UserRole,
@@ -35,6 +36,7 @@ export const useUsers = () => {
         last_active: new Date(user.last_active),
         is_active: user.is_active,
         created_at: new Date(user.created_at),
+        updated_at: new Date(user.updated_at),
         permissions: user.permissions as unknown as PermissionMatrix,
       }));
       setUsers(parsedData);
@@ -77,7 +79,7 @@ export const useCurrentUser = () => {
           .from('users')
           .select('*')
           .eq('id', userData.id)
-          .single();
+          .single() as { data: any; error: any };
 
         if (userError || !user) {
           // User not found or error, clear localStorage

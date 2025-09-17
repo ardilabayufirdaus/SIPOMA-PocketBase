@@ -178,15 +178,15 @@ export const useNotifications = () => {
         read: false,
       };
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from('alerts')
         .insert([newNotification])
         .select()
-        .single();
+        .single()) as { data: ExtendedAlert | null; error: any };
 
       if (error) {
         console.error('Error creating notification:', error);
-      } else {
+      } else if (data) {
         const parsedNotification: ExtendedAlert = {
           ...data,
           severity: data.severity as AlertSeverity,

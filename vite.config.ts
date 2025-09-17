@@ -9,25 +9,10 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // React ecosystem - keep all React-related packages together
-            if (
-              id.includes('react') ||
-              id.includes('@react-spring') ||
-              id.includes('@use-gesture') ||
-              id.includes('react-error-boundary') ||
-              id.includes('react-transition-group') ||
-              id.includes('react-is') ||
-              id.includes('scheduler') ||
-              id.includes('focus-trap-react') ||
-              id.includes('@heroicons') ||
-              id.includes('framer-motion')
-            ) {
-              return 'react-vendor';
-            }
-            if (id.includes('@nivo')) {
+            if (id.includes('@nivo') || id.includes('chart.js')) {
               return 'charts-vendor';
             }
-            if (id.includes('@supabase') || id.includes('@tanstack')) {
+            if (id.includes('@supabase')) {
               return 'data-vendor';
             }
             if (id.includes('crypto-js')) {
@@ -39,11 +24,11 @@ export default defineConfig({
             if (id.includes('uuid') || id.includes('focus-trap')) {
               return 'utils-light';
             }
+            // Keep utility components in utils-misc with other utilities
+            if (id.includes('ResponsiveLayout') || id.includes('Microinteractions')) {
+              return 'utils-misc';
+            }
             return 'utils-misc';
-          }
-          // Handle utils files that contain React components
-          if (id.includes('/utils/') && (id.includes('ResponsiveLayout') || id.includes('Microinteractions'))) {
-            return 'react-vendor';
           }
         },
       },

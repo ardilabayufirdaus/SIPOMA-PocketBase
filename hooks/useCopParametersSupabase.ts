@@ -10,11 +10,11 @@ export const useCopParametersSupabase = () => {
   useEffect(() => {
     const fetchCopParameters = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from('cop_parameters')
         .select('parameter_ids')
         .eq('id', 'default')
-        .single();
+        .single()) as { data: { parameter_ids: string[] } | null; error: any };
       if (data && data.parameter_ids) {
         setCopParameterIds(data.parameter_ids);
       }

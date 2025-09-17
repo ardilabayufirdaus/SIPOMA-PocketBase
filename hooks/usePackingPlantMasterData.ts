@@ -12,13 +12,13 @@ export const usePackingPlantMasterData = () => {
       .from('packing_plant_master')
       .select('*')
       .order('area')
-      .order('plant_code');
+      .order('plant_code') as { data: any; error: any };
 
     if (error) {
       console.error('Error fetching packing plant master data:', error);
       setRecords([]);
     } else {
-      setRecords(data || []);
+      setRecords((data || []) as PackingPlantMasterRecord[]);
     }
     setLoading(false);
   }, []);

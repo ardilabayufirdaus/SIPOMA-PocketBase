@@ -65,12 +65,12 @@ export const usePackingPlantStockData = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('packing_plant_stock')
-      .select('id, date, area, opening_stock, stock_received, stock_out, closing_stock');
+      .select('id, date, area, opening_stock, stock_received, stock_out, closing_stock') as { data: any; error: any };
 
     if (error) {
       console.error('Error fetching stock records:', error);
     } else {
-      const processedRecords = processRecords(data || []);
+      const processedRecords = processRecords((data || []) as PackingPlantStockRecord[]);
       setRecords(processedRecords);
     }
     setLoading(false);

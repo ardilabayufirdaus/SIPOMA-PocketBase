@@ -34,9 +34,12 @@ export interface DashboardKPI {
   value: number;
   unit: string;
   trend: {
-    direction: 'up' | 'down' | 'stable';
-    percentage: number;
+    value: number;
+    isPositive: boolean;
   };
+  icon: React.ReactNode;
+  status: string;
+  target: number;
 }
 
 export const usePlantOperationsDashboard = () => {

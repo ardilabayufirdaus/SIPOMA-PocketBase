@@ -563,6 +563,8 @@ interface EnhancedInputProps {
   autoFocus?: boolean;
   maxLength?: number;
   autoComplete?: string;
+  ariaLabel?: string;
+  ariaDescribedBy?: string;
 }
 
 export const EnhancedInput: React.FC<EnhancedInputProps> = ({

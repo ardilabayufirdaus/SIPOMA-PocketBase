@@ -32,13 +32,13 @@ export const useParameterSettings = () => {
       .from('parameter_settings')
       .select('*')
       .order('parameter')
-      .limit(500); // Limit for performance, parameter settings shouldn't be too many
+      .limit(500) as { data: any; error: any }; // Limit for performance, parameter settings shouldn't be too many
 
     if (error) {
       console.error('Error fetching parameter settings:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as any[]);
+      setRecords((data || []) as ParameterSetting[]);
       // Cache the data
       try {
         localStorage.setItem(cacheKey, JSON.stringify(data || []));
@@ -96,7 +96,7 @@ export const useParameterSettings = () => {
         // First, get all existing records to delete them properly
         const { data: existingRecords, error: fetchError } = await supabase
           .from('parameter_settings')
-          .select('id');
+          .select('id') as { data: any; error: any };
 
         if (fetchError) {
           console.error('Error fetching existing parameter settings:', fetchError);
@@ -110,7 +110,7 @@ export const useParameterSettings = () => {
             .delete()
             .in(
               'id',
-              existingRecords.map((r) => r.id)
+              (existingRecords as { id: string }[]).map((r) => r.id)
             );
 
           if (deleteError) {

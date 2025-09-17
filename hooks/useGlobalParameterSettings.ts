@@ -59,17 +59,16 @@ export const useGlobalParameterSettings = (): UseGlobalParameterSettingsReturn =
           query = query.eq('plant_unit', plantUnit);
         }
 
-        const { data, error: fetchError } = await query
+        const { data, error: fetchError } = (await query
           .order('updated_at', { ascending: false })
-          .limit(1);
+          .limit(1)) as { data: GlobalParameterSettings[] | null; error: any };
 
         if (fetchError) {
           // If no personal settings found for regular users, try global settings
           if (currentUser.role !== 'Super Admin' && fetchError.code === 'PGRST116') {
             let globalQuery = supabase
               .from('global_parameter_settings')
-              .select('*')
-              .eq('is_global', true);
+              .select('*');
 
             if (plantCategory) {
               globalQuery = globalQuery.eq('plant_category', plantCategory);
@@ -78,9 +77,9 @@ export const useGlobalParameterSettings = (): UseGlobalParameterSettingsReturn =
               globalQuery = globalQuery.eq('plant_unit', plantUnit);
             }
 
-            const { data: globalData, error: globalError } = await globalQuery
+            const { data: globalData, error: globalError } = (await globalQuery
               .order('updated_at', { ascending: false })
-              .limit(1);
+              .limit(1)) as { data: GlobalParameterSettings[] | null; error: any };
 
             if (globalError && globalError.code !== 'PGRST116') {
               throw globalError;
@@ -148,7 +147,7 @@ export const useGlobalParameterSettings = (): UseGlobalParameterSettingsReturn =
           if (plantUnit) existingQuery = existingQuery.eq('plant_unit', plantUnit);
         }
 
-        const { data: existing, error: fetchError } = await existingQuery.limit(1);
+        const { data: existing, error: fetchError } = (await existingQuery.limit(1)) as { data: { id: string }[] | null; error: any };
 
         if (fetchError) {
           // Continue with insert if error checking existing

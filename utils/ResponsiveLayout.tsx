@@ -3,7 +3,8 @@
  * Optimized layout system for multi-device compatibility
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { forwardRef } from 'react';
 
 // =============================================================================
 // RESPONSIVE UTILITIES (LOCAL DEFINITIONS)

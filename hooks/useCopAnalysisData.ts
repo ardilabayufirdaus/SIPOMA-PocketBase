@@ -20,15 +20,15 @@ export const useCopAnalysisData = () => {
     const fetchCopAnalysisData = async () => {
       try {
         setLoading(true);
-        const { data: copData, error } = await supabase
+        const { data: copData, error: fetchError } = await supabase
           .from('cop_analysis')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false }) as { data: any; error: any };
 
-        if (error) {
-          setError(error.message);
+        if (fetchError) {
+          setError(fetchError.message);
         } else {
-          setData(copData || []);
+          setData((copData || []) as CopAnalysisData[]);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');

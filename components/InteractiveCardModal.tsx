@@ -246,7 +246,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                                   : 'text-red-600 dark:text-red-400'
                               }`}
                             >
-                              {metric.trend.isPositive ? '↗' : '↘'} {metric.trend.value}%
+                              metric.trend.value
                             </span>
                           </div>
                         )}

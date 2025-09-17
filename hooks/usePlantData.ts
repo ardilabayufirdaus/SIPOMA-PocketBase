@@ -25,10 +25,10 @@ export const usePlantData = () => {
     setLoading(true);
 
     const [machinesRes, kpisRes, alertsRes, productionRes] = await Promise.all([
-      supabase.from('machines').select('*'),
-      supabase.from('kpis').select('*'),
-      supabase.from('alerts').select('*').order('timestamp', { ascending: false }),
-      supabase.from('production_data').select('*').limit(24).order('hour', { ascending: false }), // Assuming last 24h data
+      (supabase.from('machines').select('*')),
+      (supabase.from('kpis').select('*')),
+      (supabase.from('alerts').select('*').order('timestamp', { ascending: false })),
+      (supabase.from('production_data').select('*').limit(24).order('hour', { ascending: false })), // Assuming last 24h data
     ]);
 
     if (machinesRes.error) {
@@ -47,29 +47,29 @@ export const usePlantData = () => {
       console.error('Error fetching KPIs:', kpisRes.error);
       setKpis([]);
     } else {
-      const kpisWithIcons = (kpisRes.data || []).map((kpi) => ({
+      const kpisWithIcons = (kpisRes.data || []).map((kpi: any) => ({
         ...kpi,
         icon: iconMap[kpi.icon as string] || CogIcon, // Fallback icon
       }));
-      setKpis(kpisWithIcons as any[]);
+      setKpis(kpisWithIcons as Kpi[]);
     }
 
     if (alertsRes.error) {
       console.error('Error fetching alerts:', alertsRes.error);
       setAlerts([]);
     } else {
-      const parsedAlerts = (alertsRes.data || []).map((alert) => ({
+      const parsedAlerts = (alertsRes.data || []).map((alert: any) => ({
         ...alert,
         timestamp: new Date(alert.timestamp),
       }));
-      setAlerts(parsedAlerts as any[]);
+      setAlerts(parsedAlerts as Alert[]);
     }
 
     if (productionRes.error) {
       console.error('Error fetching production data:', productionRes.error);
       setProductionData([]);
     } else {
-      setProductionData(productionRes.data || []);
+      setProductionData((productionRes.data || []) as { hour: number; output: number }[]);
     }
 
     setLoading(false);

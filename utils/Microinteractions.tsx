@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { forwardRef } from 'react';
 
 // =============================================================================
 // ANIMATION UTILITIES
@@ -216,105 +217,111 @@ interface AnimatedButtonProps {
   fullWidth?: boolean;
 }
 
-export const AnimatedButton: React.FC<AnimatedButtonProps> = ({
-  children,
-  variant = 'primary',
-  size = 'md',
-  disabled = false,
-  loading = false,
-  onClick,
-  type = 'button',
-  className = '',
-  icon,
-  iconPosition = 'left',
-  animationType = 'scale',
-  fullWidth = false,
-}) => {
-  const { isHovered, hoverProps } = useHoverInteraction({
-    scale: animationType === 'scale' ? 1.05 : 1,
-    translate: animationType === 'lift' ? { y: -2 } : undefined,
-    duration: 200,
-  });
+export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>(
+  (
+    {
+      children,
+      variant = 'primary',
+      size = 'md',
+      disabled = false,
+      loading = false,
+      onClick,
+      type = 'button',
+      className = '',
+      icon,
+      iconPosition = 'left',
+      animationType = 'scale',
+      fullWidth = false,
+    },
+    ref
+  ) => {
+    const { isHovered, hoverProps } = useHoverInteraction({
+      scale: animationType === 'scale' ? 1.05 : 1,
+      translate: animationType === 'lift' ? { y: -2 } : undefined,
+      duration: 200,
+    });
 
-  const { isPressed, clickProps } = useClickInteraction({
-    scale: 0.98,
-    duration: 150,
-    onClick,
-  });
+    const { isPressed, clickProps } = useClickInteraction({
+      scale: 0.98,
+      duration: 150,
+      onClick,
+    });
 
-  const { showLoader, loaderClass } = useLoadingAnimation(loading);
+    const { showLoader, loaderClass } = useLoadingAnimation(loading);
 
-  const baseClasses = [
-    'inline-flex items-center justify-center',
-    'font-medium rounded-lg transition-all duration-200',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2',
-    'disabled:opacity-50 disabled:cursor-not-allowed',
-    'relative overflow-hidden',
-    fullWidth ? 'w-full' : '',
-  ];
+    const baseClasses = [
+      'inline-flex items-center justify-center',
+      'font-medium rounded-lg transition-all duration-200',
+      'focus:outline-none focus:ring-2 focus:ring-offset-2',
+      'disabled:opacity-50 disabled:cursor-not-allowed',
+      'relative overflow-hidden',
+      fullWidth ? 'w-full' : '',
+    ];
 
-  const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm',
-    secondary: 'bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500 shadow-sm',
-    ghost: 'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm',
-  };
+    const variantClasses = {
+      primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm',
+      secondary: 'bg-gray-600 hover:bg-gray-700 text-white focus:ring-gray-500 shadow-sm',
+      ghost: 'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500',
+      danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm',
+    };
 
-  const sizeClasses = {
-    xs: 'px-2.5 py-1.5 text-xs',
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
-  };
+    const sizeClasses = {
+      xs: 'px-2.5 py-1.5 text-xs',
+      sm: 'px-3 py-2 text-sm',
+      md: 'px-4 py-2 text-base',
+      lg: 'px-6 py-3 text-lg',
+    };
 
-  // Animation-specific classes
-  const animationClasses = {
-    scale: isHovered ? 'scale-105' : '',
-    lift: isHovered ? '-translate-y-1 shadow-lg' : '',
-    glow: isHovered ? 'shadow-lg shadow-blue-500/25' : '',
-    bounce: isHovered ? 'animate-bounce' : '',
-  };
+    // Animation-specific classes
+    const animationClasses = {
+      scale: isHovered ? 'scale-105' : '',
+      lift: isHovered ? '-translate-y-1 shadow-lg' : '',
+      glow: isHovered ? 'shadow-lg shadow-blue-500/25' : '',
+      bounce: isHovered ? 'animate-bounce' : '',
+    };
 
-  const classes = [
-    ...baseClasses,
-    variantClasses[variant],
-    sizeClasses[size],
-    animationClasses[animationType],
-    isPressed ? 'scale-95' : '',
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+    const classes = [
+      ...baseClasses,
+      variantClasses[variant],
+      sizeClasses[size],
+      animationClasses[animationType],
+      isPressed ? 'scale-95' : '',
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
-  return (
-    <button
-      type={type}
-      className={classes}
-      disabled={disabled || loading}
-      {...hoverProps}
-      {...clickProps}
-    >
-      {/* Ripple effect background */}
-      <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity duration-200 rounded-lg" />
+    return (
+      <button
+        ref={ref}
+        type={type}
+        className={classes}
+        disabled={disabled || loading}
+        {...hoverProps}
+        {...clickProps}
+      >
+        {/* Ripple effect background */}
+        <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity duration-200 rounded-lg" />
 
-      {showLoader && <div className={loaderClass} />}
+        {showLoader && <div className={loaderClass} />}
 
-      {!loading && icon && iconPosition === 'left' && (
-        <span className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110">
-          {icon}
-        </span>
-      )}
+        {!loading && icon && iconPosition === 'left' && (
+          <span className="w-4 h-4 mr-2 transition-transform duration-200 group-hover:scale-110">
+            {icon}
+          </span>
+        )}
 
-      <span className="relative z-10">{children}</span>
+        <span className="relative z-10">{children}</span>
 
-      {!loading && icon && iconPosition === 'right' && (
-        <span className="w-4 h-4 ml-2 transition-transform duration-200 group-hover:scale-110">
-          {icon}
-        </span>
-      )}
-    </button>
-  );
-};
+        {!loading && icon && iconPosition === 'right' && (
+          <span className="w-4 h-4 ml-2 transition-transform duration-200 group-hover:scale-110">
+            {icon}
+          </span>
+        )}
+      </button>
+    );
+  }
+);
 
 interface AnimatedCardProps {
   children: React.ReactNode;

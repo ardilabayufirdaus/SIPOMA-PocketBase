@@ -16,6 +16,8 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@nivo/bar": "^0.99.0",
+    "@nivo/line": "^0.99.0",
     "@react-spring/web": "^9.7.3",
     "@supabase/supabase-js": "^2.57.4",
     "@tanstack/react-query": "^5.86.0",

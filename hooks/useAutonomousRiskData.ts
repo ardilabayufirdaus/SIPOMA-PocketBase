@@ -16,16 +16,16 @@ export const useAutonomousRiskData = () => {
     refetch,
   } = useQuery({
     queryKey: RISK_DATA_QUERY_KEY,
-    queryFn: async (): Promise<AutonomousRiskData[]> => {
-      const { data, error } = await supabase
+    queryFn: async (): Promise<any> => {
+      const { data, error: fetchError } = await supabase
         .from('autonomous_risk_data')
         .select('*')
         .order('date', { ascending: false })
-        .limit(1000); // Limit to last 1000 records for performance
+        .limit(1000) as { data: AutonomousRiskData[] | null; error: any }; // Limit to last 1000 records for performance
 
-      if (error) {
-        console.error('Error fetching autonomous risk data:', error);
-        throw new Error(`Failed to fetch risk data: ${error.message}`);
+      if (fetchError) {
+        console.error('Error fetching autonomous risk data:', fetchError);
+        throw new Error(`Failed to fetch risk data: ${fetchError.message}`);
       }
 
       return (data || []) as AutonomousRiskData[];

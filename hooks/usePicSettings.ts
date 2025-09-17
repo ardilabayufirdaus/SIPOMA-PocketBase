@@ -8,13 +8,13 @@ export const usePicSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('pic_settings').select('*').order('pic');
+    const { data, error } = await supabase.from('pic_settings').select('*').order('pic') as { data: any; error: any };
 
     if (error) {
       console.error('Error fetching PIC settings:', error);
       setRecords([]);
     } else {
-      setRecords(data || []);
+      setRecords((data || []) as PicSetting[]);
     }
     setLoading(false);
   }, []);

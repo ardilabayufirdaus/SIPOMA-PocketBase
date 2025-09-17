@@ -107,12 +107,12 @@ export const useCcrSiloData = () => {
         return;
       }
 
-      const { data: existing, error: fetchError } = await supabase
+      const { data: existing, error: fetchError } = (await supabase
         .from('ccr_silo_data')
         .select('*')
         .eq('date', date)
         .eq('silo_id', siloId)
-        .single();
+        .single()) as { data: CcrSiloData | null; error: any };
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         // Ignore 'exact one row' error for upsert case
@@ -137,8 +137,8 @@ export const useCcrSiloData = () => {
         if (typeof s === 'object' && s !== null && !Array.isArray(s)) {
           // akses properti hanya jika objek biasa
           return (
-            (s['emptySpace'] === undefined || s['emptySpace'] === null || s['emptySpace'] === '') &&
-            (s['content'] === undefined || s['content'] === null || s['content'] === '')
+            (s['emptySpace'] === undefined || s['emptySpace'] === null) &&
+            (s['content'] === undefined || s['content'] === null)
           );
         }
         // Jika array atau tipe lain, anggap kosong
