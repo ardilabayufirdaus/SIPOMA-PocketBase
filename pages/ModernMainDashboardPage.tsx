@@ -42,6 +42,7 @@ import { usePlantData } from '../hooks/usePlantData';
 import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
 import { usePackingPlantMasterData } from '../hooks/usePackingPlantMasterData';
 import { useCcrSiloData } from '../hooks/useCcrSiloData';
+import { useTotalProduction } from '../hooks/useTotalProduction';
 import { formatNumber, formatPercentage } from '../utils/formatters';
 
 // Import Typography Components
@@ -260,6 +261,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   } = usePlantData();
   const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
   const { records: packingPlantMasterRecords } = usePackingPlantMasterData();
+  const { totalProduction, loading: totalProductionLoading } = useTotalProduction();
 
   // Auto refresh every 30 seconds
   useEffect(() => {
@@ -434,6 +436,21 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
               period: 'vs last month',
             }}
             onClick={() => onNavigate('packing')}
+          />
+
+          <ModernMetricCard
+            title="Total Production"
+            value={totalProduction ? formatNumber(totalProduction) : 'Loading...'}
+            unit="tons"
+            icon={<BarChart3Icon className="w-6 h-6" />}
+            variant="success"
+            isLoading={totalProductionLoading}
+            trend={{
+              value: 2.1,
+              direction: 'up',
+              period: 'vs last month',
+            }}
+            onClick={() => onNavigate('operations')}
           />
         </div>
 

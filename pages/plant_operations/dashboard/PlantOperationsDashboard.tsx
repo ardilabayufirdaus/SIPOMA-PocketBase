@@ -10,6 +10,7 @@ import { PermissionLevel } from '../../../types';
 import { useDashboardDataProcessor } from '../../../hooks/useDashboardDataProcessor';
 import { useCcrFooterData } from '../../../hooks/useCcrFooterData';
 import { useProductionTrendData } from '../../../hooks/useProductionTrendData';
+import { useTotalProduction } from '../../../hooks/useTotalProduction';
 import Modal from '../../../components/Modal';
 import { formatDate, formatNumber, formatDateForDB } from '../../../utils/formatters';
 import { CcrParameterData } from '../../../types';
@@ -92,6 +93,7 @@ const PlantOperationsDashboard: React.FC = () => {
   const { instructions: workInstructions } = useWorkInstructions();
   const { records: parameters } = useParameterSettings();
   const { records: plantUnits } = usePlantUnits();
+  const { totalProduction: totalProd, loading: totalProdLoading } = useTotalProduction();
 
   const [ccrData, setCcrData] = useState<CcrParameterData[]>([]);
   const [footerData, setFooterData] = useState<any[]>([]);
@@ -175,6 +177,15 @@ const PlantOperationsDashboard: React.FC = () => {
     selectedProductionParameters,
     selectedMonth,
     selectedYear
+  );
+
+  // Override totalProduction with the specific calculation
+  const updatedKeyMetrics = useMemo(
+    () => ({
+      ...keyMetrics,
+      totalProduction: totalProd || 0,
+    }),
+    [keyMetrics, totalProd]
   );
 
   // Use production trend data from footer
@@ -385,7 +396,7 @@ const PlantOperationsDashboard: React.FC = () => {
                           Total Production
                         </p>
                         <p className="text-white text-xl font-bold">
-                          {formatNumber(keyMetrics.totalProduction)}
+                          {formatNumber(updatedKeyMetrics.totalProduction)}
                         </p>
                       </div>
                     </div>
@@ -412,7 +423,9 @@ const PlantOperationsDashboard: React.FC = () => {
                         <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
                           Total Parameters
                         </p>
-                        <p className="text-white text-xl font-bold">{keyMetrics.totalParameters}</p>
+                        <p className="text-white text-xl font-bold">
+                          {updatedKeyMetrics.totalParameters}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -439,7 +452,7 @@ const PlantOperationsDashboard: React.FC = () => {
                           Active COP
                         </p>
                         <p className="text-white text-xl font-bold">
-                          {keyMetrics.activeCopParameters}
+                          {updatedKeyMetrics.activeCopParameters}
                         </p>
                       </div>
                     </div>
