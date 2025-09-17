@@ -12,7 +12,10 @@ export default defineConfig({
             if (
               id.includes("react") ||
               id.includes("react-dom") ||
-              id.includes("react-router")
+              id.includes("react-router") ||
+              id.includes("react-is") ||
+              id.includes("react-transition-group") ||
+              id.includes("scheduler")
             ) {
               return "react-vendor";
             }
