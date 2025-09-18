@@ -2,11 +2,21 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCcrParameterData } from '../../hooks/useCcrParameterData';
-import { ParameterDataType, ParameterSetting, UserRole } from '../../types';
+import { ParameterDataType, ParameterSetting } from '../../types';
 import { formatDate } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
 import Modal from '../../components/Modal';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Cell,
+} from 'recharts';
 
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
@@ -66,7 +76,7 @@ interface AnalysisDataRow {
 }
 
 const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
-  const { copParameterIds, loading: copLoading } = useCopParametersSupabase();
+  const { copParameterIds } = useCopParametersSupabase();
   const { records: allParameters } = useParameterSettings();
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
@@ -273,7 +283,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
           .filter((p): p is NonNullable<typeof p> => p !== null);
 
         setAnalysisData(data);
-      } catch (err) {
+      } catch {
         setError('Failed to load COP analysis data. Please try again.');
         setAnalysisData([]);
       } finally {
@@ -858,9 +868,50 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
             target (di luar range 0-100%).
           </p>
           <div className="h-64">
-            <div className="flex items-center justify-center h-full text-slate-500">
-              Bar Chart - implement with Chart.js
-            </div>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={operatorAchievementData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 60,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="parameter"
+                  fontSize={10}
+                  tick={{ fill: '#64748b' }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis
+                  fontSize={10}
+                  tick={{ fill: '#64748b' }}
+                  label={{ value: 'Persentase (%)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip
+                  formatter={(value: number) => [`${value}%`, 'Persentase']}
+                  labelFormatter={(label) => `Parameter: ${label}`}
+                />
+                <Bar dataKey="percentage" fill="#f59e0b" radius={[4, 4, 0, 0]}>
+                  {operatorAchievementData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.percentage > 50
+                          ? '#ef4444'
+                          : entry.percentage > 25
+                            ? '#f59e0b'
+                            : '#10b981'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
           <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
             <p>Total parameter yang tidak mencapai target: {operatorAchievementData.length}</p>

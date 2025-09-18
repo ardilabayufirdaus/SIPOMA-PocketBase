@@ -57,7 +57,6 @@ const useCcrDowntimeData = () => {
   const addDowntimeMutation = useMutation({
     mutationFn: async (record: Omit<CcrDowntimeData, 'id'>) => {
       const payload = { ...record };
-      // @ts-ignore - Supabase typing issue
       const { error } = await supabase.from('ccr_downtime_data').insert([payload]);
       if (error) {
         throw new Error(`Failed to add downtime: ${error.message}`);
@@ -71,7 +70,6 @@ const useCcrDowntimeData = () => {
   const updateDowntimeMutation = useMutation({
     mutationFn: async (updatedRecord: CcrDowntimeData) => {
       const { id, ...payload } = updatedRecord;
-      // @ts-ignore - Supabase typing issue
       const { error } = await supabase.from('ccr_downtime_data').update(payload).eq('id', id);
       if (error) {
         throw new Error(`Failed to update downtime: ${error.message}`);

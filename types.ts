@@ -121,6 +121,17 @@ export interface ReportSetting {
   category: string;
 }
 
+export interface WhatsAppReportSetting {
+  id: string;
+  jenis: 'text' | 'number' | 'unit_name' | 'material' | 'feeder' | 'downtime' | 'silo' | 'summary';
+  parameter_id?: string; // Required for 'number' type
+  data: string; // Manual text for 'text' type, or parameter value for 'number' type
+  category: string; // For grouping in report
+  plant_unit?: string; // Specific plant unit for this setting
+  report_type: 'daily' | 'shift'; // Type of report this setting applies to
+  kalkulasi?: 'selisih' | 'total' | 'average' | 'min' | 'max' | 'counter_total'; // Calculation method for number type
+}
+
 export interface PicSetting {
   id: string;
   pic: string;

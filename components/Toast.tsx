@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import CheckBadgeIcon from './icons/CheckBadgeIcon';
-import ClipboardIcon from './icons/ClipboardIcon';
 
 interface ToastProps {
   message: string;

@@ -13,7 +13,6 @@ import {
   AlertTriangleIcon,
   CheckCircleIcon,
   PieChartIcon,
-  ActivityIcon,
   SettingsIcon,
   ArrowRightIcon,
   FilterIcon,
@@ -39,6 +38,7 @@ import { ProjectStatusChart } from '../components/charts/ProjectStatusChart';
 // Import existing hooks
 import { useProjects } from '../hooks/useProjects';
 import { usePlantData } from '../hooks/usePlantData';
+import { EnhancedButton } from '../components/ui/EnhancedComponents';
 import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
 import { usePackingPlantMasterData } from '../hooks/usePackingPlantMasterData';
 import { useCcrSiloData } from '../hooks/useCcrSiloData';
@@ -51,8 +51,6 @@ import { H2, Body, UIText } from '../components/ui/Typography';
 interface ModernMainDashboardPageProps {
   language: 'en' | 'id';
   onNavigate: (page: Page, subPage?: string) => void;
-  usersCount: number;
-  onlineUsersCount: number;
 }
 
 // Enhanced Performance Chart Widget
@@ -92,9 +90,15 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
               </button>
             ))}
           </div>
-          <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-            <RefreshCcwIcon className="w-4 h-4" />
-          </button>
+          <EnhancedButton
+            variant="ghost"
+            size="sm"
+            className="p-2"
+            icon={<RefreshCcwIcon className="w-4 h-4" />}
+            ariaLabel="Refresh data"
+          >
+            {'\u00A0'}
+          </EnhancedButton>
         </div>
       }
       className="col-span-2"
@@ -186,10 +190,15 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
       title="Project Status"
       subtitle={`${projects.length} active projects`}
       actions={
-        <button className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center space-x-1">
-          <span>View All</span>
-          <ArrowRightIcon className="w-3 h-3" />
-        </button>
+        <EnhancedButton
+          variant="ghost"
+          size="sm"
+          className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+          icon={<ArrowRightIcon className="w-3 h-3" />}
+          iconPosition="right"
+        >
+          View All
+        </EnhancedButton>
       }
     >
       <div className="grid grid-cols-2 gap-6">
@@ -242,8 +251,6 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
 const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   language,
   onNavigate,
-  usersCount,
-  onlineUsersCount,
 }) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
@@ -385,32 +392,6 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <ModernMetricCard
-            title="Active Users"
-            value={usersCount}
-            icon={<UsersIcon className="w-6 h-6" />}
-            variant="primary"
-            trend={{
-              value: 12.5,
-              direction: 'up',
-              period: 'vs last month',
-            }}
-            onClick={() => onNavigate('users')}
-          />
-
-          <ModernMetricCard
-            title="Online Users"
-            value={onlineUsersCount}
-            icon={<ActivityIcon className="w-6 h-6" />}
-            variant="success"
-            trend={{
-              value: 8.3,
-              direction: 'up',
-              period: 'vs yesterday',
-            }}
-            onClick={() => onNavigate('users')}
-          />
-
           <ModernMetricCard
             title="Active Projects"
             value={activeProjects}

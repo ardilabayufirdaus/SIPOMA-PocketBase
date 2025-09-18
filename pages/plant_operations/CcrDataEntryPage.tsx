@@ -326,6 +326,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               parameter_id: param.id,
               plant_unit: selectedCategory || 'CCR',
               total: footerData.total,
+              counter_total: counterTotalData[param.id] || 0,
               average: footerData.avg,
               minimum: footerData.min,
               maximum: footerData.max,

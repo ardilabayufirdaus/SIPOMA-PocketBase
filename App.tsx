@@ -9,7 +9,6 @@ import Toast from './components/Toast';
 import LoadingSkeleton, { PageLoading } from './components/LoadingSkeleton';
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
-import { useOnlineUsers } from './hooks/useOnlineUsers';
 import { useUserActivity } from './hooks/useUserActivity';
 import { usePlantData } from './hooks/usePlantData';
 import { useProjects } from './hooks/useProjects';
@@ -84,6 +83,19 @@ const SettingsPage = lazy(() =>
   }))
 );
 
+// WhatsApp Reports Page
+const WhatsAppReportsPage = lazy(() =>
+  import('./src/presentation/views/WhatsAppGroupReportContainer')
+    .then((module) => ({
+      default: module.WhatsAppGroupReportContainer,
+    }))
+    .catch(() => ({
+      default: () => (
+        <div className="text-center p-8">Error loading WhatsApp Reports. Please refresh.</div>
+      ),
+    }))
+);
+
 // User Management Pages
 const UserListPage = lazy(() =>
   import('./features/user-management/pages/UserListPage').catch(() => ({
@@ -115,7 +127,8 @@ export type Page =
   | 'packing'
   | 'projects'
   | 'sla'
-  | 'settings';
+  | 'settings'
+  | 'whatsapp-reports';
 export type Language = 'en' | 'id';
 export type Theme = 'light' | 'dark';
 
@@ -139,7 +152,6 @@ const App: React.FC = () => {
     isLoading: usersLoading,
     error: usersError,
   } = useUserStore();
-  const onlineUsersCount = useOnlineUsers(users);
 
   // Update current user activity
   useUserActivity(currentUser?.id);
@@ -422,12 +434,7 @@ const App: React.FC = () => {
                     }
                   >
                     {currentPage === 'dashboard' && (
-                      <ModernMainDashboardPage
-                        language={language}
-                        usersCount={users.filter((u) => u.is_active).length}
-                        onlineUsersCount={onlineUsersCount}
-                        onNavigate={handleNavigate}
-                      />
+                      <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
                     )}
                   </PermissionGuard>
                   {/* User Management - Check permission */}
@@ -556,6 +563,43 @@ const App: React.FC = () => {
                         currentLanguage={language}
                         onLanguageChange={setLanguage}
                       />
+                    )}
+                  </PermissionGuard>
+                  {/* WhatsApp Reports - Check permission */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="system_settings" // Using existing permission for now
+                    requiredLevel="READ"
+                    fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
+                          <div className="mb-4">
+                            <svg
+                              className="w-16 h-16 text-red-500 mx-auto"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                              />
+                            </svg>
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                            Access Denied
+                          </h3>
+                          <p className="text-red-600 dark:text-red-300">
+                            You don&apos;t have permission to access WhatsApp Reports.
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  >
+                    {currentPage === 'whatsapp-reports' && (
+                      <WhatsAppReportsPage groupId="default-group" />
                     )}
                   </PermissionGuard>
                   {currentPage === 'sla' && <SLAManagementPage t={t} />}

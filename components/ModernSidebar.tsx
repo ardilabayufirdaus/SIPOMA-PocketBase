@@ -266,6 +266,10 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           key: 'op_report',
           icon: <ClipboardDocumentListIcon className={iconClass} />,
         },
+        {
+          key: 'op_wag_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
         { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
         {
           key: 'op_autonomous_data_entry',

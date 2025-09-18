@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { EnhancedButton } from '../components/ui/EnhancedComponents';
 import RegistrationForm from '../components/RegistrationForm';
 
 const LoginPage: React.FC = () => {
@@ -102,23 +103,28 @@ const LoginPage: React.FC = () => {
                 {error}
               </div>
             )}
-            <button
+            <EnhancedButton
               type="submit"
+              loading={loading}
               disabled={loading}
-              className="w-full py-2 rounded font-semibold bg-red-600 dark:bg-red-500 text-white hover:bg-red-700 dark:hover:bg-red-600 transition-colors text-lg shadow focus:outline-none focus:ring-2 focus:ring-red-500 animate-fadein-btn"
+              fullWidth
+              size="lg"
+              className="font-semibold text-lg shadow animate-fadein-btn"
             >
               {loading ? 'Logging in...' : 'Login'}
-            </button>
+            </EnhancedButton>
           </form>
           <div className="mt-4 text-center">
             <span className="text-sm text-slate-600 dark:text-slate-400">
               Belum punya akun?{' '}
-              <button
+              <EnhancedButton
                 onClick={() => setShowRegistration(true)}
-                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium underline focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-1"
+                variant="ghost"
+                size="sm"
+                className="font-medium underline px-1"
               >
                 Daftar di sini
-              </button>
+              </EnhancedButton>
             </span>
           </div>
           <div className="mt-8 text-xs text-slate-400 dark:text-slate-500 text-center animate-fadein-footer">

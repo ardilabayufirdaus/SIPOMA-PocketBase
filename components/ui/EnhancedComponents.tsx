@@ -341,12 +341,12 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
       'shadow-md hover:shadow-lg'
     ),
     ghost: cn(
-      'bg-transparent text-neutral-700 dark:text-neutral-300',
+      'bg-transparent text-neutral-900 dark:text-neutral-100',
       'hover:bg-neutral-100 dark:hover:bg-neutral-800',
       'focus:ring-neutral-500'
     ),
     outline: cn(
-      'bg-transparent border-2 border-primary-600 text-primary-600',
+      'bg-transparent border-2 border-primary-600 text-primary-700 dark:text-primary-300',
       'hover:bg-primary-50 dark:hover:bg-primary-900/20',
       'focus:ring-primary-500'
     ),

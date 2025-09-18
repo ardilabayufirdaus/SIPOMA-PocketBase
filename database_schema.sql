@@ -200,6 +200,18 @@ CREATE TABLE IF NOT EXISTS ccr_footer_data (
     UNIQUE(date, parameter_id, plant_unit)
 );
 
+-- WhatsApp Report Settings table
+CREATE TABLE IF NOT EXISTS whatsapp_report_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    jenis VARCHAR(10) NOT NULL CHECK (jenis IN ('text', 'number')),
+    parameter_id UUID REFERENCES parameter_settings(id) ON DELETE SET NULL,
+    data TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    kalkulasi VARCHAR(20) CHECK (kalkulasi IN ('selisih', 'total', 'average', 'min', 'max', 'counter_total')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_ccr_parameter_data_date ON ccr_parameter_data(date);
 CREATE INDEX IF NOT EXISTS idx_ccr_parameter_data_parameter_id ON ccr_parameter_data(parameter_id);
@@ -207,6 +219,8 @@ CREATE INDEX IF NOT EXISTS idx_ccr_downtime_data_date ON ccr_downtime_data(date)
 CREATE INDEX IF NOT EXISTS idx_packing_plant_stock_date ON packing_plant_stock(date);
 CREATE INDEX IF NOT EXISTS idx_alerts_timestamp ON alerts(timestamp);
 CREATE INDEX IF NOT EXISTS idx_user_activity_logs_timestamp ON user_activity_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_report_settings_jenis ON whatsapp_report_settings(jenis);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_report_settings_category ON whatsapp_report_settings(category);
 
 -- Insert default COP parameters record
 INSERT INTO cop_parameters (id, parameter_ids) VALUES ('default', '{}') ON CONFLICT (id) DO NOTHING;

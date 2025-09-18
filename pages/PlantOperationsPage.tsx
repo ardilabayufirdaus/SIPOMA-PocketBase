@@ -10,6 +10,7 @@ import AutonomousDataEntryPage from './plant_operations/AutonomousDataEntryPage'
 import CopAnalysisPage from './plant_operations/CopAnalysisPage';
 import ReportPage from './plant_operations/ReportPage';
 import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibraryPage';
+import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
 
 interface PlantData {
   machines: any[];
@@ -39,6 +40,8 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t
       return <PlantOperationsDashboardComponent />;
     case 'op_report':
       return <ReportPage t={t} />;
+    case 'op_wag_report':
+      return <WhatsAppGroupReportPage t={t} />;
     case 'op_master_data':
       return <PlantOperationsMasterData t={t} />;
     case 'op_ccr_data_entry':

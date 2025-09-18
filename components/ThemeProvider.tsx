@@ -89,7 +89,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
 // Theme Toggle Component
 export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const { theme, setTheme, isDark } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   const handleToggle = () => {
     if (theme === 'dark') {

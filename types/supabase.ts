@@ -460,6 +460,35 @@ export interface Database {
           updated_at?: string;
         };
       };
+      whatsapp_report_settings: {
+        Row: {
+          id: string;
+          jenis: string;
+          parameter_id: string | null;
+          data: string;
+          category: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          jenis: string;
+          parameter_id?: string | null;
+          data: string;
+          category: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          jenis?: string;
+          parameter_id?: string | null;
+          data?: string;
+          category?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       silo_capacities: {
         Row: {
           id: string;

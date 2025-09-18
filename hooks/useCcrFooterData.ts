@@ -7,6 +7,7 @@ interface CcrFooterData {
   parameter_id: string;
   plant_unit?: string;
   total: number;
+  counter_total: number;
   average: number;
   minimum: number;
   maximum: number;
@@ -27,6 +28,7 @@ interface CcrFooterDataRow {
   parameter_id: string;
   plant_unit: string | null;
   total: number | null;
+  counter_total: number | null;
   average: number | null;
   minimum: number | null;
   maximum: number | null;
@@ -51,6 +53,7 @@ export const useCcrFooterData = () => {
           parameter_id: footerData.parameter_id,
           plant_unit: footerData.plant_unit || 'CCR',
           total: footerData.total,
+          counter_total: footerData.counter_total,
           average: footerData.average,
           minimum: footerData.minimum,
           maximum: footerData.maximum,

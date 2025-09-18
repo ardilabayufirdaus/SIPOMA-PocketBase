@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Page, Language } from '../App';
 import { useIsMobile } from '../hooks/useIsMobile';
 import ChevronDownIcon from './icons/ChevronDownIcon';
-import SipomaLogo from './icons/SipomaLogo';
 import HomeIcon from './icons/HomeIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
 import FactoryIcon from './icons/FactoryIcon';
@@ -24,9 +23,6 @@ import CogIcon from './icons/CogIcon';
 import ClockIcon from './icons/ClockIcon';
 import PlusIcon from './icons/PlusIcon';
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
-
-// Import Design System
-import { designSystem } from '../utils/designSystem';
 
 interface SidebarProps {
   currentPage: Page;
@@ -236,7 +232,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentLanguage,
   onLanguageChange,
   isOpen,
-  isCollapsed,
   onClose,
   autoHide = true, // Default true untuk desktop
 }) => {
@@ -244,24 +239,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const iconClass = 'w-4 h-4';
   const sidebarRef = useRef<HTMLElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(!autoHide || isMobile);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Auto-hide functionality
-  useEffect(() => {
-    if (isMobile) {
-      setShowSidebar(isOpen);
-      return;
-    }
-
-    if (!autoHide) {
-      setShowSidebar(true);
-      return;
-    }
-
-    // Untuk desktop dengan auto-hide, tampilkan collapsed version saat tidak hover
-    setShowSidebar(true); // Selalu tampilkan sidebar
-  }, [isMobile, autoHide, isOpen, isHovered]);
 
   // Tentukan apakah sidebar harus collapsed berdasarkan hover state
   const shouldCollapse = !isMobile && autoHide && !isHovered;
