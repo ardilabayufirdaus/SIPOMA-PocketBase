@@ -3,77 +3,150 @@ import { supabase } from '../utils/supabase';
 import { User } from '../types';
 import useErrorHandler from './useErrorHandler';
 import { buildPermissionMatrix } from '../utils/permissionUtils';
+import { passwordUtils } from '../utils/passwordUtils';
+import { authCache } from '../utils/authCache';
+import { secureStorage } from '../utils/secureStorage';
+import { rateLimiter } from '../utils/rateLimiter';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { handleError } = useErrorHandler();
 
+  // Lazy load user permissions
+  const loadUserPermissions = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_permissions')
+        .select(
+          `
+          permissions (
+            module_name,
+            permission_level,
+            plant_units
+          )
+        `
+        )
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      const permissionMatrix = buildPermissionMatrix(data || []);
+      console.log('Debug: Permission matrix built:', permissionMatrix);
+
+      return permissionMatrix;
+    } catch (error) {
+      console.warn('Failed to load user permissions:', error);
+      return {}; // Return empty permissions on error
+    }
+  }, []);
+
   const login = useCallback(
-    async (identifier, password) => {
+    async (identifier: string, password: string) => {
       setLoading(true);
       try {
-        // Query langsung ke tabel users untuk validasi credentials
-        const { data, error } = await (supabase as any)
+        // Check rate limiting
+        const rateLimitCheck = rateLimiter.isAllowed(identifier);
+        if (!rateLimitCheck.allowed) {
+          throw new Error(rateLimitCheck.message || 'Too many login attempts');
+        }
+
+        // Check cache first
+        const cachedUser = authCache.getUser();
+        if (cachedUser && !authCache.isExpired()) {
+          setUser(cachedUser);
+          rateLimiter.recordSuccessfulLogin(identifier);
+          return cachedUser;
+        }
+
+        // Optimized query: only get basic user data first
+        const { data, error } = await supabase
           .from('users')
           .select(
             `
             id,
             username,
+            password_hash,
             full_name,
             role,
             last_active,
             is_active,
             avatar_url,
-            created_at,
-            user_permissions (
-              permissions (
-                module_name,
-                permission_level,
-                plant_units
-              )
-            )
+            created_at
           `
           )
           .eq('username', identifier)
-          .eq('password_hash', password)
           .eq('is_active', true)
           .single();
 
         if (error) {
           if (error.code === 'PGRST116') {
-            // No rows returned
+            // No rows returned - record failed attempt
+            rateLimiter.recordFailedAttempt(identifier);
             throw new Error('Invalid username or password');
           }
           throw error;
         }
 
         if (!data) {
+          rateLimiter.recordFailedAttempt(identifier);
           throw new Error('Invalid username or password');
         }
 
-        const userData = {
-          ...data,
-          permissions: buildPermissionMatrix((data as any).user_permissions || []),
+        // Verify password
+        const userData = data as any;
+        console.log('Debug: Retrieved user data:', {
+          id: userData.id,
+          username: userData.username,
+          hasPasswordHash: !!userData.password_hash,
+          passwordHashLength: userData.password_hash?.length,
+        });
+
+        if (!userData.password_hash) {
+          console.error('Debug: No password_hash found for user:', userData.username);
+          rateLimiter.recordFailedAttempt(identifier);
+          throw new Error('Account not properly configured. Please contact admin.');
+        }
+
+        const isValidPassword = await passwordUtils.verify(password, userData.password_hash);
+        console.log('Debug: Password verification result:', isValidPassword);
+
+        if (!isValidPassword) {
+          rateLimiter.recordFailedAttempt(identifier);
+          throw new Error('Invalid username or password');
+        }
+
+        // Load permissions separately (lazy loading)
+        const permissions = await loadUserPermissions(userData.id);
+
+        const finalUserData = {
+          ...userData,
+          permissions,
         };
 
         // Convert dates
-        if (userData.last_active && typeof userData.last_active === 'string') {
-          userData.last_active = new Date(userData.last_active);
+        if (finalUserData.last_active && typeof finalUserData.last_active === 'string') {
+          finalUserData.last_active = new Date(finalUserData.last_active);
         }
-        if (userData.created_at && typeof userData.created_at === 'string') {
-          userData.created_at = new Date(userData.created_at);
+        if (finalUserData.created_at && typeof finalUserData.created_at === 'string') {
+          finalUserData.created_at = new Date(finalUserData.created_at);
         }
 
         // Update last_active
-        await (supabase as any)
+        await supabase
           .from('users')
           .update({ last_active: new Date().toISOString() })
-          .eq('id', userData.id);
+          .eq('id', finalUserData.id);
 
-        setUser(userData as User);
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        return userData;
+        // Cache the user data
+        authCache.setUser(finalUserData as User);
+
+        // Record successful login
+        rateLimiter.recordSuccessfulLogin(identifier);
+
+        setUser(finalUserData as User);
+        secureStorage.setItem('currentUser', finalUserData);
+        return finalUserData;
       } catch (error) {
         handleError(error, 'Error logging in');
         return null;
@@ -87,26 +160,31 @@ export const useAuth = () => {
   const logout = useCallback(() => {
     setUser(null);
     setLoading(false);
-    localStorage.removeItem('currentUser');
+    secureStorage.removeItem('currentUser');
+    authCache.clearCache();
 
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('authStateChanged'));
   }, []);
 
   useEffect(() => {
-    const currentUser = localStorage.getItem('currentUser');
+    const currentUser = secureStorage.getItem<User>('currentUser');
     if (currentUser) {
-      setUser(JSON.parse(currentUser));
+      setUser(currentUser);
+      // Also update cache
+      authCache.setUser(currentUser);
     }
     setLoading(false);
 
     // Listen for auth state changes
     const handleAuthChange = () => {
-      const storedUser = localStorage.getItem('currentUser');
+      const storedUser = secureStorage.getItem<User>('currentUser');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        setUser(storedUser);
+        authCache.setUser(storedUser);
       } else {
         setUser(null);
+        authCache.clearCache();
       }
       setLoading(false);
     };

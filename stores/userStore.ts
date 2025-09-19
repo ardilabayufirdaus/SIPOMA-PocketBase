@@ -185,6 +185,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
         full_name: userData.full_name,
         role: userData.role,
         is_active: userData.is_active,
+        avatar_url: userData.avatar_url,
         updated_at: new Date().toISOString(),
       };
 

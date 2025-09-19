@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../../../utils/supabaseClient';
+import { supabase, apiClient } from '../../../utils/supabaseClient';
+import { passwordUtils } from '../../../utils/passwordUtils';
 import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';
 import PermissionMatrixEditor from './PermissionMatrixEditor';
@@ -255,7 +256,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
       // Only include password if it's provided (for new users or password changes)
       if (formData.password) {
-        submitData.password_hash = formData.password; // Plain text as per requirements
+        submitData.password_hash = await passwordUtils.hash(formData.password);
       }
 
       let userId = user?.id;
@@ -273,14 +274,13 @@ const UserForm: React.FC<UserFormProps> = ({
       } else {
         // Create new user
         performanceMonitor.startOperation('user_creation');
-        const { data: newUser, error: insertError } = await supabase
-          .from('users')
-          .insert(submitData)
-          .select('id')
-          .single();
-
-        if (insertError) throw insertError;
-        userId = newUser?.id;
+        const newUser = await apiClient.users.create({
+          username: formData.username.trim(),
+          password: formData.password,
+          full_name: formData.full_name.trim() || undefined,
+          role: formData.role,
+        });
+        userId = newUser.id;
         performanceMonitor.endOperation('user_creation', true);
       }
 
@@ -377,22 +377,13 @@ const UserForm: React.FC<UserFormProps> = ({
       setBulkProgress((prev) => ({ ...prev, current: i + 1 }));
 
       try {
-        // Create user
-        const { data: newUser, error: insertError } = await supabase
-          .from('users')
-          .insert({
-            username: userData.username,
-            password_hash: userData.password, // Plain text as per requirements
-            full_name: userData.full_name || null,
-            role: userData.role,
-            is_active: userData.is_active,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .select('id')
-          .single();
-
-        if (insertError) throw insertError;
+        // Create user using apiClient for proper password hashing
+        await apiClient.users.create({
+          username: userData.username,
+          password: userData.password,
+          full_name: userData.full_name || undefined,
+          role: userData.role,
+        });
 
         results.successes++;
         setBulkProgress((prev) => ({ ...prev, successes: results.successes }));

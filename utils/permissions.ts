@@ -268,6 +268,14 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     hasAccess = permissionChecker.hasPermission(feature, requiredLevel);
   }
 
+  console.log(
+    `PermissionGuard check for ${feature} (${requiredLevel}): ${hasAccess}, user: ${user?.username}, role: ${user?.role}`
+  );
+
+  console.log(
+    `PermissionGuard check for ${feature} (${requiredLevel}): ${hasAccess}, user: ${user?.username}, role: ${user?.role}`
+  );
+
   return hasAccess
     ? React.createElement(React.Fragment, null, children)
     : React.createElement(React.Fragment, null, fallback);

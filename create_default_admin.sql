@@ -9,7 +9,7 @@ VALUES (
     'System Administrator',
     'Super Admin',
     true,
-    '$2b$10$8K3VzJcQX8zJcQX8zJcQX8zJcQX8zJcQX8zJcQX8zJcQX8zJcQX8', -- password: admin123
+    '$2b$12$XdaJIhb/Ole9wv/HsHfgk.dNV7OJx9N5ugts3UWBbmkGNWuMoDstu', -- password: admin123
     NOW(),
     NOW()
 ) ON CONFLICT (id) DO NOTHING;

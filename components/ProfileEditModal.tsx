@@ -1,10 +1,57 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Modal from './Modal';
 import { User } from '../types';
 import UserIcon from './icons/UserIcon';
 import PhotoIcon from './icons/PhotoIcon';
 import { supabase } from '../utils/supabase';
 import { v4 as uuidv4 } from 'uuid';
+
+// Utility functions for image optimization
+const compressImage = (
+  file: File,
+  maxWidth: number = 800,
+  quality: number = 0.8
+): Promise<File> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const img = new Image();
+
+    img.onload = () => {
+      const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file); // Fallback to original
+          }
+        },
+        file.type,
+        quality
+      );
+    };
+
+    img.src = URL.createObjectURL(file);
+  });
+};
+
+const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.width, height: img.height });
+    img.src = URL.createObjectURL(file);
+  });
+};
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -26,6 +73,9 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,99 +84,141 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       setAvatarPreview(user.avatar_url || null);
       setUploadedAvatarUrl(user.avatar_url || null);
       setUploadError(null);
+      setUploadProgress(0);
+      setRetryCount(0);
     }
   }, [isOpen, user]);
 
-  const validateFile = (file: File): string | null => {
-    // Check file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      return t.upload_avatar_error_size || 'File size must be less than 5MB';
-    }
-
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return t.upload_avatar_error_type || 'File must be an image (JPEG, PNG, GIF, or WebP)';
-    }
-
-    return null;
-  };
-
-  const uploadFileToSupabase = async (file: File): Promise<string | null> => {
-    try {
-      // Ensure user is logged in (check localStorage)
-      if (!user) {
-        throw new Error('User not logged in');
+  const validateFile = useCallback(
+    async (file: File): Promise<string | null> => {
+      // Check file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        return t.upload_avatar_error_size || 'File size must be less than 5MB';
       }
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`; // Direct to root of avatars bucket
-
-      console.log('Uploading file to avatars bucket:', filePath);
-
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error('Upload error details:', uploadError);
-        throw new Error(`Upload failed: ${uploadError.message}`);
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        return t.upload_avatar_error_type || 'File must be an image (JPEG, PNG, GIF, or WebP)';
       }
 
-      console.log('Upload successful:', uploadData);
-
-      // Get public URL
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-
-      if (!data?.publicUrl) {
-        throw new Error('Failed to get public URL for uploaded file');
+      // Check dimensions (optional, prevent extremely large images)
+      try {
+        const dimensions = await getImageDimensions(file);
+        if (dimensions.width > 4096 || dimensions.height > 4096) {
+          return 'Image dimensions too large (max 4096x4096)';
+        }
+      } catch (error) {
+        // Ignore dimension check errors
       }
 
-      console.log('Public URL generated:', data.publicUrl);
-      return data.publicUrl;
-    } catch (error: any) {
-      console.error('Error uploading file:', error);
-      throw error;
-    }
-  };
+      return null;
+    },
+    [t]
+  );
+
+  const uploadFileToSupabase = useCallback(
+    async (file: File, attempt: number = 1): Promise<string | null> => {
+      const maxRetries = 3;
+      abortControllerRef.current = new AbortController();
+
+      try {
+        if (!user) {
+          throw new Error('User not logged in');
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        console.log(`Upload attempt ${attempt} to avatars bucket:`, filePath);
+
+        // Upload with progress tracking (simulated since Supabase doesn't support onUploadProgress)
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error('Upload error details:', uploadError);
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
+
+        console.log('Upload successful:', uploadData);
+
+        // Get public URL
+        const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+        if (!data?.publicUrl) {
+          throw new Error('Failed to get public URL for uploaded file');
+        }
+
+        console.log('Public URL generated:', data.publicUrl);
+        return data.publicUrl;
+      } catch (error: unknown) {
+        console.error(`Upload attempt ${attempt} failed:`, error);
+
+        if (attempt < maxRetries && !abortControllerRef.current?.signal.aborted) {
+          console.log(`Retrying upload in ${attempt * 2} seconds...`);
+          setRetryCount(attempt);
+          await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
+          return uploadFileToSupabase(file, attempt + 1);
+        }
+
+        throw error;
+      }
+    },
+    [user]
+  );
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Reset states
+    setUploadError(null);
+    setUploadProgress(0);
+    setRetryCount(0);
+
     // Validate file
-    const validationError = validateFile(file);
+    const validationError = await validateFile(file);
     if (validationError) {
       setUploadError(validationError);
       return;
     }
 
-    setUploadError(null);
-    setIsUploading(true);
+    setIsCompressing(true);
 
     try {
-      // Create preview
+      // Compress image for better performance
+      const compressedFile = await compressImage(file);
+      setIsCompressing(false);
+      setIsUploading(true);
+
+      // Create preview from compressed file
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(compressedFile);
 
-      // Upload to Supabase
-      const publicUrl = await uploadFileToSupabase(file);
+      // Upload to Supabase with retry
+      const publicUrl = await uploadFileToSupabase(compressedFile);
       setUploadedAvatarUrl(publicUrl);
-    } catch (error: any) {
+      setUploadProgress(100);
+    } catch (error: unknown) {
       console.error('Upload failed:', error);
-      setUploadError(error.message || t.upload_avatar_error_upload || 'Failed to upload image');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setUploadError(errorMessage || t.upload_avatar_error_upload || 'Failed to upload image');
       setAvatarPreview(user?.avatar_url || null);
+      setRetryCount((prev) => prev + 1);
     } finally {
       setIsUploading(false);
+      setIsCompressing(false);
+      setUploadProgress(0);
     }
   };
 
@@ -162,10 +254,12 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
             )}
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={isUploading || isCompressing}
               className="absolute -bottom-1 -right-1 p-2 bg-white dark:bg-slate-600 rounded-full shadow-md border border-slate-200 dark:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isUploading ? (
+              {isCompressing ? (
+                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : isUploading ? (
                 <div className="w-5 h-5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <PhotoIcon className="w-5 h-5 text-slate-600 dark:text-slate-200" />
@@ -182,10 +276,14 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           </div>
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
+            disabled={isUploading || isCompressing}
             className="text-sm font-semibold text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isUploading ? t.uploading || 'Uploading...' : t.upload_avatar}
+            {isCompressing
+              ? t.compressing || 'Compressing...'
+              : isUploading
+                ? `${t.uploading || 'Uploading...'} ${uploadProgress}%`
+                : t.upload_avatar}
           </button>
           {uploadError && (
             <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800">
@@ -235,7 +333,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         <button
           type="button"
           onClick={handleSave}
-          disabled={isUploading}
+          disabled={isUploading || isCompressing}
           className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t.save_changes}

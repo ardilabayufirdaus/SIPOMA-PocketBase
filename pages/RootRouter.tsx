@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import App from '../App';
 import LoginPage from './LoginPage';
+import { secureStorage } from '../utils/secureStorage';
+import { User } from '../types';
 
 // Create a client with optimized settings for Plant Operations Dashboard
 const queryClient = new QueryClient({
@@ -30,7 +32,7 @@ const RootRouter: React.FC = () => {
 
   const checkAuthStatus = useCallback(() => {
     try {
-      const storedUser = localStorage.getItem('currentUser');
+      const storedUser = secureStorage.getItem<User>('currentUser');
       const loggedIn = !!storedUser;
       setIsLoggedIn(loggedIn);
       setChecking(false);
@@ -46,22 +48,14 @@ const RootRouter: React.FC = () => {
     // Initial check
     checkAuthStatus();
 
-    // Listen for storage changes with debouncing
-    let timeoutId: NodeJS.Timeout;
-
+    // Listen for storage changes immediately (no debouncing for auth)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'currentUser') {
-        // Clear previous timeout
-        clearTimeout(timeoutId);
-
-        // Debounce storage change handling
-        timeoutId = setTimeout(() => {
-          checkAuthStatus();
-        }, 100);
+        checkAuthStatus();
       }
     };
 
-    // Also listen for custom auth events
+    // Listen for custom auth events immediately
     const handleAuthChange = () => {
       checkAuthStatus();
     };
@@ -70,7 +64,6 @@ const RootRouter: React.FC = () => {
     window.addEventListener('authStateChanged', handleAuthChange);
 
     return () => {
-      clearTimeout(timeoutId);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('authStateChanged', handleAuthChange);
     };
@@ -79,7 +72,7 @@ const RootRouter: React.FC = () => {
   if (checking || isLoggedIn === null) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600"></div>
+        <div className="rounded-full h-8 w-8 border-2 border-red-600 border-t-transparent animate-spin"></div>
       </div>
     );
   }

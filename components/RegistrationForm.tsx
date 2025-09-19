@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { api } from '../utils/api';
 import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 
@@ -11,39 +11,71 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess 
   const { announceToScreenReader } = useAccessibility();
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
   });
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    // Validasi input
     if (!formData.name.trim()) {
       setError('Nama lengkap wajib diisi');
       setLoading(false);
       return;
     }
 
+    if (!formData.email.trim()) {
+      setError('Email wajib diisi');
+      setLoading(false);
+      return;
+    }
+
+    if (!validateEmail(formData.email)) {
+      setError('Format email tidak valid');
+      setLoading(false);
+      return;
+    }
+
+    // Validate reCAPTCHA
+    if (!recaptchaToken) {
+      setError('Silakan verifikasi bahwa Anda bukan robot');
+      setLoading(false);
+      return;
+    }
+
     try {
       await api.users.requestRegistration({
-        email: '',
+        email: formData.email.trim().toLowerCase(),
         name: formData.name.trim(),
       });
 
       setSuccess(true);
+      announceToScreenReader('Registration request submitted successfully');
       setTimeout(() => {
         onSuccess();
         onClose();
       }, 2000);
-    } catch (err: any) {
-      if (err.message?.includes('already exists')) {
-        setError('Nama sudah terdaftar atau sedang dalam proses verifikasi');
+    } catch (err: unknown) {
+      const error = err as Error;
+      if (error.message?.includes('already exists')) {
+        setError('Email sudah terdaftar atau sedang dalam proses verifikasi');
+      } else if (error.message?.includes('rate limit')) {
+        setError('Terlalu banyak permintaan. Silakan coba lagi dalam beberapa menit.');
       } else {
         setError('Gagal mengirim permintaan registrasi. Silakan coba lagi.');
       }
+      announceToScreenReader('Registration request failed');
     } finally {
       setLoading(false);
     }
@@ -129,7 +161,38 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess 
               required
               className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Masukkan nama lengkap"
+              aria-describedby="name-error"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Masukkan alamat email"
+              aria-describedby="email-error"
+            />
+          </div>
+
+          {/* reCAPTCHA placeholder - integrate with actual reCAPTCHA service */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="recaptcha"
+              checked={!!recaptchaToken}
+              onChange={(e) => setRecaptchaToken(e.target.checked ? 'verified' : null)}
+              className="w-4 h-4 text-red-600 bg-slate-100 border-slate-300 rounded focus:ring-red-500"
+            />
+            <label htmlFor="recaptcha" className="text-sm text-slate-700 dark:text-slate-300">
+              Saya bukan robot
+            </label>
           </div>
 
           {error && (

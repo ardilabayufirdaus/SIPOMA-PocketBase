@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 // import { Database } from "../types/supabase";
+import { passwordUtils } from './passwordUtils';
+import { emailService } from './emailService';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
@@ -52,6 +54,7 @@ export const apiClient = {
           id,
           username,
           full_name,
+          avatar_url,
           role,
           is_active,
           created_at,
@@ -105,11 +108,24 @@ export const apiClient = {
     // Create new user
     async create(userData: {
       username: string;
-      password_hash: string;
+      password: string; // Changed from password_hash to password
       full_name?: string;
       role: string;
     }) {
-      const { data, error } = await supabase.from('users').insert([userData]).select().single();
+      // Hash password before storing
+      const hashedPassword = await passwordUtils.hash(userData.password);
+
+      const userDataWithHash = {
+        ...userData,
+        password_hash: hashedPassword,
+        password: undefined, // Remove plain password
+      };
+
+      const { data, error } = await supabase
+        .from('users')
+        .insert([userDataWithHash])
+        .select()
+        .single();
 
       if (error) throw error;
       return data;
@@ -209,38 +225,153 @@ export const apiClient = {
       return data;
     },
 
-    // Request user registration
+    // Request user registration with validation and rate limiting
     async requestRegistration({ email, name }: { email: string; name: string }) {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error('Invalid email format');
+      }
+
+      // Check if email already exists in users table
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', email.toLowerCase())
+        .single();
+
+      if (existingUser) {
+        throw new Error('Email already exists');
+      }
+
+      // Check if there's already a pending request for this email
+      const { data: existingRequest } = await supabase
+        .from('user_requests')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .eq('status', 'pending')
+        .single();
+
+      if (existingRequest) {
+        throw new Error('Registration request already exists for this email');
+      }
+
+      // Rate limiting: Check requests from same IP in last hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: recentRequests, error: rateLimitError } = await supabase
+        .from('user_requests')
+        .select('id')
+        .eq('ip_address', '0.0.0.0') // This should be replaced with actual IP detection
+        .gte('requested_at', oneHourAgo);
+
+      if (rateLimitError) {
+        console.warn('Rate limit check failed:', rateLimitError);
+      } else if (recentRequests && recentRequests.length >= 5) {
+        throw new Error('Rate limit exceeded. Too many requests from this IP.');
+      }
+
+      // Insert the registration request
       const { data, error } = await supabase
         .from('user_requests')
         .insert([
           {
-            email,
-            name,
+            email: email.toLowerCase(),
+            name: name.trim(),
             status: 'pending',
+            ip_address: '0.0.0.0', // Should be replaced with actual IP
+            user_agent: navigator?.userAgent || 'Unknown',
           },
         ])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Handle unique constraint violation
+        if (error.code === '23505') {
+          throw new Error('Email already exists');
+        }
+        throw error;
+      }
+
+      // Send confirmation email to user
+      try {
+        await emailService.sendRegistrationRequestNotification(email.toLowerCase(), name.trim());
+        await emailService.sendAdminNotification({
+          email: email.toLowerCase(),
+          name: name.trim(),
+          id: data.id,
+        });
+      } catch (emailError) {
+        console.warn('Failed to send notification emails:', emailError);
+        // Don't fail the registration if email fails
+      }
+
       return data;
     },
 
-    // Get registration requests
-    async getRegistrationRequests() {
-      const { data, error } = await supabase
-        .from('user_requests')
-        .select('*')
-        .eq('status', 'pending')
-        .order('requested_at', { ascending: false });
+    // Get registration requests with pagination and filtering
+    async getRegistrationRequests(
+      options: {
+        status?: 'pending' | 'approved' | 'rejected' | 'all';
+        limit?: number;
+        offset?: number;
+        search?: string;
+      } = {}
+    ) {
+      const { status = 'pending', limit = 50, offset = 0, search } = options;
+
+      let query = supabase.from('user_requests').select(
+        `
+          id,
+          email,
+          name,
+          status,
+          requested_at,
+          processed_at,
+          processed_by,
+          rejection_reason,
+          ip_address,
+          created_at,
+          updated_at
+        `,
+        { count: 'exact' }
+      );
+
+      // Apply status filter
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+
+      // Apply search filter
+      if (search) {
+        query = query.or(`email.ilike.%${search}%,name.ilike.%${search}%`);
+      }
+
+      // Apply ordering and pagination
+      const { data, error, count } = await query
+        .order('requested_at', { ascending: false })
+        .range(offset, offset + limit - 1);
 
       if (error) throw error;
-      return data || [];
+
+      return {
+        data: data || [],
+        total: count || 0,
+        hasMore: (count || 0) > offset + limit,
+      };
     },
 
     // Approve registration request
-    async approveRegistrationRequest(requestId: string, userData: any) {
+    async approveRegistrationRequest(
+      requestId: string,
+      userData: {
+        username: string;
+        full_name: string;
+        role: string;
+        password_hash: string;
+        is_active?: boolean;
+      }
+    ) {
       // First update the request status
       const { error: requestError } = await supabase
         .from('user_requests')
@@ -253,19 +384,57 @@ export const apiClient = {
       const { data, error } = await supabase.from('users').insert([userData]).select().single();
 
       if (error) throw error;
+
+      // Send approval notification
+      try {
+        await emailService.sendRegistrationApprovalNotification(
+          userData.username, // email is used as username
+          userData.full_name,
+          userData.username
+        );
+      } catch (emailError) {
+        console.warn('Failed to send approval email:', emailError);
+      }
+
       return data;
     },
 
     // Reject registration request
-    async rejectRegistrationRequest(requestId: string) {
+    async rejectRegistrationRequest(requestId: string, rejectionReason?: string) {
+      // First get the request details for email notification
+      const { data: requestData, error: fetchError } = await supabase
+        .from('user_requests')
+        .select('email, name')
+        .eq('id', requestId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update the request status
       const { data, error } = await supabase
         .from('user_requests')
-        .update({ status: 'rejected' })
+        .update({
+          status: 'rejected',
+          rejection_reason: rejectionReason,
+          processed_at: new Date().toISOString(),
+        })
         .eq('id', requestId)
         .select()
         .single();
 
       if (error) throw error;
+
+      // Send rejection notification
+      try {
+        await emailService.sendRegistrationRejectionNotification(
+          requestData.email,
+          requestData.name,
+          rejectionReason
+        );
+      } catch (emailError) {
+        console.warn('Failed to send rejection email:', emailError);
+      }
+
       return data;
     },
 
