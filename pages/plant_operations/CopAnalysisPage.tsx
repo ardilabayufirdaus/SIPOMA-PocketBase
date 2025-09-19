@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
-import { useCcrParameterData } from '../../hooks/useCcrParameterData';
-import { ParameterDataType, ParameterSetting } from '../../types';
+import { useCcrFooterData } from '../../hooks/useCcrFooterData';
+import { ParameterSetting } from '../../types';
 import { formatDate } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
@@ -185,7 +185,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
   // ...existing code...
 
   // ...existing code...
-  const { getDataForDate } = useCcrParameterData();
+  const { getFooterDataForDate } = useCcrFooterData();
   const [analysisData, setAnalysisData] = useState<AnalysisDataRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -212,28 +212,21 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
 
         const dailyAverages = new Map<string, Map<string, number>>();
 
-        const dataPromises = dates.map((dateString) => getDataForDate(dateString));
-        const allDataForMonth = await Promise.all(dataPromises);
+        // Get footer data for all dates in the month
+        const footerDataPromises = dates.map((dateString) => getFooterDataForDate(dateString));
+        const allFooterDataForMonth = await Promise.all(footerDataPromises);
 
-        allDataForMonth.flat().forEach((paramData) => {
-          // FIX: Use snake_case property `parameter_id`
-          const paramSetting = allParameters.find((p) => p.id === paramData.parameter_id);
-          // FIX: Use snake_case property `data_type`
-          if (paramSetting && paramSetting.data_type === ParameterDataType.NUMBER) {
-            // FIX: Use snake_case property `hourly_values`
-            const values = Object.values(paramData.hourly_values || {})
-              .map((v) => Number(v))
-              .filter((v) => !isNaN(v) && v !== null && v !== undefined);
-            if (values.length > 0) {
-              const avg = values.reduce((a, b) => a + b, 0) / values.length;
-              // FIX: Use snake_case property `parameter_id`
-              if (!dailyAverages.has(paramData.parameter_id)) {
-                // FIX: Use snake_case property `parameter_id`
-                dailyAverages.set(paramData.parameter_id, new Map());
-              }
-              // FIX: Use snake_case property `parameter_id`
-              dailyAverages.get(paramData.parameter_id)!.set(paramData.date, avg);
+        allFooterDataForMonth.flat().forEach((footerData) => {
+          // Use footer average data instead of calculating from hourly values
+          if (footerData.average !== null && footerData.average !== undefined) {
+            if (!dailyAverages.has(footerData.parameter_id)) {
+              dailyAverages.set(footerData.parameter_id, new Map());
             }
+            dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
+          } else {
+            console.warn(
+              `Footer average data not available for parameter ${footerData.parameter_id} on date ${footerData.date}`
+            );
           }
         });
 
@@ -297,7 +290,7 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
     filterYear,
     filteredCopParameters,
     allParameters,
-    getDataForDate,
+    getFooterDataForDate,
     selectedCategory,
     selectedUnit,
   ]);

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
@@ -455,8 +456,77 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
     setIsExporting(true);
     try {
-      // Placeholder: Export functionality temporarily disabled due to security update
-      alert('Export functionality is temporarily disabled. Please use alternative export method.');
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+
+      // Export Plant Units
+      if (plantUnits.length > 0) {
+        const plantUnitsData = plantUnits.map((unit) => ({
+          ID: unit.id,
+          Unit: unit.unit,
+          Category: unit.category,
+          Description: unit.description || '',
+        }));
+        const wsPlantUnits = XLSX.utils.json_to_sheet(plantUnitsData);
+        XLSX.utils.book_append_sheet(wb, wsPlantUnits, 'Plant Units');
+      }
+
+      // Export Parameter Settings
+      if (parameterSettings.length > 0) {
+        const paramData = parameterSettings.map((param) => ({
+          ID: param.id,
+          Parameter: param.parameter,
+          Data_Type: param.data_type,
+          Unit: param.unit,
+          Category: param.category,
+          Min_Value: param.min_value || '',
+          Max_Value: param.max_value || '',
+        }));
+        const wsParams = XLSX.utils.json_to_sheet(paramData);
+        XLSX.utils.book_append_sheet(wb, wsParams, 'Parameter Settings');
+      }
+
+      // Export Silo Capacities
+      if (siloCapacities.length > 0) {
+        const siloData = siloCapacities.map((silo) => ({
+          ID: silo.id,
+          Plant_Category: silo.plant_category,
+          Unit: silo.unit,
+          Silo_Name: silo.silo_name,
+          Capacity: silo.capacity,
+          Dead_Stock: silo.dead_stock,
+        }));
+        const wsSilos = XLSX.utils.json_to_sheet(siloData);
+        XLSX.utils.book_append_sheet(wb, wsSilos, 'Silo Capacities');
+      }
+
+      // Export Report Settings
+      if (reportSettings.length > 0) {
+        const reportData = reportSettings.map((setting) => ({
+          ID: setting.id,
+          Parameter_ID: setting.parameter_id,
+          Category: setting.category,
+        }));
+        const wsReports = XLSX.utils.json_to_sheet(reportData);
+        XLSX.utils.book_append_sheet(wb, wsReports, 'Report Settings');
+      }
+
+      // Export PIC Settings
+      if (picSettings.length > 0) {
+        const picData = picSettings.map((pic) => ({
+          ID: pic.id,
+          PIC: pic.pic,
+        }));
+        const wsPics = XLSX.utils.json_to_sheet(picData);
+        XLSX.utils.book_append_sheet(wb, wsPics, 'PIC Settings');
+      }
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `PlantOperations_MasterData_${timestamp}.xlsx`;
+
+      // Write file
+      XLSX.writeFile(wb, filename);
     } catch (error) {
       console.error('Failed to export master data:', error);
       alert(
@@ -469,20 +539,240 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     }
   };
 
-  const handleImportAll = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Placeholder: Import functionality temporarily disabled due to security update
-    alert('Import functionality is temporarily disabled. Please use alternative import method.');
-  };
+  const handleImportAll = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  // Removed incomplete import implementation code that was causing syntax errors
+    if (isImporting) return;
 
-  const handleDelete = (type: ModalType, id: string) => {
-    if (type === 'plantUnit') deletePlantUnit(id);
-    if (type === 'parameterSetting') deleteParameter(id);
-    if (type === 'siloCapacity') deleteSilo(id);
-    if (type === 'reportSetting') deleteReportSetting(id);
-    if (type === 'picSetting') deletePicSetting(id);
-    handleCloseModals();
+    setIsImporting(true);
+    const errorMessages: string[] = [];
+    let importCount = 0;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const wb = XLSX.read(arrayBuffer, { type: 'array' });
+
+      // Import Plant Units
+      if (wb.Sheets['Plant Units']) {
+        try {
+          const plantUnitsData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Plant Units']
+          );
+          if (plantUnitsData.length > 0) {
+            // Validate data structure
+            const requiredFields = ['Unit', 'Category'];
+            const invalidRows = plantUnitsData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Plant Units row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              // Process valid data
+              for (const row of plantUnitsData) {
+                await addPlantUnit({
+                  unit: String(row.Unit),
+                  category: String(row.Category),
+                  description: row.Description ? String(row.Description) : null,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Plant Units import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Parameter Settings
+      if (wb.Sheets['Parameter Settings']) {
+        try {
+          const paramData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Parameter Settings']
+          );
+          if (paramData.length > 0) {
+            const requiredFields = ['Parameter', 'Data_Type', 'Unit', 'Category'];
+            const invalidRows = paramData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Parameter Settings row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of paramData) {
+                const dataType = String(row.Data_Type);
+                // Validate data type
+                if (dataType !== 'Number' && dataType !== 'Text') {
+                  errorMessages.push(
+                    `Parameter Settings: Invalid data type "${dataType}". Must be "Number" or "Text"`
+                  );
+                  continue;
+                }
+
+                await addParameter({
+                  parameter: String(row.Parameter),
+                  data_type: dataType as ParameterDataType,
+                  unit: String(row.Unit),
+                  category: String(row.Category),
+                  min_value: row.Min_Value ? Number(row.Min_Value) : null,
+                  max_value: row.Max_Value ? Number(row.Max_Value) : null,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Parameter Settings import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Silo Capacities
+      if (wb.Sheets['Silo Capacities']) {
+        try {
+          const siloData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Silo Capacities']
+          );
+          if (siloData.length > 0) {
+            const requiredFields = ['Plant_Category', 'Unit', 'Silo_Name', 'Capacity'];
+            const invalidRows = siloData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Silo Capacities row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of siloData) {
+                await addSilo({
+                  plant_category: String(row.Plant_Category),
+                  unit: String(row.Unit),
+                  silo_name: String(row.Silo_Name),
+                  capacity: Number(row.Capacity),
+                  dead_stock: row.Dead_Stock ? Number(row.Dead_Stock) : 0,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Silo Capacities import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Report Settings
+      if (wb.Sheets['Report Settings']) {
+        try {
+          const reportData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Report Settings']
+          );
+          if (reportData.length > 0) {
+            const requiredFields = ['Parameter_ID', 'Category'];
+            const invalidRows = reportData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Report Settings row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of reportData) {
+                await addReportSetting({
+                  parameter_id: String(row.Parameter_ID),
+                  category: String(row.Category),
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Report Settings import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import PIC Settings
+      if (wb.Sheets['PIC Settings']) {
+        try {
+          const picData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['PIC Settings']
+          );
+          if (picData.length > 0) {
+            const requiredFields = ['PIC'];
+            const invalidRows = picData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `PIC Settings row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of picData) {
+                await addPicSetting({
+                  pic: String(row.PIC),
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `PIC Settings import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Show results
+      if (importCount > 0) {
+        alert(`Successfully imported ${importCount} records.`);
+      }
+
+      if (errorMessages.length > 0) {
+        alert(`Import completed with errors:\n${errorMessages.join('\n')}`);
+      }
+    } catch (error) {
+      console.error('Failed to import master data:', error);
+      alert(
+        `An error occurred during import: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
   };
 
   return (

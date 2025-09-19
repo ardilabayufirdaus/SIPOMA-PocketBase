@@ -1,4 +1,5 @@
 ﻿import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -297,6 +298,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     parameterFooterData,
     parameterShiftFooterData,
     parameterShiftDifferenceData,
+    parameterShiftAverageData,
     counterTotalData,
   } = useFooterCalculations({
     filteredParameterSettings,
@@ -304,12 +306,17 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   });
 
   // Use custom hook for footer data persistence
-  const { saveFooterData } = useCcrFooterData();
+  const { saveFooterData, getFooterDataForDate } = useCcrFooterData();
 
   // Auto-save footer data when it changes
   useEffect(() => {
     const saveFooterDataAsync = async () => {
-      if (!parameterFooterData || !parameterShiftFooterData || !parameterShiftDifferenceData) {
+      if (
+        !parameterFooterData ||
+        !parameterShiftFooterData ||
+        !parameterShiftDifferenceData ||
+        !parameterShiftAverageData
+      ) {
         return;
       }
 
@@ -319,6 +326,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           const footerData = parameterFooterData[param.id];
           const shiftData = parameterShiftFooterData;
           const differenceData = parameterShiftDifferenceData;
+          const averageData = parameterShiftAverageData;
 
           if (footerData) {
             await saveFooterData({
@@ -338,6 +346,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               shift2_difference: differenceData.shift2[param.id] || 0,
               shift3_difference: differenceData.shift3[param.id] || 0,
               shift3_cont_difference: differenceData.shift3Cont[param.id] || 0,
+              shift1_average: averageData.shift1[param.id] || 0,
+              shift2_average: averageData.shift2[param.id] || 0,
+              shift3_average: averageData.shift3[param.id] || 0,
+              shift3_cont_average: averageData.shift3Cont[param.id] || 0,
             });
           }
         }
@@ -357,6 +369,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     parameterFooterData,
     parameterShiftFooterData,
     parameterShiftDifferenceData,
+    parameterShiftAverageData,
+    counterTotalData,
     filteredParameterSettings,
     selectedDate,
     selectedCategory,
@@ -640,7 +654,79 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
     setIsExporting(true);
     try {
-      alert('Export functionality is temporarily disabled. Chart.js implementation pending.');
+      const wb = XLSX.utils.book_new();
+
+      // Get parameter data for the selected date
+      const parameterData = await getParameterDataForDate(selectedDate);
+      const footerData = await getFooterDataForDate(selectedDate, selectedUnit);
+      const downtimeData = getDowntimeForDate(selectedDate);
+
+      // Export Parameter Data
+      if (parameterData && parameterData.length > 0) {
+        const paramExportData: Record<string, unknown>[] = [];
+
+        // Create rows for each hour (1-24)
+        for (let hour = 1; hour <= 24; hour++) {
+          const shift = hour <= 8 ? '1' : hour <= 16 ? '2' : '3';
+          const row: Record<string, unknown> = {
+            Date: selectedDate,
+            Hour: hour,
+            Shift: shift,
+            Unit: selectedUnit,
+          };
+
+          // Add parameter values for this hour
+          filteredParameterSettings.forEach((param) => {
+            const paramData = parameterDataMap.get(param.id);
+            const paramValue = paramData?.hourly_values[hour] ?? '';
+            row[param.parameter] = paramValue;
+          });
+
+          paramExportData.push(row);
+        }
+
+        const wsParam = XLSX.utils.json_to_sheet(paramExportData);
+        XLSX.utils.book_append_sheet(wb, wsParam, 'Parameter Data');
+      }
+
+      // Export Footer Data
+      if (footerData && footerData.length > 0) {
+        const footerExportData = footerData.map((row) => ({
+          Date: row.date,
+          Unit: row.unit,
+          Target_Production: row.target_production || '',
+          Next_Shift_PIC: row.next_shift_pic || '',
+          Handover_Notes: row.handover_notes || '',
+        }));
+
+        const wsFooter = XLSX.utils.json_to_sheet(footerExportData);
+        XLSX.utils.book_append_sheet(wb, wsFooter, 'Footer Data');
+      }
+
+      // Export Downtime Data
+      if (downtimeData && downtimeData.length > 0) {
+        const filteredDowntime = downtimeData.filter((d) => d.date === selectedDate);
+        if (filteredDowntime.length > 0) {
+          const downtimeExportData = filteredDowntime.map((row) => ({
+            Date: row.date,
+            Start_Time: row.start_time,
+            End_Time: row.end_time,
+            Unit: row.unit,
+            PIC: row.pic,
+            Problem: row.problem,
+          }));
+
+          const wsDowntime = XLSX.utils.json_to_sheet(downtimeExportData);
+          XLSX.utils.book_append_sheet(wb, wsDowntime, 'Downtime Data');
+        }
+      }
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `CCR_Data_${selectedUnit}_${timestamp}.xlsx`;
+
+      // Write file
+      XLSX.writeFile(wb, filename);
     } catch (error) {
       console.error('Error exporting CCR parameter data:', error);
       alert('An error occurred while exporting data. Please try again.');
@@ -661,17 +747,235 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
     setIsImporting(true);
     try {
-      alert('Import functionality is temporarily disabled. Chart.js implementation pending.');
+      const arrayBuffer = await file.arrayBuffer();
+      const wb = XLSX.read(arrayBuffer, { type: 'array' });
+
+      let importCount = 0;
+      let errorMessages: string[] = [];
+
+      // Import Parameter Data
+      if (wb.Sheets['Parameter Data']) {
+        try {
+          const paramData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Parameter Data']
+          );
+          if (paramData.length > 0) {
+            // Validate data structure
+            const requiredFields = ['Date', 'Hour', 'Unit'];
+            const invalidRows = paramData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Parameter Data row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              // Process valid data
+              for (const row of paramData) {
+                const date = String(row.Date);
+                const hour = Number(row.Hour);
+                const unit = String(row.Unit);
+
+                // Get all parameter columns (exclude Date, Hour, Unit, Shift)
+                const parameterColumns = Object.keys(row).filter(
+                  (key) => !['Date', 'Hour', 'Unit', 'Shift'].includes(key)
+                );
+
+                // For each parameter column with a value, save the data
+                for (const paramName of parameterColumns) {
+                  const value = row[paramName];
+                  if (value !== undefined && value !== null && value !== '') {
+                    // Find parameter settings to get parameter_id
+                    const paramSetting = filteredParameterSettings.find(
+                      (p) => p.parameter === paramName
+                    );
+                    if (paramSetting) {
+                      try {
+                        await updateParameterData(
+                          date,
+                          paramSetting.id,
+                          hour,
+                          String(value),
+                          loggedInUser?.name || 'Import User'
+                        );
+                        importCount++;
+                      } catch (error) {
+                        errorMessages.push(
+                          `Failed to save parameter ${paramName} for ${date} hour ${hour}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                        );
+                      }
+                    } else {
+                      errorMessages.push(
+                        `Parameter "${paramName}" not found in parameter settings for unit ${unit}`
+                      );
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Parameter Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Footer Data
+      if (wb.Sheets['Footer Data']) {
+        try {
+          const footerData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Footer Data']
+          );
+          if (footerData.length > 0) {
+            // Validate data structure
+            const requiredFields = ['Date', 'Unit'];
+            const invalidRows = footerData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Footer Data row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              // Process valid data
+              for (const row of footerData) {
+                try {
+                  // Find parameter setting to get parameter_id
+                  // For footer data, we need to determine which parameter this footer data belongs to
+                  // This might need to be specified in the Excel or determined by context
+                  // For now, we'll assume it's for all parameters or needs parameter_id column
+
+                  // Check if parameter_id is provided in the Excel
+                  if (!row.parameter_id && !row.Parameter_ID) {
+                    errorMessages.push(
+                      `Footer Data: Missing parameter_id for row with date ${row.Date}`
+                    );
+                    continue;
+                  }
+
+                  const parameterId = row.parameter_id || row.Parameter_ID;
+
+                  await saveFooterData({
+                    date: String(row.Date),
+                    parameter_id: String(parameterId),
+                    plant_unit: row.Unit ? String(row.Unit) : selectedUnit,
+                    total: row.Total ? Number(row.Total) : 0,
+                    average: row.Average ? Number(row.Average) : 0,
+                    minimum: row.Minimum ? Number(row.Minimum) : 0,
+                    maximum: row.Maximum ? Number(row.Maximum) : 0,
+                    shift1_total: row.Shift1_Total ? Number(row.Shift1_Total) : 0,
+                    shift2_total: row.Shift2_Total ? Number(row.Shift2_Total) : 0,
+                    shift3_total: row.Shift3_Total ? Number(row.Shift3_Total) : 0,
+                    shift3_cont_total: row.Shift3_Cont_Total ? Number(row.Shift3_Cont_Total) : 0,
+                    shift1_difference: row.Shift1_Difference ? Number(row.Shift1_Difference) : 0,
+                    shift2_difference: row.Shift2_Difference ? Number(row.Shift2_Difference) : 0,
+                    shift3_difference: row.Shift3_Difference ? Number(row.Shift3_Difference) : 0,
+                    shift3_cont_difference: row.Shift3_Cont_Difference
+                      ? Number(row.Shift3_Cont_Difference)
+                      : 0,
+                  });
+                  importCount++;
+                } catch (error) {
+                  errorMessages.push(
+                    `Failed to save footer data for ${row.Date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                  );
+                }
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Footer Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Downtime Data
+      if (wb.Sheets['Downtime Data']) {
+        try {
+          const downtimeData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Downtime Data']
+          );
+          if (downtimeData.length > 0) {
+            // Validate data structure
+            const requiredFields = ['Date', 'Start_Time', 'End_Time', 'Unit', 'PIC', 'Problem'];
+            const invalidRows = downtimeData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Downtime Data row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              // Process valid data
+              for (const row of downtimeData) {
+                try {
+                  const result = await addDowntime({
+                    date: String(row.Date),
+                    start_time: String(row.Start_Time),
+                    end_time: String(row.End_Time),
+                    unit: String(row.Unit),
+                    pic: String(row.PIC),
+                    problem: String(row.Problem),
+                    action: row.Action ? String(row.Action) : undefined,
+                    corrective_action: row.Corrective_Action
+                      ? String(row.Corrective_Action)
+                      : undefined,
+                    status: row.Status ? String(row.Status) : 'Open',
+                  });
+
+                  if (result.success) {
+                    importCount++;
+                  } else {
+                    errorMessages.push(
+                      `Failed to save downtime data for ${row.Date}: ${result.error}`
+                    );
+                  }
+                } catch (error) {
+                  errorMessages.push(
+                    `Failed to save downtime data for ${row.Date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                  );
+                }
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Downtime Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Show results
+      if (importCount > 0) {
+        alert(`Successfully imported ${importCount} records to the database.`);
+      }
+
+      if (errorMessages.length > 0) {
+        alert(`Import validation completed with errors:\n${errorMessages.join('\n')}`);
+      }
     } catch (error) {
       console.error('Error processing Excel file:', error);
       alert('Error processing Excel file. Please check the file format and try again.');
     } finally {
       setIsImporting(false);
-    }
-
-    // Clear the file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      // Reset file input
+      if (e.target) {
+        e.target.value = '';
+      }
     }
   };
 
@@ -1385,6 +1689,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 filteredParameterSettings={filteredParameterSettings}
                 parameterShiftFooterData={parameterShiftFooterData}
                 parameterShiftDifferenceData={parameterShiftDifferenceData}
+                parameterShiftAverageData={parameterShiftAverageData}
                 parameterFooterData={parameterFooterData}
                 counterTotalData={counterTotalData}
                 formatStatValue={formatStatValue}

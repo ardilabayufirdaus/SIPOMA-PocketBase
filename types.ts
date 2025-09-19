@@ -262,6 +262,7 @@ export interface CcrFooterData {
   parameter_id: string;
   plant_unit?: string;
   total: number;
+  counter_total: number;
   average: number;
   minimum: number;
   maximum: number;

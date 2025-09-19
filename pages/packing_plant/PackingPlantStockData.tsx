@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import Modal from '../../components/Modal';
 import { usePackingPlantMasterData } from '../../hooks/usePackingPlantMasterData';
 import { PackingPlantStockRecord } from '../../types';
@@ -319,8 +320,34 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
   };
 
   const handleExport = () => {
-    // Placeholder: Export functionality temporarily disabled due to security update
-    alert('Export functionality is temporarily disabled. Please use alternative export method.');
+    try {
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+
+      // Export current filtered data
+      const exportData = tableData.map((record) => ({
+        Date: record.date,
+        Area: record.area,
+        'Opening Stock': record.opening_stock,
+        'Stock Received': record.stock_received,
+        'Stock Out': record.stock_out,
+        'Closing Stock': record.closing_stock,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      XLSX.utils.book_append_sheet(wb, ws, 'Stock Data');
+
+      // Generate filename with current filter info
+      const monthName =
+        monthOptions.find((m) => m.value === filterMonth)?.label || `Month_${filterMonth + 1}`;
+      const filename = `PackingPlant_Stock_${filterArea}_${monthName}_${filterYear}.xlsx`;
+
+      // Write file
+      XLSX.writeFile(wb, filename);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    }
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -329,10 +356,71 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
     setIsImporting(true);
     try {
-      alert('Import functionality is temporarily disabled. Chart.js implementation pending.');
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets['Stock Data'];
+
+      if (!worksheet) {
+        alert('Invalid Excel format. Please ensure the file contains a "Stock Data" sheet.');
+        return;
+      }
+
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      // Process and validate imported data
+      const importedRecords: PackingPlantStockRecord[] = [];
+      const errors: string[] = [];
+
+      jsonData.forEach((row: any, index: number) => {
+        try {
+          // Validate required fields
+          if (!row.Date || !row.Area) {
+            errors.push(`Row ${index + 2}: Missing Date or Area`);
+            return;
+          }
+
+          // Parse and validate data
+          const record: PackingPlantStockRecord = {
+            id: '', // Will be set by upsertRecord
+            date: row.Date,
+            area: row.Area,
+            opening_stock: Number(row['Opening Stock']) || 0,
+            stock_received: Number(row['Stock Received']) || 0,
+            stock_out: Number(row['Stock Out']) || 0,
+            closing_stock: Number(row['Closing Stock']) || 0,
+          };
+
+          importedRecords.push(record);
+        } catch (error) {
+          errors.push(`Row ${index + 2}: Invalid data format`);
+        }
+      });
+
+      if (errors.length > 0) {
+        alert(`Import validation errors:\n${errors.join('\n')}`);
+        return;
+      }
+
+      // Import records
+      for (const record of importedRecords) {
+        try {
+          // Look up the master area ID
+          const master = masterAreas.find((m: any) => m.area === record.area);
+          const masterId = master ? master.id : '';
+
+          await upsertRecord({
+            ...record,
+            id: masterId,
+          });
+        } catch (error) {
+          console.error('Error importing record:', record, error);
+        }
+      }
+
+      alert(`Successfully imported ${importedRecords.length} records.`);
     } catch (error) {
-      console.error('Error processing Excel file:', error);
-      alert('Error saat memproses file Excel. Pastikan format file sudah benar.');
+      console.error('Import failed:', error);
+      alert('Import failed. Please check the file format and try again.');
     } finally {
       setIsImporting(false);
     }

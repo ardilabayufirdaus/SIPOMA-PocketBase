@@ -19,6 +19,10 @@ interface CcrFooterData {
   shift2_difference: number;
   shift3_difference: number;
   shift3_cont_difference: number;
+  shift1_average: number;
+  shift2_average: number;
+  shift3_average: number;
+  shift3_cont_average: number;
 }
 
 // Interface untuk response Supabase
@@ -40,6 +44,10 @@ interface CcrFooterDataRow {
   shift2_difference: number | null;
   shift3_difference: number | null;
   shift3_cont_difference: number | null;
+  shift1_average: number | null;
+  shift2_average: number | null;
+  shift3_average: number | null;
+  shift3_cont_average: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -65,6 +73,10 @@ export const useCcrFooterData = () => {
           shift2_difference: footerData.shift2_difference,
           shift3_difference: footerData.shift3_difference,
           shift3_cont_difference: footerData.shift3_cont_difference,
+          shift1_average: footerData.shift1_average,
+          shift2_average: footerData.shift2_average,
+          shift3_average: footerData.shift3_average,
+          shift3_cont_average: footerData.shift3_cont_average,
           updated_at: new Date().toISOString(),
         },
         {

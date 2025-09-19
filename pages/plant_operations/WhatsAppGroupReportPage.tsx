@@ -1,14 +1,23 @@
-﻿import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useCcrParameterData } from '../../hooks/useCcrParameterData';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useAuth } from '../../hooks/useAuth';
 import { CcrDowntimeData } from '../../types';
 
 import { EnhancedButton } from '../../components/ui/EnhancedComponents';
+
+// Helper function to format numbers in Indonesian format (comma for decimal, dot for thousands)
+const formatIndonesianNumber = (num: number, decimals: number = 2): string => {
+  return num.toLocaleString('id-ID', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
 
 interface WhatsAppGroupReportPageProps {
   t: Record<string, string>;
@@ -35,6 +44,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
   const { getDowntimeForDate } = useCcrDowntimeData();
   const { records: plantUnits } = usePlantUnits();
   const { records: parameterSettings } = useParameterSettings();
+  const { records: silos } = useSiloCapacities();
 
   const plantCategories = useMemo(() => {
     const categories = [...new Set(plantUnits.map((unit) => unit.category))];
@@ -115,14 +125,25 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
     try {
       const { date } = { date: selectedDate };
 
-      // Fetch all required data
-      const [parameterData, siloData] = await Promise.all([
-        getParameterData(date),
-        getSiloData(date),
-      ]);
+      // Fetch data for all selected units in parallel
+      const dataPromises = selectedPlantUnits.map(async (unit) => ({
+        unit,
+        parameterData: await getParameterData(date, unit),
+      }));
+
+      const unitDataArray = await Promise.all(dataPromises);
+      const unitDataMap = new Map(
+        unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
+      );
+
+      // Fetch footer data for the category (footer data is stored per category, not per unit)
+      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+
+      // Fetch silo data (shared across units)
+      const siloData = await getSiloData(date);
 
       // Debug logging untuk memastikan data parameter dari CCR Parameter Data Entry
-      console.log('CCR Parameter Data Entry - Raw Data:', parameterData);
+      console.log('Unit Data Map:', unitDataMap);
       console.log('Parameter Settings:', parameterSettings);
       console.log('Selected Plant Units:', selectedPlantUnits);
 
@@ -141,77 +162,138 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       const plantUnitsFiltered = selectedPlantUnits;
 
       for (const unit of plantUnitsFiltered) {
-        // Filter parameter data based on parameter settings that belong to this unit
-        const unitParameterData = parameterData.filter((p) => {
-          const paramSetting = parameterSettings.find((setting) => setting.id === p.parameter_id);
-          return paramSetting && paramSetting.unit === unit;
-        });
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) {
+          console.warn(`No data found for unit ${unit}`);
+          continue;
+        }
 
-        // Debug logging untuk memastikan parameter data yang benar diambil
-        console.log(
-          `Unit ${unit} - Parameter Data:`,
-          unitParameterData.map((p) => ({
-            parameter_id: p.parameter_id,
-            name: p.name,
-            setting: parameterSettings.find((s) => s.id === p.parameter_id),
-          }))
-        );
+        const { parameterData: allParameterData } = unitData;
 
         report += `*Plant Unit Cement Mill ${unit}*\n`;
 
-        // Get values from parameter data
-        const feedParam = unitParameterData.find((p) => p.name?.toLowerCase().includes('feed'));
-        const runningHoursParam = unitParameterData.find(
-          (p) =>
-            p.name?.toLowerCase().includes('running hours') ||
-            p.name?.toLowerCase().includes('jam operasi')
+        // Get values from footer data (footer data is stored per category)
+        // Filter footer data for parameters that belong to this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
         );
 
-        // Debug logging untuk parameter yang ditemukan
-        console.log(`Unit ${unit} - Found Parameters:`, {
-          feedParam: feedParam
-            ? { parameter_id: feedParam.parameter_id, name: feedParam.name }
-            : null,
-          runningHoursParam: runningHoursParam
-            ? { parameter_id: runningHoursParam.parameter_id, name: runningHoursParam.name }
-            : null,
-          totalParameters: unitParameterData.length,
+        // Cari data berdasarkan parameter_id di footer data
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed \(tph\)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
         });
 
-        // Calculate averages
-        const feedValues = feedParam
-          ? (Object.values(feedParam.hourly_values).filter(
-              (v) => typeof v === 'number' && !isNaN(v)
-            ) as number[])
-          : [];
-        const feedAvg =
-          feedValues.length > 0 ? feedValues.reduce((a, b) => a + b, 0) / feedValues.length : 0;
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                total: feedData.total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+          runningHoursData: runningHoursData
+            ? {
+                parameter_id: runningHoursData.parameter_id,
+                total: runningHoursData.total,
+                setting: parameterSettings.find((s) => s.id === runningHoursData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productionData: productionData
+            ? {
+                parameter_id: productionData.parameter_id,
+                total: productionData.total,
+                setting: parameterSettings.find((s) => s.id === productionData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+        });
 
-        const runningHoursValues = runningHoursParam
-          ? (Object.values(runningHoursParam.hourly_values).filter(
-              (v) => typeof v === 'number' && !isNaN(v)
-            ) as number[])
-          : [];
-        const runningHoursAvg =
-          runningHoursValues.length > 0
-            ? runningHoursValues.reduce((a, b) => a + b, 0) / runningHoursValues.length
-            : 0;
+        // Calculate values from footer data
+        const feedAvg = feedData?.average || feedData?.total || 0;
+        const runningHoursAvg = runningHoursData?.total || 0;
+        const totalProduction = productionData?.total || feedAvg * runningHoursAvg;
 
         // Debug logging untuk nilai yang dihitung
         console.log(`Unit ${unit} - Calculated Values:`, {
-          feedAvg: feedAvg.toFixed(2),
-          runningHoursAvg: runningHoursAvg.toFixed(2),
-          feedValues: feedValues,
-          runningHoursValues: runningHoursValues,
+          feedAvg: formatIndonesianNumber(feedAvg),
+          runningHoursAvg: formatIndonesianNumber(runningHoursAvg),
+          totalProduction: formatIndonesianNumber(totalProduction),
+          feedData: feedData?.total,
+          runningHoursData: runningHoursData?.total,
+          productionData: productionData?.total,
         });
 
-        // Tipe Produk - menggunakan data dari parameter atau default
-        const productType = 'OPC'; // Default, bisa disesuaikan
+        // Tipe Produk - cari dari parameter data atau default N/A
+        const productTypeParam = allParameterData.find((p) => {
+          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
+          return (
+            paramSetting &&
+            paramSetting.category === selectedPlantCategory &&
+            paramSetting.unit === unit &&
+            (paramSetting.parameter.toLowerCase().includes('product type') ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
+              paramSetting.parameter.toLowerCase().includes('cement type') ||
+              paramSetting.parameter.toLowerCase().includes('type produk'))
+          );
+        });
+
+        let productType = 'N/A'; // Default jika tidak ada data
+        if (productTypeParam) {
+          // Ambil nilai dari hourly_values (gunakan nilai terbaru atau rata-rata)
+          const productTypeValues = Object.values(productTypeParam.hourly_values).filter(
+            (v) => typeof v === 'string' && v.trim() !== ''
+          ) as string[];
+          if (productTypeValues.length > 0) {
+            // Gunakan nilai terakhir (jam terakhir)
+            const lastHour = Math.max(...Object.keys(productTypeParam.hourly_values).map(Number));
+            productType =
+              (productTypeParam.hourly_values[lastHour] as string) ||
+              productTypeValues[productTypeValues.length - 1];
+          }
+        }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
 
         report += `Tipe Produk  : ${productType}\n`;
-        report += `Feed  : ${feedAvg.toFixed(2)} tph\n`;
-        report += `Jam Operasi  : ${runningHoursAvg.toFixed(2)} jam\n`;
-        report += `Total Produksi  : ${(feedAvg * runningHoursAvg).toFixed(2)} ton\n\n`;
+        report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
+        report += `Jam Operasi  : ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
         // Pemakaian Bahan
         report += `*Pemakaian Bahan*\n`;
@@ -226,16 +308,14 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         ];
 
         bahanParams.forEach(({ name, param }) => {
-          const bahanData = unitParameterData.find((p) =>
-            p.name?.toLowerCase().includes(param.toLowerCase())
-          );
-          const bahanValues = bahanData
-            ? (Object.values(bahanData.hourly_values).filter(
-                (v) => typeof v === 'number' && !isNaN(v)
-              ) as number[])
-            : [];
-          const bahanTotal = bahanValues.length > 0 ? bahanValues.reduce((a, b) => a + b, 0) : 0;
-          report += `- ${name} : ${bahanTotal.toFixed(2)} ton\n`;
+          const bahanData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
+          report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
         });
 
         report += `\n*Setting Feeder*\n`;
@@ -250,37 +330,46 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         ];
 
         feederParams.forEach(({ name, param }) => {
-          const feederData = unitParameterData.find((p) =>
-            p.name?.toLowerCase().includes(param.toLowerCase())
-          );
-          const feederValues = feederData
-            ? (Object.values(feederData.hourly_values).filter(
-                (v) => typeof v === 'number' && !isNaN(v)
-              ) as number[])
-            : [];
-          const feederAvg =
-            feederValues.length > 0
-              ? feederValues.reduce((a, b) => a + b, 0) / feederValues.length
-              : 0;
-          report += `- ${name} : ${feederAvg.toFixed(2)} %\n`;
+          const feederData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const feederAvg = feederData ? Number(feederData.average || 0) : 0;
+          report += `- ${name} : ${formatIndonesianNumber(feederAvg, 2)} %\n`;
         });
 
         // Catatan Tambahan - downtime data
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => d.unit.includes(unit));
-        const notes = unitDowntime.map((d) => `${d.problem} - ${d.start_time || 'N/A'}`).join('\n');
+        const notes = unitDowntime
+          .map((d) => {
+            const start = new Date(`${d.date} ${d.start_time}`);
+            const end = new Date(`${d.date} ${d.end_time}`);
+            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
+          })
+          .join('\n');
         report += `\n*Catatan Tambahan*\n${notes}\n\n`;
       }
 
       // Silo Data - hanya shift 3
       report += `*Ruang Kosong & Isi Silo Semen*\n`;
-      siloData.forEach((silo) => {
+      const filteredSiloData = siloData.filter((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        return siloInfo && siloInfo.plant_category === selectedPlantCategory;
+      });
+      filteredSiloData.forEach((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        const siloName = siloInfo?.silo_name || silo.silo_id;
         const shift3Data = silo.shift3;
         if (shift3Data) {
-          const percentage = shift3Data.content
-            ? ((shift3Data.content / 100) * 100).toFixed(1)
-            : 'N/A';
-          report += `${silo.silo_id}: Empty ${shift3Data.emptySpace || 'N/A'} m³, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+          const percentage =
+            siloInfo && shift3Data.content
+              ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
+              : 'N/A';
+          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m�, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
@@ -301,6 +390,869 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
     getFooterDataForDate,
     getSiloData,
     getDowntimeForDate,
+    parameterSettings,
+  ]);
+
+  // Generate Shift 1 Report sesuai format yang diminta (jam 07-15)
+  const generateShift1Report = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const { date } = { date: selectedDate };
+
+      // Fetch data for all selected units in parallel
+      const dataPromises = selectedPlantUnits.map(async (unit) => ({
+        unit,
+        parameterData: await getParameterData(date, unit),
+      }));
+
+      const unitDataArray = await Promise.all(dataPromises);
+      const unitDataMap = new Map(
+        unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
+      );
+
+      // Fetch footer data for the category (footer data is stored per category, not per unit)
+      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+
+      // Fetch silo data (shared across units)
+      const siloData = await getSiloData(date);
+
+      // Debug logging untuk memastikan data parameter dari CCR Parameter Data Entry
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+
+      // Format date
+      const reportDate = new Date(date);
+      const formattedDate = reportDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      let report = `*Laporan Shift 1 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+
+      // Plant Units - use selected units
+      const plantUnitsFiltered = selectedPlantUnits;
+
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) {
+          console.warn(`No data found for unit ${unit}`);
+          continue;
+        }
+
+        const { parameterData: allParameterData } = unitData;
+
+        report += `*Plant Unit Cement Mill ${unit}*\n`;
+
+        // Get values from footer data (footer data is stored per category)
+        // Filter footer data for parameters that belong to this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        // Cari data berdasarkan parameter_id di footer data
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed \(tph\)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                shift1_total: feedData.shift1_total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+          runningHoursData: runningHoursData
+            ? {
+                parameter_id: runningHoursData.parameter_id,
+                shift1_total: runningHoursData.shift1_total,
+                setting: parameterSettings.find((s) => s.id === runningHoursData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productionData: productionData
+            ? {
+                parameter_id: productionData.parameter_id,
+                shift1_total: productionData.shift1_total,
+                setting: parameterSettings.find((s) => s.id === productionData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+        });
+
+        // Calculate values from footer data - menggunakan shift1_average untuk feed
+        const feedAvg = feedData?.shift1_average || 0;
+        const runningHoursAvg = runningHoursData?.shift1_total || 0;
+        const totalProduction = productionData?.shift1_total || feedAvg * runningHoursAvg;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          runningHoursAvg: formatIndonesianNumber(runningHoursAvg),
+          totalProduction: formatIndonesianNumber(totalProduction),
+          feedData: feedData?.shift1_average,
+          runningHoursData: runningHoursData?.shift1_total,
+          productionData: productionData?.shift1_total,
+        });
+
+        // Tipe Produk - cari dari parameter data atau default N/A
+        const productTypeParam = allParameterData.find((p) => {
+          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
+          return (
+            paramSetting &&
+            paramSetting.category === selectedPlantCategory &&
+            paramSetting.unit === unit &&
+            (paramSetting.parameter.toLowerCase().includes('product type') ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
+              paramSetting.parameter.toLowerCase().includes('cement type') ||
+              paramSetting.parameter.toLowerCase().includes('type produk'))
+          );
+        });
+
+        let productType = 'N/A'; // Default jika tidak ada data
+        if (productTypeParam) {
+          // Ambil nilai dari hourly_values jam 7-15
+          const shift1Hours = [7, 8, 9, 10, 11, 12, 13, 14, 15];
+          const productTypeValues = shift1Hours
+            .map((hour) => productTypeParam.hourly_values[hour])
+            .filter((v) => typeof v === 'string' && v.trim() !== '') as string[];
+          if (productTypeValues.length > 0) {
+            // Gunakan nilai terakhir dalam shift 1
+            productType = productTypeValues[productTypeValues.length - 1];
+          }
+        }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
+
+        report += `Tipe Produk  : ${productType}\n`;
+        report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
+        report += `Jam Operasi  : ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+
+        // Pemakaian Bahan - menggunakan shift1_total
+        report += `*Pemakaian Bahan*\n`;
+        const bahanParams = [
+          { name: 'Clinker', param: 'counter feeder clinker' },
+          { name: 'Gypsum', param: 'counter feeder gypsum' },
+          { name: 'Batu Kapur', param: 'counter feeder limestone' },
+          { name: 'Trass', param: 'counter feeder trass' },
+          { name: 'FineTrass', param: 'counter feeder fine trass' },
+          { name: 'Fly Ash', param: 'counter feeder flyash' },
+          { name: 'CKD', param: 'counter feeder ckd' },
+        ];
+
+        bahanParams.forEach(({ name, param }) => {
+          const bahanData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const bahanTotal = bahanData ? Number(bahanData.shift1_total || 0) : 0;
+          report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+        });
+
+        report += `\n*Setting Feeder*\n`;
+        const feederParams = [
+          { name: 'Clinker', param: 'set. feeder clinker' },
+          { name: 'Gypsum', param: 'set. feeder gypsum' },
+          { name: 'Batu Kapur', param: 'set. feeder limestone' },
+          { name: 'Trass', param: 'set. feeder trass' },
+          { name: 'FineTrass', param: 'set. feeder fine trass' },
+          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'CKD', param: 'set. feeder ckd' },
+        ];
+
+        feederParams.forEach(({ name, param }) => {
+          const feederData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const feederAvg = feederData ? Number(feederData.shift1_average || 0) : 0;
+          report += `- ${name} : ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+        });
+
+        // Catatan Tambahan - downtime data untuk shift 1 (jam 07-15)
+        const downtimeNotes = await getDowntimeForDate(date);
+        const unitDowntime = downtimeNotes.filter((d) => {
+          const startHour = parseInt(d.start_time.split(':')[0]);
+          return d.unit.includes(unit) && startHour >= 7 && startHour <= 15;
+        });
+        const notes = unitDowntime
+          .map((d) => {
+            const start = new Date(`${d.date} ${d.start_time}`);
+            const end = new Date(`${d.date} ${d.end_time}`);
+            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
+          })
+          .join('\n');
+        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+      }
+
+      // Silo Data - hanya shift 1
+      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      const filteredSiloData = siloData.filter((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        return siloInfo && siloInfo.plant_category === selectedPlantCategory;
+      });
+      filteredSiloData.forEach((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        const siloName = siloInfo?.silo_name || silo.silo_id;
+        const shift1Data = silo.shift1;
+        if (shift1Data) {
+          const percentage =
+            siloInfo && shift1Data.content
+              ? formatIndonesianNumber((shift1Data.content / siloInfo.capacity) * 100, 1)
+              : 'N/A';
+          report += `${siloName}: Empty ${shift1Data.emptySpace || 'N/A'} m�, Content ${shift1Data.content || 'N/A'} ton, ${percentage}%\n`;
+        }
+      });
+
+      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+
+      return report;
+    } catch (error) {
+      console.error('Error generating shift 1 report:', error);
+      return `*Laporan Shift 1 Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    selectedDate,
+    selectedPlantCategory,
+    selectedPlantUnits,
+    getParameterData,
+    getFooterDataForDate,
+    getSiloData,
+    getDowntimeForDate,
+    parameterSettings,
+    silos,
+  ]);
+
+  // Generate Shift 2 Report sesuai format yang diminta (jam 15-23)
+  const generateShift2Report = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const { date } = { date: selectedDate };
+
+      // Fetch data for all selected units in parallel
+      const dataPromises = selectedPlantUnits.map(async (unit) => ({
+        unit,
+        parameterData: await getParameterData(date, unit),
+      }));
+
+      const unitDataArray = await Promise.all(dataPromises);
+      const unitDataMap = new Map(
+        unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
+      );
+
+      // Fetch footer data for the category (footer data is stored per category, not per unit)
+      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+
+      // Fetch silo data (shared across units)
+      const siloData = await getSiloData(date);
+
+      // Debug logging untuk memastikan data parameter dari CCR Parameter Data Entry
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+
+      // Format date
+      const reportDate = new Date(date);
+      const formattedDate = reportDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      let report = `*Laporan Shift 2 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+
+      // Plant Units - use selected units
+      const plantUnitsFiltered = selectedPlantUnits;
+
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) {
+          console.warn(`No data found for unit ${unit}`);
+          continue;
+        }
+
+        const { parameterData: allParameterData } = unitData;
+
+        report += `*Plant Unit Cement Mill ${unit}*\n`;
+
+        // Get values from footer data (footer data is stored per category)
+        // Filter footer data for parameters that belong to this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        // Cari data berdasarkan parameter_id di footer data
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                shift2_total: feedData.shift2_total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+          runningHoursData: runningHoursData
+            ? {
+                parameter_id: runningHoursData.parameter_id,
+                shift2_total: runningHoursData.shift2_total,
+                setting: parameterSettings.find((s) => s.id === runningHoursData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productionData: productionData
+            ? {
+                parameter_id: productionData.parameter_id,
+                shift2_total: productionData.shift2_total,
+                setting: parameterSettings.find((s) => s.id === productionData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+        });
+
+        // Calculate values from footer data - menggunakan shift2_average untuk feed
+        const feedAvg = feedData?.shift2_average || 0;
+        const runningHoursAvg = runningHoursData?.shift2_total || 0;
+        const totalProduction = productionData?.shift2_total || feedAvg * runningHoursAvg;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          runningHoursAvg: formatIndonesianNumber(runningHoursAvg),
+          totalProduction: formatIndonesianNumber(totalProduction),
+          feedData: feedData?.shift2_average,
+          runningHoursData: runningHoursData?.shift2_total,
+          productionData: productionData?.shift2_total,
+        });
+
+        // Tipe Produk - cari dari parameter data atau default N/A
+        const productTypeParam = allParameterData.find((p) => {
+          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
+          return (
+            paramSetting &&
+            paramSetting.category === selectedPlantCategory &&
+            paramSetting.unit === unit &&
+            (paramSetting.parameter.toLowerCase().includes('product type') ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
+              paramSetting.parameter.toLowerCase().includes('cement type') ||
+              paramSetting.parameter.toLowerCase().includes('type produk'))
+          );
+        });
+
+        let productType = 'N/A'; // Default jika tidak ada data
+        if (productTypeParam) {
+          // Ambil nilai dari hourly_values jam 15-23
+          const shift2Hours = [15, 16, 17, 18, 19, 20, 21, 22, 23];
+          const productTypeValues = shift2Hours
+            .map((hour) => productTypeParam.hourly_values[hour])
+            .filter((v) => typeof v === 'string' && v.trim() !== '') as string[];
+          if (productTypeValues.length > 0) {
+            // Gunakan nilai terakhir dalam shift 2
+            productType = productTypeValues[productTypeValues.length - 1];
+          }
+        }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
+
+        report += `Tipe Produk  : ${productType}\n`;
+        report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
+        report += `Jam Operasi  : ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+
+        // Pemakaian Bahan - menggunakan shift2_total
+        report += `*Pemakaian Bahan*\n`;
+        const bahanParams = [
+          { name: 'Clinker', param: 'counter feeder clinker' },
+          { name: 'Gypsum', param: 'counter feeder gypsum' },
+          { name: 'Batu Kapur', param: 'counter feeder limestone' },
+          { name: 'Trass', param: 'counter feeder trass' },
+          { name: 'FineTrass', param: 'counter feeder fine trass' },
+          { name: 'Fly Ash', param: 'counter feeder flyash' },
+          { name: 'CKD', param: 'counter feeder ckd' },
+        ];
+
+        bahanParams.forEach(({ name, param }) => {
+          const bahanData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const bahanTotal = bahanData ? Number(bahanData.shift2_total || 0) : 0;
+          report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+        });
+
+        report += `\n*Setting Feeder*\n`;
+        const feederParams = [
+          { name: 'Clinker', param: 'set. feeder clinker' },
+          { name: 'Gypsum', param: 'set. feeder gypsum' },
+          { name: 'Batu Kapur', param: 'set. feeder limestone' },
+          { name: 'Trass', param: 'set. feeder trass' },
+          { name: 'FineTrass', param: 'set. feeder fine trass' },
+          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'CKD', param: 'set. feeder ckd' },
+        ];
+
+        feederParams.forEach(({ name, param }) => {
+          const feederData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const feederAvg = feederData ? Number(feederData.shift2_average || 0) : 0;
+          report += `- ${name} : ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+        });
+
+        // Catatan Tambahan - downtime data untuk shift 2 (jam 15-23)
+        const downtimeNotes = await getDowntimeForDate(date);
+        const unitDowntime = downtimeNotes.filter((d) => {
+          const startHour = parseInt(d.start_time.split(':')[0]);
+          return d.unit.includes(unit) && startHour >= 15 && startHour <= 23;
+        });
+        const notes = unitDowntime
+          .map((d) => {
+            const start = new Date(`${d.date} ${d.start_time}`);
+            const end = new Date(`${d.date} ${d.end_time}`);
+            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
+          })
+          .join('\n');
+        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+      }
+
+      // Silo Data - hanya shift 2
+      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      const filteredSiloData = siloData.filter((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        return siloInfo && siloInfo.plant_category === selectedPlantCategory;
+      });
+      filteredSiloData.forEach((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        const siloName = siloInfo?.silo_name || silo.silo_id;
+        const shift2Data = silo.shift2;
+        if (shift2Data) {
+          const percentage =
+            siloInfo && shift2Data.content
+              ? formatIndonesianNumber((shift2Data.content / siloInfo.capacity) * 100, 1)
+              : 'N/A';
+          report += `${siloName}: Empty ${shift2Data.emptySpace || 'N/A'} m�, Content ${shift2Data.content || 'N/A'} ton, ${percentage}%\n`;
+        }
+      });
+
+      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+
+      return report;
+    } catch (error) {
+      console.error('Error generating shift 2 report:', error);
+      return `*Laporan Shift 2 Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    selectedDate,
+    selectedPlantCategory,
+    selectedPlantUnits,
+    getParameterData,
+    getFooterDataForDate,
+    getSiloData,
+    getDowntimeForDate,
+    parameterSettings,
+    silos,
+  ]);
+
+  // Generate Shift 3 Report sesuai format yang diminta (jam 23-07) dengan data shift3_cont hari berikutnya
+  const generateShift3Report = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const { date } = { date: selectedDate };
+
+      // Hitung tanggal berikutnya untuk shift3_cont
+      const currentDate = new Date(date);
+      const nextDate = new Date(currentDate);
+      nextDate.setDate(currentDate.getDate() + 1);
+      const nextDateString = nextDate.toISOString().split('T')[0];
+
+      // Fetch data for all selected units in parallel untuk hari ini
+      const dataPromises = selectedPlantUnits.map(async (unit) => ({
+        unit,
+        parameterData: await getParameterData(date, unit),
+      }));
+
+      const unitDataArray = await Promise.all(dataPromises);
+      const unitDataMap = new Map(
+        unitDataArray.map(({ unit, parameterData }) => [unit, { parameterData }])
+      );
+
+      // Fetch footer data untuk hari ini
+      const categoryFooterData = await getFooterDataForDate(date, selectedPlantCategory);
+
+      // Fetch footer data untuk hari berikutnya (untuk shift3_cont)
+      const nextDayFooterData = await getFooterDataForDate(nextDateString, selectedPlantCategory);
+
+      // Fetch silo data untuk hari ini
+      const siloData = await getSiloData(date);
+
+      // Debug logging
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+      console.log('Next Day Footer Data:', nextDayFooterData);
+
+      // Format date
+      const reportDate = new Date(date);
+      const formattedDate = reportDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      let report = `*Laporan Shift 3 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+
+      // Plant Units - use selected units
+      const plantUnitsFiltered = selectedPlantUnits;
+
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) {
+          console.warn(`No data found for unit ${unit}`);
+          continue;
+        }
+
+        const { parameterData: allParameterData } = unitData;
+
+        report += `*Plant Unit Cement Mill ${unit}*\n`;
+
+        // Get values from footer data (footer data is stored per category)
+        // Filter footer data for parameters that belong to this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        const nextDayUnitFooterData = nextDayFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        // Cari data berdasarkan parameter_id di footer data
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          nextDayUnitFooterData: nextDayUnitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                shift3_total: feedData.shift3_total,
+                shift3_cont_total: nextDayUnitFooterData.find(
+                  (f) => f.parameter_id === feedData.parameter_id
+                )?.shift3_cont_total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+        });
+
+        // Calculate values from footer data - menggunakan shift3_average dan shift3_cont_average
+        const feedAvg = feedData?.shift3_average || 0;
+        const feedContAvg =
+          nextDayUnitFooterData.find((f) => f.parameter_id === feedData?.parameter_id)
+            ?.shift3_cont_average || 0;
+        const combinedFeedAvg = feedAvg + feedContAvg;
+
+        const runningHoursTotal = runningHoursData?.shift3_total || 0;
+        const runningHoursContTotal =
+          nextDayUnitFooterData.find((f) => f.parameter_id === runningHoursData?.parameter_id)
+            ?.shift3_cont_total || 0;
+        const combinedRunningHours = runningHoursTotal + runningHoursContTotal;
+
+        const productionTotal = productionData?.shift3_total || 0;
+        const productionContTotal =
+          nextDayUnitFooterData.find((f) => f.parameter_id === productionData?.parameter_id)
+            ?.shift3_cont_total || 0;
+        const combinedProduction = productionTotal + productionContTotal;
+
+        // Jika tidak ada production total, hitung dari feed dan running hours
+        const totalProduction = combinedProduction || combinedFeedAvg * combinedRunningHours;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          feedContAvg: formatIndonesianNumber(feedContAvg),
+          combinedFeedAvg: formatIndonesianNumber(combinedFeedAvg),
+          runningHoursTotal: formatIndonesianNumber(runningHoursTotal),
+          runningHoursContTotal: formatIndonesianNumber(runningHoursContTotal),
+          combinedRunningHours: formatIndonesianNumber(combinedRunningHours),
+          totalProduction: formatIndonesianNumber(totalProduction),
+        });
+
+        // Tipe Produk - cari dari parameter data atau default N/A
+        const productTypeParam = allParameterData.find((p) => {
+          const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
+          return (
+            paramSetting &&
+            paramSetting.category === selectedPlantCategory &&
+            paramSetting.unit === unit &&
+            (paramSetting.parameter.toLowerCase().includes('product type') ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
+              paramSetting.parameter.toLowerCase().includes('cement type') ||
+              paramSetting.parameter.toLowerCase().includes('type produk'))
+          );
+        });
+
+        let productType = 'N/A'; // Default jika tidak ada data
+        if (productTypeParam) {
+          // Ambil nilai dari hourly_values jam 23-07 (23 hari ini + 0-7 hari berikutnya)
+          const shift3Hours = [23, 0, 1, 2, 3, 4, 5, 6, 7];
+          const productTypeValues = shift3Hours
+            .map((hour) => productTypeParam.hourly_values[hour])
+            .filter((v) => typeof v === 'string' && v.trim() !== '') as string[];
+          if (productTypeValues.length > 0) {
+            // Gunakan nilai terakhir dalam shift 3
+            productType = productTypeValues[productTypeValues.length - 1];
+          }
+        }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
+
+        report += `Tipe Produk  : ${productType}\n`;
+        report += `Feed  : ${formatIndonesianNumber(combinedFeedAvg, 2)} tph\n`;
+        report += `Jam Operasi  : ${formatIndonesianNumber(combinedRunningHours, 2)} jam\n`;
+        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+
+        // Pemakaian Bahan - menggunakan shift3_total + shift3_cont_total
+        report += `*Pemakaian Bahan*\n`;
+        const bahanParams = [
+          { name: 'Clinker', param: 'counter feeder clinker' },
+          { name: 'Gypsum', param: 'counter feeder gypsum' },
+          { name: 'Batu Kapur', param: 'counter feeder limestone' },
+          { name: 'Trass', param: 'counter feeder trass' },
+          { name: 'FineTrass', param: 'counter feeder fine trass' },
+          { name: 'Fly Ash', param: 'counter feeder flyash' },
+          { name: 'CKD', param: 'counter feeder ckd' },
+        ];
+
+        bahanParams.forEach(({ name, param }) => {
+          const bahanData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const bahanTotal = bahanData ? Number(bahanData.shift3_total || 0) : 0;
+          const bahanContTotal =
+            nextDayUnitFooterData.find((f) => f.parameter_id === bahanData?.parameter_id)
+              ?.shift3_cont_total || 0;
+          const combinedBahanTotal = bahanTotal + Number(bahanContTotal);
+          report += `- ${name} : ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
+        });
+
+        report += `\n*Setting Feeder*\n`;
+        const feederParams = [
+          { name: 'Clinker', param: 'set. feeder clinker' },
+          { name: 'Gypsum', param: 'set. feeder gypsum' },
+          { name: 'Batu Kapur', param: 'set. feeder limestone' },
+          { name: 'Trass', param: 'set. feeder trass' },
+          { name: 'FineTrass', param: 'set. feeder fine trass' },
+          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'CKD', param: 'set. feeder ckd' },
+        ];
+
+        feederParams.forEach(({ name, param }) => {
+          const feederData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const feederAvg = feederData ? Number(feederData.shift3_average || 0) : 0;
+          const feederContAvg =
+            nextDayUnitFooterData.find((f) => f.parameter_id === feederData?.parameter_id)
+              ?.shift3_cont_average || 0;
+          const combinedFeederAvg = feederAvg + Number(feederContAvg);
+          report += `- ${name} : ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
+        });
+
+        // Catatan Tambahan - downtime data untuk shift 3 (jam 23 hari ini + 00-07 hari berikutnya)
+        const downtimeNotes = await getDowntimeForDate(date);
+        const nextDayDowntimeNotes = await getDowntimeForDate(nextDateString);
+        const unitDowntime = downtimeNotes.filter((d) => {
+          const startHour = parseInt(d.start_time.split(':')[0]);
+          return d.unit.includes(unit) && startHour >= 23;
+        });
+        const nextDayUnitDowntime = nextDayDowntimeNotes.filter((d) => {
+          const startHour = parseInt(d.start_time.split(':')[0]);
+          return d.unit.includes(unit) && startHour >= 0 && startHour <= 7;
+        });
+        const allDowntime = [...unitDowntime, ...nextDayUnitDowntime];
+        const notes = allDowntime
+          .map((d) => {
+            const start = new Date(`${d.date} ${d.start_time}`);
+            const end = new Date(`${d.date} ${d.end_time}`);
+            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
+          })
+          .join('\n');
+        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+      }
+
+      // Silo Data - shift 3
+      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      const filteredSiloData = siloData.filter((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        return siloInfo && siloInfo.plant_category === selectedPlantCategory;
+      });
+      filteredSiloData.forEach((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        const siloName = siloInfo?.silo_name || silo.silo_id;
+        const shift3Data = silo.shift3;
+        if (shift3Data) {
+          const percentage =
+            siloInfo && shift3Data.content
+              ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
+              : 'N/A';
+          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m�, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+        }
+      });
+
+      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+
+      return report;
+    } catch (error) {
+      console.error('Error generating shift 3 report:', error);
+      return `*Laporan Shift 3 Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    selectedDate,
+    selectedPlantCategory,
+    selectedPlantUnits,
+    getParameterData,
+    getFooterDataForDate,
+    getSiloData,
+    getDowntimeForDate,
+    parameterSettings,
+    silos,
   ]);
 
   // Handle generate report button click
@@ -319,6 +1271,57 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       setIsGenerating(false);
     }
   }, [generateDailyReport]);
+
+  // Handle generate shift 1 report button click
+  const handleGenerateShift1Report = useCallback(async () => {
+    setIsGenerating(true);
+    setReportGenerated(false);
+    try {
+      const report = await generateShift1Report();
+      setGeneratedReport(report);
+      setReportGenerated(true);
+      // Reset success state after animation
+      setTimeout(() => setReportGenerated(false), 2000);
+    } catch (error) {
+      console.error('Error generating shift 1 report:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [generateShift1Report]);
+
+  // Handle generate shift 2 report button click
+  const handleGenerateShift2Report = useCallback(async () => {
+    setIsGenerating(true);
+    setReportGenerated(false);
+    try {
+      const report = await generateShift2Report();
+      setGeneratedReport(report);
+      setReportGenerated(true);
+      // Reset success state after animation
+      setTimeout(() => setReportGenerated(false), 2000);
+    } catch (error) {
+      console.error('Error generating shift 2 report:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [generateShift2Report]);
+
+  // Handle generate shift 3 report button click
+  const handleGenerateShift3Report = useCallback(async () => {
+    setIsGenerating(true);
+    setReportGenerated(false);
+    try {
+      const report = await generateShift3Report();
+      setGeneratedReport(report);
+      setReportGenerated(true);
+      // Reset success state after animation
+      setTimeout(() => setReportGenerated(false), 2000);
+    } catch (error) {
+      console.error('Error generating shift 3 report:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [generateShift3Report]);
 
   // Handle copy to clipboard with feedback
   const handleCopyToClipboard = useCallback(async () => {
@@ -357,7 +1360,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       if (line.startsWith('- ')) {
         return (
           <div key={index} className="mb-1 ml-4 flex items-start">
-            <span className="text-blue-500 mr-2 mt-1">•</span>
+            <span className="text-blue-500 mr-2 mt-1">�</span>
             <span>{line.substring(2)}</span>
           </div>
         );
@@ -489,7 +1492,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2M7 7h10"
                     />
                   </svg>
                   Plant Units ({selectedPlantUnits.length} selected)
@@ -597,7 +1600,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             </div>
 
             {/* Generate Button */}
-            <div className="flex justify-center">
+            <div className="flex justify-center space-x-4">
               <EnhancedButton
                 onClick={handleGenerateReport}
                 disabled={isGenerating}
@@ -643,6 +1646,156 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                         />
                       </svg>
                       <span>Generate Daily Report</span>
+                    </>
+                  )}
+                </div>
+              </EnhancedButton>
+
+              <EnhancedButton
+                onClick={handleGenerateShift1Report}
+                disabled={isGenerating}
+                className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
+                  isGenerating
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  {isGenerating ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Generating Report...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                      <span>Generate Shift 1 Report</span>
+                    </>
+                  )}
+                </div>
+              </EnhancedButton>
+
+              <EnhancedButton
+                onClick={handleGenerateShift2Report}
+                disabled={isGenerating}
+                className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
+                  isGenerating
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  {isGenerating ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Generating Report...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                      <span>Generate Shift 2 Report</span>
+                    </>
+                  )}
+                </div>
+              </EnhancedButton>
+
+              <EnhancedButton
+                onClick={handleGenerateShift3Report}
+                disabled={isGenerating}
+                className={`px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 ${
+                  isGenerating
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  {isGenerating ? (
+                    <>
+                      <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span>Generating Report...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                      <span>Generate Shift 3 Report</span>
                     </>
                   )}
                 </div>

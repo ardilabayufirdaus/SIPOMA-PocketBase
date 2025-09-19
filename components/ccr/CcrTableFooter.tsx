@@ -5,6 +5,7 @@ interface CcrTableFooterProps {
   filteredParameterSettings: ParameterSetting[];
   parameterShiftFooterData: any;
   parameterShiftDifferenceData: any;
+  parameterShiftAverageData: any;
   parameterFooterData: any;
   counterTotalData: any;
   formatStatValue: (value: number) => string;
@@ -16,6 +17,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
   filteredParameterSettings,
   parameterShiftFooterData,
   parameterShiftDifferenceData,
+  parameterShiftAverageData,
   parameterFooterData,
   counterTotalData,
   formatStatValue,
@@ -55,8 +57,14 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
+      label: t.average_shift_3_cont,
+      data: parameterShiftAverageData.shift3Cont,
+      className: 'bg-slate-50 dark:bg-slate-700',
+    },
+    {
       label: t.total_shift_1,
       data: parameterShiftFooterData.shift1,
+      className: 'border-t border-slate-200',
     },
     {
       label: `${t.total_shift_1} Selisih`,
@@ -64,8 +72,14 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
+      label: t.average_shift_1,
+      data: parameterShiftAverageData.shift1,
+      className: 'bg-slate-50 dark:bg-slate-700',
+    },
+    {
       label: t.total_shift_2,
       data: parameterShiftFooterData.shift2,
+      className: 'border-t border-slate-200',
     },
     {
       label: `${t.total_shift_2} Selisih`,
@@ -73,12 +87,23 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
+      label: t.average_shift_2,
+      data: parameterShiftAverageData.shift2,
+      className: 'bg-slate-50 dark:bg-slate-700',
+    },
+    {
       label: t.total_shift_3,
       data: parameterShiftFooterData.shift3,
+      className: 'border-t border-slate-200',
     },
     {
       label: `${t.total_shift_3} Selisih`,
       data: parameterShiftDifferenceData.shift3,
+      className: 'bg-slate-50 dark:bg-slate-700',
+    },
+    {
+      label: t.average_shift_3,
+      data: parameterShiftAverageData.shift3,
       className: 'bg-slate-50 dark:bg-slate-700',
     },
     {

@@ -325,6 +325,10 @@ export const translations = {
     total_shift_2: 'Total Shift 2',
     total_shift_3: 'Total Shift 3',
     total_shift_3_cont: 'Total Shift 3 (Cont.)',
+    average_shift_1: 'Average Shift 1',
+    average_shift_2: 'Average Shift 2',
+    average_shift_3: 'Average Shift 3',
+    average_shift_3_cont: 'Average Shift 3 (Cont.)',
 
     // Autonomous Data Entry
     autonomous_downtime_follow_up: 'Downtime Follow-up',

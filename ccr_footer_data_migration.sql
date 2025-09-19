@@ -20,10 +20,22 @@ CREATE TABLE IF NOT EXISTS ccr_footer_data (
     shift2_difference NUMERIC DEFAULT 0,
     shift3_difference NUMERIC DEFAULT 0,
     shift3_cont_difference NUMERIC DEFAULT 0,
+    shift1_average NUMERIC DEFAULT 0,
+    shift2_average NUMERIC DEFAULT 0,
+    shift3_average NUMERIC DEFAULT 0,
+    shift3_cont_average NUMERIC DEFAULT 0,
+    counter_total NUMERIC DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(date, parameter_id, plant_unit)
 );
+
+-- ALTER TABLE statements untuk menambahkan kolom baru jika tabel sudah ada
+ALTER TABLE ccr_footer_data ADD COLUMN IF NOT EXISTS shift1_average NUMERIC DEFAULT 0;
+ALTER TABLE ccr_footer_data ADD COLUMN IF NOT EXISTS shift2_average NUMERIC DEFAULT 0;
+ALTER TABLE ccr_footer_data ADD COLUMN IF NOT EXISTS shift3_average NUMERIC DEFAULT 0;
+ALTER TABLE ccr_footer_data ADD COLUMN IF NOT EXISTS shift3_cont_average NUMERIC DEFAULT 0;
+ALTER TABLE ccr_footer_data ADD COLUMN IF NOT EXISTS counter_total NUMERIC DEFAULT 0;
 
 -- Indexes untuk performa
 CREATE INDEX IF NOT EXISTS idx_ccr_footer_data_date ON ccr_footer_data(date);

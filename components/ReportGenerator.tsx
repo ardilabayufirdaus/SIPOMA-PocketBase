@@ -1,7 +1,11 @@
 import React, { useState, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import { useCcrParameterData } from '../hooks/useCcrParameterData';
 import { useCcrFooterData } from '../hooks/useCcrFooterData';
 import useCcrDowntimeData from '../hooks/useCcrDowntimeData';
+import { usePlantUnits } from '../hooks/usePlantUnits';
+import { useParameterSettings } from '../hooks/useParameterSettings';
+import { useSiloCapacities } from '../hooks/useSiloCapacities';
 import { supabase } from '../utils/supabase';
 import { CcrDowntimeData } from '../types';
 
@@ -12,6 +16,7 @@ interface ReportData {
   targetProduction?: number;
   nextShiftPic?: string;
   handoverNotes?: string;
+  reportType?: 'daily' | 'shift' | 'feed';
 }
 
 interface SiloData {
@@ -28,23 +33,35 @@ export const ReportGenerator: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     plantCategory: 'Cement Mill',
     shift: '1',
+    reportType: 'shift',
   });
   const [generatedReport, setGeneratedReport] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const { getDataForDate: getParameterData } = useCcrParameterData();
   const { getFooterDataForDate } = useCcrFooterData();
-  const [downtimeData, setDowntimeData] = useState<CcrDowntimeData[]>([]);
-  const { getAllDowntime } = useCcrDowntimeData();
+  const { getDowntimeForDate } = useCcrDowntimeData();
+  const { records: plantUnits } = usePlantUnits();
+  const { records: parameterSettings } = useParameterSettings();
+  const { records: silos } = useSiloCapacities();
 
-  // Load downtime data on mount
-  React.useEffect(() => {
-    const loadDowntimeData = async () => {
-      const data = await getAllDowntime();
-      setDowntimeData(data);
-    };
-    loadDowntimeData();
-  }, [getAllDowntime]);
+  // Export report to Excel
+  const handleExportReport = useCallback(async () => {
+    if (!generatedReport) return;
+
+    setIsExporting(true);
+    try {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([['Report'], [generatedReport]]);
+      XLSX.utils.book_append_sheet(wb, ws, 'Report');
+      XLSX.writeFile(wb, `Report_${reportData.date}.xlsx`);
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [generatedReport, reportData.date]);
 
   // Fetch silo data
   const getSiloData = useCallback(async (date: string): Promise<SiloData[]> => {
@@ -65,7 +82,7 @@ export const ReportGenerator: React.FC = () => {
 
   // Calculate downtime duration for shift
   const calculateShiftDowntime = useCallback(
-    (date: string, shift: string): number => {
+    (date: string, shift: string, downtimeData: CcrDowntimeData[]): number => {
       if (!downtimeData || downtimeData.length === 0) return 0;
 
       const shiftDowntime = downtimeData.filter(
@@ -89,32 +106,19 @@ export const ReportGenerator: React.FC = () => {
         return total + duration;
       }, 0);
     },
-    [downtimeData]
+    []
   );
 
   // Get downtime notes for date/shift
-  const getDowntimeNotes = useCallback(
-    (date: string, shift?: string): string => {
-      if (!downtimeData || downtimeData.length === 0) return '';
+  const getDowntimeNotes = useCallback((date: string, downtimeData: CcrDowntimeData[]): string => {
+    if (!downtimeData || downtimeData.length === 0) return '';
 
-      let filteredDowntime = downtimeData.filter((d) => d.date === date && d.unit.includes('Mill'));
+    const filteredDowntime = downtimeData.filter((d) => d.date === date && d.unit.includes('Mill'));
 
-      if (shift) {
-        filteredDowntime = filteredDowntime.filter((d) => {
-          const hour = parseInt(d.start_time.split(':')[0]);
-          if (shift === '1') return hour >= 6 && hour < 14;
-          if (shift === '2') return hour >= 14 && hour < 22;
-          if (shift === '3') return hour >= 22 || hour < 6;
-          return false;
-        });
-      }
-
-      return filteredDowntime
-        .map((d) => `${d.problem} - ${d.action || 'No action recorded'}`)
-        .join('\n');
-    },
-    [downtimeData]
-  );
+    return filteredDowntime
+      .map((d) => `${d.problem} - ${d.action || 'No action recorded'}`)
+      .join('\n');
+  }, []);
 
   // Generate Daily Report
   const generateDailyReport = useCallback(async () => {
@@ -123,10 +127,10 @@ export const ReportGenerator: React.FC = () => {
       const { date, plantCategory } = reportData;
 
       // Fetch all required data
-      const [parameterData, footerData, siloData] = await Promise.all([
-        getParameterData(date),
+      const [footerData, siloData, downtimeData] = await Promise.all([
         getFooterDataForDate(date),
         getSiloData(date),
+        getDowntimeForDate(date),
       ]);
 
       // Format date
@@ -140,21 +144,47 @@ export const ReportGenerator: React.FC = () => {
 
       let report = `*Laporan Harian Produksi*\n*${plantCategory}*\n${formattedDate}\n===============================\n\n`;
 
-      // Plant Units (220 and 320)
-      const plantUnits = ['220', '320'];
+      // Plant Units - get from database based on category
+      const plantUnitsFiltered = plantUnits
+        .filter((unit) => unit.category === plantCategory)
+        .map((unit) => unit.unit.replace('Cement Mill ', '')); // Extract number part
 
-      for (const unit of plantUnits) {
-        const unitFooterData = footerData.filter((f) => f.plant_unit === unit);
-        const unitParameterData = parameterData.filter(() => true); // Placeholder
+      for (const unit of plantUnitsFiltered) {
+        // Filter parameter data for this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === plantCategory && param.unit === unit)
+          .map((param) => param.id);
 
         report += `*Plant Unit Cement Mill ${unit}*\n`;
 
-        // Get values from footer data (placeholder - perlu mapping yang tepat)
-        const productionData = unitFooterData.find((f) => f.parameter_id.includes('production'));
-        const feedData = unitFooterData.find((f) => f.parameter_id.includes('feed'));
-        const operationHoursData = unitFooterData.find((f) =>
-          f.parameter_id.includes('operation_hours')
+        // Get values from footer data (using parameter settings for accurate mapping)
+        // Filter footer data for parameters that belong to this unit
+        const unitFooterDataFiltered = footerData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
         );
+
+        // Cari data berdasarkan parameter_id di footer data
+        const feedData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const operationHoursData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
 
         report += `Tipe Produk  : ${productionData?.total || 'N/A'}\n`;
         report += `Feed  : ${feedData?.total || 'N/A'} tph\n`;
@@ -164,43 +194,80 @@ export const ReportGenerator: React.FC = () => {
         // Pemakaian Bahan
         report += `/Pemakaian Bahan/\n`;
         const bahanParams = [
-          'Clinker',
-          'Gypsum',
-          'Batu Kapur',
-          'Trass',
-          'FineTrass',
-          'Fly Ash',
-          'CKD',
+          { name: 'Clinker', param: 'counter feeder clinker' },
+          { name: 'Gypsum', param: 'counter feeder gypsum' },
+          { name: 'Batu Kapur', param: 'counter feeder limestone' },
+          { name: 'Trass', param: 'counter feeder trass' },
+          { name: 'FineTrass', param: 'counter feeder fine trass' },
+          { name: 'Fly Ash', param: 'counter feeder flyash' },
+          { name: 'CKD', param: 'counter feeder ckd' },
         ];
-        bahanParams.forEach((bahan) => {
-          const bahanData = unitParameterData.find((p) => p.name?.includes(bahan));
-          const bahanSum = bahanData
-            ? Object.values(bahanData.hourly_values).reduce(
-                (sum: number, val) => sum + Number(val || 0),
-                0
-              )
-            : 0;
-          report += `- ${bahan} : ${bahanData ? Number(bahanSum).toFixed(2) : 'N/A'} ton\n`;
+        bahanParams.forEach(({ name, param }) => {
+          const bahanData = unitFooterDataFiltered.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
+          console.log(`Pemakaian Bahan ${name}:`, { bahanData, bahanTotal });
+          report += `- ${name} : ${bahanTotal.toFixed(2)} ton\n`;
         });
 
         report += `\n/Setting Feeder/\n`;
-        bahanParams.forEach((bahan) => {
-          const feederData = unitParameterData.find((p) => p.name?.includes(`${bahan} Feeder`));
-          const feederValues = feederData ? Object.values(feederData.hourly_values) : [];
-          const feederSum = feederValues.reduce((sum: number, val) => sum + Number(val || 0), 0);
-          const feederAvg = feederValues.length > 0 ? Number(feederSum) / feederValues.length : 0;
-          report += `- ${bahan} : ${feederData ? feederAvg.toFixed(2) : 'N/A'} %\n`;
+        const feederParams = [
+          { name: 'Clinker', param: 'set. feeder clinker' },
+          { name: 'Gypsum', param: 'set. feeder gypsum' },
+          { name: 'Batu Kapur', param: 'set. feeder limestone' },
+          { name: 'Trass', param: 'set. feeder trass' },
+          { name: 'FineTrass', param: 'set. feeder fine trass' },
+          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'CKD', param: 'set. feeder ckd' },
+        ];
+        feederParams.forEach(({ name, param }) => {
+          const feederData = unitFooterDataFiltered.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const feederAvg = feederData ? Number(feederData.average || 0) : 0;
+          console.log(`Setting Feeder ${name}:`, { feederData, feederAvg });
+          report += `- ${name} : ${feederAvg.toFixed(2)} %\n`;
         });
 
-        report += `\n/Catatan Tambahan/\n${getDowntimeNotes(date)}\n\n`;
+        // Catatan Tambahan - Downtime data per unit
+        const unitDowntimeData = downtimeData.filter((d) => d.unit === `Cement Mill ${unit}`);
+        if (unitDowntimeData.length > 0) {
+          report += `\n/Catatan Tambahan/\n`;
+          unitDowntimeData.forEach((d) => {
+            const start = new Date(`${d.date} ${d.start_time}`);
+            const end = new Date(`${d.date} ${d.end_time}`);
+            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+            report += `- ${d.start_time} - ${d.end_time} (${duration.toFixed(2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}\n`;
+          });
+          report += `\n`;
+        } else {
+          report += `\n/Catatan Tambahan/\n- Tidak ada downtime tercatat\n\n`;
+        }
       }
 
       // Silo Data - hanya shift 3
       report += `*Ruang Kosong & Isi Silo Semen*\n`;
-      siloData.forEach((silo) => {
+      const filteredSiloData = siloData.filter((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        return siloInfo && siloInfo.plant_category === plantCategory;
+      });
+      filteredSiloData.forEach((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        const siloName = siloInfo?.silo_name || silo.silo_id;
         const shift3Data = silo.shift3;
         if (shift3Data) {
-          report += `${silo.silo_id}: Empty ${shift3Data.emptySpace || 'N/A'}m, Content ${shift3Data.content || 'N/A'} ton, ${shift3Data.content ? ((shift3Data.content / 100) * 100).toFixed(1) : 'N/A'}%\n`;
+          const percentage =
+            siloInfo && shift3Data.content
+              ? ((shift3Data.content / siloInfo.capacity) * 100).toFixed(1)
+              : 'N/A';
+          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'}m, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
@@ -223,10 +290,11 @@ export const ReportGenerator: React.FC = () => {
         reportData;
 
       // Fetch data
-      const [parameterData, footerData, siloData] = await Promise.all([
+      const [parameterData, footerData, siloData, downtimeData] = await Promise.all([
         getParameterData(date),
         getFooterDataForDate(date),
         getSiloData(date),
+        getDowntimeForDate(date),
       ]);
 
       // Format date
@@ -243,26 +311,56 @@ export const ReportGenerator: React.FC = () => {
       report += `P. Jawab Shift  : ${'Nama PIC' /* perlu implementasi */}\n`;
       report += `===============================\n\n`;
 
-      // Plant Units
-      const plantUnits = ['220', '320'];
+      // Plant Units - get from database based on category
+      const plantUnitsFiltered = plantUnits
+        .filter((unit) => unit.category === plantCategory)
+        .map((unit) => ({
+          fullName: unit.unit,
+          shortName: unit.unit.replace('Cement Mill ', ''),
+        }));
 
-      for (const unit of plantUnits) {
-        const unitFooterData = footerData.filter((f) => f.plant_unit === unit);
+      for (const unitInfo of plantUnitsFiltered) {
         const unitParameterData = parameterData.filter(() => true); // Placeholder
 
-        report += `*Produksi Shift Unit Mill ${unit}*\n`;
+        report += `*Produksi Shift Unit Mill ${unitInfo.shortName}*\n`;
         report += `Target Produksi  : ${targetProduction || 'N/A'} ton\n`;
 
-        const productionData = unitFooterData.find((f) => f.parameter_id.includes('production'));
-        const feedData = unitFooterData.find((f) => f.parameter_id.includes('feed'));
-        const operationHoursData = unitFooterData.find((f) =>
-          f.parameter_id.includes('operation_hours')
+        // Get values from footer data (using parameter settings for accurate mapping)
+        // Filter footer data for parameters that belong to this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === plantCategory && param.unit === unitInfo.fullName)
+          .map((param) => param.id);
+
+        const unitFooterDataFiltered = footerData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
         );
 
-        report += `Realisasi Produksi  : ${productionData?.total || 'N/A'} ton\n`;
-        report += `Jam Operasional  : ${operationHoursData?.total || 'N/A'} jam\n`;
-        report += `Durasi down time  : ${calculateShiftDowntime(date, shift || '1').toFixed(2)} jam\n`;
-        report += `Feed rate  : ${feedData?.total || 'N/A'} tph\n\n`;
+        const productionData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+        const feedData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const operationHoursData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+
+        report += `Realisasi Produksi  : ${productionData?.shift1_total || 'N/A'} ton\n`;
+        report += `Jam Operasional  : ${operationHoursData?.shift1_total || 'N/A'} jam\n`;
+        report += `Durasi down time  : ${calculateShiftDowntime(date, shift || '1', downtimeData).toFixed(2)} jam\n`;
+        report += `Feed rate  : ${feedData?.shift1_average || 'N/A'} tph\n\n`;
 
         // Pemakaian Bahan
         report += `/Pemakaian Bahan/\n`;
@@ -308,16 +406,26 @@ export const ReportGenerator: React.FC = () => {
         report += `- Blaine : ${blaineData ? (Number(blaineSum) / 24).toFixed(2) : 'N/A'} cm²/g\n`;
 
         // Kondisi peralatan & Mesin
-        report += `\n/Kondisi peralatan & Mesin/\n${getDowntimeNotes(date, shift)}\n\n`;
+        report += `\n/Kondisi peralatan & Mesin/\n${getDowntimeNotes(date, downtimeData)}\n\n`;
       }
 
       // Silo Data untuk shift tertentu
       report += `*Ruang Kosong & Isi Silo Semen*\n`;
-      siloData.forEach((silo) => {
+      const filteredSiloDataShift = siloData.filter((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        return siloInfo && siloInfo.plant_category === plantCategory;
+      });
+      filteredSiloDataShift.forEach((silo) => {
+        const siloInfo = silos.find((s) => s.id === silo.silo_id);
+        const siloName = siloInfo?.silo_name || silo.silo_id;
         const shiftData = silo[`shift${shift}` as keyof SiloData];
         if (shiftData && typeof shiftData === 'object' && 'emptySpace' in shiftData) {
           const data = shiftData as { emptySpace?: number; content?: number };
-          report += `${silo.silo_id}: Empty ${data.emptySpace || 'N/A'}m, Content ${data.content || 'N/A'} ton, ${data.content ? ((data.content / 100) * 100).toFixed(1) : 'N/A'}%\n`;
+          const percentage =
+            siloInfo && data.content
+              ? ((data.content / siloInfo.capacity) * 100).toFixed(1)
+              : 'N/A';
+          report += `${siloName}: Empty ${data.emptySpace || 'N/A'}m, Content ${data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
@@ -344,8 +452,70 @@ export const ReportGenerator: React.FC = () => {
     calculateShiftDowntime,
   ]);
 
+  // Generate Feed Report
+  const generateFeedReport = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const { date, shift, plantCategory } = reportData;
+
+      // Fetch footer data for feed information
+      const footerData = await getFooterDataForDate(date);
+
+      // Format date
+      const reportDate = new Date(date);
+      const formattedDate = reportDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      let report = `*Laporan Feed Shift ${shift}*\n*${plantCategory}*\n${formattedDate}\n===============================\n\n`;
+
+      // Plant Units - get from database based on category
+      const plantUnitsFiltered = plantUnits
+        .filter((unit) => unit.category === plantCategory)
+        .map((unit) => ({
+          fullName: unit.unit,
+          shortName: unit.unit.replace('Cement Mill ', ''),
+        }));
+
+      for (const unitInfo of plantUnitsFiltered) {
+        // Get feed data for this unit
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === plantCategory && param.unit === unitInfo.fullName)
+          .map((param) => param.id);
+
+        const unitFooterDataFiltered = footerData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        const feedData = unitFooterDataFiltered.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+
+        report += `*Feed Data Unit Mill ${unitInfo.shortName}*\n`;
+        report += `Shift : ${shift}\n`;
+        report += `Feed Rate Average : ${feedData?.[`shift${shift}_average`] || 'N/A'} tph\n`;
+        report += `Feed Total : ${feedData?.[`shift${shift}_total`] || 'N/A'} ton\n\n`;
+      }
+
+      report += `*Demikian laporan feed shift ${shift}*\n*Terima kasih atas kerja kerasnya*\n*Terus semangat untuk hasil yang lebih baik!*`;
+
+      setGeneratedReport(report);
+    } catch (error) {
+      console.error('Error generating feed report:', error);
+      setGeneratedReport('Error generating feed report');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [reportData, getFooterDataForDate, plantUnits, parameterSettings]);
+
   const handleGenerateReport = () => {
-    if (reportData.shift) {
+    if (reportData.reportType === 'feed') {
+      generateFeedReport();
+    } else if (reportData.shift) {
       generateShiftReport();
     } else {
       generateDailyReport();
@@ -383,21 +553,24 @@ export const ReportGenerator: React.FC = () => {
         <div>
           <label className="block text-sm font-medium mb-2">Tipe Laporan</label>
           <select
-            value={reportData.shift ? 'shift' : 'daily'}
-            onChange={(e) =>
+            value={reportData.reportType || 'shift'}
+            onChange={(e) => {
+              const value = e.target.value as 'daily' | 'shift' | 'feed';
               setReportData((prev) => ({
                 ...prev,
-                shift: e.target.value === 'shift' ? '1' : undefined,
-              }))
-            }
+                reportType: value,
+                shift: value === 'daily' ? undefined : prev.shift || '1',
+              }));
+            }}
             className="w-full p-2 border rounded"
           >
             <option value="daily">Daily Report</option>
             <option value="shift">Shift Report</option>
+            <option value="feed">Feed Report</option>
           </select>
         </div>
 
-        {reportData.shift && (
+        {(reportData.reportType === 'shift' || reportData.reportType === 'feed') && (
           <div>
             <label className="block text-sm font-medium mb-2">Shift</label>
             <select
@@ -412,7 +585,7 @@ export const ReportGenerator: React.FC = () => {
           </div>
         )}
 
-        {reportData.shift && (
+        {reportData.reportType === 'shift' && (
           <>
             <div>
               <label className="block text-sm font-medium mb-2">Target Produksi (ton)</label>
@@ -478,6 +651,13 @@ export const ReportGenerator: React.FC = () => {
             className="mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
             Copy to Clipboard
+          </button>
+          <button
+            onClick={handleExportReport}
+            disabled={isExporting}
+            className="mt-2 ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+          >
+            {isExporting ? 'Exporting...' : 'Export to Excel'}
           </button>
         </div>
       )}
