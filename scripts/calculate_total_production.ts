@@ -33,12 +33,10 @@ async function calculateTotalProduction() {
     }
 
     if (!data || data.length === 0) {
-      console.log('No data found');
       return;
     }
 
     const totalSum = data.reduce((sum, row) => sum + (row.total || 0), 0);
-    console.log('Total Production:', totalSum);
   } catch (err) {
     console.error('Error:', err);
   }

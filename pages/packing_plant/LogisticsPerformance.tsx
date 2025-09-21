@@ -492,7 +492,7 @@ const LogisticsPerformance: React.FC<PageProps> = ({ t, areas, stockRecords, mas
         actions: [
           {
             label: 'Optimize Turnover',
-            onClick: () => console.log('Optimize turnover'),
+            onClick: () => {}, // TODO: Implement optimize turnover functionality
             variant: 'primary',
           },
         ],

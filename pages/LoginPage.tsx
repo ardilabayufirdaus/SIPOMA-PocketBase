@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth';
 import { EnhancedButton } from '../components/ui/EnhancedComponents';
 import RegistrationForm from '../components/RegistrationForm';
 import { secureStorage } from '../utils/secureStorage';
+import { User, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
@@ -112,51 +114,89 @@ const LoginPage: React.FC = () => {
   return (
     <>
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-slate-100 to-slate-300 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        <div className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center glass-card">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center glass-card"
+        >
           <div className="mb-6 flex flex-col items-center">
-            <div className="p-2 rounded-2xl bg-white/95 dark:bg-slate-800/95 shadow-lg border border-white/30 dark:border-slate-700/50 mb-2">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5, type: 'spring', stiffness: 200 }}
+              className="p-2 rounded-2xl bg-white/95 dark:bg-slate-800/95 shadow-lg border border-white/30 dark:border-slate-700/50 mb-2"
+            >
               <img src="/sipoma-logo.png" alt="SIPOMA Logo" className="h-14 w-14 object-contain" />
-            </div>
-            <h1 className="text-4xl font-extrabold text-red-600 dark:text-red-400 tracking-wide mb-1">
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-4xl font-extrabold text-red-600 dark:text-red-400 tracking-wide mb-1"
+            >
               SIPOMA
-            </h1>
-            <span className="text-base text-slate-500 dark:text-slate-300">
+            </motion.h1>
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+              className="text-base text-slate-500 dark:text-slate-300"
+            >
               Smart Integrated Plant Operations Management Application
-            </span>
+            </motion.span>
           </div>
           <form onSubmit={handleLogin} className="w-full">
             <div className="mb-4 relative">
-              <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label
+                htmlFor="identifier"
+                className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
+              >
                 Username
               </label>
-              <input
-                type="text"
-                id="identifier"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                autoComplete="username"
-                className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                <input
+                  type="text"
+                  id="identifier"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                  autoComplete="username"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400 dark:hover:border-slate-500"
+                />
+              </div>
             </div>
             <div className="mb-6 relative">
-              <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <label
+                htmlFor="password"
+                className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
+              >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400 dark:hover:border-slate-500"
+                />
+              </div>
             </div>
             {error && (
-              <div className="mb-4 text-red-600 dark:text-red-400 text-sm text-center" role="alert">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="mb-4 text-red-600 dark:text-red-400 text-sm text-center"
+                role="alert"
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
             <EnhancedButton
               type="submit"
@@ -198,7 +238,7 @@ const LoginPage: React.FC = () => {
           <div className="mt-8 text-xs text-slate-400 dark:text-slate-500 text-center animate-fadein-footer">
             &copy; {new Date().getFullYear()} SIPOMA. All rights reserved.
           </div>
-        </div>
+        </motion.div>
         {/* Animasi fadein dipindahkan ke file CSS global agar konsisten di seluruh aplikasi */}
       </div>
 

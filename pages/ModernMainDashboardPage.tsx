@@ -5,8 +5,6 @@ import {
   FolderIcon,
   BarChart3Icon,
   TrendingUpIcon,
-  PlayIcon,
-  PauseIcon,
   RefreshCcwIcon,
   CalendarIcon,
   ClockIcon,
@@ -23,7 +21,6 @@ import {
 import {
   ModernMetricCard,
   ChartContainer,
-  QuickAction,
   DashboardHeader,
   fadeInUp,
   staggerContainer,
@@ -349,35 +346,6 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
   const totalStock = transformedStockData.reduce((acc, item) => acc + item.currentStock, 0);
   const utilizationRate = totalCapacity > 0 ? (totalStock / totalCapacity) * 100 : 0;
 
-  // Quick actions data
-  const quickActions = [
-    {
-      title: 'User Management',
-      description: 'Manage user accounts, roles, and permissions',
-      icon: <UsersIcon className="w-5 h-5" />,
-      onClick: () => onNavigate('users'),
-    },
-    {
-      title: 'Plant Operations',
-      description: 'Monitor production and operational metrics',
-      icon: <SettingsIcon className="w-5 h-5" />,
-      onClick: () => onNavigate('operations'),
-    },
-    {
-      title: 'Project Management',
-      description: 'Track project progress and deliverables',
-      icon: <FolderIcon className="w-5 h-5" />,
-      onClick: () => onNavigate('projects'),
-    },
-    {
-      title: 'Analytics Dashboard',
-      description: 'View detailed analytics and reports',
-      icon: <BarChart3Icon className="w-5 h-5" />,
-      onClick: () => onNavigate('operations', 'op_dashboard'),
-      variant: 'primary' as const,
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-screen-xl mx-auto p-2 space-y-4">
@@ -387,7 +355,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
             name: 'Admin User',
             role: 'Super Administrator',
           }}
-          onSearch={(query) => console.log('Search:', query)}
+          onSearch={(query) => {}} // TODO: Implement search functionality
         />
 
         {/* Key Metrics */}
@@ -445,51 +413,8 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
         </div>
 
         {/* Secondary Widgets */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <ProjectInsights projects={transformedProjects} />
-
-          {/* Quick Actions */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Quick Actions
-              </h3>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setIsAutoRefresh(!isAutoRefresh)}
-                  className={`
-                    flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
-                    ${
-                      isAutoRefresh
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
-                    }
-                  `}
-                >
-                  {isAutoRefresh ? (
-                    <PauseIcon className="w-3 h-3" />
-                  ) : (
-                    <PlayIcon className="w-3 h-3" />
-                  )}
-                  <span>{isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}</span>
-                </button>
-                <button
-                  onClick={() => setRefreshKey((prev) => prev + 1)}
-                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                >
-                  <RefreshCcwIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {quickActions.map((action, index) => (
-                <div key={action.title}>
-                  <QuickAction {...action} />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Status Bar */}

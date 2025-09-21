@@ -40,9 +40,7 @@ const headers = [
 // Fungsi test export
 export const testExportExcel = async () => {
   try {
-    console.log('Testing Excel export...');
     await exportToExcelStyled(testData, 'test_project_tasks', 'Project Tasks', headers);
-    console.log('✅ Excel export successful!');
     return true;
   } catch (error) {
     console.error('❌ Excel export failed:', error);

@@ -16,40 +16,37 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 interface ProductionTrendChartProps {
   data: any[];
   parameters: any[];
-  selectedProductionParameters: string[];
   selectedPlantCategory: string;
   selectedPlantUnit: string;
 }
 
 const ProductionTrendChart = memo<ProductionTrendChartProps>(
-  ({
-    data,
-    parameters,
-    selectedProductionParameters,
-    selectedPlantCategory,
-    selectedPlantUnit,
-  }) => {
+  ({ data, parameters, selectedPlantCategory, selectedPlantUnit }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const filteredParameters = useMemo(() => {
+      // Fixed parameters for Production Trend
+      const fixedParameterIds = [
+        'a3f7b380-1cad-41f3-b459-802d4c33da54', // CM 220
+        'fb58e1a8-d808-46fc-8123-c3a33899dfcc', // CM 320
+        '8d1d2e1e-b003-44f1-a946-50aed6b44fe8', // CM 419
+        '14bf978b-5f5f-4279-b0c1-b91eb8a28e3a', // CM 420
+        '0917556b-e2b7-466b-bc55-fc3a79bb9a25', // CM 552
+        'fe1548c9-2ee5-44a8-9105-3fa2922438f4', // CM 552
+      ];
+
       return parameters.filter((param) => {
         const categoryMatch =
           selectedPlantCategory === 'all' || param.category === selectedPlantCategory;
         const unitMatch = selectedPlantUnit === 'all' || param.unit === selectedPlantUnit;
-        return categoryMatch && unitMatch;
+        return categoryMatch && unitMatch && fixedParameterIds.includes(param.id);
       });
     }, [parameters, selectedPlantCategory, selectedPlantUnit]);
 
     const displayParameters = useMemo(() => {
-      return selectedProductionParameters.length === 0
-        ? filteredParameters.slice(0, 5)
-        : selectedProductionParameters
-            .map((paramId) => {
-              return parameters.find((p) => p.id === paramId);
-            })
-            .filter(Boolean);
-    }, [selectedProductionParameters, filteredParameters, parameters]);
+      return filteredParameters;
+    }, [filteredParameters]);
 
     const totalItems = data.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -61,7 +58,7 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
 
     useEffect(() => {
       setCurrentPage(1);
-    }, [selectedPlantCategory, selectedPlantUnit, selectedProductionParameters]);
+    }, [selectedPlantCategory, selectedPlantUnit]);
 
     const handlePageChange = (page: number) => {
       setCurrentPage(Math.max(1, Math.min(page, totalPages)));
@@ -167,18 +164,32 @@ const ProductionTrendChart = memo<ProductionTrendChartProps>(
               }}
             />
             <Legend />
-            {displayParameters.map((param, index) => (
-              <Line
-                key={param.id}
-                type="monotone"
-                dataKey={param.parameter}
-                stroke={`hsl(${index * 60}, 70%, 50%)`}
-                strokeWidth={2}
-                name={`${param.parameter} (${param.unit})`}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            ))}
+            {displayParameters.map((param, index) => {
+              // Map parameter IDs to CM names
+              const cmNameMap: { [key: string]: string } = {
+                'a3f7b380-1cad-41f3-b459-802d4c33da54': 'CM 220',
+                'fb58e1a8-d808-46fc-8123-c3a33899dfcc': 'CM 320',
+                '8d1d2e1e-b003-44f1-a946-50aed6b44fe8': 'CM 419',
+                '14bf978b-5f5f-4279-b0c1-b91eb8a28e3a': 'CM 420',
+                '0917556b-e2b7-466b-bc55-fc3a79bb9a25': 'CM 552',
+                'fe1548c9-2ee5-44a8-9105-3fa2922438f4': 'CM 552',
+              };
+
+              const cmName = cmNameMap[param.id] || param.parameter;
+
+              return (
+                <Line
+                  key={param.id}
+                  type="monotone"
+                  dataKey={param.parameter}
+                  stroke={`hsl(${index * 60}, 70%, 50%)`}
+                  strokeWidth={2}
+                  name={cmName}
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -191,57 +202,20 @@ ProductionTrendChart.displayName = 'ProductionTrendChart';
 interface ProductionTrendSectionProps {
   productionTrendData: any[];
   parameters: any[];
-  selectedProductionParameters: string[];
   selectedPlantCategory: string;
   selectedPlantUnit: string;
-  isSuperAdmin: boolean;
-  showProductionTrendSettings: boolean;
-  setShowProductionTrendSettings: (show: boolean) => void;
-  selectedProductionParametersState: string[];
-  setSelectedProductionParameters: (params: string[]) => void;
-  saveProductionParameters: (params: string[]) => void;
 }
 
 const ProductionTrendSection: React.FC<ProductionTrendSectionProps> = ({
   productionTrendData,
   parameters,
-  selectedProductionParameters,
   selectedPlantCategory,
   selectedPlantUnit,
-  isSuperAdmin,
-  showProductionTrendSettings,
-  setShowProductionTrendSettings,
-  selectedProductionParametersState,
-  setSelectedProductionParameters,
-  saveProductionParameters,
 }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold">Production Trend</h3>
-        {isSuperAdmin && (
-          <button
-            onClick={() => setShowProductionTrendSettings(true)}
-            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-            title="Configure Production Trend Parameters"
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            Settings
-          </button>
-        )}
       </div>
 
       {productionTrendData.length > 0 ? (
@@ -249,7 +223,6 @@ const ProductionTrendSection: React.FC<ProductionTrendSectionProps> = ({
           <ProductionTrendChart
             data={productionTrendData}
             parameters={parameters}
-            selectedProductionParameters={selectedProductionParameters}
             selectedPlantCategory={selectedPlantCategory}
             selectedPlantUnit={selectedPlantUnit}
           />

@@ -39,11 +39,9 @@ const mockPlantParameters: PlantParameters = {
 
 // Test function
 function testStockPrediction() {
-  // console.log("🧪 Testing Stock Prediction Algorithm...\n"); // removed for production
 
   try {
     // Test 1: Basic prediction calculation
-    // console.log("📊 Test 1: Basic Prediction Calculation"); // removed for production
     const result = calculateStockPrediction(
       mockHistoricalStock,
       mockPlannedDeliveries,
@@ -52,46 +50,34 @@ function testStockPrediction() {
       7 // 7 days history
     );
 
-    // console.log(`✅ Generated ${result.prognosisData.length} data points`); // removed for production
-    // console.log(
     //   `📅 Critical stock date: ${result.criticalStockDate || "None (Safe)"}`
     // );
 
     // Test 2: Data structure validation
-    // console.log("\n🔍 Test 2: Data Structure Validation"); // removed for production
     const firstDataPoint = result.prognosisData[0];
     const lastDataPoint = result.prognosisData[result.prognosisData.length - 1];
-    // console.log(
     //   `📈 First data point (${firstDataPoint.date}): ${
     //     firstDataPoint.isActual ? "Actual" : "Predicted"
     //   }`
     // );
-    // console.log(
     //   `📉 Last data point (${lastDataPoint.date}): ${
     //     lastDataPoint.isActual ? "Actual" : "Predicted"
     //   }`
     // );
 
     // Test 3: Prediction metrics
-    // console.log("\n📊 Test 3: Prediction Metrics"); // removed for production
     const metrics = calculatePredictionMetrics(result, mockPlantParameters);
-    // console.log(
     //   `⏰ Days until empty: ${
     //     metrics.daysUntilEmpty === Infinity ? "∞" : metrics.daysUntilEmpty
     //   }`
     // );
-    // console.log(
     //   `📊 Average projected stock: ${Math.round(
     //     metrics.avgProjectedStock
     //   )} tons`
     // );
-    console.log(`⚠️ Stock critical: ${metrics.isStockCritical ? 'Yes' : 'No'}`);
-    console.log(`🎯 Projection accuracy: ${Math.round(metrics.projectionAccuracy)}%`);
 
     // Test 4: Critical stock detection
-    console.log('\n🚨 Test 4: Critical Stock Detection');
     const criticalStockFound = result.criticalStockDate !== null;
-    console.log(
       `Critical stock detection: ${criticalStockFound ? '✅ Working' : '❌ Not triggered'}`
     );
 
@@ -101,11 +87,9 @@ function testStockPrediction() {
       const daysUntilCritical = Math.ceil(
         (criticalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
       );
-      console.log(`⏳ Days until critical: ${daysUntilCritical}`);
     }
 
     // Test 5: Data conversion functions
-    console.log('\n🔄 Test 5: Data Conversion Functions');
 
     // Mock existing data format
     const mockExistingData = [
@@ -124,7 +108,6 @@ function testStockPrediction() {
     ];
 
     const convertedHistorical = convertExistingDataToHistoricalStock(mockExistingData);
-    console.log(`✅ Converted ${convertedHistorical.length} historical records`);
 
     // Mock master data format
     const mockMasterData = [
@@ -137,16 +120,12 @@ function testStockPrediction() {
     ];
 
     const convertedParameters = convertMasterDataToPlantParameters(mockMasterData, 'Area A');
-    console.log(
       `✅ Converted plant parameters: Current=${convertedParameters.currentStock}, Safety=${convertedParameters.safetyStock}`
     );
 
     // Test 6: Planned deliveries generation
-    console.log('\n📦 Test 6: Planned Deliveries Generation');
     const generatedDeliveries = generatePlannedDeliveries(new Date(), 30, 100, 7);
-    console.log(`✅ Generated ${generatedDeliveries.length} planned deliveries`);
 
-    console.log('\n🎉 All tests completed successfully!');
 
     return {
       success: true,
@@ -164,16 +143,12 @@ function testStockPrediction() {
 
 // Advanced test scenarios
 function testEdgeCases() {
-  console.log('\n🔬 Testing Edge Cases...\n');
 
   try {
     // Test dengan data kosong
-    console.log('📋 Test: Empty historical data');
     const emptyResult = calculateStockPrediction([], [], mockPlantParameters, 30, 7);
-    console.log(`✅ Handled empty data: ${emptyResult.prognosisData.length} points generated`);
 
     // Test dengan konsumsi nol
-    console.log('\n📋 Test: Zero consumption');
     const zeroConsumptionParams = {
       ...mockPlantParameters,
       avgDailyConsumption: 0,
@@ -185,19 +160,15 @@ function testEdgeCases() {
       30,
       7
     );
-    console.log(
       `✅ Handled zero consumption: Critical date = ${zeroResult.criticalStockDate || 'None'}`
     );
 
     // Test dengan stok sangat rendah
-    console.log('\n📋 Test: Very low current stock');
     const lowStockParams = { ...mockPlantParameters, currentStock: 20 };
     const lowStockResult = calculateStockPrediction(mockHistoricalStock, [], lowStockParams, 30, 7);
-    console.log(
       `✅ Handled low stock: Critical in ${lowStockResult.criticalStockDate ? 'soon' : 'never'}`
     );
 
-    console.log('\n🎯 Edge case testing completed!');
   } catch (error) {
     console.error('❌ Edge case test failed:', error);
   }
@@ -205,7 +176,6 @@ function testEdgeCases() {
 
 // Fungsi untuk menampilkan sample data
 function displaySamplePrediction() {
-  console.log('\n📋 Sample Prediction Data:\n');
 
   const result = calculateStockPrediction(
     mockHistoricalStock,
@@ -215,20 +185,15 @@ function displaySamplePrediction() {
     3 // 3 days history
   );
 
-  console.log('Date\t\tStock\tConsump.\tArrivals\tType');
-  console.log('─'.repeat(60));
 
   result.prognosisData.forEach((data) => {
     const type = data.isActual ? 'Actual' : 'Predicted';
-    console.log(
       `${data.date}\t${data.stockLevel}\t${data.consumption}\t\t${data.arrivals}\t\t${type}`
     );
   });
 
   if (result.criticalStockDate) {
-    console.log(`\n⚠️  Critical stock level reached on: ${result.criticalStockDate}`);
   } else {
-    console.log('\n✅ Stock levels remain safe throughout projection period');
   }
 }
 
@@ -249,14 +214,8 @@ export function debugPredictionStep(
   plantParams: PlantParameters,
   projectionDays: number = 30
 ) {
-  console.log('🔧 Debug Mode: Step-by-step prediction calculation\n');
 
   // Tampilkan input data
-  console.log('📊 Input Data:');
-  console.log('Historical Stock:', historicalData.slice(-5)); // Last 5 days
-  console.log('Planned Deliveries:', plannedDeliveries);
-  console.log('Plant Parameters:', plantParams);
-  console.log('Projection Period:', projectionDays, 'days\n');
 
   // Jalankan prediksi dengan logging
   const result = calculateStockPrediction(
@@ -268,9 +227,6 @@ export function debugPredictionStep(
   );
 
   // Tampilkan hasil detail
-  console.log('📈 Prediction Results:');
-  console.log('Total data points:', result.prognosisData.length);
-  console.log('Critical stock date:', result.criticalStockDate);
 
   // Tampilkan breakdown per week
   const weeklyBreakdown = [];
@@ -289,7 +245,6 @@ export function debugPredictionStep(
     });
   }
 
-  console.log('\n📊 Weekly Breakdown:');
   console.table(weeklyBreakdown);
 
   return result;

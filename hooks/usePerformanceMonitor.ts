@@ -143,11 +143,7 @@ export const useUserManagementPerformance = () => {
     onMetricCollected: (metric) => {
       // Log to console in development
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Performance] ${metric.operationName}: ${metric.duration?.toFixed(2)}ms`, {
-          success: metric.success,
-          error: metric.error,
-          metadata: metric.metadata,
-        });
+        // Development logging removed
       }
 
       // Could send to analytics service in production

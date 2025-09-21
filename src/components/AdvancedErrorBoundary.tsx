@@ -135,8 +135,6 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       if (onRetry) {
         onRetry();
       }
-
-      console.log(`🔄 Retrying component render (attempt ${retryCount + 1}/${maxRetries})`);
     } else {
       console.warn('❌ Max retry attempts reached, cannot retry further');
     }
@@ -151,8 +149,6 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       errorId: null,
       retryCount: 0,
     });
-
-    console.log('🔄 Error boundary reset');
   };
 
   // Reload the page

@@ -142,6 +142,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       // Fetch silo data (shared across units)
       const siloData = await getSiloData(date);
 
+      // Debug logging untuk memastikan data parameter dari CCR Parameter Data Entry
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+
       // Format date
       const reportDate = new Date(date);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
@@ -200,10 +205,49 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           );
         });
 
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                total: feedData.total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+          runningHoursData: runningHoursData
+            ? {
+                parameter_id: runningHoursData.parameter_id,
+                total: runningHoursData.total,
+                setting: parameterSettings.find((s) => s.id === runningHoursData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productionData: productionData
+            ? {
+                parameter_id: productionData.parameter_id,
+                total: productionData.total,
+                setting: parameterSettings.find((s) => s.id === productionData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+        });
+
         // Calculate values from footer data
         const feedAvg = feedData?.average || feedData?.total || 0;
         const runningHoursAvg = runningHoursData?.total || 0;
         const totalProduction = productionData?.total || feedAvg * runningHoursAvg;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          runningHoursAvg: formatIndonesianNumber(runningHoursAvg),
+          totalProduction: formatIndonesianNumber(totalProduction),
+          feedData: feedData?.total,
+          runningHoursData: runningHoursData?.total,
+          productionData: productionData?.total,
+        });
 
         // Tipe Produk - cari dari parameter data atau default N/A
         const productTypeParam = allParameterData.find((p) => {
@@ -233,6 +277,18 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
               productTypeValues[productTypeValues.length - 1];
           }
         }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
 
         report += `Tipe Produk  : ${productType}\n`;
         report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
@@ -360,6 +416,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       // Fetch silo data (shared across units)
       const siloData = await getSiloData(date);
 
+      // Debug logging untuk memastikan data parameter dari CCR Parameter Data Entry
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+
       // Format date
       const reportDate = new Date(date);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
@@ -418,10 +479,49 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           );
         });
 
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                shift1_total: feedData.shift1_total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+          runningHoursData: runningHoursData
+            ? {
+                parameter_id: runningHoursData.parameter_id,
+                shift1_total: runningHoursData.shift1_total,
+                setting: parameterSettings.find((s) => s.id === runningHoursData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productionData: productionData
+            ? {
+                parameter_id: productionData.parameter_id,
+                shift1_total: productionData.shift1_total,
+                setting: parameterSettings.find((s) => s.id === productionData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+        });
+
         // Calculate values from footer data - menggunakan shift1_average untuk feed
         const feedAvg = feedData?.shift1_average || 0;
         const runningHoursAvg = runningHoursData?.shift1_total || 0;
         const totalProduction = productionData?.shift1_total || feedAvg * runningHoursAvg;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          runningHoursAvg: formatIndonesianNumber(runningHoursAvg),
+          totalProduction: formatIndonesianNumber(totalProduction),
+          feedData: feedData?.shift1_average,
+          runningHoursData: runningHoursData?.shift1_total,
+          productionData: productionData?.shift1_total,
+        });
 
         // Tipe Produk - cari dari parameter data atau default N/A
         const productTypeParam = allParameterData.find((p) => {
@@ -449,6 +549,18 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             productType = productTypeValues[productTypeValues.length - 1];
           }
         }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
 
         report += `Tipe Produk  : ${productType}\n`;
         report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
@@ -580,6 +692,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       // Fetch silo data (shared across units)
       const siloData = await getSiloData(date);
 
+      // Debug logging untuk memastikan data parameter dari CCR Parameter Data Entry
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+
       // Format date
       const reportDate = new Date(date);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
@@ -638,10 +755,49 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           );
         });
 
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                shift2_total: feedData.shift2_total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+          runningHoursData: runningHoursData
+            ? {
+                parameter_id: runningHoursData.parameter_id,
+                shift2_total: runningHoursData.shift2_total,
+                setting: parameterSettings.find((s) => s.id === runningHoursData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productionData: productionData
+            ? {
+                parameter_id: productionData.parameter_id,
+                shift2_total: productionData.shift2_total,
+                setting: parameterSettings.find((s) => s.id === productionData.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+        });
+
         // Calculate values from footer data - menggunakan shift2_average untuk feed
         const feedAvg = feedData?.shift2_average || 0;
         const runningHoursAvg = runningHoursData?.shift2_total || 0;
         const totalProduction = productionData?.shift2_total || feedAvg * runningHoursAvg;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          runningHoursAvg: formatIndonesianNumber(runningHoursAvg),
+          totalProduction: formatIndonesianNumber(totalProduction),
+          feedData: feedData?.shift2_average,
+          runningHoursData: runningHoursData?.shift2_total,
+          productionData: productionData?.shift2_total,
+        });
 
         // Tipe Produk - cari dari parameter data atau default N/A
         const productTypeParam = allParameterData.find((p) => {
@@ -669,6 +825,18 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             productType = productTypeValues[productTypeValues.length - 1];
           }
         }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
 
         report += `Tipe Produk  : ${productType}\n`;
         report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
@@ -809,6 +977,12 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       // Fetch silo data untuk hari ini
       const siloData = await getSiloData(date);
 
+      // Debug logging
+      console.log('Unit Data Map:', unitDataMap);
+      console.log('Parameter Settings:', parameterSettings);
+      console.log('Selected Plant Units:', selectedPlantUnits);
+      console.log('Next Day Footer Data:', nextDayFooterData);
+
       // Format date
       const reportDate = new Date(date);
       const formattedDate = reportDate.toLocaleDateString('id-ID', {
@@ -871,6 +1045,23 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           );
         });
 
+        // Debug logging untuk data footer yang ditemukan
+        console.log(`Unit ${unit} - Footer Data:`, {
+          unitParameterIds: unitParameterIds,
+          unitFooterData: unitFooterData.length,
+          nextDayUnitFooterData: nextDayUnitFooterData.length,
+          feedData: feedData
+            ? {
+                parameter_id: feedData.parameter_id,
+                shift3_total: feedData.shift3_total,
+                shift3_cont_total: nextDayUnitFooterData.find(
+                  (f) => f.parameter_id === feedData.parameter_id
+                )?.shift3_cont_total,
+                setting: parameterSettings.find((s) => s.id === feedData.parameter_id)?.parameter,
+              }
+            : null,
+        });
+
         // Calculate values from footer data - menggunakan shift3_average dan shift3_cont_average
         const feedAvg = feedData?.shift3_average || 0;
         const feedContAvg =
@@ -892,6 +1083,17 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         // Jika tidak ada production total, hitung dari feed dan running hours
         const totalProduction = combinedProduction || combinedFeedAvg * combinedRunningHours;
+
+        // Debug logging untuk nilai yang dihitung
+        console.log(`Unit ${unit} - Calculated Values:`, {
+          feedAvg: formatIndonesianNumber(feedAvg),
+          feedContAvg: formatIndonesianNumber(feedContAvg),
+          combinedFeedAvg: formatIndonesianNumber(combinedFeedAvg),
+          runningHoursTotal: formatIndonesianNumber(runningHoursTotal),
+          runningHoursContTotal: formatIndonesianNumber(runningHoursContTotal),
+          combinedRunningHours: formatIndonesianNumber(combinedRunningHours),
+          totalProduction: formatIndonesianNumber(totalProduction),
+        });
 
         // Tipe Produk - cari dari parameter data atau default N/A
         const productTypeParam = allParameterData.find((p) => {
@@ -919,6 +1121,18 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             productType = productTypeValues[productTypeValues.length - 1];
           }
         }
+
+        // Debug logging untuk product type
+        console.log(`Unit ${unit} - Product Type:`, {
+          productTypeParam: productTypeParam
+            ? {
+                parameter_id: productTypeParam.parameter_id,
+                setting_name: parameterSettings.find((s) => s.id === productTypeParam.parameter_id)
+                  ?.parameter,
+              }
+            : null,
+          productType,
+        });
 
         report += `Tipe Produk  : ${productType}\n`;
         report += `Feed  : ${formatIndonesianNumber(combinedFeedAvg, 2)} tph\n`;

@@ -114,15 +114,6 @@ const PlantOperationsDashboard: React.FC = () => {
         const startDateStr = formatDate(startDate);
         const endDateStr = formatDate(endDate);
 
-        console.log('🔍 Dashboard: Fetching data with filters:', {
-          selectedMonth,
-          selectedYear,
-          selectedPlantCategory,
-          selectedPlantUnit,
-          startDate: startDateStr,
-          endDate: endDateStr,
-        });
-
         const allData: CcrParameterData[] = [];
         const allFooterData: any[] = [];
 
@@ -134,18 +125,6 @@ const PlantOperationsDashboard: React.FC = () => {
           allData.push(...dateData);
           allFooterData.push(...footerDateData);
         }
-
-        console.log('🔍 Dashboard: Fetched CCR data:', {
-          count: allData.length,
-          footerCount: allFooterData.length,
-          selectedPlantCategory,
-          selectedPlantUnit,
-          dateRange: `${startDateStr} to ${endDateStr}`,
-          sampleData: allData.slice(0, 3),
-          sampleFooterData: allFooterData.slice(0, 3),
-          uniqueParameterIds: [...new Set(allData.map((d) => d.parameter_id))],
-          uniqueFooterParameterIds: [...new Set(allFooterData.map((d) => d.parameter_id))],
-        });
 
         // Set the fetched data to state
         setCcrData(allData);

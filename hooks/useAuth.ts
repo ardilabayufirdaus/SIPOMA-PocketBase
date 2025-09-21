@@ -32,7 +32,6 @@ export const useAuth = () => {
       if (error) throw error;
 
       const permissionMatrix = buildPermissionMatrix(data || []);
-      console.log('Debug: Permission matrix built:', permissionMatrix);
 
       return permissionMatrix;
     } catch (error) {
@@ -95,12 +94,6 @@ export const useAuth = () => {
 
         // Verify password
         const userData = data as any;
-        console.log('Debug: Retrieved user data:', {
-          id: userData.id,
-          username: userData.username,
-          hasPasswordHash: !!userData.password_hash,
-          passwordHashLength: userData.password_hash?.length,
-        });
 
         if (!userData.password_hash) {
           console.error('Debug: No password_hash found for user:', userData.username);
@@ -109,7 +102,6 @@ export const useAuth = () => {
         }
 
         const isValidPassword = await passwordUtils.verify(password, userData.password_hash);
-        console.log('Debug: Password verification result:', isValidPassword);
 
         if (!isValidPassword) {
           rateLimiter.recordFailedAttempt(identifier);

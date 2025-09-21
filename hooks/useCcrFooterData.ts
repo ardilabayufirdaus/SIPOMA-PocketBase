@@ -89,7 +89,6 @@ export const useCcrFooterData = () => {
         throw error;
       }
 
-      console.log('CCR footer data saved successfully:', footerData);
       return data;
     } catch (error) {
       console.error('Error in saveFooterData:', error);
@@ -139,7 +138,6 @@ export const useCcrFooterData = () => {
           throw error;
         }
 
-        console.log('CCR footer data deleted successfully');
       } catch (error) {
         console.error('Error in deleteFooterData:', error);
         throw error;

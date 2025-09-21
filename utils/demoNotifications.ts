@@ -42,7 +42,6 @@ export const createDemoNotifications = async () => {
     if (error) {
       console.error('Error creating demo notifications:', error);
     } else {
-      // console.log("Demo notifications created successfully"); // removed for production
     }
   } catch (error) {
     console.error('Error:', error);
@@ -62,7 +61,6 @@ export const clearDemoNotifications = async () => {
     if (error) {
       console.error('Error clearing demo notifications:', error);
     } else {
-      // console.log("Demo notifications cleared successfully"); // removed for production
     }
   } catch (error) {
     console.error('Error:', error);

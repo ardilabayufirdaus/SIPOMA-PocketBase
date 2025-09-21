@@ -210,7 +210,6 @@ export const ReportGenerator: React.FC = () => {
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
-          console.log(`Pemakaian Bahan ${name}:`, { bahanData, bahanTotal });
           report += `- ${name} : ${bahanTotal.toFixed(2)} ton\n`;
         });
 
@@ -232,7 +231,6 @@ export const ReportGenerator: React.FC = () => {
             );
           });
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          console.log(`Setting Feeder ${name}:`, { feederData, feederAvg });
           report += `- ${name} : ${feederAvg.toFixed(2)} %\n`;
         });
 

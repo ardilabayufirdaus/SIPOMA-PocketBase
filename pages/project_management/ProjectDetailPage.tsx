@@ -1,4 +1,4 @@
-锘縤mport React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
 import * as XLSX from 'xlsx';
 import { useProjects } from '../../hooks/useProjects';
 import { Project, ProjectTask } from '../../types';
@@ -918,7 +918,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 className="text-sm text-slate-600 dark:text-slate-400"
                 aria-describedby="project-meta"
               >
-                {t.project_overview} 螕脟贸 {projectOverview.totalTasks} tasks 螕脟贸{' '}
+                {t.project_overview} G求 {projectOverview.totalTasks} tasks G求{' '}
                 {projectOverview.duration} days
               </p>
             </div>

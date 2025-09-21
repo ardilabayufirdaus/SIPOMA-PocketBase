@@ -33,7 +33,6 @@ export const useServiceWorker = () => {
           scope: '/',
         });
 
-        console.log('✅ Service Worker registered:', registration);
 
         // Handle updates
         registration.addEventListener('updatefound', () => {
@@ -49,7 +48,6 @@ export const useServiceWorker = () => {
 
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 // New version available
-                console.log('🔄 New Service Worker version available');
               }
             });
           }
@@ -57,7 +55,6 @@ export const useServiceWorker = () => {
 
         // Handle controller change (new SW activated)
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          console.log('🎯 Service Worker controller changed');
           window.location.reload();
         });
 
@@ -80,7 +77,6 @@ export const useServiceWorker = () => {
     if (status.registration) {
       try {
         await status.registration.update();
-        console.log('🔄 Service Worker update triggered');
       } catch (error) {
         console.error('❌ Service Worker update failed:', error);
       }
@@ -105,14 +101,12 @@ export const useServiceWorker = () => {
   useEffect(() => {
     const handleOnline = () => {
       setStatus((prev) => ({ ...prev, isOnline: true }));
-      console.log('🌐 Online - Syncing data...');
       // Trigger background sync
       sendMessage({ type: 'SYNC_DATA' });
     };
 
     const handleOffline = () => {
       setStatus((prev) => ({ ...prev, isOnline: false }));
-      console.log('📴 Offline - Using cached data');
     };
 
     window.addEventListener('online', handleOnline);
@@ -136,16 +130,13 @@ export const useServiceWorker = () => {
 
       switch (type) {
         case 'CACHE_UPDATED':
-          console.log('📦 Cache updated:', data);
           break;
         case 'SYNC_COMPLETED':
-          console.log('🔄 Sync completed:', data);
           break;
         case 'ERROR':
           console.error('❌ Service Worker error:', data);
           break;
         default:
-          console.log('📨 Service Worker message:', type, data);
       }
     };
 

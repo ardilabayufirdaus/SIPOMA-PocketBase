@@ -54,7 +54,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
     try {
       setIsLoading(true);
-      console.log(`📡 Fetching users (attempt ${retryCount + 1}/${maxRetries + 1})...`);
 
       const { data, error } = await supabase
         .from('users')
@@ -99,7 +98,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       }));
 
       setUsers(transformedUsers);
-      console.log(`✅ Successfully fetched ${transformedUsers.length} users`);
     } catch (err) {
       console.error(`❌ Error fetching users (attempt ${retryCount + 1}):`, err);
       const errorMsg =
@@ -111,7 +109,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         errorMsg?.includes('Failed to fetch') ||
         (errorMsg?.includes('ERR_NETWORK_CHANGED') && retryCount < maxRetries)
       ) {
-        console.log(`🔄 Retrying in ${retryDelay}ms...`);
         setTimeout(() => fetchUsers(retryCount + 1), retryDelay);
         return;
       }
@@ -206,11 +203,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
     try {
       setError('');
-      console.log('🔄 Starting permission save for user:', selectedUser.username);
-      console.log('📋 Pending permissions:', pendingPermissions);
 
       // Delete existing permissions
-      console.log('🗑️ Deleting existing user permissions...');
       const { error: deleteError } = await supabase
         .from('user_permissions')
         .delete()
@@ -220,7 +214,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         console.error('❌ Error deleting permissions:', deleteError);
         throw deleteError;
       }
-      console.log('✅ Existing permissions deleted');
 
       // Insert new permissions
       const permissionInserts = [];
@@ -243,10 +236,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         },
       ];
 
-      console.log('🔍 Processing simple permissions...');
       for (const perm of simplePermissions) {
         if (perm.level !== 'NONE') {
-          console.log(`📝 Processing ${perm.module} with level ${perm.level}`);
 
           // Check if permission exists
           const { data: existingPerm, error: lookupError } = await supabase
@@ -264,7 +255,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
           }
 
           if (!permissionId) {
-            console.log(`🆕 Creating new permission for ${perm.module}`);
             const { data: newPerm, error: insertError } = await supabase
               .from('permissions')
               .insert({
@@ -281,7 +271,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
             }
 
             permissionId = newPerm?.id;
-            console.log(`✅ Created permission with ID: ${permissionId}`);
           }
 
           if (permissionId) {
@@ -294,7 +283,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       }
 
       // Handle plant operations permissions
-      console.log('🌱 Processing plant operations permissions...');
       if (
         pendingPermissions.plant_operations &&
         Object.keys(pendingPermissions.plant_operations).length > 0
@@ -308,7 +296,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
           });
         });
 
-        console.log('📊 Plant units to process:', plantUnits);
 
         if (plantUnits.length > 0) {
           // Group by permission level
@@ -321,10 +308,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
             {} as Record<string, unknown[]>
           );
 
-          console.log('🎯 Permission level groups:', levelGroups);
 
           for (const [level, units] of Object.entries(levelGroups)) {
-            console.log(`🔧 Processing level ${level} with units:`, units);
 
             // Check if permission exists
             const { data: existingPerm, error: lookupError } = await supabase
@@ -341,7 +326,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
             }
 
             if (!permissionId) {
-              console.log(`🆕 Creating new plant operations permission for level ${level}`);
               const { data: newPerm, error: insertError } = await supabase
                 .from('permissions')
                 .insert({
@@ -361,7 +345,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
               }
 
               permissionId = newPerm?.id;
-              console.log(`✅ Created plant permission with ID: ${permissionId}`);
             }
 
             if (permissionId) {
@@ -375,7 +358,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       }
 
       // Insert user permissions
-      console.log('💾 Inserting user permissions:', permissionInserts);
       if (permissionInserts.length > 0) {
         const { error: insertError } = await supabase
           .from('user_permissions')
@@ -385,13 +367,10 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
           console.error('❌ Error inserting user permissions:', insertError);
           throw insertError;
         }
-        console.log('✅ User permissions inserted successfully');
       }
 
-      console.log('🔄 Refreshing users list...');
       try {
         await fetchUsers();
-        console.log('✅ Users list refreshed successfully');
         setSuccessMessage(''); // Clear success message when refresh succeeds
       } catch (refreshError) {
         console.warn('⚠️ Failed to refresh users list after save:', refreshError);
@@ -403,7 +382,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         setSuccessMessage('✅ Permissions saved successfully!');
       }
 
-      console.log('🎉 Permission save completed successfully!');
       setError(''); // Clear any previous errors on success
       // Close modal and reset state
       setIsPermissionEditorOpen(false);

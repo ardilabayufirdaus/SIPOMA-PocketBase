@@ -627,9 +627,6 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({ t, areas, stockRecords
         return isValid;
       });
 
-      console.log('Processed chart data sample:', validatedData.slice(0, 3));
-      console.log('Total data points:', validatedData.length);
-
       return validatedData;
     } catch (error) {
       console.error('Error processing chart data:', error);

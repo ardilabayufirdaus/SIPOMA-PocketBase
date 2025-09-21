@@ -62,21 +62,6 @@ export const useDashboardDataProcessor = (
   }, [parameters, plantCategory, plantUnit]);
 
   const processedData = useMemo((): ProcessedDashboardData => {
-    console.log('🔍 Dashboard Processor Input:', {
-      ccrDataCount: ccrData.length,
-      parametersCount: parameters.length,
-      filteredParametersCount: filteredParameters.length,
-      plantCategory,
-      plantUnit,
-      selectedProductionParameters,
-      copParameterIdsCount: copParameterIds.length,
-      sampleCcrData: ccrData.slice(0, 2),
-      sampleFilteredParameters: filteredParameters.slice(0, 5),
-      sampleParameters: parameters.slice(0, 5),
-      uniqueParameterIdsInData: [...new Set(ccrData.map((d) => d.parameter_id))],
-      uniqueParameterIdsInSettings: [...new Set(parameters.map((p) => p.id))],
-    });
-
     // Check cache first
     const cachedProcessedData = cache.getCachedProcessedData(
       selectedMonth || new Date().getMonth() + 1,
@@ -86,11 +71,8 @@ export const useDashboardDataProcessor = (
     );
 
     if (cachedProcessedData) {
-      console.log('✅ Using cached processed dashboard data');
       return cachedProcessedData as unknown as ProcessedDashboardData;
     }
-
-    console.log('🔄 Processing dashboard data...');
 
     // Process chart data
     const chartData = ccrData.map((item, index) => {
@@ -232,10 +214,6 @@ export const useDashboardDataProcessor = (
       .filter((item) => {
         const param = parameters.find((p) => p.id === item.parameter_id);
         if (!param) {
-          console.log('🔍 Parameter not found for item:', {
-            parameterId: item.parameter_id,
-            availableParameterIds: parameters.map((p) => p.id).slice(0, 10),
-          });
           return false;
         }
 
@@ -266,15 +244,6 @@ export const useDashboardDataProcessor = (
 
         const totalValue = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) : 0;
 
-        console.log('🔍 Processing item:', {
-          parameterId: item.parameter_id,
-          paramName,
-          date: itemDate,
-          hourlyValues: item.hourly_values,
-          values,
-          totalValue,
-        });
-
         dataByDate[itemDate][paramName] = totalValue;
       });
 
@@ -299,10 +268,6 @@ export const useDashboardDataProcessor = (
         parametersToShow = parameters.filter((param) =>
           paramNamesWithData.includes(param.parameter)
         );
-        console.log(
-          '🔍 Using parameters with data:',
-          parametersToShow.map((p) => p.parameter)
-        );
       }
 
       // If specific parameters are selected, only show those
@@ -323,11 +288,6 @@ export const useDashboardDataProcessor = (
     productionTrendData.sort(
       (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
-
-    console.log('🔍 Final Production Trend Data:', {
-      productionTrendDataCount: productionTrendData.length,
-      sampleData: productionTrendData.slice(0, 5),
-    });
 
     const result = {
       chartData,

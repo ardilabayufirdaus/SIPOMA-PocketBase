@@ -200,7 +200,6 @@ export const usePackingPlantStockData = () => {
           if (updateError) {
             console.error('Error updating stock record:', updateError);
           } else {
-            console.log(`Successfully updated record for ${record.date} - ${record.area}`);
             fetchRecords();
           }
         } else {
@@ -212,7 +211,6 @@ export const usePackingPlantStockData = () => {
           if (insertError) {
             console.error('Error inserting stock record:', insertError);
           } else {
-            console.log(`Successfully inserted new record for ${record.date} - ${record.area}`);
             fetchRecords();
           }
         }

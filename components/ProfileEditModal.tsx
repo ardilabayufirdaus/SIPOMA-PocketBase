@@ -132,7 +132,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
         const filePath = `${fileName}`;
 
-        console.log(`Upload attempt ${attempt} to avatars bucket:`, filePath);
 
         // Upload with progress tracking (simulated since Supabase doesn't support onUploadProgress)
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -147,7 +146,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           throw new Error(`Upload failed: ${uploadError.message}`);
         }
 
-        console.log('Upload successful:', uploadData);
 
         // Get public URL
         const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
@@ -156,13 +154,11 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           throw new Error('Failed to get public URL for uploaded file');
         }
 
-        console.log('Public URL generated:', data.publicUrl);
         return data.publicUrl;
       } catch (error: unknown) {
         console.error(`Upload attempt ${attempt} failed:`, error);
 
         if (attempt < maxRetries && !abortControllerRef.current?.signal.aborted) {
-          console.log(`Retrying upload in ${attempt * 2} seconds...`);
           setRetryCount(attempt);
           await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
           return uploadFileToSupabase(file, attempt + 1);

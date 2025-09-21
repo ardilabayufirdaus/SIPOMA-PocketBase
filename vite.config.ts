@@ -1,4 +1,4 @@
-﻿import { defineConfig } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
@@ -9,9 +9,6 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            if (id.includes('@nivo') || id.includes('chart.js')) {
-              return 'charts-vendor';
-            }
             if (id.includes('@supabase')) {
               return 'data-vendor';
             }

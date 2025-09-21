@@ -484,7 +484,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
         {/* Enhanced Header */}
         <ModernDashboardHeader
           currentTime={currentTime}
-          onSearch={(query) => console.log('Search:', query)}
+          onSearch={(query) => {}} // TODO: Implement search functionality
           isAutoRefresh={isAutoRefresh}
           onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
           onRefresh={() => setRefreshKey((prev) => prev + 1)}

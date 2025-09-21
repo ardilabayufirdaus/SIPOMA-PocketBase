@@ -141,22 +141,17 @@ export const useCcrParameterData = () => {
           if (userSession) {
             try {
               const sessionData = JSON.parse(userSession);
-              console.log('User session active:', !!sessionData.id);
             } catch (error) {
               console.warn('Invalid user session data');
             }
           } else {
-            console.log('No active user session');
           }
           (window as any)._userSessionChecked = true;
         }
 
         // Only log on development mode
         if ((import.meta as any).env?.DEV) {
-          console.log('Attempting to fetch parameter data:', {
-            date,
-            parameter_id,
-          });
+          // Development logging removed
         }
 
         // Try the query with proper error handling for 406 errors
@@ -319,11 +314,8 @@ export const useCcrParameterData = () => {
         );
 
         if (cachedData) {
-          console.log('✅ Using cached CCR data for', startDate, 'to', endDate);
           return cachedData;
         }
-
-        console.log('🔄 Fetching CCR data from database for', startDate, 'to', endDate);
 
         // Build query with date range and optional plant_unit filter
         let query = supabase

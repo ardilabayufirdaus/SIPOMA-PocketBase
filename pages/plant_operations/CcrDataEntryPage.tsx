@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
@@ -261,7 +261,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         (record: any) => !record.name && Object.keys(record.hourly_values).length > 0
       );
       if (legacyRecords.length > 0) {
-        console.log(`Found ${legacyRecords.length} legacy records without name, updating...`);
         legacyRecords.forEach(async (record: any) => {
           try {
             const { error } = await supabase
@@ -274,11 +273,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             if (error) {
               console.error('Error updating legacy record:', error);
             } else {
-              console.log(
-                `Updated legacy record ${record.id} with name: ${
-                  loggedInUser?.full_name || currentUser.full_name
-                }`
-              );
+              // Successfully updated legacy record
             }
           } catch (error) {
             console.error('Error updating legacy record:', error);
@@ -353,8 +348,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             });
           }
         }
-
-        console.log('Footer data saved to Supabase for date:', selectedDate);
       } catch (error) {
         console.error('Error saving footer data:', error);
       }
@@ -451,9 +444,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     if (!unit) return 1;
 
     // Units that typically need 2 decimal places
-    const highPrecisionUnits = ['bar', 'psi', 'kPa', 'MPa', 'm³/h', 'kg/h', 't/h', 'L/h', 'mL/h'];
+    const highPrecisionUnits = ['bar', 'psi', 'kPa', 'MPa', 'm�/h', 'kg/h', 't/h', 'L/h', 'mL/h'];
     // Units that typically need 1 decimal place
-    const mediumPrecisionUnits = ['°C', '°F', '°K', '%', 'kg', 'ton', 'm³', 'L', 'mL'];
+    const mediumPrecisionUnits = ['�C', '�F', '�K', '%', 'kg', 'ton', 'm�', 'L', 'mL'];
     // Units that typically need 0 decimal places (whole numbers)
     const lowPrecisionUnits = ['unit', 'pcs', 'buah', 'batch', 'shift'];
 
@@ -1305,7 +1298,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           {/* Enhanced Table Controls */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <span>Use ↑↓←→ or Tab to navigate</span>
+              <span>Use ???? or Tab to navigate</span>
               <span className="text-slate-400 dark:text-slate-500">|</span>
               <span>Press Esc to exit navigation</span>
             </div>

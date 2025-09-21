@@ -1,17 +1,14 @@
 import React from 'react';
-import { Line } from 'react-chartjs-2';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   Legend,
-} from 'chart.js';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+  ResponsiveContainer,
+} from 'recharts';
 
 interface ProgressTrendChartProps {
   data: Array<{
@@ -21,7 +18,7 @@ interface ProgressTrendChartProps {
       y: number;
     }>;
   }>;
-  t: any;
+  t: (key: string) => string;
 }
 
 export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({ data, t }) => {
@@ -31,97 +28,72 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({ data, t 
     '#F59E0B', // amber-500
   ];
 
-  const chartData = {
-    labels: data[0]?.data.map((point) => point.x) || [],
-    datasets: data.map((series, index) => ({
-      label: series.id,
-      data: series.data.map((point) => point.y),
-      borderColor: colors[index % colors.length],
-      backgroundColor: colors[index % colors.length] + '20',
-      borderWidth: 2,
-      fill: false,
-      tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    })),
-  };
+  // Transform data for Recharts
+  const chartData =
+    data[0]?.data.map((point, index) => {
+      const obj: Record<string, string | number> = { x: point.x, [data[0].id]: point.y };
+      data.slice(1).forEach((series) => {
+        obj[series.id] = series.data[index]?.y || 0;
+      });
+      return obj;
+    }) || [];
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        labels: {
-          padding: 10,
-          usePointStyle: true,
-          font: {
-            size: 11,
-          },
-        },
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        callbacks: {
-          label: function (context: any) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += context.parsed.y.toFixed(1) + '%';
-            }
-            return label;
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Month',
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Progress (%)',
-          font: {
-            size: 12,
-          },
-        },
-        beginAtZero: true,
-        max: 100,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-        ticks: {
-          callback: function (value: any) {
-            return value + '%';
-          },
-        },
-      },
-    },
-    interaction: {
-      mode: 'nearest' as const,
-      axis: 'x' as const,
-      intersect: false,
-    },
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<{
+      color: string;
+      dataKey: string;
+      value: number;
+    }>;
+    label?: string;
+  }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          <p className="font-medium text-gray-900 dark:text-gray-100">{`Month: ${label}`}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }} className="text-sm">
+              {`${entry.dataKey}: ${entry.value.toFixed(1)}%`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
     <div className="h-32 w-full">
-      <Line data={chartData} options={options} />
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+          <XAxis dataKey="x" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+          <YAxis
+            domain={[0, 100]}
+            tick={{ fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(value) => `${value}%`}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend />
+          {data.map((series, index) => (
+            <Line
+              key={series.id}
+              type="monotone"
+              dataKey={series.id}
+              stroke={colors[index % colors.length]}
+              strokeWidth={2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 };

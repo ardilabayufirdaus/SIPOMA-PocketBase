@@ -39,7 +39,6 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
       if (parameterSheet) {
         const parameterData = XLSX.utils.sheet_to_json(parameterSheet);
         // Process and save parameter data
-        console.log('Parameter data to import:', parameterData);
         // TODO: Implement save logic
       }
 
@@ -48,7 +47,6 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
       if (footerSheet) {
         const footerData = XLSX.utils.sheet_to_json(footerSheet);
         // Process and save footer data
-        console.log('Footer data to import:', footerData);
         // TODO: Implement save logic
       }
 
@@ -57,7 +55,6 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
       if (downtimeSheet) {
         const downtimeData = XLSX.utils.sheet_to_json(downtimeSheet);
         // Process and save downtime data
-        console.log('Downtime data to import:', downtimeData);
         // TODO: Implement save logic
       }
 

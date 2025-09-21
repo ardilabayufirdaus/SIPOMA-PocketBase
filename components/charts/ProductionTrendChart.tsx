@@ -24,7 +24,6 @@ interface ProductionTrendChartProps {
     category: string;
     unit: string;
   }>;
-  selectedProductionParameters: string[];
   selectedPlantCategory: string;
   selectedPlantUnit: string;
 }
@@ -32,43 +31,28 @@ interface ProductionTrendChartProps {
 export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
   data,
   parameters,
-  selectedProductionParameters,
   selectedPlantCategory,
   selectedPlantUnit,
 }) => {
-  console.log('🔍 ProductionTrendChart Input:', {
-    dataCount: data.length,
-    parametersCount: parameters.length,
-    selectedProductionParameters,
-    selectedPlantCategory,
-    selectedPlantUnit,
-    sampleData: data.slice(0, 3),
-    dataKeys: data.length > 0 ? Object.keys(data[0]) : [],
-  });
+  // Fixed parameters for Production Trend
+  const fixedParameterIds = [
+    'a3f7b380-1cad-41f3-b459-802d4c33da54', // CM 220
+    'fb58e1a8-d808-46fc-8123-c3a33899dfcc', // CM 320
+    '8d1d2e1e-b003-44f1-a946-50aed6b44fe8', // CM 419
+    '14bf978b-5f3f-4279-b0c1-b91eb8a28e3a', // CM 420
+    '0917556b-e2b7-466b-bc55-fc3a79bb9a25', // CM 552
+    'fe1548c9-2ee5-44a8-9105-3fa2922438f4', // CM 552
+  ];
 
-  // Filter parameters based on selection (only for display purposes)
+  // Filter parameters based on fixed parameters
   const filteredParameters = parameters.filter((param) => {
-    // If specific parameters are selected, only show those
-    if (selectedProductionParameters.length > 0) {
-      return selectedProductionParameters.includes(param.id);
-    }
-    return true; // Show all parameters if none selected
+    const categoryMatch =
+      selectedPlantCategory === 'all' || param.category === selectedPlantCategory;
+    const unitMatch = selectedPlantUnit === 'all' || param.unit === selectedPlantUnit;
+    return categoryMatch && unitMatch && fixedParameterIds.includes(param.id);
   });
 
-  const displayParameters =
-    selectedProductionParameters.length === 0
-      ? filteredParameters // Show all filtered parameters instead of limiting to 5
-      : selectedProductionParameters
-          .map((paramId) => parameters.find((p) => p.id === paramId))
-          .filter(Boolean);
-
-  console.log('🔍 Chart displayParameters:', {
-    displayParametersCount: displayParameters.length,
-    displayParameters: displayParameters.map((p) => ({
-      id: p?.id,
-      parameter: p?.parameter,
-    })),
-  });
+  const displayParameters = filteredParameters;
 
   const colors = [
     '#3B82F6', // blue-500
@@ -96,15 +80,20 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
         return typeof paramValue === 'number' ? paramValue : 0;
       });
 
-      console.log('🔍 Chart Dataset for parameter:', {
-        parameterId: param?.id,
-        parameterName: param?.parameter,
-        sampleData: datasetData.slice(0, 5),
-        uniqueValues: [...new Set(datasetData)],
-      });
+      // Map parameter IDs to CM names
+      const cmNameMap: { [key: string]: string } = {
+        'a3f7b380-1cad-41f3-b459-802d4c33da54': 'CM 220',
+        'fb58e1a8-d808-46fc-8123-c3a33899dfcc': 'CM 320',
+        '8d1d2e1e-b003-44f1-a946-50aed6b44fe8': 'CM 419',
+        '14bf978b-5f3f-4279-b0c1-b91eb8a28e3a': 'CM 420',
+        '0917556b-e2b7-466b-bc55-fc3a79bb9a25': 'CM 552',
+        'fe1548c9-2ee5-44a8-9105-3fa2922438f4': 'CM 552',
+      };
+
+      const cmName = param?.id ? cmNameMap[param.id] || param.parameter : `Parameter ${index + 1}`;
 
       return {
-        label: param?.unit || `Unit ${index + 1}`,
+        label: cmName,
         parameterName: param?.parameter || `Parameter ${index + 1}`,
         data: datasetData,
         borderColor: colors[index % colors.length],

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import PlusIcon from './icons/PlusIcon';
 import UserIcon from './icons/UserIcon';
 import BellIcon from './icons/BellIcon';
@@ -102,7 +103,13 @@ const Header: React.FC<HeaderProps> = ({
       {/* Skip Links for accessibility */}
       <SkipLinks />
 
-      <header className="header-modern" role="banner">
+      <motion.header
+        className="header-modern"
+        role="banner"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      >
         <div className="header-modern-content">
           <div className="flex items-center justify-between">
             <div
@@ -158,24 +165,30 @@ const Header: React.FC<HeaderProps> = ({
               )}
 
               {/* Theme Toggle */}
-              <EnhancedButton
-                variant="ghost"
-                size="sm"
-                onClick={onToggleTheme}
-                ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                icon={
-                  theme === 'light' ? (
-                    <MoonIcon className="w-4 h-4" />
-                  ) : (
-                    <SunIcon className="w-4 h-4" />
-                  )
-                }
-                className="header-button"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
-                <span className="sr-only">
-                  Switch to {theme === 'light' ? 'dark' : 'light'} mode
-                </span>
-              </EnhancedButton>
+                <EnhancedButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={onToggleTheme}
+                  ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                  icon={
+                    theme === 'light' ? (
+                      <MoonIcon className="w-4 h-4" />
+                    ) : (
+                      <SunIcon className="w-4 h-4" />
+                    )
+                  }
+                  className="header-button"
+                >
+                  <span className="sr-only">
+                    Switch to {theme === 'light' ? 'dark' : 'light'} mode
+                  </span>
+                </EnhancedButton>
+              </motion.div>
 
               {/* Notifications */}
               <NotificationPanel
@@ -339,7 +352,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
     </>
   );
 };
