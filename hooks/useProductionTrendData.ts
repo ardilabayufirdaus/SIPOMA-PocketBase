@@ -46,8 +46,11 @@ export const useProductionTrendData = (
     // Filter footer data based on fixed parameters and plant unit
     const filteredFooterData = footerData.filter((item) => {
       // Filter by plant unit if specified
-      if (plantUnit && plantUnit !== 'all' && item.plant_unit !== plantUnit) {
-        return false;
+      if (plantUnit && plantUnit !== 'all') {
+        // Allow items with null/undefined plant_unit or matching plant_unit
+        if (item.plant_unit && item.plant_unit !== plantUnit) {
+          return false;
+        }
       }
 
       // Filter by plant category if specified (need to match with parameter category)
@@ -69,7 +72,6 @@ export const useProductionTrendData = (
         return;
       }
 
-      const paramName = param.parameter;
       const itemDate = item.date;
 
       if (!dataByDate[itemDate]) {

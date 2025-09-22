@@ -75,7 +75,15 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
     return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));
   }, [instructions]);
 
-  const tableHeaders = ['doc_code', 'doc_title', 'description', 'link', 'actions'];
+  const tableHeaders = [
+    'doc_code',
+    'doc_title',
+    'plant_category',
+    'plant_unit',
+    'description',
+    'link',
+    'actions',
+  ];
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
@@ -131,6 +139,12 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {instruction.doc_title}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {instruction.plant_category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {instruction.plant_unit}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
                       {instruction.description}

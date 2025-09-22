@@ -144,6 +144,8 @@ export interface WorkInstruction {
   doc_title: string;
   description: string;
   link: string;
+  plant_category: string;
+  plant_unit: string;
 }
 
 // CCR Data Entry
