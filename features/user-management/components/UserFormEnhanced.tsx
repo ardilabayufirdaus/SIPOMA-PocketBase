@@ -5,6 +5,7 @@ import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';
 import PermissionMatrixEditor from './PermissionMatrixEditor';
 import { useUserManagementPerformance } from '../../../hooks/usePerformanceMonitor';
+import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import {
   EnhancedButton,
   EnhancedCard,
@@ -37,6 +38,7 @@ const UserForm: React.FC<UserFormProps> = ({
   isOpen = true, // Default to true for backward compatibility
 }) => {
   const performanceMonitor = useUserManagementPerformance();
+  const { currentUser } = useCurrentUser();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -896,15 +898,17 @@ const UserForm: React.FC<UserFormProps> = ({
                   Configure detailed access permissions for this user
                 </p>
               </div>
-              <EnhancedButton
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPermissionEditorOpen(true)}
-                icon={<ShieldCheckIcon className="w-4 h-4" />}
-                disabled={!user?.id}
-              >
-                Edit Permissions
-              </EnhancedButton>
+              {currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin' ? (
+                <EnhancedButton
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsPermissionEditorOpen(true)}
+                  icon={<ShieldCheckIcon className="w-4 h-4" />}
+                  disabled={!user?.id}
+                >
+                  Edit Permissions
+                </EnhancedButton>
+              ) : null}
             </div>
             {!user?.id && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
