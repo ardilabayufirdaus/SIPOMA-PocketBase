@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { formatIndonesianNumber } from '../../utils/formatUtils';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -58,7 +59,7 @@ export const StockDistributionChart: React.FC<StockDistributionChartProps> = ({ 
             const value = context.parsed;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
             const percentage = ((value / total) * 100).toFixed(1);
-            return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+            return `${label}: ${formatIndonesianNumber(value)} (${percentage}%)`;
           },
         },
       },

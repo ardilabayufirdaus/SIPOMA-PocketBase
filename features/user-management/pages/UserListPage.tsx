@@ -3,6 +3,7 @@ import UserTable from '../components/UserTableEnhanced';
 import UserForm from '../components/UserFormEnhanced';
 import { translations } from '../../../translations';
 import { supabase } from '../../../utils/supabaseClient';
+import { formatIndonesianNumber } from '../../../utils/formatUtils';
 
 // Enhanced Components
 import {
@@ -145,7 +146,7 @@ const UserListPage: React.FC = () => {
         <div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
           <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-            {typeof value === 'number' ? value.toLocaleString() : value}
+            {typeof value === 'number' ? formatIndonesianNumber(value) : value}
           </p>
           {subtitle && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>}
         </div>

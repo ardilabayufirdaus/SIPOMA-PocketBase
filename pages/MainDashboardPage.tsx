@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { formatIndonesianNumber } from '../utils/formatUtils';
 import { Page } from '../App';
 import {
   TrendingUpIcon,
@@ -267,7 +268,7 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
 
             <div className="flex items-baseline space-x-2">
               <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {typeof value === 'number' ? value.toLocaleString() : value}
+                {typeof value === 'number' ? formatIndonesianNumber(value) : value}
               </span>
               {unit && (
                 <span className="text-sm font-medium text-slate-500 dark:text-slate-400">

@@ -12,9 +12,9 @@ import { CcrDowntimeData } from '../../types';
 import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 // Helper function to format numbers in Indonesian format (comma for decimal, dot for thousands)
-const formatIndonesianNumber = (num: number, decimals: number = 2): string => {
+const formatIndonesianNumber = (num: number, decimals: number = 1): string => {
   return num.toLocaleString('id-ID', {
-    minimumFractionDigits: decimals,
+    minimumFractionDigits: 0,
     maximumFractionDigits: decimals,
   });
 };

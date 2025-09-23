@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { formatIndonesianNumber } from '../../utils/formatUtils';
 import {
   TrendingUpIcon,
   TrendingDownIcon,
@@ -169,7 +170,7 @@ const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
             ) : (
               <>
                 <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                  {typeof value === 'number' ? value.toLocaleString() : value}
+                  {typeof value === 'number' ? formatIndonesianNumber(value) : value}
                 </span>
                 {unit && (
                   <span className="text-lg font-medium text-slate-500 dark:text-slate-400">

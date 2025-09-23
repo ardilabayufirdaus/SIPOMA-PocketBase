@@ -3,7 +3,7 @@ import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { ParameterSetting } from '../../types';
-import { formatDate } from '../../utils/formatters';
+import { formatDate, formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
 import Modal from '../../components/Modal';
@@ -23,10 +23,7 @@ const formatCopNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) {
     return '-';
   }
-  return num.toLocaleString('de-DE', {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
+  return formatNumberIndonesian(num, 1);
 };
 
 const getPercentageColor = (
@@ -75,7 +72,7 @@ interface AnalysisDataRow {
   monthlyAverageRaw: number | null;
 }
 
-const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
+const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { copParameterIds } = useCopParametersSupabase();
   const { records: allParameters } = useParameterSettings();
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
@@ -788,8 +785,8 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                           {qaf.total > 0 && (
                             <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                               {t.qaf_tooltip
-                                ?.replace('{inRange}', qaf.inRange)
-                                .replace('{total}', qaf.total)}
+                                ?.replace('{inRange}', qaf.inRange.toString())
+                                .replace('{total}', qaf.total.toString())}
                             </div>
                           )}
                         </div>
@@ -812,8 +809,8 @@ const CopAnalysisPage: React.FC<{ t: any }> = ({ t }) => {
                           {qaf.total > 0 && (
                             <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                               {t.qaf_tooltip
-                                ?.replace('{inRange}', qaf.inRange)
-                                .replace('{total}', qaf.total)}
+                                ?.replace('{inRange}', qaf.inRange.toString())
+                                .replace('{total}', qaf.total.toString())}
                             </div>
                           )}
                         </div>

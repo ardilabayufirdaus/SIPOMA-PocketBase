@@ -210,7 +210,7 @@ export const ReportGenerator: React.FC = () => {
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
-          report += `- ${name} : ${bahanTotal.toFixed(2)} ton\n`;
+          report += `- ${name} : ${bahanTotal.toFixed(1)} ton\n`;
         });
 
         report += `\n/Setting Feeder/\n`;
@@ -231,7 +231,7 @@ export const ReportGenerator: React.FC = () => {
             );
           });
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          report += `- ${name} : ${feederAvg.toFixed(2)} %\n`;
+          report += `- ${name} : ${feederAvg.toFixed(1)} %\n`;
         });
 
         // Catatan Tambahan - Downtime data per unit
@@ -242,7 +242,7 @@ export const ReportGenerator: React.FC = () => {
             const start = new Date(`${d.date} ${d.start_time}`);
             const end = new Date(`${d.date} ${d.end_time}`);
             const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-            report += `- ${d.start_time} - ${d.end_time} (${duration.toFixed(2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}\n`;
+            report += `- ${d.start_time} - ${d.end_time} (${duration.toFixed(1)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}\n`;
           });
           report += `\n`;
         } else {
@@ -357,7 +357,7 @@ export const ReportGenerator: React.FC = () => {
 
         report += `Realisasi Produksi  : ${productionData?.shift1_total || 'N/A'} ton\n`;
         report += `Jam Operasional  : ${operationHoursData?.shift1_total || 'N/A'} jam\n`;
-        report += `Durasi down time  : ${calculateShiftDowntime(date, shift || '1', downtimeData).toFixed(2)} jam\n`;
+        report += `Durasi down time  : ${calculateShiftDowntime(date, shift || '1', downtimeData).toFixed(1)} jam\n`;
         report += `Feed rate  : ${feedData?.shift1_average || 'N/A'} tph\n\n`;
 
         // Pemakaian Bahan
@@ -381,7 +381,7 @@ export const ReportGenerator: React.FC = () => {
               )
             : 0;
           const unit = bahan === 'CGA' ? (bahan.includes('PPM') ? 'PPM' : 'Liter') : 'ton';
-          report += `- ${bahan} : ${bahanData ? Number(bahanSum).toFixed(2) : 'N/A'} ${unit}\n`;
+          report += `- ${bahan} : ${bahanData ? Number(bahanSum).toFixed(1) : 'N/A'} ${unit}\n`;
         });
 
         // Kualitas Produk
@@ -400,8 +400,8 @@ export const ReportGenerator: React.FC = () => {
               0
             )
           : 0;
-        report += `- R45 (Residue 45 µm) : ${r45Data ? (Number(r45Sum) / 24).toFixed(2) : 'N/A'} %\n`;
-        report += `- Blaine : ${blaineData ? (Number(blaineSum) / 24).toFixed(2) : 'N/A'} cm²/g\n`;
+        report += `- R45 (Residue 45 µm) : ${r45Data ? (Number(r45Sum) / 24).toFixed(1) : 'N/A'} %\n`;
+        report += `- Blaine : ${blaineData ? (Number(blaineSum) / 24).toFixed(1) : 'N/A'} cm²/g\n`;
 
         // Kondisi peralatan & Mesin
         report += `\n/Kondisi peralatan & Mesin/\n${getDowntimeNotes(date, downtimeData)}\n\n`;

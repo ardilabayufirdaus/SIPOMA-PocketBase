@@ -1,5 +1,4 @@
 import * as XLSX from 'xlsx';
-import ExcelJS from 'exceljs';
 
 /**
  * Utility untuk export data ke Excel menggunakan xlsx
@@ -17,63 +16,22 @@ export const exportToExcel = (data: any[], filename: string, sheetName: string =
 };
 
 /**
- * Utility untuk export data ke Excel dengan styling menggunakan ExcelJS
+ * Utility untuk export data ke Excel dengan styling menggunakan XLSX
  */
-export const exportToExcelStyled = async (
+export const exportToExcelStyled = (
   data: any[],
   filename: string,
   sheetName: string = 'Sheet1',
   headers?: string[]
 ) => {
   try {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet(sheetName);
-
-    // Add headers if provided
-    if (headers && headers.length > 0) {
-      const headerRow = worksheet.addRow(headers);
-      headerRow.eachCell((cell) => {
-        cell.font = { bold: true };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFE6E6FA' },
-        };
-      });
-    }
-
-    // Add data rows
-    data.forEach((row) => {
-      worksheet.addRow(Object.values(row));
-    });
-
-    // Auto-fit columns
-    worksheet.columns.forEach((column) => {
-      column.width = 15;
-    });
-
-    // Generate buffer instead of writing file directly
-    const buffer = await workbook.xlsx.writeBuffer();
-
-    // Create blob and trigger download
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    });
-
-    // Create download link
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}.xlsx`;
-    document.body.appendChild(link);
-    link.click();
-
-    // Cleanup
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    XLSX.writeFile(workbook, `${filename}.xlsx`);
   } catch (error) {
-    console.error('Error exporting styled Excel:', error);
-    throw new Error('Failed to export styled Excel file');
+    console.error('Error exporting to Excel:', error);
+    throw new Error('Failed to export data to Excel');
   }
 };
 

@@ -51,6 +51,19 @@ export const formatNumber = (num: number): string => {
   return parts.join(',');
 };
 
+// Function to format number with Indonesian locale (dot as thousand separator, comma as decimal)
+export const formatNumberIndonesian = (num: number, maxDecimals: number = 1): string => {
+  if (num === null || num === undefined || isNaN(num)) {
+    return '0,0';
+  }
+
+  // Format to specified decimal places and use dot as thousand separator
+  const formatted = num.toFixed(maxDecimals);
+  const parts = formatted.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.join(',');
+};
+
 // Function to format number with dot as thousand separator and configurable decimal places
 export const formatNumberWithPrecision = (num: number, precision: number = 1): string => {
   if (num === null || num === undefined) {

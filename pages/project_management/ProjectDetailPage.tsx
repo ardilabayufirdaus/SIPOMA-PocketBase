@@ -918,7 +918,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 className="text-sm text-slate-600 dark:text-slate-400"
                 aria-describedby="project-meta"
               >
-                {t.project_overview} GÇó {projectOverview.totalTasks} tasks GÇó{' '}
+                {t.project_overview} Gï¿½ï¿½ {projectOverview.totalTasks} tasks Gï¿½ï¿½{' '}
                 {projectOverview.duration} days
               </p>
             </div>

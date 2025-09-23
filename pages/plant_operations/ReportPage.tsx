@@ -15,13 +15,12 @@ import {
 } from '../../types';
 import {
   formatDate,
-  formatNumber,
+  formatNumberIndonesian,
   calculateDuration,
   formatDuration,
 } from '../../utils/formatters';
-import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
-import ClipboardIcon from '../../components/icons/ClipboardIcon';
 import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
+import { InteractiveReport } from './components/InteractiveReport';
 
 declare global {
   interface Window {
@@ -223,7 +222,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     paramX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
     allParams.forEach((param: any) => {
       const value = row.values[param.id];
-      const text = typeof value === 'number' ? value.toLocaleString('de-DE') : value || '-';
+      const text = typeof value === 'number' ? formatNumberIndonesian(value) : value || '-';
       ctx.fillText(text, paramX + paramColWidth / 2, currentY + ROW_HEIGHT / 2);
       paramX += paramColWidth;
     });
@@ -247,7 +246,8 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     paramX = PADDING + COL_HOUR_WIDTH + COL_SHIFT_WIDTH;
     allParams.forEach((param: any) => {
       const value = (values as any)[param.id];
-      ctx.fillText(value || '-', paramX + paramColWidth / 2, currentY + FOOTER_ROW_HEIGHT / 2);
+      const text = typeof value === 'number' ? formatNumberIndonesian(value) : value || '-';
+      ctx.fillText(text, paramX + paramColWidth / 2, currentY + FOOTER_ROW_HEIGHT / 2);
       paramX += paramColWidth;
     });
     currentY += FOOTER_ROW_HEIGHT;
@@ -425,13 +425,13 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
           capacity > 0 && typeof content === 'number' ? (content / capacity) * 100 : 0;
 
         ctx.fillText(
-          shiftData?.emptySpace?.toLocaleString('de-DE') || '-',
+          formatNumberIndonesian(shiftData?.emptySpace) || '-',
           cellX + subColWidth / 2,
           currentY + SILO_ROW_HEIGHT / 2
         );
         cellX += subColWidth;
         ctx.fillText(
-          content?.toLocaleString('de-DE') || '-',
+          formatNumberIndonesian(content) || '-',
           cellX + subColWidth / 2,
           currentY + SILO_ROW_HEIGHT / 2
         );
@@ -575,15 +575,53 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   }
 };
 
-const ReportPage: React.FC<{ t: any }> = ({ t }) => {
+const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { announceToScreenReader } = useAccessibility();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [reportImageUrl, setReportImageUrl] = useState<string | null>(null);
+  const [reportData, setReportData] = useState<{
+    groupedHeaders: Array<{
+      category: string;
+      parameters: Array<{
+        id: string;
+        parameter: string;
+        unit: string;
+        data_type: string;
+      }>;
+    }>;
+    rows: Array<{
+      hour: number;
+      shift: string;
+      values: Record<string, string | number>;
+    }>;
+    footer: Record<string, Record<string, string>>;
+    title: string;
+    date: string;
+    downtimeData: CcrDowntimeData[];
+    siloData: Array<{
+      master: {
+        silo_name: string;
+        capacity: number;
+      };
+      shift1: {
+        emptySpace?: number;
+        content?: number;
+      };
+      shift2: {
+        emptySpace?: number;
+        content?: number;
+      };
+      shift3: {
+        emptySpace?: number;
+        content?: number;
+      };
+    }>;
+    operatorData: Array<{
+      shift: string;
+      name: string;
+    }>;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isDownloadDropdownOpen, setIsDownloadDropdownOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const downloadDropdownRef = useRef<HTMLDivElement>(null);
 
   const { records: reportSettings, loading: reportSettingsLoading } = useReportSettings();
   const { records: parameterSettings, loading: parameterSettingsLoading } = useParameterSettings();
@@ -628,23 +666,8 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
   }, [unitsForCategory]); // Simplified dependency
 
   useEffect(() => {
-    setReportImageUrl(null);
+    setReportData(null);
   }, [selectedCategory, selectedUnit, selectedDate]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        downloadDropdownRef.current &&
-        !downloadDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDownloadDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   const reportConfig = useMemo(() => {
     if (
@@ -716,7 +739,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
     }
 
     setIsLoading(true);
-    setReportImageUrl(null);
+    setReportData(null);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -805,20 +828,16 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         if (param.data_type === ParameterDataType.NUMBER) {
           const values = rows.map((r) => Number(r.values[param.id])).filter((v) => !isNaN(v));
           if (values.length > 0) {
-            footerStats[t.average][param.id] = (
+            footerStats[t.average][param.id] = formatNumberIndonesian(
               values.reduce((a, b) => a + b, 0) / values.length
-            ).toLocaleString('de-DE', { maximumFractionDigits: 2 });
-            footerStats[t.min][param.id] = Math.min(...values).toLocaleString('de-DE', {
-              maximumFractionDigits: 2,
-            });
-            footerStats[t.max][param.id] = Math.max(...values).toLocaleString('de-DE', {
-              maximumFractionDigits: 2,
-            });
+            );
+            footerStats[t.min][param.id] = formatNumberIndonesian(Math.min(...values));
+            footerStats[t.max][param.id] = formatNumberIndonesian(Math.max(...values));
           }
         }
       });
 
-      const dataForCanvas = {
+      const dataForReport = {
         groupedHeaders: reportConfig,
         rows,
         footer: footerStats,
@@ -829,9 +848,10 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         operatorData: operatorData,
       };
 
-      drawReportOnCanvas(canvasRef.current, dataForCanvas, t);
+      setReportData(dataForReport);
 
-      setReportImageUrl(canvasRef.current.toDataURL('image/png'));
+      // Also draw on canvas for download functionality
+      drawReportOnCanvas(canvasRef.current, dataForReport, t);
     } catch (error) {
       console.error('Error generating report:', error);
       // Could add toast notification here for user feedback
@@ -851,73 +871,6 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
     parameterSettings,
   ]);
 
-  const handleDownloadImage = () => {
-    if (!reportImageUrl) return;
-    const link = document.createElement('a');
-    link.download = `SIPOMA_Report_${selectedUnit}_${selectedDate}.png`;
-    link.href = reportImageUrl;
-    link.click();
-    setIsDownloadDropdownOpen(false);
-  };
-
-  const handleDownloadPdf = useCallback(() => {
-    if (!reportImageUrl) return;
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: 'a4',
-    });
-
-    const img = new Image();
-    img.src = reportImageUrl;
-    img.onload = () => {
-      const imgProps = pdf.getImageProperties(img);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
-      const ratio = imgProps.width / imgProps.height;
-      let imgWidth = pdfWidth;
-      let imgHeight = imgWidth / ratio;
-
-      if (imgHeight > pdfHeight) {
-        imgHeight = pdfHeight;
-        imgWidth = imgHeight * ratio;
-      }
-
-      const x = (pdfWidth - imgWidth) / 2;
-      const y = (pdfHeight - imgHeight) / 2;
-
-      pdf.addImage(reportImageUrl, 'PNG', x, y, imgWidth, imgHeight);
-
-      // Generate filename with Plant Unit, Date, Month, Year, Hour
-      const now = new Date();
-      const [year, month, day] = selectedDate.split('-');
-      const hour = now.getHours().toString().padStart(2, '0');
-      const filename = `Report_${selectedUnit}_${day}_${month}_${year}_${hour}.pdf`;
-
-      pdf.save(filename);
-      setIsDownloadDropdownOpen(false);
-    };
-  }, [reportImageUrl, selectedDate, selectedUnit]);
-
-  const handleCopy = useCallback(() => {
-    if (!canvasRef.current) return;
-    canvasRef.current.toBlob(async (blob) => {
-      if (blob) {
-        try {
-          const item = new ClipboardItem({ 'image/png': blob });
-          await navigator.clipboard.write([item]);
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
-        } catch (error) {
-          console.error('Failed to copy image: ', error);
-        }
-      }
-    }, 'image/png');
-  }, []);
-
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
@@ -929,7 +882,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <label
                 htmlFor="report-category"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap"
               >
                 {t.plant_category_label}:
               </label>
@@ -949,7 +902,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <label
                 htmlFor="report-unit"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap"
               >
                 {t.unit_label}:
               </label>
@@ -970,7 +923,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <label
                 htmlFor="report-date"
-                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                className="text-sm font-medium text-slate-800 dark:text-slate-200"
               >
                 {t.select_date}:
               </label>
@@ -994,58 +947,6 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
               >
                 {isLoading ? t.generating_report_message : t.generate_report_button}
               </EnhancedButton>
-              {reportImageUrl && (
-                <>
-                  <EnhancedButton
-                    onClick={handleCopy}
-                    disabled={isCopied}
-                    variant="secondary"
-                    size="md"
-                    className="w-full sm:w-auto"
-                    ariaLabel={isCopied ? t.copied_button_text : t.copy_image_button}
-                  >
-                    <ClipboardIcon className="w-5 h-5" />
-                    {isCopied ? t.copied_button_text : t.copy_image_button}
-                  </EnhancedButton>
-                  <div className="relative" ref={downloadDropdownRef}>
-                    <EnhancedButton
-                      onClick={() => setIsDownloadDropdownOpen((prev) => !prev)}
-                      variant="secondary"
-                      size="md"
-                      className="w-full sm:w-auto"
-                      ariaLabel={t.download_button}
-                    >
-                      <DocumentArrowDownIcon className="w-5 h-5" />
-                      {t.download_button}
-                    </EnhancedButton>
-                    {isDownloadDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-56 origin-top-right bg-white dark:bg-slate-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                        <div
-                          className="py-1"
-                          role="menu"
-                          aria-orientation="vertical"
-                          aria-labelledby="options-menu"
-                        >
-                          <button
-                            onClick={handleDownloadImage}
-                            className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-                            role="menuitem"
-                          >
-                            {t.download_as_image}
-                          </button>
-                          <button
-                            onClick={handleDownloadPdf}
-                            className="w-full text-left px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100"
-                            role="menuitem"
-                          >
-                            {t.download_as_pdf}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -1056,10 +957,7 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
         {reportConfig.length === 0 && (
           <div className="text-center text-slate-500 dark:text-slate-400">
             <h3 className="text-lg font-semibold">{t.no_report_parameters}</h3>
-            <p>
-              Please configure parameters for the selected unit '&apos;{selectedUnit}&apos;' in
-              Plant Operations - Master Data.
-            </p>
+            <p>Please configure parameters in Plant Operations - Master Data.</p>
           </div>
         )}
         {isLoading && (
@@ -1068,18 +966,25 @@ const ReportPage: React.FC<{ t: any }> = ({ t }) => {
             <p className="mt-4">{t.generating_report_message}</p>
           </div>
         )}
-        {reportImageUrl && !isLoading && (
-          <div className="w-full overflow-x-auto">
-            <img
-              src={reportImageUrl}
-              alt={t.op_report_title}
-              className="max-w-none w-full h-auto"
-            />
-          </div>
+        {reportData && !isLoading && (
+          <InteractiveReport
+            groupedHeaders={reportData.groupedHeaders}
+            rows={reportData.rows}
+            footer={reportData.footer}
+            title={reportData.title}
+            date={reportData.date}
+            downtimeData={reportData.downtimeData}
+            siloData={reportData.siloData}
+            operatorData={reportData.operatorData}
+            t={t}
+          />
         )}
-        {!isLoading && !reportImageUrl && reportConfig.length > 0 && (
+        {!isLoading && !reportData && reportConfig.length > 0 && (
           <div className="text-center text-slate-400 dark:text-slate-500">
-            <p>Select filters and click "Generate Report" to view the daily operational report.</p>
+            <p>
+              Select filters and click &quot;Generate Report&quot; to view the daily operational
+              report.
+            </p>
           </div>
         )}
       </div>
