@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { CcrDowntimeData } from '../types';
 import { supabase } from '../utils/supabase';
 
@@ -28,19 +29,8 @@ const useCcrDowntimeData = () => {
         throw new Error(`Failed to fetch downtime data: ${error.message}`);
       }
 
-      // FIX: Database sebenarnya sudah menggunakan snake_case, tidak perlu mapping
-      return ((data || []) as any[]).map((d) => ({
-        id: d.id,
-        date: d.date,
-        start_time: d.start_time,
-        end_time: d.end_time,
-        pic: d.pic,
-        problem: d.problem,
-        unit: d.unit,
-        action: d.action,
-        corrective_action: d.corrective_action,
-        status: d.status,
-      }));
+      // Database already uses snake_case matching the interface
+      return (data || []) as unknown as CcrDowntimeData[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -91,6 +81,29 @@ const useCcrDowntimeData = () => {
       queryClient.invalidateQueries({ queryKey: DOWNTIME_QUERY_KEY });
     },
   });
+
+  // Realtime subscription for ccr_downtime_data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('ccr_downtime_data_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ccr_downtime_data',
+        },
+        (payload) => {
+          console.log('CCR downtime data change received!', payload);
+          queryClient.invalidateQueries({ queryKey: DOWNTIME_QUERY_KEY });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Helper functions
   const getDowntimeForDate = (date: string): CcrDowntimeData[] => {

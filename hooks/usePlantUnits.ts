@@ -9,44 +9,18 @@ export const usePlantUnits = () => {
   const fetchRecords = useCallback(async () => {
     setLoading(true);
 
-    // Check cache first (cache for 1 hour)
-    const cacheKey = 'plant_units_cache';
-    const cacheTimestampKey = 'plant_units_cache_timestamp';
-    const now = Date.now();
-    const cacheTimestamp = localStorage.getItem(cacheTimestampKey);
-    const cachedData = localStorage.getItem(cacheKey);
-
-    if (cachedData && cacheTimestamp && now - parseInt(cacheTimestamp) < 3600000) {
-      // 1 hour
-      try {
-        const parsedData = JSON.parse(cachedData);
-        setRecords(parsedData);
-        setLoading(false);
-        return;
-      } catch (error) {
-        console.warn('Failed to parse cached plant units data:', error);
-      }
-    }
-
-    const { data, error } = (await supabase
+    const { data, error } = await supabase
       .from('plant_units')
       .select('*')
       .order('category')
       .order('unit')
-      .limit(500)) as { data: any; error: any }; // Limit for performance, plant units shouldn't be too many
+      .limit(500);
 
     if (error) {
       console.error('Error fetching plant units:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as PlantUnit[]);
-      // Cache the data
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(data || []));
-        localStorage.setItem(cacheTimestampKey, now.toString());
-      } catch (error) {
-        console.warn('Failed to cache plant units data:', error);
-      }
+      setRecords((data || []) as unknown as PlantUnit[]);
     }
     setLoading(false);
   }, []);
@@ -82,12 +56,7 @@ export const usePlantUnits = () => {
     async (record: Omit<PlantUnit, 'id'>) => {
       const { error } = await supabase.from('plant_units').insert([record]);
       if (error) console.error('Error adding plant unit:', error);
-      else {
-        // Invalidate cache
-        localStorage.removeItem('plant_units_cache');
-        localStorage.removeItem('plant_units_cache_timestamp');
-        fetchRecords();
-      }
+      else fetchRecords();
     },
     [fetchRecords]
   );
@@ -115,9 +84,9 @@ export const usePlantUnits = () => {
     async (newRecords: Omit<PlantUnit, 'id'>[]) => {
       try {
         // First, get all existing records to delete them properly
-        const { data: existingRecords, error: fetchError } = (await supabase
+        const { data: existingRecords, error: fetchError } = await supabase
           .from('plant_units')
-          .select('id')) as { data: any; error: any };
+          .select('id');
 
         if (fetchError) {
           console.error('Error fetching existing plant units:', fetchError);
@@ -131,7 +100,7 @@ export const usePlantUnits = () => {
             .delete()
             .in(
               'id',
-              (existingRecords as { id: string }[]).map((r) => r.id)
+              (existingRecords as unknown as { id: string }[]).map((r) => r.id)
             );
 
           if (deleteError) {

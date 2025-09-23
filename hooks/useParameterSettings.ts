@@ -9,43 +9,17 @@ export const useParameterSettings = () => {
   const fetchRecords = useCallback(async () => {
     setLoading(true);
 
-    // Check cache first (cache for 1 hour)
-    const cacheKey = 'parameter_settings_cache';
-    const cacheTimestampKey = 'parameter_settings_cache_timestamp';
-    const now = Date.now();
-    const cacheTimestamp = localStorage.getItem(cacheTimestampKey);
-    const cachedData = localStorage.getItem(cacheKey);
-
-    if (cachedData && cacheTimestamp && now - parseInt(cacheTimestamp) < 3600000) {
-      // 1 hour
-      try {
-        const parsedData = JSON.parse(cachedData);
-        setRecords(parsedData);
-        setLoading(false);
-        return;
-      } catch (error) {
-        console.warn('Failed to parse cached parameter settings data:', error);
-      }
-    }
-
-    const { data, error } = (await supabase
+    const { data, error } = await supabase
       .from('parameter_settings')
       .select('*')
       .order('parameter')
-      .limit(500)) as { data: any; error: any }; // Limit for performance, parameter settings shouldn't be too many
+      .limit(500);
 
     if (error) {
       console.error('Error fetching parameter settings:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as ParameterSetting[]);
-      // Cache the data
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(data || []));
-        localStorage.setItem(cacheTimestampKey, now.toString());
-      } catch (error) {
-        console.warn('Failed to cache parameter settings data:', error);
-      }
+      setRecords((data || []) as unknown as ParameterSetting[]);
     }
     setLoading(false);
   }, []);
@@ -79,14 +53,9 @@ export const useParameterSettings = () => {
 
   const addRecord = useCallback(
     async (record: Omit<ParameterSetting, 'id'>) => {
-      const { error } = await supabase.from('parameter_settings').insert([record as any]);
+      const { error } = await supabase.from('parameter_settings').insert([record]);
       if (error) console.error('Error adding parameter setting:', error);
-      else {
-        // Invalidate cache
-        localStorage.removeItem('parameter_settings_cache');
-        localStorage.removeItem('parameter_settings_cache_timestamp');
-        fetchRecords();
-      }
+      else fetchRecords();
     },
     [fetchRecords]
   );
@@ -94,10 +63,7 @@ export const useParameterSettings = () => {
   const updateRecord = useCallback(
     async (updatedRecord: ParameterSetting) => {
       const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase
-        .from('parameter_settings')
-        .update(updateData as any)
-        .eq('id', id);
+      const { error } = await supabase.from('parameter_settings').update(updateData).eq('id', id);
       if (error) console.error('Error updating parameter setting:', error);
       else fetchRecords();
     },
@@ -117,9 +83,9 @@ export const useParameterSettings = () => {
     async (newRecords: Omit<ParameterSetting, 'id'>[]) => {
       try {
         // First, get all existing records to delete them properly
-        const { data: existingRecords, error: fetchError } = (await supabase
+        const { data: existingRecords, error: fetchError } = await supabase
           .from('parameter_settings')
-          .select('id')) as { data: any; error: any };
+          .select('id');
 
         if (fetchError) {
           console.error('Error fetching existing parameter settings:', fetchError);
@@ -133,7 +99,7 @@ export const useParameterSettings = () => {
             .delete()
             .in(
               'id',
-              (existingRecords as { id: string }[]).map((r) => r.id)
+              (existingRecords as unknown as { id: string }[]).map((r) => r.id)
             );
 
           if (deleteError) {
@@ -146,7 +112,7 @@ export const useParameterSettings = () => {
         if (newRecords.length > 0) {
           const { error: insertError } = await supabase
             .from('parameter_settings')
-            .insert(newRecords as any[]);
+            .insert(newRecords);
 
           if (insertError) {
             console.error('Error bulk inserting parameter settings:', insertError);

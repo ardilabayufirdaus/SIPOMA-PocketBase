@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { AutonomousRiskData } from '../types';
 import { supabase } from '../utils/supabase';
 
@@ -16,19 +17,19 @@ export const useAutonomousRiskData = () => {
     refetch,
   } = useQuery({
     queryKey: RISK_DATA_QUERY_KEY,
-    queryFn: async (): Promise<any> => {
-      const { data, error: fetchError } = (await supabase
+    queryFn: async (): Promise<AutonomousRiskData[]> => {
+      const { data, error: fetchError } = await supabase
         .from('autonomous_risk_data')
         .select('*')
         .order('date', { ascending: false })
-        .limit(1000)) as { data: AutonomousRiskData[] | null; error: any }; // Limit to last 1000 records for performance
+        .limit(1000);
 
       if (fetchError) {
         console.error('Error fetching autonomous risk data:', fetchError);
         throw new Error(`Failed to fetch risk data: ${fetchError.message}`);
       }
 
-      return (data || []) as AutonomousRiskData[];
+      return (data || []) as unknown as AutonomousRiskData[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -78,6 +79,29 @@ export const useAutonomousRiskData = () => {
       queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
     },
   });
+
+  // Realtime subscription for autonomous_risk_data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('autonomous_risk_data_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'autonomous_risk_data',
+        },
+        (payload) => {
+          console.log('Autonomous risk data change received!', payload);
+          queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Wrapper functions for backward compatibility
   const addRecord = async (record: Omit<AutonomousRiskData, 'id'>) => {
