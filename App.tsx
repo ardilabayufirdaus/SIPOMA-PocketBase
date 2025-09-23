@@ -437,91 +437,52 @@ const App: React.FC = () => {
                       <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
                     )}
                   </PermissionGuard>
-                  {/* User Management - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="user_management"
-                    requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300 mb-4">
-                            You don&apos;t have permission to access User Management.
-                          </p>
-                          <button
-                            onClick={() => handleNavigate('dashboard')}
-                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                          >
-                            Back to Dashboard
-                          </button>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {currentPage === 'users' && (
-                      <>
-                        {activeSubPages.users === 'user_list' && <UserListPage />}
-                        {activeSubPages.users === 'add_user' && (
-                          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8 max-w-md">
-                              <div className="mb-4">
-                                <svg
-                                  className="w-16 h-16 text-blue-500 mx-auto"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                  />
-                                </svg>
-                              </div>
-                              <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                                Add New User
-                              </h3>
-                              <p className="text-blue-600 dark:text-blue-300 mb-4">
-                                Use the &quot;Add User&quot; button in the header to create a new
-                                user.
-                              </p>
-                              <button
-                                onClick={() => handleNavigate('users', 'user_list')}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  {/* User Management */}
+                  {currentPage === 'users' && (
+                    <>
+                      {activeSubPages.users === 'user_list' && <UserListPage />}
+                      {activeSubPages.users === 'add_user' && (
+                        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8 max-w-md">
+                            <div className="mb-4">
+                              <svg
+                                className="w-16 h-16 text-blue-500 mx-auto"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                               >
-                                Go to User List
-                              </button>
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                              </svg>
                             </div>
+                            <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                              Add New User
+                            </h3>
+                            <p className="text-blue-600 dark:text-blue-300 mb-4">
+                              Use the &quot;Add User&quot; button in the header to create a new
+                              user.
+                            </p>
+                            <button
+                              onClick={() => handleNavigate('users', 'user_list')}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              Go to User List
+                            </button>
                           </div>
-                        )}
-                        {activeSubPages.users === 'user_roles' && (
-                          <UserRolesPage users={users} plantUnits={plantUnits} t={t} />
-                        )}
-                        {activeSubPages.users === 'user_activity' && (
-                          <UserActivityPage users={users} t={t} />
-                        )}
-                      </>
-                    )}
-                  </PermissionGuard>
+                        </div>
+                      )}
+                      {activeSubPages.users === 'user_roles' && (
+                        <UserRolesPage users={users} plantUnits={plantUnits} t={t} />
+                      )}
+                      {activeSubPages.users === 'user_activity' && (
+                        <UserActivityPage users={users} t={t} />
+                      )}
+                    </>
+                  )}
                   {/* Settings - Check permission */}
                   <PermissionGuard
                     user={currentUser}
@@ -687,47 +648,14 @@ const App: React.FC = () => {
                       <PackingPlantPage activePage={activeSubPages.packing} t={t} />
                     )}
                   </PermissionGuard>
-                  {/* Project Management - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="project_management"
-                    requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300">
-                            You don&apos;t have permission to access Project Management.
-                          </p>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {currentPage === 'projects' && (
-                      <ProjectManagementPage
-                        activePage={activeSubPages.projects}
-                        t={t}
-                        onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
-                      />
-                    )}
-                  </PermissionGuard>
+                  {/* Project Management */}
+                  {currentPage === 'projects' && (
+                    <ProjectManagementPage
+                      activePage={activeSubPages.projects}
+                      t={t}
+                      onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
+                    />
+                  )}
                 </Suspense>
               </div>
             </main>

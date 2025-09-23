@@ -359,10 +359,17 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
 
   const getDropdownItems = useCallback(
     (module: string) => {
+      const isAdminOrSuperAdmin =
+        currentUser?.role === 'Admin' || currentUser?.role === 'Super Admin';
+
       switch (module) {
         case 'operations':
           return navigationData.plantOperationPages
             .filter((page) => {
+              // Hide Master Data for non-admin users
+              if (page.key === 'op_master_data' && !isAdminOrSuperAdmin) {
+                return false;
+              }
               // For now, use main plant_operations permission
               // TODO: Implement granular permissions for each sub-menu
               return permissionChecker.hasPermission('plant_operations', 'READ');
@@ -375,6 +382,13 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         case 'packing':
           return navigationData.packingPlantPages
             .filter((page) => {
+              // Hide Master Data and Stock Data Entry for non-admin users
+              if (
+                (page.key === 'pack_master_data' || page.key === 'pack_stock_data_entry') &&
+                !isAdminOrSuperAdmin
+              ) {
+                return false;
+              }
               // For now, use main packing_plant permission
               // TODO: Implement granular permissions for each sub-menu
               return permissionChecker.hasPermission('packing_plant', 'READ');
@@ -387,6 +401,10 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         case 'projects':
           return navigationData.projectPages
             .filter((page) => {
+              // Hide Project List for non-admin users
+              if (page.key === 'proj_list' && !isAdminOrSuperAdmin) {
+                return false;
+              }
               // For now, use main project_management permission
               // TODO: Implement granular permissions for each sub-menu
               return permissionChecker.hasPermission('project_management', 'READ');
