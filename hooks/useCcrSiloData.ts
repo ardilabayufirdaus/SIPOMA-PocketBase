@@ -107,17 +107,58 @@ export const useCcrSiloData = () => {
         return;
       }
 
-      const { data: existing, error: fetchError } = (await supabase
-        .from('ccr_silo_data')
-        .select('*')
-        .eq('date', date)
-        .eq('silo_id', siloId)
-        .single()) as { data: CcrSiloData | null; error: any };
+      // Try the query with proper error handling for 406 errors
+      let existing = null;
+      let fetchError = null;
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // Ignore 'exact one row' error for upsert case
-        console.error('Error fetching existing silo data', fetchError);
-        return;
+      try {
+        const result = await supabase
+          .from('ccr_silo_data')
+          .select('*')
+          .eq('date', date)
+          .eq('silo_id', siloId)
+          .maybeSingle();
+
+        existing = result.data;
+        fetchError = result.error;
+      } catch (networkError) {
+        console.error('Network/HTTP error occurred:', networkError);
+        // If it's a 406 error, try without .single() to see if that helps
+        try {
+          const fallbackResult = await supabase
+            .from('ccr_silo_data')
+            .select('*')
+            .eq('date', date)
+            .eq('silo_id', siloId)
+            .limit(1);
+
+          if (fallbackResult.data && fallbackResult.data.length > 0) {
+            existing = fallbackResult.data[0];
+            fetchError = null;
+          } else {
+            fetchError = fallbackResult.error || {
+              code: 'PGRST116',
+              message: 'No rows found',
+            };
+          }
+        } catch (fallbackError) {
+          console.error('Fallback query also failed:', fallbackError);
+          throw fallbackError;
+        }
+      }
+
+      if (fetchError) {
+        console.error('Error fetching existing silo data:', {
+          error: fetchError,
+          code: fetchError.code,
+          message: fetchError.message,
+          details: fetchError.details,
+          hint: fetchError.hint,
+        });
+
+        if (fetchError.code !== 'PGRST116') {
+          return;
+        }
       }
 
       const currentShiftData =

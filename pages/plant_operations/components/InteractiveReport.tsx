@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import { ParameterTable } from './ParameterTable';
 import { OperatorTable } from './OperatorTable';
@@ -63,32 +63,44 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   t,
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
+  const [isCopying, setIsCopying] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleCopyImage = async () => {
     if (!reportRef.current) return;
 
+    setIsCopying(true);
+    setCopySuccess(false);
+
     try {
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
+      const element = reportRef.current;
+      const rect = element.getBoundingClientRect();
+      const canvas = await html2canvas(element, {
+        scale: 4,
+        width: rect.width,
+        height: rect.height,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
+        logging: false,
       });
 
       canvas.toBlob(async (blob) => {
         if (blob) {
           await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-          // Optional: Show success message
-          console.log('Report image copied to clipboard');
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
         }
       });
     } catch (error) {
       console.error('Failed to copy report as image:', error);
+    } finally {
+      setIsCopying(false);
     }
   };
 
   return (
-    <div ref={reportRef} className="space-y-6 max-w-full overflow-hidden">
+    <div ref={reportRef} className="space-y-6 max-w-full overflow-hidden pb-8">
       {/* Report Header */}
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-3">
         <div className="flex justify-between items-center">
@@ -102,8 +114,9 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
             size="sm"
             className="ml-4"
             ariaLabel="Copy report as image"
+            disabled={isCopying}
           >
-            Copy Image
+            {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
           </EnhancedButton>
         </div>
       </div>

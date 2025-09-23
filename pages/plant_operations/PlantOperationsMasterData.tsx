@@ -1,5 +1,9 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import {
+  exportMultipleSheets,
+  importMultipleSheets,
+  validateExcelImport,
+} from '../../utils/excelUtils';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
@@ -456,8 +460,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
     setIsExporting(true);
     try {
-      // Create workbook
-      const wb = XLSX.utils.book_new();
+      const sheets = [];
 
       // Export Plant Units
       if (plantUnits.length > 0) {
@@ -467,8 +470,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           Category: unit.category,
           Description: unit.description || '',
         }));
-        const wsPlantUnits = XLSX.utils.json_to_sheet(plantUnitsData);
-        XLSX.utils.book_append_sheet(wb, wsPlantUnits, 'Plant Units');
+        sheets.push({ name: 'Plant Units', data: plantUnitsData });
       }
 
       // Export Parameter Settings
@@ -482,8 +484,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           Min_Value: param.min_value || '',
           Max_Value: param.max_value || '',
         }));
-        const wsParams = XLSX.utils.json_to_sheet(paramData);
-        XLSX.utils.book_append_sheet(wb, wsParams, 'Parameter Settings');
+        sheets.push({ name: 'Parameter Settings', data: paramData });
       }
 
       // Export Silo Capacities
@@ -496,8 +497,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           Capacity: silo.capacity,
           Dead_Stock: silo.dead_stock,
         }));
-        const wsSilos = XLSX.utils.json_to_sheet(siloData);
-        XLSX.utils.book_append_sheet(wb, wsSilos, 'Silo Capacities');
+        sheets.push({ name: 'Silo Capacities', data: siloData });
       }
 
       // Export Report Settings
@@ -507,8 +507,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           Parameter_ID: setting.parameter_id,
           Category: setting.category,
         }));
-        const wsReports = XLSX.utils.json_to_sheet(reportData);
-        XLSX.utils.book_append_sheet(wb, wsReports, 'Report Settings');
+        sheets.push({ name: 'Report Settings', data: reportData });
       }
 
       // Export PIC Settings
@@ -517,16 +516,15 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           ID: pic.id,
           PIC: pic.pic,
         }));
-        const wsPics = XLSX.utils.json_to_sheet(picData);
-        XLSX.utils.book_append_sheet(wb, wsPics, 'PIC Settings');
+        sheets.push({ name: 'PIC Settings', data: picData });
       }
 
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `PlantOperations_MasterData_${timestamp}.xlsx`;
+      const filename = `PlantOperations_MasterData_${timestamp}`;
 
-      // Write file
-      XLSX.writeFile(wb, filename);
+      // Export using utility
+      exportMultipleSheets(sheets, filename);
     } catch (error) {
       console.error('Failed to export master data:', error);
       alert(
@@ -545,20 +543,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
     if (isImporting) return;
 
-    setIsImporting(true);
-    const errorMessages: string[] = [];
-    let importCount = 0;
-
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const wb = XLSX.read(arrayBuffer, { type: 'array' });
+      const { sheets } = await importMultipleSheets(file);
 
       // Import Plant Units
-      if (wb.Sheets['Plant Units']) {
+      if (sheets['Plant Units']) {
         try {
-          const plantUnitsData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Plant Units']
-          );
+          const plantUnitsData = sheets['Plant Units'];
           if (plantUnitsData.length > 0) {
             // Validate data structure
             const requiredFields = ['Unit', 'Category'];
@@ -593,11 +584,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import Parameter Settings
-      if (wb.Sheets['Parameter Settings']) {
+      if (sheets['Parameter Settings']) {
         try {
-          const paramData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Parameter Settings']
-          );
+          const paramData = sheets['Parameter Settings'];
           if (paramData.length > 0) {
             const requiredFields = ['Parameter', 'Data_Type', 'Unit', 'Category'];
             const invalidRows = paramData.filter((row, index) => {
@@ -642,11 +631,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import Silo Capacities
-      if (wb.Sheets['Silo Capacities']) {
+      if (sheets['Silo Capacities']) {
         try {
-          const siloData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Silo Capacities']
-          );
+          const siloData = sheets['Silo Capacities'];
           if (siloData.length > 0) {
             const requiredFields = ['Plant_Category', 'Unit', 'Silo_Name', 'Capacity'];
             const invalidRows = siloData.filter((row, index) => {
@@ -681,11 +668,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import Report Settings
-      if (wb.Sheets['Report Settings']) {
+      if (sheets['Report Settings']) {
         try {
-          const reportData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Report Settings']
-          );
+          const reportData = sheets['Report Settings'];
           if (reportData.length > 0) {
             const requiredFields = ['Parameter_ID', 'Category'];
             const invalidRows = reportData.filter((row, index) => {
@@ -717,11 +702,9 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import PIC Settings
-      if (wb.Sheets['PIC Settings']) {
+      if (sheets['PIC Settings']) {
         try {
-          const picData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['PIC Settings']
-          );
+          const picData = sheets['PIC Settings'];
           if (picData.length > 0) {
             const requiredFields = ['PIC'];
             const invalidRows = picData.filter((row, index) => {

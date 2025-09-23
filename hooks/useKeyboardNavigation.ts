@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 interface TableDimensions {
   rows: number;
@@ -9,26 +9,25 @@ interface KeyboardNavigationOptions {
   getSiloTableDimensions: () => TableDimensions;
   getParameterTableDimensions: () => TableDimensions;
   focusCell: (table: 'silo' | 'parameter', row: number, col: number) => void;
+  inputRefs: React.MutableRefObject<Map<string, HTMLInputElement>>;
 }
 
 export const useKeyboardNavigation = ({
   getSiloTableDimensions,
   getParameterTableDimensions,
   focusCell,
+  inputRefs,
 }: KeyboardNavigationOptions) => {
-  const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
-
-  const getInputRef = useCallback((table: 'silo' | 'parameter', row: number, col: number) => {
-    return `${table}-${row}-${col}`;
-  }, []);
-
-  const setInputRef = useCallback((key: string, element: HTMLInputElement | null) => {
-    if (element) {
-      inputRefs.current.set(key, element);
-    } else {
-      inputRefs.current.delete(key);
-    }
-  }, []);
+  const setInputRef = useCallback(
+    (key: string, element: HTMLInputElement | null) => {
+      if (element) {
+        inputRefs.current.set(key, element);
+      } else {
+        inputRefs.current.delete(key);
+      }
+    },
+    [inputRefs]
+  );
 
   const handleKeyDown = useCallback(
     (

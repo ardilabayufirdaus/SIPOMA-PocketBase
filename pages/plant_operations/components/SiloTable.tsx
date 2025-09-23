@@ -43,25 +43,25 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
             <tr className="bg-slate-50 dark:bg-slate-700">
               <th
                 rowSpan={2}
-                className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-slate-50 dark:bg-slate-700 z-10 min-w-24"
+                className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-slate-50 dark:bg-slate-700 z-10 min-w-24 align-middle"
               >
                 {t.silo_name || 'Silo Name'}
               </th>
               <th
                 colSpan={3}
-                className="px-1 py-1 text-center font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600"
+                className="px-1 py-1 text-center font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle"
               >
                 {t.shift_1 || 'Shift 1'}
               </th>
               <th
                 colSpan={3}
-                className="px-1 py-1 text-center font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600"
+                className="px-1 py-1 text-center font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle"
               >
                 {t.shift_2 || 'Shift 2'}
               </th>
               <th
                 colSpan={3}
-                className="px-1 py-1 text-center font-semibold text-slate-800 dark:text-slate-200"
+                className="px-1 py-1 text-center font-semibold text-slate-800 dark:text-slate-200 align-middle"
               >
                 {t.shift_3 || 'Shift 3'}
               </th>
@@ -70,13 +70,13 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
             <tr className="bg-slate-100 dark:bg-slate-600">
               {['shift1', 'shift2', 'shift3'].map((shiftKey) => (
                 <React.Fragment key={shiftKey}>
-                  <th className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600">
+                  <th className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600 align-middle">
                     <div className="text-xs leading-tight">{t.empty_space || 'Empty Space'}</div>
                   </th>
-                  <th className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600">
+                  <th className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600 align-middle">
                     <div className="text-xs leading-tight">{t.content || 'Content'}</div>
                   </th>
-                  <th className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600 last:border-r-0">
+                  <th className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600 last:border-r-0 align-middle">
                     <div className="text-xs leading-tight">{t.percentage || '%'}</div>
                   </th>
                 </React.Fragment>
@@ -91,7 +91,7 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
                   index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-700'
                 } hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors`}
               >
-                <td className="px-1 py-1 font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-inherit z-10">
+                <td className="px-1 py-1 font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-inherit z-10 align-middle">
                   {silo.master.silo_name}
                 </td>
 
@@ -107,14 +107,14 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
 
                   return (
                     <React.Fragment key={shiftKey}>
-                      <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600">
+                      <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
                         {formatNumberIndonesian(shiftData?.emptySpace) || '-'}
                       </td>
-                      <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600">
+                      <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
                         {formatNumberIndonesian(content) || '-'}
                       </td>
                       <td
-                        className={`px-1 py-1 text-center text-slate-800 dark:text-slate-200 ${
+                        className={`px-1 py-1 text-center text-slate-800 dark:text-slate-200 align-middle ${
                           shiftIndex === 2 ? '' : 'border-r border-slate-200 dark:border-slate-600'
                         }`}
                       >

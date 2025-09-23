@@ -410,10 +410,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     getSiloTableDimensions,
     getParameterTableDimensions,
     focusCell,
+    inputRefs,
   });
 
   // Downtime Data Hooks and State
-  const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime } = useCcrDowntimeData();
+  const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime, refetch } =
+    useCcrDowntimeData();
   const dailyDowntimeData = useMemo(() => {
     const allDowntimeForDate = getDowntimeForDate(selectedDate);
     if (!selectedCategory) {
@@ -714,6 +716,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         }
       }
 
+      // Export Silo Data
+      if (dailySiloData && dailySiloData.length > 0) {
+        const siloExportData = dailySiloData.map((row) => ({
+          Date: row.date,
+          Silo_ID: row.silo_id,
+          Shift1_EmptySpace: row.shift1?.emptySpace ?? '',
+          Shift1_Content: row.shift1?.content ?? '',
+          Shift2_EmptySpace: row.shift2?.emptySpace ?? '',
+          Shift2_Content: row.shift2?.content ?? '',
+          Shift3_EmptySpace: row.shift3?.emptySpace ?? '',
+          Shift3_Content: row.shift3?.content ?? '',
+        }));
+
+        const wsSilo = XLSX.utils.json_to_sheet(siloExportData);
+        XLSX.utils.book_append_sheet(wb, wsSilo, 'Silo Data');
+      }
+
       // Generate filename with timestamp
       const timestamp = new Date().toISOString().split('T')[0];
       const filename = `CCR_Data_${selectedUnit}_${timestamp}.xlsx`;
@@ -796,7 +815,13 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           loggedInUser?.name || 'Import User'
                         );
                         importCount++;
+                        // Add small delay to prevent rate limiting
+                        await new Promise((resolve) => setTimeout(resolve, 100));
                       } catch (error) {
+                        console.error(
+                          `Failed to save parameter ${paramName} for ${date} hour ${hour}:`,
+                          error
+                        );
                         errorMessages.push(
                           `Failed to save parameter ${paramName} for ${date} hour ${hour}: ${error instanceof Error ? error.message : 'Unknown error'}`
                         );
@@ -913,6 +938,35 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             });
 
             if (invalidRows.length === 0) {
+              // Collect unique dates from import data
+              const importDates = [...new Set(downtimeData.map((row) => String(row.Date)))];
+
+              // Delete existing downtime data for these dates to replace with new data
+              if (importDates.length > 0) {
+                try {
+                  const { error: deleteError } = await supabase
+                    .from('ccr_downtime_data')
+                    .delete()
+                    .in('date', importDates);
+
+                  if (deleteError) {
+                    errorMessages.push(
+                      `Failed to delete existing downtime data for dates ${importDates.join(', ')}: ${deleteError.message}`
+                    );
+                  } else {
+                    console.log(
+                      `Deleted existing downtime data for dates: ${importDates.join(', ')}`
+                    );
+                    // Refresh downtime data to reflect changes
+                    refetch();
+                  }
+                } catch (error) {
+                  errorMessages.push(
+                    `Error deleting existing downtime data: ${error instanceof Error ? error.message : 'Unknown error'}`
+                  );
+                }
+              }
+
               // Process valid data
               for (const row of downtimeData) {
                 try {
@@ -948,6 +1002,156 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         } catch (error) {
           errorMessages.push(
             `Downtime Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Silo Data
+      if (wb.Sheets['Silo Data']) {
+        try {
+          const siloData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
+            wb.Sheets['Silo Data']
+          );
+          if (siloData.length > 0) {
+            // Validate data structure
+            const requiredFields = ['Date', 'Silo_ID'];
+            const invalidRows = siloData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Silo Data row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              // Collect unique dates from import data
+              const importDates = [...new Set(siloData.map((row) => String(row.Date)))];
+
+              // Delete existing silo data for these dates to replace with new data
+              if (importDates.length > 0) {
+                try {
+                  const { error: deleteError } = await supabase
+                    .from('ccr_silo_data')
+                    .delete()
+                    .in('date', importDates);
+
+                  if (deleteError) {
+                    errorMessages.push(
+                      `Failed to delete existing silo data for dates ${importDates.join(', ')}: ${deleteError.message}`
+                    );
+                  } else {
+                    console.log(`Deleted existing silo data for dates: ${importDates.join(', ')}`);
+                    // Refresh silo data to reflect changes
+                    getSiloDataForDate(selectedDate).then((data) => {
+                      setAllDailySiloData(data);
+                    });
+                  }
+                } catch (error) {
+                  errorMessages.push(
+                    `Error deleting existing silo data: ${error instanceof Error ? error.message : 'Unknown error'}`
+                  );
+                }
+              }
+
+              // Process valid data
+              for (const row of siloData) {
+                try {
+                  const siloId = String(row.Silo_ID);
+                  const date = String(row.Date);
+
+                  // Prepare shift data
+                  const shift1 = {
+                    emptySpace: row.Shift1_EmptySpace ? Number(row.Shift1_EmptySpace) : undefined,
+                    content: row.Shift1_Content ? Number(row.Shift1_Content) : undefined,
+                  };
+                  const shift2 = {
+                    emptySpace: row.Shift2_EmptySpace ? Number(row.Shift2_EmptySpace) : undefined,
+                    content: row.Shift2_Content ? Number(row.Shift2_Content) : undefined,
+                  };
+                  const shift3 = {
+                    emptySpace: row.Shift3_EmptySpace ? Number(row.Shift3_EmptySpace) : undefined,
+                    content: row.Shift3_Content ? Number(row.Shift3_Content) : undefined,
+                  };
+
+                  // Check if all shift data is empty
+                  const isEmpty = [shift1, shift2, shift3].every(
+                    (shift) => !shift.emptySpace && !shift.content
+                  );
+
+                  if (!isEmpty) {
+                    // Update silo data for each shift if data exists
+                    if (shift1.emptySpace !== undefined || shift1.content !== undefined) {
+                      try {
+                        await updateSiloData(
+                          date,
+                          siloId,
+                          'shift1',
+                          'emptySpace',
+                          shift1.emptySpace
+                        );
+                        await updateSiloData(date, siloId, 'shift1', 'content', shift1.content);
+                      } catch (error) {
+                        console.error(`Failed to update silo ${siloId} shift1 for ${date}:`, error);
+                        errorMessages.push(
+                          `Failed to update silo ${siloId} shift1 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                        );
+                      }
+                    }
+                    if (shift2.emptySpace !== undefined || shift2.content !== undefined) {
+                      try {
+                        await updateSiloData(
+                          date,
+                          siloId,
+                          'shift2',
+                          'emptySpace',
+                          shift2.emptySpace
+                        );
+                        await updateSiloData(date, siloId, 'shift2', 'content', shift2.content);
+                        // Add small delay to prevent rate limiting
+                        await new Promise((resolve) => setTimeout(resolve, 50));
+                      } catch (error) {
+                        console.error(`Failed to update silo ${siloId} shift2 for ${date}:`, error);
+                        errorMessages.push(
+                          `Failed to update silo ${siloId} shift2 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                        );
+                      }
+                    }
+                    if (shift3.emptySpace !== undefined || shift3.content !== undefined) {
+                      try {
+                        await updateSiloData(
+                          date,
+                          siloId,
+                          'shift3',
+                          'emptySpace',
+                          shift3.emptySpace
+                        );
+                        await updateSiloData(date, siloId, 'shift3', 'content', shift3.content);
+                        // Add small delay to prevent rate limiting
+                        await new Promise((resolve) => setTimeout(resolve, 50));
+                      } catch (error) {
+                        console.error(`Failed to update silo ${siloId} shift3 for ${date}:`, error);
+                        errorMessages.push(
+                          `Failed to update silo ${siloId} shift3 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                        );
+                      }
+                    }
+
+                    importCount++;
+                  }
+                } catch (error) {
+                  errorMessages.push(
+                    `Failed to save silo data for ${row.Date} silo ${row.Silo_ID}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                  );
+                }
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Silo Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
         }
       }

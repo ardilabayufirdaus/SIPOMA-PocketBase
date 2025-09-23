@@ -154,43 +154,55 @@ export const useCcrParameterData = () => {
           // Development logging removed
         }
 
-        // Try the query with proper error handling for 406 errors
+        // Try the query with proper error handling and retry logic
         let existing = null;
         let fetchError = null;
+        let retryCount = 0;
+        const maxRetries = 3;
 
-        try {
-          const result = await supabase
-            .from('ccr_parameter_data')
-            .select('*')
-            .eq('date', date)
-            .eq('parameter_id', parameter_id)
-            .maybeSingle();
-
-          existing = result.data;
-          fetchError = result.error;
-        } catch (networkError) {
-          console.error('Network/HTTP error occurred:', networkError);
-          // If it's a 406 error, try without .single() to see if that helps
+        while (retryCount < maxRetries) {
           try {
-            const fallbackResult = await supabase
+            const result = await supabase
               .from('ccr_parameter_data')
               .select('*')
               .eq('date', date)
               .eq('parameter_id', parameter_id)
-              .limit(1);
+              .maybeSingle();
 
-            if (fallbackResult.data && fallbackResult.data.length > 0) {
-              existing = fallbackResult.data[0];
-              fetchError = null;
+            existing = result.data;
+            fetchError = result.error;
+            break; // Success, exit retry loop
+          } catch (networkError) {
+            console.error(`Network error on attempt ${retryCount + 1}:`, networkError);
+            retryCount++;
+
+            if (retryCount < maxRetries) {
+              // Wait before retry (exponential backoff)
+              await new Promise((resolve) => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
             } else {
-              fetchError = fallbackResult.error || {
-                code: 'PGRST116',
-                message: 'No rows found',
-              };
+              // If it's a 406 error, try without .single() to see if that helps
+              try {
+                const fallbackResult = await supabase
+                  .from('ccr_parameter_data')
+                  .select('*')
+                  .eq('date', date)
+                  .eq('parameter_id', parameter_id)
+                  .limit(1);
+
+                if (fallbackResult.data && fallbackResult.data.length > 0) {
+                  existing = fallbackResult.data[0];
+                  fetchError = null;
+                } else {
+                  fetchError = fallbackResult.error || {
+                    code: 'PGRST116',
+                    message: 'No rows found',
+                  };
+                }
+              } catch (fallbackError) {
+                console.error('Fallback query also failed:', fallbackError);
+                throw fallbackError;
+              }
             }
-          } catch (fallbackError) {
-            console.error('Fallback query also failed:', fallbackError);
-            throw fallbackError;
           }
         }
 
@@ -247,10 +259,33 @@ export const useCcrParameterData = () => {
             upsertData.name = userName;
           }
 
-          // Upsert record
-          const { error: upsertError } = await supabase
-            .from('ccr_parameter_data')
-            .upsert(upsertData, { onConflict: 'date,parameter_id' });
+          // Try upsert first, if it fails due to network issues, try manual approach
+          let upsertError = null;
+          try {
+            const result = await supabase
+              .from('ccr_parameter_data')
+              .upsert(upsertData, { onConflict: 'date,parameter_id' });
+            upsertError = result.error;
+          } catch (networkError) {
+            console.warn('Upsert failed due to network, trying manual approach:', networkError);
+            // Manual conflict resolution
+            if (existing) {
+              // Update existing record
+              const { error } = await supabase
+                .from('ccr_parameter_data')
+                .update({
+                  hourly_values: updatedHourlyValues,
+                  // Don't update name for existing records
+                })
+                .eq('date', date)
+                .eq('parameter_id', parameter_id);
+              upsertError = error;
+            } else {
+              // Insert new record
+              const { error } = await supabase.from('ccr_parameter_data').insert(upsertData);
+              upsertError = error;
+            }
+          }
 
           if (upsertError) {
             console.error('Error updating CCR parameter data:', upsertError);

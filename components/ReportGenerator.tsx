@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import * as XLSX from 'xlsx';
+import { exportToExcel } from '../utils/excelUtils';
 import { useCcrParameterData } from '../hooks/useCcrParameterData';
 import { useCcrFooterData } from '../hooks/useCcrFooterData';
 import useCcrDowntimeData from '../hooks/useCcrDowntimeData';
@@ -8,6 +8,7 @@ import { useParameterSettings } from '../hooks/useParameterSettings';
 import { useSiloCapacities } from '../hooks/useSiloCapacities';
 import { supabase } from '../utils/supabase';
 import { CcrDowntimeData } from '../types';
+import { formatNumberIndonesian } from '../utils/formatters';
 
 interface ReportData {
   date: string;
@@ -52,10 +53,8 @@ export const ReportGenerator: React.FC = () => {
 
     setIsExporting(true);
     try {
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet([['Report'], [generatedReport]]);
-      XLSX.utils.book_append_sheet(wb, ws, 'Report');
-      XLSX.writeFile(wb, `Report_${reportData.date}.xlsx`);
+      const data = [{ Report: generatedReport }];
+      exportToExcel(data, `Report_${reportData.date}`, 'Report');
     } catch (error) {
       console.error('Export failed:', error);
     } finally {
@@ -187,9 +186,9 @@ export const ReportGenerator: React.FC = () => {
         });
 
         report += `Tipe Produk  : ${productionData?.total || 'N/A'}\n`;
-        report += `Feed  : ${feedData?.total || 'N/A'} tph\n`;
-        report += `Jam Operasi  : ${operationHoursData?.total || 'N/A'} jam\n`;
-        report += `Total Produksi  : ${productionData?.total || 'N/A'} ton\n\n`;
+        report += `Feed  : ${feedData?.total ? formatNumberIndonesian(Number(feedData.total)) : 'N/A'} tph\n`;
+        report += `Jam Operasi  : ${operationHoursData?.total ? formatNumberIndonesian(Number(operationHoursData.total)) : 'N/A'} jam\n`;
+        report += `Total Produksi  : ${productionData?.total ? formatNumberIndonesian(Number(productionData.total)) : 'N/A'} ton\n\n`;
 
         // Pemakaian Bahan
         report += `/Pemakaian Bahan/\n`;
@@ -210,7 +209,7 @@ export const ReportGenerator: React.FC = () => {
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
-          report += `- ${name} : ${bahanTotal.toFixed(1)} ton\n`;
+          report += `- ${name} : ${formatNumberIndonesian(bahanTotal)} ton\n`;
         });
 
         report += `\n/Setting Feeder/\n`;
@@ -231,7 +230,7 @@ export const ReportGenerator: React.FC = () => {
             );
           });
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          report += `- ${name} : ${feederAvg.toFixed(1)} %\n`;
+          report += `- ${name} : ${formatNumberIndonesian(feederAvg)} %\n`;
         });
 
         // Catatan Tambahan - Downtime data per unit
@@ -242,7 +241,7 @@ export const ReportGenerator: React.FC = () => {
             const start = new Date(`${d.date} ${d.start_time}`);
             const end = new Date(`${d.date} ${d.end_time}`);
             const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-            report += `- ${d.start_time} - ${d.end_time} (${duration.toFixed(1)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}\n`;
+            report += `- ${d.start_time} - ${d.end_time} (${formatNumberIndonesian(duration)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}\n`;
           });
           report += `\n`;
         } else {
@@ -263,9 +262,9 @@ export const ReportGenerator: React.FC = () => {
         if (shift3Data) {
           const percentage =
             siloInfo && shift3Data.content
-              ? ((shift3Data.content / siloInfo.capacity) * 100).toFixed(1)
+              ? formatNumberIndonesian((shift3Data.content / siloInfo.capacity) * 100)
               : 'N/A';
-          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'}m, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+          report += `${siloName}: Empty ${shift3Data.emptySpace ? formatNumberIndonesian(Number(shift3Data.emptySpace)) : 'N/A'}m, Content ${shift3Data.content ? formatNumberIndonesian(Number(shift3Data.content)) : 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
@@ -321,7 +320,7 @@ export const ReportGenerator: React.FC = () => {
         const unitParameterData = parameterData.filter(() => true); // Placeholder
 
         report += `*Produksi Shift Unit Mill ${unitInfo.shortName}*\n`;
-        report += `Target Produksi  : ${targetProduction || 'N/A'} ton\n`;
+        report += `Target Produksi  : ${targetProduction ? formatNumberIndonesian(Number(targetProduction)) : 'N/A'} ton\n`;
 
         // Get values from footer data (using parameter settings for accurate mapping)
         // Filter footer data for parameters that belong to this unit
@@ -355,10 +354,10 @@ export const ReportGenerator: React.FC = () => {
           );
         });
 
-        report += `Realisasi Produksi  : ${productionData?.shift1_total || 'N/A'} ton\n`;
-        report += `Jam Operasional  : ${operationHoursData?.shift1_total || 'N/A'} jam\n`;
-        report += `Durasi down time  : ${calculateShiftDowntime(date, shift || '1', downtimeData).toFixed(1)} jam\n`;
-        report += `Feed rate  : ${feedData?.shift1_average || 'N/A'} tph\n\n`;
+        report += `Realisasi Produksi  : ${productionData?.shift1_total ? formatNumberIndonesian(Number(productionData.shift1_total)) : 'N/A'} ton\n`;
+        report += `Jam Operasional  : ${operationHoursData?.shift1_total ? formatNumberIndonesian(Number(operationHoursData.shift1_total)) : 'N/A'} jam\n`;
+        report += `Durasi down time  : ${formatNumberIndonesian(calculateShiftDowntime(date, shift || '1', downtimeData))} jam\n`;
+        report += `Feed rate  : ${feedData?.shift1_average ? formatNumberIndonesian(Number(feedData.shift1_average)) : 'N/A'} tph\n\n`;
 
         // Pemakaian Bahan
         report += `/Pemakaian Bahan/\n`;
@@ -381,7 +380,7 @@ export const ReportGenerator: React.FC = () => {
               )
             : 0;
           const unit = bahan === 'CGA' ? (bahan.includes('PPM') ? 'PPM' : 'Liter') : 'ton';
-          report += `- ${bahan} : ${bahanData ? Number(bahanSum).toFixed(1) : 'N/A'} ${unit}\n`;
+          report += `- ${bahan} : ${bahanData ? formatNumberIndonesian(Number(bahanSum)) : 'N/A'} ${unit}\n`;
         });
 
         // Kualitas Produk
@@ -400,8 +399,8 @@ export const ReportGenerator: React.FC = () => {
               0
             )
           : 0;
-        report += `- R45 (Residue 45 µm) : ${r45Data ? (Number(r45Sum) / 24).toFixed(1) : 'N/A'} %\n`;
-        report += `- Blaine : ${blaineData ? (Number(blaineSum) / 24).toFixed(1) : 'N/A'} cm²/g\n`;
+        report += `- R45 (Residue 45 µm) : ${r45Data ? formatNumberIndonesian(Number(r45Sum) / 24) : 'N/A'} %\n`;
+        report += `- Blaine : ${blaineData ? formatNumberIndonesian(Number(blaineSum) / 24) : 'N/A'} cm²/g\n`;
 
         // Kondisi peralatan & Mesin
         report += `\n/Kondisi peralatan & Mesin/\n${getDowntimeNotes(date, downtimeData)}\n\n`;
@@ -421,9 +420,9 @@ export const ReportGenerator: React.FC = () => {
           const data = shiftData as { emptySpace?: number; content?: number };
           const percentage =
             siloInfo && data.content
-              ? ((data.content / siloInfo.capacity) * 100).toFixed(1)
+              ? formatNumberIndonesian((data.content / siloInfo.capacity) * 100)
               : 'N/A';
-          report += `${siloName}: Empty ${data.emptySpace || 'N/A'}m, Content ${data.content || 'N/A'} ton, ${percentage}%\n`;
+          report += `${siloName}: Empty ${data.emptySpace ? formatNumberIndonesian(Number(data.emptySpace)) : 'N/A'}m, Content ${data.content ? formatNumberIndonesian(Number(data.content)) : 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
@@ -495,8 +494,8 @@ export const ReportGenerator: React.FC = () => {
 
         report += `*Feed Data Unit Mill ${unitInfo.shortName}*\n`;
         report += `Shift : ${shift}\n`;
-        report += `Feed Rate Average : ${feedData?.[`shift${shift}_average`] || 'N/A'} tph\n`;
-        report += `Feed Total : ${feedData?.[`shift${shift}_total`] || 'N/A'} ton\n\n`;
+        report += `Feed Rate Average : ${feedData?.[`shift${shift}_average`] ? formatNumberIndonesian(Number(feedData[`shift${shift}_average`])) : 'N/A'} tph\n`;
+        report += `Feed Total : ${feedData?.[`shift${shift}_total`] ? formatNumberIndonesian(Number(feedData[`shift${shift}_total`])) : 'N/A'} ton\n\n`;
       }
 
       report += `*Demikian laporan feed shift ${shift}*\n*Terima kasih atas kerja kerasnya*\n*Terus semangat untuk hasil yang lebih baik!*`;
