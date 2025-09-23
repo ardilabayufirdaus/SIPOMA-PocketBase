@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
 import { Page, Language } from '../App';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { useSidebarState } from '../hooks/useSidebarState';
-import ChevronDownIcon from './icons/ChevronDownIcon';
-import SipomaLogo from './icons/SipomaLogo';
 import HomeIcon from './icons/HomeIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
 import FactoryIcon from './icons/FactoryIcon';
@@ -36,31 +33,18 @@ import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
 // Import permission utilities
 import { usePermissions } from '../utils/permissions';
-import { User, PermissionLevel } from '../types';
+import { User } from '../types';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  EnhancedCard,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from './ui/EnhancedComponents';
-
-import NavLink from './atoms/NavLink';
-
-import CollapsibleMenu from './molecules/CollapsibleMenu';
+import { EnhancedButton } from './ui/EnhancedComponents';
 
 interface ModernSidebarProps {
   currentPage: Page;
-  activeSubPages: { [key: string]: string };
   onNavigate: (page: Page, subPage?: string) => void;
-  t: any;
+  t: Record<string, string>;
   currentLanguage: Language;
   onLanguageChange: (lang: Language) => void;
   isOpen: boolean;
-  isCollapsed: boolean;
   onClose?: () => void;
   currentUser?: User | null;
 }
@@ -232,25 +216,17 @@ const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
 
 const ModernSidebar: React.FC<ModernSidebarProps> = ({
   currentPage,
-  activeSubPages,
   onNavigate,
   t,
   currentLanguage,
   onLanguageChange,
   isOpen,
-  isCollapsed,
   onClose,
   currentUser,
 }) => {
   const isMobile = useIsMobile();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-
-  // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
 
   // Permission checker
   const permissionChecker = usePermissions(currentUser);
@@ -416,7 +392,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             }));
         case 'users':
           return navigationData.userManagementPages
-            .filter((page) => {
+            .filter(() => {
               // For now, use main system_settings permission with ADMIN level
               // TODO: Implement more granular permissions for user management sub-pages
               return permissionChecker.hasPermission('system_settings', 'ADMIN');

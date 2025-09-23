@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import FocusTrap from 'focus-trap-react';
+import React from 'react';
 
 interface ModalProps {
   isOpen: boolean;

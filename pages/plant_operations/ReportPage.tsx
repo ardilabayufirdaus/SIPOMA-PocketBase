@@ -6,6 +6,8 @@ import { usePlantUnits } from '../../hooks/usePlantUnits';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
+import { useAuth } from '../../hooks/useAuth';
+import { PermissionChecker } from '../../utils/permissions';
 import {
   ParameterSetting,
   CcrParameterData,
@@ -577,6 +579,8 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 
 const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { announceToScreenReader } = useAccessibility();
+  const { user } = useAuth();
+  const permissionChecker = useMemo(() => new PermissionChecker(user), [user]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportData, setReportData] = useState<{
     groupedHeaders: Array<{
@@ -636,22 +640,36 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   const plantCategories = useMemo(() => {
     if (plantUnitsLoading || !plantUnits.length) return [];
-    return [...new Set(plantUnits.map((unit) => unit.category).sort())];
-  }, [plantUnits, plantUnitsLoading]);
+    const allCategories = [...new Set(plantUnits.map((unit) => unit.category).sort())];
+    // Filter categories based on user permissions
+    return allCategories.filter((category) => {
+      const unitsInCategory = plantUnits.filter((unit) => unit.category === category);
+      return unitsInCategory.some((unit) =>
+        permissionChecker.hasPlantOperationPermission(category, unit.unit, 'READ')
+      );
+    });
+  }, [plantUnits, plantUnitsLoading, permissionChecker]);
 
   const unitsForCategory = useMemo(() => {
     if (plantUnitsLoading || !plantUnits.length || !selectedCategory) return [];
     return plantUnits
       .filter((unit) => unit.category === selectedCategory)
+      .filter((unit) => permissionChecker.hasPlantOperationPermission(selectedCategory, unit.unit, 'READ'))
       .map((unit) => unit.unit)
       .sort();
-  }, [plantUnits, selectedCategory, plantUnitsLoading]);
+  }, [plantUnits, selectedCategory, plantUnitsLoading, permissionChecker]);
 
   useEffect(() => {
-    if (plantCategories.length > 0 && !selectedCategory) {
-      setSelectedCategory(plantCategories[0]);
+    if (plantCategories.length > 0) {
+      if (!selectedCategory || !plantCategories.includes(selectedCategory)) {
+        setSelectedCategory(plantCategories[0]);
+      }
+    } else {
+      if (selectedCategory !== '') {
+        setSelectedCategory('');
+      }
     }
-  }, [plantCategories]); // Removed selectedCategory to prevent loop
+  }, [plantCategories, selectedCategory]);
 
   useEffect(() => {
     if (unitsForCategory.length > 0) {
@@ -879,47 +897,51 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {t.op_report}
           </h2>
           <div className="flex flex-col lg:flex-row items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label
-                htmlFor="report-category"
-                className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap"
-              >
-                {t.plant_category_label}:
-              </label>
-              <select
-                id="report-category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-              >
-                {plantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label
-                htmlFor="report-unit"
-                className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap"
-              >
-                {t.unit_label}:
-              </label>
-              <select
-                id="report-unit"
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                disabled={unitsForCategory.length === 0}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm disabled:bg-slate-100 dark:disabled:bg-slate-600"
-              >
-                {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {permissionChecker.canAccessPlantOperations() && plantCategories.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <label
+                    htmlFor="report-category"
+                    className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap"
+                  >
+                    {t.plant_category_label}:
+                  </label>
+                  <select
+                    id="report-category"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                  >
+                    {plantCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <label
+                    htmlFor="report-unit"
+                    className="text-sm font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap"
+                  >
+                    {t.unit_label}:
+                  </label>
+                  <select
+                    id="report-unit"
+                    value={selectedUnit}
+                    onChange={(e) => setSelectedUnit(e.target.value)}
+                    disabled={unitsForCategory.length === 0}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm disabled:bg-slate-100 dark:disabled:bg-slate-600"
+                  >
+                    {unitsForCategory.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <label
                 htmlFor="report-date"
@@ -938,7 +960,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <EnhancedButton
                 onClick={handleGenerateReport}
-                disabled={isLoading || reportConfig.length === 0}
+                disabled={isLoading || reportConfig.length === 0 || !permissionChecker.canAccessPlantOperations() || plantCategories.length === 0 || !selectedCategory || !selectedUnit}
                 variant="primary"
                 size="md"
                 className="w-full sm:w-auto"
@@ -979,11 +1001,25 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             t={t}
           />
         )}
-        {!isLoading && !reportData && reportConfig.length > 0 && (
+        {!isLoading && !reportData && reportConfig.length > 0 && permissionChecker.canAccessPlantOperations() && plantCategories.length > 0 && (
           <div className="text-center text-slate-400 dark:text-slate-500">
             <p>
               Select filters and click &quot;Generate Report&quot; to view the daily operational
               report.
+            </p>
+          </div>
+        )}
+        {!permissionChecker.canAccessPlantOperations() && (
+          <div className="text-center text-slate-400 dark:text-slate-500">
+            <p>
+              You do not have access to Plant Operations reports.
+            </p>
+          </div>
+        )}
+        {permissionChecker.canAccessPlantOperations() && plantCategories.length === 0 && (
+          <div className="text-center text-slate-400 dark:text-slate-500">
+            <p>
+              No plant operations data available for your access level.
             </p>
           </div>
         )}

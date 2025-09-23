@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { api } from '../utils/api';
 import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 

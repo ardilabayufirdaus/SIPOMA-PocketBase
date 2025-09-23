@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 
 interface VirtualTableProps<T> {
   data: T[];
@@ -105,7 +105,8 @@ export const useVirtualTablePerformance = () => {
         lastRenderTime: renderTime,
         averageRenderTime:
           (prev.averageRenderTime * prev.renderCount + renderTime) / (prev.renderCount + 1),
-        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
+        memoryUsage:
+          (performance as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || 0,
       }));
     };
   }, []);

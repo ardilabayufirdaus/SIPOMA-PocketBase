@@ -4,8 +4,8 @@ import '@testing-library/jest-dom';
 import PlantOperationsDashboard from './PlantOperationsDashboard';
 
 // Mock the hooks
-jest.mock('./hooks/usePlantOperationsData', () => ({
-  usePlantOperationsData: jest.fn(() => ({
+jest.mock('../../../hooks/useDashboardDataAggregator', () => ({
+  useDashboardDataAggregator: jest.fn(() => ({
     ccrData: [],
     siloData: [],
     riskData: [],

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ComposedChart,
   Bar,
@@ -28,8 +28,6 @@ import {
   convertMasterDataToPlantParameters,
   generatePlannedDeliveries,
   calculatePredictionMetrics,
-  PredictionResult,
-  DailyProjectionData,
 } from '../../utils/stockPrediction';
 
 /**
@@ -38,7 +36,7 @@ import {
  */
 const calculate7DayMovingAverage = (
   stockRecords: PackingPlantStockRecord[],
-  chartDataSoFar: any[],
+  chartDataSoFar: Record<string, unknown>[],
   currentDate: Date,
   area: string,
   fallbackValue: number = 100
@@ -71,7 +69,7 @@ const calculate7DayMovingAverage = (
   const recentChartData = chartDataSoFar
     .filter((item) => {
       if (!item.date) return false;
-      const itemDate = new Date(item.date);
+      const itemDate = new Date(item.date as string);
       return (
         itemDate >= sevenDaysAgo &&
         itemDate < currentDate &&
@@ -171,7 +169,7 @@ const ForecastMetricCard: React.FC<ForecastMetricCardProps> = ({
 };
 
 interface PageProps {
-  t: any;
+  t: Record<string, string>;
   areas: string[];
   stockRecords: PackingPlantStockRecord[];
   masterData: PackingPlantMasterRecord[];
@@ -525,7 +523,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({ t, areas, stockRecords
   }, [forecastData, stockRecords, filterKey]);
 
   // Enhanced chart data with moving averages - optimized for performance
-  const processedChartData = useMemo(() => {
+  useMemo(() => {
     // Early return for empty data
     if (!chartData || chartData.length === 0) {
       return [];
@@ -646,7 +644,6 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({ t, areas, stockRecords
 
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(filterYear, filterMonth, day);
-      const dateKey = currentDate.toISOString().split('T')[0];
 
       // Find matching data from chartData
       const matchingData = chartData.find((item) => {
@@ -1408,7 +1405,7 @@ const PackingPlantStockForecast: React.FC<PageProps> = ({ t, areas, stockRecords
                                 />
 
                                 <Tooltip
-                                  content={({ active, payload, label }) => {
+                                  content={({ active, payload }) => {
                                     if (active && payload && payload.length) {
                                       const data = payload[0].payload;
                                       return (

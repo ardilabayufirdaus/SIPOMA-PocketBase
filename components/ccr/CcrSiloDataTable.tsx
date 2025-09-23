@@ -1,12 +1,12 @@
-import React, { useCallback } from 'react';
-import { CcrSiloData } from '../../types';
+import React from 'react';
+import { CcrSiloData, SiloCapacity } from '../../types';
 
 interface CcrSiloDataTableProps {
-  t: any;
+  t: Record<string, string>;
   loading: boolean;
   dailySiloData: CcrSiloData[];
-  siloMasterMap: Map<string, any>;
-  formatInputValue: (value: any, precision?: number) => string;
+  siloMasterMap: Map<string, SiloCapacity>;
+  formatInputValue: (value: number | string, precision?: number) => string;
   parseInputValue: (value: string) => number | null;
   handleSiloDataChange: (
     siloId: string,

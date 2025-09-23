@@ -1,21 +1,15 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import Modal from '../../components/Modal';
 import { usePackingPlantMasterData } from '../../hooks/usePackingPlantMasterData';
-import { PackingPlantStockRecord } from '../../types';
+import { PackingPlantStockRecord, PackingPlantMasterRecord } from '../../types';
 import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
 import DocumentArrowUpIcon from '../../components/icons/DocumentArrowUpIcon';
 import { formatDate, formatNumber } from '../../utils/formatters';
 import { usePackingPlantStockData } from '../../hooks/usePackingPlantStockData';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 // Helper function to format number for display in inputs
 const formatInputNumber = (num: number): string => {
@@ -42,7 +36,7 @@ const parseFormattedNumber = (str: string): number => {
 // Helper function to format user input as they type
 const formatUserInput = (value: string): string => {
   // Remove all non-digit characters except comma and dot
-  let cleaned = value.replace(/[^\d,\.]/g, '');
+  let cleaned = value.replace(/[^\d,.]/g, '');
 
   // If there's a comma, treat it as decimal separator
   if (cleaned.includes(',')) {
@@ -66,17 +60,11 @@ const formatUserInput = (value: string): string => {
 };
 
 interface PageProps {
-  t: any;
+  t: Record<string, string>;
   areas: string[];
 }
 
 const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
-  // Enhanced accessibility hooks
-  const announceToScreenReader = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { records, upsertRecord } = usePackingPlantStockData();
   const { records: masterAreas } = usePackingPlantMasterData();
@@ -181,7 +169,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     const nextDate = getNextDate();
 
     // Look up the master area ID
-    const master = masterAreas.find((m: any) => m.area === filterArea);
+    const master = masterAreas.find((m: PackingPlantMasterRecord) => m.area === filterArea);
     const masterId = master ? master.id : undefined;
 
     // Use the new getOpeningStock function
@@ -240,9 +228,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
   const handleAddData = () => {
     // Check if we can use quick add (when the filter is for current month/year or future)
-    const currentDate = new Date();
     const nextDate = new Date(getNextDate());
-    const filterDate = new Date(filterYear, filterMonth);
 
     // If next date falls within the current filter period, use quick add
     if (nextDate.getMonth() === filterMonth && nextDate.getFullYear() === filterYear) {
@@ -269,7 +255,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     if (!newRecord.date || !newRecord.area) return;
 
     // Look up the master area ID
-    const master = masterAreas.find((m: any) => m.area === newRecord.area);
+    const master = masterAreas.find((m: PackingPlantMasterRecord) => m.area === newRecord.area);
     const masterId = master ? master.id : undefined;
 
     // Use the new getOpeningStock function
@@ -305,7 +291,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     const record = tableData[index];
 
     // Look up the master area ID
-    const master = masterAreas.find((m: any) => m.area === record.area);
+    const master = masterAreas.find((m: PackingPlantMasterRecord) => m.area === record.area);
     const masterId = master ? master.id : undefined;
 
     // Use the new getOpeningStock function
@@ -371,29 +357,25 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
       const importedRecords: PackingPlantStockRecord[] = [];
       const errors: string[] = [];
 
-      jsonData.forEach((row: any, index: number) => {
-        try {
-          // Validate required fields
-          if (!row.Date || !row.Area) {
-            errors.push(`Row ${index + 2}: Missing Date or Area`);
-            return;
-          }
-
-          // Parse and validate data
-          const record: PackingPlantStockRecord = {
-            id: '', // Will be set by upsertRecord
-            date: row.Date,
-            area: row.Area,
-            opening_stock: Number(row['Opening Stock']) || 0,
-            stock_received: Number(row['Stock Received']) || 0,
-            stock_out: Number(row['Stock Out']) || 0,
-            closing_stock: Number(row['Closing Stock']) || 0,
-          };
-
-          importedRecords.push(record);
-        } catch (error) {
-          errors.push(`Row ${index + 2}: Invalid data format`);
+      jsonData.forEach((row: Record<string, string | number>, index: number) => {
+        // Validate required fields
+        if (!row.Date || !row.Area) {
+          errors.push(`Row ${index + 2}: Missing Date or Area`);
+          return;
         }
+
+        // Parse and validate data
+        const record: PackingPlantStockRecord = {
+          id: '', // Will be set by upsertRecord
+          date: String(row.Date),
+          area: String(row.Area),
+          opening_stock: Number(row['Opening Stock']) || 0,
+          stock_received: Number(row['Stock Received']) || 0,
+          stock_out: Number(row['Stock Out']) || 0,
+          closing_stock: Number(row['Closing Stock']) || 0,
+        };
+
+        importedRecords.push(record);
       });
 
       if (errors.length > 0) {
@@ -405,7 +387,7 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
       for (const record of importedRecords) {
         try {
           // Look up the master area ID
-          const master = masterAreas.find((m: any) => m.area === record.area);
+          const master = masterAreas.find((m: PackingPlantMasterRecord) => m.area === record.area);
           const masterId = master ? master.id : '';
 
           await upsertRecord({

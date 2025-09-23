@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { formatIndonesianNumber } from '../../utils/formatUtils';
 import {
   TrendingUpIcon,
@@ -7,7 +7,6 @@ import {
   PauseIcon,
   RefreshCcwIcon,
   CalendarIcon,
-  ClockIcon,
   AlertTriangleIcon,
   CheckCircleIcon,
   BarChart3Icon,
@@ -16,7 +15,6 @@ import {
   UsersIcon,
   FolderIcon,
   SettingsIcon,
-  SearchIcon,
   FilterIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
@@ -320,17 +318,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
 };
 
 // Main Dashboard Header
-interface DashboardHeaderProps {
-  currentUser?: {
-    name: string;
-    role: string;
-    avatar?: string;
-  };
-  onSearch?: (query: string) => void;
-}
-
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser, onSearch }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const DashboardHeader: React.FC = () => {
   const currentTime = new Date().toLocaleString('id-ID', {
     weekday: 'long',
     year: 'numeric',
@@ -353,52 +341,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ currentUser, onSearch
           <div>
             <h1 className="text-2xl font-bold mb-1">Selamat Datang di SIPOMA</h1>
             <p className="text-white/80 text-sm">{currentTime}</p>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            {/* Search */}
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/60" />
-              <input
-                type="text"
-                placeholder="Cari data..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  onSearch?.(e.target.value);
-                }}
-                className="pl-10 pr-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 w-64"
-              />
-            </div>
-
-            {/* User Profile */}
-            {currentUser && (
-              <div className="flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-lg p-2">
-                <div className="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium">
-                    {currentUser.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="text-sm">
-                  <div className="font-medium">{currentUser.name}</div>
-                  <div className="text-white/70 text-xs">{currentUser.role}</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Status Indicators */}
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-sm text-white/90">System Online</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <ClockIcon className="w-4 h-4 text-white/70" />
-            <span className="text-sm text-white/70">
-              Last Updated: {new Date().toLocaleTimeString('id-ID')}
-            </span>
           </div>
         </div>
       </div>

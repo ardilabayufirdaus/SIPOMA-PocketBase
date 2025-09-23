@@ -350,13 +350,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-screen-xl mx-auto p-2 space-y-4">
         {/* Header */}
-        <DashboardHeader
-          currentUser={{
-            name: 'Admin User',
-            role: 'Super Administrator',
-          }}
-          onSearch={(query) => {}} // TODO: Implement search functionality
-        />
+        <DashboardHeader />
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
