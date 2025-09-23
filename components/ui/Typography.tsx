@@ -4,13 +4,7 @@
  */
 
 import React from 'react';
-import {
-  getTextColor,
-  getHeadingClasses,
-  getBodyClasses,
-  getLinkClasses,
-  getStatusClasses,
-} from '../../utils/typographyUtils';
+import { designSystem } from '../../utils/designSystem';
 
 interface TypographyProps {
   children: React.ReactNode;
@@ -18,63 +12,168 @@ interface TypographyProps {
   theme?: 'light' | 'dark';
 }
 
+export type { TypographyProps };
+
 // Heading Components
 export const H1: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
-  const classes = getHeadingClasses(1, 'primary', theme);
-  return <h1 className={`${classes} ${className}`}>{children}</h1>;
+  const baseClasses = 'font-bold leading-tight';
+  const color =
+    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+
+  return (
+    <h1
+      className={`${baseClasses} ${className}`}
+      style={{
+        fontSize: designSystem.typography.fontSize['5xl'],
+        fontWeight: designSystem.typography.fontWeight.extrabold,
+        lineHeight: designSystem.typography.lineHeight.tight,
+        color: color,
+      }}
+    >
+      {children}
+    </h1>
+  );
 };
 
 export const H2: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
-  const classes = getHeadingClasses(2, 'primary', theme);
-  return <h2 className={`${classes} ${className}`}>{children}</h2>;
+  const baseClasses = 'font-bold leading-tight';
+  const color =
+    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+
+  return (
+    <h2
+      className={`${baseClasses} ${className}`}
+      style={{
+        fontSize: designSystem.typography.fontSize['4xl'],
+        fontWeight: designSystem.typography.fontWeight.bold,
+        lineHeight: designSystem.typography.lineHeight.tight,
+        color: color,
+      }}
+    >
+      {children}
+    </h2>
+  );
 };
 
 export const H3: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
-  const classes = getHeadingClasses(3, 'primary', theme);
-  return <h3 className={`${classes} ${className}`}>{children}</h3>;
+  const baseClasses = 'font-semibold leading-tight';
+  const color =
+    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+
+  return (
+    <h3
+      className={`${baseClasses} ${className}`}
+      style={{
+        fontSize: designSystem.typography.fontSize['3xl'],
+        fontWeight: designSystem.typography.fontWeight.semibold,
+        lineHeight: designSystem.typography.lineHeight.tight,
+        color: color,
+      }}
+    >
+      {children}
+    </h3>
+  );
 };
 
 export const H4: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
-  const classes = getHeadingClasses(4, 'primary', theme);
-  return <h4 className={`${classes} ${className}`}>{children}</h4>;
+  const baseClasses = 'font-semibold leading-tight';
+  const color =
+    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+
+  return (
+    <h4
+      className={`${baseClasses} ${className}`}
+      style={{
+        fontSize: designSystem.typography.fontSize['2xl'],
+        fontWeight: designSystem.typography.fontWeight.semibold,
+        lineHeight: designSystem.typography.lineHeight.tight,
+        color: color,
+      }}
+    >
+      {children}
+    </h4>
+  );
 };
 
 export const H5: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
-  const classes = getHeadingClasses(5, 'primary', theme);
-  return <h5 className={`${classes} ${className}`}>{children}</h5>;
+  const baseClasses = 'font-semibold leading-tight';
+  const color =
+    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+
+  return (
+    <h5
+      className={`${baseClasses} ${className}`}
+      style={{
+        fontSize: designSystem.typography.fontSize.xl,
+        fontWeight: designSystem.typography.fontWeight.semibold,
+        lineHeight: designSystem.typography.lineHeight.tight,
+        color: color,
+      }}
+    >
+      {children}
+    </h5>
+  );
 };
 
 export const H6: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
-  const classes = getHeadingClasses(6, 'primary', theme);
-  return <h6 className={`${classes} ${className}`}>{children}</h6>;
+  const baseClasses = 'font-semibold leading-tight uppercase tracking-wider';
+  const color =
+    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+
+  return (
+    <h6
+      className={`${baseClasses} ${className}`}
+      style={{
+        fontSize: designSystem.typography.fontSize.sm,
+        fontWeight: designSystem.typography.fontWeight.semibold,
+        lineHeight: designSystem.typography.lineHeight.tight,
+        color: color,
+      }}
+    >
+      {children}
+    </h6>
+  );
 };
 
-// Body Text Components
-interface BodyTextProps extends TypographyProps {
+// Body Text Component
+interface BodyProps extends TypographyProps {
   size?: 'large' | 'base' | 'small' | 'xs';
   color?: 'primary' | 'secondary' | 'tertiary';
 }
 
-export const Body: React.FC<BodyTextProps> = ({
+export const Body: React.FC<BodyProps> = ({
   children,
   size = 'base',
   color = 'primary',
   className = '',
   theme = 'light',
 }) => {
-  const classes = getBodyClasses(size, color, theme);
-  return <p className={`${classes} ${className}`}>{children}</p>;
-};
+  const sizeMap = {
+    large: designSystem.typography.fontSize.lg,
+    base: designSystem.typography.fontSize.base,
+    small: designSystem.typography.fontSize.sm,
+    xs: designSystem.typography.fontSize.xs,
+  };
 
-export const Span: React.FC<BodyTextProps> = ({
-  children,
-  size = 'base',
-  color = 'primary',
-  className = '',
-  theme = 'light',
-}) => {
-  const classes = getBodyClasses(size, color, theme);
-  return <span className={`${classes} ${className}`}>{children}</span>;
+  const colorMap = {
+    primary: theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900],
+    secondary:
+      theme === 'dark' ? designSystem.colors.neutral[300] : designSystem.colors.neutral[600],
+    tertiary:
+      theme === 'dark' ? designSystem.colors.neutral[400] : designSystem.colors.neutral[500],
+  };
+
+  return (
+    <p
+      className={`font-normal leading-relaxed ${className}`}
+      style={{
+        fontSize: sizeMap[size],
+        color: colorMap[color],
+      }}
+    >
+      {children}
+    </p>
+  );
 };
 
 // Link Component
@@ -92,11 +191,22 @@ export const Link: React.FC<LinkProps> = ({
   className = '',
   theme = 'light',
 }) => {
-  const classes = getLinkClasses(state, theme);
+  const colorMap = {
+    default: theme === 'dark' ? designSystem.colors.primary[400] : designSystem.colors.primary[600],
+    visited: theme === 'dark' ? designSystem.colors.primary[500] : designSystem.colors.primary[800],
+  };
+
   const Component = href ? 'a' : 'button';
 
   return (
-    <Component href={href} onClick={onClick} className={`${classes} underline ${className}`}>
+    <Component
+      href={href}
+      onClick={onClick}
+      className={`underline hover:opacity-80 ${className}`}
+      style={{
+        color: colorMap[state],
+      }}
+    >
       {children}
     </Component>
   );
@@ -113,8 +223,23 @@ export const StatusText: React.FC<StatusTextProps> = ({
   className = '',
   theme = 'light',
 }) => {
-  const classes = getStatusClasses(status, theme);
-  return <span className={`${classes} ${className}`}>{children}</span>;
+  const colorMap = {
+    success: theme === 'dark' ? designSystem.colors.success[300] : designSystem.colors.success[800],
+    warning: theme === 'dark' ? designSystem.colors.warning[300] : designSystem.colors.warning[800],
+    error: theme === 'dark' ? designSystem.colors.error[300] : designSystem.colors.error[800],
+    info: theme === 'dark' ? designSystem.colors.info[300] : designSystem.colors.info[800],
+  };
+
+  return (
+    <span
+      className={`font-normal ${className}`}
+      style={{
+        color: colorMap[status],
+      }}
+    >
+      {children}
+    </span>
+  );
 };
 
 // UI Text Components
@@ -124,50 +249,42 @@ interface UITextProps extends TypographyProps {
 
 export const UIText: React.FC<UITextProps> = ({
   children,
-  variant = 'caption',
+  variant = 'label',
   className = '',
   theme = 'light',
 }) => {
-  let classes = '';
-
-  switch (variant) {
-    case 'label':
-      classes = `text-sm font-medium ${getTextColor('secondary', undefined, theme)}`;
-      break;
-    case 'caption':
-      classes = `text-xs ${getTextColor('tertiary', undefined, theme)}`;
-      break;
-    case 'overline':
-      classes = `text-xs uppercase tracking-wider font-semibold ${getTextColor(
-        'secondary',
-        undefined,
-        theme
-      )}`;
-      break;
-  }
-
-  return <span className={`${classes} ${className}`}>{children}</span>;
-};
-
-// White Text for Dark Backgrounds
-interface WhiteTextProps extends TypographyProps {
-  opacity?: 'pure' | 'high' | 'medium' | 'low' | 'subtle';
-}
-
-export const WhiteText: React.FC<WhiteTextProps> = ({
-  children,
-  opacity = 'pure',
-  className = '',
-}) => {
-  const opacityClasses = {
-    pure: 'text-white',
-    high: 'text-white',
-    medium: 'text-white/90',
-    low: 'text-white/70',
-    subtle: 'text-white/50',
+  const variantConfig = {
+    label: {
+      fontSize: designSystem.typography.fontSize.sm,
+      fontWeight: designSystem.typography.fontWeight.medium,
+      color: theme === 'dark' ? designSystem.colors.neutral[300] : designSystem.colors.neutral[600],
+    },
+    caption: {
+      fontSize: designSystem.typography.fontSize.xs,
+      fontWeight: designSystem.typography.fontWeight.normal,
+      color: theme === 'dark' ? designSystem.colors.neutral[400] : designSystem.colors.neutral[500],
+    },
+    overline: {
+      fontSize: designSystem.typography.fontSize.xs,
+      fontWeight: designSystem.typography.fontWeight.semibold,
+      color: theme === 'dark' ? designSystem.colors.neutral[300] : designSystem.colors.neutral[600],
+    },
   };
 
-  return <span className={`${opacityClasses[opacity]} ${className}`}>{children}</span>;
+  const config = variantConfig[variant];
+
+  return (
+    <span
+      className={`${variant === 'overline' ? 'uppercase tracking-wider' : ''} ${className}`}
+      style={{
+        fontSize: config.fontSize,
+        fontWeight: config.fontWeight,
+        color: config.color,
+      }}
+    >
+      {children}
+    </span>
+  );
 };
 
 // Accent Text Component
@@ -181,22 +298,21 @@ export const AccentText: React.FC<AccentTextProps> = ({
   className = '',
   theme = 'light',
 }) => {
-  const classes = getTextColor('accent', variant, theme);
-  return <span className={`${classes} ${className}`}>{children}</span>;
-};
+  const colorMap = {
+    primary: theme === 'dark' ? designSystem.colors.primary[400] : designSystem.colors.primary[600],
+    success: theme === 'dark' ? designSystem.colors.success[400] : designSystem.colors.success[700],
+    warning: theme === 'dark' ? designSystem.colors.warning[400] : designSystem.colors.warning[700],
+    error: theme === 'dark' ? designSystem.colors.error[400] : designSystem.colors.error[700],
+  };
 
-export default {
-  H1,
-  H2,
-  H3,
-  H4,
-  H5,
-  H6,
-  Body,
-  Span,
-  Link,
-  StatusText,
-  UIText,
-  WhiteText,
-  AccentText,
+  return (
+    <span
+      className={`font-normal ${className}`}
+      style={{
+        color: colorMap[variant],
+      }}
+    >
+      {children}
+    </span>
+  );
 };

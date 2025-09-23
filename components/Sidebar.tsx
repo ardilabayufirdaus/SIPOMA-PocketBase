@@ -24,6 +24,9 @@ import ClockIcon from './icons/ClockIcon';
 import PlusIcon from './icons/PlusIcon';
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
+// Import Design System
+import { designSystem } from '../utils/designSystem';
+
 interface SidebarProps {
   currentPage: Page;
   activeSubPages: { [key: string]: string };
@@ -65,11 +68,27 @@ const NavLink: React.FC<NavLinkProps> = ({
       onKeyDown={handleKeyDown}
       className={`w-full flex items-center ${
         isCollapsed ? 'justify-center px-2 py-1.5' : 'text-left gap-2 px-2 py-1.5'
-      } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px] ${
-        isActive
-          ? 'bg-red-500/15 text-red-400 shadow-sm border border-red-500/20'
-          : 'text-slate-100 hover:bg-white/5 hover:text-white hover:scale-[1.01] focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30'
-      }`}
+      } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px]`}
+      style={{
+        backgroundColor: isActive ? `${designSystem.colors.primary[500]}26` : 'transparent',
+        color: isActive ? designSystem.colors.primary[400] : designSystem.colors.neutral[100],
+        border: isActive ? `1px solid ${designSystem.colors.primary[500]}33` : 'none',
+        boxShadow: isActive ? designSystem.shadows.sm : 'none',
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+          e.currentTarget.style.color = 'white';
+          e.currentTarget.style.transform = 'scale(1.01)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.backgroundColor = 'transparent';
+          e.currentTarget.style.color = designSystem.colors.neutral[100];
+          e.currentTarget.style.transform = 'scale(1)';
+        }
+      }}
       title={isCollapsed ? label : undefined}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
@@ -88,7 +107,13 @@ const NavLink: React.FC<NavLinkProps> = ({
       {isCollapsed && <div className="sidebar-tooltip">{label}</div>}
 
       {isActive && (
-        <div className="absolute inset-0 rounded-md bg-gradient-to-r from-red-500/8 to-red-600/8 border border-red-500/15"></div>
+        <div
+          className="absolute inset-0 rounded-md border"
+          style={{
+            background: `linear-gradient(to right, ${designSystem.colors.primary[500]}13, ${designSystem.colors.primary[600]}13)`,
+            borderColor: `${designSystem.colors.primary[500]}26`,
+          }}
+        ></div>
       )}
     </button>
   );
@@ -160,11 +185,25 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
         onKeyDown={handleKeyDown}
         className={`w-full flex items-center ${
           isCollapsed ? 'justify-center px-2 py-1.5' : 'justify-between text-left gap-1 px-2 py-1.5'
-        } rounded-md text-xs font-semibold transition-all duration-200 group ${
-          isActive
-            ? 'text-white bg-gradient-to-r from-slate-700/40 to-slate-600/40'
-            : 'text-slate-100 hover:bg-white/5 hover:text-white focus:bg-white/5 focus:text-white focus:outline-none focus:ring-1 focus:ring-red-500/30'
-        }`}
+        } rounded-md text-xs font-semibold transition-all duration-200 group`}
+        style={{
+          color: isActive ? designSystem.colors.neutral[0] : designSystem.colors.neutral[100],
+          background: isActive
+            ? 'linear-gradient(to right, rgba(71, 85, 105, 0.4), rgba(51, 65, 85, 0.4))'
+            : 'transparent',
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+            e.currentTarget.style.color = 'white';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+            e.currentTarget.style.color = designSystem.colors.neutral[100];
+          }
+        }}
         title={isCollapsed ? label : undefined}
         aria-expanded={!isCollapsed ? isOpen : undefined}
         aria-controls={
@@ -190,7 +229,11 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
       </button>
       {isOpen && !isCollapsed && (
         <div
-          className="ml-2 flex flex-col gap-2 p-2 rounded-lg border border-slate-700/30 bg-slate-900/80 shadow-lg animate-fade-in-fast"
+          className="ml-2 flex flex-col gap-2 p-2 rounded-lg border bg-slate-900/80 shadow-lg animate-fade-in-fast"
+          style={{
+            borderColor: `${designSystem.colors.neutral[700]}4D`,
+            backgroundColor: `${designSystem.colors.neutral[900]}CC`,
+          }}
           id={`submenu-${label.replace(/\s+/g, '-').toLowerCase()}`}
           role="menu"
           aria-label={`${label} submenu`}
@@ -200,11 +243,37 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
               key={page.key}
               onClick={() => onSelect(page.key)}
               onKeyDown={(e) => handleSubItemKeyDown(e, page.key)}
-              className={`w-full text-left flex items-center gap-3 px-4 py-2 rounded-md text-sm transition-all duration-200 group ${
-                activeSubPage === page.key
-                  ? 'text-red-500 font-semibold bg-red-500/10 border-l-4 border-red-500 shadow-md'
-                  : 'text-slate-100 hover:text-white hover:bg-slate-800/60 hover:translate-x-1 focus:text-white focus:bg-slate-800/60 focus:outline-none focus:ring-2 focus:ring-red-500/50'
-              }`}
+              className={`w-full text-left flex items-center gap-3 px-4 py-2 rounded-md text-sm transition-all duration-200 group`}
+              style={{
+                color:
+                  activeSubPage === page.key
+                    ? designSystem.colors.primary[400]
+                    : designSystem.colors.neutral[100],
+                backgroundColor:
+                  activeSubPage === page.key
+                    ? `${designSystem.colors.primary[500]}1A`
+                    : 'transparent',
+                borderLeft:
+                  activeSubPage === page.key
+                    ? `4px solid ${designSystem.colors.primary[500]}`
+                    : 'none',
+                fontWeight: activeSubPage === page.key ? '600' : 'normal',
+                boxShadow: activeSubPage === page.key ? designSystem.shadows.md : 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (activeSubPage !== page.key) {
+                  e.currentTarget.style.backgroundColor = `${designSystem.colors.neutral[800]}99`;
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeSubPage !== page.key) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = designSystem.colors.neutral[100];
+                  e.currentTarget.style.transform = 'translateX(0)';
+                }
+              }}
               role="menuitem"
               aria-current={activeSubPage === page.key ? 'page' : undefined}
             >
@@ -390,8 +459,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const sidebarClasses = `
         ${
           shouldCollapse ? 'w-16' : isMobile ? 'w-72' : 'w-56'
-        } bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col flex-shrink-0
-        fixed inset-y-0 left-0 z-50 backdrop-blur-xl border-r border-white/10
+        } text-white flex flex-col flex-shrink-0
+        fixed inset-y-0 left-0 z-50 backdrop-blur-xl
         transform transition-all duration-300 ease-in-out
         ${
           isMobile
@@ -402,6 +471,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         }
         md:shadow-xl md:z-50
     `;
+
+  const sidebarStyle = {
+    background: 'linear-gradient(to bottom, #0f172a, #1e293b, #0f172a)',
+    borderRight: `1px solid ${designSystem.colors.neutral[0]}1A`,
+  };
 
   return (
     <>
@@ -421,7 +495,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         aria-label="Main navigation"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{ touchAction: 'none' }}
+        style={{
+          touchAction: 'none',
+          ...sidebarStyle,
+        }}
       >
         <div
           className={`sidebar-modern-header ${

@@ -24,6 +24,15 @@ import Header from './components/Header';
 import { usePermissions, PermissionGuard } from './utils/permissions';
 import { PermissionLevel } from './types';
 
+// Preload critical routes with higher priority
+const preloadDashboard = () => import('./pages/ModernMainDashboardPage');
+const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
+const preloadPackingPlant = () => import('./pages/PackingPlantPage');
+
+// Preload secondary routes on user interaction
+const preloadProjectManagement = () => import('./pages/ProjectManagementPage');
+const preloadSettings = () => import('./pages/SettingsPage');
+
 // Enhanced lazy loading with better error boundaries and retries
 const ModernMainDashboardPage = lazy(() =>
   import('./pages/ModernMainDashboardPage').catch(() => {
@@ -38,12 +47,7 @@ const ModernMainDashboardPage = lazy(() =>
   })
 );
 
-// Preload critical routes
-const preloadDashboard = () => import('./pages/ModernMainDashboardPage');
-const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
-const preloadPackingPlant = () => import('./pages/PackingPlantPage');
-
-// Heavy components with preload hints
+// Heavy components with preload hints and dynamic imports
 const PlantOperationsPage = lazy(() =>
   import('./pages/PlantOperationsPage').catch(() => ({
     default: () => (
@@ -96,7 +100,7 @@ const WhatsAppReportsPage = lazy(() =>
     }))
 );
 
-// User Management Pages
+// User Management Pages - Load on demand
 const UserListPage = lazy(() =>
   import('./features/user-management/pages/UserListPage').catch(() => ({
     default: () => <div>Error loading User List. Please refresh.</div>,

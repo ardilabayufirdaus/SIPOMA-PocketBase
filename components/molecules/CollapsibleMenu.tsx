@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { EnhancedButton } from '../ui/EnhancedComponents';
 import ChevronDownIcon from '../icons/ChevronDownIcon';
+import { designSystem } from '../../utils/designSystem';
 
 interface CollapsibleMenuProps {
   icon: React.ReactNode;
@@ -52,64 +53,93 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = memo(
 
     return (
       <div className="space-y-1">
-        <EnhancedButton
-          variant={isActive ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={handleToggle}
-          ariaLabel={label}
-          className={`w-full ${
-            isCollapsed ? 'justify-center' : 'justify-between'
-          } ${isActive ? 'bg-red-500/10 text-red-400 border border-red-500/20' : ''}`}
-          icon={
-            <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
-              <div
-                className={`transition-transform duration-200 ${
-                  isActive ? 'scale-110' : 'group-hover:scale-105'
-                }`}
-              >
-                {icon}
-              </div>
-              {!isCollapsed && <span className="truncate">{label}</span>}
-            </div>
+        <div
+          style={
+            isActive
+              ? {
+                  backgroundColor: designSystem.colors.primary[500] + '10',
+                  color: designSystem.colors.primary[400],
+                  border: `1px solid ${designSystem.colors.primary[500]}20`,
+                  borderRadius: '0.375rem',
+                }
+              : {}
           }
         >
-          {!isCollapsed && (
-            <ChevronDownIcon
-              className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-            />
-          )}
-          {isCollapsed && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-              {label}
-            </div>
-          )}
-        </EnhancedButton>
+          <EnhancedButton
+            variant={isActive ? 'primary' : 'ghost'}
+            size="sm"
+            onClick={handleToggle}
+            ariaLabel={label}
+            className={`w-full ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+            icon={
+              <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
+                <div
+                  className={`transition-transform duration-200 ${
+                    isActive ? 'scale-110' : 'group-hover:scale-105'
+                  }`}
+                >
+                  {icon}
+                </div>
+                {!isCollapsed && <span className="truncate">{label}</span>}
+              </div>
+            }
+          >
+            {!isCollapsed && (
+              <ChevronDownIcon
+                className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+              />
+            )}
+            {isCollapsed && (
+              <div
+                className="absolute left-full ml-2 px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50"
+                style={{
+                  backgroundColor: designSystem.colors.gray[800],
+                  color: designSystem.colors.gray[50],
+                }}
+              >
+                {label}
+              </div>
+            )}
+          </EnhancedButton>
+        </div>
 
         {isOpen && !isCollapsed && (
           <div className="ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200">
             {pages.map((page) => (
-              <EnhancedButton
+              <div
                 key={page.key}
-                variant={activeSubPage === page.key ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => handleSubItemClick(page.key)}
-                className={`w-full justify-start ${
+                style={
                   activeSubPage === page.key
-                    ? 'text-red-400 bg-red-500/10 border-l-2 border-red-400'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-                icon={
-                  <div
-                    className={`transition-transform duration-200 ${
-                      activeSubPage === page.key ? 'scale-110' : 'group-hover:scale-105'
-                    }`}
-                  >
-                    {page.icon}
-                  </div>
+                    ? {
+                        color: designSystem.colors.primary[400],
+                        backgroundColor: designSystem.colors.primary[500] + '10',
+                        borderLeft: `2px solid ${designSystem.colors.primary[400]}`,
+                        borderRadius: '0.25rem',
+                      }
+                    : {
+                        color: designSystem.colors.gray[300],
+                      }
                 }
+                className={activeSubPage !== page.key ? 'hover:text-white' : ''}
               >
-                <span>{t[page.key as keyof typeof t] || page.key}</span>
-              </EnhancedButton>
+                <EnhancedButton
+                  variant={activeSubPage === page.key ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSubItemClick(page.key)}
+                  className="w-full justify-start"
+                  icon={
+                    <div
+                      className={`transition-transform duration-200 ${
+                        activeSubPage === page.key ? 'scale-110' : 'group-hover:scale-105'
+                      }`}
+                    >
+                      {page.icon}
+                    </div>
+                  }
+                >
+                  <span>{t[page.key as keyof typeof t] || page.key}</span>
+                </EnhancedButton>
+              </div>
             ))}
           </div>
         )}

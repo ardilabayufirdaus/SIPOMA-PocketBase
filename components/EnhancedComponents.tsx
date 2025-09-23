@@ -3,11 +3,127 @@
  * Advanced UI components with responsive utilities and design system
  */
 
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext, useRef } from 'react';
 
 // =============================================================================
-// DESIGN TOKENS
+// PERFORMANCE MONITORING HOOK
 // =============================================================================
+
+export const useComponentPerformance = (componentName: string) => {
+  const renderCount = useRef(0);
+  const lastRenderTime = useRef(performance.now());
+
+  useEffect(() => {
+    renderCount.current += 1;
+    const now = performance.now();
+    const renderTime = now - lastRenderTime.current;
+
+    // Log performance metrics for development
+    if (process.env.NODE_ENV === 'development' && renderCount.current > 1) {
+      console.log(
+        `${componentName} re-rendered (${renderCount.current} times, ${renderTime.toFixed(2)}ms)`
+      );
+    }
+
+    lastRenderTime.current = now;
+  });
+
+  return { renderCount: renderCount.current };
+};
+
+// =============================================================================
+// MEMOIZED COMPONENT WRAPPER
+// =============================================================================
+
+interface MemoizedComponentProps {
+  children: React.ReactNode;
+  deps?: any[];
+  componentName?: string;
+}
+
+export const MemoizedComponent: React.FC<MemoizedComponentProps> = React.memo(
+  ({ children, componentName }) => {
+    useComponentPerformance(componentName || 'MemoizedComponent');
+    return <>{children}</>;
+  }
+);
+
+MemoizedComponent.displayName = 'MemoizedComponent';
+
+interface LazyImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  placeholder?: string;
+  onLoad?: () => void;
+  onError?: () => void;
+}
+
+export const LazyImage: React.FC<LazyImageProps> = ({
+  src,
+  alt,
+  className = '',
+  placeholder,
+  onLoad,
+  onError,
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleLoad = () => {
+    setIsLoaded(true);
+    onLoad?.();
+  };
+
+  const handleError = () => {
+    setHasError(true);
+    onError?.();
+  };
+
+  return (
+    <div className={`relative ${className}`} ref={imgRef}>
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse flex items-center justify-center">
+          {placeholder || (
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+          )}
+        </div>
+      )}
+
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`transition-opacity duration-300 ${
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          } ${className}`}
+          onLoad={handleLoad}
+          onError={handleError}
+        />
+      )}
+    </div>
+  );
+};
 
 export const DESIGN_TOKENS = {
   // Spacing (8pt grid system)

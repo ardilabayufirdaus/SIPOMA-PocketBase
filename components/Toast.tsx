@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CheckBadgeIcon from './icons/CheckBadgeIcon';
+import { designSystem } from '../utils/designSystem';
 
 interface ToastProps {
   message: string;
@@ -44,49 +45,68 @@ const Toast: React.FC<ToastProps> = ({
 
   const getToastStyles = () => {
     const baseStyles =
-      'fixed top-4 right-4 max-w-md w-full shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 overflow-hidden transform transition-all duration-300 z-50';
+      'fixed top-4 right-4 max-w-md w-full shadow-lg rounded-lg pointer-events-auto overflow-hidden transform transition-all duration-300 z-50';
 
+    return baseStyles;
+  };
+
+  const getToastColors = () => {
     switch (type) {
       case 'success':
-        return `${baseStyles} bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400`;
+        return {
+          backgroundColor: designSystem.colors.success[50] + '80',
+          borderColor: designSystem.colors.success[400],
+        };
       case 'error':
-        return `${baseStyles} bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400`;
+        return {
+          backgroundColor: designSystem.colors.error[50] + '80',
+          borderColor: designSystem.colors.error[400],
+        };
       case 'warning':
-        return `${baseStyles} bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400`;
+        return {
+          backgroundColor: designSystem.colors.warning[50] + '80',
+          borderColor: designSystem.colors.warning[400],
+        };
       case 'info':
-        return `${baseStyles} bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400`;
+        return {
+          backgroundColor: designSystem.colors.info[50] + '80',
+          borderColor: designSystem.colors.info[400],
+        };
       default:
-        return `${baseStyles} bg-white dark:bg-slate-800 border-l-4 border-gray-400 dark:border-slate-600`;
+        return {
+          backgroundColor: designSystem.colors.gray[50],
+          borderColor: designSystem.colors.gray[400],
+        };
     }
   };
 
   const getIconColor = () => {
     switch (type) {
       case 'success':
-        return 'text-green-400 dark:text-green-300';
+        return designSystem.colors.success[400];
       case 'error':
-        return 'text-red-400 dark:text-red-300';
+        return designSystem.colors.error[400];
       case 'warning':
-        return 'text-yellow-400 dark:text-yellow-300';
+        return designSystem.colors.warning[400];
       case 'info':
-        return 'text-blue-400 dark:text-blue-300';
+        return designSystem.colors.info[400];
       default:
-        return 'text-gray-400 dark:text-gray-300';
+        return designSystem.colors.gray[400];
     }
   };
 
   const getTextColor = () => {
     switch (type) {
       case 'success':
-        return 'text-green-800 dark:text-green-200';
+        return designSystem.colors.success[800];
       case 'error':
-        return 'text-red-800 dark:text-red-200';
+        return designSystem.colors.error[800];
       case 'warning':
-        return 'text-yellow-800 dark:text-yellow-200';
+        return designSystem.colors.warning[800];
       case 'info':
-        return 'text-blue-800 dark:text-blue-200';
+        return designSystem.colors.info[800];
       default:
-        return 'text-gray-800 dark:text-gray-200';
+        return designSystem.colors.gray[800];
     }
   };
 
@@ -97,23 +117,44 @@ const Toast: React.FC<ToastProps> = ({
       className={`${getToastStyles()} ${
         isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
       }`}
+      style={{
+        ...getToastColors(),
+        borderLeft: `4px solid ${getToastColors().borderColor}`,
+        boxShadow: designSystem.shadows.lg,
+      }}
     >
       <div className="p-4">
         <div className="flex items-start">
-          <div className="flex-shrink-0">
-            <CheckBadgeIcon className={`h-6 w-6 ${getIconColor()}`} />
+          <div className="flex-shrink-0" style={{ color: getIconColor() }}>
+            <CheckBadgeIcon className="h-6 w-6" />
           </div>
           <div className="ml-3 w-0 flex-1">
-            <p className={`text-sm font-medium ${getTextColor()}`}>{message}</p>
+            <p className="text-sm font-medium" style={{ color: getTextColor() }}>
+              {message}
+            </p>
           </div>
           {actionButton && (
             <div className="ml-4 flex-shrink-0 flex">
               <button
-                className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white ${
-                  type === 'success'
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-150`}
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150"
+                style={{
+                  backgroundColor:
+                    type === 'success'
+                      ? designSystem.colors.success[600]
+                      : designSystem.colors.info[600],
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    type === 'success'
+                      ? designSystem.colors.success[700]
+                      : designSystem.colors.info[700];
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    type === 'success'
+                      ? designSystem.colors.success[600]
+                      : designSystem.colors.info[600];
+                }}
                 onClick={actionButton.onClick}
               >
                 {actionButton.icon && <actionButton.icon className="h-4 w-4 mr-1" />}
@@ -123,7 +164,14 @@ const Toast: React.FC<ToastProps> = ({
           )}
           <div className="ml-4 flex-shrink-0 flex">
             <button
-              className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150"
+              style={{ color: designSystem.colors.gray[400] }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = designSystem.colors.gray[500];
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = designSystem.colors.gray[400];
+              }}
               onClick={handleClose}
             >
               <span className="sr-only">Close</span>

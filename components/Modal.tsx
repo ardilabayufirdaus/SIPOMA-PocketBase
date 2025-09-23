@@ -1,5 +1,8 @@
 import React from 'react';
 
+// Import Design System
+import { designSystem } from '../utils/designSystem';
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -12,7 +15,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm animate-fade-in"
+      style={{
+        backgroundColor: `${designSystem.colors.neutral[900]}4D`,
+      }}
       aria-modal="true"
       role="dialog"
       onClick={onClose}
@@ -21,13 +27,36 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
         className="glass-card rounded-2xl shadow-2xl w-full max-w-5xl m-4 transform transition-all duration-300 animate-slide-up overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-6 border-b border-white/10 dark:border-slate-700/50">
-          <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+        <div
+          className="flex justify-between items-center p-6"
+          style={{
+            borderBottom: `1px solid ${designSystem.colors.neutral[0]}1A`,
+          }}
+        >
+          <h3
+            className="text-xl font-bold bg-clip-text text-transparent"
+            style={{
+              background: 'linear-gradient(to right, #1e293b, #334155)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
             {title}
           </h3>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-xl hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-200"
+            className="p-2 rounded-xl transition-all duration-200"
+            style={{
+              color: designSystem.colors.neutral[400],
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = designSystem.colors.neutral[600];
+              e.currentTarget.style.backgroundColor = designSystem.colors.neutral[0] + '80';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = designSystem.colors.neutral[400];
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +70,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
             </svg>
           </button>
         </div>
-        <div className="dark:text-slate-300">{children}</div>
+        <div style={{ color: designSystem.colors.neutral[300] }}>{children}</div>
       </div>
       <style>{`
         @keyframes fade-in {

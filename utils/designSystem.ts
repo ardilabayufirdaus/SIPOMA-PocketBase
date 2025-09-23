@@ -1,33 +1,35 @@
 // Design Tokens for SIPOMA Application
-// Consistent design system for colors, typography, spacing, and components
+// Comprehensive design system for colors, typography, spacing, and components
 
 export const colors = {
-  // Primary Brand Colors
+  // Primary Brand Colors (Red theme for SIPOMA)
   primary: {
-    50: '#eff6ff',
-    100: '#dbeafe',
-    200: '#bfdbfe',
-    300: '#93c5fd',
-    400: '#60a5fa',
-    500: '#3b82f6', // Primary blue
-    600: '#2563eb',
-    700: '#1d4ed8',
-    800: '#1e40af',
-    900: '#1e3a8a',
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444', // Primary red
+    600: '#dc2626',
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
+    950: '#450a0a',
   },
 
-  // Secondary Colors
+  // Secondary Colors (Blue)
   secondary: {
-    50: '#f8fafc',
-    100: '#f1f5f9',
-    200: '#e2e8f0',
-    300: '#cbd5e1',
-    400: '#94a3b8',
-    500: '#64748b',
-    600: '#475569',
-    700: '#334155',
-    800: '#1e293b',
-    900: '#0f172a',
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    200: '#bae6fd',
+    300: '#7dd3fc',
+    400: '#38bdf8',
+    500: '#0ea5e9',
+    600: '#0284c7',
+    700: '#0369a1',
+    800: '#075985',
+    900: '#0c4a6e',
+    950: '#082f49',
   },
 
   // Status Colors
@@ -42,6 +44,7 @@ export const colors = {
     700: '#15803d',
     800: '#166534',
     900: '#14532d',
+    950: '#052e16',
   },
 
   warning: {
@@ -55,6 +58,7 @@ export const colors = {
     700: '#b45309',
     800: '#92400e',
     900: '#78350f',
+    950: '#451a03',
   },
 
   error: {
@@ -68,6 +72,7 @@ export const colors = {
     700: '#b91c1c',
     800: '#991b1b',
     900: '#7f1d1d',
+    950: '#450a0a',
   },
 
   info: {
@@ -83,7 +88,7 @@ export const colors = {
     900: '#1e3a8a',
   },
 
-  // Neutral Gray Scale
+  // Neutral Gray Scale (Comprehensive)
   gray: {
     50: '#f9fafb',
     100: '#f3f4f6',
@@ -95,6 +100,22 @@ export const colors = {
     700: '#374151',
     800: '#1f2937',
     900: '#111827',
+  },
+
+  // Extended neutral for better accessibility
+  neutral: {
+    0: '#ffffff',
+    50: '#f9fafb',
+    100: '#f3f4f6',
+    200: '#e5e7eb',
+    300: '#d1d5db',
+    400: '#9ca3af',
+    500: '#6b7280',
+    600: '#4b5563',
+    700: '#374151',
+    800: '#1f2937',
+    900: '#111827',
+    950: '#030712',
   },
 };
 
@@ -144,7 +165,7 @@ export const typography = {
 };
 
 export const spacing = {
-  // Spacing Scale (rem)
+  // Spacing Scale (8pt grid system - rem)
   0: '0',
   px: '1px',
   0.5: '0.125rem', // 2px
@@ -192,6 +213,8 @@ export const shadows = {
   '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
   inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
   none: '0 0 #0000',
+  glow: '0 0 20px rgba(239, 68, 68, 0.3)',
+  glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
 };
 
 export const transitions = {
@@ -232,115 +255,270 @@ export const zIndex = {
   toast: '1070',
 };
 
-// Component Variants
-export const buttonVariants = {
-  // Button Sizes
-  sizes: {
-    xs: {
-      padding: '0.25rem 0.5rem',
-      fontSize: typography.fontSize.xs,
-      borderRadius: borderRadius.sm,
+// Component Variants - Comprehensive Design System
+export const componentVariants = {
+  // Button Component
+  button: {
+    sizes: {
+      xs: {
+        height: '2rem', // 32px
+        paddingX: spacing[2],
+        paddingY: spacing[1],
+        fontSize: typography.fontSize.xs,
+        borderRadius: borderRadius.sm,
+        iconSize: '0.75rem',
+      },
+      sm: {
+        height: '2.25rem', // 36px
+        paddingX: spacing[3],
+        paddingY: spacing[1.5],
+        fontSize: typography.fontSize.sm,
+        borderRadius: borderRadius.base,
+        iconSize: '0.875rem',
+      },
+      base: {
+        height: '2.5rem', // 40px
+        paddingX: spacing[4],
+        paddingY: spacing[2],
+        fontSize: typography.fontSize.base,
+        borderRadius: borderRadius.md,
+        iconSize: '1rem',
+      },
+      lg: {
+        height: '2.75rem', // 44px
+        paddingX: spacing[5],
+        paddingY: spacing[2.5],
+        fontSize: typography.fontSize.lg,
+        borderRadius: borderRadius.lg,
+        iconSize: '1.125rem',
+      },
+      xl: {
+        height: '3rem', // 48px
+        paddingX: spacing[6],
+        paddingY: spacing[3],
+        fontSize: typography.fontSize.xl,
+        borderRadius: borderRadius.xl,
+        iconSize: '1.25rem',
+      },
     },
-    sm: {
-      padding: '0.375rem 0.75rem',
-      fontSize: typography.fontSize.sm,
-      borderRadius: borderRadius.base,
-    },
-    base: {
-      padding: '0.5rem 1rem',
-      fontSize: typography.fontSize.base,
-      borderRadius: borderRadius.md,
-    },
-    lg: {
-      padding: '0.75rem 1.5rem',
-      fontSize: typography.fontSize.lg,
-      borderRadius: borderRadius.lg,
-    },
-    xl: {
-      padding: '1rem 2rem',
-      fontSize: typography.fontSize.xl,
-      borderRadius: borderRadius.xl,
+
+    variants: {
+      primary: {
+        background: colors.primary[500],
+        backgroundHover: colors.primary[600],
+        backgroundActive: colors.primary[700],
+        backgroundDisabled: colors.neutral[200],
+        color: colors.neutral[0],
+        colorDisabled: colors.neutral[400],
+        border: 'transparent',
+        focusRing: colors.primary[500],
+      },
+      secondary: {
+        background: colors.neutral[0],
+        backgroundHover: colors.neutral[50],
+        backgroundActive: colors.neutral[100],
+        backgroundDisabled: colors.neutral[100],
+        color: colors.neutral[900],
+        colorDisabled: colors.neutral[400],
+        border: colors.neutral[300],
+        focusRing: colors.primary[500],
+      },
+      success: {
+        background: colors.success[500],
+        backgroundHover: colors.success[600],
+        backgroundActive: colors.success[700],
+        backgroundDisabled: colors.neutral[200],
+        color: colors.neutral[0],
+        colorDisabled: colors.neutral[400],
+        border: 'transparent',
+        focusRing: colors.success[500],
+      },
+      warning: {
+        background: colors.warning[500],
+        backgroundHover: colors.warning[600],
+        backgroundActive: colors.warning[700],
+        backgroundDisabled: colors.neutral[200],
+        color: colors.neutral[0],
+        colorDisabled: colors.neutral[400],
+        border: 'transparent',
+        focusRing: colors.warning[500],
+      },
+      error: {
+        background: colors.error[500],
+        backgroundHover: colors.error[600],
+        backgroundActive: colors.error[700],
+        backgroundDisabled: colors.neutral[200],
+        color: colors.neutral[0],
+        colorDisabled: colors.neutral[400],
+        border: 'transparent',
+        focusRing: colors.error[500],
+      },
+      outline: {
+        background: 'transparent',
+        backgroundHover: colors.neutral[50],
+        backgroundActive: colors.neutral[100],
+        backgroundDisabled: 'transparent',
+        color: colors.neutral[700],
+        colorDisabled: colors.neutral[400],
+        border: colors.neutral[300],
+        focusRing: colors.primary[500],
+      },
+      ghost: {
+        background: 'transparent',
+        backgroundHover: colors.neutral[100],
+        backgroundActive: colors.neutral[200],
+        backgroundDisabled: 'transparent',
+        color: colors.neutral[700],
+        colorDisabled: colors.neutral[400],
+        border: 'transparent',
+        focusRing: colors.primary[500],
+      },
     },
   },
 
-  // Button Colors/Variants
-  variants: {
-    primary: {
-      background: colors.primary[600],
-      backgroundHover: colors.primary[700],
-      color: '#ffffff',
-      border: 'transparent',
+  // Input Component
+  input: {
+    sizes: {
+      sm: {
+        height: '2.25rem',
+        paddingX: spacing[3],
+        paddingY: spacing[1.5],
+        fontSize: typography.fontSize.sm,
+        borderRadius: borderRadius.base,
+      },
+      base: {
+        height: '2.5rem',
+        paddingX: spacing[4],
+        paddingY: spacing[2],
+        fontSize: typography.fontSize.base,
+        borderRadius: borderRadius.md,
+      },
+      lg: {
+        height: '2.75rem',
+        paddingX: spacing[4],
+        paddingY: spacing[2.5],
+        fontSize: typography.fontSize.lg,
+        borderRadius: borderRadius.lg,
+      },
     },
-    secondary: {
-      background: colors.secondary[100],
-      backgroundHover: colors.secondary[200],
-      color: colors.secondary[900],
-      border: colors.secondary[300],
-    },
-    success: {
-      background: colors.success[600],
-      backgroundHover: colors.success[700],
-      color: '#ffffff',
-      border: 'transparent',
-    },
-    warning: {
-      background: colors.warning[500],
-      backgroundHover: colors.warning[600],
-      color: '#ffffff',
-      border: 'transparent',
-    },
-    error: {
-      background: colors.error[600],
-      backgroundHover: colors.error[700],
-      color: '#ffffff',
-      border: 'transparent',
-    },
-    outline: {
-      background: 'transparent',
-      backgroundHover: colors.gray[50],
-      color: colors.gray[700],
-      border: colors.gray[300],
-    },
-    ghost: {
-      background: 'transparent',
-      backgroundHover: colors.gray[100],
-      color: colors.gray[700],
-      border: 'transparent',
+
+    states: {
+      default: {
+        border: colors.neutral[300],
+        borderHover: colors.neutral[400],
+        borderFocus: colors.primary[500],
+        background: colors.neutral[0],
+        color: colors.neutral[900],
+        placeholder: colors.neutral[500],
+      },
+      error: {
+        border: colors.error[500],
+        borderHover: colors.error[600],
+        borderFocus: colors.error[500],
+        background: colors.error[50],
+        color: colors.neutral[900],
+        placeholder: colors.error[400],
+      },
+      success: {
+        border: colors.success[500],
+        borderHover: colors.success[600],
+        borderFocus: colors.success[500],
+        background: colors.success[50],
+        color: colors.neutral[900],
+        placeholder: colors.success[400],
+      },
+      disabled: {
+        border: colors.neutral[200],
+        borderHover: colors.neutral[200],
+        borderFocus: colors.neutral[200],
+        background: colors.neutral[100],
+        color: colors.neutral[400],
+        placeholder: colors.neutral[300],
+      },
     },
   },
-};
 
-export const inputVariants = {
-  sizes: {
-    sm: {
-      padding: '0.375rem 0.75rem',
-      fontSize: typography.fontSize.sm,
+  // Card Component
+  card: {
+    variants: {
+      default: {
+        background: colors.neutral[0],
+        border: colors.neutral[200],
+        shadow: shadows.sm,
+      },
+      elevated: {
+        background: colors.neutral[0],
+        border: colors.neutral[200],
+        shadow: shadows.md,
+      },
+      outlined: {
+        background: colors.neutral[0],
+        border: colors.neutral[300],
+        shadow: 'none',
+      },
+      filled: {
+        background: colors.neutral[50],
+        border: colors.neutral[200],
+        shadow: shadows.sm,
+      },
     },
-    base: {
-      padding: '0.5rem 0.75rem',
-      fontSize: typography.fontSize.base,
-    },
-    lg: {
-      padding: '0.75rem 1rem',
-      fontSize: typography.fontSize.lg,
+
+    padding: {
+      sm: spacing[4],
+      md: spacing[6],
+      lg: spacing[8],
     },
   },
 
-  states: {
-    default: {
-      border: colors.gray[300],
-      borderFocus: colors.primary[500],
-      background: '#ffffff',
+  // Badge/Chip Component
+  badge: {
+    sizes: {
+      sm: {
+        paddingX: spacing[1.5],
+        paddingY: spacing[0.5],
+        fontSize: typography.fontSize.xs,
+        borderRadius: borderRadius.sm,
+      },
+      base: {
+        paddingX: spacing[2],
+        paddingY: spacing[1],
+        fontSize: typography.fontSize.sm,
+        borderRadius: borderRadius.base,
+      },
+      lg: {
+        paddingX: spacing[2.5],
+        paddingY: spacing[1.5],
+        fontSize: typography.fontSize.base,
+        borderRadius: borderRadius.md,
+      },
     },
-    error: {
-      border: colors.error[500],
-      borderFocus: colors.error[500],
-      background: colors.error[50],
-    },
-    success: {
-      border: colors.success[500],
-      borderFocus: colors.success[500],
-      background: colors.success[50],
+
+    variants: {
+      primary: {
+        background: colors.primary[100],
+        color: colors.primary[800],
+        border: colors.primary[200],
+      },
+      success: {
+        background: colors.success[100],
+        color: colors.success[800],
+        border: colors.success[200],
+      },
+      warning: {
+        background: colors.warning[100],
+        color: colors.warning[800],
+        border: colors.warning[200],
+      },
+      error: {
+        background: colors.error[100],
+        color: colors.error[800],
+        border: colors.error[200],
+      },
+      neutral: {
+        background: colors.neutral[100],
+        color: colors.neutral[800],
+        border: colors.neutral[200],
+      },
     },
   },
 };
@@ -390,8 +568,7 @@ export const designSystem = {
   shadows,
   transitions,
   zIndex,
-  buttonVariants,
-  inputVariants,
+  componentVariants,
   breakpoints,
   header,
 };

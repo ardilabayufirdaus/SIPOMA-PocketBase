@@ -4,11 +4,12 @@
  */
 
 import React from 'react';
-import { getCardClasses, getAriaProps, cn } from '../../utils/uiUtils';
+import { designSystem } from '../../utils/designSystem';
+import { getAriaProps, cn } from '../../utils/uiUtils';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: 'default' | 'elevated' | 'outlined';
+  variant?: 'default' | 'elevated' | 'outlined' | 'filled';
   padding?: 'sm' | 'md' | 'lg';
   className?: string;
   onClick?: () => void;
@@ -25,14 +26,18 @@ export const Card: React.FC<CardProps> = ({
   ariaLabel,
   ariaDescribedBy,
 }) => {
-  const cardClasses = getCardClasses(variant, padding);
-  const ariaProps = getAriaProps(ariaLabel, ariaDescribedBy);
+  const cardConfig = designSystem.componentVariants.card;
+  const variantConfig = cardConfig.variants[variant];
+  const paddingValue = cardConfig.padding[padding];
 
-  const finalClasses = cn(
-    cardClasses,
-    className,
-    onClick && 'cursor-pointer hover:shadow-md transition-shadow'
-  );
+  const baseClasses = 'bg-white dark:bg-slate-800 rounded-lg border transition-shadow duration-200';
+  const variantClasses = `bg-[${variantConfig.background}] border-[${variantConfig.border}] shadow-[${variantConfig.shadow}]`;
+  const paddingClasses = `p-[${paddingValue}]`;
+  const hoverClasses = onClick ? 'cursor-pointer hover:shadow-md' : '';
+
+  const finalClasses = cn(baseClasses, variantClasses, paddingClasses, hoverClasses, className);
+
+  const ariaProps = getAriaProps(ariaLabel, ariaDescribedBy);
 
   const Component = onClick ? 'button' : 'div';
 
@@ -49,8 +54,14 @@ interface CardHeaderProps {
 }
 
 export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '' }) => {
+  const spacing = designSystem.spacing;
   return (
-    <div className={cn('pb-4 border-b border-slate-200 dark:border-slate-700', className)}>
+    <div
+      className={cn(
+        `pb-[${spacing[4]}] border-b border-slate-200 dark:border-slate-700`,
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -62,7 +73,8 @@ interface CardContentProps {
 }
 
 export const CardContent: React.FC<CardContentProps> = ({ children, className = '' }) => {
-  return <div className={cn('pt-4', className)}>{children}</div>;
+  const spacing = designSystem.spacing;
+  return <div className={cn(`pt-[${spacing[4]}]`, className)}>{children}</div>;
 };
 
 interface CardFooterProps {
@@ -71,8 +83,14 @@ interface CardFooterProps {
 }
 
 export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '' }) => {
+  const spacing = designSystem.spacing;
   return (
-    <div className={cn('pt-4 border-t border-slate-200 dark:border-slate-700', className)}>
+    <div
+      className={cn(
+        `pt-[${spacing[4]}] border-t border-slate-200 dark:border-slate-700`,
+        className
+      )}
+    >
       {children}
     </div>
   );

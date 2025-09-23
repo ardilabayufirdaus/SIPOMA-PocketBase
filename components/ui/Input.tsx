@@ -41,6 +41,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     // Determine the variant based on error/success states
     const currentVariant = error ? 'error' : success ? 'success' : variant;
 
+    const inputConfig = designSystem.componentVariants.input;
+    const sizeConfig = inputConfig.sizes[size];
+    const variantConfig = inputConfig.states[currentVariant] || inputConfig.states.default;
+
     const getInputClasses = () => {
       const baseClasses = [
         'block',
@@ -60,56 +64,24 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         rightIcon || loading ? 'pr-10' : '',
       ].filter(Boolean);
 
-      // Size classes
-      switch (size) {
-        case 'sm':
-          baseClasses.push('px-3', 'py-1.5', 'text-sm');
-          break;
-        case 'lg':
-          baseClasses.push('px-4', 'py-3', 'text-lg');
-          break;
-        case 'base':
-        default:
-          baseClasses.push('px-3', 'py-2', 'text-base');
-          break;
-      }
+      // Apply design system styles
+      const style = {
+        paddingLeft: leftIcon ? `calc(${sizeConfig.paddingX} + 2.5rem)` : sizeConfig.paddingX,
+        paddingRight:
+          rightIcon || loading ? `calc(${sizeConfig.paddingX} + 2.5rem)` : sizeConfig.paddingX,
+        paddingTop: sizeConfig.paddingY,
+        paddingBottom: sizeConfig.paddingY,
+        fontSize: sizeConfig.fontSize,
+        borderRadius: designSystem.borderRadius.md,
+        borderColor: disabled ? designSystem.colors.neutral[200] : variantConfig.border,
+        backgroundColor: disabled ? designSystem.colors.neutral[100] : variantConfig.background,
+        color: disabled ? designSystem.colors.neutral[400] : variantConfig.color,
+      };
 
-      // Variant classes
-      switch (currentVariant) {
-        case 'error':
-          baseClasses.push(
-            'border-red-300',
-            'bg-red-50',
-            'text-red-900',
-            'placeholder-red-400',
-            'focus:ring-red-500',
-            'focus:border-red-500'
-          );
-          break;
-        case 'success':
-          baseClasses.push(
-            'border-green-300',
-            'bg-green-50',
-            'text-green-900',
-            'placeholder-green-400',
-            'focus:ring-green-500',
-            'focus:border-green-500'
-          );
-          break;
-        case 'default':
-        default:
-          baseClasses.push(
-            'border-gray-300',
-            'bg-white',
-            'text-gray-900',
-            'placeholder-gray-400',
-            'focus:ring-blue-500',
-            'focus:border-blue-500'
-          );
-          break;
-      }
-
-      return baseClasses.join(' ');
+      return {
+        classes: baseClasses.join(' '),
+        style: style,
+      };
     };
 
     const getLabelClasses = () => {
@@ -155,6 +127,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       }
     };
 
+    const inputStyles = getInputClasses();
+
     return (
       <div className={fullWidth ? 'w-full' : ''}>
         {label && (
@@ -175,7 +149,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             disabled={disabled || loading}
-            className={`${getInputClasses()} ${className}`}
+            className={`${inputStyles.classes} ${className}`}
+            style={inputStyles.style}
             {...props}
           />
 

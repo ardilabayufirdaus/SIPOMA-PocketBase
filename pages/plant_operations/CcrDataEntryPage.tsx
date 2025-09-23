@@ -1507,55 +1507,57 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               <span>Press Esc to exit navigation</span>
             </div>
 
-            {/* Export/Import Controls */}
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImport}
-                accept=".xlsx, .xls"
-                className="hidden"
-              />
-              <EnhancedButton
-                variant="secondary"
-                size="md"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={
-                  isImporting ||
-                  !selectedCategory ||
-                  !selectedUnit ||
-                  !permissionChecker.hasPermission('plant_operations', 'WRITE')
-                }
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                loading={isImporting}
-                aria-label={t.import_excel || 'Import Excel file'}
-              >
-                <DocumentArrowUpIcon className="w-5 h-5" />
-                <span className="text-sm font-medium">
-                  {isImporting ? 'Importing...' : t.import_excel}
-                </span>
-              </EnhancedButton>
-              <EnhancedButton
-                variant="secondary"
-                size="md"
-                onClick={handleExport}
-                disabled={
-                  isExporting ||
-                  !selectedCategory ||
-                  !selectedUnit ||
-                  filteredParameterSettings.length === 0 ||
-                  !permissionChecker.hasPermission('plant_operations', 'READ')
-                }
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                loading={isExporting}
-                aria-label={t.export_excel || 'Export to Excel'}
-              >
-                <DocumentArrowDownIcon className="w-5 h-5" />
-                <span className="text-sm font-medium">
-                  {isExporting ? 'Exporting...' : t.export_excel}
-                </span>
-              </EnhancedButton>
-            </div>
+            {/* Export/Import Controls - Hidden for Operator role */}
+            {loggedInUser?.role !== 'Operator' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImport}
+                  accept=".xlsx, .xls"
+                  className="hidden"
+                />
+                <EnhancedButton
+                  variant="secondary"
+                  size="md"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={
+                    isImporting ||
+                    !selectedCategory ||
+                    !selectedUnit ||
+                    !permissionChecker.hasPermission('plant_operations', 'WRITE')
+                  }
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  loading={isImporting}
+                  aria-label={t.import_excel || 'Import Excel file'}
+                >
+                  <DocumentArrowUpIcon className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    {isImporting ? 'Importing...' : t.import_excel}
+                  </span>
+                </EnhancedButton>
+                <EnhancedButton
+                  variant="secondary"
+                  size="md"
+                  onClick={handleExport}
+                  disabled={
+                    isExporting ||
+                    !selectedCategory ||
+                    !selectedUnit ||
+                    filteredParameterSettings.length === 0 ||
+                    !permissionChecker.hasPermission('plant_operations', 'READ')
+                  }
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  loading={isExporting}
+                  aria-label={t.export_excel || 'Export to Excel'}
+                >
+                  <DocumentArrowDownIcon className="w-5 h-5" />
+                  <span className="text-sm font-medium">
+                    {isExporting ? 'Exporting...' : t.export_excel}
+                  </span>
+                </EnhancedButton>
+              </div>
+            )}
 
             <EnhancedButton
               variant="primary"
