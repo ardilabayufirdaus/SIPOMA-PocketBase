@@ -28,11 +28,11 @@ export const useParameterSettings = () => {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from('parameter_settings')
       .select('*')
       .order('parameter')
-      .limit(500) as { data: any; error: any }; // Limit for performance, parameter settings shouldn't be too many
+      .limit(500)) as { data: any; error: any }; // Limit for performance, parameter settings shouldn't be too many
 
     if (error) {
       console.error('Error fetching parameter settings:', error);
@@ -52,6 +52,29 @@ export const useParameterSettings = () => {
 
   useEffect(() => {
     fetchRecords();
+  }, [fetchRecords]);
+
+  // Realtime subscription for parameter_settings changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('parameter_settings_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'parameter_settings',
+        },
+        (payload) => {
+          console.log('Parameter settings change received!', payload);
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchRecords]);
 
   const addRecord = useCallback(
@@ -94,9 +117,9 @@ export const useParameterSettings = () => {
     async (newRecords: Omit<ParameterSetting, 'id'>[]) => {
       try {
         // First, get all existing records to delete them properly
-        const { data: existingRecords, error: fetchError } = await supabase
+        const { data: existingRecords, error: fetchError } = (await supabase
           .from('parameter_settings')
-          .select('id') as { data: any; error: any };
+          .select('id')) as { data: any; error: any };
 
         if (fetchError) {
           console.error('Error fetching existing parameter settings:', fetchError);

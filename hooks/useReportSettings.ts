@@ -23,6 +23,29 @@ export const useReportSettings = () => {
     fetchRecords();
   }, [fetchRecords]);
 
+  // Realtime subscription for report_settings changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('report_settings_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'report_settings',
+        },
+        (payload) => {
+          console.log('Report settings change received!', payload);
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchRecords]);
+
   const addRecord = useCallback(
     async (record: Omit<ReportSetting, 'id'>) => {
       const { error } = await supabase.from('report_settings').insert([record]);

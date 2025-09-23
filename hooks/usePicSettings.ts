@@ -8,7 +8,10 @@ export const usePicSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('pic_settings').select('*').order('pic') as { data: any; error: any };
+    const { data, error } = (await supabase.from('pic_settings').select('*').order('pic')) as {
+      data: any;
+      error: any;
+    };
 
     if (error) {
       console.error('Error fetching PIC settings:', error);
@@ -21,6 +24,29 @@ export const usePicSettings = () => {
 
   useEffect(() => {
     fetchRecords();
+  }, [fetchRecords]);
+
+  // Realtime subscription for pic_settings changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('pic_settings_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pic_settings',
+        },
+        (payload) => {
+          console.log('PIC settings change received!', payload);
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchRecords]);
 
   const addRecord = useCallback(

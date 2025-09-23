@@ -23,6 +23,29 @@ export const useSiloCapacities = () => {
     fetchRecords();
   }, [fetchRecords]);
 
+  // Realtime subscription for silo_capacities changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('silo_capacities_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'silo_capacities',
+        },
+        (payload) => {
+          console.log('Silo capacities change received!', payload);
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchRecords]);
+
   const addRecord = useCallback(
     async (record: Omit<SiloCapacity, 'id'>) => {
       const { error } = await supabase.from('silo_capacities').insert([record]);

@@ -28,12 +28,12 @@ export const usePlantUnits = () => {
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
       .from('plant_units')
       .select('*')
       .order('category')
       .order('unit')
-      .limit(500) as { data: any; error: any }; // Limit for performance, plant units shouldn't be too many
+      .limit(500)) as { data: any; error: any }; // Limit for performance, plant units shouldn't be too many
 
     if (error) {
       console.error('Error fetching plant units:', error);
@@ -53,6 +53,29 @@ export const usePlantUnits = () => {
 
   useEffect(() => {
     fetchRecords();
+  }, [fetchRecords]);
+
+  // Realtime subscription for plant_units changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('plant_units_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'plant_units',
+        },
+        (payload) => {
+          console.log('Plant units change received!', payload);
+          fetchRecords();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchRecords]);
 
   const addRecord = useCallback(
@@ -92,9 +115,9 @@ export const usePlantUnits = () => {
     async (newRecords: Omit<PlantUnit, 'id'>[]) => {
       try {
         // First, get all existing records to delete them properly
-        const { data: existingRecords, error: fetchError } = await supabase
+        const { data: existingRecords, error: fetchError } = (await supabase
           .from('plant_units')
-          .select('id') as { data: any; error: any };
+          .select('id')) as { data: any; error: any };
 
         if (fetchError) {
           console.error('Error fetching existing plant units:', fetchError);
