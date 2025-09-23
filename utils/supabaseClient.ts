@@ -116,9 +116,10 @@ export const apiClient = {
       const hashedPassword = await passwordUtils.hash(userData.password);
 
       const userDataWithHash = {
-        ...userData,
+        username: userData.username,
+        full_name: userData.full_name,
+        role: userData.role,
         password_hash: hashedPassword,
-        password: undefined, // Remove plain password
       };
 
       const { data, error } = await supabase
