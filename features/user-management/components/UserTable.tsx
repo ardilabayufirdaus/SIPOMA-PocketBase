@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUserStore } from '../../../stores/userStore';
+import { useUserRealtime } from '../hooks/useUserRealtime';
 import { translations } from '../../../translations';
 import { UserRole, User } from '../../../types';
 
@@ -13,6 +14,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   const { users, isLoading, error, fetchUsers, deleteUser, updateUser, clearError } =
     useUserStore();
   const t = translations[language];
+
+  // Initialize realtime subscription
+  useUserRealtime();
 
   useEffect(() => {
     fetchUsers();

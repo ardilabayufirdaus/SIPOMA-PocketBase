@@ -40,6 +40,63 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     hasMore: false,
   },
 
+  // Realtime subscription
+  initRealtimeSubscription: () => {
+    const channel = supabase
+      .channel('users_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'users',
+        },
+        (payload) => {
+          console.log('Realtime user change:', payload);
+          const { eventType, new: newRecord, old: oldRecord } = payload;
+
+          set((state) => {
+            let updatedUsers = [...state.users];
+
+            if (eventType === 'INSERT' && newRecord) {
+              const newUser: User = {
+                id: newRecord.id,
+                username: newRecord.username,
+                full_name: newRecord.full_name || undefined,
+                role: newRecord.role,
+                is_active: newRecord.is_active,
+                created_at: new Date(newRecord.created_at),
+                updated_at: new Date(newRecord.updated_at),
+                permissions: {},
+              };
+              updatedUsers.unshift(newUser); // Add to top
+            } else if (eventType === 'UPDATE' && newRecord) {
+              updatedUsers = updatedUsers.map((user) =>
+                user.id === newRecord.id
+                  ? {
+                      ...user,
+                      username: newRecord.username,
+                      full_name: newRecord.full_name || undefined,
+                      role: newRecord.role,
+                      is_active: newRecord.is_active,
+                      updated_at: new Date(newRecord.updated_at),
+                    }
+                  : user
+              );
+            } else if (eventType === 'DELETE' && oldRecord) {
+              updatedUsers = updatedUsers.filter((user) => user.id !== oldRecord.id);
+            }
+
+            return { users: updatedUsers };
+          });
+        }
+      )
+      .subscribe();
+
+    // Store channel for cleanup if needed
+    (get() as any).realtimeChannel = channel;
+  },
+
   fetchUsers: async (page = 1, limit = 20, includePermissions = false) => {
     set({ isLoading: true, error: null });
     try {
@@ -167,7 +224,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
       if (error) throw error;
 
-      await get().fetchUsers();
+      // No need to fetchUsers, realtime will update
       return data;
     } catch (err: any) {
       set({ error: err.message || 'Failed to create user' });
@@ -202,7 +259,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
       if (error) throw error;
 
-      await get().fetchUsers();
+      // No need to fetchUsers, realtime will update
       return data;
     } catch (err: any) {
       set({ error: err.message || 'Failed to update user' });
@@ -219,7 +276,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
       if (error) throw error;
 
-      await get().fetchUsers();
+      // No need to fetchUsers, realtime will update
     } catch (err: any) {
       set({ error: err.message || 'Failed to delete user' });
       throw err;

@@ -48,6 +48,30 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     filterUsers();
   }, [users, searchTerm, roleFilter]);
 
+  // Realtime subscription for user permissions
+  useEffect(() => {
+    const channel = supabase
+      .channel('user_permissions_changes_new')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_permissions',
+        },
+        async (payload) => {
+          console.log('Realtime permission change (new):', payload);
+          // Refresh users when permissions change to get updated permission matrix
+          await fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const fetchUsers = async (retryCount = 0) => {
     const maxRetries = 3;
     const retryDelay = 1000; // 1 second
@@ -238,7 +262,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
       for (const perm of simplePermissions) {
         if (perm.level !== 'NONE') {
-
           // Check if permission exists
           const { data: existingPerm, error: lookupError } = await supabase
             .from('permissions')
@@ -296,7 +319,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
           });
         });
 
-
         if (plantUnits.length > 0) {
           // Group by permission level
           const levelGroups = plantUnits.reduce(
@@ -308,9 +330,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
             {} as Record<string, unknown[]>
           );
 
-
           for (const [level, units] of Object.entries(levelGroups)) {
-
             // Check if permission exists
             const { data: existingPerm, error: lookupError } = await supabase
               .from('permissions')
@@ -369,19 +389,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         }
       }
 
-      try {
-        await fetchUsers();
-        setSuccessMessage(''); // Clear success message when refresh succeeds
-      } catch (refreshError) {
-        console.warn('⚠️ Failed to refresh users list after save:', refreshError);
-        // Don't throw error here - the save was successful, just the refresh failed
-        // Show a warning to the user instead
-        setError(
-          'Permissions saved successfully, but failed to refresh the list. Please use the refresh button to see changes.'
-        );
-        setSuccessMessage('✅ Permissions saved successfully!');
-      }
-
+      // Permissions will be updated via realtime subscription
+      setSuccessMessage('✅ Permissions saved successfully!');
       setError(''); // Clear any previous errors on success
       // Close modal and reset state
       setIsPermissionEditorOpen(false);

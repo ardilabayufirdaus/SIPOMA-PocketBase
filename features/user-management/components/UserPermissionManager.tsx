@@ -41,6 +41,30 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     filterUsers();
   }, [users, searchTerm, roleFilter]);
 
+  // Realtime subscription for user permissions
+  useEffect(() => {
+    const channel = supabase
+      .channel('user_permissions_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_permissions',
+        },
+        async (payload) => {
+          console.log('Realtime permission change:', payload);
+          // Refresh users when permissions change to get updated permission matrix
+          await fetchUsers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
@@ -283,8 +307,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         await supabase.from('user_permissions').insert(permissionInserts);
       }
 
-      // Refresh users list
-      await fetchUsers();
+      // Permissions will be updated via realtime subscription
       setIsPermissionEditorOpen(false);
       setSelectedUser(null);
     } catch (err: any) {

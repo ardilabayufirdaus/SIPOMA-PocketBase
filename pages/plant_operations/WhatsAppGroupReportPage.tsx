@@ -202,7 +202,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         // Calculate values from footer data
         const feedAvg = feedData?.average || feedData?.total || 0;
-        const runningHoursAvg = runningHoursData?.total || 0;
+        const runningHoursAvg = runningHoursData?.counter_total || 0;
         const totalProduction = productionData?.total || feedAvg * runningHoursAvg;
 
         // Tipe Produk - cari dari parameter data atau default N/A
@@ -420,7 +420,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         // Calculate values from footer data - menggunakan shift1_average untuk feed
         const feedAvg = feedData?.shift1_average || 0;
-        const runningHoursAvg = runningHoursData?.shift1_total || 0;
+        const runningHoursAvg = runningHoursData?.shift1_difference || 0;
         const totalProduction = productionData?.shift1_total || feedAvg * runningHoursAvg;
 
         // Tipe Produk - cari dari parameter data atau default N/A
@@ -474,7 +474,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
               paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
             );
           });
-          const bahanTotal = bahanData ? Number(bahanData.shift1_total || 0) : 0;
+          const bahanTotal = bahanData ? Number(bahanData.shift1_difference || 0) : 0;
           report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
         });
 
@@ -640,7 +640,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         // Calculate values from footer data - menggunakan shift2_average untuk feed
         const feedAvg = feedData?.shift2_average || 0;
-        const runningHoursAvg = runningHoursData?.shift2_total || 0;
+        const runningHoursAvg = runningHoursData?.shift2_difference || 0;
         const totalProduction = productionData?.shift2_total || feedAvg * runningHoursAvg;
 
         // Tipe Produk - cari dari parameter data atau default N/A
@@ -694,7 +694,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
               paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
             );
           });
-          const bahanTotal = bahanData ? Number(bahanData.shift2_total || 0) : 0;
+          const bahanTotal = bahanData ? Number(bahanData.shift2_difference || 0) : 0;
           report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
         });
 
@@ -876,12 +876,13 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         const feedContAvg =
           nextDayUnitFooterData.find((f) => f.parameter_id === feedData?.parameter_id)
             ?.shift3_cont_average || 0;
-        const combinedFeedAvg = feedAvg + feedContAvg;
+        const combinedFeedAvg =
+          feedAvg && feedContAvg ? (feedAvg + feedContAvg) / 2 : feedAvg || feedContAvg;
 
-        const runningHoursTotal = runningHoursData?.shift3_total || 0;
+        const runningHoursTotal = runningHoursData?.shift3_difference || 0;
         const runningHoursContTotal =
           nextDayUnitFooterData.find((f) => f.parameter_id === runningHoursData?.parameter_id)
-            ?.shift3_cont_total || 0;
+            ?.shift3_cont_difference || 0;
         const combinedRunningHours = runningHoursTotal + runningHoursContTotal;
 
         const productionTotal = productionData?.shift3_total || 0;
@@ -944,10 +945,10 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
               paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
             );
           });
-          const bahanTotal = bahanData ? Number(bahanData.shift3_total || 0) : 0;
+          const bahanTotal = bahanData ? Number(bahanData.shift3_difference || 0) : 0;
           const bahanContTotal =
             nextDayUnitFooterData.find((f) => f.parameter_id === bahanData?.parameter_id)
-              ?.shift3_cont_total || 0;
+              ?.shift3_cont_difference || 0;
           const combinedBahanTotal = bahanTotal + Number(bahanContTotal);
           report += `- ${name} : ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
         });
@@ -974,7 +975,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const feederContAvg =
             nextDayUnitFooterData.find((f) => f.parameter_id === feederData?.parameter_id)
               ?.shift3_cont_average || 0;
-          const combinedFeederAvg = feederAvg + Number(feederContAvg);
+          const combinedFeederAvg = (feederAvg + Number(feederContAvg)) / 2;
           report += `- ${name} : ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
         });
 
