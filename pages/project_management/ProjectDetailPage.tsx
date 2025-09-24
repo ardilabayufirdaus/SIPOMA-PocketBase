@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { useProjects } from '../../hooks/useProjects';
 import { Project, ProjectTask } from '../../types';
 import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
@@ -670,7 +670,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     fileInputRef.current?.click();
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!activeProjectTasks || activeProjectTasks.length === 0) {
       alert('No tasks to export');
       return;
@@ -688,27 +688,45 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       }));
 
       // Create workbook and worksheet
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(exportData);
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Project Tasks');
 
-      // Auto-size columns
-      const colWidths = [
-        { wch: 40 }, // Activity
-        { wch: 15 }, // Planned Start
-        { wch: 15 }, // Planned End
-        { wch: 15 }, // Percent Complete
+      // Add headers
+      worksheet.addRow(['Activity', 'Planned Start', 'Planned End', 'Percent Complete']);
+
+      // Add data rows
+      exportData.forEach((row) => {
+        worksheet.addRow([
+          row.Activity,
+          row['Planned Start'],
+          row['Planned End'],
+          row['Percent Complete'],
+        ]);
+      });
+
+      // Set column widths
+      worksheet.columns = [
+        { header: 'Activity', width: 40 },
+        { header: 'Planned Start', width: 15 },
+        { header: 'Planned End', width: 15 },
+        { header: 'Percent Complete', width: 15 },
       ];
-      ws['!cols'] = colWidths;
-
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Project Tasks');
 
       // Generate filename with project title
       const projectTitle = activeProject?.title || 'Project';
       const filename = `${projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_tasks.xlsx`;
 
       // Save file
-      XLSX.writeFile(wb, filename);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export error:', error);
       alert('Failed to export tasks. Please try again.');
@@ -717,7 +735,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     }
   };
 
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -725,17 +743,20 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 
     try {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: 'array' });
+          const arrayBuffer = e.target?.result as ArrayBuffer;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
 
           // Get first worksheet
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
+          const worksheet = workbook.worksheets[0];
 
-          // Convert to JSON
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          // Convert to array of arrays
+          const jsonData: (string | number | null)[][] = [];
+          worksheet.eachRow((row) => {
+            jsonData.push(row.values as (string | number | null)[]);
+          });
 
           if (jsonData.length < 2) {
             alert('Excel file must contain at least a header row and one data row');

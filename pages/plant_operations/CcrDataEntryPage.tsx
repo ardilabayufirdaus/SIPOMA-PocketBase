@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -649,7 +649,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
     setIsExporting(true);
     try {
-      const wb = XLSX.utils.book_new();
+      const workbook = new ExcelJS.Workbook();
 
       // Get parameter data for the selected date
       const parameterData = await getParameterDataForDate(selectedDate);
@@ -680,8 +680,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           paramExportData.push(row);
         }
 
-        const wsParam = XLSX.utils.json_to_sheet(paramExportData);
-        XLSX.utils.book_append_sheet(wb, wsParam, 'Parameter Data');
+        const worksheetParam = workbook.addWorksheet('Parameter Data');
+        worksheetParam.addRows(paramExportData);
       }
 
       // Export Footer Data
@@ -694,8 +694,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           Handover_Notes: row.handover_notes || '',
         }));
 
-        const wsFooter = XLSX.utils.json_to_sheet(footerExportData);
-        XLSX.utils.book_append_sheet(wb, wsFooter, 'Footer Data');
+        const worksheetFooter = workbook.addWorksheet('Footer Data');
+        worksheetFooter.addRows(footerExportData);
       }
 
       // Export Downtime Data
@@ -711,8 +711,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             Problem: row.problem,
           }));
 
-          const wsDowntime = XLSX.utils.json_to_sheet(downtimeExportData);
-          XLSX.utils.book_append_sheet(wb, wsDowntime, 'Downtime Data');
+          const worksheetDowntime = workbook.addWorksheet('Downtime Data');
+          worksheetDowntime.addRows(downtimeExportData);
         }
       }
 
@@ -729,8 +729,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           Shift3_Content: row.shift3?.content ?? '',
         }));
 
-        const wsSilo = XLSX.utils.json_to_sheet(siloExportData);
-        XLSX.utils.book_append_sheet(wb, wsSilo, 'Silo Data');
+        const worksheetSilo = workbook.addWorksheet('Silo Data');
+        worksheetSilo.addRows(siloExportData);
       }
 
       // Generate filename with timestamp
@@ -738,7 +738,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       const filename = `CCR_Data_${selectedUnit}_${timestamp}.xlsx`;
 
       // Write file
-      XLSX.writeFile(wb, filename);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error exporting CCR parameter data:', error);
       alert('An error occurred while exporting data. Please try again.');
@@ -760,17 +769,30 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setIsImporting(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const wb = XLSX.read(arrayBuffer, { type: 'array' });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(arrayBuffer);
 
       let importCount = 0;
       let errorMessages: string[] = [];
 
       // Import Parameter Data
-      if (wb.Sheets['Parameter Data']) {
+      const paramWorksheet = workbook.getWorksheet('Parameter Data');
+      if (paramWorksheet) {
         try {
-          const paramData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Parameter Data']
-          );
+          const paramData: Record<string, unknown>[] = [];
+          let paramHeaders: string[] = [];
+
+          paramWorksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) {
+              paramHeaders = row.values.map((v) => String(v || ''));
+            } else {
+              const rowData: Record<string, unknown> = {};
+              row.eachCell((cell, colNumber) => {
+                rowData[paramHeaders[colNumber - 1]] = cell.value;
+              });
+              paramData.push(rowData);
+            }
+          });
           if (paramData.length > 0) {
             // Validate data structure
             const requiredFields = ['Date', 'Hour', 'Unit'];
@@ -844,11 +866,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import Footer Data
-      if (wb.Sheets['Footer Data']) {
+      const footerWorksheet = workbook.getWorksheet('Footer Data');
+      if (footerWorksheet) {
         try {
-          const footerData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Footer Data']
-          );
+          const footerData: Record<string, unknown>[] = [];
+          let footerHeaders: string[] = [];
+
+          footerWorksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) {
+              footerHeaders = row.values.map((v) => String(v || ''));
+            } else {
+              const rowData: Record<string, unknown> = {};
+              row.eachCell((cell, colNumber) => {
+                rowData[footerHeaders[colNumber - 1]] = cell.value;
+              });
+              footerData.push(rowData);
+            }
+          });
           if (footerData.length > 0) {
             // Validate data structure
             const requiredFields = ['Date', 'Unit'];
@@ -918,11 +952,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import Downtime Data
-      if (wb.Sheets['Downtime Data']) {
+      const downtimeWorksheet = workbook.getWorksheet('Downtime Data');
+      if (downtimeWorksheet) {
         try {
-          const downtimeData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Downtime Data']
-          );
+          const downtimeData: Record<string, unknown>[] = [];
+          let downtimeHeaders: string[] = [];
+
+          downtimeWorksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) {
+              downtimeHeaders = row.values.map((v) => String(v || ''));
+            } else {
+              const rowData: Record<string, unknown> = {};
+              row.eachCell((cell, colNumber) => {
+                rowData[downtimeHeaders[colNumber - 1]] = cell.value;
+              });
+              downtimeData.push(rowData);
+            }
+          });
           if (downtimeData.length > 0) {
             // Validate data structure
             const requiredFields = ['Date', 'Start_Time', 'End_Time', 'Unit', 'PIC', 'Problem'];
@@ -1007,11 +1053,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       }
 
       // Import Silo Data
-      if (wb.Sheets['Silo Data']) {
+      const siloWorksheet = workbook.getWorksheet('Silo Data');
+      if (siloWorksheet) {
         try {
-          const siloData: Record<string, unknown>[] = XLSX.utils.sheet_to_json(
-            wb.Sheets['Silo Data']
-          );
+          const siloData: Record<string, unknown>[] = [];
+          let siloHeaders: string[] = [];
+
+          siloWorksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) {
+              siloHeaders = row.values.map((v) => String(v || ''));
+            } else {
+              const rowData: Record<string, unknown> = {};
+              row.eachCell((cell, colNumber) => {
+                rowData[siloHeaders[colNumber - 1]] = cell.value;
+              });
+              siloData.push(rowData);
+            }
+          });
           if (siloData.length > 0) {
             // Validate data structure
             const requiredFields = ['Date', 'Silo_ID'];

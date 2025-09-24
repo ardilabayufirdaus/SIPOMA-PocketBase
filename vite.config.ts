@@ -5,6 +5,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
+    // Enable build cache for faster rebuilds
+    watch: null,
+    // Use esbuild for faster minification
+    minify: 'esbuild',
+    cssMinify: 'esbuild',
+    // Disable compressed size reporting for faster builds
+    reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -78,14 +85,6 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     // Enable source maps for production debugging
     sourcemap: false,
-    // Minify for better performance
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
   },
   // Optimize dependencies
   optimizeDeps: {

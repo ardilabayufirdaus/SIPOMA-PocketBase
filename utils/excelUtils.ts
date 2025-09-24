@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 /**
  * Interface untuk konfigurasi export Excel
@@ -9,8 +9,8 @@ export interface ExcelExportConfig {
   headers?: string[];
   data: Record<string, unknown>[];
   styling?: {
-    headerStyle?: unknown;
-    dataStyle?: unknown;
+    headerStyle?: Partial<ExcelJS.Style>;
+    dataStyle?: Partial<ExcelJS.Style>;
   };
 }
 
@@ -25,18 +25,43 @@ export interface ExcelImportConfig {
 }
 
 /**
- * Utility untuk export data ke Excel menggunakan xlsx dengan styling dasar
+ * Utility untuk export data ke Excel menggunakan exceljs dengan styling dasar
  */
-export const exportToExcel = (
+export const exportToExcel = async (
   data: Record<string, unknown>[],
   filename: string,
   sheetName: string = 'Sheet1'
 ) => {
   try {
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${filename}.xlsx`);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(sheetName);
+
+    if (data.length > 0) {
+      // Set headers dari keys pertama
+      const headers = Object.keys(data[0]);
+      worksheet.columns = headers.map((header) => ({
+        header,
+        key: header,
+        width: 15,
+      }));
+
+      // Add rows
+      worksheet.addRows(data);
+    }
+
+    // Write buffer and download for browser compatibility
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting to Excel:', error);
     throw new Error('Failed to export data to Excel');
@@ -46,44 +71,55 @@ export const exportToExcel = (
 /**
  * Utility untuk export data ke Excel dengan konfigurasi lengkap
  */
-export const exportToExcelAdvanced = (config: ExcelExportConfig) => {
+export const exportToExcelAdvanced = async (config: ExcelExportConfig) => {
   try {
     const { data, filename, sheetName = 'Sheet1', headers, styling } = config;
 
-    // Buat worksheet dari data
-    const worksheet = XLSX.utils.json_to_sheet(data, {
-      header: headers,
-      skipHeader: !headers,
-    });
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(sheetName);
 
-    // Apply basic styling jika disediakan
+    // Set columns dengan headers
+    if (headers) {
+      worksheet.columns = headers.map((header) => ({
+        header,
+        key: header,
+        width: 15,
+      }));
+    } else if (data.length > 0) {
+      const dataHeaders = Object.keys(data[0]);
+      worksheet.columns = dataHeaders.map((header) => ({
+        header,
+        key: header,
+        width: 15,
+      }));
+    }
+
+    // Add data
+    worksheet.addRows(data);
+
+    // Apply styling jika disediakan
     if (styling) {
       // Header styling
-      if (styling.headerStyle && headers) {
-        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-        for (let col = range.s.c; col <= range.e.c; col++) {
-          const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-          if (!worksheet[cellAddress]) continue;
-          worksheet[cellAddress].s = styling.headerStyle;
-        }
+      if (styling.headerStyle && worksheet.getRow(1)) {
+        worksheet.getRow(1).eachCell((cell) => {
+          cell.style = styling.headerStyle!;
+        });
       }
 
       // Data styling
       if (styling.dataStyle) {
-        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
-        for (let row = headers ? 1 : 0; row <= range.e.r; row++) {
-          for (let col = range.s.c; col <= range.e.c; col++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-            if (!worksheet[cellAddress]) continue;
-            worksheet[cellAddress].s = styling.dataStyle;
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber > 1) {
+            // Skip header row
+            row.eachCell((cell) => {
+              cell.style = styling.dataStyle!;
+            });
           }
-        }
+        });
       }
     }
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${filename}.xlsx`);
+    await workbook.xlsx.writeFile(`${filename}.xlsx`);
   } catch (error) {
     console.error('Error exporting to Excel:', error);
     throw new Error('Failed to export data to Excel');
@@ -93,22 +129,47 @@ export const exportToExcelAdvanced = (config: ExcelExportConfig) => {
 /**
  * Utility untuk export multiple sheets ke Excel
  */
-export const exportMultipleSheets = (
+export const exportMultipleSheets = async (
   sheets: { name: string; data: Record<string, unknown>[]; headers?: string[] }[],
   filename: string
 ) => {
   try {
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
 
     sheets.forEach(({ name, data, headers }) => {
-      const worksheet = XLSX.utils.json_to_sheet(data, {
-        header: headers,
-        skipHeader: !headers,
-      });
-      XLSX.utils.book_append_sheet(workbook, worksheet, name);
+      const worksheet = workbook.addWorksheet(name);
+
+      if (headers) {
+        worksheet.columns = headers.map((header) => ({
+          header,
+          key: header,
+          width: 15,
+        }));
+      } else if (data.length > 0) {
+        const dataHeaders = Object.keys(data[0]);
+        worksheet.columns = dataHeaders.map((header) => ({
+          header,
+          key: header,
+          width: 15,
+        }));
+      }
+
+      worksheet.addRows(data);
     });
 
-    XLSX.writeFile(workbook, `${filename}.xlsx`);
+    // Write buffer and download for browser compatibility
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting multiple sheets:', error);
     throw new Error('Failed to export multiple sheets to Excel');
@@ -116,22 +177,48 @@ export const exportMultipleSheets = (
 };
 
 /**
- * Utility untuk export data ke Excel dengan styling menggunakan XLSX
+ * Utility untuk export data ke Excel dengan styling menggunakan ExcelJS
  */
-export const exportToExcelStyled = (
+export const exportToExcelStyled = async (
   data: Record<string, unknown>[],
   filename: string,
   sheetName: string = 'Sheet1',
   headers?: string[]
 ) => {
   try {
-    const worksheet = XLSX.utils.json_to_sheet(data, {
-      header: headers,
-      skipHeader: !headers,
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(sheetName);
+
+    if (headers) {
+      worksheet.columns = headers.map((header) => ({
+        header,
+        key: header,
+        width: 15,
+      }));
+    } else if (data.length > 0) {
+      const dataHeaders = Object.keys(data[0]);
+      worksheet.columns = dataHeaders.map((header) => ({
+        header,
+        key: header,
+        width: 15,
+      }));
+    }
+
+    worksheet.addRows(data);
+
+    // Write buffer and download for browser compatibility
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${filename}.xlsx`);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error exporting to Excel:', error);
     throw new Error('Failed to export data to Excel');
@@ -144,47 +231,44 @@ export const exportToExcelStyled = (
 export const importFromExcel = async (
   config: ExcelImportConfig
 ): Promise<Record<string, unknown>[]> => {
-  const { file, sheetName, requiredFields, skipRows = 0 } = config;
+  const { file, sheetName, skipRows = 0 } = config;
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const targetSheetName = sheetName || workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[targetSheetName];
+        const buffer = e.target?.result as ArrayBuffer;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer);
+
+        const targetSheetName = sheetName || workbook.worksheets[0].name;
+        const worksheet = workbook.getWorksheet(targetSheetName);
 
         if (!worksheet) {
           reject(new Error(`Sheet '${targetSheetName}' not found in Excel file`));
           return;
         }
 
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-          header: 1, // Return array of arrays
-          defval: '', // Default value for empty cells
-          blankrows: false, // Skip blank rows
-        }) as any[][];
+        const data: Record<string, unknown>[] = [];
 
-        // Skip rows jika diperlukan
-        const processedData = jsonData.slice(skipRows);
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber <= skipRows) return; // Skip rows
 
-        // Convert to objects jika ada header
-        let result: any[];
-        if (processedData.length > 0) {
-          const headers = processedData[0] as string[];
-          result = processedData.slice(1).map((row) => {
-            const obj: any = {};
-            headers.forEach((header, index) => {
-              obj[header] = row[index] || '';
-            });
-            return obj;
+          const rowData: Record<string, unknown> = {};
+          row.eachCell((cell, colNumber) => {
+            const header = worksheet.getCell(1, colNumber).value as string;
+            if (header) {
+              rowData[header] = cell.value;
+            }
           });
-        } else {
-          result = [];
-        }
 
-        resolve(result);
+          // Only add if row has data
+          if (Object.keys(rowData).length > 0) {
+            data.push(rowData);
+          }
+        });
+
+        resolve(data);
       } catch (error) {
         console.error('Error importing from Excel:', error);
         reject(new Error('Failed to import data from Excel'));
@@ -245,22 +329,33 @@ export const previewExcelFile = async (
 }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
-          header: 1,
-          defval: '',
-        }) as any[][];
+        const buffer = e.target?.result as ArrayBuffer;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer);
+
+        const firstSheet = workbook.worksheets[0];
+        const preview: unknown[][] = [];
+        let totalRows = 0;
+
+        firstSheet.eachRow((row, rowNumber) => {
+          totalRows = rowNumber;
+          if (rowNumber <= maxRows) {
+            const rowData: unknown[] = [];
+            row.eachCell((cell) => {
+              rowData.push(cell.value);
+            });
+            preview.push(rowData);
+          }
+        });
 
         resolve({
-          sheets: workbook.SheetNames,
-          preview: jsonData.slice(0, maxRows),
-          totalRows: jsonData.length,
+          sheets: workbook.worksheets.map((ws) => ws.name),
+          preview,
+          totalRows,
         });
-      } catch (error) {
+      } catch {
         reject(new Error('Failed to preview Excel file'));
       }
     };
@@ -280,38 +375,42 @@ export const importMultipleSheets = async (
 }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const buffer = e.target?.result as ArrayBuffer;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(buffer);
+
         const sheets: { [sheetName: string]: Record<string, unknown>[] } = {};
+        const sheetNames: string[] = [];
 
-        workbook.SheetNames.forEach((sheetName) => {
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-            header: 1,
-            defval: '',
-            blankrows: false,
-          }) as unknown[][];
+        workbook.worksheets.forEach((worksheet) => {
+          const sheetName = worksheet.name;
+          sheetNames.push(sheetName);
+          const data: Record<string, unknown>[] = [];
 
-          if (jsonData.length > 0) {
-            const headers = jsonData[0] as string[];
-            const rows = jsonData.slice(1).map((row) => {
-              const obj: Record<string, unknown> = {};
-              headers.forEach((header, index) => {
-                obj[header] = row[index] || '';
-              });
-              return obj;
+          worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) return; // Skip header
+
+            const rowData: Record<string, unknown> = {};
+            row.eachCell((cell, colNumber) => {
+              const header = worksheet.getCell(1, colNumber).value as string;
+              if (header) {
+                rowData[header] = cell.value;
+              }
             });
-            sheets[sheetName] = rows;
-          } else {
-            sheets[sheetName] = [];
-          }
+
+            if (Object.keys(rowData).length > 0) {
+              data.push(rowData);
+            }
+          });
+
+          sheets[sheetName] = data;
         });
 
         resolve({
           sheets,
-          sheetNames: workbook.SheetNames,
+          sheetNames,
         });
       } catch (error) {
         console.error('Error importing multiple sheets:', error);

@@ -27,11 +27,15 @@ export const Card: React.FC<CardProps> = ({
   ariaDescribedBy,
 }) => {
   const cardConfig = designSystem.componentVariants.card;
-  const variantConfig = cardConfig.variants[variant];
   const paddingValue = cardConfig.padding[padding];
 
   const baseClasses = 'bg-white dark:bg-slate-800 rounded-lg border transition-shadow duration-200';
-  const variantClasses = `bg-[${variantConfig.background}] border-[${variantConfig.border}] shadow-[${variantConfig.shadow}]`;
+  const variantClasses =
+    variant === 'elevated'
+      ? 'shadow-md'
+      : variant === 'outlined'
+        ? 'border-neutral-300'
+        : 'shadow-sm';
   const paddingClasses = `p-[${paddingValue}]`;
   const hoverClasses = onClick ? 'cursor-pointer hover:shadow-md' : '';
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import Modal from '../../components/Modal';
 import { usePackingPlantMasterData } from '../../hooks/usePackingPlantMasterData';
 import { PackingPlantStockRecord, PackingPlantMasterRecord } from '../../types';
@@ -305,31 +305,52 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
     });
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
       // Create workbook
-      const wb = XLSX.utils.book_new();
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Stock Data');
+
+      // Set headers
+      worksheet.columns = [
+        { header: 'Date', key: 'date', width: 15 },
+        { header: 'Area', key: 'area', width: 15 },
+        { header: 'Opening Stock', key: 'opening_stock', width: 15 },
+        { header: 'Stock Received', key: 'stock_received', width: 15 },
+        { header: 'Stock Out', key: 'stock_out', width: 15 },
+        { header: 'Closing Stock', key: 'closing_stock', width: 15 },
+      ];
 
       // Export current filtered data
       const exportData = tableData.map((record) => ({
-        Date: record.date,
-        Area: record.area,
-        'Opening Stock': record.opening_stock,
-        'Stock Received': record.stock_received,
-        'Stock Out': record.stock_out,
-        'Closing Stock': record.closing_stock,
+        date: record.date,
+        area: record.area,
+        opening_stock: record.opening_stock,
+        stock_received: record.stock_received,
+        stock_out: record.stock_out,
+        closing_stock: record.closing_stock,
       }));
 
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      XLSX.utils.book_append_sheet(wb, ws, 'Stock Data');
+      worksheet.addRows(exportData);
 
       // Generate filename with current filter info
       const monthName =
         monthOptions.find((m) => m.value === filterMonth)?.label || `Month_${filterMonth + 1}`;
       const filename = `PackingPlant_Stock_${filterArea}_${monthName}_${filterYear}.xlsx`;
 
-      // Write file
-      XLSX.writeFile(wb, filename);
+      // Write buffer and download
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export failed:', error);
       alert('Export failed. Please try again.');
@@ -342,40 +363,63 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
 
     setIsImporting(true);
     try {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets['Stock Data'];
+      const buffer = await file.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+
+      const worksheet = workbook.getWorksheet('Stock Data');
 
       if (!worksheet) {
         alert('Invalid Excel format. Please ensure the file contains a "Stock Data" sheet.');
         return;
       }
 
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-      // Process and validate imported data
       const importedRecords: PackingPlantStockRecord[] = [];
       const errors: string[] = [];
 
-      jsonData.forEach((row: Record<string, string | number>, index: number) => {
-        // Validate required fields
-        if (!row.Date || !row.Area) {
-          errors.push(`Row ${index + 2}: Missing Date or Area`);
-          return;
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header
+
+        const rowData: Record<string, unknown> = {};
+        row.eachCell((cell, colNumber) => {
+          const headerCell = worksheet.getCell(1, colNumber);
+          const header = headerCell.value ? String(headerCell.value).trim() : '';
+          if (header) {
+            // Convert header to match export format: "Date" -> "date", "Opening Stock" -> "opening_stock"
+            const key = header.toLowerCase().replace(/\s+/g, '_');
+            rowData[key] = cell.value;
+          }
+        });
+
+        // Validate and process row data
+        try {
+          // Parse numeric values safely
+          const parseNumber = (value: unknown): number => {
+            if (value === null || value === undefined || value === '') return 0;
+            const num = Number(value);
+            return isNaN(num) ? 0 : num;
+          };
+
+          const record: PackingPlantStockRecord = {
+            id: '',
+            date: String(rowData.date || '').trim(),
+            area: String(rowData.area || '').trim(),
+            opening_stock: parseNumber(rowData.opening_stock),
+            stock_received: parseNumber(rowData.stock_received),
+            stock_out: parseNumber(rowData.stock_out),
+            closing_stock: parseNumber(rowData.closing_stock),
+          };
+
+          // Basic validation
+          if (!record.date || !record.area) {
+            errors.push(`Row ${rowNumber}: Missing required fields (Date, Area)`);
+            return;
+          }
+
+          importedRecords.push(record);
+        } catch {
+          errors.push(`Row ${rowNumber}: Invalid data format`);
         }
-
-        // Parse and validate data
-        const record: PackingPlantStockRecord = {
-          id: '', // Will be set by upsertRecord
-          date: String(row.Date),
-          area: String(row.Area),
-          opening_stock: Number(row['Opening Stock']) || 0,
-          stock_received: Number(row['Stock Received']) || 0,
-          stock_out: Number(row['Stock Out']) || 0,
-          closing_stock: Number(row['Closing Stock']) || 0,
-        };
-
-        importedRecords.push(record);
       });
 
       if (errors.length > 0) {
@@ -384,22 +428,39 @@ const PackingPlantStockData: React.FC<PageProps> = ({ t, areas }) => {
       }
 
       // Import records
+      let successCount = 0;
+      let errorCount = 0;
+
       for (const record of importedRecords) {
         try {
-          // Look up the master area ID
+          // Look up the master area ID - area must exist in master data
           const master = masterAreas.find((m: PackingPlantMasterRecord) => m.area === record.area);
-          const masterId = master ? master.id : '';
+          if (!master) {
+            errors.push(`Area "${record.area}" not found in master data. Please add it first.`);
+            errorCount++;
+            continue;
+          }
 
           await upsertRecord({
             ...record,
-            id: masterId,
+            id: master.id,
           });
+          successCount++;
         } catch (error) {
           console.error('Error importing record:', record, error);
+          errors.push(`Failed to import record for area "${record.area}": ${error}`);
+          errorCount++;
         }
       }
 
-      alert(`Successfully imported ${importedRecords.length} records.`);
+      // Show results
+      if (errors.length > 0) {
+        alert(
+          `Import completed with issues:\n${errors.join('\n')}\n\nSuccessfully imported: ${successCount} records\nFailed: ${errorCount} records`
+        );
+      } else {
+        alert(`Successfully imported ${successCount} records.`);
+      }
     } catch (error) {
       console.error('Import failed:', error);
       alert('Import failed. Please check the file format and try again.');

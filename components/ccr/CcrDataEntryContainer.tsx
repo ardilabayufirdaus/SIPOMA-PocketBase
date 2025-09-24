@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { useCcrParameterData } from '../../hooks/useCcrParameterData';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
@@ -32,28 +32,71 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
     setIsImporting(true);
     try {
       const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(data);
 
       // Process Parameter Data sheet
-      const parameterSheet = workbook.Sheets['Parameter Data'];
-      if (parameterSheet) {
-        const parameterData = XLSX.utils.sheet_to_json(parameterSheet);
+      const parameterWorksheet = workbook.getWorksheet('Parameter Data');
+      if (parameterWorksheet) {
+        const parameterData: Record<string, unknown>[] = [];
+        let paramHeaders: string[] = [];
+
+        parameterWorksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) {
+            const values = Array.from(row.values as ExcelJS.CellValue[]);
+            paramHeaders = values.map((v) => String(v || ''));
+          } else {
+            const rowData: Record<string, unknown> = {};
+            row.eachCell((cell, colNumber) => {
+              rowData[paramHeaders[colNumber - 1]] = cell.value;
+            });
+            parameterData.push(rowData);
+          }
+        });
         // Process and save parameter data
         // TODO: Implement save logic
       }
 
       // Process Footer Data sheet
-      const footerSheet = workbook.Sheets['Footer Data'];
-      if (footerSheet) {
-        const footerData = XLSX.utils.sheet_to_json(footerSheet);
+      const footerWorksheet = workbook.getWorksheet('Footer Data');
+      if (footerWorksheet) {
+        const footerData: Record<string, unknown>[] = [];
+        let footerHeaders: string[] = [];
+
+        footerWorksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) {
+            const values = Array.from(row.values as ExcelJS.CellValue[]);
+            footerHeaders = values.map((v) => String(v || ''));
+          } else {
+            const rowData: Record<string, unknown> = {};
+            row.eachCell((cell, colNumber) => {
+              rowData[footerHeaders[colNumber - 1]] = cell.value;
+            });
+            footerData.push(rowData);
+          }
+        });
         // Process and save footer data
         // TODO: Implement save logic
       }
 
       // Process Downtime Data sheet
-      const downtimeSheet = workbook.Sheets['Downtime Data'];
-      if (downtimeSheet) {
-        const downtimeData = XLSX.utils.sheet_to_json(downtimeSheet);
+      const downtimeWorksheet = workbook.getWorksheet('Downtime Data');
+      if (downtimeWorksheet) {
+        const downtimeData: Record<string, unknown>[] = [];
+        let downtimeHeaders: string[] = [];
+
+        downtimeWorksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) {
+            const values = Array.from(row.values as ExcelJS.CellValue[]);
+            downtimeHeaders = values.map((v) => String(v || ''));
+          } else {
+            const rowData: Record<string, unknown> = {};
+            row.eachCell((cell, colNumber) => {
+              rowData[downtimeHeaders[colNumber - 1]] = cell.value;
+            });
+            downtimeData.push(rowData);
+          }
+        });
         // Process and save downtime data
         // TODO: Implement save logic
       }
@@ -77,44 +120,52 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
       ]);
 
       // Create workbook
-      const wb = XLSX.utils.book_new();
+      const workbook = new ExcelJS.Workbook();
 
       // Parameter Data Sheet
       if (parameterData.length > 0) {
-        const parameterSheet = XLSX.utils.json_to_sheet(
-          parameterData.map((item) => {
-            const row: any = {
-              Date: item.date,
-              ParameterId: item.parameter_id,
-              Name: item.name,
-            };
-            // Add hourly values
-            for (let hour = 1; hour <= 24; hour++) {
-              row[`Hour${hour}`] = item.hourly_values[hour] || '';
-            }
-            return row;
-          })
-        );
-        XLSX.utils.book_append_sheet(wb, parameterSheet, 'Parameter Data');
+        const parameterWorksheet = workbook.addWorksheet('Parameter Data');
+        const paramRows = parameterData.map((item) => {
+          const row: Record<string, unknown> = {
+            Date: item.date,
+            ParameterId: item.parameter_id,
+            Name: item.name,
+          };
+          // Add hourly values
+          for (let hour = 1; hour <= 24; hour++) {
+            row[`Hour${hour}`] = item.hourly_values[hour] || '';
+          }
+          return row;
+        });
+        parameterWorksheet.addRows(paramRows);
       }
 
       // Footer Data Sheet
       if (footerData.length > 0) {
-        const footerSheet = XLSX.utils.json_to_sheet(footerData);
-        XLSX.utils.book_append_sheet(wb, footerSheet, 'Footer Data');
+        const footerWorksheet = workbook.addWorksheet('Footer Data');
+        footerWorksheet.addRows(footerData);
       }
 
       // Downtime Data Sheet
       if (downtimeData.length > 0) {
-        const downtimeSheet = XLSX.utils.json_to_sheet(downtimeData);
-        XLSX.utils.book_append_sheet(wb, downtimeSheet, 'Downtime Data');
+        const downtimeWorksheet = workbook.addWorksheet('Downtime Data');
+        downtimeWorksheet.addRows(downtimeData);
       }
 
       // Generate filename with date
       const filename = `CCR_Data_${selectedDate.replace(/\//g, '-')}.xlsx`;
 
       // Write file
-      XLSX.writeFile(wb, filename);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export failed:', error);
       // You might want to show a toast notification here
