@@ -34,6 +34,10 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
     category: '',
     min_value: undefined as number | undefined,
     max_value: undefined as number | undefined,
+    opc_min_value: undefined as number | undefined,
+    opc_max_value: undefined as number | undefined,
+    pcc_min_value: undefined as number | undefined,
+    pcc_max_value: undefined as number | undefined,
   });
   const [errors, setErrors] = useState<any>({});
   const [touched, setTouched] = useState<any>({});
@@ -58,6 +62,22 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
       case 'max_value':
         if (formData.min_value !== undefined && value < formData.min_value)
           return 'Max tidak boleh kurang dari Min';
+        return '';
+      case 'opc_min_value':
+        if (formData.opc_max_value !== undefined && value > formData.opc_max_value)
+          return 'OPC Min tidak boleh lebih dari OPC Max';
+        return '';
+      case 'opc_max_value':
+        if (formData.opc_min_value !== undefined && value < formData.opc_min_value)
+          return 'OPC Max tidak boleh kurang dari OPC Min';
+        return '';
+      case 'pcc_min_value':
+        if (formData.pcc_max_value !== undefined && value > formData.pcc_max_value)
+          return 'PCC Min tidak boleh lebih dari PCC Max';
+        return '';
+      case 'pcc_max_value':
+        if (formData.pcc_min_value !== undefined && value < formData.pcc_min_value)
+          return 'PCC Max tidak boleh kurang dari PCC Min';
         return '';
       default:
         return '';
@@ -116,6 +136,10 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
         category: recordToEdit.category,
         min_value: recordToEdit.min_value,
         max_value: recordToEdit.max_value,
+        opc_min_value: recordToEdit.opc_min_value,
+        opc_max_value: recordToEdit.opc_max_value,
+        pcc_min_value: recordToEdit.pcc_min_value,
+        pcc_max_value: recordToEdit.pcc_max_value,
       });
     } else {
       setFormData({
@@ -125,6 +149,10 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
         category: '',
         min_value: undefined,
         max_value: undefined,
+        opc_min_value: undefined,
+        opc_max_value: undefined,
+        pcc_min_value: undefined,
+        pcc_max_value: undefined,
       });
     }
   }, [recordToEdit]);
@@ -284,6 +312,100 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
               {errors.max_value && touched.max_value && (
                 <p id="max_value-error" className="mt-1 text-sm text-red-600" role="alert">
                   {errors.max_value}
+                </p>
+              )}
+            </div>
+            <div className="sm:col-span-2">
+              <h4 className="text-md font-medium text-slate-900 mb-2">OPC Cement Settings</h4>
+            </div>
+            <div>
+              <label htmlFor="opc_min_value" className="block text-sm font-medium text-slate-700">
+                OPC Min Value
+              </label>
+              <input
+                type="number"
+                name="opc_min_value"
+                id="opc_min_value"
+                value={formData.opc_min_value ?? ''}
+                onChange={handleChange}
+                aria-invalid={!!errors.opc_min_value}
+                aria-describedby={errors.opc_min_value ? 'opc_min_value-error' : undefined}
+                className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                  errors.opc_min_value ? 'border-red-500' : 'border-slate-300'
+                } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              />
+              {errors.opc_min_value && touched.opc_min_value && (
+                <p id="opc_min_value-error" className="mt-1 text-sm text-red-600" role="alert">
+                  {errors.opc_min_value}
+                </p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="opc_max_value" className="block text-sm font-medium text-slate-700">
+                OPC Max Value
+              </label>
+              <input
+                type="number"
+                name="opc_max_value"
+                id="opc_max_value"
+                value={formData.opc_max_value ?? ''}
+                onChange={handleChange}
+                aria-invalid={!!errors.opc_max_value}
+                aria-describedby={errors.opc_max_value ? 'opc_max_value-error' : undefined}
+                className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                  errors.opc_max_value ? 'border-red-500' : 'border-slate-300'
+                } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              />
+              {errors.opc_max_value && touched.opc_max_value && (
+                <p id="opc_max_value-error" className="mt-1 text-sm text-red-600" role="alert">
+                  {errors.opc_max_value}
+                </p>
+              )}
+            </div>
+            <div className="sm:col-span-2">
+              <h4 className="text-md font-medium text-slate-900 mb-2">PCC Cement Settings</h4>
+            </div>
+            <div>
+              <label htmlFor="pcc_min_value" className="block text-sm font-medium text-slate-700">
+                PCC Min Value
+              </label>
+              <input
+                type="number"
+                name="pcc_min_value"
+                id="pcc_min_value"
+                value={formData.pcc_min_value ?? ''}
+                onChange={handleChange}
+                aria-invalid={!!errors.pcc_min_value}
+                aria-describedby={errors.pcc_min_value ? 'pcc_min_value-error' : undefined}
+                className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                  errors.pcc_min_value ? 'border-red-500' : 'border-slate-300'
+                } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              />
+              {errors.pcc_min_value && touched.pcc_min_value && (
+                <p id="pcc_min_value-error" className="mt-1 text-sm text-red-600" role="alert">
+                  {errors.pcc_min_value}
+                </p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="pcc_max_value" className="block text-sm font-medium text-slate-700">
+                PCC Max Value
+              </label>
+              <input
+                type="number"
+                name="pcc_max_value"
+                id="pcc_max_value"
+                value={formData.pcc_max_value ?? ''}
+                onChange={handleChange}
+                aria-invalid={!!errors.pcc_max_value}
+                aria-describedby={errors.pcc_max_value ? 'pcc_max_value-error' : undefined}
+                className={`mt-1 block w-full px-3 py-2 bg-white border ${
+                  errors.pcc_max_value ? 'border-red-500' : 'border-slate-300'
+                } rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm`}
+              />
+              {errors.pcc_max_value && touched.pcc_max_value && (
+                <p id="pcc_max_value-error" className="mt-1 text-sm text-red-600" role="alert">
+                  {errors.pcc_max_value}
                 </p>
               )}
             </div>

@@ -314,17 +314,21 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
           </p>
           <div className="flex justify-end gap-3">
             <EnhancedButton
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => setDeleteModalOpen(false)}
+              rounded="lg"
+              elevation="sm"
               aria-label={t.cancel || 'Cancel delete'}
             >
               {t.cancel || 'Cancel'}
             </EnhancedButton>
             <EnhancedButton
-              variant="error"
+              variant="warning"
               size="sm"
               onClick={handleDeleteConfirm}
+              rounded="lg"
+              elevation="sm"
               aria-label={t.delete || 'Confirm delete'}
             >
               {t.delete || 'Delete'}

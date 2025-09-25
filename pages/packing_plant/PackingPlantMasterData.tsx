@@ -197,16 +197,20 @@ const PackingPlantMasterData: React.FC<{ t: any }> = ({ t }) => {
           <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
             <EnhancedButton
               onClick={handleDeleteConfirm}
-              variant="error"
+              variant="warning"
               className="sm:ml-3 sm:w-auto"
+              rounded="lg"
+              elevation="sm"
               aria-label={t.confirm_delete_button || 'Confirm delete'}
             >
               {t.confirm_delete_button}
             </EnhancedButton>
             <EnhancedButton
               onClick={handleCloseModals}
-              variant="secondary"
+              variant="outline"
               className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
+              rounded="lg"
+              elevation="sm"
               aria-label={t.cancel_button || 'Cancel'}
             >
               {t.cancel_button}

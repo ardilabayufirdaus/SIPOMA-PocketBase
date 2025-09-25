@@ -1838,6 +1838,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         {filteredParameterSettings.map((param, paramIndex) => {
                           const value = parameterDataMap.get(param.id)?.hourly_values[hour] ?? '';
                           const isCurrentlySaving = savingParameterId === param.id;
+                          const isProductTypeParameter = param.parameter
+                            .toLowerCase()
+                            .includes('tipe produk');
 
                           return (
                             <td
@@ -1849,65 +1852,98 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                               role="gridcell"
                             >
                               <div className="relative">
-                                <input
-                                  ref={(el) => {
-                                    const refKey = getInputRef('parameter', hour - 1, paramIndex);
-                                    setInputRef(refKey, el);
-                                  }}
-                                  type={
-                                    param.data_type === ParameterDataType.NUMBER ? 'text' : 'text'
-                                  }
-                                  defaultValue={
-                                    param.data_type === ParameterDataType.NUMBER
-                                      ? formatInputValue(value, getPrecisionForUnit(param.unit))
-                                      : value
-                                  }
-                                  onChange={(e) => {
-                                    if (param.data_type === ParameterDataType.NUMBER) {
-                                      const parsed = parseInputValue(e.target.value);
-                                      handleParameterDataChange(
-                                        param.id,
-                                        hour,
-                                        parsed !== null ? parsed.toString() : ''
-                                      );
-                                    } else {
+                                {isProductTypeParameter ? (
+                                  <select
+                                    ref={(el) => {
+                                      const refKey = getInputRef('parameter', hour - 1, paramIndex);
+                                      setInputRef(refKey, el);
+                                    }}
+                                    value={value}
+                                    onChange={(e) => {
                                       handleParameterDataChange(param.id, hour, e.target.value);
+                                    }}
+                                    onKeyDown={(e) =>
+                                      handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                     }
-                                  }}
-                                  onBlur={(e) => {
-                                    // Reformat numerical values on blur
-                                    if (param.data_type === ParameterDataType.NUMBER) {
-                                      const parsed = parseInputValue(e.target.value);
-                                      if (parsed !== null) {
-                                        e.target.value = formatInputValue(
-                                          parsed,
-                                          getPrecisionForUnit(param.unit)
+                                    disabled={isCurrentlySaving}
+                                    className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
+                                      isCurrentlySaving
+                                        ? 'opacity-50 cursor-not-allowed bg-slate-100'
+                                        : ''
+                                    }`}
+                                    style={{
+                                      fontSize: '12px',
+                                      minHeight: '32px',
+                                      maxWidth: '150px',
+                                    }}
+                                    aria-label={`Parameter ${param.parameter} jam ${hour}`}
+                                    title={`Pilih tipe produk untuk jam ${hour}`}
+                                  >
+                                    <option value="">Pilih Tipe</option>
+                                    <option value="OPC">OPC</option>
+                                    <option value="PCC">PCC</option>
+                                  </select>
+                                ) : (
+                                  <input
+                                    ref={(el) => {
+                                      const refKey = getInputRef('parameter', hour - 1, paramIndex);
+                                      setInputRef(refKey, el);
+                                    }}
+                                    type={
+                                      param.data_type === ParameterDataType.NUMBER ? 'text' : 'text'
+                                    }
+                                    defaultValue={
+                                      param.data_type === ParameterDataType.NUMBER
+                                        ? formatInputValue(value, getPrecisionForUnit(param.unit))
+                                        : value
+                                    }
+                                    onChange={(e) => {
+                                      if (param.data_type === ParameterDataType.NUMBER) {
+                                        const parsed = parseInputValue(e.target.value);
+                                        handleParameterDataChange(
+                                          param.id,
+                                          hour,
+                                          parsed !== null ? parsed.toString() : ''
                                         );
+                                      } else {
+                                        handleParameterDataChange(param.id, hour, e.target.value);
                                       }
+                                    }}
+                                    onBlur={(e) => {
+                                      // Reformat numerical values on blur
+                                      if (param.data_type === ParameterDataType.NUMBER) {
+                                        const parsed = parseInputValue(e.target.value);
+                                        if (parsed !== null) {
+                                          e.target.value = formatInputValue(
+                                            parsed,
+                                            getPrecisionForUnit(param.unit)
+                                          );
+                                        }
+                                      }
+                                    }}
+                                    onKeyDown={(e) =>
+                                      handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                     }
-                                  }}
-                                  onKeyDown={(e) =>
-                                    handleKeyDown(e, 'parameter', hour - 1, paramIndex)
-                                  }
-                                  disabled={isCurrentlySaving}
-                                  className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
-                                    isCurrentlySaving
-                                      ? 'opacity-50 cursor-not-allowed bg-slate-100'
-                                      : ''
-                                  }`}
-                                  style={{
-                                    fontSize: '12px',
-                                    minHeight: '32px',
-                                    maxWidth: '150px',
-                                  }}
-                                  aria-label={`Parameter ${param.parameter} jam ${hour}`}
-                                  title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
-                                  placeholder={
-                                    param.data_type === ParameterDataType.NUMBER
-                                      ? '0,0'
-                                      : 'Enter text'
-                                  }
-                                />
+                                    disabled={isCurrentlySaving}
+                                    className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
+                                      isCurrentlySaving
+                                        ? 'opacity-50 cursor-not-allowed bg-slate-100'
+                                        : ''
+                                    }`}
+                                    style={{
+                                      fontSize: '12px',
+                                      minHeight: '32px',
+                                      maxWidth: '150px',
+                                    }}
+                                    aria-label={`Parameter ${param.parameter} jam ${hour}`}
+                                    title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
+                                    placeholder={
+                                      param.data_type === ParameterDataType.NUMBER
+                                        ? '0,0'
+                                        : 'Enter text'
+                                    }
+                                  />
+                                )}
                                 {isCurrentlySaving && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
                                     <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
@@ -2091,17 +2127,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         </div>
         <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
           <EnhancedButton
-            variant="error"
+            variant="warning"
             onClick={handleDeleteConfirm}
             className="sm:ml-3 sm:w-auto"
+            rounded="lg"
+            elevation="sm"
             aria-label={t.confirm_delete_button || 'Confirm delete'}
           >
             {t.confirm_delete_button}
           </EnhancedButton>
           <EnhancedButton
-            variant="secondary"
+            variant="outline"
             onClick={handleCloseDeleteModal}
             className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
+            rounded="lg"
+            elevation="sm"
             aria-label={t.cancel_button || 'Cancel'}
           >
             {t.cancel_button}

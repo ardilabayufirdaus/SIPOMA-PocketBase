@@ -125,6 +125,10 @@ export interface Database {
           category: string;
           min_value: number | null;
           max_value: number | null;
+          opc_min_value: number | null;
+          opc_max_value: number | null;
+          pcc_min_value: number | null;
+          pcc_max_value: number | null;
           created_at: string;
           updated_at: string;
         };
@@ -136,6 +140,10 @@ export interface Database {
           category: string;
           min_value?: number | null;
           max_value?: number | null;
+          opc_min_value?: number | null;
+          opc_max_value?: number | null;
+          pcc_min_value?: number | null;
+          pcc_max_value?: number | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -147,6 +155,10 @@ export interface Database {
           category?: string;
           min_value?: number | null;
           max_value?: number | null;
+          opc_min_value?: number | null;
+          opc_max_value?: number | null;
+          pcc_min_value?: number | null;
+          pcc_max_value?: number | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
+import * as React from 'import { useCurrentUser } from '../hooks/useCurrentUser';rt { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { formatIndonesianNumber } from '../utils/formatUtils';
 import { Page } from '../App';
@@ -22,6 +21,9 @@ import ChartBarIcon from '../components/icons/ChartBarIcon';
 import CogIcon from '../components/icons/CogIcon';
 import CheckBadgeIcon from '../components/icons/CheckBadgeIcon';
 import ClockIcon from '../components/icons/ClockIcon';
+import { useProjects } from '../hooks/useProjects';
+import { usePlantData } from '../hooks/usePlantData';
+import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
 import { formatPercentage } from '../utils/formatters';
 import { exportToExcelStyled } from '../utils/excelUtils';
 import { InteractiveCardModal, BreakdownData } from '../components/InteractiveCardModal';
@@ -56,7 +58,7 @@ const ModernDashboardHeader: React.FC<{
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-xl p-4 text-white relative overflow-hidden shadow-2xl"
+      className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl p-6 text-white relative overflow-hidden shadow-2xl"
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10" />
@@ -65,10 +67,10 @@ const ModernDashboardHeader: React.FC<{
 
       <div className="relative">
         {/* Main Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <H1 className="mb-1 tracking-tight text-xl">Selamat Datang di SIPOMA</H1>
-            <Body size="small" className="text-white/90">
+            <H1 className="mb-2 tracking-tight">Selamat Datang di SIPOMA</H1>
+            <Body size="large" className="text-white/90">
               System Informasi Plant Operations Management & Analytics
             </Body>
           </div>
@@ -89,44 +91,47 @@ const ModernDashboardHeader: React.FC<{
               />
             </div>
 
-            <button
-              onClick={onToggleAutoRefresh}
-              className={`
+              <button
+                onClick={onToggleAutoRefresh}
+                className={`
                   flex items-center space-x-2 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/30 transition-all duration-300
-                  ${
-                    isAutoRefresh
-                      ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5'
-                      : 'bg-white/20 hover:bg-white/30 text-white/80 hover:text-white'
+                  ${isAutoRefresh 
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5' 
+                    : 'bg-white/20 hover:bg-white/30 text-white/80 hover:text-white'
                   }
                 `}
-            >
-              {isAutoRefresh ? <PauseIcon className="w-4 h-4" /> : <PlayIcon className="w-4 h-4" />}
-              <span className="text-sm font-medium">
-                {isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}
-              </span>
-            </button>
-
-            <button
-              onClick={onRefresh}
-              className="p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-            >
-              <RefreshCcwIcon className="w-4 h-4" />
-            </button>
-
-            {onExport && (
-              <button
-                onClick={onExport}
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border border-green-500 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 text-white font-semibold"
               >
-                <DownloadIcon className="w-5 h-5" />
-                <span className="text-sm font-medium">Export Data</span>
+                {isAutoRefresh ? (
+                  <PauseIcon className="w-4 h-4" />
+                ) : (
+                  <PlayIcon className="w-4 h-4" />
+                )}
+                <span className="text-sm font-medium">
+                  {isAutoRefresh ? 'Auto Refresh' : 'Manual Mode'}
+                </span>
               </button>
-            )}
+
+              <button
+                onClick={onRefresh}
+                className="p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+              >
+                <RefreshCcwIcon className="w-4 h-4" />
+              </button>
+
+              {onExport && (
+                <button
+                  onClick={onExport}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border border-green-500 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 text-white font-semibold"
+                >
+                  <DownloadIcon className="w-5 h-5" />
+                  <span className="text-sm font-medium">Export Data</span>
+                </button>
+              )}
           </div>
         </div>
 
         {/* Status Row */}
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" />
@@ -223,46 +228,28 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
         animate={{ opacity: 1, y: 0 }}
         whileHover={{
           scale: isInteractive ? 1.02 : 1,
-          y: isInteractive ? -4 : 0,
-          boxShadow: isInteractive ? '0 20px 40px rgba(0,0,0,0.1)' : undefined,
+          y: isInteractive ? -2 : 0,
         }}
         whileTap={{ scale: isInteractive ? 0.98 : 1 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
         className={`
           relative overflow-hidden rounded-2xl border backdrop-blur-sm cursor-pointer transition-all duration-300
           ${getVariantClasses()}
-          ${isInteractive ? 'hover:shadow-2xl hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50' : ''}
+          ${isInteractive ? 'hover:shadow-xl' : ''}
         `}
         onClick={handleClick}
-        role={isInteractive ? 'button' : undefined}
-        tabIndex={isInteractive ? 0 : undefined}
-        aria-label={isInteractive ? `View details for ${title}` : undefined}
-        onKeyDown={
-          isInteractive
-            ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleClick();
-                }
-              }
-            : undefined
-        }
       >
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20 dark:from-transparent dark:via-white/5 dark:to-white/10" />
 
-        <div className="relative p-4">
+        <div className="relative p-6">
           {/* Header */}
-          <div className="flex items-start justify-between mb-2">
-            <motion.div
-              className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}
-              whileHover={{ scale: 1.1, rotate: 5 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-            >
+          <div className="flex items-start justify-between mb-4">
+            <div className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}>
               {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
                 className: 'w-5 h-5',
               })}
-            </motion.div>
+            </div>
             {isInteractive && (
               <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 <MoreHorizontalIcon className="w-4 h-4" />
@@ -271,13 +258,13 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
           </div>
 
           {/* Content */}
-          <div className="space-y-1">
-            <h3 className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
               {title}
             </h3>
 
             <div className="flex items-baseline space-x-2">
-              <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {typeof value === 'number' ? formatIndonesianNumber(value) : value}
               </span>
               {unit && (
@@ -334,26 +321,20 @@ const QuickLinkCard: React.FC<QuickLinkCardProps> = ({ title, icon, onClick }) =
   <motion.button
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
-    whileHover={{
-      scale: 1.05,
-      y: -4,
-      boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
-    }}
+    whileHover={{ scale: 1.05, y: -2 }}
     whileTap={{ scale: 0.95 }}
     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     onClick={onClick}
-    className="w-full glass-card p-3 rounded-xl hover-lift group transition-all duration-300 relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-    aria-label={`Navigate to ${title}`}
-    role="button"
+    className="w-full glass-card p-4 rounded-2xl hover-lift group transition-all duration-300 relative overflow-hidden"
   >
     <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     <div className="relative z-10 flex flex-col items-center justify-center text-center">
-      <div className="p-2 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:to-red-600 group-hover:text-white transition-all duration-300 mb-2 group-hover:scale-110 group-hover:rotate-3">
+      <div className="p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-400 group-hover:bg-gradient-to-br group-hover:from-red-500 group-hover:to-red-600 group-hover:text-white transition-all duration-300 mb-3 group-hover:scale-105">
         {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-          className: 'w-4 h-4',
+          className: 'w-5 h-5',
         })}
       </div>
-      <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300 truncate">
+      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300 truncate">
         {title}
       </p>
     </div>
@@ -407,7 +388,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
     minute: '2-digit',
   });
 
-  const getKPITrend = (currentValue: number) => {
+  const getKPITrend = (currentValue: number, kpiId: string) => {
     const baseValue = typeof currentValue === 'string' ? parseFloat(currentValue) : currentValue;
 
     const previousValue = baseValue * (0.95 + Math.random() * 0.1);
@@ -481,33 +462,31 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden">
-      <div className="h-full max-w-screen-2xl mx-auto p-3 space-y-4 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="max-w-screen-2xl mx-auto p-6 space-y-8">
         {/* Enhanced Header */}
-        <div className="flex-shrink-0">
-          <ModernDashboardHeader
-            currentTime={currentTime}
-            onSearch={() => {}} // TODO: Implement search functionality
-            isAutoRefresh={isAutoRefresh}
-            onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
-            onRefresh={() => {}} // TODO: Implement refresh functionality
-            onExport={handleExportDashboardData}
-          />
-        </div>
+        <ModernDashboardHeader
+          currentTime={currentTime}
+          onSearch={(query) => {}} // TODO: Implement search functionality
+          isAutoRefresh={isAutoRefresh}
+          onToggleAutoRefresh={() => setIsAutoRefresh(!isAutoRefresh)}
+          onRefresh={() => {}} // TODO: Implement refresh functionality
+          onExport={handleExportDashboardData}
+        />
 
         {/* Enhanced Quick Stats */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, staggerChildren: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 flex-shrink-0"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           <QuickStatCard
             title="Active Users"
             value={usersCount}
             icon={<UserGroupIcon className="w-5 h-5" />}
             variant="default"
-            trend={getKPITrend(usersCount)}
+            trend={getKPITrend(usersCount, 'users')}
             onClick={() => onNavigate('users')}
           />
 
@@ -516,7 +495,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             value={onlineUsersCount}
             icon={<UsersOnlineIcon className="w-5 h-5" />}
             variant="online"
-            trend={getKPITrend(onlineUsersCount)}
+            trend={getKPITrend(onlineUsersCount, 'online')}
             onClick={() => onNavigate('users')}
           />
 
@@ -525,7 +504,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             value={activeProjects}
             icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
             variant="success"
-            trend={getKPITrend(activeProjects)}
+            trend={getKPITrend(activeProjects, 'projects')}
             onClick={() => onNavigate('projects', 'proj_list')}
           />
 
@@ -541,17 +520,12 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
         </motion.div>
 
         {/* Quick Links */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="flex-shrink-0"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-4 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Quick Access</h2>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">Quick Access</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <QuickLinkCard
               title="User Management"
               icon={<UserGroupIcon className="w-5 h-5" />}
@@ -590,7 +564,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="bg-white/80 backdrop-blur-xl dark:bg-slate-800/80 rounded-xl border border-slate-200/50 dark:border-slate-700/30 p-3 shadow-lg mt-auto"
+          className="bg-white/80 backdrop-blur-xl dark:bg-slate-800/80 rounded-2xl border border-slate-200/50 dark:border-slate-700/30 p-4 shadow-lg"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">

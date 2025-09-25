@@ -338,7 +338,7 @@ export const componentVariants = {
         backgroundHover: colors.warning[600],
         backgroundActive: colors.warning[700],
         backgroundDisabled: colors.neutral[200],
-        color: colors.neutral[0],
+        color: colors.neutral[900],
         colorDisabled: colors.neutral[400],
         border: 'transparent',
         focusRing: colors.warning[500],

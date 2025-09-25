@@ -26,6 +26,29 @@ const formatCopNumber = (num: number | null | undefined): string => {
   return formatNumberIndonesian(num, 1);
 };
 
+// Helper function to get min/max values based on cement type
+const getMinMaxForCementType = (
+  parameter: ParameterSetting,
+  cementType: string
+): { min: number | undefined; max: number | undefined } => {
+  if (cementType === 'OPC') {
+    return {
+      min: parameter.opc_min_value ?? parameter.min_value,
+      max: parameter.opc_max_value ?? parameter.max_value,
+    };
+  } else if (cementType === 'PCC') {
+    return {
+      min: parameter.pcc_min_value ?? parameter.min_value,
+      max: parameter.pcc_max_value ?? parameter.max_value,
+    };
+  }
+  // Default fallback
+  return {
+    min: parameter.min_value,
+    max: parameter.max_value,
+  };
+};
+
 const getPercentageColor = (
   percentage: number | null
 ): { bg: string; text: string; darkBg: string; status: string } => {
@@ -83,6 +106,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Set default filter so not all parameters are shown for all categories/units
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
+  const [selectedCementType, setSelectedCementType] = useState('OPC');
   const [selectedOperator, setSelectedOperator] = useState('');
   const [selectedParameterStats, setSelectedParameterStats] = useState<{
     parameter: string;
@@ -231,8 +255,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           .map((parameter) => {
             const dailyValues = dates.map((dateString) => {
               const avg = dailyAverages.get(parameter.id)?.get(dateString);
-              // FIX: Use snake_case properties `min_value` and `max_value`
-              const { min_value, max_value } = parameter;
+              // Use helper function for consistent min/max calculation
+              const { min: min_value, max: max_value } = getMinMaxForCementType(
+                parameter,
+                selectedCementType
+              );
 
               if (
                 avg === undefined ||
@@ -290,6 +317,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     getFooterDataForDate,
     selectedCategory,
     selectedUnit,
+    selectedCementType,
   ]);
 
   const dailyQaf = useMemo(() => {
@@ -518,6 +546,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
+                htmlFor="cop-filter-cement-type"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Cement Type:
+              </label>
+              <select
+                id="cop-filter-cement-type"
+                value={selectedCementType}
+                onChange={(e) => setSelectedCementType(e.target.value)}
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+              >
+                <option value="OPC">OPC</option>
+                <option value="PCC">PCC</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
                 htmlFor="cop-filter-month"
                 className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
               >
@@ -673,12 +718,18 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 min-w-[140px]">
                       {row.parameter.parameter}
                     </td>
-                    {/* FIX: Use snake_case properties `min_value` and `max_value` */}
+                    {/* Use helper function for consistent min/max display */}
                     <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
-                      {formatCopNumber(row.parameter.min_value)}
+                      {(() => {
+                        const { min } = getMinMaxForCementType(row.parameter, selectedCementType);
+                        return formatCopNumber(min);
+                      })()}
                     </td>
                     <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
-                      {formatCopNumber(row.parameter.max_value)}
+                      {(() => {
+                        const { max } = getMinMaxForCementType(row.parameter, selectedCementType);
+                        return formatCopNumber(max);
+                      })()}
                     </td>
                     {row.dailyValues.map((day, dayIndex) => {
                       const colors = getPercentageColor(day.value);
@@ -712,12 +763,17 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     {formatCopNumber(day.raw)} {row.parameter.unit}
                                   </span>
                                 </p>
-                                {/* FIX: Use snake_case properties `min_value` and `max_value` */}
+                                {/* Use helper function for consistent target display */}
                                 <p className="text-xs">
                                   <strong>Target:</strong>{' '}
                                   <span className="font-mono text-xs">
-                                    {formatCopNumber(row.parameter.min_value)} -{' '}
-                                    {formatCopNumber(row.parameter.max_value)}
+                                    {(() => {
+                                      const { min, max } = getMinMaxForCementType(
+                                        row.parameter,
+                                        selectedCementType
+                                      );
+                                      return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
+                                    })()}
                                   </span>
                                 </p>
                                 {day.value !== null && (

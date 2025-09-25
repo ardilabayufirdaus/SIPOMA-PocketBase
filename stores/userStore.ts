@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { User } from '../types';
 import { SHA256 } from 'crypto-js';
+import { buildPermissionMatrix } from '../utils/permissionUtils';
 
 interface UserManagementState {
   users: User[];
@@ -89,6 +90,107 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
             return { users: updatedUsers };
           });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'permissions',
+        },
+        (payload) => {
+          console.log('Realtime permission change:', payload);
+          const { eventType, new: newRecord, old: oldRecord } = payload;
+
+          set((state) => {
+            let updatedPermissions = [...state.permissions];
+
+            if (eventType === 'INSERT' && newRecord) {
+              updatedPermissions.unshift(newRecord);
+            } else if (eventType === 'UPDATE' && newRecord) {
+              updatedPermissions = updatedPermissions.map((perm) =>
+                perm.id === newRecord.id ? newRecord : perm
+              );
+            } else if (eventType === 'DELETE' && oldRecord) {
+              updatedPermissions = updatedPermissions.filter((perm) => perm.id !== oldRecord.id);
+            }
+
+            return { permissions: updatedPermissions };
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'roles',
+        },
+        (payload) => {
+          console.log('Realtime role change:', payload);
+          const { eventType, new: newRecord, old: oldRecord } = payload;
+
+          set((state) => {
+            let updatedRoles = [...state.roles];
+
+            if (eventType === 'INSERT' && newRecord) {
+              updatedRoles.unshift(newRecord);
+            } else if (eventType === 'UPDATE' && newRecord) {
+              updatedRoles = updatedRoles.map((role) =>
+                role.id === newRecord.id ? newRecord : role
+              );
+            } else if (eventType === 'DELETE' && oldRecord) {
+              updatedRoles = updatedRoles.filter((role) => role.id !== oldRecord.id);
+            }
+
+            return { roles: updatedRoles };
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_permissions',
+        },
+        async (payload) => {
+          console.log('Realtime user_permissions change:', payload);
+          const { eventType, new: newRecord, old: oldRecord } = payload;
+
+          // For user_permissions changes, we need to refetch the affected user's permissions
+          const record = newRecord || oldRecord;
+          if (record && (record as any).user_id) {
+            const userId = (record as any).user_id;
+            try {
+              // Refetch permissions for this user
+              const { data: userPermissions, error } = await supabase
+                .from('user_permissions')
+                .select(
+                  `
+                  permissions (
+                    module_name,
+                    permission_level,
+                    plant_units
+                  )
+                `
+                )
+                .eq('user_id', userId);
+
+              if (!error && userPermissions) {
+                const permissionsMatrix = buildPermissionMatrix(userPermissions);
+
+                set((state) => ({
+                  users: state.users.map((user) =>
+                    user.id === userId ? { ...user, permissions: permissionsMatrix } : user
+                  ),
+                }));
+              }
+            } catch (err) {
+              console.error('Error refetching user permissions:', err);
+            }
+          }
         }
       )
       .subscribe();

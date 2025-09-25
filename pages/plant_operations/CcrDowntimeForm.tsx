@@ -98,13 +98,8 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       const startSeconds = parseTime(startTime);
       const endSeconds = parseTime(endTime);
 
-      if (startSeconds >= endSeconds) {
-        return 'End time must be after start time';
-      }
-
-      // Minimum 5 minutes duration
-      if (endSeconds - startSeconds < 300) {
-        return 'Minimum downtime duration is 5 minutes';
+      if (startSeconds > endSeconds) {
+        return 'End time must be after or equal to start time';
       }
     }
     return null;

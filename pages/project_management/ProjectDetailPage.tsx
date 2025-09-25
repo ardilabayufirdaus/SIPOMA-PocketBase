@@ -1494,12 +1494,20 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                     <div className="flex justify-end gap-3">
                       <EnhancedButton
                         onClick={() => setDeleteModalOpen(false)}
-                        variant="secondary"
+                        variant="outline"
                         size="sm"
+                        rounded="lg"
+                        elevation="sm"
                       >
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton onClick={handleDeleteConfirm} variant="error" size="sm">
+                      <EnhancedButton
+                        onClick={handleDeleteConfirm}
+                        variant="warning"
+                        size="sm"
+                        rounded="lg"
+                        elevation="sm"
+                      >
                         {t.delete}
                       </EnhancedButton>
                     </div>

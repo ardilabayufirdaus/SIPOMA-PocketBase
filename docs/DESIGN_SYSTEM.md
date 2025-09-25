@@ -111,39 +111,59 @@ spacing: {
 
 #### Variants
 
-- **Primary**: Main actions, high emphasis
-- **Secondary**: Alternative actions, medium emphasis
-- **Success**: Positive actions (save, confirm)
-- **Warning**: Caution actions (delete with confirmation)
-- **Error**: Destructive actions (delete, cancel)
-- **Outline**: Low emphasis, secondary actions
-- **Ghost**: Minimal styling, subtle actions
+- **Primary**: Main actions, high emphasis (gradient background)
+- **Secondary**: Alternative actions, medium emphasis (gradient background)
+- **Success**: Positive actions (save, confirm) (gradient background)
+- **Warning**: Caution actions (delete with confirmation) (gradient background)
+- **Error**: Destructive actions (delete, cancel) (gradient background)
+- **Gradient**: Special premium actions (multi-color gradient)
+- **Glass**: Modern glassmorphism effect (backdrop blur)
+- **Outline**: Low emphasis, secondary actions (border only)
+- **Ghost**: Minimal styling, subtle actions (transparent with border)
 
 #### Sizes
 
 - **xs**: 32px height, small icons/buttons
 - **sm**: 36px height, compact interfaces
-- **base**: 40px height, standard buttons
-- **lg**: 44px height, prominent actions
-- **xl**: 48px height, hero buttons
+- **md**: 44px height, standard buttons (recommended)
+- **lg**: 52px height, prominent actions
+- **xl**: 60px height, hero buttons
+
+#### Elevation Levels
+
+- **none**: Flat design
+- **sm**: Subtle shadow
+- **md**: Standard shadow
+- **lg**: Prominent shadow
+- **xl**: Strong shadow
+- **2xl**: Maximum shadow
 
 #### States
 
-- **Default**: Normal state
-- **Hover**: Background color changes
-- **Active**: Scale down 95%, darker background
-- **Disabled**: 50% opacity, not clickable
-- **Loading**: Shows spinner, disabled state
+- **Default**: Normal state with gradient backgrounds
+- **Hover**: Lift effect (-translate-y), enhanced shadow, color shift
+- **Active**: Scale down (98%), instant feedback
+- **Focus**: Enhanced ring with glow effect
+- **Disabled**: Reduced opacity, no interactions
+- **Loading**: Animated spinner, wait cursor, disabled state
+
+#### Micro-interactions
+
+- **Hover**: Smooth lift animation with shadow enhancement
+- **Press**: Scale feedback with ripple effect
+- **Focus**: Glowing ring with backdrop blur
+- **Loading**: Smooth spinner animation
+- **Ripple**: Material Design inspired ripple effect
 
 ### Input Component
 
-#### Sizes
+#### Input Sizes
 
 - **sm**: 36px height, compact forms
 - **base**: 40px height, standard inputs
 - **lg**: 44px height, prominent inputs
 
-#### States
+#### Input States
 
 - **Default**: Neutral styling
 - **Focus**: Blue ring, enhanced border

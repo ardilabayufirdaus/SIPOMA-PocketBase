@@ -104,6 +104,10 @@ export interface ParameterSetting {
   category: string;
   min_value?: number;
   max_value?: number;
+  opc_min_value?: number;
+  opc_max_value?: number;
+  pcc_min_value?: number;
+  pcc_max_value?: number;
 }
 
 export interface SiloCapacity {

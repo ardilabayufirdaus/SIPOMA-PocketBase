@@ -485,19 +485,23 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         </div>
         <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
           <EnhancedButton
-            variant="error"
+            variant="warning"
             size="sm"
             onClick={handleDeleteRiskConfirm}
             className="sm:ml-3"
+            rounded="lg"
+            elevation="sm"
             aria-label={t.confirm_delete_button || 'Confirm delete'}
           >
             {t.confirm_delete_button}
           </EnhancedButton>
           <EnhancedButton
-            variant="secondary"
+            variant="outline"
             size="sm"
             onClick={() => setDeleteModalOpen(false)}
             className="mt-3 sm:mt-0 sm:ml-3"
+            rounded="lg"
+            elevation="sm"
             aria-label={t.cancel_button || 'Cancel delete'}
           >
             {t.cancel_button}

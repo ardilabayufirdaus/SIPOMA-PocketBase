@@ -483,6 +483,10 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           Category: param.category,
           Min_Value: param.min_value || '',
           Max_Value: param.max_value || '',
+          OPC_Min_Value: param.opc_min_value || '',
+          OPC_Max_Value: param.opc_max_value || '',
+          PCC_Min_Value: param.pcc_min_value || '',
+          PCC_Max_Value: param.pcc_max_value || '',
         }));
         sheets.push({ name: 'Parameter Settings', data: paramData });
       }
@@ -544,6 +548,8 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     if (isImporting) return;
 
     try {
+      let importCount = 0;
+      let errorMessages: string[] = [];
       const { sheets } = await importMultipleSheets(file);
 
       // Import Plant Units
@@ -618,6 +624,10 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                   category: String(row.Category),
                   min_value: row.Min_Value ? Number(row.Min_Value) : null,
                   max_value: row.Max_Value ? Number(row.Max_Value) : null,
+                  opc_min_value: row.OPC_Min_Value ? Number(row.OPC_Min_Value) : null,
+                  opc_max_value: row.OPC_Max_Value ? Number(row.OPC_Max_Value) : null,
+                  pcc_min_value: row.PCC_Min_Value ? Number(row.PCC_Min_Value) : null,
+                  pcc_max_value: row.PCC_Max_Value ? Number(row.PCC_Max_Value) : null,
                 });
                 importCount++;
               }
@@ -1030,6 +1040,18 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   {t.max_value}
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  OPC Min
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  OPC Max
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  PCC Min
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  PCC Max
+                </th>
                 <th className="relative px-6 py-3">
                   <span className="sr-only">{t.actions}</span>
                 </th>
@@ -1058,6 +1080,26 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                     {param.data_type === ParameterDataType.NUMBER ? (param.max_value ?? '-') : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.opc_min_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.opc_max_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.pcc_min_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.pcc_max_value ?? '-')
+                      : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
