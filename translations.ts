@@ -28,6 +28,17 @@ export const translations = {
     theme_dark: 'Dark',
     header_sign_out: 'Sign Out',
 
+    // Tooltips
+    tooltip_toggle_menu: 'Toggle navigation menu',
+    tooltip_add_user: 'Create a new user account',
+    tooltip_switch_dark: 'Switch to dark mode',
+    tooltip_switch_light: 'Switch to light mode',
+    tooltip_notifications: 'View notifications',
+    tooltip_notifications_unread: '{count} unread notifications',
+    tooltip_sign_out: 'Sign out from application',
+    tooltip_open_user_menu: '{name} profile & settings',
+    tooltip_close_user_menu: 'Close user menu',
+
     // Notifications
     notifications_title: 'Notifications',
     mark_all_as_read: 'Mark all as read',
@@ -616,6 +627,17 @@ export const translations = {
     theme_light: 'Terang',
     theme_dark: 'Gelap',
     header_sign_out: 'Keluar',
+
+    // Tooltips
+    tooltip_toggle_menu: 'Buka/tutup menu navigasi',
+    tooltip_add_user: 'Buat akun pengguna baru',
+    tooltip_switch_dark: 'Ubah ke mode gelap',
+    tooltip_switch_light: 'Ubah ke mode terang',
+    tooltip_notifications: 'Lihat notifikasi',
+    tooltip_notifications_unread: '{count} notifikasi belum dibaca',
+    tooltip_sign_out: 'Keluar dari aplikasi',
+    tooltip_open_user_menu: 'Profil & pengaturan {name}',
+    tooltip_close_user_menu: 'Tutup menu pengguna',
 
     // Notifications
     notifications_title: 'Notifikasi',

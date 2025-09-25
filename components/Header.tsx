@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlusIcon from './icons/PlusIcon';
 import UserIcon from './icons/UserIcon';
-import BellIcon from './icons/BellIcon';
 import CogIcon from './icons/CogIcon';
 import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
 import Bars3Icon from './icons/Bars3Icon';
 import { Page, Theme } from '../App';
 import { User } from '../types';
-import { formatTimeSince } from '../utils/formatters';
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
 import QuestionMarkCircleIcon from './icons/QuestionMarkCircleIcon';
 import SunIcon from './icons/SunIcon';
@@ -18,7 +16,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import NotificationPanel from './NotificationPanel';
 
 // Import Enhanced Components
-import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
+import { EnhancedButton, SkipLinks, AccessibleTooltip } from './ui/EnhancedComponents';
 
 interface HeaderProps {
   pageTitle: string;
@@ -119,22 +117,28 @@ const Header: React.FC<HeaderProps> = ({
             >
               {/* Mobile Hamburger Menu */}
               {isMobile && onToggleSidebar && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                <AccessibleTooltip
+                  content={t.tooltip_toggle_menu || 'Toggle navigation menu'}
+                  position="bottom"
+                  delay={500}
                 >
-                  <EnhancedButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={onToggleSidebar}
-                    ariaLabel="Toggle navigation menu"
-                    className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
-                    icon={<Bars3Icon className="w-5 h-5" />}
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   >
-                    <span className="sr-only">Toggle navigation menu</span>
-                  </EnhancedButton>
-                </motion.div>
+                    <EnhancedButton
+                      variant="ghost"
+                      size="sm"
+                      onClick={onToggleSidebar}
+                      ariaLabel="Toggle navigation menu"
+                      className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
+                      icon={<Bars3Icon className="w-5 h-5" />}
+                    >
+                      <span className="sr-only">Toggle navigation menu</span>
+                    </EnhancedButton>
+                  </motion.div>
+                </AccessibleTooltip>
               )}
 
               {/* Logo Container */}
@@ -184,84 +188,115 @@ const Header: React.FC<HeaderProps> = ({
             >
               {/* Add User Button */}
               {showAddUserButton && (
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                <AccessibleTooltip
+                  content={t.tooltip_add_user || 'Create a new user account'}
+                  position="bottom"
+                  delay={500}
                 >
-                  <EnhancedButton
-                    variant="primary"
-                    size="sm"
-                    onClick={onAddUser}
-                    ariaLabel={t.add_user_button || 'Add new user'}
-                    icon={<PlusIcon className="w-4 h-4" />}
-                    className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   >
-                    {t.add_user_button}
-                  </EnhancedButton>
-                </motion.div>
+                    <EnhancedButton
+                      variant="primary"
+                      size="sm"
+                      onClick={onAddUser}
+                      ariaLabel={t.add_user_button || 'Add new user'}
+                      icon={<PlusIcon className="w-4 h-4" />}
+                      className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {t.add_user_button}
+                    </EnhancedButton>
+                  </motion.div>
+                </AccessibleTooltip>
               )}
 
               {/* Theme Toggle */}
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+              <AccessibleTooltip
+                content={
+                  theme === 'light'
+                    ? t.tooltip_switch_dark || 'Switch to dark mode'
+                    : t.tooltip_switch_light || 'Switch to light mode'
+                }
+                position="bottom"
+                delay={500}
               >
-                <EnhancedButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={onToggleTheme}
-                  ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                  className="relative p-2 rounded-lg bg-gradient-to-br from-transparent via-white/5 to-white/10 hover:from-white/10 hover:via-white/15 hover:to-white/20 dark:from-transparent dark:via-black/5 dark:to-black/10 dark:hover:from-black/10 dark:hover:via-black/15 dark:hover:to-black/20 transition-all duration-300 group border border-transparent hover:border-white/20 dark:hover:border-white/10 shadow-sm hover:shadow-md"
-                  icon={
-                    <motion.div
-                      key={theme}
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeOut' }}
-                      className="relative"
-                    >
-                      {theme === 'light' ? (
-                        <MoonIcon className="w-5 h-5 text-purple-400 group-hover:text-purple-300 transition-colors duration-200" />
-                      ) : (
-                        <SunIcon className="w-5 h-5 text-yellow-400 group-hover:text-yellow-300 transition-colors duration-200" />
-                      )}
-                      {/* Subtle glow effect */}
-                      <div className="absolute inset-0 rounded-full bg-current opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-200" />
-                    </motion.div>
-                  }
+                <motion.div
+                  whileHover={{ scale: 1.05, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 >
-                  <span className="sr-only">
-                    Switch to {theme === 'light' ? 'dark' : 'light'} mode
-                  </span>
-                </EnhancedButton>
-              </motion.div>
+                  <EnhancedButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={onToggleTheme}
+                    ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                    className="relative p-2 rounded-lg bg-gradient-to-br from-transparent via-white/5 to-white/10 hover:from-white/10 hover:via-white/15 hover:to-white/20 dark:from-transparent dark:via-black/5 dark:to-black/10 dark:hover:from-black/10 dark:hover:via-black/15 dark:hover:to-black/20 transition-all duration-300 group border border-transparent hover:border-white/20 dark:hover:border-white/10 shadow-sm hover:shadow-md"
+                    icon={
+                      <motion.div
+                        key={theme}
+                        initial={{ rotate: -90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: 90, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="relative"
+                      >
+                        {theme === 'light' ? (
+                          <MoonIcon className="w-5 h-5 text-purple-400 group-hover:text-purple-300 transition-colors duration-200" />
+                        ) : (
+                          <SunIcon className="w-5 h-5 text-yellow-400 group-hover:text-yellow-300 transition-colors duration-200" />
+                        )}
+                        {/* Subtle glow effect */}
+                        <div className="absolute inset-0 rounded-full bg-current opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-200" />
+                      </motion.div>
+                    }
+                  >
+                    <span className="sr-only">
+                      Switch to {theme === 'light' ? 'dark' : 'light'} mode
+                    </span>
+                  </EnhancedButton>
+                </motion.div>
+              </AccessibleTooltip>
 
               {/* Notifications */}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+              <AccessibleTooltip
+                content={
+                  unreadCount > 0
+                    ? t.tooltip_notifications_unread?.replace('{count}', unreadCount.toString()) ||
+                      `${unreadCount} unread notifications`
+                    : t.tooltip_notifications || 'View notifications'
+                }
+                position="bottom"
+                delay={500}
               >
-                <NotificationPanel
-                  notifications={notifications}
-                  unreadCount={unreadCount}
-                  settings={settings}
-                  onMarkAsRead={markAsRead}
-                  onMarkAllAsRead={markAllAsRead}
-                  onDismiss={dismissNotification}
-                  onSnooze={snoozeNotification}
-                  onUpdateSettings={updateSettings}
-                  t={t}
-                  isOpen={isNotifMenuOpen}
-                  onToggle={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
-                />
-              </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                >
+                  <NotificationPanel
+                    notifications={notifications}
+                    unreadCount={unreadCount}
+                    settings={settings}
+                    onMarkAsRead={markAsRead}
+                    onMarkAllAsRead={markAllAsRead}
+                    onDismiss={dismissNotification}
+                    onSnooze={snoozeNotification}
+                    onUpdateSettings={updateSettings}
+                    t={t}
+                    isOpen={isNotifMenuOpen}
+                    onToggle={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
+                  />
+                </motion.div>
+              </AccessibleTooltip>
 
-              {/* User Profile Dropdown */}
-              <div className="relative" ref={userDropdownRef}>
+              {/* Sign Out Button */}
+              <AccessibleTooltip
+                content={t.tooltip_sign_out || 'Sign out from application'}
+                position="bottom"
+                delay={500}
+              >
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -270,35 +305,76 @@ const Header: React.FC<HeaderProps> = ({
                   <EnhancedButton
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                    ariaLabel={isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
-                    ariaExpanded={isUserMenuOpen}
-                    className="relative p-1.5 rounded-full bg-gradient-to-br from-white/10 via-white/5 to-transparent hover:from-white/20 hover:via-white/10 hover:to-white/5 dark:from-black/10 dark:via-black/5 dark:to-transparent dark:hover:from-black/20 dark:hover:via-black/10 dark:hover:to-black/5 transition-all duration-300 ring-2 ring-transparent hover:ring-white/30 dark:hover:ring-white/20 shadow-sm hover:shadow-lg group"
+                    onClick={onSignOut}
+                    ariaLabel="Sign out from application"
+                    className="relative p-2 rounded-lg bg-gradient-to-br from-transparent via-red-500/5 to-red-500/10 hover:from-red-500/10 hover:via-red-500/15 hover:to-red-500/20 dark:from-transparent dark:via-red-500/5 dark:to-red-500/10 dark:hover:from-red-500/10 dark:hover:via-red-500/15 dark:hover:to-red-500/20 transition-all duration-300 group border border-transparent hover:border-red-500/20 dark:hover:border-red-500/10 shadow-sm hover:shadow-md"
                     icon={
-                      currentUser?.avatar_url ? (
-                        <div className="relative">
-                          <img
-                            className="h-8 w-8 rounded-full object-cover ring-2 ring-white/20 group-hover:ring-white/40 transition-all duration-200"
-                            src={currentUser.avatar_url}
-                            alt="User avatar"
-                          />
-                          {/* Online indicator */}
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
-                        </div>
-                      ) : (
-                        <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center ring-2 ring-white/20 group-hover:ring-white/40 transition-all duration-200 shadow-md group-hover:shadow-lg">
-                          <UserIcon className="w-5 h-5 text-white" />
-                          {/* Online indicator */}
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
-                        </div>
-                      )
+                      <motion.div
+                        whileHover={{ x: 2 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="relative"
+                      >
+                        <ArrowRightOnRectangleIcon className="w-5 h-5 text-red-500 group-hover:text-red-400 transition-colors duration-200" />
+                        {/* Subtle glow effect */}
+                        <div className="absolute inset-0 rounded-full bg-red-500 opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-200" />
+                      </motion.div>
                     }
                   >
-                    <span className="sr-only">
-                      {isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
-                    </span>
+                    <span className="sr-only">Sign out from application</span>
                   </EnhancedButton>
                 </motion.div>
+              </AccessibleTooltip>
+
+              {/* User Profile Dropdown */}
+              <div className="relative" ref={userDropdownRef}>
+                <AccessibleTooltip
+                  content={
+                    isUserMenuOpen
+                      ? t.tooltip_close_user_menu || 'Close user menu'
+                      : t.tooltip_open_user_menu ||
+                        `${currentUser?.full_name || 'User'} profile & settings`
+                  }
+                  position="bottom"
+                  delay={500}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  >
+                    <EnhancedButton
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                      ariaLabel={isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
+                      ariaExpanded={isUserMenuOpen}
+                      className="relative p-1.5 rounded-full bg-gradient-to-br from-white/10 via-white/5 to-transparent hover:from-white/20 hover:via-white/10 hover:to-white/5 dark:from-black/10 dark:via-black/5 dark:to-transparent dark:hover:from-black/20 dark:hover:via-black/10 dark:hover:to-black/5 transition-all duration-300 ring-2 ring-transparent hover:ring-white/30 dark:hover:ring-white/20 shadow-sm hover:shadow-lg group"
+                      icon={
+                        currentUser?.avatar_url ? (
+                          <div className="relative">
+                            <img
+                              className="h-8 w-8 rounded-full object-cover ring-2 ring-white/20 group-hover:ring-white/40 transition-all duration-200"
+                              src={currentUser.avatar_url}
+                              alt="User avatar"
+                            />
+                            {/* Online indicator */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                          </div>
+                        ) : (
+                          <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center ring-2 ring-white/20 group-hover:ring-white/40 transition-all duration-200 shadow-md group-hover:shadow-lg">
+                            <UserIcon className="w-5 h-5 text-white" />
+                            {/* Online indicator */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                          </div>
+                        )
+                      }
+                    >
+                      <span className="sr-only">
+                        {isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
+                      </span>
+                    </EnhancedButton>
+                  </motion.div>
+                </AccessibleTooltip>
 
                 {/* Modern Dropdown Menu */}
                 <AnimatePresence>
