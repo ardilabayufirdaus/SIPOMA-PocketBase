@@ -441,8 +441,8 @@ const App: React.FC = () => {
                       <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
                     )}
                   </PermissionGuard>
-                  {/* User Management */}
-                  {currentPage === 'users' && (
+                  {/* User Management - Only for Super Admin */}
+                  {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
                     <>
                       {activeSubPages.users === 'user_list' && <UserListPage />}
                       {activeSubPages.users === 'add_user' && (

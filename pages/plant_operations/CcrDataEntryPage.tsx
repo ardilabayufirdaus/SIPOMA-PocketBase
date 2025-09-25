@@ -176,10 +176,17 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   // Filter state and options from Plant Units master data
   const { records: plantUnits } = usePlantUnits();
-  const plantCategories = useMemo(
-    () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
-    [plantUnits]
-  );
+  const plantCategories = useMemo(() => {
+    // Filter categories based on user permissions - only show categories where user has access to at least one unit
+    const allowedCategories = plantUnits
+      .filter((unit) =>
+        permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
+      )
+      .map((unit) => unit.category);
+
+    // Remove duplicates and sort
+    return [...new Set(allowedCategories)].sort();
+  }, [plantUnits, permissionChecker]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
   const unitToCategoryMap = useMemo(
@@ -198,10 +205,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const unitsForCategory = useMemo(() => {
     if (!selectedCategory) return [];
     return plantUnits
-      .filter((unit) => unit.category === selectedCategory)
+      .filter(
+        (unit) =>
+          unit.category === selectedCategory &&
+          permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
+      )
       .map((unit) => unit.unit)
       .sort();
-  }, [plantUnits, selectedCategory]);
+  }, [plantUnits, selectedCategory, permissionChecker]);
 
   useEffect(() => {
     if (unitsForCategory.length > 0 && !unitsForCategory.includes(selectedUnit)) {
@@ -1553,18 +1564,18 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       {/* Enhanced Parameter Data Table */}
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-            {t.ccr_parameter_data_entry_title}
-          </h3>
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+              {t.ccr_parameter_data_entry_title}
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Pastikan Plant Kategori dan Plant Unit sesuai dengan filter yang diterapkan sebelum
+              mengisi data parameter.
+            </p>
+          </div>
 
           {/* Enhanced Table Controls */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <span>Use ???? or Tab to navigate</span>
-              <span className="text-slate-400 dark:text-slate-500">|</span>
-              <span>Press Esc to exit navigation</span>
-            </div>
-
             {/* Export/Import Controls - Hidden for Operator role */}
             {loggedInUser?.role !== 'Operator' && (
               <div className="flex items-center gap-2">
@@ -1617,14 +1628,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               </div>
             )}
 
-            <EnhancedButton
-              variant="primary"
-              size="xs"
-              onClick={() => setShowNavigationHelp(true)}
-              aria-label="Show navigation help"
-            >
-              ? Help
-            </EnhancedButton>
             <EnhancedButton
               variant="primary"
               size="xs"

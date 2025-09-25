@@ -48,8 +48,32 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   const [activeTab, setActiveTab] = useState<'general' | 'plant'>('general');
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const t = translations[language];
+
+  // Notify parent when permissions change (but not during initial load)
+  useEffect(() => {
+    if (!isInitialLoad) {
+      try {
+        console.log('📤 PermissionMatrixEditor calling onPermissionsChange with:', permissions);
+        onPermissionsChange(permissions);
+        console.log('📤 onPermissionsChange call completed');
+      } catch (error) {
+        console.error('📤 Error calling onPermissionsChange:', error);
+      }
+    }
+  }, [permissions, onPermissionsChange, isInitialLoad]);
+
+  // Reset initial load flag when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsInitialLoad(true);
+      setPermissions(currentPermissions);
+      // Use setTimeout to ensure state is set before resetting flag
+      setTimeout(() => setIsInitialLoad(false), 0);
+    }
+  }, [isOpen, currentPermissions]);
 
   // Helper function to get color for permission level
   const getPermissionLevelColor = (level: PermissionLevel) => {
@@ -143,12 +167,10 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
           newPermissions[feature] = level;
         }
 
-        // Update parent immediately without debouncing for save functionality
-        onPermissionsChange(newPermissions);
         return newPermissions;
       });
     },
-    [plantUnits, onPermissionsChange]
+    [plantUnits]
   );
 
   const handlePlantOperationPermissionChange = (
@@ -165,7 +187,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
 
     plantOps[category][unit] = level;
     setPermissions(newPermissions);
-    onPermissionsChange(newPermissions);
+    // onPermissionsChange will be called by useEffect when permissions state changes
   };
 
   const getPermissionLevelIcon = (level: PermissionLevel) => {
@@ -318,17 +340,27 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   };
 
   const handleSave = async () => {
+    console.log('PermissionMatrixEditor handleSave called');
+    console.log('onSave prop exists:', !!onSave);
+    console.log('onSave function:', onSave);
+    console.log('Current permissions state:', permissions);
+
     setSaving(true);
     try {
       if (onSave) {
+        console.log('Calling parent onSave function...');
         // Use parent save handler
         await onSave();
+        console.log('Parent onSave completed, closing modal');
+        onClose();
       } else {
+        console.log('No onSave prop provided, using fallback');
         // Fallback to local save simulation
         await new Promise((resolve) => setTimeout(resolve, 1000));
         onClose();
       }
     } catch (err) {
+      console.error('Error in handleSave:', err);
       setError('Failed to save permissions');
     } finally {
       setSaving(false);

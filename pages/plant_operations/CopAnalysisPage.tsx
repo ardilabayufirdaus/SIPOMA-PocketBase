@@ -18,6 +18,10 @@ import {
   Cell,
 } from 'recharts';
 
+// Import permissions
+import { usePermissions } from '../../utils/permissions';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) {
@@ -103,6 +107,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   const { records: plantUnits } = usePlantUnits();
   const { users } = useUsers();
+
+  // Permission checker
+  const { currentUser: loggedInUser } = useCurrentUser();
+  const permissionChecker = usePermissions(loggedInUser);
   // Set default filter so not all parameters are shown for all categories/units
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
@@ -162,10 +170,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const unitsForCategory = useMemo(() => {
     if (!selectedCategory) return [];
     return plantUnits
-      .filter((unit) => unit.category === selectedCategory)
+      .filter(
+        (unit) =>
+          unit.category === selectedCategory &&
+          permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
+      )
       .map((unit) => unit.unit)
       .sort();
-  }, [plantUnits, selectedCategory]);
+  }, [plantUnits, selectedCategory, permissionChecker]);
 
   // Memoize filtered parameters to avoid recalculating on every render
   const filteredCopParameters = useMemo(() => {
@@ -189,10 +201,17 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     }
   }, [unitsForCategory, selectedUnit]);
 
-  const plantCategories = useMemo(
-    () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
-    [plantUnits]
-  );
+  const plantCategories = useMemo(() => {
+    // Filter categories based on user permissions - only show categories where user has access to at least one unit
+    const allowedCategories = plantUnits
+      .filter((unit) =>
+        permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
+      )
+      .map((unit) => unit.category);
+
+    // Remove duplicates and sort
+    return [...new Set(allowedCategories)].sort();
+  }, [plantUnits, permissionChecker]);
 
   // Update relevantOperators to get all active users with role Operator from User Management, ignoring category and unit permissions
   const relevantOperators = useMemo(() => {

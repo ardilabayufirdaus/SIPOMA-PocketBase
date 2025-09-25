@@ -4,6 +4,7 @@ import { FilterIcon, X, ChevronDown, RefreshCw } from 'lucide-react';
 import { EnhancedButton } from '../ui/EnhancedComponents';
 import { usePermissions } from '../../utils/permissions';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { PlantUnit } from '../../types';
 
 export interface DashboardFilters {
   plantCategory: string;
@@ -15,8 +16,7 @@ export interface DashboardFilters {
 
 interface FilterSectionProps {
   filters: DashboardFilters;
-  uniqueCategories: string[];
-  availableUnits: string[];
+  plantUnits: PlantUnit[];
   onFilterChange: (key: keyof DashboardFilters, value: string | number) => void;
   onReset?: () => void;
   isLoading?: boolean;
@@ -24,8 +24,7 @@ interface FilterSectionProps {
 
 const FilterSection: React.FC<FilterSectionProps> = ({
   filters,
-  uniqueCategories,
-  availableUnits,
+  plantUnits,
   onFilterChange,
   onReset,
   isLoading = false,
@@ -44,18 +43,25 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   }
 
   // Filter categories and units based on user permissions
-  const allowedCategories = uniqueCategories.filter((category) => {
-    return availableUnits.some((unit) => {
-      return permissionChecker.hasPlantOperationPermission(category, unit, 'READ');
-    });
-  });
+  const allowedCategories = plantUnits
+    .filter((unit) =>
+      permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
+    )
+    .map((unit) => unit.category)
+    .filter((category, index, arr) => arr.indexOf(category) === index); // unique
 
-  const allowedUnits = availableUnits.filter((unit) => {
-    const category = uniqueCategories.find((cat) => unit.includes(cat)) || filters.plantCategory;
-    return (
-      category === 'all' || permissionChecker.hasPlantOperationPermission(category, unit, 'READ')
-    );
-  });
+  const allowedUnits = plantUnits
+    .filter((unit) => {
+      const hasPermission = permissionChecker.hasPlantOperationPermission(
+        unit.category,
+        unit.unit,
+        'READ'
+      );
+      const categoryMatch =
+        filters.plantCategory === 'all' || unit.category === filters.plantCategory;
+      return hasPermission && categoryMatch;
+    })
+    .map((unit) => unit.unit);
 
   const handleFieldChange = (key: keyof DashboardFilters, value: string | number) => {
     setAnimatingField(key as string);

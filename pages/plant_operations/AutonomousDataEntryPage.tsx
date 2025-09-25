@@ -20,8 +20,16 @@ import {
   useColorScheme,
 } from '../../components/ui/EnhancedComponents';
 
+// Import permissions
+import { usePermissions } from '../../utils/permissions';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+
 const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const { records: plantUnits } = usePlantUnits();
+
+  // Permission checker
+  const { currentUser: loggedInUser } = useCurrentUser();
+  const permissionChecker = usePermissions(loggedInUser);
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -47,10 +55,17 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   // Shared Filter State
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
-  const plantCategories = useMemo(
-    () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
-    [plantUnits]
-  );
+  const plantCategories = useMemo(() => {
+    // Filter categories based on user permissions - only show categories where user has access to at least one unit
+    const allowedCategories = plantUnits
+      .filter((unit) =>
+        permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
+      )
+      .map((unit) => unit.category);
+
+    // Remove duplicates and sort
+    return [...new Set(allowedCategories)].sort();
+  }, [plantUnits, permissionChecker]);
   const [selectedCategory, setSelectedCategory] = useState('');
 
   const [isDowntimeModalOpen, setDowntimeModalOpen] = useState(false);

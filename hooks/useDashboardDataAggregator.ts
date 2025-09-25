@@ -111,6 +111,7 @@ export const useDashboardDataAggregator = (filters: DashboardFilters) => {
     data,
     stats,
     filteredData,
+    plantUnits: plantUnits || [],
     isLoading,
   };
 };

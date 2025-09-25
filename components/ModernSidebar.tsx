@@ -599,8 +599,8 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             />
           )}
 
-          {/* User Management - Check permission */}
-          {permissionChecker.hasPermission('system_settings', 'ADMIN') && (
+          {/* User Management - Only for Super Admin */}
+          {currentUser?.role === 'Super Admin' && (
             <IconButton
               ref={usersButtonRef}
               icon={<UserGroupIcon className={iconClass} />}

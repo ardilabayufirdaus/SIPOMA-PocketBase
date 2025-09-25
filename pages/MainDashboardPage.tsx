@@ -552,11 +552,13 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
             <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Quick Access</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            <QuickLinkCard
-              title="User Management"
-              icon={<UserGroupIcon className="w-5 h-5" />}
-              onClick={() => onNavigate('users')}
-            />
+            {currentUser?.role === 'Super Admin' && (
+              <QuickLinkCard
+                title="User Management"
+                icon={<UserGroupIcon className="w-5 h-5" />}
+                onClick={() => onNavigate('users')}
+              />
+            )}
             <QuickLinkCard
               title="Plant Dashboard"
               icon={<CogIcon className="w-5 h-5" />}
