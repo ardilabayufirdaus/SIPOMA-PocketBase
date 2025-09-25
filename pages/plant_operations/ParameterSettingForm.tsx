@@ -56,27 +56,69 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
         if (!value.trim()) return 'Kategori wajib diisi';
         return '';
       case 'min_value':
-        if (formData.max_value !== undefined && value > formData.max_value)
+        // Allow empty values (undefined/null), only validate if both values exist
+        if (
+          value !== undefined &&
+          value !== null &&
+          formData.max_value !== undefined &&
+          formData.max_value !== null &&
+          value > formData.max_value
+        )
           return 'Min tidak boleh lebih dari Max';
         return '';
       case 'max_value':
-        if (formData.min_value !== undefined && value < formData.min_value)
+        // Allow empty values (undefined/null), only validate if both values exist
+        if (
+          value !== undefined &&
+          value !== null &&
+          formData.min_value !== undefined &&
+          formData.min_value !== null &&
+          value < formData.min_value
+        )
           return 'Max tidak boleh kurang dari Min';
         return '';
       case 'opc_min_value':
-        if (formData.opc_max_value !== undefined && value > formData.opc_max_value)
+        // Allow empty values (undefined/null), only validate if both values exist
+        if (
+          value !== undefined &&
+          value !== null &&
+          formData.opc_max_value !== undefined &&
+          formData.opc_max_value !== null &&
+          value > formData.opc_max_value
+        )
           return 'OPC Min tidak boleh lebih dari OPC Max';
         return '';
       case 'opc_max_value':
-        if (formData.opc_min_value !== undefined && value < formData.opc_min_value)
+        // Allow empty values (undefined/null), only validate if both values exist
+        if (
+          value !== undefined &&
+          value !== null &&
+          formData.opc_min_value !== undefined &&
+          formData.opc_min_value !== null &&
+          value < formData.opc_min_value
+        )
           return 'OPC Max tidak boleh kurang dari OPC Min';
         return '';
       case 'pcc_min_value':
-        if (formData.pcc_max_value !== undefined && value > formData.pcc_max_value)
+        // Allow empty values (undefined/null), only validate if both values exist
+        if (
+          value !== undefined &&
+          value !== null &&
+          formData.pcc_max_value !== undefined &&
+          formData.pcc_max_value !== null &&
+          value > formData.pcc_max_value
+        )
           return 'PCC Min tidak boleh lebih dari PCC Max';
         return '';
       case 'pcc_max_value':
-        if (formData.pcc_min_value !== undefined && value < formData.pcc_min_value)
+        // Allow empty values (undefined/null), only validate if both values exist
+        if (
+          value !== undefined &&
+          value !== null &&
+          formData.pcc_min_value !== undefined &&
+          formData.pcc_min_value !== null &&
+          value < formData.pcc_min_value
+        )
           return 'PCC Max tidak boleh kurang dari PCC Min';
         return '';
       default:
@@ -97,12 +139,15 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    const processedValue =
+      type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value,
+      [name]: processedValue,
     }));
     setTouched((prev: any) => ({ ...prev, [name]: true }));
-    setErrors((prev: any) => ({ ...prev, [name]: validateField(name, value) }));
+    // Pass the processed value to validateField, not the raw string value
+    setErrors((prev: any) => ({ ...prev, [name]: validateField(name, processedValue) }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -134,12 +179,12 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
         data_type: recordToEdit.data_type,
         unit: recordToEdit.unit,
         category: recordToEdit.category,
-        min_value: recordToEdit.min_value,
-        max_value: recordToEdit.max_value,
-        opc_min_value: recordToEdit.opc_min_value,
-        opc_max_value: recordToEdit.opc_max_value,
-        pcc_min_value: recordToEdit.pcc_min_value,
-        pcc_max_value: recordToEdit.pcc_max_value,
+        min_value: recordToEdit.min_value ?? undefined,
+        max_value: recordToEdit.max_value ?? undefined,
+        opc_min_value: recordToEdit.opc_min_value ?? undefined,
+        opc_max_value: recordToEdit.opc_max_value ?? undefined,
+        pcc_min_value: recordToEdit.pcc_min_value ?? undefined,
+        pcc_max_value: recordToEdit.pcc_max_value ?? undefined,
       });
     } else {
       setFormData({

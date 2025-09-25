@@ -14,7 +14,7 @@ export const useSiloCapacities = () => {
       console.error('Error fetching silo capacities:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as any[]);
+      setRecords((data || []) as unknown as SiloCapacity[]);
     }
     setLoading(false);
   }, []);
@@ -23,10 +23,10 @@ export const useSiloCapacities = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Realtime subscription for silo_capacities changes
+  // Enhanced realtime subscription for silo_capacities changes
   useEffect(() => {
     const channel = supabase
-      .channel('silo_capacities_changes')
+      .channel('silo_capacities_realtime')
       .on(
         'postgres_changes',
         {
@@ -35,8 +35,31 @@ export const useSiloCapacities = () => {
           table: 'silo_capacities',
         },
         (payload) => {
-          console.log('Silo capacities change received!', payload);
-          fetchRecords();
+          console.log(
+            'Silo capacities realtime update:',
+            payload.eventType,
+            payload.new || payload.old
+          );
+
+          // Optimized state updates based on event type
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setRecords((prev) =>
+              [...prev, payload.new as SiloCapacity].sort((a, b) =>
+                a.silo_name.localeCompare(b.silo_name)
+              )
+            );
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setRecords((prev) =>
+              prev.map((record) =>
+                record.id === payload.new.id ? (payload.new as SiloCapacity) : record
+              )
+            );
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
+          } else {
+            // Fallback to full refetch for complex changes
+            fetchRecords();
+          }
         }
       )
       .subscribe();

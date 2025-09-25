@@ -14,7 +14,7 @@ export const useReportSettings = () => {
       console.error('Error fetching report settings:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as any[]);
+      setRecords((data || []) as unknown as ReportSetting[]);
     }
     setLoading(false);
   }, []);
@@ -23,10 +23,10 @@ export const useReportSettings = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Realtime subscription for report_settings changes
+  // Enhanced realtime subscription for report_settings changes
   useEffect(() => {
     const channel = supabase
-      .channel('report_settings_changes')
+      .channel('report_settings_realtime')
       .on(
         'postgres_changes',
         {
@@ -35,8 +35,31 @@ export const useReportSettings = () => {
           table: 'report_settings',
         },
         (payload) => {
-          console.log('Report settings change received!', payload);
-          fetchRecords();
+          console.log(
+            'Report settings realtime update:',
+            payload.eventType,
+            payload.new || payload.old
+          );
+
+          // Optimized state updates based on event type
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setRecords((prev) =>
+              [...prev, payload.new as ReportSetting].sort((a, b) =>
+                a.category.localeCompare(b.category)
+              )
+            );
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setRecords((prev) =>
+              prev.map((record) =>
+                record.id === payload.new.id ? (payload.new as ReportSetting) : record
+              )
+            );
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
+          } else {
+            // Fallback to full refetch for complex changes
+            fetchRecords();
+          }
         }
       )
       .subscribe();

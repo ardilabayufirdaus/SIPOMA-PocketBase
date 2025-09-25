@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import {
-  exportMultipleSheets,
-  importMultipleSheets,
-  validateExcelImport,
-} from '../../utils/excelUtils';
+import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
+import { useRealtimeStatus } from '../../hooks/useRealtimeStatus';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
 import PlusIcon from '../../components/icons/PlusIcon';
 import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
@@ -58,6 +57,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     updateRecord: updatePlantUnit,
     deleteRecord: deletePlantUnit,
     setAllRecords: setAllPlantUnits,
+    loading: plantUnitsLoading,
   } = usePlantUnits();
   const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(null);
   const {
@@ -74,6 +74,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     updateRecord: updateParameter,
     deleteRecord: deleteParameter,
     setAllRecords: setAllParameterSettings,
+    loading: parameterSettingsLoading,
   } = useParameterSettings();
   const [editingParameter, setEditingParameter] = useState<ParameterSetting | null>(null);
 
@@ -772,9 +773,12 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     <div className="space-y-8">
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.op_master_data}
-          </h2>
+          <div className="flex flex-col items-start gap-2">
+            <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
+              {t.op_master_data}
+            </h2>
+            <RealtimeIndicator isConnected={true} lastUpdate={new Date()} className="text-xs" />
+          </div>
           <div className="flex items-center gap-2">
             <input
               type="file"
@@ -832,32 +836,54 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedPlantUnits.map((unit) => (
-                <tr key={unit.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {unit.unit}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {unit.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => handleOpenEditModal('plantUnit', unit)}
-                        className="p-2 text-slate-400 hover:text-red-600"
-                      >
-                        <EditIcon />
-                      </button>
-                      <button
-                        onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                        className="p-2 text-slate-400 hover:text-red-600"
-                      >
-                        <TrashIcon />
-                      </button>
+              {plantUnitsLoading ? (
+                <tr>
+                  <td colSpan={3} className="px-6 py-8 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      <span className="text-slate-500 dark:text-slate-400">
+                        Loading plant units...
+                      </span>
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : paginatedPlantUnits.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
+                  >
+                    No plant units found
+                  </td>
+                </tr>
+              ) : (
+                paginatedPlantUnits.map((unit) => (
+                  <tr key={unit.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {unit.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {unit.category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => handleOpenEditModal('plantUnit', unit)}
+                          className="p-2 text-slate-400 hover:text-red-600"
+                        >
+                          <EditIcon />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
+                          className="p-2 text-slate-400 hover:text-red-600"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

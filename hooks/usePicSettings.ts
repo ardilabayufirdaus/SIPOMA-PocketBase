@@ -8,16 +8,13 @@ export const usePicSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = (await supabase.from('pic_settings').select('*').order('pic')) as {
-      data: any;
-      error: any;
-    };
+    const { data, error } = await supabase.from('pic_settings').select('*').order('pic');
 
     if (error) {
       console.error('Error fetching PIC settings:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as PicSetting[]);
+      setRecords((data || []) as unknown as PicSetting[]);
     }
     setLoading(false);
   }, []);
@@ -26,10 +23,10 @@ export const usePicSettings = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Realtime subscription for pic_settings changes
+  // Enhanced realtime subscription for pic_settings changes
   useEffect(() => {
     const channel = supabase
-      .channel('pic_settings_changes')
+      .channel('pic_settings_realtime')
       .on(
         'postgres_changes',
         {
@@ -38,8 +35,29 @@ export const usePicSettings = () => {
           table: 'pic_settings',
         },
         (payload) => {
-          console.log('PIC settings change received!', payload);
-          fetchRecords();
+          console.log(
+            'PIC settings realtime update:',
+            payload.eventType,
+            payload.new || payload.old
+          );
+
+          // Optimized state updates based on event type
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setRecords((prev) =>
+              [...prev, payload.new as PicSetting].sort((a, b) => a.pic.localeCompare(b.pic))
+            );
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setRecords((prev) =>
+              prev.map((record) =>
+                record.id === payload.new.id ? (payload.new as PicSetting) : record
+              )
+            );
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
+          } else {
+            // Fallback to full refetch for complex changes
+            fetchRecords();
+          }
         }
       )
       .subscribe();

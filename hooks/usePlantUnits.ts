@@ -29,10 +29,10 @@ export const usePlantUnits = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Realtime subscription for plant_units changes
+  // Enhanced realtime subscription for plant_units changes
   useEffect(() => {
     const channel = supabase
-      .channel('plant_units_changes')
+      .channel('plant_units_realtime')
       .on(
         'postgres_changes',
         {
@@ -41,8 +41,31 @@ export const usePlantUnits = () => {
           table: 'plant_units',
         },
         (payload) => {
-          console.log('Plant units change received!', payload);
-          fetchRecords();
+          console.log(
+            'Plant units realtime update:',
+            payload.eventType,
+            payload.new || payload.old
+          );
+
+          // Optimized state updates based on event type
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setRecords((prev) =>
+              [...prev, payload.new as PlantUnit].sort(
+                (a, b) => a.category.localeCompare(b.category) || a.unit.localeCompare(b.unit)
+              )
+            );
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setRecords((prev) =>
+              prev.map((record) =>
+                record.id === payload.new.id ? (payload.new as PlantUnit) : record
+              )
+            );
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
+          } else {
+            // Fallback to full refetch for complex changes
+            fetchRecords();
+          }
         }
       )
       .subscribe();

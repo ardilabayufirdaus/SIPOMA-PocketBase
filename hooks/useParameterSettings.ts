@@ -28,10 +28,10 @@ export const useParameterSettings = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Realtime subscription for parameter_settings changes
+  // Enhanced realtime subscription for parameter_settings changes
   useEffect(() => {
     const channel = supabase
-      .channel('parameter_settings_changes')
+      .channel('parameter_settings_realtime')
       .on(
         'postgres_changes',
         {
@@ -40,8 +40,31 @@ export const useParameterSettings = () => {
           table: 'parameter_settings',
         },
         (payload) => {
-          console.log('Parameter settings change received!', payload);
-          fetchRecords();
+          console.log(
+            'Parameter settings realtime update:',
+            payload.eventType,
+            payload.new || payload.old
+          );
+
+          // Optimized state updates based on event type
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setRecords((prev) =>
+              [...prev, payload.new as ParameterSetting].sort((a, b) =>
+                a.parameter.localeCompare(b.parameter)
+              )
+            );
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setRecords((prev) =>
+              prev.map((record) =>
+                record.id === payload.new.id ? (payload.new as ParameterSetting) : record
+              )
+            );
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
+          } else {
+            // Fallback to full refetch for complex changes
+            fetchRecords();
+          }
         }
       )
       .subscribe();
@@ -53,7 +76,18 @@ export const useParameterSettings = () => {
 
   const addRecord = useCallback(
     async (record: Omit<ParameterSetting, 'id'>) => {
-      const { error } = await supabase.from('parameter_settings').insert([record]);
+      // Convert undefined values to null for Supabase compatibility
+      const cleanedRecord = {
+        ...record,
+        min_value: record.min_value === undefined ? null : record.min_value,
+        max_value: record.max_value === undefined ? null : record.max_value,
+        opc_min_value: record.opc_min_value === undefined ? null : record.opc_min_value,
+        opc_max_value: record.opc_max_value === undefined ? null : record.opc_max_value,
+        pcc_min_value: record.pcc_min_value === undefined ? null : record.pcc_min_value,
+        pcc_max_value: record.pcc_max_value === undefined ? null : record.pcc_max_value,
+      };
+
+      const { error } = await supabase.from('parameter_settings').insert([cleanedRecord]);
       if (error) console.error('Error adding parameter setting:', error);
       else fetchRecords();
     },
@@ -63,7 +97,22 @@ export const useParameterSettings = () => {
   const updateRecord = useCallback(
     async (updatedRecord: ParameterSetting) => {
       const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase.from('parameter_settings').update(updateData).eq('id', id);
+
+      // Convert undefined values to null for Supabase compatibility
+      const cleanedUpdateData = {
+        ...updateData,
+        min_value: updateData.min_value === undefined ? null : updateData.min_value,
+        max_value: updateData.max_value === undefined ? null : updateData.max_value,
+        opc_min_value: updateData.opc_min_value === undefined ? null : updateData.opc_min_value,
+        opc_max_value: updateData.opc_max_value === undefined ? null : updateData.opc_max_value,
+        pcc_min_value: updateData.pcc_min_value === undefined ? null : updateData.pcc_min_value,
+        pcc_max_value: updateData.pcc_max_value === undefined ? null : updateData.pcc_max_value,
+      };
+
+      const { error } = await supabase
+        .from('parameter_settings')
+        .update(cleanedUpdateData)
+        .eq('id', id);
       if (error) console.error('Error updating parameter setting:', error);
       else fetchRecords();
     },
