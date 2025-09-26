@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../utils/supabaseClient';
-import { UserRole } from '../types';
+import { UserRole, PermissionMatrix } from '../types';
+import { getDefaultPermissionsForRole } from '../utils/tonasaPermissions';
 
 interface User {
   id: string;
@@ -12,6 +13,7 @@ interface User {
   updated_at: string;
   avatar_url?: string;
   last_active?: string;
+  permissions: PermissionMatrix;
 }
 
 interface UseRealtimeUsersOptions {
@@ -67,7 +69,13 @@ export const useRealtimeUsers = (options: UseRealtimeUsersOptions = {}) => {
 
       if (error) throw error;
 
-      setUsers(data || []);
+      // Process users and add default permissions if not present
+      const processedUsers = (data || []).map((user) => ({
+        ...user,
+        permissions: user.permissions || getDefaultPermissionsForRole(user.role),
+      }));
+
+      setUsers(processedUsers);
       setTotalUsers(count || 0);
       setError('');
     } catch (err) {

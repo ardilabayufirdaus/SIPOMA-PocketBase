@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabaseClient';
 import { translations } from '../../../translations';
-import { UserRole } from '../../../types';
+import { UserRole, PermissionMatrix } from '../../../types';
 import { useRealtimeUsers } from '../../../hooks/useRealtimeUsers';
+import {
+  getPermissionsSummary,
+  formatPermissionsDetailed,
+} from '../../../utils/permissionDisplayUtils';
 
 // Enhanced Components
 import {
@@ -11,7 +15,6 @@ import {
   EnhancedInput,
   EnhancedBadge,
   EnhancedSpinner,
-  cn,
 } from '../../../components/ui/EnhancedComponents';
 
 // Icons
@@ -20,11 +23,11 @@ import EditIcon from '../../../components/icons/EditIcon';
 import TrashIcon from '../../../components/icons/TrashIcon';
 import CheckIcon from '../../../components/icons/CheckIcon';
 import XCircleIcon from '../../../components/icons/XCircleIcon';
-import EyeSlashIcon from '../../../components/icons/EyeSlashIcon';
 import PlusIcon from '../../../components/icons/PlusIcon';
 import ArrowTrendingUpIcon from '../../../components/icons/ArrowTrendingUpIcon';
 import ArrowTrendingDownIcon from '../../../components/icons/ArrowTrendingDownIcon';
 import ArrowPathRoundedSquareIcon from '../../../components/icons/ArrowPathRoundedSquareIcon';
+import EyeIcon from '../../../components/icons/EyeIcon';
 
 interface User {
   id: string;
@@ -36,6 +39,7 @@ interface User {
   updated_at: string;
   avatar_url?: string;
   last_active?: string;
+  permissions: PermissionMatrix;
 }
 
 interface UserTableProps {
@@ -56,6 +60,8 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [selectedUserPermissions, setSelectedUserPermissions] = useState<User | null>(null);
 
   const t = translations[language];
   const itemsPerPage = 10;
@@ -98,6 +104,11 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   // Pagination
   const totalPages = Math.ceil(totalUsers / itemsPerPage);
 
+  const handleViewPermissions = (user: User) => {
+    setSelectedUserPermissions(user);
+    setShowPermissionsModal(true);
+  };
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -125,9 +136,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
       if (error) throw error;
       // Real-time subscription will handle the actual update
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting user:', err);
-      setError(err.message || 'Failed to delete user');
+      setError(err instanceof Error ? err.message : 'Failed to delete user');
       // Note: The real-time subscription will correct the UI if the delete failed
     }
   };
@@ -147,9 +158,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
       if (error) throw error;
       // Real-time subscription will handle the actual update
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating user status:', err);
-      setError(err.message || 'Failed to update user status');
+      setError(err instanceof Error ? err.message : 'Failed to update user status');
       // Note: The real-time subscription will correct the UI if the update failed
     }
   };
@@ -176,9 +187,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       setSelectedUsers(new Set());
       setShowBulkActions(false);
       // Real-time subscription will handle the actual updates
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error bulk updating users:', err);
-      setError(err.message || 'Failed to update users');
+      setError(err instanceof Error ? err.message : 'Failed to update users');
       // Note: The real-time subscription will correct the UI if the update failed
     }
   };
@@ -203,9 +214,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       setSelectedUsers(new Set());
       setShowBulkActions(false);
       // Real-time subscription will handle the actual updates
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error bulk deleting users:', err);
-      setError(err.message || 'Failed to delete users');
+      setError(err instanceof Error ? err.message : 'Failed to delete users');
       // Note: The real-time subscription will correct the UI if the delete failed
     }
   };
@@ -454,6 +465,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  {t.permissions || 'Permissions'}
+                </th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                   {t.actions || 'Actions'}
                 </th>
               </tr>
@@ -509,6 +524,17 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                     <EnhancedBadge variant={user.is_active ? 'success' : 'error'}>
                       {user.is_active ? t.active || 'Active' : t.inactive || 'Inactive'}
                     </EnhancedBadge>
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-xs">
+                    <div
+                      className="truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded"
+                      title={getPermissionsSummary(user.permissions)}
+                      onClick={() => handleViewPermissions(user)}
+                    >
+                      {getPermissionsSummary(user.permissions)}
+                      <EyeIcon className="inline-block w-4 h-4 ml-1 text-gray-400" />
+                    </div>
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -662,6 +688,63 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
           </div>
         )}
       </EnhancedCard>
+
+      {/* Permissions Modal */}
+      {showPermissionsModal && selectedUserPermissions && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  {t.permissions || 'Permissions'} - {selectedUserPermissions.username}
+                </h3>
+                <button
+                  onClick={() => setShowPermissionsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="max-h-96 overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {formatPermissionsDetailed(selectedUserPermissions.permissions).map(
+                    (perm, index) => (
+                      <div key={index} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {perm.module}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                          {perm.access}
+                        </div>
+                        <div className="mt-1">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              perm.level === 'ADMIN'
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                : perm.level === 'WRITE'
+                                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                                  : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                            }`}
+                          >
+                            {perm.level}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <EnhancedButton variant="outline" onClick={() => setShowPermissionsModal(false)}>
+                  {t.close || 'Close'}
+                </EnhancedButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
