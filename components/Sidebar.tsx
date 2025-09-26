@@ -601,13 +601,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
 
           <NavLink
-            label={t.slaManagement}
-            icon={<ClockIcon className="w-5 h-5" />}
-            isActive={currentPage === 'sla'}
-            onClick={() => handleNavigate('sla')}
-            isCollapsed={shouldCollapse}
-          />
-          <NavLink
             label={t.header_settings}
             icon={<CogIcon className="w-5 h-5" />}
             isActive={currentPage === 'settings'}

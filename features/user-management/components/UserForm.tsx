@@ -155,7 +155,13 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
               >
                 <option value="Guest">Guest</option>
                 <option value="Operator">Operator</option>
+                <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
+                <option value="Operator Tonasa 4">Operator Tonasa 4</option>
+                <option value="Operator Tonasa 5">Operator Tonasa 5</option>
                 <option value="Admin">Admin</option>
+                <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
+                <option value="Admin Tonasa 4">Admin Tonasa 4</option>
+                <option value="Admin Tonasa 5">Admin Tonasa 5</option>
                 <option value="Super Admin">Super Admin</option>
               </select>
             </div>

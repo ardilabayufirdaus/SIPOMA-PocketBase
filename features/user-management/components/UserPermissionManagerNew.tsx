@@ -211,7 +211,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   const handleEditPermissions = (user: User) => {
     setSelectedUser(user);
-    setPendingPermissions(user.permissions); // Initialize with current permissions
+    setPendingPermissions(JSON.parse(JSON.stringify(user.permissions))); // Initialize with deep copy of current permissions
     setIsPermissionEditorOpen(true);
     setError(''); // Clear any previous errors
     setSuccessMessage(''); // Clear any previous success messages
@@ -436,7 +436,14 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
   // Statistics
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.is_active).length;
-  const adminUsers = users.filter((u) => u.role === 'Super Admin' || u.role === 'Admin').length;
+  const adminUsers = users.filter(
+    (u) =>
+      u.role === 'Super Admin' ||
+      u.role === 'Admin' ||
+      u.role === 'Admin Tonasa 2/3' ||
+      u.role === 'Admin Tonasa 4' ||
+      u.role === 'Admin Tonasa 5'
+  ).length;
   const usersWithPermissions = users.filter(
     (u) => getPermissionSummary(u.permissions) !== 'No permissions'
   ).length;
@@ -548,7 +555,13 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                 <option value="all">All Roles</option>
                 <option value="Super Admin">Super Admin</option>
                 <option value="Admin">Admin</option>
+                <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
+                <option value="Admin Tonasa 4">Admin Tonasa 4</option>
+                <option value="Admin Tonasa 5">Admin Tonasa 5</option>
                 <option value="Operator">Operator</option>
+                <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
+                <option value="Operator Tonasa 4">Operator Tonasa 4</option>
+                <option value="Operator Tonasa 5">Operator Tonasa 5</option>
                 <option value="Guest">Guest</option>
               </select>
             </div>

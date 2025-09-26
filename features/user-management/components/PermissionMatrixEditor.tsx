@@ -43,7 +43,9 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   isOpen,
   language = 'en',
 }) => {
-  const [permissions, setPermissions] = useState<PermissionMatrix>(currentPermissions);
+  const [permissions, setPermissions] = useState<PermissionMatrix>(() =>
+    JSON.parse(JSON.stringify(currentPermissions))
+  );
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'general' | 'plant'>('general');
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
@@ -69,7 +71,8 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   useEffect(() => {
     if (isOpen) {
       setIsInitialLoad(true);
-      setPermissions(currentPermissions);
+      // Create deep copy to avoid reference sharing
+      setPermissions(JSON.parse(JSON.stringify(currentPermissions)));
       // Use setTimeout to ensure state is set before resetting flag
       setTimeout(() => setIsInitialLoad(false), 0);
     }

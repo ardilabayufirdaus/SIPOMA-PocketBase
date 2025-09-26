@@ -18,6 +18,7 @@ import FlagENIcon from './icons/FlagENIcon';
 import FlagIDIcon from './icons/FlagIDIcon';
 import ChartBarIcon from './icons/ChartBarIcon';
 import EditIcon from './icons/EditIcon';
+import { isAdminRole } from '../utils/roleHelpers';
 import PresentationChartLineIcon from './icons/PresentationChartLineIcon';
 import ArrowTrendingUpIcon from './icons/ArrowTrendingUpIcon';
 import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
@@ -335,8 +336,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
 
   const getDropdownItems = useCallback(
     (module: string) => {
-      const isAdminOrSuperAdmin =
-        currentUser?.role === 'Admin' || currentUser?.role === 'Super Admin';
+      const isAdminOrSuperAdmin = isAdminRole(currentUser?.role);
 
       switch (module) {
         case 'operations':
@@ -427,7 +427,6 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const packingButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
-  const slaButtonRef = useRef<HTMLButtonElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = useCallback(() => {
@@ -580,24 +579,14 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             />
           )}
 
+          {/* Settings - Accessible to all users */}
           <IconButton
-            ref={slaButtonRef}
-            icon={<ClockIcon className={iconClass} />}
-            label={t.slaManagement}
-            isActive={currentPage === 'sla'}
-            onClick={() => handleNavigate('sla')}
+            ref={settingsButtonRef}
+            icon={<CogIcon className={iconClass} />}
+            label={t.header_settings}
+            isActive={currentPage === 'settings'}
+            onClick={() => handleNavigate('settings')}
           />
-
-          {/* Settings - Check permission */}
-          {permissionChecker.hasPermission('system_settings', 'READ') && (
-            <IconButton
-              ref={settingsButtonRef}
-              icon={<CogIcon className={iconClass} />}
-              label={t.header_settings}
-              isActive={currentPage === 'settings'}
-              onClick={() => handleNavigate('settings')}
-            />
-          )}
 
           {/* User Management - Only for Super Admin */}
           {currentUser?.role === 'Super Admin' && (

@@ -23,6 +23,7 @@ import Header from './components/Header';
 // Import permission utilities
 import { usePermissions, PermissionGuard } from './utils/permissions';
 import { PermissionLevel } from './types';
+import { logSystemStatus } from './utils/systemStatus';
 
 // Preload critical routes with higher priority
 const preloadDashboard = () => import('./pages/ModernMainDashboardPage');
@@ -73,14 +74,6 @@ const ProjectManagementPage = lazy(() =>
 );
 
 // Lightweight components
-const SLAManagementPage = lazy(() =>
-  import('./pages/SLAManagementPage').catch(() => ({
-    default: () => (
-      <div className="text-center p-8">Error loading SLA Management. Please refresh.</div>
-    ),
-  }))
-);
-
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').catch(() => ({
     default: () => <div className="text-center p-8">Error loading Settings. Please refresh.</div>,
@@ -130,7 +123,6 @@ export type Page =
   | 'operations'
   | 'packing'
   | 'projects'
-  | 'sla'
   | 'settings'
   | 'whatsapp-reports';
 export type Language = 'en' | 'id';
@@ -199,6 +191,13 @@ const App: React.FC = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  // Log system status on app load
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      logSystemStatus();
+    }
+  }, []);
 
   // Preload critical routes after user authentication
   useEffect(() => {
@@ -315,8 +314,6 @@ const App: React.FC = () => {
         return t[activeSubPages.users as keyof typeof t] || t.userManagement;
       case 'settings':
         return t.header_settings;
-      case 'sla':
-        return t.slaManagement;
       case 'operations':
         return t[activeSubPages.operations as keyof typeof t] || t.plantOperations;
       case 'packing':
@@ -487,87 +484,20 @@ const App: React.FC = () => {
                       )}
                     </>
                   )}
-                  {/* Settings - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="system_settings"
-                    requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300">
-                            You don&apos;t have permission to access Settings.
-                          </p>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {currentPage === 'settings' && (
-                      <SettingsPage
-                        t={t}
-                        user={currentUser}
-                        onOpenProfileModal={handleOpenProfileModal}
-                        currentLanguage={language}
-                        onLanguageChange={setLanguage}
-                      />
-                    )}
-                  </PermissionGuard>
-                  {/* WhatsApp Reports - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="system_settings" // Using existing permission for now
-                    requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300">
-                            You don&apos;t have permission to access WhatsApp Reports.
-                          </p>
-                        </div>
-                      </div>
-                    }
-                  >
-                    {currentPage === 'whatsapp-reports' && (
-                      <WhatsAppReportsPage groupId="default-group" />
-                    )}
-                  </PermissionGuard>
-                  {currentPage === 'sla' && <SLAManagementPage t={t} />}
+                  {/* Settings - Accessible to all users */}
+                  {currentPage === 'settings' && (
+                    <SettingsPage
+                      t={t}
+                      user={currentUser}
+                      onOpenProfileModal={handleOpenProfileModal}
+                      currentLanguage={language}
+                      onLanguageChange={setLanguage}
+                    />
+                  )}
+                  {/* WhatsApp Reports - Accessible to all users */}
+                  {currentPage === 'whatsapp-reports' && (
+                    <WhatsAppReportsPage groupId="default-group" />
+                  )}
                   {/* Plant Operations - Check permission */}
                   <PermissionGuard
                     user={currentUser}

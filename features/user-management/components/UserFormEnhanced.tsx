@@ -6,6 +6,9 @@ import { UserRole, PermissionMatrix } from '../../../types';
 import PermissionMatrixEditor from './PermissionMatrixEditor';
 import { useUserManagementPerformance } from '../../../hooks/usePerformanceMonitor';
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import { getDefaultPermissionsForRole, isTonasaRole } from '../../../utils/tonasaPermissions';
+import DatabaseMigrationPrompt from '../../../components/DatabaseMigrationPrompt';
+import { isAdminRole } from '../../../utils/roleHelpers';
 import {
   EnhancedButton,
   EnhancedCard,
@@ -83,6 +86,8 @@ const UserForm: React.FC<UserFormProps> = ({
     successes: number;
     failures: number;
   }>({ current: 0, total: 0, successes: 0, failures: 0 });
+  const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
+  const [migrationError, setMigrationError] = useState('');
 
   const t = translations[language];
 
@@ -298,7 +303,14 @@ const UserForm: React.FC<UserFormProps> = ({
       onClose();
     } catch (err: any) {
       console.error('User save error:', err);
-      setError(err.message || 'Failed to save user');
+
+      // Check if it's a role constraint error
+      if (err.code === '23514' && err.message && err.message.includes('users_role_check')) {
+        setMigrationError(err.message);
+        setShowMigrationPrompt(true);
+      } else {
+        setError(err.message || 'Failed to save user');
+      }
 
       // Rollback optimistic update on error
       setOptimisticUpdate(null);
@@ -510,6 +522,13 @@ const UserForm: React.FC<UserFormProps> = ({
       ...prev,
       [field]: value,
     }));
+
+    // Auto-assign default permissions when role changes
+    if (field === 'role' && typeof value === 'string') {
+      const role = value as UserRole;
+      const defaultPermissions = getDefaultPermissionsForRole(role);
+      setUserPermissions(defaultPermissions);
+    }
 
     // Clear validation error when user starts typing
     if (validationErrors[field]) {
@@ -832,7 +851,13 @@ const UserForm: React.FC<UserFormProps> = ({
               {[
                 { value: 'Guest', label: 'Guest', color: 'secondary' },
                 { value: 'Operator', label: 'Operator', color: 'primary' },
+                { value: 'Operator Tonasa 2/3', label: 'Operator Tonasa 2/3', color: 'primary' },
+                { value: 'Operator Tonasa 4', label: 'Operator Tonasa 4', color: 'primary' },
+                { value: 'Operator Tonasa 5', label: 'Operator Tonasa 5', color: 'primary' },
                 { value: 'Admin', label: 'Admin', color: 'warning' },
+                { value: 'Admin Tonasa 2/3', label: 'Admin Tonasa 2/3', color: 'warning' },
+                { value: 'Admin Tonasa 4', label: 'Admin Tonasa 4', color: 'warning' },
+                { value: 'Admin Tonasa 5', label: 'Admin Tonasa 5', color: 'warning' },
                 { value: 'Super Admin', label: 'Super Admin', color: 'error' },
               ].map((role) => (
                 <button
@@ -898,7 +923,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   Configure detailed access permissions for this user
                 </p>
               </div>
-              {currentUser?.role === 'Super Admin' || currentUser?.role === 'Admin' ? (
+              {isAdminRole(currentUser?.role) ? (
                 <EnhancedButton
                   variant="outline"
                   size="sm"
@@ -981,6 +1006,17 @@ const UserForm: React.FC<UserFormProps> = ({
         isOpen={isPermissionEditorOpen}
         language={language}
       />
+
+      {/* Database Migration Prompt */}
+      {showMigrationPrompt && (
+        <DatabaseMigrationPrompt
+          error={migrationError}
+          onDismiss={() => {
+            setShowMigrationPrompt(false);
+            setMigrationError('');
+          }}
+        />
+      )}
     </EnhancedModal>
   );
 };

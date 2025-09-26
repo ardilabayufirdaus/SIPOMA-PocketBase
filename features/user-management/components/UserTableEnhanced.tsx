@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../utils/supabaseClient';
 import { translations } from '../../../translations';
 import { UserRole } from '../../../types';
+import { useRealtimeUsers } from '../../../hooks/useRealtimeUsers';
 
 // Enhanced Components
 import {
@@ -47,11 +48,9 @@ type SortField = 'username' | 'full_name' | 'role' | 'is_active' | 'created_at';
 type SortDirection = 'asc' | 'desc';
 
 const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language = 'en' }) => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,60 +60,37 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   const t = translations[language];
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, sortField, sortDirection]);
+  // Use the real-time users hook for instant updates
+  const {
+    users,
+    totalUsers,
+    isLoading,
+    error,
+    setError,
+    refetch,
+    optimisticUpdateUser,
+    optimisticDeleteUser,
+  } = useRealtimeUsers({
+    searchTerm: debouncedSearchTerm,
+    roleFilter,
+    sortField,
+    sortDirection,
+    currentPage,
+    itemsPerPage,
+  });
 
+  // Minimal debounce for search input - instant updates with small delay to prevent excessive API calls
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page when search changes
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 100); // Reduced to 100ms for near-instant response
+
+    return () => clearTimeout(timer);
   }, [searchTerm]);
 
   useEffect(() => {
-    const subscription = supabase
-      .channel('users_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => {
-        fetchUsers(); // Refetch on any change
-      })
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [currentPage, searchTerm, sortField, sortDirection]); // Depend on same as fetchUsers
-
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      let query = supabase.from('users').select('*', { count: 'exact' });
-
-      // Apply search filter
-      if (searchTerm) {
-        query = query.or(
-          `username.ilike.%${searchTerm}%,full_name.ilike.%${searchTerm}%,role.ilike.%${searchTerm}%`
-        );
-      }
-
-      // Apply sorting
-      query = query.order(sortField, { ascending: sortDirection === 'asc' });
-
-      // Apply pagination
-      const from = (currentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-      query = query.range(from, to);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-      setUsers(data || []);
-      setTotalUsers(count || 0);
-    } catch (err: unknown) {
-      console.error('Error fetching users:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setCurrentPage(1); // Reset to first page when search or filter changes
+  }, [debouncedSearchTerm, roleFilter]);
 
   // Users are already filtered, sorted, and paginated from server
   const displayedUsers = users;
@@ -136,23 +112,33 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       return;
     }
 
+    // Optimistic update - immediately remove from UI
+    optimisticDeleteUser(userId);
+    setSelectedUsers((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(userId);
+      return newSet;
+    });
+
     try {
       const { error } = await supabase.from('users').delete().eq('id', userId);
 
       if (error) throw error;
-      await fetchUsers();
-      setSelectedUsers((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
-      });
+      // Real-time subscription will handle the actual update
     } catch (err: any) {
       console.error('Error deleting user:', err);
       setError(err.message || 'Failed to delete user');
+      // Note: The real-time subscription will correct the UI if the delete failed
     }
   };
 
   const handleToggleActive = async (userId: string, isActive: boolean) => {
+    // Optimistic update - immediately update UI
+    optimisticUpdateUser(userId, {
+      is_active: !isActive,
+      updated_at: new Date().toISOString(),
+    });
+
     try {
       const { error } = await supabase
         .from('users')
@@ -160,27 +146,40 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
         .eq('id', userId);
 
       if (error) throw error;
-      await fetchUsers();
+      // Real-time subscription will handle the actual update
     } catch (err: any) {
       console.error('Error updating user status:', err);
       setError(err.message || 'Failed to update user status');
+      // Note: The real-time subscription will correct the UI if the update failed
     }
   };
 
   const handleBulkToggleActive = async (activate: boolean) => {
+    const selectedUserIds = Array.from(selectedUsers);
+
+    // Optimistic update - immediately update UI for all selected users
+    selectedUserIds.forEach((userId) => {
+      optimisticUpdateUser(userId, {
+        is_active: activate,
+        updated_at: new Date().toISOString(),
+      });
+    });
+
     try {
       const { error } = await supabase
         .from('users')
         .update({ is_active: activate, updated_at: new Date().toISOString() })
-        .in('id', Array.from(selectedUsers));
+        .in('id', selectedUserIds);
 
       if (error) throw error;
-      await fetchUsers();
+
       setSelectedUsers(new Set());
       setShowBulkActions(false);
+      // Real-time subscription will handle the actual updates
     } catch (err: any) {
       console.error('Error bulk updating users:', err);
       setError(err.message || 'Failed to update users');
+      // Note: The real-time subscription will correct the UI if the update failed
     }
   };
 
@@ -189,16 +188,25 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       return;
     }
 
+    const selectedUserIds = Array.from(selectedUsers);
+
+    // Optimistic update - immediately remove from UI
+    selectedUserIds.forEach((userId) => {
+      optimisticDeleteUser(userId);
+    });
+
     try {
-      const { error } = await supabase.from('users').delete().in('id', Array.from(selectedUsers));
+      const { error } = await supabase.from('users').delete().in('id', selectedUserIds);
 
       if (error) throw error;
-      await fetchUsers();
+
       setSelectedUsers(new Set());
       setShowBulkActions(false);
+      // Real-time subscription will handle the actual updates
     } catch (err: any) {
       console.error('Error bulk deleting users:', err);
       setError(err.message || 'Failed to delete users');
+      // Note: The real-time subscription will correct the UI if the delete failed
     }
   };
 
@@ -273,7 +281,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
           </div>
           <EnhancedButton
             variant="outline"
-            onClick={fetchUsers}
+            onClick={refetch}
             icon={<ArrowPathRoundedSquareIcon className="w-4 h-4" />}
           >
             Try Again
@@ -304,6 +312,24 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             className="w-full sm:w-64"
             size="sm"
           />
+
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+          >
+            <option value="all">All Roles</option>
+            <option value="Super Admin">Super Admin</option>
+            <option value="Admin">Admin</option>
+            <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
+            <option value="Admin Tonasa 4">Admin Tonasa 4</option>
+            <option value="Admin Tonasa 5">Admin Tonasa 5</option>
+            <option value="Operator">Operator</option>
+            <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
+            <option value="Operator Tonasa 4">Operator Tonasa 4</option>
+            <option value="Operator Tonasa 5">Operator Tonasa 5</option>
+            <option value="Guest">Guest</option>
+          </select>
 
           <EnhancedButton
             variant="primary"
@@ -537,14 +563,14 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
           <div className="text-center py-12">
             <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-              {searchTerm ? 'No users found' : 'No users'}
+              {debouncedSearchTerm || roleFilter !== 'all' ? 'No users found' : 'No users'}
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {searchTerm
-                ? 'Try adjusting your search terms.'
+              {debouncedSearchTerm || roleFilter !== 'all'
+                ? 'Try adjusting your search or filter settings.'
                 : 'Get started by adding a new user.'}
             </p>
-            {!searchTerm && (
+            {!(debouncedSearchTerm || roleFilter !== 'all') && (
               <div className="mt-6">
                 <EnhancedButton
                   variant="primary"

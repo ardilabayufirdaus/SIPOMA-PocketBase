@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // import { Database } from "../types/supabase";
 import { passwordUtils } from './passwordUtils';
 import { emailService } from './emailService';
@@ -6,8 +6,15 @@ import { emailService } from './emailService';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
-// Temporarily use any type to resolve 'never' type issues
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Singleton pattern to prevent multiple client instances
+let supabaseInstance: SupabaseClient | null = null;
+
+export const supabase = (() => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return supabaseInstance;
+})();
 
 export const apiClient = {
   // User Management - Custom Authentication (Username/Password)

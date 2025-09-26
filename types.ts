@@ -1,6 +1,16 @@
 import React from 'react';
 
-export type UserRole = 'Super Admin' | 'Admin' | 'Operator' | 'Guest';
+export type UserRole =
+  | 'Super Admin'
+  | 'Admin'
+  | 'Admin Tonasa 2/3'
+  | 'Admin Tonasa 4'
+  | 'Admin Tonasa 5'
+  | 'Operator'
+  | 'Operator Tonasa 2/3'
+  | 'Operator Tonasa 4'
+  | 'Operator Tonasa 5'
+  | 'Guest';
 
 export type PermissionLevel = 'NONE' | 'READ' | 'WRITE' | 'ADMIN';
 

@@ -245,6 +245,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   const handleEditPermissions = (user: User) => {
     setSelectedUser(user);
+    setPendingPermissions(user.permissions); // Initialize with current user's permissions
     setIsPermissionEditorOpen(true);
   };
 
@@ -509,7 +510,13 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
               <option value="all">All Roles</option>
               <option value="Super Admin">Super Admin</option>
               <option value="Admin">Admin</option>
+              <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
+              <option value="Admin Tonasa 4">Admin Tonasa 4</option>
+              <option value="Admin Tonasa 5">Admin Tonasa 5</option>
               <option value="Operator">Operator</option>
+              <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
+              <option value="Operator Tonasa 4">Operator Tonasa 4</option>
+              <option value="Operator Tonasa 5">Operator Tonasa 5</option>
               <option value="Guest">Guest</option>
             </select>
           </div>
