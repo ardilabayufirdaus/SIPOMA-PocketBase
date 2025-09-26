@@ -333,7 +333,7 @@ const App: React.FC = () => {
     (currentUserLoading && !localStorage.getItem('currentUser'))
   ) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="h-screen w-screen flex items-center justify-center bg-white dark:bg-slate-900">
         <div className="text-center">
           <div className="modern-spinner mx-auto mb-6"></div>
           <div className="space-y-2">
@@ -356,7 +356,7 @@ const App: React.FC = () => {
       }
     >
       <div>
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 font-sans compact">
+        <div className="min-h-screen bg-white dark:bg-slate-900 font-sans compact">
           <Sidebar
             currentPage={currentPage}
             activeSubPages={activeSubPages}

@@ -1,52 +1,184 @@
-# SIPOMA v2.0 - Sistem Informasi Produksi dan Monitoring Aplikasi
+# SIPOMA v2.0 - Plant Operations Management System
 
-Sistem manajemen produksi modern dengan dashboard real-time, user management, dan monitoring komprehensif untuk industri manufaktur.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![React Version](https://img.shields.io/badge/react-18.3.1-blue)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/typescript-5.x-blue)](https://www.typescriptlang.org/)
 
-## 🚀 Fitur Utama
+A modern, real-time plant operations management system built with React 18, TypeScript, and Supabase. Designed for industrial manufacturing environments with comprehensive monitoring, user management, and analytics capabilities.
 
-### 📊 Dashboard & Monitoring
+## ✨ Features
 
-- **Real-time Dashboard**: Monitoring KPI produksi, mesin, dan performa
-- **Plant Operations**: Tracking status mesin dan alert sistem
-- **Packing Plant**: Manajemen data packing dan inventory
-- **Project Management**: SLA tracking dan project monitoring
+### 📊 Real-time Dashboard & Monitoring
 
-### 👥 User Management
+- **Live KPI Tracking**: Production metrics, machine status, and performance indicators
+- **Plant Operations**: Real-time machine monitoring and automated alerts
+- **Packing Plant Management**: Inventory tracking and production data analysis
+- **Project Management**: SLA monitoring and project lifecycle tracking
 
-- **Role-based Access Control**: Super Admin, Admin, Manager, Supervisor, Operator, Viewer
-- **Multi-level Permissions**: Dashboard, User Management, Plant Operations, Packing Plant, Project Management, System Settings
-- **User Activity Tracking**: Monitoring aktivitas user real-time
-- **Secure Authentication**: JWT-based authentication dengan Supabase
+### 👥 Advanced User Management
 
-### 🎨 Modern UI/UX
+- **Role-based Access Control**: 6-tier permission system (Super Admin to Viewer)
+- **Multi-level Permissions**: Granular access control for all system modules
+- **User Activity Monitoring**: Real-time user behavior tracking and audit logs
+- **Secure Authentication**: JWT-based auth with Supabase integration
 
-- **Dark/Light Mode**: Support tema gelap dan terang
-- **Responsive Design**: Mobile-first approach dengan Tailwind CSS
-- **Modern Components**: Heroicons, Framer Motion animations
-- **Accessibility**: WCAG compliant dengan keyboard navigation
+### 🎨 Modern UI/UX Design
 
-### 📈 Data Visualization
+- **Dark/Light Mode**: Seamless theme switching with system preference detection
+- **Mobile-First Responsive**: Optimized for all device sizes
+- **Modern Component Library**: Heroicons, Framer Motion animations
+- **Accessibility Compliant**: WCAG 2.1 AA standards with full keyboard navigation
 
-- **Recharts Integration**: Interactive charts untuk data analisis
-- **Nivo Charts**: Advanced data visualization
-- **Real-time Updates**: Live data streaming dengan React Query
-- **Export Capabilities**: Excel/CSV export untuk reporting
+### 📈 Data Visualization & Analytics
 
-## 🛠️ Tech Stack
+- **Interactive Charts**: Recharts and Nivo for advanced data visualization
+- **Real-time Updates**: Live data streaming with React Query
+- **Export Capabilities**: Excel, CSV, and PDF report generation
+- **Custom Dashboards**: User-configurable widgets and layouts
 
-### Frontend
+## 🛠️ Technology Stack
 
-- **React 18** - Modern React dengan hooks dan concurrent features
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool dan HMR
-- **Tailwind CSS** - Utility-first CSS framework
-- **React Router v7** - Modern routing dengan data loading
+### Frontend Framework
+
+- **React 18.3.1** - Concurrent features, hooks, and modern architecture
+- **TypeScript 5.x** - Type-safe development with advanced features
+- **Vite 6.3.6** - Lightning-fast build tool with HMR
+- **React Router v7** - Modern routing with data loading and caching
+
+### Styling & UI
+
+- **Tailwind CSS 3.x** - Utility-first CSS framework
+- **Framer Motion** - Production-ready animations and gestures
+- **Heroicons** - Beautiful, consistent icon library
+- **Headless UI** - Unstyled, accessible UI components
 
 ### Backend & Database
 
-- **Supabase** - PostgreSQL database dengan real-time subscriptions
-- **Row Level Security** - Database-level security
-- **RESTful APIs** - Clean API design patterns
+- **Supabase** - PostgreSQL with real-time subscriptions
+- **Row Level Security** - Database-level access control
+- **RESTful APIs** - Clean, documented API endpoints
+- **WebSocket Support** - Real-time data synchronization
+
+### Development Tools
+
+- **ESLint** - Code linting and quality enforcement
+- **Prettier** - Code formatting consistency
+- **Jest** - Unit and integration testing
+- **Vitest** - Fast, modern testing framework
+- **Husky** - Git hooks for quality gates
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18.0.0 or higher
+- npm or yarn package manager
+- Supabase account and project
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/ardilabayufirdaus/sipoma-versi-2.git
+   cd sipoma-versi-2
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Supabase credentials
+   ```
+
+4. **Start development server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Build for production**
+   ```bash
+   npm run build
+   npm run preview
+   ```
+
+## 📁 Project Structure
+
+```
+sipoma-versi-2/
+├── public/                 # Static assets
+├── src/
+│   ├── components/         # Reusable UI components
+│   ├── pages/             # Page components
+│   ├── hooks/             # Custom React hooks
+│   ├── stores/            # State management (Zustand)
+│   ├── types/             # TypeScript type definitions
+│   ├── utils/             # Utility functions
+│   └── styles/            # Global styles and design tokens
+├── docs/                  # Documentation
+├── tests/                 # Test files
+├── scripts/               # Build and utility scripts
+└── database/              # Database migrations and seeds
+```
+
+## 🔧 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run test` - Run test suite
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking
+
+## 🔒 Security
+
+- Row Level Security (RLS) enabled on all database tables
+- JWT-based authentication with automatic token refresh
+- Input validation and sanitization
+- XSS protection and CSRF prevention
+- Secure password policies and encryption
+
+## 📱 Browser Support
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- React team for the amazing framework
+- Supabase for the excellent backend-as-a-service
+- Tailwind CSS for the utility-first approach
+- All contributors and the open-source community
+
+## 📞 Support
+
+For support, email support@sipoma.com or join our [Discord community](https://discord.gg/sipoma).
+
+---
+
+**Built with ❤️ for industrial excellence**
 
 ### State Management
 
