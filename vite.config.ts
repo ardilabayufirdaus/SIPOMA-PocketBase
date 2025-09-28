@@ -7,82 +7,135 @@ export default defineConfig({
   build: {
     // Enable build cache for faster rebuilds
     watch: null,
-    // Use esbuild for faster minification
-    minify: 'esbuild',
-    cssMinify: 'esbuild',
+    // Disable minification temporarily to debug React error
+    minify: false,
+    cssMinify: false,
     // Disable compressed size reporting for faster builds
     reportCompressedSize: false,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
+            // Database and auth
             if (id.includes('@supabase')) {
               return 'data-vendor';
             }
-            if (id.includes('crypto-js')) {
+            // Security utilities
+            if (id.includes('crypto-js') || id.includes('bcrypt')) {
               return 'crypto-vendor';
             }
-            if (id.includes('xlsx') || id.includes('exceljs')) {
+            // Excel libraries (lazy loaded)
+            if (id.includes('exceljs')) {
               return 'excel-vendor';
             }
-            if (id.includes('uuid') || id.includes('focus-trap')) {
+            // Small utilities
+            if (id.includes('uuid') || id.includes('focus-trap') || id.includes('classnames')) {
               return 'utils-light';
             }
-            // Separate chart libraries
+            // Chart libraries
             if (
               id.includes('chart.js') ||
               id.includes('react-chartjs-2') ||
-              id.includes('recharts')
+              id.includes('recharts') ||
+              id.includes('d3')
             ) {
               return 'charts-vendor';
             }
-            // Separate UI libraries
+            // UI libraries
             if (
               id.includes('@heroicons') ||
               id.includes('lucide-react') ||
-              id.includes('framer-motion')
+              id.includes('framer-motion') ||
+              id.includes('@headlessui')
             ) {
               return 'ui-vendor';
             }
-            // Separate form/query libraries
+            // Form and query libraries
             if (id.includes('@tanstack/react-query') || id.includes('react-hook-form')) {
               return 'query-vendor';
             }
-            // Separate date/time utilities
+            // Date/time utilities
             if (id.includes('date-fns') || id.includes('dayjs') || id.includes('moment')) {
               return 'date-vendor';
             }
-            // Keep utility components in utils-misc with other utilities
-            if (id.includes('ResponsiveLayout') || id.includes('Microinteractions')) {
-              return 'utils-misc';
+            // Router
+            if (id.includes('react-router')) {
+              return 'router-vendor';
             }
-            return 'utils-misc';
+            // State management
+            if (id.includes('zustand') || id.includes('immer')) {
+              return 'state-vendor';
+            }
+            // Everything else
+            return 'vendor-misc';
           }
 
-          // Split large application chunks
-          if (id.includes('components/plant-operations')) {
-            return 'plant-ops-components';
+          // Application chunks - split pages more granularly
+          if (id.includes('pages/') && !id.includes('test')) {
+            // Plant operations pages
+            if (id.includes('PlantOperationsPage') || id.includes('plant_operations/')) {
+              return 'page-plant-ops';
+            }
+            // Packing plant pages
+            if (id.includes('PackingPlantPage') || id.includes('packing_plant/')) {
+              return 'page-packing';
+            }
+            // User management pages
+            if (
+              id.includes('UserListPage') ||
+              id.includes('UserRolesPage') ||
+              id.includes('UserActivityPage')
+            ) {
+              return 'page-users';
+            }
+            // Project management pages
+            if (
+              id.includes('ProjectDashboardPage') ||
+              id.includes('ProjectDetailPage') ||
+              id.includes('ProjectListPage') ||
+              id.includes('project_management/')
+            ) {
+              return 'page-projects';
+            }
+            // Settings pages
+            if (id.includes('SettingsPage') || id.includes('Settings/')) {
+              return 'page-settings';
+            }
+            // Dashboard pages
+            if (id.includes('MainDashboardPage') || id.includes('ModernMainDashboardPage')) {
+              return 'page-dashboard';
+            }
+            // Auth pages
+            if (id.includes('LoginPage')) {
+              return 'page-auth';
+            }
+            return 'pages-misc';
           }
-          if (id.includes('components/packing-plant')) {
-            return 'packing-components';
+
+          // Component chunks
+          if (id.includes('components/plant-operations')) {
+            return 'components-plant-ops';
           }
           if (id.includes('components/charts') || id.includes('Chart')) {
-            return 'chart-components';
+            return 'components-charts';
           }
+          if (id.includes('components/dashboard')) {
+            return 'components-dashboard';
+          }
+
+          // Hook chunks
           if (id.includes('hooks/use') && id.includes('Data')) {
-            return 'data-hooks';
+            return 'hooks-data';
           }
-          if (
-            id.includes('utils/') &&
-            !id.includes('permissions') &&
-            !id.includes('Microinteractions')
-          ) {
+
+          // Utility chunks
+          if (id.includes('utils/') && !id.includes('permissions')) {
             return 'app-utils';
           }
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500, // Reduced to catch large chunks
     // Enable source maps for production debugging
     sourcemap: false,
   },

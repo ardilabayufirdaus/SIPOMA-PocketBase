@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Children } from 'react';
 
 interface ResponsiveTableProps {
   children: React.ReactNode;
@@ -65,7 +65,7 @@ export const ResponsiveTableBody: React.FC<ResponsiveTableBodyProps> = ({
 
       {/* Mobile Card Layout */}
       <div className="md:hidden space-y-3 p-3">
-        {React.Children.map(children, (child, index) => (
+        {Children.map(children, (child, index) => (
           <div key={index} className="mobile-card">
             {child}
           </div>

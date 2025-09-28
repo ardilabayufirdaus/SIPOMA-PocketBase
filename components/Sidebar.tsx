@@ -21,7 +21,7 @@ import ChartPieIcon from './icons/ChartPieIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import CogIcon from './icons/CogIcon';
 import ClockIcon from './icons/ClockIcon';
-import PlusIcon from './icons/PlusIcon';
+
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
 // Import Design System
@@ -415,8 +415,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const userManagementPages = useMemo(
     () => [
       { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
-      { key: 'add_user', icon: <PlusIcon className={iconClass} /> },
-      { key: 'user_roles', icon: <ShieldCheckIcon className={iconClass} /> },
+
       { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
     ],
     [iconClass]

@@ -29,7 +29,7 @@ import ChartPieIcon from './icons/ChartPieIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import CogIcon from './icons/CogIcon';
 import ClockIcon from './icons/ClockIcon';
-import PlusIcon from './icons/PlusIcon';
+
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
 // Import permission utilities
@@ -305,9 +305,15 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
       ],
       userManagementPages: [
         { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
-        { key: 'add_user', icon: <PlusIcon className={iconClass} /> },
-        { key: 'user_roles', icon: <ShieldCheckIcon className={iconClass} /> },
         { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
+      ],
+      securityPages: [
+        { key: 'overview', icon: <ShieldCheckIcon className={iconClass} /> },
+        { key: 'monitoring', icon: <ChartBarIcon className={iconClass} /> },
+        { key: 'audit', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+        { key: 'gdpr', icon: <ShieldCheckIcon className={iconClass} /> },
+        { key: 'roles', icon: <UserGroupIcon className={iconClass} /> },
+        { key: 'mfa', icon: <ShieldCheckIcon className={iconClass} /> },
       ],
     }),
     [iconClass]
@@ -427,6 +433,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const packingButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
+  const securityButtonRef = useRef<HTMLButtonElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = useCallback(() => {
@@ -596,6 +603,17 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               label={t.userManagement || 'User Management'}
               isActive={currentPage === 'users'}
               onClick={() => handleDropdownToggle('users', usersButtonRef)}
+            />
+          )}
+
+          {/* Security - Only for Super Admin */}
+          {currentUser?.role === 'Super Admin' && (
+            <IconButton
+              ref={securityButtonRef}
+              icon={<ShieldCheckIcon className={iconClass} />}
+              label="Security"
+              isActive={currentPage === 'security'}
+              onClick={() => handleDropdownToggle('security', securityButtonRef)}
             />
           )}
         </nav>

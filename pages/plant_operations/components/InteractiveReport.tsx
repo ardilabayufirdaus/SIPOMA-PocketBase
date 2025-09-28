@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { ParameterTable } from './ParameterTable';
 import { OperatorTable } from './OperatorTable';
@@ -65,6 +65,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   const reportRef = useRef<HTMLDivElement>(null);
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCopyImage = async () => {
     if (!reportRef.current) return;
@@ -89,7 +90,11 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         if (blob) {
           await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
           setCopySuccess(true);
-          setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
+          // Clear any existing timeout before setting new one
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => setCopySuccess(false), 2000);
         }
       });
     } catch (error) {
@@ -98,6 +103,15 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
       setIsCopying(false);
     }
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div ref={reportRef} className="space-y-6 max-w-full overflow-hidden pb-8">

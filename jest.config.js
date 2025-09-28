@@ -16,7 +16,7 @@ export default {
     ],
   },
   transformIgnorePatterns: ['node_modules/(?!(@supabase|react-router-dom|@tanstack)/)'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/tests/__mocks__/fileMock.js',
   },

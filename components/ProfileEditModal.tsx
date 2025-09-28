@@ -77,6 +77,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   const [retryCount, setRetryCount] = useState(0);
   const [isCompressing, setIsCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -132,7 +133,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
         const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
         const filePath = `${fileName}`;
 
-
         // Upload with progress tracking (simulated since Supabase doesn't support onUploadProgress)
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('avatars')
@@ -145,7 +145,6 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           console.error('Upload error details:', uploadError);
           throw new Error(`Upload failed: ${uploadError.message}`);
         }
-
 
         // Get public URL
         const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);

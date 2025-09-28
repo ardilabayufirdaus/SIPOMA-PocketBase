@@ -224,7 +224,7 @@ export const getResponsiveClasses = (base: string, responsive?: Record<string, s
 
 // Enhanced Button with Microinteractions
 interface EnhancedButtonProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   variant?:
     | 'primary'
     | 'secondary'

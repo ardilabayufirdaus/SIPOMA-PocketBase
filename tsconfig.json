@@ -16,6 +16,8 @@
       "@/*": ["./*"]
     },
     "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "noEmit": true,
     // Performance optimizations
     "incremental": true, // Enable incremental compilation

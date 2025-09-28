@@ -2,13 +2,26 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Alert, AlertSeverity } from '../types';
 import { supabase } from '../utils/supabase';
 
-// Simple debounce function to avoid lodash dependency
-function debounce<T extends (...args: any[]) => any>(func: T, delay: number): T {
-  let timeoutId: NodeJS.Timeout;
-  return ((...args: any[]) => {
-    clearTimeout(timeoutId);
+// Enhanced debounce function with cancel support
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  delay: number
+): T & { cancel: () => void } {
+  let timeoutId: NodeJS.Timeout | null = null;
+
+  const debounced = ((...args: any[]) => {
+    if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(null, args), delay);
-  }) as T;
+  }) as T & { cancel: () => void };
+
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+
+  return debounced;
 }
 
 export interface NotificationSettings {

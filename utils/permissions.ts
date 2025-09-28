@@ -210,24 +210,7 @@ export const withPermission = <P extends object>(
           {
             className: 'text-center',
           },
-          [
-            React.createElement(
-              'h2',
-              {
-                key: 'title',
-                className: 'text-2xl font-bold text-gray-900 mb-4',
-              },
-              'Access Denied'
-            ),
-            React.createElement(
-              'p',
-              {
-                key: 'message',
-                className: 'text-gray-600',
-              },
-              "You don't have permission to access this page."
-            ),
-          ]
+          [null]
         )
       );
     }

@@ -1,7 +1,30 @@
 import CryptoJS from 'crypto-js';
 
-// Simple encryption key - in production, this should be derived from user-specific data
-const ENCRYPTION_KEY = 'sipoma-session-key-2024';
+// Generate secure encryption key from environment and browser fingerprint
+const generateSecureKey = (): string => {
+  // Base key from environment variable (should be set in .env)
+  const envKey = import.meta.env.VITE_ENCRYPTION_SEED || 'sipoma-default-seed';
+
+  // Browser fingerprint components
+  const browserFingerprint = [
+    navigator.userAgent,
+    navigator.language,
+    screen.width + 'x' + screen.height,
+    new Date().toDateString(), // Rotates daily for added security
+    window.location.origin,
+  ].join('|');
+
+  // Derive key using PBKDF2 with salt
+  const salt = CryptoJS.SHA256(browserFingerprint).toString();
+  const derivedKey = CryptoJS.PBKDF2(envKey, salt, {
+    keySize: 256 / 32,
+    iterations: 1000,
+  }).toString();
+
+  return derivedKey;
+};
+
+const ENCRYPTION_KEY = generateSecureKey();
 
 export class SecureStorage {
   private static instance: SecureStorage;

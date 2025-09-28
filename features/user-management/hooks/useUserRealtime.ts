@@ -3,6 +3,9 @@ import { useUserStore } from '../../../stores/userStore';
 
 export const useUserRealtime = () => {
   const initRealtimeSubscription = useUserStore((state) => (state as any).initRealtimeSubscription);
+  const cleanupRealtimeSubscription = useUserStore(
+    (state) => (state as any).cleanupRealtimeSubscription
+  );
 
   useEffect(() => {
     if (initRealtimeSubscription) {
@@ -11,7 +14,9 @@ export const useUserRealtime = () => {
 
     // Cleanup on unmount
     return () => {
-      // If needed, unsubscribe here
+      if (cleanupRealtimeSubscription) {
+        cleanupRealtimeSubscription();
+      }
     };
-  }, [initRealtimeSubscription]);
+  }, [initRealtimeSubscription, cleanupRealtimeSubscription]);
 };

@@ -21,7 +21,8 @@ export const apiClient = {
   users: {
     // Login dengan username dan password
     async login(username: string, password: string) {
-      const { data, error } = await supabase
+      // First, get user by username only (don't expose password hash)
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .select(
           `
@@ -30,6 +31,7 @@ export const apiClient = {
           full_name,
           role,
           is_active,
+          password_hash,
           created_at,
           updated_at,
           user_permissions (
@@ -42,12 +44,20 @@ export const apiClient = {
         `
         )
         .eq('username', username)
-        .eq('password_hash', password)
         .eq('is_active', true)
         .single();
 
-      if (error) throw error;
-      if (!data) throw new Error('User not found');
+      if (userError) throw userError;
+      if (!userData) throw new Error('Invalid username or password');
+
+      // Verify password using bcrypt
+      const isValidPassword = await passwordUtils.verify(password, userData.password_hash);
+      if (!isValidPassword) {
+        throw new Error('Invalid username or password');
+      }
+
+      // Remove password_hash from returned data for security
+      const { password_hash, ...data } = userData;
 
       return data;
     },

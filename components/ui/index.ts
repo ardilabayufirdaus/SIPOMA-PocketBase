@@ -20,5 +20,5 @@ export {
   StatusText,
   UIText,
   AccentText,
-  TypographyProps,
+  type TypographyProps,
 } from './Typography';

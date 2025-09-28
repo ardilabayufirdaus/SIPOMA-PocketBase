@@ -316,3 +316,20 @@ export const AccentText: React.FC<AccentTextProps> = ({
     </span>
   );
 };
+
+// Default export for backward compatibility
+const Typography = {
+  H1,
+  H2,
+  H3,
+  H4,
+  H5,
+  H6,
+  Body,
+  Link,
+  StatusText,
+  UIText,
+  AccentText,
+};
+
+export default Typography;

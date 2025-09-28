@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabaseClient';
 import { User } from '../types';
-import { SHA256 } from 'crypto-js';
+import { passwordUtils } from '../utils/passwordUtils';
 import { buildPermissionMatrix } from '../utils/permissionUtils';
 
 interface UserManagementState {
@@ -26,6 +26,10 @@ interface UserManagementState {
   deleteUser: (userId: string) => Promise<void>;
   assignPermissions: (userId: string, permissionIds: string[]) => Promise<void>;
   clearError: () => void;
+
+  // Realtime subscription management
+  initRealtimeSubscription: () => void;
+  cleanupRealtimeSubscription: () => void;
 }
 
 export const useUserStore = create<UserManagementState>((set, get) => ({
@@ -68,7 +72,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
                 is_active: newRecord.is_active,
                 created_at: new Date(newRecord.created_at),
                 updated_at: new Date(newRecord.updated_at),
-                permissions: {},
+                permissions: buildPermissionMatrix([]),
               };
               updatedUsers.unshift(newUser); // Add to top
             } else if (eventType === 'UPDATE' && newRecord) {
@@ -199,6 +203,14 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     (get() as any).realtimeChannel = channel;
   },
 
+  cleanupRealtimeSubscription: () => {
+    const state = get() as any;
+    if (state.realtimeChannel) {
+      state.realtimeChannel.unsubscribe();
+      state.realtimeChannel = null;
+    }
+  },
+
   fetchUsers: async (page = 1, limit = 20, includePermissions = false) => {
     set({ isLoading: true, error: null });
     try {
@@ -310,7 +322,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       if (!userData.password) {
         throw new Error('Password is required for new users');
       }
-      const passwordHash = SHA256(userData.password).toString();
+      const passwordHash = await passwordUtils.hash(userData.password);
 
       const { data, error } = await supabase
         .from('users')
@@ -349,7 +361,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       };
 
       if (userData.password) {
-        updateData.password_hash = SHA256(userData.password).toString();
+        updateData.password_hash = await passwordUtils.hash(userData.password);
       }
 
       const { data, error } = await supabase

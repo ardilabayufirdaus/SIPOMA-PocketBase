@@ -15,7 +15,6 @@ import {
   Bars3Icon,
   SunIcon,
   MoonIcon,
-  UserIcon,
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
@@ -54,7 +53,7 @@ const motionVariants = {
   header: {
     initial: { y: -20, opacity: 0 },
     animate: { y: 0, opacity: 1 },
-    transition: { duration: 0.4, ease: 'easeOut' },
+    transition: { duration: 0.4 },
   },
   leftSection: {
     initial: { x: -20, opacity: 0 },
@@ -84,8 +83,7 @@ const OptimizedHeader: React.FC<HeaderProps> = memo(
     const isMobile = useIsMobile();
 
     // Optimized notifications hook with debouncing and caching
-    const { notifications, unreadCount, settings, actions, isLoading } =
-      useOptimizedNotifications();
+    const { notifications, unreadCount, settings, actions } = useOptimizedNotifications();
 
     // Memoized theme styles
     const themeStyles = useMemo(() => getThemeStyles(theme), [theme]);
@@ -266,9 +264,14 @@ const OptimizedHeader: React.FC<HeaderProps> = memo(
                     notifications={notifications}
                     unreadCount={unreadCount}
                     settings={settings}
-                    actions={actions}
+                    onMarkAsRead={actions?.markAsRead || (() => {})}
+                    onMarkAllAsRead={actions?.markAllAsRead || (() => {})}
+                    onDismiss={actions?.dismissNotification || (() => {})}
+                    onSnooze={actions?.snoozeNotification || (() => {})}
+                    onUpdateSettings={actions?.updateSettings || (() => {})}
                     t={t}
-                    isLoading={isLoading}
+                    isOpen={true}
+                    onToggle={() => {}}
                   />
                 </Suspense>
 

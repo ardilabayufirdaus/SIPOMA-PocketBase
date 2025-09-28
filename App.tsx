@@ -6,14 +6,14 @@ import ProfileEditModal from './components/ProfileEditModal';
 import UserForm from './features/user-management/components/UserForm';
 import PasswordDisplay from './components/PasswordDisplay';
 import Toast from './components/Toast';
-import LoadingSkeleton, { PageLoading } from './components/LoadingSkeleton';
+import LoadingSkeleton from './components/LoadingSkeleton';
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
 import { useUserActivity } from './hooks/useUserActivity';
 import { usePlantData } from './hooks/usePlantData';
-import { useProjects } from './hooks/useProjects';
+
 import { useIsMobile } from './hooks/useIsMobile';
-import { User, ProjectStatus } from './types';
+import { User } from './types';
 import { translations } from './translations';
 import { usePlantUnits } from './hooks/usePlantUnits';
 
@@ -21,8 +21,8 @@ import Sidebar from './components/ModernSidebar';
 import Header from './components/Header';
 
 // Import permission utilities
-import { usePermissions, PermissionGuard } from './utils/permissions';
-import { PermissionLevel } from './types';
+import { PermissionGuard } from './utils/permissions';
+
 import { logSystemStatus } from './utils/systemStatus';
 
 // Preload critical routes with higher priority
@@ -31,8 +31,7 @@ const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
 const preloadPackingPlant = () => import('./pages/PackingPlantPage');
 
 // Preload secondary routes on user interaction
-const preloadProjectManagement = () => import('./pages/ProjectManagementPage');
-const preloadSettings = () => import('./pages/SettingsPage');
+// Preload functions removed as they were unused
 
 // Enhanced lazy loading with better error boundaries and retries
 const ModernMainDashboardPage = lazy(() =>
@@ -99,16 +98,31 @@ const UserListPage = lazy(() =>
     default: () => <div>Error loading User List. Please refresh.</div>,
   }))
 );
-const UserRolesPage = lazy(() =>
-  import('./features/user-management/pages/UserRolesPage').catch(() => ({
-    default: () => <div>Error loading User Roles. Please refresh.</div>,
-  }))
-);
+
 const UserActivityPage = lazy(() =>
   import('./features/user-management/pages/UserActivityPage').catch(() => ({
     default: () => <div>Error loading User Activity. Please refresh.</div>,
   }))
 );
+const SecurityDashboard = lazy(() =>
+  import('./components/security/SecurityMonitoringDashboard').catch(() => ({
+    default: () => <div>Error loading Security Dashboard. Please refresh.</div>,
+  }))
+);
+const AuditDashboard = lazy(() =>
+  import('./components/security/AuditLoggingDashboard').catch(() => ({
+    default: () => <div>Error loading Audit Dashboard. Please refresh.</div>,
+  }))
+);
+const GDPRDashboard = lazy(() =>
+  import('./components/security/GDPRComplianceDashboard').catch(() => ({
+    default: () => <div>Error loading GDPR Dashboard. Please refresh.</div>,
+  }))
+);
+const RoleManagement = lazy(() => import('./components/security/RoleManagement'));
+const MFAManagement = lazy(() => import('./components/security/MFAManagement'));
+const MFASetup = lazy(() => import('./components/security/MFASetup'));
+const MFAVerification = lazy(() => import('./components/security/MFAVerification'));
 
 // Loading component for lazy loaded pages
 const PageLoader = () => (
@@ -124,7 +138,8 @@ export type Page =
   | 'packing'
   | 'projects'
   | 'settings'
-  | 'whatsapp-reports';
+  | 'whatsapp-reports'
+  | 'security';
 export type Language = 'en' | 'id';
 export type Theme = 'light' | 'dark';
 
@@ -138,15 +153,15 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
-  const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
+  const { loading: plantUnitsLoading } = usePlantUnits();
   const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
   const {
     users,
-    createUser: addUser,
+    createUser,
     updateUser,
     deleteUser: deleteUserStore,
     isLoading: usersLoading,
-    error: usersError,
+    error,
   } = useUserStore();
 
   // Update current user activity
@@ -159,20 +174,20 @@ const App: React.FC = () => {
     productionData,
     loading: plantDataLoading,
     toggleMachineStatus,
-    markAllAlertsAsRead,
+    // markAllAlertsAsRead,
   } = usePlantData();
 
   // Load projects data for active projects count
-  const { projects } = useProjects();
+  // const { projects } = useProjects();
 
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [showPasswordDisplay, setShowPasswordDisplay] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState('');
-  const [newUsername, setNewUsername] = useState('');
-  const [newUserFullName, setNewUserFullName] = useState('');
+  // const [generatedPassword, setGeneratedPassword] = useState('');
+  // const [newUsername, setNewUsername] = useState('');
+  // const [newUserFullName, setNewUserFullName] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'info' | 'warning'>('success');
@@ -182,6 +197,8 @@ const App: React.FC = () => {
     packing: 'pack_master_data',
     projects: 'proj_dashboard',
     users: 'user_list',
+    security: 'overview',
+    mfa: 'management',
   });
 
   useEffect(() => {
@@ -247,46 +264,12 @@ const App: React.FC = () => {
     setEditingUser(null);
   }, []);
 
-  const handleDeleteUser = useCallback(
-    async (userId: string) => {
-      // Find the user to be deleted
-      const userToDelete = users.find((u) => u.id === userId);
-      if (!userToDelete) {
-        setToastMessage(t.user_not_found || 'User not found');
-        setToastType('error');
-        setShowToast(true);
-        return;
-      }
-
-      // Check if user is trying to delete a super admin
-      if (userToDelete.role === 'Super Admin') {
-        setToastMessage(t.cannot_delete_super_admin || 'Super Admin users cannot be deleted');
-        setToastType('error');
-        setShowToast(true);
-        return;
-      }
-
-      // Check if current user has permission to delete
-      if (!currentUser || currentUser.role !== 'Super Admin') {
-        setToastMessage(t.only_super_admin_can_delete || 'Only Super Admin can delete users');
-        setToastType('error');
-        setShowToast(true);
-        return;
-      }
-
-      // Confirm before deleting
-      const confirmMessage =
-        t.confirm_delete_user ||
-        `Are you sure you want to delete ${userToDelete.full_name}? This action cannot be undone.`;
-      if (window.confirm(confirmMessage.replace('{name}', userToDelete.full_name))) {
-        await deleteUserStore(userId);
-        setToastMessage(t.user_deleted_success || 'User deleted successfully');
-        setToastType('success');
-        setShowToast(true);
-      }
-    },
-    [users, currentUser, deleteUserStore, t]
-  );
+  // const handleDeleteUser = useCallback(
+  //   async (userId: string) => {
+  //     // Implementation commented out as not currently used
+  //   },
+  //   [users, currentUser, deleteUserStore, t]
+  // );
 
   const handleOpenProfileModal = () => setProfileModalOpen(true);
   const handleCloseProfileModal = () => setProfileModalOpen(false);
@@ -359,13 +342,11 @@ const App: React.FC = () => {
         <div className="min-h-screen bg-white dark:bg-slate-900 font-sans compact">
           <Sidebar
             currentPage={currentPage}
-            activeSubPages={activeSubPages}
             onNavigate={handleNavigate}
             t={t}
             currentLanguage={language}
             onLanguageChange={setLanguage}
             isOpen={isSidebarOpen}
-            isCollapsed={false}
             onClose={handleCloseSidebar}
             currentUser={currentUser}
           />
@@ -382,8 +363,6 @@ const App: React.FC = () => {
               t={t}
               onNavigate={handleNavigate}
               onSignOut={handleSignOutClick}
-              alerts={alerts}
-              onMarkAllAsRead={markAllAlertsAsRead}
               theme={theme}
               onToggleTheme={handleToggleTheme}
               currentUser={currentUser}
@@ -406,33 +385,7 @@ const App: React.FC = () => {
                     user={currentUser}
                     feature="dashboard"
                     requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300">
-                            You don&apos;t have permission to access the Dashboard.
-                          </p>
-                        </div>
-                      </div>
-                    }
+                    fallback={null}
                   >
                     {currentPage === 'dashboard' && (
                       <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
@@ -442,43 +395,7 @@ const App: React.FC = () => {
                   {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
                     <>
                       {activeSubPages.users === 'user_list' && <UserListPage />}
-                      {activeSubPages.users === 'add_user' && (
-                        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-8 max-w-md">
-                            <div className="mb-4">
-                              <svg
-                                className="w-16 h-16 text-blue-500 mx-auto"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                              </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                              Add New User
-                            </h3>
-                            <p className="text-blue-600 dark:text-blue-300 mb-4">
-                              Use the &quot;Add User&quot; button in the header to create a new
-                              user.
-                            </p>
-                            <button
-                              onClick={() => handleNavigate('users', 'user_list')}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              Go to User List
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      {activeSubPages.users === 'user_roles' && (
-                        <UserRolesPage users={users} plantUnits={plantUnits} t={t} />
-                      )}
+
                       {activeSubPages.users === 'user_activity' && (
                         <UserActivityPage users={users} t={t} />
                       )}
@@ -498,38 +415,194 @@ const App: React.FC = () => {
                   {currentPage === 'whatsapp-reports' && (
                     <WhatsAppReportsPage groupId="default-group" />
                   )}
+                  {/* Security - Admin only */}
+                  <PermissionGuard user={currentUser} feature="packing_plant" fallback={null}>
+                    {currentPage === 'security' && (
+                      <Suspense fallback={<PageLoader />}>
+                        <div className="space-y-6">
+                          <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <div className="flex flex-wrap gap-2 mb-6">
+                              {[
+                                { key: 'overview', label: 'Security Overview', icon: '🛡️' },
+                                { key: 'monitoring', label: 'Security Monitoring', icon: '📊' },
+                                { key: 'audit', label: 'Audit Logs', icon: '📋' },
+                                { key: 'gdpr', label: 'GDPR Compliance', icon: '🇪🇺' },
+                                { key: 'roles', label: 'Role Management', icon: '👥' },
+                                { key: 'mfa', label: 'MFA Management', icon: '🔐' },
+                              ].map((tab) => (
+                                <button
+                                  key={tab.key}
+                                  onClick={() => handleNavigate('security', tab.key)}
+                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                                    activeSubPages.security === tab.key
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  <span>{tab.icon}</span>
+                                  {tab.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {activeSubPages.security === 'overview' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                              <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-center mb-4">
+                                  <div className="p-2 bg-blue-100 rounded-lg">
+                                    <span className="text-2xl">📊</span>
+                                  </div>
+                                  <div className="ml-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                      Security Monitoring
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                      Real-time threat detection
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleNavigate('security', 'monitoring')}
+                                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                  Open Dashboard
+                                </button>
+                              </div>
+
+                              <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-center mb-4">
+                                  <div className="p-2 bg-green-100 rounded-lg">
+                                    <span className="text-2xl">📋</span>
+                                  </div>
+                                  <div className="ml-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                      Audit Logs
+                                    </h3>
+                                    <p className="text-sm text-gray-500">Compliance tracking</p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleNavigate('security', 'audit')}
+                                  className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                >
+                                  View Logs
+                                </button>
+                              </div>
+
+                              <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-center mb-4">
+                                  <div className="p-2 bg-purple-100 rounded-lg">
+                                    <span className="text-2xl">🇪🇺</span>
+                                  </div>
+                                  <div className="ml-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                      GDPR Compliance
+                                    </h3>
+                                    <p className="text-sm text-gray-500">Data protection</p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleNavigate('security', 'gdpr')}
+                                  className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                >
+                                  Manage GDPR
+                                </button>
+                              </div>
+
+                              <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-center mb-4">
+                                  <div className="p-2 bg-orange-100 rounded-lg">
+                                    <span className="text-2xl">👥</span>
+                                  </div>
+                                  <div className="ml-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                      Role Management
+                                    </h3>
+                                    <p className="text-sm text-gray-500">RBAC system</p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleNavigate('security', 'roles')}
+                                  className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                                >
+                                  Manage Roles
+                                </button>
+                              </div>
+
+                              <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex items-center mb-4">
+                                  <div className="p-2 bg-red-100 rounded-lg">
+                                    <span className="text-2xl">🔐</span>
+                                  </div>
+                                  <div className="ml-4">
+                                    <h3 className="text-lg font-semibold text-gray-900">
+                                      MFA Management
+                                    </h3>
+                                    <p className="text-sm text-gray-500">Two-factor auth</p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleNavigate('security', 'mfa')}
+                                  className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                  Setup MFA
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {activeSubPages.security === 'monitoring' && <SecurityDashboard />}
+                          {activeSubPages.security === 'audit' && <AuditDashboard />}
+                          {activeSubPages.security === 'gdpr' && <GDPRDashboard />}
+                          {activeSubPages.security === 'roles' && <RoleManagement />}
+                          {activeSubPages.security === 'mfa' && (
+                            <div className="space-y-6">
+                              <div className="bg-white rounded-lg shadow-sm border p-6">
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                  {[
+                                    { key: 'management', label: 'MFA Management', icon: '🔐' },
+                                    { key: 'setup', label: 'MFA Setup', icon: '⚙️' },
+                                    { key: 'verification', label: 'Verification', icon: '✔️' },
+                                  ].map((tab) => (
+                                    <button
+                                      key={tab.key}
+                                      onClick={() => {
+                                        const newSubPages = { ...activeSubPages };
+                                        newSubPages.mfa = tab.key;
+                                        setActiveSubPages(newSubPages);
+                                      }}
+                                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                                        (activeSubPages as any).mfa === tab.key
+                                          ? 'bg-blue-600 text-white'
+                                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                      }`}
+                                    >
+                                      <span>{tab.icon}</span>
+                                      {tab.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {((activeSubPages as any).mfa === 'management' ||
+                                !(activeSubPages as any).mfa) && <MFAManagement />}
+                              {(activeSubPages as any).mfa === 'setup' && <MFASetup />}
+                              {(activeSubPages as any).mfa === 'verification' && (
+                                <MFAVerification />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </Suspense>
+                    )}
+                  </PermissionGuard>
                   {/* Plant Operations - Check permission */}
                   <PermissionGuard
                     user={currentUser}
                     feature="plant_operations"
                     requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300">
-                            You don&apos;t have permission to access Plant Operations.
-                          </p>
-                        </div>
-                      </div>
-                    }
+                    fallback={null}
                   >
                     {currentPage === 'operations' && (
                       <PlantOperationsPage
@@ -550,33 +623,7 @@ const App: React.FC = () => {
                     user={currentUser}
                     feature="packing_plant"
                     requiredLevel="READ"
-                    fallback={
-                      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-8 max-w-md">
-                          <div className="mb-4">
-                            <svg
-                              className="w-16 h-16 text-red-500 mx-auto"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                              />
-                            </svg>
-                          </div>
-                          <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
-                            Access Denied
-                          </h3>
-                          <p className="text-red-600 dark:text-red-300">
-                            You don&apos;t have permission to access Packing Plant.
-                          </p>
-                        </div>
-                      </div>
-                    }
+                    fallback={null}
                   >
                     {currentPage === 'packing' && (
                       <PackingPlantPage activePage={activeSubPages.packing} t={t} />
