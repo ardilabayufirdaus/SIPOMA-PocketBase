@@ -1945,7 +1945,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                     title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
                                     placeholder={
                                       param.data_type === ParameterDataType.NUMBER
-                                        ? '0,0'
+                                        ? ''
                                         : 'Enter text'
                                     }
                                   />

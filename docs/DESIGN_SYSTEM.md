@@ -202,9 +202,8 @@ spacing: {
 
 ### Enhanced Card Component
 
-#### Variants
+#### Card Variants
 
-- **Default**: Clean white dengan subtle gradient border
 - **Elevated**: Multi-layer shadows dengan gradient background
 - **Glass**: Glassmorphism dengan backdrop blur
 - **Gradient**: Subtle background gradients
@@ -219,9 +218,7 @@ spacing: {
 - **md**: 24px padding
 - **lg**: 32px padding
 
-## Usage Guidelines
-
-### Color Usage
+## General Usage Guidelines
 
 - **Primary**: Main brand actions, primary buttons
 - **Secondary**: Secondary actions, links

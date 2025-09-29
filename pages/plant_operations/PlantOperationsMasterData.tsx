@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
-import { useRealtimeStatus } from '../../hooks/useRealtimeStatus';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -32,6 +31,18 @@ import {
   PicSetting,
 } from '../../types';
 
+type MasterDataRecord =
+  | PlantUnit
+  | Omit<PlantUnit, 'id'>
+  | ParameterSetting
+  | Omit<ParameterSetting, 'id'>
+  | SiloCapacity
+  | Omit<SiloCapacity, 'id'>
+  | ReportSetting
+  | Omit<ReportSetting, 'id'>
+  | PicSetting
+  | Omit<PicSetting, 'id'>;
+
 // Forms
 import PlantUnitForm from './PlantUnitForm';
 import ParameterSettingForm from './ParameterSettingForm';
@@ -47,7 +58,7 @@ type ModalType =
   | 'picSetting'
   | null;
 
-const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
+const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Plant Units State
@@ -56,7 +67,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     addRecord: addPlantUnit,
     updateRecord: updatePlantUnit,
     deleteRecord: deletePlantUnit,
-    setAllRecords: setAllPlantUnits,
     loading: plantUnitsLoading,
   } = usePlantUnits();
   const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(null);
@@ -73,8 +83,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     addRecord: addParameter,
     updateRecord: updateParameter,
     deleteRecord: deleteParameter,
-    setAllRecords: setAllParameterSettings,
-    loading: parameterSettingsLoading,
   } = useParameterSettings();
   const [editingParameter, setEditingParameter] = useState<ParameterSetting | null>(null);
 
@@ -84,7 +92,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     addRecord: addSilo,
     updateRecord: updateSilo,
     deleteRecord: deleteSilo,
-    setAllRecords: setAllSiloCapacities,
   } = useSiloCapacities();
   const [editingSilo, setEditingSilo] = useState<SiloCapacity | null>(null);
 
@@ -94,7 +101,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     addRecord: addReportSetting,
     updateRecord: updateReportSetting,
     deleteRecord: deleteReportSetting,
-    setAllRecords: setAllReportSettings,
   } = useReportSettings();
   const [editingReportSetting, setEditingReportSetting] = useState<ReportSetting | null>(null);
 
@@ -104,7 +110,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     addRecord: addPicSetting,
     updateRecord: updatePicSetting,
     deleteRecord: deletePicSetting,
-    setAllRecords: setAllPicSettings,
   } = usePicSettings();
   const [editingPic, setEditingPic] = useState<PicSetting | null>(null);
   const {
@@ -140,7 +145,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     () => new Map(parameterSettings.map((p) => [p.id, p])),
     [parameterSettings]
   );
-  const { copParameterIds, setCopParameterIds, loading } = useCopParametersSupabase();
+  const { copParameterIds, setCopParameterIds } = useCopParametersSupabase();
   const [isCopModalOpen, setIsCopModalOpen] = useState(false);
   const [tempCopSelection, setTempCopSelection] = useState<string[]>([]);
 
@@ -402,12 +407,12 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     setActiveModal(type);
   };
 
-  const handleOpenEditModal = (type: ModalType, record: any) => {
-    if (type === 'plantUnit') setEditingPlantUnit(record);
-    if (type === 'parameterSetting') setEditingParameter(record);
-    if (type === 'siloCapacity') setEditingSilo(record);
-    if (type === 'reportSetting') setEditingReportSetting(record);
-    if (type === 'picSetting') setEditingPic(record);
+  const handleOpenEditModal = (type: ModalType, record: MasterDataRecord) => {
+    if (type === 'plantUnit') setEditingPlantUnit(record as PlantUnit);
+    if (type === 'parameterSetting') setEditingParameter(record as ParameterSetting);
+    if (type === 'siloCapacity') setEditingSilo(record as SiloCapacity);
+    if (type === 'reportSetting') setEditingReportSetting(record as ReportSetting);
+    if (type === 'picSetting') setEditingPic(record as PicSetting);
     setActiveModal(type);
   };
 
@@ -445,14 +450,27 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
     deletePicSetting,
   ]);
 
-  const handleSave = (type: ModalType, record: any) => {
-    if (type === 'plantUnit') 'id' in record ? updatePlantUnit(record) : addPlantUnit(record);
-    if (type === 'parameterSetting')
-      'id' in record ? updateParameter(record) : addParameter(record);
-    if (type === 'siloCapacity') 'id' in record ? updateSilo(record) : addSilo(record);
-    if (type === 'reportSetting')
-      'id' in record ? updateReportSetting(record) : addReportSetting(record);
-    if (type === 'picSetting') 'id' in record ? updatePicSetting(record) : addPicSetting(record);
+  const handleSave = (type: ModalType, record: MasterDataRecord) => {
+    if (type === 'plantUnit') {
+      if ('id' in record) updatePlantUnit(record as PlantUnit);
+      else addPlantUnit(record as PlantUnit);
+    }
+    if (type === 'parameterSetting') {
+      if ('id' in record) updateParameter(record as ParameterSetting);
+      else addParameter(record as ParameterSetting);
+    }
+    if (type === 'siloCapacity') {
+      if ('id' in record) updateSilo(record as SiloCapacity);
+      else addSilo(record as SiloCapacity);
+    }
+    if (type === 'reportSetting') {
+      if ('id' in record) updateReportSetting(record as ReportSetting);
+      else addReportSetting(record as ReportSetting);
+    }
+    if (type === 'picSetting') {
+      if ('id' in record) updatePicSetting(record as PicSetting);
+      else addPicSetting(record as PicSetting);
+    }
     handleCloseModals();
   };
 
@@ -531,7 +549,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       // Export using utility
       exportMultipleSheets(sheets, filename);
     } catch (error) {
-      console.error('Failed to export master data:', error);
       alert(
         `An error occurred during export: ${
           error instanceof Error ? error.message : 'Unknown error'
@@ -550,7 +567,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
 
     try {
       let importCount = 0;
-      let errorMessages: string[] = [];
+      const errorMessages: string[] = [];
       const { sheets } = await importMultipleSheets(file);
 
       // Import Plant Units
@@ -754,7 +771,6 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         alert(`Import completed with errors:\n${errorMessages.join('\n')}`);
       }
     } catch (error) {
-      console.error('Failed to import master data:', error);
       alert(
         `An error occurred during import: ${
           error instanceof Error ? error.message : 'Unknown error'
@@ -775,7 +791,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col items-start gap-2">
             <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
-              {t.op_master_data}
+              {t('op_master_data')}
             </h2>
             <RealtimeIndicator isConnected={true} lastUpdate={new Date()} className="text-xs" />
           </div>
@@ -793,7 +809,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <DocumentArrowUpIcon className="w-5 h-5" />
-              {isImporting ? t.importing || 'Importing...' : t.import_all}
+              {isImporting ? t('importing') || 'Importing...' : t('import_all')}
             </button>
             <button
               onClick={handleExportAll}
@@ -801,7 +817,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <DocumentArrowDownIcon className="w-5 h-5" />
-              {isExporting ? t.exporting || 'Exporting...' : t.export_all}
+              {isExporting ? t('exporting') || 'Exporting...' : t('export_all')}
             </button>
           </div>
         </div>
@@ -811,13 +827,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.plant_unit_title}
+            {t('plant_unit_title')}
           </h2>
           <button
             onClick={() => handleOpenAddModal('plantUnit')}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
           >
-            <PlusIcon className="w-5 h-5" /> {t.add_data_button}
+            <PlusIcon className="w-5 h-5" /> {t('add_data_button')}
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -825,13 +841,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.unit}
+                  {t('unit')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.plant_category}
+                  {t('plant_category')}
                 </th>
                 <th className="relative px-6 py-3">
-                  <span className="sr-only">{t.actions}</span>
+                  <span className="sr-only">{t('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -898,13 +914,13 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.pic_setting_title}
+            {t('pic_setting_title')}
           </h2>
           <button
             onClick={() => handleOpenAddModal('picSetting')}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
           >
-            <PlusIcon className="w-5 h-5" /> {t.add_data_button}
+            <PlusIcon className="w-5 h-5" /> {t('add_data_button')}
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -912,10 +928,10 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.pic}
+                  {t('pic')}
                 </th>
                 <th className="relative px-6 py-3">
-                  <span className="sr-only">{t.actions}</span>
+                  <span className="sr-only">{t('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -957,7 +973,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.parameter_settings_title}
+            {t('parameter_settings_title')}
           </h2>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1005,7 +1021,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               onClick={() => handleOpenAddModal('parameterSetting')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
-              <PlusIcon className="w-5 h-5" /> {t.add_data_button}
+              <PlusIcon className="w-5 h-5" /> {t('add_data_button')}
             </button>
           </div>
         </div>
@@ -1015,7 +1031,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
           <div className="flex-1 max-w-md">
             <div className="parameter-search-input">
               <SearchInput
-                placeholder={t.parameter_search_placeholder}
+                placeholder={t('parameter_search_placeholder')}
                 value={parameterSearchQuery}
                 onChange={(e) => setParameterSearchQuery(e.target.value)}
                 className="w-full"
@@ -1028,14 +1044,14 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               <div className="text-sm text-slate-600 dark:text-slate-400">
                 {filteredParameterSettings.length}{' '}
                 {filteredParameterSettings.length === 1
-                  ? t.parameter_search_results
-                  : t.parameter_search_results_plural}
+                  ? t('parameter_search_results')
+                  : t('parameter_search_results_plural')}
               </div>
               <button
                 onClick={clearParameterSearch}
                 className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
               >
-                {t.parameter_clear_search}
+                {t('parameter_clear_search')}
               </button>
             </div>
           )}
@@ -1046,25 +1062,25 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.parameter_id}
+                  {t('parameter_id')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.parameter}
+                  {t('parameter')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.data_type}
+                  {t('data_type')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.unit}
+                  {t('unit')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.category}
+                  {t('category')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.min_value}
+                  {t('min_value')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.max_value}
+                  {t('max_value')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                   OPC Min
@@ -1079,7 +1095,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
                   PCC Max
                 </th>
                 <th className="relative px-6 py-3">
-                  <span className="sr-only">{t.actions}</span>
+                  <span className="sr-only">{t('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -1166,7 +1182,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.silo_capacity_title}
+            {t('silo_capacity_title')}
           </h2>
           <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
             <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1214,7 +1230,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               onClick={() => handleOpenAddModal('siloCapacity')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
-              <PlusIcon className="w-5 h-5" /> {t.add_data_button}
+              <PlusIcon className="w-5 h-5" /> {t('add_data_button')}
             </button>
           </div>
         </div>
@@ -1223,25 +1239,25 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.plant_category}
+                  {t('plant_category')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.unit}
+                  {t('unit')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.silo_name}
+                  {t('silo_name')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.capacity}
+                  {t('capacity')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.dead_stock}
+                  {t('dead_stock')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.silo_lifestock}
+                  {t('silo_lifestock')}
                 </th>
                 <th className="relative px-6 py-3">
-                  <span className="sr-only">{t.actions}</span>
+                  <span className="sr-only">{t('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -1308,7 +1324,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.cop_parameters_title}
+            {t('cop_parameters_title')}
           </h2>
           <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
             <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1356,7 +1372,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               onClick={handleOpenCopModal}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
-              <PlusIcon className="w-5 h-5" /> {t.add_data_button}
+              <PlusIcon className="w-5 h-5" /> {t('add_data_button')}
             </button>
           </div>
         </div>
@@ -1365,16 +1381,16 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.parameter}
+                  {t('parameter')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.unit}
+                  {t('unit')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.category}
+                  {t('category')}
                 </th>
                 <th className="relative px-6 py-3">
-                  <span className="sr-only">{t.actions}</span>
+                  <span className="sr-only">{t('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -1421,7 +1437,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.report_settings_title}
+            {t('report_settings_title')}
           </h2>
           <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
             <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -1469,7 +1485,7 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
               onClick={() => handleOpenAddModal('reportSetting')}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
             >
-              <PlusIcon className="w-5 h-5" /> {t.add_data_button}
+              <PlusIcon className="w-5 h-5" /> {t('add_data_button')}
             </button>
           </div>
         </div>
@@ -1478,19 +1494,19 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.parameter}
+                  {t('parameter')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.plant_category}
+                  {t('plant_category')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.unit}
+                  {t('unit')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.category}
+                  {t('category')}
                 </th>
                 <th className="relative px-6 py-3">
-                  <span className="sr-only">{t.actions}</span>
+                  <span className="sr-only">{t('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -1547,24 +1563,24 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
         title={
           activeModal === 'plantUnit'
             ? editingPlantUnit
-              ? t.edit_plant_unit_title
-              : t.add_plant_unit_title
+              ? t('edit_plant_unit_title')
+              : t('add_plant_unit_title')
             : activeModal === 'parameterSetting'
               ? editingParameter
-                ? t.edit_parameter_title
-                : t.add_parameter_title
+                ? t('edit_parameter_title')
+                : t('add_parameter_title')
               : activeModal === 'siloCapacity'
                 ? editingSilo
-                  ? t.edit_silo_title
-                  : t.add_silo_title
+                  ? t('edit_silo_title')
+                  : t('add_silo_title')
                 : activeModal === 'reportSetting'
                   ? editingReportSetting
-                    ? t.edit_report_parameter_title
-                    : t.add_report_parameter_title
+                    ? t('edit_report_parameter_title')
+                    : t('add_report_parameter_title')
                   : activeModal === 'picSetting'
                     ? editingPic
-                      ? t.edit_pic_title
-                      : t.add_pic_title
+                      ? t('edit_pic_title')
+                      : t('add_pic_title')
                     : ''
         }
       >
@@ -1618,11 +1634,11 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseModals}
-        title={t.delete_confirmation_title}
+        title={t('delete_confirmation_title')}
       >
         <div className="p-6">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            {t.delete_confirmation_message}
+            {t('delete_confirmation_message')}
           </p>
         </div>
         <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
@@ -1630,19 +1646,23 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             onClick={handleDeleteConfirm}
             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            {t.confirm_delete_button}
+            {t('confirm_delete_button')}
           </button>
           <button
             onClick={handleCloseModals}
             className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            {t.cancel_button}
+            {t('cancel_button')}
           </button>
         </div>
       </Modal>
 
       {/* COP Selection Modal */}
-      <Modal isOpen={isCopModalOpen} onClose={handleCloseCopModal} title={t.cop_parameters_title}>
+      <Modal
+        isOpen={isCopModalOpen}
+        onClose={handleCloseCopModal}
+        title={t('cop_parameters_title')}
+      >
         <div className="border-b border-slate-200 dark:border-slate-700 p-6">
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Select the parameters from Parameter Settings to be included in the COP (Cost of
@@ -1727,14 +1747,14 @@ const PlantOperationsMasterData: React.FC<{ t: any }> = ({ t }) => {
             type="button"
             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            {t.save_button}
+            {t('save_button')}
           </button>
           <button
             type="button"
             onClick={handleCloseCopModal}
             className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            {t.cancel_button}
+            {t('cancel_button')}
           </button>
         </div>
       </Modal>

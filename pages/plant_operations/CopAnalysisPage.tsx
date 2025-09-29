@@ -23,6 +23,9 @@ import {
 import { usePermissions } from '../../utils/permissions';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
+// Import drag and drop
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) {
@@ -127,6 +130,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     qaf: number | null;
   } | null>(null);
 
+  // State untuk urutan parameter per user
+  const [parameterOrder, setParameterOrder] = useState<string[]>([]);
+
   // State untuk modal breakdown
   const [breakdownModal, setBreakdownModal] = useState<{
     isOpen: boolean;
@@ -186,11 +192,25 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       return [];
     }
 
-    return copParameterIds
+    const filtered = copParameterIds
       .map((paramId) => allParameters.find((p) => p.id === paramId))
       .filter((param): param is ParameterSetting => param !== undefined)
       .filter((param) => param.category === selectedCategory && param.unit === selectedUnit);
-  }, [allParameters, copParameterIds, selectedCategory, selectedUnit]);
+
+    // Sort based on parameterOrder if available
+    if (parameterOrder.length > 0) {
+      return filtered.sort((a, b) => {
+        const indexA = parameterOrder.indexOf(a.id);
+        const indexB = parameterOrder.indexOf(b.id);
+        if (indexA === -1 && indexB === -1) return 0;
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      });
+    }
+
+    return filtered;
+  }, [allParameters, copParameterIds, selectedCategory, selectedUnit, parameterOrder]);
 
   useEffect(() => {
     if (unitsForCategory.length > 0) {
@@ -201,6 +221,33 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       setSelectedUnit('');
     }
   }, [unitsForCategory, selectedUnit]);
+
+  // Load parameter order from localStorage when user or category/unit changes
+  useEffect(() => {
+    if (loggedInUser && selectedCategory && selectedUnit) {
+      const storageKey = `cop-analysis-order-${loggedInUser.id}-${selectedCategory}-${selectedUnit}`;
+      const savedOrder = localStorage.getItem(storageKey);
+      if (savedOrder) {
+        try {
+          const order = JSON.parse(savedOrder);
+          setParameterOrder(order);
+        } catch {
+          // Failed to parse saved parameter order, use default
+          setParameterOrder([]);
+        }
+      } else {
+        setParameterOrder([]);
+      }
+    }
+  }, [loggedInUser, selectedCategory, selectedUnit]);
+
+  // Save parameter order to localStorage when it changes
+  useEffect(() => {
+    if (loggedInUser && selectedCategory && selectedUnit && parameterOrder.length > 0) {
+      const storageKey = `cop-analysis-order-${loggedInUser.id}-${selectedCategory}-${selectedUnit}`;
+      localStorage.setItem(storageKey, JSON.stringify(parameterOrder));
+    }
+  }, [parameterOrder, loggedInUser, selectedCategory, selectedUnit]);
 
   const plantCategories = useMemo(() => {
     // Filter categories based on user permissions - only show categories where user has access to at least one unit
@@ -508,6 +555,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     [analysisData, filterYear, filterMonth]
   );
 
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+
+    const items = Array.from(analysisData);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    // Update analysisData
+    setAnalysisData(items);
+
+    // Update parameterOrder
+    const newOrder = items.map((item) => item.parameter.id);
+    setParameterOrder(newOrder);
+  };
+
   return (
     <div className="space-y-6">
       <Card
@@ -690,124 +752,222 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         )}
 
         {!isLoading && !error && (
-          <div
-            className="overflow-x-auto scroll-smooth"
-            role="region"
-            aria-label="COP Analysis Data Table"
-            tabIndex={0}
-            style={{
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#cbd5e1 #f1f5f9',
-            }}
-          >
-            <table
-              className="min-w-full text-xs border-collapse"
-              role="table"
-              aria-label="COP Analysis Table"
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div
+              className="overflow-x-auto scroll-smooth"
+              role="region"
+              aria-label="COP Analysis Data Table"
+              tabIndex={0}
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#cbd5e1 #f1f5f9',
+              }}
             >
-              <thead className="bg-slate-100 dark:bg-slate-700">
-                <tr>
-                  <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-8">
-                    No.
-                  </th>
-                  <th className="sticky left-8 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[140px]">
-                    {t.parameter}
-                  </th>
-                  <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
-                    {t.min}
-                  </th>
-                  <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
-                    {t.max}
-                  </th>
-                  {daysHeader.map((day) => (
-                    <th
-                      key={day}
-                      className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-10"
-                    >
-                      {day}
+              <table
+                className="min-w-full text-xs border-collapse"
+                role="table"
+                aria-label="COP Analysis Table"
+              >
+                <thead className="bg-slate-100 dark:bg-slate-700">
+                  <tr>
+                    <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-8">
+                      No.
                     </th>
-                  ))}
-                  <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600 w-16">
-                    Avg.
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-slate-800">
-                {analysisData.map((row, rowIndex) => (
-                  <tr
-                    key={row.parameter.id}
-                    className="group hover:bg-slate-50 dark:hover:bg-slate-700/50"
-                  >
-                    <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 w-8">
-                      {rowIndex + 1}
+                    <th className="sticky left-8 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[140px]">
+                      {t.parameter}
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                      {t.min}
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                      {t.max}
+                    </th>
+                    {daysHeader.map((day) => (
+                      <th
+                        key={day}
+                        className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-10"
+                      >
+                        {day}
+                      </th>
+                    ))}
+                    <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600 w-16">
+                      Avg.
+                    </th>
+                  </tr>
+                </thead>
+                <Droppable droppableId="cop-analysis-table">
+                  {(provided) => (
+                    <tbody
+                      className="bg-white dark:bg-slate-800"
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                    >
+                      {analysisData.map((row, rowIndex) => (
+                        <Draggable
+                          key={row.parameter.id}
+                          draggableId={row.parameter.id}
+                          index={rowIndex}
+                        >
+                          {(provided, snapshot) => (
+                            <tr
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`group hover:bg-slate-50 dark:hover:bg-slate-700/50 ${
+                                snapshot.isDragging
+                                  ? 'shadow-lg bg-blue-50 dark:bg-blue-900/20'
+                                  : ''
+                              }`}
+                              style={{
+                                ...provided.draggableProps.style,
+                              }}
+                            >
+                              <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 w-8">
+                                {rowIndex + 1}
+                              </td>
+                              <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 min-w-[140px]">
+                                {row.parameter.parameter}
+                              </td>
+                              {/* Use helper function for consistent min/max display */}
+                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                                {(() => {
+                                  const { min } = getMinMaxForCementType(
+                                    row.parameter,
+                                    selectedCementType
+                                  );
+                                  return formatCopNumber(min);
+                                })()}
+                              </td>
+                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                                {(() => {
+                                  const { max } = getMinMaxForCementType(
+                                    row.parameter,
+                                    selectedCementType
+                                  );
+                                  return formatCopNumber(max);
+                                })()}
+                              </td>
+                              {row.dailyValues.map((day, dayIndex) => {
+                                const colors = getPercentageColor(day.value);
+                                return (
+                                  <td
+                                    key={dayIndex}
+                                    className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
+                                  >
+                                    <div className="relative group/cell h-full w-full flex items-center justify-center">
+                                      <span className={`font-medium text-xs ${colors.text}`}>
+                                        {formatCopNumber(day.raw)}
+                                      </span>
+                                      {day.raw !== undefined && (
+                                        <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
+                                          <div className="flex items-center justify-between gap-2">
+                                            <span className="font-bold text-xs">
+                                              {formatDate(
+                                                new Date(
+                                                  Date.UTC(filterYear, filterMonth, dayIndex + 1)
+                                                )
+                                              )}
+                                            </span>
+                                            <span
+                                              className={`px-1 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
+                                            >
+                                              {colors.status}
+                                            </span>
+                                          </div>
+                                          <hr className="border-slate-600 my-1" />
+                                          <p className="text-xs">
+                                            <strong>{t.average}:</strong>{' '}
+                                            <span className="font-mono">
+                                              {formatCopNumber(day.raw)} {row.parameter.unit}
+                                            </span>
+                                          </p>
+                                          {/* Use helper function for consistent target display */}
+                                          <p className="text-xs">
+                                            <strong>Target:</strong>{' '}
+                                            <span className="font-mono text-xs">
+                                              {(() => {
+                                                const { min, max } = getMinMaxForCementType(
+                                                  row.parameter,
+                                                  selectedCementType
+                                                );
+                                                return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
+                                              })()}
+                                            </span>
+                                          </p>
+                                          {day.value !== null && (
+                                            <p className="text-xs">
+                                              <strong>Normalized:</strong>{' '}
+                                              <span className="font-mono">
+                                                {day.value.toFixed(1)}%
+                                              </span>
+                                            </p>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                              {(() => {
+                                const avgColors = getPercentageColor(row.monthlyAverage);
+                                return (
+                                  <td
+                                    className={`sticky right-0 z-20 px-2 py-1.5 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700 w-16`}
+                                  >
+                                    <span className={`${avgColors.text} text-xs`}>
+                                      {formatCopNumber(row.monthlyAverageRaw)}
+                                    </span>
+                                  </td>
+                                );
+                              })()}
+                            </tr>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                      {analysisData.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={daysHeader.length + 5}
+                            className="text-center py-10 text-slate-500 dark:text-slate-400"
+                          >
+                            {!selectedCategory || !selectedUnit
+                              ? 'Please select both Category and Unit to view COP analysis data.'
+                              : filteredCopParameters.length === 0
+                                ? 'No COP parameters found for the selected Category and Unit.'
+                                : 'No data available for the selected period.'}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  )}
+                </Droppable>
+                <tfoot className="font-semibold bg-slate-50 dark:bg-slate-700/50">
+                  <tr className="border-t-2 border-slate-300 dark:border-slate-600">
+                    <td
+                      colSpan={4}
+                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
+                    >
+                      {t.qaf_daily}
                     </td>
-                    <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 min-w-[140px]">
-                      {row.parameter.parameter}
-                    </td>
-                    {/* Use helper function for consistent min/max display */}
-                    <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
-                      {(() => {
-                        const { min } = getMinMaxForCementType(row.parameter, selectedCementType);
-                        return formatCopNumber(min);
-                      })()}
-                    </td>
-                    <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
-                      {(() => {
-                        const { max } = getMinMaxForCementType(row.parameter, selectedCementType);
-                        return formatCopNumber(max);
-                      })()}
-                    </td>
-                    {row.dailyValues.map((day, dayIndex) => {
-                      const colors = getPercentageColor(day.value);
+                    {dailyQaf.daily.map((qaf, index) => {
+                      const colors = getQafColor(qaf.value);
                       return (
                         <td
-                          key={dayIndex}
-                          className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
+                          key={index}
+                          className={`px-1 py-2 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
                         >
                           <div className="relative group/cell h-full w-full flex items-center justify-center">
-                            <span className={`font-medium text-xs ${colors.text}`}>
-                              {formatCopNumber(day.raw)}
+                            <span className="text-xs font-bold">
+                              {qaf.value !== null && !isNaN(qaf.value)
+                                ? `${formatCopNumber(qaf.value)}%`
+                                : '-'}
                             </span>
-                            {day.raw !== undefined && (
+                            {qaf.total > 0 && (
                               <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="font-bold text-xs">
-                                    {formatDate(
-                                      new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1))
-                                    )}
-                                  </span>
-                                  <span
-                                    className={`px-1 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
-                                  >
-                                    {colors.status}
-                                  </span>
-                                </div>
-                                <hr className="border-slate-600 my-1" />
-                                <p className="text-xs">
-                                  <strong>{t.average}:</strong>{' '}
-                                  <span className="font-mono">
-                                    {formatCopNumber(day.raw)} {row.parameter.unit}
-                                  </span>
-                                </p>
-                                {/* Use helper function for consistent target display */}
-                                <p className="text-xs">
-                                  <strong>Target:</strong>{' '}
-                                  <span className="font-mono text-xs">
-                                    {(() => {
-                                      const { min, max } = getMinMaxForCementType(
-                                        row.parameter,
-                                        selectedCementType
-                                      );
-                                      return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
-                                    })()}
-                                  </span>
-                                </p>
-                                {day.value !== null && (
-                                  <p className="text-xs">
-                                    <strong>Normalized:</strong>{' '}
-                                    <span className="font-mono">{day.value.toFixed(1)}%</span>
-                                  </p>
-                                )}
+                                {t.qaf_tooltip
+                                  ?.replace('{inRange}', qaf.inRange.toString())
+                                  .replace('{total}', qaf.total.toString())}
                               </div>
                             )}
                           </div>
@@ -815,94 +975,34 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       );
                     })}
                     {(() => {
-                      const avgColors = getPercentageColor(row.monthlyAverage);
+                      const qaf = dailyQaf.monthly;
+                      const colors = getQafColor(qaf.value);
                       return (
                         <td
-                          className={`sticky right-0 z-20 px-2 py-1.5 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700 w-16`}
+                          className={`sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text} font-bold text-sm`}
                         >
-                          <span className={`${avgColors.text} text-xs`}>
-                            {formatCopNumber(row.monthlyAverageRaw)}
-                          </span>
+                          <div className="relative group/cell h-full w-full flex items-center justify-center">
+                            <span>
+                              {qaf.value !== null && !isNaN(qaf.value)
+                                ? `${formatCopNumber(qaf.value)}%`
+                                : '-'}
+                            </span>
+                            {qaf.total > 0 && (
+                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
+                                {t.qaf_tooltip
+                                  ?.replace('{inRange}', qaf.inRange.toString())
+                                  .replace('{total}', qaf.total.toString())}
+                              </div>
+                            )}
+                          </div>
                         </td>
                       );
                     })()}
                   </tr>
-                ))}
-                {analysisData.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={daysHeader.length + 5}
-                      className="text-center py-10 text-slate-500 dark:text-slate-400"
-                    >
-                      {!selectedCategory || !selectedUnit
-                        ? 'Please select both Category and Unit to view COP analysis data.'
-                        : filteredCopParameters.length === 0
-                          ? 'No COP parameters found for the selected Category and Unit.'
-                          : 'No data available for the selected period.'}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-              <tfoot className="font-semibold bg-slate-50 dark:bg-slate-700/50">
-                <tr className="border-t-2 border-slate-300 dark:border-slate-600">
-                  <td
-                    colSpan={4}
-                    className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
-                  >
-                    {t.qaf_daily}
-                  </td>
-                  {dailyQaf.daily.map((qaf, index) => {
-                    const colors = getQafColor(qaf.value);
-                    return (
-                      <td
-                        key={index}
-                        className={`px-1 py-2 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
-                      >
-                        <div className="relative group/cell h-full w-full flex items-center justify-center">
-                          <span className="text-xs font-bold">
-                            {qaf.value !== null && !isNaN(qaf.value)
-                              ? `${formatCopNumber(qaf.value)}%`
-                              : '-'}
-                          </span>
-                          {qaf.total > 0 && (
-                            <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
-                              {t.qaf_tooltip
-                                ?.replace('{inRange}', qaf.inRange.toString())
-                                .replace('{total}', qaf.total.toString())}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
-                  {(() => {
-                    const qaf = dailyQaf.monthly;
-                    const colors = getQafColor(qaf.value);
-                    return (
-                      <td
-                        className={`sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text} font-bold text-sm`}
-                      >
-                        <div className="relative group/cell h-full w-full flex items-center justify-center">
-                          <span>
-                            {qaf.value !== null && !isNaN(qaf.value)
-                              ? `${formatCopNumber(qaf.value)}%`
-                              : '-'}
-                          </span>
-                          {qaf.total > 0 && (
-                            <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
-                              {t.qaf_tooltip
-                                ?.replace('{inRange}', qaf.inRange.toString())
-                                .replace('{total}', qaf.total.toString())}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })()}
-                </tr>
-              </tfoot>
-            </table>
-          </div>
+                </tfoot>
+              </table>
+            </div>
+          </DragDropContext>
         )}
       </Card>
 

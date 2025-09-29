@@ -248,7 +248,7 @@ export const useOptimizedNotifications = () => {
     debouncedFetch();
 
     // Setup real-time subscription for critical alerts only
-    const subscription = supabase
+    const criticalSubscription = supabase
       .channel('critical_alerts')
       .on(
         'postgres_changes',
@@ -266,11 +266,31 @@ export const useOptimizedNotifications = () => {
       )
       .subscribe();
 
+    // Setup real-time subscription for info alerts (registration requests)
+    const infoSubscription = supabase
+      .channel('info_alerts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'alerts',
+          filter: 'severity=eq.INFO',
+        },
+        (payload) => {
+          const newAlert = payload.new as ExtendedAlert;
+          setNotifications((prev) => [newAlert, ...prev]);
+          showBrowserNotification(newAlert);
+        }
+      )
+      .subscribe();
+
     // Cleanup polling interval (less frequent for optimization)
     const pollInterval = setInterval(debouncedFetch, 60000); // Poll every minute
 
     return () => {
-      subscription.unsubscribe();
+      criticalSubscription.unsubscribe();
+      infoSubscription.unsubscribe();
       clearInterval(pollInterval);
       debouncedFetch.cancel();
     };

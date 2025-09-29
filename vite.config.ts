@@ -7,11 +7,11 @@ export default defineConfig({
   build: {
     // Enable build cache for faster rebuilds
     watch: null,
-    // Disable minification temporarily to debug React error
-    minify: false,
-    cssMinify: false,
-    // Disable compressed size reporting for faster builds
-    reportCompressedSize: false,
+    // Enable minification for production
+    minify: 'esbuild',
+    cssMinify: 'esbuild',
+    // Enable compressed size reporting
+    reportCompressedSize: true,
     rollupOptions: {
       output: {
         manualChunks: (id) => {

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
-import ExcelJS from 'exceljs';
+// import ExcelJS from 'exceljs'; // Lazy loaded
 import { useProjects } from '../../hooks/useProjects';
 import { Project, ProjectTask } from '../../types';
 import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
@@ -679,6 +679,9 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     setIsExporting(true);
 
     try {
+      // Dynamic import ExcelJS for lazy loading
+      const ExcelJS = (await import('exceljs')).default;
+
       // Prepare data for export
       const exportData = activeProjectTasks.map((task) => ({
         Activity: task.activity,
