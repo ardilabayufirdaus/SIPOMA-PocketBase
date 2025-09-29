@@ -6,6 +6,7 @@ import RegistrationForm from '../components/RegistrationForm';
 import { secureStorage } from '../utils/secureStorage';
 import { User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '../hooks/useTranslation';
 
 const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
@@ -15,6 +16,7 @@ const LoginPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -29,13 +31,13 @@ const LoginPage: React.FC = () => {
     setIsSubmitting(true);
 
     if (!identifier.trim()) {
-      setError('Username is required');
+      setError(t.login_username_required);
       setIsSubmitting(false);
       return;
     }
 
     if (!password.trim()) {
-      setError('Password is required');
+      setError(t.login_password_required);
       setIsSubmitting(false);
       return;
     }
@@ -99,7 +101,7 @@ const LoginPage: React.FC = () => {
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Guest login error:', error);
-      setError('Guest login failed. Please try regular login.');
+      setError(t.login_guest_error);
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +145,7 @@ const LoginPage: React.FC = () => {
               transition={{ delay: 0.6, duration: 0.5 }}
               className="text-base text-slate-500 dark:text-slate-300"
             >
-              Smart Integrated Plant Operations Management Application
+              {t.login_subtitle}
             </motion.span>
           </div>
           <form onSubmit={handleLogin} className="w-full">
@@ -152,7 +154,7 @@ const LoginPage: React.FC = () => {
                 htmlFor="identifier"
                 className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
               >
-                Username
+                {t.login_username_label}
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
@@ -172,7 +174,7 @@ const LoginPage: React.FC = () => {
                 htmlFor="password"
                 className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
               >
-                Password
+                {t.login_password_label}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
@@ -206,7 +208,7 @@ const LoginPage: React.FC = () => {
               size="lg"
               className="font-semibold text-lg shadow"
             >
-              {isSubmitting || loading ? 'Logging in...' : 'Login'}
+              {isSubmitting || loading ? t.login_logging_in : t.sign_in}
             </EnhancedButton>
             <div className="mt-4">
               <EnhancedButton
@@ -218,25 +220,25 @@ const LoginPage: React.FC = () => {
                 variant="outline"
                 className="font-semibold text-lg shadow"
               >
-                {isSubmitting || loading ? 'Logging in...' : 'Login as Guest'}
+                {isSubmitting || loading ? t.login_logging_in : t.login_guest_button}
               </EnhancedButton>
             </div>
           </form>
           <div className="mt-4 text-center">
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              Belum punya akun?{' '}
+              {t.login_no_account}{' '}
               <EnhancedButton
                 onClick={() => setShowRegistration(true)}
                 variant="ghost"
                 size="sm"
                 className="font-medium underline px-1"
               >
-                Daftar di sini
+                {t.login_register_here}
               </EnhancedButton>
             </span>
           </div>
           <div className="mt-8 text-xs text-slate-400 dark:text-slate-500 text-center animate-fadein-footer">
-            &copy; {new Date().getFullYear()} SIPOMA. All rights reserved.
+            &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
           </div>
         </motion.div>
         {/* Animasi fadein dipindahkan ke file CSS global agar konsisten di seluruh aplikasi */}
@@ -246,6 +248,7 @@ const LoginPage: React.FC = () => {
         <RegistrationForm
           onClose={() => setShowRegistration(false)}
           onSuccess={handleRegistrationSuccess}
+          t={t}
         />
       )}
     </>

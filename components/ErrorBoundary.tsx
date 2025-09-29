@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { translations } from '../translations';
 
 interface Props {
   children: ReactNode;
@@ -29,6 +30,9 @@ class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      const language = localStorage.getItem('sipoma-language') === 'id' ? 'id' : 'en';
+      const t = translations[language];
+
       return (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <div className="text-red-600 mb-2">
@@ -46,13 +50,13 @@ class ErrorBoundary extends Component<Props, State> {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-red-800 mb-2">Terjadi Kesalahan</h3>
-          <p className="text-red-700 mb-4">Maaf, terjadi kesalahan saat memuat komponen ini.</p>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">{t.error_title}</h3>
+          <p className="text-red-700 mb-4">{t.error_message}</p>
           <button
             onClick={() => this.setState({ hasError: false, error: undefined })}
             className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
           >
-            Coba Lagi
+            {t.error_retry}
           </button>
         </div>
       );

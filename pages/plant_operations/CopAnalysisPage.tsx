@@ -7,6 +7,7 @@ import { formatDate, formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
 import Modal from '../../components/Modal';
+import { Card } from '../../components/ui/Card';
 import {
   ResponsiveContainer,
   BarChart,
@@ -264,9 +265,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             }
             dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
           } else {
-            console.warn(
-              `Footer average data not available for parameter ${footerData.parameter_id} on date ${footerData.date}`
-            );
+            // Note: Footer average data not available for this parameter and date
           }
         });
 
@@ -510,19 +509,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4">
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+    <div className="space-y-6">
+      <Card
+        variant="interactive"
+        padding="lg"
+        className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20"
+      >
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+            <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-3">
               {t.op_cop_analysis}
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            </h1>
+            <p className="text-base text-gray-700 dark:text-gray-300">
               Kelola data COP untuk monitoring performa pabrik
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-6 min-w-0">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-category"
                 className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
@@ -533,7 +536,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="cop-filter-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+                className="flex-1 min-w-0 px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
               >
                 {plantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -563,7 +566,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 ))}
               </select>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-4 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-cement-type"
                 className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
@@ -574,7 +577,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="cop-filter-cement-type"
                 value={selectedCementType}
                 onChange={(e) => setSelectedCementType(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+                className="flex-1 min-w-0 px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
               >
                 <option value="OPC">OPC</option>
                 <option value="PCC">PCC</option>
@@ -622,19 +625,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md dark:shadow-slate-900/20 border dark:border-slate-700">
+      <Card
+        variant="glass"
+        padding="lg"
+        className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80"
+      >
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="flex items-center space-x-2">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
-              <span className="text-slate-600 dark:text-slate-300">
+          <div className="flex flex-col items-center justify-center py-16 space-y-6">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+              <span className="text-lg font-medium text-slate-600 dark:text-slate-300">
                 Loading COP analysis data...
               </span>
             </div>
             {/* Loading skeleton */}
-            <div className="mt-4 w-full">
+            <div className="w-full max-w-2xl">
               <div className="animate-pulse">
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-3"></div>
                 <div className="space-y-2">
@@ -897,16 +904,20 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </table>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Kategori Pencapaian COP Operator */}
       {operatorAchievementData.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4 mt-4 relative">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-3">
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+        <Card
+          variant="floating"
+          padding="lg"
+          className="mt-6 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20"
+        >
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+            <h2 className="text-2xl font-semibold text-emerald-800 dark:text-emerald-200">
               Kategori Pencapaian COP Operator
-            </h3>
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            </h2>
+            <div className="flex items-center gap-4 w-full md:w-auto">
               <label
                 htmlFor="operator-filter"
                 className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
@@ -917,7 +928,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="operator-filter"
                 value={selectedOperator}
                 onChange={(e) => setSelectedOperator(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+                className="flex-1 min-w-0 px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
               >
                 <option value="">Semua Operator</option>
                 {relevantOperators.map((operator) => (
@@ -928,7 +939,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </select>
             </div>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
             Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
             target (di luar range 0-100%).
           </p>
@@ -1054,7 +1065,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </ul>
             </div>
           )}
-        </div>
+        </Card>
       )}
 
       {/* Modal Breakdown Harian */}
@@ -1063,10 +1074,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         onClose={() => setBreakdownModal({ isOpen: false, parameter: '', data: null })}
         title={`Breakdown Harian - ${breakdownModal.parameter}`}
       >
-        <div className="p-6 max-h-96 overflow-y-auto">
+        <div className="p-8 max-h-96 overflow-y-auto">
           {breakdownModal.data && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-7 gap-2">
+            <div className="space-y-6">
+              <div className="grid grid-cols-7 gap-3">
                 {breakdownModal.data.dailyValues.map((day, index) => {
                   const isOutOfRange = day.value === null || day.value < 0 || day.value > 100;
                   return (
@@ -1126,19 +1137,19 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           hourlyBreakdownModal.dayIndex + 1
         })`}
       >
-        <div className="p-6 max-h-96 overflow-y-auto">
-          <div className="grid grid-cols-6 gap-2">
+        <div className="p-8 max-h-96 overflow-y-auto">
+          <div className="grid grid-cols-6 gap-3">
             {hourlyBreakdownModal.data.map((hour) => (
               <div
                 key={hour.hour}
-                className={`p-3 rounded-lg text-sm transition-colors ${
+                className={`p-4 rounded-lg text-sm transition-all duration-200 ${
                   hour.isOutOfRange
-                    ? 'bg-red-100 text-red-800 border-2 border-red-300'
-                    : 'bg-green-100 text-green-800'
+                    ? 'bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-50'
+                    : 'bg-green-100 text-green-800 hover:bg-green-50'
                 }`}
               >
                 <div className="text-center">
-                  <div className="text-xs">Jam {hour.hour}:00</div>
+                  <div className="text-xs font-medium text-slate-600">Jam {hour.hour}:00</div>
                   <div className="text-lg font-bold">
                     {hour.value !== null ? `${hour.value.toFixed(1)}%` : '-'}
                   </div>
@@ -1146,8 +1157,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </div>
             ))}
           </div>
-          <div className="text-xs text-slate-600 dark:text-slate-400 mt-4">
-            Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
+          <div className="text-sm text-slate-600 dark:text-slate-400 mt-6 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+            💡 Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
           </div>
         </div>
       </Modal>

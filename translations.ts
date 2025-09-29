@@ -234,6 +234,14 @@ export const translations = {
     module: 'Module',
     permission_level: 'Permission Level',
 
+    // Security Module
+    overview: 'Overview',
+    monitoring: 'Monitoring',
+    audit: 'Audit Logs',
+    gdpr: 'GDPR Compliance',
+    roles: 'Role Management',
+    mfa: 'MFA Management',
+
     // Plant Operations Dropdown & Page
     op_dashboard: 'Dashboard',
     op_report: 'Report',
@@ -646,6 +654,30 @@ export const translations = {
     footer_terms: 'Terms of Service',
     footer_privacy: 'Privacy Policy',
     footer_contact: 'Contact Us',
+
+    // Error Boundary
+    error_title: 'An Error Occurred',
+    error_message: 'Sorry, an error occurred while loading this component.',
+    error_retry: 'Try Again',
+
+    // Login
+    login_username_required: 'Username is required',
+    login_password_required: 'Password is required',
+    login_username_label: 'Username',
+    login_password_label: 'Password',
+    login_logging_in: 'Logging in...',
+    login_guest_button: 'Login as Guest',
+    login_guest_error: 'Guest login failed. Please try regular login.',
+    login_subtitle: 'Smart Integrated Plant Operations Management Application',
+    login_no_account: "Don't have an account?",
+    login_register_here: 'Register here',
+    login_copyright: 'All rights reserved.',
+
+    // Registration
+    registration_name_required: 'Full name is required',
+    registration_email_required: 'Email is required',
+    registration_email_invalid: 'Invalid email format',
+    registration_success: 'Registration Request Successful!',
   },
   id: {
     // Header & Navigation
@@ -884,6 +916,14 @@ export const translations = {
     select_role: 'Pilih Peran',
     module: 'Modul',
     permission_level: 'Level Izin',
+
+    // Security Module
+    overview: 'Ikhtisar',
+    monitoring: 'Pemantauan',
+    audit: 'Log Audit',
+    gdpr: 'Kepatuhan GDPR',
+    roles: 'Manajemen Peran',
+    mfa: 'Manajemen MFA',
 
     // Plant Operations Dropdown & Page
     op_dashboard: 'Dasbor',
@@ -1292,5 +1332,29 @@ export const translations = {
     footer_terms: 'Ketentuan Layanan',
     footer_privacy: 'Kebijakan Privasi',
     footer_contact: 'Hubungi Kami',
+
+    // Error Boundary
+    error_title: 'Terjadi Kesalahan',
+    error_message: 'Maaf, terjadi kesalahan saat memuat komponen ini.',
+    error_retry: 'Coba Lagi',
+
+    // Login
+    login_username_required: 'Nama pengguna diperlukan',
+    login_password_required: 'Kata sandi diperlukan',
+    login_username_label: 'Nama Pengguna',
+    login_password_label: 'Kata Sandi',
+    login_logging_in: 'Sedang masuk...',
+    login_guest_button: 'Masuk sebagai Tamu',
+    login_guest_error: 'Login tamu gagal. Silakan coba login biasa.',
+    login_subtitle: 'Aplikasi Manajemen Operasi Pabrik Terintegrasi Cerdas',
+    login_no_account: 'Belum punya akun?',
+    login_register_here: 'Daftar di sini',
+    login_copyright: 'Semua hak dilindungi undang-undang.',
+
+    // Registration
+    registration_name_required: 'Nama lengkap wajib diisi',
+    registration_email_required: 'Email wajib diisi',
+    registration_email_invalid: 'Format email tidak valid',
+    registration_success: 'Permintaan Registrasi Berhasil!',
   },
 };

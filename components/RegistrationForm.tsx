@@ -5,9 +5,10 @@ import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 interface RegistrationFormProps {
   onClose: () => void;
   onSuccess: () => void;
+  t: Record<string, string>;
 }
 
-const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess }) => {
+const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess, t }) => {
   const { announceToScreenReader } = useAccessibility();
   const [formData, setFormData] = useState({
     name: '',
@@ -30,19 +31,19 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess 
 
     // Validasi input
     if (!formData.name.trim()) {
-      setError('Nama lengkap wajib diisi');
+      setError(t.registration_name_required);
       setLoading(false);
       return;
     }
 
     if (!formData.email.trim()) {
-      setError('Email wajib diisi');
+      setError(t.registration_email_required);
       setLoading(false);
       return;
     }
 
     if (!validateEmail(formData.email)) {
-      setError('Format email tidak valid');
+      setError(t.registration_email_invalid);
       setLoading(false);
       return;
     }
@@ -109,7 +110,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess 
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-              Permintaan Registrasi Berhasil!
+              {t.registration_success}
             </h3>
             <p className="text-slate-600 dark:text-slate-400">
               Permintaan registrasi Anda telah dikirim. Admin akan memproses permintaan Anda dalam

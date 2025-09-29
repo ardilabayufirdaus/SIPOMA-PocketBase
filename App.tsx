@@ -14,8 +14,8 @@ import { usePlantData } from './hooks/usePlantData';
 
 import { useIsMobile } from './hooks/useIsMobile';
 import { User } from './types';
-import { translations } from './translations';
 import { usePlantUnits } from './hooks/usePlantUnits';
+import { useTranslation } from './hooks/useTranslation';
 
 import Sidebar from './components/ModernSidebar';
 import Header from './components/Header';
@@ -145,8 +145,7 @@ export type Theme = 'light' | 'dark';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState<Language>('en');
-  const t = translations[language];
+  const { language, setLanguage, t } = useTranslation();
   const [theme, setTheme] = useState<Theme>('light');
   const isMobile = useIsMobile();
 
@@ -415,188 +414,184 @@ const App: React.FC = () => {
                   {currentPage === 'whatsapp-reports' && (
                     <WhatsAppReportsPage groupId="default-group" />
                   )}
-                  {/* Security - Admin only */}
-                  <PermissionGuard user={currentUser} feature="packing_plant" fallback={null}>
-                    {currentPage === 'security' && (
-                      <Suspense fallback={<PageLoader />}>
-                        <div className="space-y-6">
-                          <div className="bg-white rounded-lg shadow-sm border p-6">
-                            <div className="flex flex-wrap gap-2 mb-6">
-                              {[
-                                { key: 'overview', label: 'Security Overview', icon: '🛡️' },
-                                { key: 'monitoring', label: 'Security Monitoring', icon: '📊' },
-                                { key: 'audit', label: 'Audit Logs', icon: '📋' },
-                                { key: 'gdpr', label: 'GDPR Compliance', icon: '🇪🇺' },
-                                { key: 'roles', label: 'Role Management', icon: '👥' },
-                                { key: 'mfa', label: 'MFA Management', icon: '🔐' },
-                              ].map((tab) => (
-                                <button
-                                  key={tab.key}
-                                  onClick={() => handleNavigate('security', tab.key)}
-                                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                                    activeSubPages.security === tab.key
-                                      ? 'bg-blue-600 text-white'
-                                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                  }`}
-                                >
-                                  <span>{tab.icon}</span>
-                                  {tab.label}
-                                </button>
-                              ))}
+                  {/* Security - Super Admin only */}
+                  {currentUser?.role === 'Super Admin' && currentPage === 'security' && (
+                    <Suspense fallback={<PageLoader />}>
+                      <div className="space-y-6">
+                        <div className="bg-white rounded-lg shadow-sm border p-6">
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {[
+                              { key: 'overview', label: 'Security Overview', icon: '🛡️' },
+                              { key: 'monitoring', label: 'Security Monitoring', icon: '📊' },
+                              { key: 'audit', label: 'Audit Logs', icon: '📋' },
+                              { key: 'gdpr', label: 'GDPR Compliance', icon: '🇪🇺' },
+                              { key: 'roles', label: 'Role Management', icon: '👥' },
+                              { key: 'mfa', label: 'MFA Management', icon: '🔐' },
+                            ].map((tab) => (
+                              <button
+                                key={tab.key}
+                                onClick={() => handleNavigate('security', tab.key)}
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                                  activeSubPages.security === tab.key
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                              >
+                                <span>{tab.icon}</span>
+                                {tab.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {activeSubPages.security === 'overview' && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                              <div className="flex items-center mb-4">
+                                <div className="p-2 bg-blue-100 rounded-lg">
+                                  <span className="text-2xl">📊</span>
+                                </div>
+                                <div className="ml-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    Security Monitoring
+                                  </h3>
+                                  <p className="text-sm text-gray-500">
+                                    Real-time threat detection
+                                  </p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleNavigate('security', 'monitoring')}
+                                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Open Dashboard
+                              </button>
+                            </div>
+
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                              <div className="flex items-center mb-4">
+                                <div className="p-2 bg-green-100 rounded-lg">
+                                  <span className="text-2xl">📋</span>
+                                </div>
+                                <div className="ml-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    Audit Logs
+                                  </h3>
+                                  <p className="text-sm text-gray-500">Compliance tracking</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleNavigate('security', 'audit')}
+                                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                View Logs
+                              </button>
+                            </div>
+
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                              <div className="flex items-center mb-4">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                  <span className="text-2xl">🇪🇺</span>
+                                </div>
+                                <div className="ml-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    GDPR Compliance
+                                  </h3>
+                                  <p className="text-sm text-gray-500">Data protection</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleNavigate('security', 'gdpr')}
+                                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                              >
+                                Manage GDPR
+                              </button>
+                            </div>
+
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                              <div className="flex items-center mb-4">
+                                <div className="p-2 bg-orange-100 rounded-lg">
+                                  <span className="text-2xl">👥</span>
+                                </div>
+                                <div className="ml-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    Role Management
+                                  </h3>
+                                  <p className="text-sm text-gray-500">RBAC system</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleNavigate('security', 'roles')}
+                                className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                              >
+                                Manage Roles
+                              </button>
+                            </div>
+
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                              <div className="flex items-center mb-4">
+                                <div className="p-2 bg-red-100 rounded-lg">
+                                  <span className="text-2xl">🔐</span>
+                                </div>
+                                <div className="ml-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">
+                                    MFA Management
+                                  </h3>
+                                  <p className="text-sm text-gray-500">Two-factor auth</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleNavigate('security', 'mfa')}
+                                className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                              >
+                                Setup MFA
+                              </button>
                             </div>
                           </div>
+                        )}
 
-                          {activeSubPages.security === 'overview' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                              <div className="bg-white rounded-lg shadow-sm border p-6">
-                                <div className="flex items-center mb-4">
-                                  <div className="p-2 bg-blue-100 rounded-lg">
-                                    <span className="text-2xl">📊</span>
-                                  </div>
-                                  <div className="ml-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                      Security Monitoring
-                                    </h3>
-                                    <p className="text-sm text-gray-500">
-                                      Real-time threat detection
-                                    </p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => handleNavigate('security', 'monitoring')}
-                                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                  Open Dashboard
-                                </button>
-                              </div>
-
-                              <div className="bg-white rounded-lg shadow-sm border p-6">
-                                <div className="flex items-center mb-4">
-                                  <div className="p-2 bg-green-100 rounded-lg">
-                                    <span className="text-2xl">📋</span>
-                                  </div>
-                                  <div className="ml-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                      Audit Logs
-                                    </h3>
-                                    <p className="text-sm text-gray-500">Compliance tracking</p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => handleNavigate('security', 'audit')}
-                                  className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                                >
-                                  View Logs
-                                </button>
-                              </div>
-
-                              <div className="bg-white rounded-lg shadow-sm border p-6">
-                                <div className="flex items-center mb-4">
-                                  <div className="p-2 bg-purple-100 rounded-lg">
-                                    <span className="text-2xl">🇪🇺</span>
-                                  </div>
-                                  <div className="ml-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                      GDPR Compliance
-                                    </h3>
-                                    <p className="text-sm text-gray-500">Data protection</p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => handleNavigate('security', 'gdpr')}
-                                  className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                                >
-                                  Manage GDPR
-                                </button>
-                              </div>
-
-                              <div className="bg-white rounded-lg shadow-sm border p-6">
-                                <div className="flex items-center mb-4">
-                                  <div className="p-2 bg-orange-100 rounded-lg">
-                                    <span className="text-2xl">👥</span>
-                                  </div>
-                                  <div className="ml-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                      Role Management
-                                    </h3>
-                                    <p className="text-sm text-gray-500">RBAC system</p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => handleNavigate('security', 'roles')}
-                                  className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-                                >
-                                  Manage Roles
-                                </button>
-                              </div>
-
-                              <div className="bg-white rounded-lg shadow-sm border p-6">
-                                <div className="flex items-center mb-4">
-                                  <div className="p-2 bg-red-100 rounded-lg">
-                                    <span className="text-2xl">🔐</span>
-                                  </div>
-                                  <div className="ml-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                      MFA Management
-                                    </h3>
-                                    <p className="text-sm text-gray-500">Two-factor auth</p>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => handleNavigate('security', 'mfa')}
-                                  className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                                >
-                                  Setup MFA
-                                </button>
+                        {activeSubPages.security === 'monitoring' && <SecurityDashboard />}
+                        {activeSubPages.security === 'audit' && <AuditDashboard />}
+                        {activeSubPages.security === 'gdpr' && <GDPRDashboard />}
+                        {activeSubPages.security === 'roles' && <RoleManagement />}
+                        {activeSubPages.security === 'mfa' && (
+                          <div className="space-y-6">
+                            <div className="bg-white rounded-lg shadow-sm border p-6">
+                              <div className="flex flex-wrap gap-2 mb-6">
+                                {[
+                                  { key: 'management', label: 'MFA Management', icon: '🔐' },
+                                  { key: 'setup', label: 'MFA Setup', icon: '⚙️' },
+                                  { key: 'verification', label: 'Verification', icon: '✔️' },
+                                ].map((tab) => (
+                                  <button
+                                    key={tab.key}
+                                    onClick={() => {
+                                      const newSubPages = { ...activeSubPages };
+                                      newSubPages.mfa = tab.key;
+                                      setActiveSubPages(newSubPages);
+                                    }}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                                      (activeSubPages as any).mfa === tab.key
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    <span>{tab.icon}</span>
+                                    {tab.label}
+                                  </button>
+                                ))}
                               </div>
                             </div>
-                          )}
 
-                          {activeSubPages.security === 'monitoring' && <SecurityDashboard />}
-                          {activeSubPages.security === 'audit' && <AuditDashboard />}
-                          {activeSubPages.security === 'gdpr' && <GDPRDashboard />}
-                          {activeSubPages.security === 'roles' && <RoleManagement />}
-                          {activeSubPages.security === 'mfa' && (
-                            <div className="space-y-6">
-                              <div className="bg-white rounded-lg shadow-sm border p-6">
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                  {[
-                                    { key: 'management', label: 'MFA Management', icon: '🔐' },
-                                    { key: 'setup', label: 'MFA Setup', icon: '⚙️' },
-                                    { key: 'verification', label: 'Verification', icon: '✔️' },
-                                  ].map((tab) => (
-                                    <button
-                                      key={tab.key}
-                                      onClick={() => {
-                                        const newSubPages = { ...activeSubPages };
-                                        newSubPages.mfa = tab.key;
-                                        setActiveSubPages(newSubPages);
-                                      }}
-                                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                                        (activeSubPages as any).mfa === tab.key
-                                          ? 'bg-blue-600 text-white'
-                                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                      }`}
-                                    >
-                                      <span>{tab.icon}</span>
-                                      {tab.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {((activeSubPages as any).mfa === 'management' ||
-                                !(activeSubPages as any).mfa) && <MFAManagement />}
-                              {(activeSubPages as any).mfa === 'setup' && <MFASetup />}
-                              {(activeSubPages as any).mfa === 'verification' && (
-                                <MFAVerification />
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </Suspense>
-                    )}
-                  </PermissionGuard>
+                            {((activeSubPages as any).mfa === 'management' ||
+                              !(activeSubPages as any).mfa) && <MFAManagement />}
+                            {(activeSubPages as any).mfa === 'setup' && <MFASetup />}
+                            {(activeSubPages as any).mfa === 'verification' && <MFAVerification />}
+                          </div>
+                        )}
+                      </div>
+                    </Suspense>
+                  )}
                   {/* Plant Operations - Check permission */}
                   <PermissionGuard
                     user={currentUser}

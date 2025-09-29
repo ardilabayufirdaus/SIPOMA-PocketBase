@@ -410,6 +410,19 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
                 page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               icon: page.icon,
             }));
+        case 'security':
+          return navigationData.securityPages
+            .filter(() => {
+              // Only Super Admin can access security modules
+              return currentUser?.role === 'Super Admin';
+            })
+            .map((page) => ({
+              key: page.key,
+              label:
+                t[page.key as keyof typeof t] ||
+                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              icon: page.icon,
+            }));
         default:
           return [];
       }

@@ -56,7 +56,7 @@ const ModernDashboardHeader: React.FC<{
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-xl p-4 text-white relative overflow-hidden shadow-2xl"
+      className="bg-gradient-fire rounded-xl p-6 text-white relative overflow-hidden shadow-lift-lg"
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10" />
@@ -187,30 +187,30 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
   const getVariantClasses = () => {
     switch (variant) {
       case 'online':
-        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-green-950/30 dark:to-green-900/30 dark:border-green-800/30';
+        return 'bg-gradient-forest border-emerald-200/50 shadow-glow-emerald dark:border-emerald-700/30';
       case 'success':
-        return 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 dark:from-blue-950/30 dark:to-blue-900/30 dark:border-blue-800/30';
+        return 'bg-gradient-ocean border-secondary-200/50 shadow-glow-ocean dark:border-secondary-700/30';
       case 'warning':
-        return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/30 dark:border-amber-800/30';
+        return 'bg-gradient-sunset border-amber-200/50 shadow-lg shadow-amber-500/20 dark:border-amber-700/30';
       case 'danger':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30';
+        return 'bg-gradient-to-br from-red-500 to-red-600 border-red-200/50 shadow-lg shadow-red-500/20 text-white dark:border-red-700/30';
       default:
-        return 'bg-gradient-to-br from-slate-50 to-white border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700';
+        return 'bg-gradient-to-br from-white to-gray-50 border-gray-200/50 shadow-lift dark:from-gray-800 dark:to-gray-900 dark:border-gray-700/50';
     }
   };
 
   const getIconBgColor = () => {
     switch (variant) {
       case 'online':
-        return 'bg-green-500';
+        return 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-glow-emerald';
       case 'success':
-        return 'bg-blue-500';
+        return 'bg-gradient-to-r from-blue-500 to-cyan-500 shadow-glow-ocean';
       case 'warning':
-        return 'bg-amber-500';
+        return 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30';
       case 'danger':
-        return 'bg-red-500';
+        return 'bg-gradient-to-r from-red-500 to-rose-500 shadow-lg shadow-red-500/30';
       default:
-        return 'bg-slate-500';
+        return 'bg-gradient-to-r from-gray-500 to-gray-600 shadow-md';
     }
   };
 
@@ -231,7 +231,7 @@ const QuickStatCard: React.FC<QuickStatCardProps> = ({
         className={`
           relative overflow-hidden rounded-2xl border backdrop-blur-sm cursor-pointer transition-all duration-300
           ${getVariantClasses()}
-          ${isInteractive ? 'hover:shadow-2xl hover:border-opacity-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50' : ''}
+          ${isInteractive ? 'hover:shadow-lift-lg hover:border-opacity-60 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2' : ''}
         `}
         onClick={handleClick}
         role={isInteractive ? 'button' : undefined}

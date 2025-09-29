@@ -18,7 +18,6 @@ import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import { formatNumber, formatNumberWithPrecision } from '../../utils/formatters';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useDebouncedParameterUpdates } from '../../hooks/useDebouncedParameterUpdates';
 import { useDataFiltering } from '../../hooks/useDataFiltering';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
@@ -526,42 +525,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     });
   };
 
-  // Use custom hook for debounced parameter updates
-  const {
-    savingParameterId: debouncedSavingParameterId,
-    error: debouncedError,
-    updateParameterDataDebounced,
-    cleanup: cleanupDebouncedUpdates,
-  } = useDebouncedParameterUpdates({
-    selectedDate,
-    updateParameterData,
-    getParameterDataForDate,
-    currentUserName: loggedInUser?.full_name || currentUser.full_name,
-    onSuccess: (parameterId, hour) => {
-      showToast(`Data parameter ${parameterId} jam ${hour} berhasil disimpan.`);
-    },
-    onError: (parameterId, errorMessage) => {
-      setError(errorMessage);
-    },
-  });
-
   // Alias for saving parameter ID
-  const savingParameterId = debouncedSavingParameterId;
+  const savingParameterId = null;
 
   // Enhanced cleanup for inputRefs, debounced updates, and custom hooks
   useEffect(() => {
     return () => {
-      // Clear all debounced timers from custom hook
-      cleanupDebouncedUpdates();
-
       // Clear input refs
       inputRefs.current.clear();
     };
-  }, [selectedDate, selectedCategory, selectedUnit, cleanupDebouncedUpdates]);
+  }, [selectedDate, selectedCategory, selectedUnit]);
 
   // Wrapper function for parameter data changes with optimistic updates
   const handleParameterDataChange = useCallback(
-    (parameterId: string, hour: number, value: string) => {
+    async (parameterId: string, hour: number, value: string) => {
       // Optimistic update for UI
       setDailyParameterData((prev) => {
         const idx = prev.findIndex((p) => p.parameter_id === parameterId);
@@ -590,10 +567,36 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         return newArr;
       });
 
-      // Debounced database update
-      updateParameterDataDebounced(parameterId, hour, value);
+      // Direct database update
+      try {
+        await updateParameterData(
+          selectedDate,
+          parameterId,
+          hour,
+          value === '' ? null : value,
+          loggedInUser?.full_name || currentUser.full_name
+        );
+        showToast(`Data parameter ${parameterId} jam ${hour} berhasil disimpan.`);
+      } catch (error) {
+        console.error('Error updating parameter data:', error);
+        setError(`Failed to save data for parameter ${parameterId}`);
+        // Revert optimistic update on error
+        setDailyParameterData((prev) => {
+          const idx = prev.findIndex((p) => p.parameter_id === parameterId);
+          if (idx === -1) return prev;
+
+          const param = prev[idx];
+          const revertedHourlyValues = { ...param.hourly_values };
+          delete revertedHourlyValues[hour]; // Remove the failed update
+
+          const revertedParam = { ...param, hourly_values: revertedHourlyValues };
+          const newArr = [...prev];
+          newArr[idx] = revertedParam;
+          return newArr;
+        });
+      }
     },
-    [updateParameterDataDebounced]
+    [updateParameterData, selectedDate, loggedInUser, currentUser, showToast]
   );
 
   const handleOpenAddDowntimeModal = () => {

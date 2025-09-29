@@ -6,6 +6,7 @@ import App from '../App';
 import LoginPage from './LoginPage';
 import { secureStorage } from '../utils/secureStorage';
 import { User } from '../types';
+import { TranslationProvider } from '../hooks/useTranslation';
 
 // Create a client with optimized settings for Plant Operations Dashboard
 const queryClient = new QueryClient({
@@ -79,13 +80,15 @@ const RootRouter: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/*" element={isLoggedIn ? <App /> : <Navigate to="/login" replace />} />
-        </Routes>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </Router>
+      <TranslationProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/*" element={isLoggedIn ? <App /> : <Navigate to="/login" replace />} />
+          </Routes>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Router>
+      </TranslationProvider>
     </QueryClientProvider>
   );
 };

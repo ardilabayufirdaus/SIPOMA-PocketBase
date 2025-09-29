@@ -1,37 +1,65 @@
-# Design System SIPOMA
+# SIPOMA Enhanced Design System
 
 ## Overview
 
-Design system komprehensif untuk aplikasi SIPOMA yang mencakup color palette, typography, spacing, dan component library yang konsisten.
+Design system modern dan vibrant untuk aplikasi SIPOMA dengan pendekatan colorful, gradient-rich, dan interactive components yang menciptakan pengalaman pengguna yang engaging dan professional.
 
-## Color Palette
+## Enhanced Color Palette
 
-### Primary Colors (Red Theme)
+### Primary Gradient Colors (Fire Theme)
 
 ```typescript
 primary: {
-  50: '#fef2f2',   // Lightest red
-  500: '#ef4444',  // Primary red
-  900: '#7f1d1d'   // Darkest red
+  50: '#fef7ee',   // Warm cream
+  100: '#fed7aa',  // Light peach
+  200: '#fdb582',  // Soft orange
+  300: '#fc8f54',  // Medium orange
+  400: '#fb6b2a',  // Vibrant orange
+  500: '#ea5234',  // Primary fire red
+  600: '#dc2626',  // Deep red
+  700: '#b91c1c',  // Darker red
+  800: '#991b1b',  // Rich red
+  900: '#7c2d12'   // Deepest red
 }
 ```
 
-### Secondary Colors (Blue)
+### Secondary Gradient Colors (Ocean Theme)
 
 ```typescript
 secondary: {
-  50: '#f0f9ff',   // Lightest blue
-  500: '#0ea5e9',  // Primary blue
-  900: '#0c4a6e'   // Darkest blue
+  50: '#f0f9ff',   // Lightest sky
+  100: '#e0f2fe',  // Light cyan
+  200: '#bae6fd',  // Soft blue
+  300: '#7dd3fc',  // Medium blue
+  400: '#38bdf8',  // Bright blue
+  500: '#0ea5e9',  // Primary ocean
+  600: '#0284c7',  // Deep blue
+  700: '#0369a1',  // Navy blue
+  800: '#075985',  // Rich navy
+  900: '#0c4a6e'   // Deepest ocean
 }
 ```
 
-### Status Colors
+### Accent Colors (Rainbow Spectrum)
 
-- **Success**: Green palette (#22c55e)
-- **Warning**: Yellow palette (#f59e0b)
-- **Error**: Red palette (#ef4444)
-- **Info**: Blue palette (#3b82f6)
+```typescript
+accent: {
+  purple: { 500: '#8b5cf6', gradient: 'from-purple-500 to-pink-500' },
+  emerald: { 500: '#10b981', gradient: 'from-emerald-500 to-teal-500' },
+  rose: { 500: '#f43f5e', gradient: 'from-rose-500 to-pink-500' },
+  amber: { 500: '#f59e0b', gradient: 'from-amber-500 to-orange-500' },
+  indigo: { 500: '#6366f1', gradient: 'from-indigo-500 to-purple-500' },
+  lime: { 500: '#84cc16', gradient: 'from-lime-500 to-green-500' }
+}
+```
+
+### Status Colors (Enhanced)
+
+- **Success**: Emerald gradient (#10b981 → #059669)
+- **Warning**: Amber gradient (#f59e0b → #d97706)
+- **Error**: Red gradient (#ef4444 → #dc2626)
+- **Info**: Blue gradient (#3b82f6 → #2563eb)
+- **New**: Purple gradient (#8b5cf6 → #7c3aed)
 
 ### Neutral Colors
 
@@ -107,19 +135,20 @@ spacing: {
 
 ## Component Library
 
-### Button Component
+### Enhanced Button Component
 
 #### Variants
 
-- **Primary**: Main actions, high emphasis (gradient background)
-- **Secondary**: Alternative actions, medium emphasis (gradient background)
-- **Success**: Positive actions (save, confirm) (gradient background)
-- **Warning**: Caution actions (delete with confirmation) (gradient background)
-- **Error**: Destructive actions (delete, cancel) (gradient background)
-- **Gradient**: Special premium actions (multi-color gradient)
-- **Glass**: Modern glassmorphism effect (backdrop blur)
-- **Outline**: Low emphasis, secondary actions (border only)
-- **Ghost**: Minimal styling, subtle actions (transparent with border)
+- **Primary**: Fire gradient (orange→red) dengan shadow & hover lift
+- **Secondary**: Ocean gradient (blue→cyan) dengan ripple effect
+- **Success**: Emerald gradient (green→teal) dengan success animation
+- **Warning**: Sunset gradient (amber→orange) dengan pulse effect
+- **Error**: Crimson gradient (red→rose) dengan shake animation
+- **Purple**: Magic gradient (purple→pink) dengan glow effect
+- **Rainbow**: Multi-color gradient dengan shifting colors
+- **Glass**: Glassmorphism dengan backdrop blur & subtle gradients
+- **Neon**: Bright colors dengan outer glow
+- **Gradient**: Custom gradients dengan dynamic hover effects
 
 #### Sizes
 
@@ -171,14 +200,18 @@ spacing: {
 - **Success**: Green border, light green background
 - **Disabled**: Gray background, not editable
 
-### Card Component
+### Enhanced Card Component
 
 #### Variants
 
-- **Default**: White background, subtle shadow
-- **Elevated**: Enhanced shadow for prominence
-- **Outlined**: Transparent background, border only
-- **Filled**: Light gray background
+- **Default**: Clean white dengan subtle gradient border
+- **Elevated**: Multi-layer shadows dengan gradient background
+- **Glass**: Glassmorphism dengan backdrop blur
+- **Gradient**: Subtle background gradients
+- **Neon**: Glowing borders dengan vibrant accents
+- **Interactive**: Hover transforms dengan color transitions
+- **Feature**: Hero cards dengan large gradients
+- **Floating**: Enhanced shadows dengan hover lift
 
 #### Padding Options
 
