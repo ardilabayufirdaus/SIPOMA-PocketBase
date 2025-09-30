@@ -333,28 +333,6 @@ export const translations = {
     export_all: 'Export All',
     import_all: 'Import All',
 
-    // Plant Operations Dashboard
-    kpi_kiln_temp: 'Kiln Temperature',
-    kpi_raw_mill_output: 'Raw Mill Output',
-    kpi_cement_silo_level: 'Cement Silo Level',
-    kpi_oee: 'OEE',
-    machine_status_title: 'Machine Status',
-    machine_header: 'Machine',
-    output_header: 'Output',
-    temp_header: 'Temp.',
-    uptime_header: 'Uptime',
-    live_alerts_title: 'Live Alerts',
-    production_output_title: 'Production Output',
-    last_24h: '(Last 24h)',
-    start_button: 'Start',
-    stop_button: 'Stop',
-    alert_kiln_temp: 'Kiln temperature exceeds threshold by 2°C',
-    alert_mill_vibration: 'Vibration sensor on Mill 1 reports high readings.',
-    alert_silo_full: 'Silo 4 is 95% full. Prepare for switchover.',
-    plant_operations_dashboard: 'Plant Operations Dashboard',
-    under_development:
-      'This feature is under development. The plant operations dashboard will be available soon with real-time data.',
-
     // Plant Operations CCR Data Entry
     ccr_data_entry_title: 'CCR Silo Data Entry',
     ccr_parameter_data_entry_title: 'CCR Parameter Data Entry',
@@ -1015,28 +993,6 @@ export const translations = {
     edit_pic_title: 'Ubah PIC',
     export_all: 'Ekspor Semua',
     import_all: 'Impor Semua',
-
-    // Plant Operations Dashboard
-    kpi_kiln_temp: 'Suhu Kiln',
-    kpi_raw_mill_output: 'Output Raw Mill',
-    kpi_cement_silo_level: 'Level Silo Semen',
-    kpi_oee: 'OEE',
-    machine_status_title: 'Status Mesin',
-    machine_header: 'Mesin',
-    output_header: 'Output',
-    temp_header: 'Suhu',
-    uptime_header: 'Uptime',
-    live_alerts_title: 'Peringatan Langsung',
-    production_output_title: 'Output Produksi',
-    last_24h: '(24 Jam Terakhir)',
-    start_button: 'Mulai',
-    stop_button: 'Hentikan',
-    alert_kiln_temp: 'Suhu kiln melebihi ambang batas sebesar 2°C',
-    alert_mill_vibration: 'Sensor getaran di Mill 1 melaporkan pembacaan tinggi.',
-    alert_silo_full: 'Silo 4 sudah 95% penuh. Persiapkan untuk pergantian.',
-    plant_operations_dashboard: 'Dashboard Operasi Pabrik',
-    under_development:
-      'Fitur ini sedang dalam pengembangan. Dashboard operasi pabrik akan segera tersedia dengan data real-time.',
 
     // Plant Operations CCR Data Entry
     ccr_data_entry_title: 'Entri Data Silo CCR',

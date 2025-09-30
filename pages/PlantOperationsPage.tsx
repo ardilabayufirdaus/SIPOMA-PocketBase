@@ -1,6 +1,5 @@
 import React from 'react';
 import PlaceholderPage from '../components/PlaceholderPage';
-import PlantOperationsDashboard from './plant_operations/PlantOperationsDashboard';
 import PlantOperationsMasterData from './plant_operations/PlantOperationsMasterData';
 import CcrDataEntryPage from './plant_operations/CcrDataEntryPage';
 import AutonomousDataEntryPage from './plant_operations/AutonomousDataEntryPage';
@@ -30,8 +29,6 @@ interface PageProps {
 
 const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t }) => {
   switch (activePage) {
-    case 'op_dashboard':
-      return <PlantOperationsDashboard t={t} />;
     case 'op_report':
       return <ReportPage t={t} />;
     case 'op_wag_report':

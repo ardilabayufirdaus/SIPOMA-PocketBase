@@ -8,7 +8,7 @@ import { secureStorage } from '../utils/secureStorage';
 import { User } from '../types';
 import { TranslationProvider } from '../hooks/useTranslation';
 
-// Create a client with optimized settings for Plant Operations Dashboard
+// Create a client with optimized settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
