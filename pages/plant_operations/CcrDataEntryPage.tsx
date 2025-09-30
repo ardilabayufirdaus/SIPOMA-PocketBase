@@ -6,7 +6,13 @@ import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCcrParameterData } from '../../hooks/useCcrParameterData';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
 import { useUsers } from '../../hooks/useUsers';
-import { ParameterDataType, CcrDowntimeData, CcrSiloData, CcrParameterData } from '../../types';
+import {
+  ParameterDataType,
+  CcrDowntimeData,
+  CcrSiloData,
+  CcrParameterData,
+  ParameterSetting,
+} from '../../types';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import Modal from '../../components/Modal';
 import CcrDowntimeForm from './CcrDowntimeForm';
@@ -18,7 +24,6 @@ import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import { formatNumber, formatNumberWithPrecision } from '../../utils/formatters';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useDataFiltering } from '../../hooks/useDataFiltering';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import {
@@ -26,6 +31,7 @@ import {
   DocumentArrowUpIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
+  ArrowsUpDownIcon,
 } from '@heroicons/react/24/outline';
 import { usePermissions } from '../../utils/permissions';
 import { PermissionLevel } from '../../types';
@@ -83,6 +89,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [columnSearchQuery, setColumnSearchQuery] = useState('');
   const [isFooterVisible, setIsFooterVisible] = useState(false);
+
+  // Parameter reorder state
+  const [parameterOrder, setParameterOrder] = useState<string[]>([]);
+  const [showReorderModal, setShowReorderModal] = useState(false);
+  const [modalParameterOrder, setModalParameterOrder] = useState<ParameterSetting[]>([]);
 
   // New state for undo stack
   const [undoStack, setUndoStack] = useState<
@@ -242,16 +253,92 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   // Parameter Data Hooks and Filtering
   const { records: parameterSettings } = useParameterSettings();
 
-  // Use custom hook for data filtering
-  const { filteredParameterSettings, dailySiloData, siloMasterMap } = useDataFiltering({
+  // Load parameter order from localStorage
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('ccrParameterOrder');
+    if (savedOrder) {
+      try {
+        const parsedOrder = JSON.parse(savedOrder);
+        setParameterOrder(parsedOrder);
+      } catch (error) {
+        console.error('Error parsing saved parameter order:', error);
+      }
+    }
+  }, []);
+
+  // Save parameter order to localStorage when it changes
+  useEffect(() => {
+    if (parameterOrder.length > 0) {
+      localStorage.setItem('ccrParameterOrder', JSON.stringify(parameterOrder));
+    }
+  }, [parameterOrder]);
+
+  // Custom parameter filtering with reorder support
+  const filteredParameterSettings = useMemo(() => {
+    if (!selectedCategory || !selectedUnit) return [];
+
+    const unitBelongsToCategory = plantUnits.some(
+      (pu) => pu.unit === selectedUnit && pu.category === selectedCategory
+    );
+    if (!unitBelongsToCategory) return [];
+
+    let filtered = parameterSettings.filter(
+      (param) => param.category === selectedCategory && param.unit === selectedUnit
+    );
+
+    // Apply custom order if available
+    if (parameterOrder.length > 0) {
+      const orderMap = new Map(parameterOrder.map((id, index) => [id, index]));
+      filtered = filtered.sort((a, b) => {
+        const aIndex = orderMap.get(a.id) ?? filtered.length;
+        const bIndex = orderMap.get(b.id) ?? filtered.length;
+        return aIndex - bIndex;
+      });
+    } else {
+      // Default sort by parameter name
+      filtered = filtered.sort((a, b) => a.parameter.localeCompare(b.parameter));
+    }
+
+    // Apply column search filter
+    if (columnSearchQuery.trim()) {
+      const searchTerm = columnSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (param) =>
+          param.parameter.toLowerCase().includes(searchTerm) ||
+          param.unit.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  }, [
     parameterSettings,
-    plantUnits,
     selectedCategory,
     selectedUnit,
+    plantUnits,
+    parameterOrder,
     columnSearchQuery,
-    allDailySiloData,
-    siloMasterData,
-  });
+  ]);
+
+  // Update modal parameter order when modal opens or filteredParameterSettings changes
+  useEffect(() => {
+    if (showReorderModal) {
+      setModalParameterOrder([...filteredParameterSettings]);
+    }
+  }, [showReorderModal, filteredParameterSettings]);
+
+  // Filter silo data
+  const dailySiloData = useMemo(() => {
+    if (!selectedCategory || !selectedUnit) return [];
+    return allDailySiloData.filter(
+      (data) => data.category === selectedCategory && data.unit === selectedUnit
+    );
+  }, [allDailySiloData, selectedCategory, selectedUnit]);
+
+  // Silo master map
+  const siloMasterMap = useMemo(
+    () => new Map(siloMasterData.map((silo) => [silo.id, silo])),
+    [siloMasterData]
+  );
 
   const { getDataForDate: getParameterDataForDate, updateParameterData } = useCcrParameterData();
   const [dailyParameterData, setDailyParameterData] = useState<CcrParameterData[]>([]);
@@ -1639,6 +1726,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             >
               {isFooterVisible ? 'Hide Footer' : 'Show Footer'}
             </EnhancedButton>
+
+            <EnhancedButton
+              variant="secondary"
+              size="md"
+              onClick={() => setShowReorderModal(true)}
+              disabled={
+                !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
+              }
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              aria-label="Reorder parameters"
+            >
+              <ArrowsUpDownIcon className="w-5 h-5" />
+              <span className="text-sm font-medium">Reorder Parameters</span>
+            </EnhancedButton>
           </div>
         </div>
 
@@ -2152,6 +2253,107 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           >
             {t.cancel_button}
           </EnhancedButton>
+        </div>
+      </Modal>
+
+      {/* Parameter Reorder Modal */}
+      <Modal
+        isOpen={showReorderModal}
+        onClose={() => setShowReorderModal(false)}
+        title="Reorder Parameters"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Drag parameters or use the buttons to reorder them. The order will be saved
+            automatically.
+          </p>
+
+          <div className="max-h-96 overflow-y-auto space-y-2">
+            {modalParameterOrder.map((param, index) => (
+              <div
+                key={param.id}
+                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {index + 1}.
+                  </span>
+                  <div>
+                    <div className="font-semibold text-slate-800 dark:text-slate-200">
+                      {param.parameter}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{param.unit}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <EnhancedButton
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => {
+                      const newOrder = [...modalParameterOrder];
+                      if (index > 0) {
+                        [newOrder[index], newOrder[index - 1]] = [
+                          newOrder[index - 1],
+                          newOrder[index],
+                        ];
+                        setModalParameterOrder(newOrder);
+                      }
+                    }}
+                    disabled={index === 0}
+                    aria-label={`Move ${param.parameter} up`}
+                  >
+                    ↑
+                  </EnhancedButton>
+                  <EnhancedButton
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => {
+                      const newOrder = [...modalParameterOrder];
+                      if (index < modalParameterOrder.length - 1) {
+                        [newOrder[index], newOrder[index + 1]] = [
+                          newOrder[index + 1],
+                          newOrder[index],
+                        ];
+                        setModalParameterOrder(newOrder);
+                      }
+                    }}
+                    disabled={index === modalParameterOrder.length - 1}
+                    aria-label={`Move ${param.parameter} down`}
+                  >
+                    ↓
+                  </EnhancedButton>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <EnhancedButton
+              variant="outline"
+              onClick={() => {
+                // Reset to default order (sorted by parameter name)
+                const defaultOrder = [...filteredParameterSettings].sort((a, b) =>
+                  a.parameter.localeCompare(b.parameter)
+                );
+                setModalParameterOrder(defaultOrder);
+              }}
+              aria-label="Reset to default order"
+            >
+              Reset to Default
+            </EnhancedButton>
+            <EnhancedButton
+              variant="primary"
+              onClick={() => {
+                const newOrder = modalParameterOrder.map((param) => param.id);
+                setParameterOrder(newOrder);
+                setShowReorderModal(false);
+              }}
+              aria-label="Save parameter order"
+            >
+              Done
+            </EnhancedButton>
+          </div>
         </div>
       </Modal>
 
