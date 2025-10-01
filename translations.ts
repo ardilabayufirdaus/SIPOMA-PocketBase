@@ -7,6 +7,7 @@ export const translations = {
     mainDashboard: 'Main Dashboard',
     plantOperations: 'Plant Operations',
     packingPlant: 'Packing Plant',
+    inspection: 'Inspection',
     projectManagement: 'Project Management',
     user_management: 'User Management',
     userManagement: 'User Management',
@@ -39,6 +40,12 @@ export const translations = {
     tooltip_sign_out: 'Sign out from application',
     tooltip_open_user_menu: '{name} profile & settings',
     tooltip_close_user_menu: 'Close user menu',
+
+    // Inspection Module
+    insp_dashboard: 'Dashboard',
+    insp_form: 'New Inspection',
+    insp_details: 'Inspection Details',
+    insp_reports: 'Reports',
 
     // Notifications
     notifications_title: 'Notifications',
@@ -665,6 +672,7 @@ export const translations = {
     mainDashboard: 'Dasbor Utama',
     plantOperations: 'Operasi Pabrik',
     packingPlant: 'Pabrik Pengantongan',
+    inspection: 'Inspeksi',
     projectManagement: 'Manajemen Proyek',
     user_management: 'Manajemen Pengguna',
     userManagement: 'Manajemen Pengguna',
@@ -697,6 +705,12 @@ export const translations = {
     tooltip_sign_out: 'Keluar dari aplikasi',
     tooltip_open_user_menu: 'Profil & pengaturan {name}',
     tooltip_close_user_menu: 'Tutup menu pengguna',
+
+    // Inspection Module
+    insp_dashboard: 'Dasbor',
+    insp_form: 'Inspeksi Baru',
+    insp_details: 'Detail Inspeksi',
+    insp_reports: 'Laporan',
 
     // Notifications
     notifications_title: 'Notifikasi',

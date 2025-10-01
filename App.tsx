@@ -72,6 +72,13 @@ const ProjectManagementPage = lazy(() =>
   }))
 );
 
+// Inspection Page
+const InspectionPage = lazy(() =>
+  import('./pages/InspectionPage').catch(() => ({
+    default: () => <div className="text-center p-8">Error loading Inspection. Please refresh.</div>,
+  }))
+);
+
 // Lightweight components
 const SettingsPage = lazy(() =>
   import('./pages/SettingsPage').catch(() => ({
@@ -136,6 +143,7 @@ export type Page =
   | 'users'
   | 'operations'
   | 'packing'
+  | 'inspection'
   | 'projects'
   | 'settings'
   | 'whatsapp-reports'
@@ -194,6 +202,7 @@ const App: React.FC = () => {
   const [activeSubPages, setActiveSubPages] = useState({
     operations: 'op_dashboard',
     packing: 'pack_master_data',
+    inspection: 'insp_dashboard',
     projects: 'proj_dashboard',
     users: 'user_list',
     security: 'overview',
@@ -300,6 +309,8 @@ const App: React.FC = () => {
         return t[activeSubPages.operations as keyof typeof t] || t.plantOperations;
       case 'packing':
         return t[activeSubPages.packing as keyof typeof t] || t.packingPlant;
+      case 'inspection':
+        return t[activeSubPages.inspection as keyof typeof t] || t.inspection || 'Inspection';
       case 'projects':
         if (activeSubPages.projects === 'proj_detail') return t.project_overview_title;
         return t[activeSubPages.projects as keyof typeof t] || t.projectManagement;
@@ -388,6 +399,15 @@ const App: React.FC = () => {
                   >
                     {currentPage === 'dashboard' && (
                       <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
+                    )}
+
+                    {/* Inspection Module */}
+                    {currentPage === 'inspection' && (
+                      <InspectionPage
+                        language={language}
+                        subPage={activeSubPages.inspection}
+                        onNavigate={handleNavigate}
+                      />
                     )}
                   </PermissionGuard>
                   {/* User Management - Only for Super Admin */}

@@ -29,6 +29,7 @@ import ChartPieIcon from './icons/ChartPieIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import CogIcon from './icons/CogIcon';
 import ClockIcon from './icons/ClockIcon';
+import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
 
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
 
@@ -273,6 +274,12 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           icon: <ArchiveBoxIcon className={iconClass} />,
         },
       ],
+      inspectionPages: [
+        { key: 'insp_dashboard', icon: <ClipboardCheckIcon className={iconClass} /> },
+        { key: 'insp_form', icon: <EditIcon className={iconClass} /> },
+        { key: 'insp_details', icon: <ChartBarIcon className={iconClass} /> },
+        { key: 'insp_reports', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+      ],
       packingPlantPages: [
         {
           key: 'pack_stock_forecast',
@@ -345,6 +352,20 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
       const isAdminOrSuperAdmin = isAdminRole(currentUser?.role);
 
       switch (module) {
+        case 'inspection':
+          return navigationData.inspectionPages
+            .filter(() => {
+              // Allow access for all users for now
+              // TODO: Implement proper inspection permissions
+              return true;
+            })
+            .map((page) => ({
+              key: page.key,
+              label:
+                t[page.key as keyof typeof t] ||
+                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              icon: page.icon,
+            }));
         case 'operations':
           return navigationData.plantOperationPages
             .filter((page) => {
@@ -444,6 +465,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const operationsButtonRef = useRef<HTMLButtonElement>(null);
   const packingButtonRef = useRef<HTMLButtonElement>(null);
+  const inspectionButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
   const securityButtonRef = useRef<HTMLButtonElement>(null);
@@ -587,6 +609,15 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               onClick={() => handleDropdownToggle('packing', packingButtonRef)}
             />
           )}
+
+          {/* Inspection Module - All users */}
+          <IconButton
+            ref={inspectionButtonRef}
+            icon={<ClipboardCheckIcon className={iconClass} />}
+            label={t.inspection || 'Inspection'}
+            isActive={currentPage === 'inspection'}
+            onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
+          />
 
           {/* Project Management - Check permission */}
           {permissionChecker.hasPermission('project_management', 'READ') && (

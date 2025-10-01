@@ -24,6 +24,7 @@ export interface PermissionMatrix {
   dashboard: PermissionLevel;
   plant_operations: PlantOperationsPermissions;
   packing_plant: PermissionLevel;
+  inspection: PermissionLevel;
   project_management: PermissionLevel;
   system_settings: PermissionLevel;
   user_management: PermissionLevel;

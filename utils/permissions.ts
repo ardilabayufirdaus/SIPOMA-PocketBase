@@ -115,6 +115,13 @@ export class PermissionChecker {
   }
 
   /**
+   * Check if user can access inspection module
+   */
+  canAccessInspection(): boolean {
+    return this.hasPermission('inspection', 'READ');
+  }
+
+  /**
    * Check if user can perform admin actions (create, update, delete)
    */
   canPerformAdminActions(feature: keyof PermissionMatrix): boolean {
