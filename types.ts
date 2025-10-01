@@ -177,7 +177,26 @@ export interface CcrParameterData {
   id: string; // combination of parameterId and date
   parameter_id: string;
   date: string; // YYYY-MM-DD
-  hourly_values: { [hour: number]: string | number }; // hour is 1-24
+  hourly_values: { [hour: number]: string | number }; // hour is 1-24 - LEGACY
+}
+
+// Extended interface with name field for legacy compatibility
+export interface CcrParameterDataWithName extends CcrParameterData {
+  name?: string;
+}
+
+// New interface with user tracking per hour
+export interface CcrParameterDataWithTracking {
+  id: string; // combination of parameterId and date
+  parameter_id: string;
+  date: string; // YYYY-MM-DD
+  hourly_values: {
+    [hour: number]: {
+      value: string | number;
+      user_name: string;
+      timestamp: string; // ISO timestamp
+    };
+  };
 }
 
 export enum DowntimeStatus {

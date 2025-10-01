@@ -199,17 +199,28 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                             {(() => {
                               const filledParam = filteredParameterSettings.find((param) => {
                                 const paramData = parameterDataMap.get(param.id);
+                                if (!paramData?.hourly_values?.[hour]) return false;
+                                const hourData = paramData.hourly_values[hour] as any;
+                                if (!hourData || typeof hourData !== 'object') return false;
                                 return (
-                                  paramData &&
-                                  paramData.hourly_values[hour] !== undefined &&
-                                  paramData.hourly_values[hour] !== ''
+                                  'value' in hourData &&
+                                  hourData.value !== undefined &&
+                                  hourData.value !== ''
                                 );
                               });
                               if (filledParam) {
                                 const paramData = parameterDataMap.get(filledParam.id);
+                                const hourData = paramData?.hourly_values?.[hour] as any;
+                                const userName =
+                                  hourData &&
+                                  typeof hourData === 'object' &&
+                                  hourData !== null &&
+                                  'user_name' in hourData
+                                    ? String(hourData.user_name || '')
+                                    : '';
                                 return (
-                                  <span className="truncate" title={(paramData as any)?.name || ''}>
-                                    {(paramData as any)?.name || ''}
+                                  <span className="truncate" title={userName}>
+                                    {userName}
                                   </span>
                                 );
                               }

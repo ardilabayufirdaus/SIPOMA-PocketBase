@@ -3,6 +3,7 @@ import { CcrParameterData } from '../types';
 import { useParameterSettings } from './useParameterSettings';
 import { supabase } from '../utils/supabase';
 import { useCcrDataCache } from './useDataCache';
+import { useEffect } from 'react';
 
 // Extend CcrParameterData interface untuk include name property
 interface CcrParameterDataWithName extends CcrParameterData {
@@ -12,6 +13,31 @@ interface CcrParameterDataWithName extends CcrParameterData {
 export const useCcrParameterData = () => {
   const { records: parameters, loading: paramsLoading } = useParameterSettings();
   const cache = useCcrDataCache();
+
+  // Real-time subscription for ccr_parameter_data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('ccr_parameter_data_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ccr_parameter_data',
+        },
+        (payload) => {
+          console.log('CCR parameter data change received!', payload);
+          // Clear cache when data changes to trigger refetch
+          cache.clearCache();
+          // Trigger component re-render by updating a state (will be handled by component)
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [cache]);
 
   const getDataForDate = useCallback(
     async (date: string, plantUnit?: string): Promise<CcrParameterDataWithName[]> => {
@@ -135,20 +161,6 @@ export const useCcrParameterData = () => {
       }
 
       try {
-        // Check user session status (only log once per session)
-        if (!(window as any)._userSessionChecked) {
-          const userSession = localStorage.getItem('currentUser');
-          if (userSession) {
-            try {
-              const sessionData = JSON.parse(userSession);
-            } catch (error) {
-              console.warn('Invalid user session data');
-            }
-          } else {
-          }
-          (window as any)._userSessionChecked = true;
-        }
-
         // Only log on development mode
         if ((import.meta as any).env?.DEV) {
           // Development logging removed
@@ -225,13 +237,42 @@ export const useCcrParameterData = () => {
             ? existing.hourly_values
             : {};
 
-        const updatedHourlyValues = { ...currentHourlyValues };
+        // Transform current hourly values to new format if needed
+        const transformedCurrentValues: {
+          [hour: number]: { value: string | number; user_name: string; timestamp: string };
+        } = {};
+
+        Object.entries(currentHourlyValues).forEach(([hour, hourData]) => {
+          const hourNum = parseInt(hour);
+          if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+            // Already in new format
+            transformedCurrentValues[hourNum] = hourData as {
+              value: string | number;
+              user_name: string;
+              timestamp: string;
+            };
+          } else {
+            // Legacy format - convert with existing user
+            transformedCurrentValues[hourNum] = {
+              value: hourData as string | number,
+              user_name: existing?.name || 'Unknown',
+              timestamp: new Date().toISOString(),
+            };
+          }
+        });
+
+        const updatedHourlyValues = { ...transformedCurrentValues };
 
         if (value === '' || value === null || value === undefined) {
           // Remove the hour key if input is cleared
           delete updatedHourlyValues[hour];
         } else {
-          updatedHourlyValues[hour] = value;
+          // Update or add the hour with user tracking
+          updatedHourlyValues[hour] = {
+            value: value,
+            user_name: userName,
+            timestamp: new Date().toISOString(),
+          };
         }
 
         // If all hourly_values are empty, delete the record from Supabase
@@ -245,19 +286,17 @@ export const useCcrParameterData = () => {
           if (deleteError) {
             console.error('Error deleting CCR parameter data:', deleteError);
             throw deleteError;
+          } else {
+            // Successfully deleted CCR parameter data record
           }
         } else {
-          // Prepare upsert data - only set name if this is a new record
+          // Prepare upsert data - always include name for backward compatibility
           const upsertData: any = {
             date,
             parameter_id,
             hourly_values: updatedHourlyValues,
+            name: userName, // Keep for backward compatibility, but per-hour tracking is in hourly_values
           };
-
-          // Only set name if this is a new record (no existing data)
-          if (!existing) {
-            upsertData.name = userName;
-          }
 
           // Try upsert first, if it fails due to network issues, try manual approach
           let upsertError = null;
@@ -266,6 +305,9 @@ export const useCcrParameterData = () => {
               .from('ccr_parameter_data')
               .upsert(upsertData, { onConflict: 'date,parameter_id' });
             upsertError = result.error;
+            if (!upsertError) {
+              // Successfully upserted CCR parameter data via upsert
+            }
           } catch (networkError) {
             console.warn('Upsert failed due to network, trying manual approach:', networkError);
             // Manual conflict resolution
@@ -275,15 +317,21 @@ export const useCcrParameterData = () => {
                 .from('ccr_parameter_data')
                 .update({
                   hourly_values: updatedHourlyValues,
-                  // Don't update name for existing records
+                  name: userName, // Update name for backward compatibility
                 })
                 .eq('date', date)
                 .eq('parameter_id', parameter_id);
               upsertError = error;
+              if (!upsertError) {
+                console.log('Successfully updated CCR parameter data via manual update');
+              }
             } else {
               // Insert new record
               const { error } = await supabase.from('ccr_parameter_data').insert(upsertData);
               upsertError = error;
+              if (!upsertError) {
+                console.log('Successfully inserted CCR parameter data via manual insert');
+              }
             }
           }
 

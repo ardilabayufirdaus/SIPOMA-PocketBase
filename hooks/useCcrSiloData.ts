@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { CcrSiloData } from '../types';
 import { useSiloCapacities } from './useSiloCapacities';
 import { supabase } from '../utils/supabase';
+import { useEffect } from 'react';
 
 export const useCcrSiloData = () => {
   // Fungsi untuk menghapus data silo di Supabase
@@ -27,7 +28,31 @@ export const useCcrSiloData = () => {
       console.error('Error deleting CCR silo data:', error);
     }
   }, []);
+
   const { records: silos, loading: silosLoading } = useSiloCapacities();
+
+  // Real-time subscription for ccr_silo_data changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('ccr_silo_data_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ccr_silo_data',
+        },
+        (payload) => {
+          console.log('CCR silo data change received!', payload);
+          // Data will be refetched automatically when component re-renders
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const getDataForDate = useCallback(
     async (date: string): Promise<CcrSiloData[]> => {

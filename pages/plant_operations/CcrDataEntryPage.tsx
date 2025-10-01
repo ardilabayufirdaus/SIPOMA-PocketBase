@@ -224,10 +224,21 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         );
 
         if (error) {
+          // Handle 406 Not Acceptable error gracefully
+          if (
+            error.code === 'PGRST116' ||
+            error.message?.includes('406') ||
+            error.message?.includes('Not Acceptable')
+          ) {
+            console.warn(
+              'Parameter order save not available (RLS policy or table access issue), skipping save'
+            );
+            return;
+          }
           console.error('Error saving parameter order:', error);
         }
       } catch (err) {
-        console.error('Exception in saveParameterOrder:', err);
+        console.warn('Failed to save parameter order, continuing without saving:', err);
       }
     },
     [loggedInUser?.id, selectedCategory, selectedUnit]
@@ -262,17 +273,30 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           .eq('parameter_type', 'ccr_parameters')
           .eq('category', selectedCategory)
           .eq('unit', selectedUnit)
-          .single();
+          .limit(1);
 
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
+          // Handle 406 Not Acceptable error gracefully - this is likely an RLS policy issue
+          if (
+            error.code === 'PGRST116' ||
+            error.message?.includes('406') ||
+            error.message?.includes('Not Acceptable')
+          ) {
+            console.warn(
+              'Parameter order not available (RLS policy or table access issue), using default order'
+            );
+            setParameterOrder([]);
+            return;
+          }
           console.error('Error loading parameter order:', error);
-        } else if (data?.parameter_order) {
-          setParameterOrder(data.parameter_order);
+          setParameterOrder([]);
+        } else if (data && data.length > 0) {
+          setParameterOrder(data[0].parameter_order);
         } else {
           setParameterOrder([]);
         }
       } catch (err) {
-        console.error('Error loading parameter order:', err);
+        console.warn('Failed to load parameter order, using default order:', err);
         setParameterOrder([]);
       }
     };
@@ -304,19 +328,35 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const { records: siloMasterData } = useSiloCapacities();
   const { getDataForDate: getSiloDataForDate, updateSiloData } = useCcrSiloData();
   const [allDailySiloData, setAllDailySiloData] = useState<CcrSiloData[]>([]);
+  const [siloDataTrigger, setSiloDataTrigger] = useState(0); // Trigger for real-time updates
 
-  useEffect(() => {
-    // Don't fetch data if selectedDate is not properly initialized
+  const fetchSiloData = useCallback(async () => {
     if (!selectedDate || selectedDate.trim() === '') {
       return;
     }
 
-    setLoading(true);
-    getSiloDataForDate(selectedDate).then((data) => {
+    try {
+      const data = await getSiloDataForDate(selectedDate);
       setAllDailySiloData(data);
-      setLoading(false);
-    });
+    } catch (error) {
+      console.error('Error fetching silo data:', error);
+    }
   }, [selectedDate, getSiloDataForDate]);
+
+  useEffect(() => {
+    // Initial data fetch
+    setLoading(true);
+    fetchSiloData().then(() => setLoading(false));
+
+    // Real-time polling every 5 seconds when window is focused
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchSiloData();
+      }
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [selectedDate, fetchSiloData]);
 
   // Parameter Data Hooks and Filtering
   const { records: parameterSettings } = useParameterSettings();
@@ -390,16 +430,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   const { getDataForDate: getParameterDataForDate, updateParameterData } = useCcrParameterData();
   const [dailyParameterData, setDailyParameterData] = useState<CcrParameterData[]>([]);
-  useEffect(() => {
-    // Don't fetch data if selectedDate is not properly initialized
+  const [parameterDataTrigger, setParameterDataTrigger] = useState(0); // Trigger for real-time updates
+
+  const fetchParameterData = useCallback(async () => {
     if (!selectedDate || selectedDate.trim() === '') {
       return;
     }
 
-    setLoading(true);
-    getParameterDataForDate(selectedDate).then((data) => {
+    try {
+      const data = await getParameterDataForDate(selectedDate);
       setDailyParameterData(data);
-      setLoading(false);
 
       // Update legacy records that don't have name field
       const legacyRecords = data.filter(
@@ -417,16 +457,31 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
             if (error) {
               console.error('Error updating legacy record:', error);
-            } else {
-              // Successfully updated legacy record
             }
           } catch (error) {
             console.error('Error updating legacy record:', error);
           }
         });
       }
-    });
+    } catch (error) {
+      console.error('Error fetching parameter data:', error);
+    }
   }, [selectedDate, getParameterDataForDate, loggedInUser?.full_name, currentUser.full_name]);
+
+  useEffect(() => {
+    // Initial data fetch
+    setLoading(true);
+    fetchParameterData().then(() => setLoading(false));
+
+    // Real-time polling every 5 seconds when window is focused
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchParameterData();
+      }
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [selectedDate, fetchParameterData]);
 
   const parameterDataMap = useMemo(
     () => new Map(dailyParameterData.map((p) => [p.parameter_id, p])),
@@ -822,7 +877,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           // Add parameter values for this hour
           filteredParameterSettings.forEach((param) => {
             const paramData = parameterDataMap.get(param.id);
-            const paramValue = paramData?.hourly_values[hour] ?? '';
+            const hourData = paramData?.hourly_values[hour];
+
+            // Extract value from new structure
+            let paramValue = '';
+            if (hourData && typeof hourData === 'object' && 'value' in hourData) {
+              paramValue = String(hourData.value || '');
+            } else if (typeof hourData === 'string' || typeof hourData === 'number') {
+              paramValue = String(hourData);
+            }
+
             row[param.parameter] = paramValue;
           });
 
@@ -1959,30 +2023,40 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
-                            {/* Enhanced name display with better logic */}
+                            {/* Enhanced name display with per-hour user tracking */}
                             {(() => {
                               const filledParam = filteredParameterSettings.find((param) => {
                                 const paramData = parameterDataMap.get(param.id);
+                                const hourData = paramData?.hourly_values[hour];
+                                // Check if hour data exists and has a value
                                 return (
                                   paramData &&
-                                  paramData.hourly_values[hour] !== undefined &&
-                                  paramData.hourly_values[hour] !== ''
+                                  hourData !== undefined &&
+                                  hourData !== '' &&
+                                  (hourData && typeof hourData === 'object' && 'value' in hourData
+                                    ? hourData.value !== ''
+                                    : true)
                                 );
                               });
                               if (filledParam) {
                                 const paramData = parameterDataMap.get(filledParam.id);
+                                const hourData = paramData?.hourly_values[hour];
+
+                                // Extract user name from new structure or fallback to legacy
+                                let userName = loggedInUser?.full_name || currentUser.full_name;
+                                if (
+                                  hourData &&
+                                  typeof hourData === 'object' &&
+                                  'user_name' in hourData
+                                ) {
+                                  userName = hourData.user_name;
+                                } else if ((paramData as any)?.name) {
+                                  userName = (paramData as any).name;
+                                }
+
                                 return (
-                                  <span
-                                    className="truncate"
-                                    title={
-                                      (paramData as any)?.name ||
-                                      loggedInUser?.full_name ||
-                                      currentUser.full_name
-                                    }
-                                  >
-                                    {(paramData as any)?.name ||
-                                      loggedInUser?.full_name ||
-                                      currentUser.full_name}
+                                  <span className="truncate" title={userName}>
+                                    {userName}
                                   </span>
                                 );
                               }
@@ -1991,7 +2065,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           </div>
                         </td>
                         {filteredParameterSettings.map((param, paramIndex) => {
-                          const value = parameterDataMap.get(param.id)?.hourly_values[hour] ?? '';
+                          const hourData = parameterDataMap.get(param.id)?.hourly_values[hour];
+                          // Extract value from new structure (object with value/user_name) or legacy direct value
+                          let value = '';
+                          if (hourData && typeof hourData === 'object' && 'value' in hourData) {
+                            value = String(hourData.value || '');
+                          } else if (typeof hourData === 'string' || typeof hourData === 'number') {
+                            value = String(hourData);
+                          }
+
                           const isCurrentlySaving = savingParameterId === param.id;
                           const isProductTypeParameter = param.parameter
                             .toLowerCase()

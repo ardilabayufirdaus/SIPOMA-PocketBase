@@ -51,15 +51,14 @@ export const useUserParameterOrder = ({
         .eq('parameter_type', parameterType)
         .eq('category', category || null)
         .eq('unit', unit || null)
-        .single();
+        .limit(1);
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 = no rows returned
+      if (fetchError) {
         throw fetchError;
       }
 
-      if (data?.parameter_order) {
-        setParameterOrder(data.parameter_order);
+      if (data && data.length > 0) {
+        setParameterOrder(data[0].parameter_order);
       } else {
         setParameterOrder([]);
       }
