@@ -65,22 +65,5 @@ export const checkDatabaseMigrationNeeded = async (): Promise<boolean> => {
  * Log system status for debugging
  */
 export const logSystemStatus = async (): Promise<void> => {
-  try {
-    const migrationNeeded = await checkDatabaseMigrationNeeded();
-    const roleSupport = await testTonasaRoleSupport();
-
-    console.log('🔍 SIPOMA System Status:');
-    console.log('  Database migration needed:', migrationNeeded);
-    console.log('  Tonasa roles supported:', roleSupport.isSupported);
-
-    if (roleSupport.unsupportedRoles.length > 0) {
-      console.log('  Unsupported roles:', roleSupport.unsupportedRoles);
-    }
-
-    if (roleSupport.error) {
-      console.log('  Error:', roleSupport.error);
-    }
-  } catch (error) {
-    console.error('Failed to log system status:', error);
-  }
+  // System status logging disabled
 };

@@ -199,6 +199,39 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   }, [plantUnits, permissionChecker]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
+
+  // Save parameter order to Supabase
+  const saveParameterOrder = useCallback(
+    async (newOrder: string[]) => {
+      if (!loggedInUser?.id || !selectedCategory || !selectedUnit || newOrder.length === 0) {
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from('user_parameter_orders').upsert(
+          {
+            user_id: loggedInUser.id,
+            module: 'plant_operations',
+            parameter_type: 'ccr_parameters',
+            category: selectedCategory,
+            unit: selectedUnit,
+            parameter_order: newOrder,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'user_id,module,parameter_type,category,unit',
+          }
+        );
+
+        if (error) {
+          console.error('Error saving parameter order:', error);
+        }
+      } catch (err) {
+        console.error('Exception in saveParameterOrder:', err);
+      }
+    },
+    [loggedInUser?.id, selectedCategory, selectedUnit]
+  );
   const unitToCategoryMap = useMemo(
     () => new Map(plantUnits.map((pu) => [pu.unit, pu.category])),
     [plantUnits]
@@ -211,6 +244,41 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       setSelectedCategory('');
     }
   }, [plantCategories, selectedCategory]);
+
+  // Load parameter order from Supabase when category/unit changes
+  useEffect(() => {
+    if (!selectedCategory || !selectedUnit) {
+      setParameterOrder([]);
+      return;
+    }
+
+    const loadParameterOrder = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('user_parameter_orders')
+          .select('parameter_order')
+          .eq('user_id', loggedInUser?.id)
+          .eq('module', 'plant_operations')
+          .eq('parameter_type', 'ccr_parameters')
+          .eq('category', selectedCategory)
+          .eq('unit', selectedUnit)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading parameter order:', error);
+        } else if (data?.parameter_order) {
+          setParameterOrder(data.parameter_order);
+        } else {
+          setParameterOrder([]);
+        }
+      } catch (err) {
+        console.error('Error loading parameter order:', err);
+        setParameterOrder([]);
+      }
+    };
+
+    loadParameterOrder();
+  }, [selectedCategory, selectedUnit, loggedInUser?.id]);
 
   const unitsForCategory = useMemo(() => {
     if (!selectedCategory) return [];
@@ -252,26 +320,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   // Parameter Data Hooks and Filtering
   const { records: parameterSettings } = useParameterSettings();
-
-  // Load parameter order from localStorage
-  useEffect(() => {
-    const savedOrder = localStorage.getItem('ccrParameterOrder');
-    if (savedOrder) {
-      try {
-        const parsedOrder = JSON.parse(savedOrder);
-        setParameterOrder(parsedOrder);
-      } catch (error) {
-        console.error('Error parsing saved parameter order:', error);
-      }
-    }
-  }, []);
-
-  // Save parameter order to localStorage when it changes
-  useEffect(() => {
-    if (parameterOrder.length > 0) {
-      localStorage.setItem('ccrParameterOrder', JSON.stringify(parameterOrder));
-    }
-  }, [parameterOrder]);
 
   // Custom parameter filtering with reorder support
   const filteredParameterSettings = useMemo(() => {
@@ -2347,6 +2395,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               onClick={() => {
                 const newOrder = modalParameterOrder.map((param) => param.id);
                 setParameterOrder(newOrder);
+                saveParameterOrder(newOrder);
                 setShowReorderModal(false);
               }}
               aria-label="Save parameter order"
