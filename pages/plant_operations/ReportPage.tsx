@@ -777,8 +777,17 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           if (!operatorDataRecord) return '-';
           for (const hour of hours) {
             // FIX: Use snake_case property `hourly_values`
-            const operator = operatorDataRecord.hourly_values[hour];
-            if (operator && String(operator).trim() !== '') return String(operator);
+            const hourData = operatorDataRecord.hourly_values[hour];
+
+            // Handle new structure: {value, user_name, timestamp} or legacy direct value
+            let operator = '';
+            if (hourData && typeof hourData === 'object' && 'value' in hourData) {
+              operator = String(hourData.value || '');
+            } else if (typeof hourData === 'string' || typeof hourData === 'number') {
+              operator = String(hourData);
+            }
+
+            if (operator && operator.trim() !== '') return operator;
           }
           return '-';
         };
@@ -808,7 +817,16 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         allParams.forEach((param) => {
           // FIX: Use snake_case property `hourly_values`
           const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
-          values[param.id] = paramData?.hourly_values[hour] ?? '';
+          const hourData = paramData?.hourly_values[hour];
+
+          // Handle new structure: {value, user_name, timestamp} or legacy direct value
+          if (hourData && typeof hourData === 'object' && 'value' in hourData) {
+            values[param.id] = hourData.value;
+          } else if (typeof hourData === 'string' || typeof hourData === 'number') {
+            values[param.id] = hourData;
+          } else {
+            values[param.id] = '';
+          }
         });
         return {
           hour,
