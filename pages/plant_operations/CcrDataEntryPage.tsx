@@ -414,19 +414,24 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     }
   }, [showReorderModal, filteredParameterSettings]);
 
-  // Filter silo data
-  const dailySiloData = useMemo(() => {
-    if (!selectedCategory || !selectedUnit) return [];
-    return allDailySiloData.filter(
-      (data) => data.category === selectedCategory && data.unit === selectedUnit
-    );
-  }, [allDailySiloData, selectedCategory, selectedUnit]);
-
   // Silo master map
   const siloMasterMap = useMemo(
     () => new Map(siloMasterData.map((silo) => [silo.id, silo])),
     [siloMasterData]
   );
+
+  // Filter silo data
+  const dailySiloData = useMemo(() => {
+    if (!selectedCategory) return [];
+    return allDailySiloData.filter((data) => {
+      const master = siloMasterMap.get(data.silo_id);
+      if (!master) return false;
+
+      const categoryMatch = master.plant_category === selectedCategory;
+      const unitMatch = !selectedUnit || master.unit === selectedUnit;
+      return categoryMatch && unitMatch;
+    });
+  }, [allDailySiloData, selectedCategory, selectedUnit, siloMasterMap]);
 
   const { getDataForDate: getParameterDataForDate, updateParameterData } = useCcrParameterData();
   const [dailyParameterData, setDailyParameterData] = useState<CcrParameterData[]>([]);
