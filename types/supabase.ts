@@ -330,35 +330,6 @@ export interface Database {
           updated_at?: string;
         };
       };
-      alerts: {
-        Row: {
-          id: string;
-          message: string;
-          severity: string;
-          timestamp: string;
-          read: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          message: string;
-          severity: string;
-          timestamp: string;
-          read?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          message?: string;
-          severity?: string;
-          timestamp?: string;
-          read?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
       packing_plant_master: {
         Row: {
           id: string;

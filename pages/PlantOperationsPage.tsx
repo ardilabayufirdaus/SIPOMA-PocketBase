@@ -9,11 +9,7 @@ import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibrar
 import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
 
 interface PlantData {
-  machines: any[];
-  kpis: any[];
-  alerts: any[];
-  productionData: any[];
-  toggleMachineStatus: (machineId: string) => void;
+  loading: boolean;
 }
 
 interface PlantOperationsPageProps {

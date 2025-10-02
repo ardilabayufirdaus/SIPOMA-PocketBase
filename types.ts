@@ -1,5 +1,3 @@
-import React from 'react';
-
 export type UserRole =
   | 'Super Admin'
   | 'Admin'
@@ -53,45 +51,6 @@ export interface AddUserData {
   avatar_url?: string;
   is_active: boolean;
   permissions: PermissionMatrix;
-}
-
-// Plant Operations Types
-export enum MachineStatus {
-  RUNNING = 'Running',
-  STOPPED = 'Stopped',
-  MAINTENANCE = 'Maintenance',
-}
-
-export interface Machine {
-  id: string;
-  name: string;
-  status: MachineStatus;
-  output: number; // tons per hour
-  uptime: number; // percentage
-  temperature: number; // Celsius
-}
-
-export interface Kpi {
-  id: string;
-  title: string;
-  value: string;
-  unit: string;
-  trend: number; // positive for up, negative for down, 0 for stable
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-export enum AlertSeverity {
-  INFO = 'Info',
-  WARNING = 'Warning',
-  CRITICAL = 'Critical',
-}
-
-export interface Alert {
-  id: string;
-  message: string;
-  timestamp: Date;
-  severity: AlertSeverity;
-  read: boolean;
 }
 
 // Plant Operations Master Data

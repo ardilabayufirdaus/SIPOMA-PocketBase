@@ -254,15 +254,7 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
   // Hooks for data
   const { projects, tasks, loading: projectsLoading } = useProjects();
-  const {
-    machines,
-    kpis,
-    alerts,
-    productionData,
-    loading: plantLoading,
-    toggleMachineStatus,
-    markAllAlertsAsRead,
-  } = usePlantData();
+  const { loading: plantLoading } = usePlantData();
   const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
   const { records: packingPlantMasterRecords } = usePackingPlantMasterData();
   const { totalProduction, loading: totalProductionLoading } = useTotalProduction();
@@ -277,26 +269,6 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
     return () => clearInterval(interval);
   }, [isAutoRefresh]);
-
-  // Transform data for charts
-  const performanceData = useMemo(() => {
-    if (!productionData || productionData.length === 0) return [];
-
-    return productionData.slice(-12).map((item, index) => {
-      const baseTime = new Date();
-      baseTime.setHours(baseTime.getHours() - (12 - index) * 2);
-
-      return {
-        time: baseTime.toLocaleTimeString('id-ID', {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        production: item.output || 0,
-        efficiency: Math.min(100, Math.max(0, (item.output / 100) * 95)),
-        quality: Math.min(100, Math.max(85, 100 - Math.random() * 5)),
-      };
-    });
-  }, [productionData, refreshKey]);
 
   // Transform project data
   const transformedProjects = useMemo(() => {
@@ -399,9 +371,6 @@ const ModernMainDashboardPage: React.FC<ModernMainDashboardPageProps> = ({
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {/* Performance Chart - takes 2/3 width */}
-          {performanceData.length > 0 && <PerformanceOverview data={performanceData} />}
-
           {/* Stock Insights */}
           <StockInsights stockData={transformedStockData} />
         </div>

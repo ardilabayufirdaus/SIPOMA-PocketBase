@@ -31,8 +31,6 @@ import CogIcon from './icons/CogIcon';
 import ClockIcon from './icons/ClockIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
 
-import ShieldCheckIcon from './icons/ShieldCheckIcon';
-
 // Import permission utilities
 import { usePermissions } from '../utils/permissions';
 import { User } from '../types';
@@ -314,14 +312,6 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
         { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
       ],
-      securityPages: [
-        { key: 'overview', icon: <ShieldCheckIcon className={iconClass} /> },
-        { key: 'monitoring', icon: <ChartBarIcon className={iconClass} /> },
-        { key: 'audit', icon: <ClipboardDocumentListIcon className={iconClass} /> },
-        { key: 'gdpr', icon: <ShieldCheckIcon className={iconClass} /> },
-        { key: 'roles', icon: <UserGroupIcon className={iconClass} /> },
-        { key: 'mfa', icon: <ShieldCheckIcon className={iconClass} /> },
-      ],
     }),
     [iconClass]
   );
@@ -431,19 +421,6 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
                 page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
               icon: page.icon,
             }));
-        case 'security':
-          return navigationData.securityPages
-            .filter(() => {
-              // Only Super Admin can access security modules
-              return currentUser?.role === 'Super Admin';
-            })
-            .map((page) => ({
-              key: page.key,
-              label:
-                t[page.key as keyof typeof t] ||
-                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              icon: page.icon,
-            }));
         default:
           return [];
       }
@@ -468,7 +445,6 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   const inspectionButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
-  const securityButtonRef = useRef<HTMLButtonElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = useCallback(() => {
@@ -647,17 +623,6 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               label={t.userManagement || 'User Management'}
               isActive={currentPage === 'users'}
               onClick={() => handleDropdownToggle('users', usersButtonRef)}
-            />
-          )}
-
-          {/* Security - Only for Super Admin */}
-          {currentUser?.role === 'Super Admin' && (
-            <IconButton
-              ref={securityButtonRef}
-              icon={<ShieldCheckIcon className={iconClass} />}
-              label="Security"
-              isActive={currentPage === 'security'}
-              onClick={() => handleDropdownToggle('security', securityButtonRef)}
             />
           )}
         </nav>

@@ -311,20 +311,6 @@ export const apiClient = {
         throw error;
       }
 
-      // Create in-app notification for Super Admin
-      try {
-        await supabase.from('alerts').insert([
-          {
-            message: `New registration request from ${name.trim()} (${email.toLowerCase()})`,
-            severity: 'info',
-            timestamp: new Date().toISOString(),
-            read: false,
-          },
-        ]);
-      } catch (notificationError) {
-        console.warn('Failed to create admin notification:', notificationError);
-      }
-
       // Send confirmation email to user
       try {
         await emailService.sendRegistrationRequestNotification(email.toLowerCase(), name.trim());

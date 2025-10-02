@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ExtendedAlert, NotificationSettings } from '../hooks/useNotifications';
-import { AlertSeverity } from '../types';
+import { ExtendedAlert, NotificationSettings, AlertSeverity } from '../hooks/useNotifications';
 import { formatTimeSince } from '../utils/formatters';
 import BellIcon from './icons/BellIcon';
 import BellSlashIcon from './icons/BellSlashIcon';
