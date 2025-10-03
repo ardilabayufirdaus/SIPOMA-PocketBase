@@ -27,7 +27,12 @@ export const useFooterCalculations = ({
       }
 
       const values = Object.values(data.hourly_values)
-        .map((v) => parseFloat(String(v)))
+        .map((v) => {
+          if (typeof v === 'object' && v !== null && 'value' in v) {
+            return parseFloat(String(v.value));
+          }
+          return parseFloat(String(v));
+        })
         .filter((v) => !isNaN(v) && v !== 0);
 
       if (values.length === 0) {
@@ -73,7 +78,13 @@ export const useFooterCalculations = ({
 
       for (const [shiftKey, hours] of Object.entries(shiftHours)) {
         const validValues = hours
-          .map((hour) => parseFloat(String(data.hourly_values[hour])))
+          .map((hour) => {
+            const hourData = data.hourly_values[hour];
+            if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+              return parseFloat(String(hourData.value));
+            }
+            return parseFloat(String(hourData));
+          })
           .filter((value) => !isNaN(value) && value !== 0);
         const total = validValues.reduce((sum, value) => sum + value, 0);
         shiftTotals[shiftKey][param.id] = total;
@@ -109,8 +120,18 @@ export const useFooterCalculations = ({
       }
 
       for (const [shiftKey, range] of Object.entries(shiftHourRanges)) {
-        const startValue = parseFloat(String(data.hourly_values[range.start]));
-        const endValue = parseFloat(String(data.hourly_values[range.end]));
+        const startData = data.hourly_values[range.start];
+        const endData = data.hourly_values[range.end];
+
+        const startValue =
+          typeof startData === 'object' && startData !== null && 'value' in startData
+            ? parseFloat(String(startData.value))
+            : parseFloat(String(startData));
+
+        const endValue =
+          typeof endData === 'object' && endData !== null && 'value' in endData
+            ? parseFloat(String(endData.value))
+            : parseFloat(String(endData));
 
         if (!isNaN(startValue) && !isNaN(endValue)) {
           shiftDifferences[shiftKey][param.id] = endValue - startValue;
@@ -137,8 +158,18 @@ export const useFooterCalculations = ({
         return;
       }
 
-      const startValue = parseFloat(String(data.hourly_values[1])); // Jam awal (jam 1)
-      const endValue = parseFloat(String(data.hourly_values[24])); // Jam akhir (jam 24)
+      const startData = data.hourly_values[1]; // Jam awal (jam 1)
+      const endData = data.hourly_values[24]; // Jam akhir (jam 24)
+
+      const startValue =
+        typeof startData === 'object' && startData !== null && 'value' in startData
+          ? parseFloat(String(startData.value))
+          : parseFloat(String(startData));
+
+      const endValue =
+        typeof endData === 'object' && endData !== null && 'value' in endData
+          ? parseFloat(String(endData.value))
+          : parseFloat(String(endData));
 
       if (!isNaN(startValue) && !isNaN(endValue)) {
         counterTotals[param.id] = endValue - startValue;
@@ -177,7 +208,13 @@ export const useFooterCalculations = ({
 
       for (const [shiftKey, hours] of Object.entries(shiftHours)) {
         const validValues = hours
-          .map((hour) => parseFloat(String(data.hourly_values[hour])))
+          .map((hour) => {
+            const hourData = data.hourly_values[hour];
+            if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+              return parseFloat(String(hourData.value));
+            }
+            return parseFloat(String(hourData));
+          })
           .filter((value) => !isNaN(value) && value !== 0);
         const total = validValues.reduce((sum, value) => sum + value, 0);
         const average = validValues.length > 0 ? total / validValues.length : 0;
