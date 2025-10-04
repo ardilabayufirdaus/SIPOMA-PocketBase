@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { formatNumberIndonesian } from '../../../utils/formatters';
 
 interface SiloTableProps {
@@ -29,21 +30,28 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mt-6">
-      <div className="p-2 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+    <motion.div
+      className="bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-800 dark:to-emerald-900/10 rounded-xl shadow-xl overflow-hidden border border-emerald-200/50 dark:border-emerald-800/50 mt-6"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ scale: 1.01 }}
+    >
+      <div className="p-4 border-b border-emerald-200/50 dark:border-emerald-700/50 bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
+        <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"></div>
           {t.silo_stock_report_title || 'Silo Stock Report'}
         </h3>
       </div>
 
       <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-xs min-w-max">
+        <table className="w-full text-xs sm:text-sm min-w-max">
           <thead>
             {/* Main Header */}
-            <tr className="bg-slate-50 dark:bg-slate-700">
+            <tr className="bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30">
               <th
                 rowSpan={2}
-                className="px-1 py-2 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-slate-50 dark:bg-slate-700 z-10 min-w-24 align-middle"
+                className="px-3 py-3 text-left font-bold text-slate-800 dark:text-slate-200 border-r border-emerald-200 dark:border-emerald-700 sticky left-0 bg-inherit z-10 min-w-24 align-middle"
               >
                 {t.silo_name || 'Silo Name'}
               </th>
@@ -128,6 +136,6 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
           </tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   );
 };

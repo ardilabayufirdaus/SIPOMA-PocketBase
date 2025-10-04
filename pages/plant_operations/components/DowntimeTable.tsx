@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { CcrDowntimeData } from '../../../types';
 import { calculateDuration, formatDuration } from '../../../utils/formatters';
 
@@ -9,9 +10,16 @@ interface DowntimeTableProps {
 
 export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mt-6">
-      <div className="p-2 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+    <motion.div
+      className="bg-gradient-to-br from-white to-rose-50/30 dark:from-slate-800 dark:to-rose-900/10 rounded-xl shadow-xl overflow-hidden border border-rose-200/50 dark:border-rose-800/50 mt-6"
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ scale: 1.01 }}
+    >
+      <div className="p-4 border-b border-rose-200/50 dark:border-rose-700/50 bg-gradient-to-r from-rose-500/10 to-pink-500/10">
+        <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full"></div>
           {t.downtime_report_title || 'Downtime Report'}
         </h3>
       </div>
@@ -19,7 +27,7 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
       <div className="overflow-x-auto max-w-full">
         <table className="w-full text-xs min-w-max">
           <thead>
-            <tr className="bg-slate-100 dark:bg-slate-600">
+            <tr className="bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30">
               <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
                 {t.start_time || 'Start Time'}
               </th>
@@ -88,6 +96,6 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
           </tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   );
 };

@@ -177,29 +177,157 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
   const loading = parameterLoading || downtimeLoading;
 
   return (
-    <div className="space-y-4">
-      <CcrDataFilters
-        t={t}
-        selectedDate={selectedDate}
-        plantUnit={plantUnit}
-        onDateChange={onDateChange}
-        onPlantUnitChange={onPlantUnitChange}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 dark:from-slate-200 dark:via-blue-400 dark:to-cyan-400 bg-clip-text text-transparent mb-2">
+            CCR Data Entry System
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-lg">
+            Manage and monitor CCR parameter data with real-time updates
+          </p>
+        </div>
 
-      <CcrDataActions
-        t={t}
-        onExport={handleExportToExcel}
-        onImport={handleImportFromExcel}
-        isExporting={isExporting}
-        isImporting={isImporting}
-        loading={loading}
-      />
+        <CcrDataFilters
+          t={t}
+          selectedDate={selectedDate}
+          plantUnit={plantUnit}
+          onDateChange={onDateChange}
+          onPlantUnitChange={onPlantUnitChange}
+        />
 
-      {/* Placeholder for data tables - these would need proper props */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow">
-        <p className="text-slate-600 dark:text-slate-400">
-          Data tables will be rendered here with proper data management.
-        </p>
+        <CcrDataActions
+          t={t}
+          onExport={handleExportToExcel}
+          onImport={handleImportFromExcel}
+          isExporting={isExporting}
+          isImporting={isImporting}
+          loading={loading}
+        />
+
+        {/* Data Tables Section */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Parameter Data Table */}
+          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                Parameter Data
+              </h3>
+            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-3 text-slate-600 dark:text-slate-400">
+                  Loading parameter data...
+                </span>
+              </div>
+            ) : (
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
+                <p className="text-slate-600 dark:text-slate-400 text-center py-8">
+                  Parameter data table will be rendered here with full functionality.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Silo Data Table */}
+          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                Silo Data
+              </h3>
+            </div>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-3 text-slate-600 dark:text-slate-400">
+                  Loading silo data...
+                </span>
+              </div>
+            ) : (
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
+                <p className="text-slate-600 dark:text-slate-400 text-center py-8">
+                  Silo data table will be rendered here with full functionality.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Data Section */}
+        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              Footer Data & Downtime
+            </h3>
+          </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="ml-3 text-slate-600 dark:text-slate-400">
+                Loading footer data...
+              </span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
+                <p className="text-slate-600 dark:text-slate-400 text-center py-4">
+                  Footer data table
+                </p>
+              </div>
+              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
+                <p className="text-slate-600 dark:text-slate-400 text-center py-4">
+                  Downtime data table
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
