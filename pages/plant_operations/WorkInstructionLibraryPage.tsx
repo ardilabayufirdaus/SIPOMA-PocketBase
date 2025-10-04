@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useWorkInstructions } from '../../hooks/useWorkInstructions';
 import { WorkInstruction } from '../../types';
 import Modal from '../../components/Modal';
@@ -7,9 +8,10 @@ import PlusIcon from '../../components/icons/PlusIcon';
 import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 import LinkIcon from '../../components/icons/LinkIcon';
+import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
 
 const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
-  const { instructions, addInstruction, updateInstruction, deleteInstruction } =
+  const { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction } =
     useWorkInstructions();
 
   const [isFormModalOpen, setFormModalOpen] = useState(false);
@@ -17,6 +19,11 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
 
   const [editingInstruction, setEditingInstruction] = useState<WorkInstruction | null>(null);
   const [deletingInstructionId, setDeletingInstructionId] = useState<string | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterActivity, setFilterActivity] = useState('');
+  const [sortColumn, setSortColumn] = useState<string>('doc_code');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleOpenAddModal = useCallback(() => {
     setEditingInstruction(null);
@@ -59,8 +66,49 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
     handleCloseModals();
   }, [deletingInstructionId, deleteInstruction, handleCloseModals]);
 
+  const handleSort = useCallback(
+    (column: string) => {
+      if (sortColumn === column) {
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortColumn(column);
+        setSortDirection('asc');
+      }
+    },
+    [sortColumn, sortDirection]
+  );
+
   const groupedInstructions = useMemo(() => {
-    const grouped = instructions.reduce(
+    // First filter instructions based on search term and activity filter
+    const filtered = instructions.filter((instruction) => {
+      const matchesSearch =
+        !searchTerm ||
+        instruction.doc_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        instruction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        instruction.doc_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        instruction.plant_category.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesActivity = !filterActivity || instruction.activity === filterActivity;
+
+      return matchesSearch && matchesActivity;
+    });
+
+    // Sort filtered instructions
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue: any = a[sortColumn as keyof WorkInstruction];
+      let bValue: any = b[sortColumn as keyof WorkInstruction];
+
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    const grouped = sorted.reduce(
       (acc, instruction) => {
         const activity = instruction.activity;
         if (!acc[activity]) {
@@ -73,7 +121,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
     );
 
     return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));
-  }, [instructions]);
+  }, [instructions, searchTerm, filterActivity, sortColumn, sortDirection]);
 
   const tableHeaders = [
     'doc_code',
@@ -100,98 +148,214 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y-4 divide-transparent">
-          <thead className="bg-slate-50 dark:bg-slate-700">
-            <tr>
-              {tableHeaders.map((header) => (
-                <th
-                  key={header}
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
-                >
-                  {t[header]}
-                </th>
+      {/* Search and Filter Controls */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <label htmlFor="search" className="sr-only">
+            Search work instructions
+          </label>
+          <div className="relative">
+            <input
+              id="search"
+              type="text"
+              placeholder={t.search_placeholder || 'Search by title, description, code...'}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-4 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+            />
+          </div>
+        </div>
+        <div className="sm:w-64">
+          <label htmlFor="activity-filter" className="sr-only">
+            Filter by activity
+          </label>
+          <select
+            id="activity-filter"
+            value={filterActivity}
+            onChange={(e) => setFilterActivity(e.target.value)}
+            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+          >
+            <option value="">{t.all_activities || 'All Activities'}</option>
+            {Array.from(new Set(instructions.map((i) => i.activity)))
+              .sort()
+              .map((activity) => (
+                <option key={activity} value={activity}>
+                  {activity}
+                </option>
               ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-slate-800">
-            {groupedInstructions.map(([activity, instructionList]) => (
-              <React.Fragment key={activity}>
+          </select>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        {loading ? (
+          <div className="flex justify-center items-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+            <span className="ml-2 text-slate-600 dark:text-slate-400">
+              Loading work instructions...
+            </span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10">
+            <div className="text-red-600 dark:text-red-400 mb-2">
+              <ExclamationTriangleIcon className="w-8 h-8 mx-auto" />
+            </div>
+            <p className="text-slate-600 dark:text-slate-400">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <table
+            className="min-w-full divide-y-4 divide-transparent"
+            role="table"
+            aria-label="Work Instructions Library"
+          >
+            <thead className="bg-slate-50 dark:bg-slate-700">
+              <tr>
+                {tableHeaders.map((header) => (
+                  <th
+                    key={header}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
+                  >
+                    {header !== 'actions' && header !== 'link' ? (
+                      <button
+                        onClick={() => handleSort(header)}
+                        className="flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
+                        aria-sort={
+                          sortColumn === header
+                            ? sortDirection === 'asc'
+                              ? 'ascending'
+                              : 'descending'
+                            : 'none'
+                        }
+                        aria-label={`Sort by ${t[header]} ${sortColumn === header ? (sortDirection === 'asc' ? 'ascending' : 'descending') : ''}`}
+                      >
+                        {t[header]}
+                        {sortColumn === header && (
+                          <span className="text-slate-500" aria-hidden="true">
+                            {sortDirection === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </button>
+                    ) : (
+                      t[header]
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800">
+              {groupedInstructions.map(([activity, instructionList], groupIndex) => (
+                <React.Fragment key={activity}>
+                  <motion.tr
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: groupIndex * 0.1 }}
+                  >
+                    <td
+                      colSpan={tableHeaders.length}
+                      className="px-6 py-3 bg-slate-100 dark:bg-slate-700"
+                    >
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                        {activity}
+                      </h3>
+                    </td>
+                  </motion.tr>
+                  {instructionList.map((instruction, index) => (
+                    <motion.tr
+                      key={instruction.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: groupIndex * 0.1 + index * 0.05 }}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 border-b border-slate-200 dark:border-slate-600"
+                    >
+                      {/* FIX: Use snake_case properties */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-mono">
+                        {instruction.doc_code}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        {instruction.doc_title}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {instruction.plant_category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {instruction.plant_unit}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+                        {instruction.description}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <a
+                          href={instruction.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-800 hover:underline"
+                        >
+                          <LinkIcon className="w-4 h-4" />
+                          <span>Open</span>
+                        </a>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <motion.button
+                            onClick={() => handleOpenEditModal(instruction)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleOpenEditModal(instruction);
+                              }
+                            }}
+                            className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            aria-label={`Edit ${instruction.doc_title}`}
+                            tabIndex={0}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                          >
+                            <EditIcon />
+                          </motion.button>
+                          <motion.button
+                            onClick={() => handleOpenDeleteModal(instruction.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleOpenDeleteModal(instruction.id);
+                              }
+                            }}
+                            className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            aria-label={`Delete ${instruction.doc_title}`}
+                            tabIndex={0}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                          >
+                            <TrashIcon />
+                          </motion.button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </React.Fragment>
+              ))}
+              {groupedInstructions.length === 0 && (
                 <tr>
                   <td
                     colSpan={tableHeaders.length}
-                    className="px-6 py-3 bg-slate-100 dark:bg-slate-700"
+                    className="text-center py-10 text-slate-500 dark:text-slate-400"
                   >
-                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                      {activity}
-                    </h3>
+                    No work instructions found.
                   </td>
                 </tr>
-                {instructionList.map((instruction) => (
-                  <tr
-                    key={instruction.id}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 border-b border-slate-200 dark:border-slate-600"
-                  >
-                    {/* FIX: Use snake_case properties */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-mono">
-                      {instruction.doc_code}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-slate-100">
-                      {instruction.doc_title}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {instruction.plant_category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {instruction.plant_unit}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
-                      {instruction.description}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <a
-                        href={instruction.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-800 hover:underline"
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                        <span>Open</span>
-                      </a>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleOpenEditModal(instruction)}
-                          className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50"
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          onClick={() => handleOpenDeleteModal(instruction.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-            {groupedInstructions.length === 0 && (
-              <tr>
-                <td
-                  colSpan={tableHeaders.length}
-                  className="text-center py-10 text-slate-500 dark:text-slate-400"
-                >
-                  No work instructions found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <Modal

@@ -5,9 +5,11 @@ import { supabase } from '../utils/supabase';
 export const useWorkInstructions = () => {
   const [instructions, setInstructions] = useState<WorkInstruction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchInstructions = useCallback(async () => {
     setLoading(true);
+    setError(null);
     const { data, error } = await supabase
       .from('work_instructions')
       .select('*')
@@ -15,10 +17,10 @@ export const useWorkInstructions = () => {
       .order('doc_title');
 
     if (error) {
-      console.error('Error fetching work instructions:', error);
+      setError('Failed to fetch work instructions');
       setInstructions([]);
     } else {
-      setInstructions((data || []) as any[]);
+      setInstructions((data || []) as unknown as WorkInstruction[]);
     }
     setLoading(false);
   }, []);
@@ -29,31 +31,43 @@ export const useWorkInstructions = () => {
 
   const addInstruction = useCallback(
     async (instruction: Omit<WorkInstruction, 'id'>) => {
+      setError(null);
       const { error } = await supabase.from('work_instructions').insert([instruction]);
-      if (error) console.error('Error adding work instruction:', error);
-      else fetchInstructions();
+      if (error) {
+        setError('Failed to add work instruction');
+      } else {
+        fetchInstructions();
+      }
     },
     [fetchInstructions]
   );
 
   const updateInstruction = useCallback(
     async (updatedInstruction: WorkInstruction) => {
+      setError(null);
       const { id, ...updateData } = updatedInstruction;
       const { error } = await supabase.from('work_instructions').update(updateData).eq('id', id);
-      if (error) console.error('Error updating work instruction:', error);
-      else fetchInstructions();
+      if (error) {
+        setError('Failed to update work instruction');
+      } else {
+        fetchInstructions();
+      }
     },
     [fetchInstructions]
   );
 
   const deleteInstruction = useCallback(
     async (instructionId: string) => {
+      setError(null);
       const { error } = await supabase.from('work_instructions').delete().eq('id', instructionId);
-      if (error) console.error('Error deleting work instruction:', error);
-      else fetchInstructions();
+      if (error) {
+        setError('Failed to delete work instruction');
+      } else {
+        fetchInstructions();
+      }
     },
     [fetchInstructions]
   );
 
-  return { instructions, loading, addInstruction, updateInstruction, deleteInstruction };
+  return { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction };
 };

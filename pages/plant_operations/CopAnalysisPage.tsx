@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -55,6 +55,33 @@ const getMinMaxForCementType = (
   return {
     min: parameter.min_value,
     max: parameter.max_value,
+  };
+};
+
+// Helper function to get performance status based on failure percentage
+const getPerformanceStatus = (percentage: number) => {
+  if (percentage <= 15)
+    return {
+      status: 'Excellent',
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bg: 'bg-emerald-100 dark:bg-emerald-900/20',
+    };
+  if (percentage <= 30)
+    return {
+      status: 'Good',
+      color: 'text-blue-600 dark:text-blue-400',
+      bg: 'bg-blue-100 dark:bg-blue-900/20',
+    };
+  if (percentage <= 45)
+    return {
+      status: 'Fair',
+      color: 'text-amber-600 dark:text-amber-400',
+      bg: 'bg-amber-100 dark:bg-amber-900/20',
+    };
+  return {
+    status: 'Needs Improvement',
+    color: 'text-red-600 dark:text-red-400',
+    bg: 'bg-red-100 dark:bg-red-900/20',
   };
 };
 
@@ -287,11 +314,28 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       try {
         // Validate required data
-        if (!selectedCategory || !selectedUnit || filteredCopParameters.length === 0) {
+        if (!selectedCategory || !selectedUnit) {
+          console.warn('COP Analysis: Missing required filters - category or unit not selected');
           setAnalysisData([]);
           setIsLoading(false);
           return;
         }
+
+        if (filteredCopParameters.length === 0) {
+          console.warn('COP Analysis: No COP parameters found for selected category and unit');
+          setAnalysisData([]);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('COP Analysis: Starting data fetch for', {
+          category: selectedCategory,
+          unit: selectedUnit,
+          cementType: selectedCementType,
+          parameterCount: filteredCopParameters.length,
+          month: filterMonth,
+          year: filterYear,
+        });
 
         const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
         const dates = Array.from({ length: daysInMonth }, (_, i) => {
@@ -302,72 +346,148 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         const dailyAverages = new Map<string, Map<string, number>>();
 
         // Get footer data for all dates in the month
+        console.log('COP Analysis: Fetching footer data for', dates.length, 'dates');
         const footerDataPromises = dates.map((dateString) => getFooterDataForDate(dateString));
         const allFooterDataForMonth = await Promise.all(footerDataPromises);
 
+        console.log('COP Analysis: Processing footer data');
         allFooterDataForMonth.flat().forEach((footerData) => {
           // Use footer average data instead of calculating from hourly values
-          if (footerData.average !== null && footerData.average !== undefined) {
+          if (
+            footerData.average !== null &&
+            footerData.average !== undefined &&
+            !isNaN(footerData.average)
+          ) {
             if (!dailyAverages.has(footerData.parameter_id)) {
               dailyAverages.set(footerData.parameter_id, new Map());
             }
             dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
-          } else {
-            // Note: Footer average data not available for this parameter and date
           }
         });
 
+        console.log('COP Analysis: Processing parameters');
         const data = filteredCopParameters
           .map((parameter) => {
-            const dailyValues = dates.map((dateString) => {
-              const avg = dailyAverages.get(parameter.id)?.get(dateString);
-              // Use helper function for consistent min/max calculation
-              const { min: min_value, max: max_value } = getMinMaxForCementType(
-                parameter,
-                selectedCementType
-              );
-
-              if (
-                avg === undefined ||
-                min_value === undefined ||
-                max_value === undefined ||
-                max_value <= min_value
-              ) {
-                return { value: null, raw: avg };
+            try {
+              // Validate parameter has required fields
+              if (!parameter || !parameter.id || !parameter.parameter) {
+                console.warn('COP Analysis: Invalid parameter data', parameter);
+                return null;
               }
 
-              const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
-              return { value: percentage, raw: avg };
-            });
+              const dailyValues = dates.map((dateString) => {
+                const avg = dailyAverages.get(parameter.id)?.get(dateString);
 
-            const validDailyPercentages = dailyValues
-              .map((d) => d.value)
-              .filter((v): v is number => v !== null && !isNaN(v));
-            const monthlyAverage =
-              validDailyPercentages.length > 0
-                ? validDailyPercentages.reduce((a, b) => a + b, 0) / validDailyPercentages.length
-                : null;
+                // Validate average value
+                if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                  console.warn(
+                    'COP Analysis: Invalid average value for parameter',
+                    parameter.parameter,
+                    'on date',
+                    dateString,
+                    ':',
+                    avg
+                  );
+                  return { value: null, raw: undefined };
+                }
 
-            const validDailyRaw = dailyValues
-              .map((d) => d.raw)
-              .filter((v): v is number => v !== undefined && v !== null && !isNaN(v));
-            const monthlyAverageRaw =
-              validDailyRaw.length > 0
-                ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
-                : null;
+                // Use helper function for consistent min/max calculation
+                const { min: min_value, max: max_value } = getMinMaxForCementType(
+                  parameter,
+                  selectedCementType
+                );
 
-            return {
-              parameter,
-              dailyValues,
-              monthlyAverage,
-              monthlyAverageRaw,
-            };
+                // Validate min/max values
+                if (min_value === undefined || max_value === undefined) {
+                  console.warn(
+                    'COP Analysis: Missing min/max values for parameter',
+                    parameter.parameter,
+                    'cement type:',
+                    selectedCementType
+                  );
+                  return { value: null, raw: avg };
+                }
+
+                if (max_value <= min_value) {
+                  console.warn(
+                    'COP Analysis: Invalid min/max range for parameter',
+                    parameter.parameter,
+                    ': min=',
+                    min_value,
+                    'max=',
+                    max_value
+                  );
+                  return { value: null, raw: avg };
+                }
+
+                if (avg === undefined) {
+                  return { value: null, raw: avg };
+                }
+
+                const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+
+                // Validate percentage calculation
+                if (isNaN(percentage) || !isFinite(percentage)) {
+                  console.warn('COP Analysis: Invalid percentage calculation', {
+                    parameter: parameter.parameter,
+                    avg,
+                    min_value,
+                    max_value,
+                    percentage,
+                  });
+                  return { value: null, raw: avg };
+                }
+
+                return { value: percentage, raw: avg };
+              });
+
+              const validDailyPercentages = dailyValues
+                .map((d) => d.value)
+                .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+              const monthlyAverage =
+                validDailyPercentages.length > 0
+                  ? validDailyPercentages.reduce((a, b) => a + b, 0) / validDailyPercentages.length
+                  : null;
+
+              const validDailyRaw = dailyValues
+                .map((d) => d.raw)
+                .filter(
+                  (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
+                );
+              const monthlyAverageRaw =
+                validDailyRaw.length > 0
+                  ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
+                  : null;
+
+              return {
+                parameter,
+                dailyValues,
+                monthlyAverage,
+                monthlyAverageRaw,
+              };
+            } catch (paramError) {
+              console.error(
+                'COP Analysis: Error processing parameter',
+                parameter?.parameter || 'unknown',
+                paramError
+              );
+              return null;
+            }
           })
           .filter((p): p is NonNullable<typeof p> => p !== null);
 
+        console.log(
+          'COP Analysis: Data processing completed, setting analysis data with',
+          data.length,
+          'parameters'
+        );
         setAnalysisData(data);
-      } catch {
-        setError('Failed to load COP analysis data. Please try again.');
+      } catch (error) {
+        console.error('COP Analysis: Failed to load data', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        setError(
+          `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
+        );
         setAnalysisData([]);
       } finally {
         setIsLoading(false);
@@ -385,7 +505,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     selectedUnit,
     selectedCementType,
   ]);
-
   const dailyQaf = useMemo(() => {
     if (!analysisData || analysisData.length === 0) {
       return { daily: [], monthly: { value: null, inRange: 0, total: 0 } };
@@ -491,10 +610,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       return [];
     }
 
-    // Note: operator_id is not available in ParameterSetting type
-    // For now, show all parameters regardless of operator filter
-    // TODO: Add operator_id to ParameterSetting type if needed
-    const filteredData = analysisData;
+    // Filter berdasarkan operator yang dipilih jika ada
+    let filteredData = analysisData;
+    if (selectedOperator) {
+      // TODO: Filter berdasarkan operator_id ketika tersedia di data
+      // Untuk sementara, tampilkan semua data dengan catatan
+      filteredData = analysisData;
+    }
 
     return filteredData
       .map((row) => {
@@ -525,8 +647,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           },
         };
       })
-      .filter((item) => item.percentage > 0);
-  }, [analysisData]);
+      .filter((item) => item.percentage > 0)
+      .sort((a, b) => b.percentage - a.percentage); // Sort by highest failure rate first
+  }, [analysisData, selectedOperator]);
 
   const yearOptions = useMemo(
     () => Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i),
@@ -762,7 +885,106 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{error}</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">{error}</p>
+              <button
+                onClick={() => {
+                  setError(null);
+                  // Trigger re-fetch by calling the data fetch function
+                  const retryFetch = async () => {
+                    setIsLoading(true);
+                    try {
+                      // Re-run the data fetching logic
+                      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+                      const dates = Array.from({ length: daysInMonth }, (_, i) => {
+                        const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
+                        return date.toISOString().split('T')[0];
+                      });
+
+                      const dailyAverages = new Map<string, Map<string, number>>();
+                      const footerDataPromises = dates.map((dateString) =>
+                        getFooterDataForDate(dateString)
+                      );
+                      const allFooterDataForMonth = await Promise.all(footerDataPromises);
+
+                      allFooterDataForMonth.flat().forEach((footerData) => {
+                        if (
+                          footerData.average !== null &&
+                          footerData.average !== undefined &&
+                          !isNaN(footerData.average)
+                        ) {
+                          if (!dailyAverages.has(footerData.parameter_id)) {
+                            dailyAverages.set(footerData.parameter_id, new Map());
+                          }
+                          dailyAverages
+                            .get(footerData.parameter_id)!
+                            .set(footerData.date, footerData.average);
+                        }
+                      });
+
+                      const data = filteredCopParameters
+                        .map((parameter) => {
+                          if (!parameter || !parameter.id || !parameter.parameter) return null;
+
+                          const dailyValues = dates.map((dateString) => {
+                            const avg = dailyAverages.get(parameter.id)?.get(dateString);
+                            const { min: min_value, max: max_value } = getMinMaxForCementType(
+                              parameter,
+                              selectedCementType
+                            );
+
+                            if (
+                              min_value === undefined ||
+                              max_value === undefined ||
+                              max_value <= min_value ||
+                              avg === undefined
+                            ) {
+                              return { value: null, raw: avg };
+                            }
+
+                            const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+                            return {
+                              value: isNaN(percentage) || !isFinite(percentage) ? null : percentage,
+                              raw: avg,
+                            };
+                          });
+
+                          const validDailyPercentages = dailyValues
+                            .map((d) => d.value)
+                            .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+                          const monthlyAverage =
+                            validDailyPercentages.length > 0
+                              ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                                validDailyPercentages.length
+                              : null;
+
+                          return {
+                            parameter,
+                            dailyValues,
+                            monthlyAverage,
+                            monthlyAverageRaw: null,
+                          };
+                        })
+                        .filter((p): p is NonNullable<typeof p> => p !== null);
+
+                      setAnalysisData(data);
+                    } catch (retryError) {
+                      console.error('COP Analysis: Retry failed', retryError);
+                      const errorMessage =
+                        retryError instanceof Error ? retryError.message : 'Retry failed';
+                      setError(
+                        `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
+                      );
+                      setAnalysisData([]);
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  };
+                  retryFetch();
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              >
+                Try Again
+              </button>
             </div>
           </div>
         )}
@@ -1059,7 +1281,16 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
             target (di luar range 0-100%).
           </p>
-          <div className="h-64">
+          {selectedOperator && (
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                <strong>Catatan:</strong> Filter operator belum dapat diterapkan karena data
+                operator belum tersedia di sistem. Diagram menampilkan semua parameter untuk
+                kategori dan unit yang dipilih.
+              </p>
+            </div>
+          )}
+          <div className="h-64 sm:h-80 md:h-96">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={operatorAchievementData}
@@ -1078,29 +1309,49 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   angle={-45}
                   textAnchor="end"
                   height={80}
+                  interval={0}
                 />
                 <YAxis
                   fontSize={10}
                   tick={{ fill: '#64748b' }}
-                  label={{ value: 'Persentase (%)', angle: -90, position: 'insideLeft' }}
+                  label={{ value: 'Persentase Kegagalan (%)', angle: -90, position: 'insideLeft' }}
                 />
                 <Tooltip
-                  formatter={(value: number) => [`${value}%`, 'Persentase']}
+                  formatter={(
+                    value: number,
+                    name: string,
+                    props: { payload: { outOfRange: number; total: number } }
+                  ) => [
+                    `${value}% (${props.payload.outOfRange}/${props.payload.total} hari)`,
+                    'Kegagalan Parameter',
+                  ]}
                   labelFormatter={(label) => `Parameter: ${label}`}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                  }}
                 />
-                <Bar dataKey="percentage" fill="#f59e0b" radius={[4, 4, 0, 0]}>
-                  {operatorAchievementData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        entry.percentage > 50
-                          ? '#ef4444'
-                          : entry.percentage > 25
-                            ? '#f59e0b'
-                            : '#10b981'
-                      }
-                    />
-                  ))}
+                <Bar dataKey="percentage" radius={[4, 4, 0, 0]}>
+                  {operatorAchievementData.map((entry, index) => {
+                    let fillColor = '#10b981'; // Default green for low failure
+                    if (entry.percentage > 50) {
+                      fillColor = '#ef4444'; // Red for high failure
+                    } else if (entry.percentage > 25) {
+                      fillColor = '#f59e0b'; // Amber for medium failure
+                    }
+                    return (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={fillColor}
+                        stroke={fillColor}
+                        strokeWidth={1}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => entry.onClick()}
+                      />
+                    );
+                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -1108,6 +1359,65 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
             <p>Total parameter yang tidak mencapai target: {operatorAchievementData.length}</p>
           </div>
+
+          {/* Statistik Ringkasan Performa */}
+          {operatorAchievementData.length > 0 && (
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                  Rata-rata Kegagalan
+                </h4>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  {operatorAchievementData.length > 0
+                    ? (
+                        operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
+                        operatorAchievementData.length
+                      ).toFixed(1)
+                    : 0}
+                  %
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Rata-rata persentase kegagalan parameter
+                </p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                  Parameter Terburuk
+                </h4>
+                <p className="text-lg font-bold text-slate-800 dark:text-slate-200 truncate">
+                  {operatorAchievementData[0]?.parameter || '-'}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {operatorAchievementData[0]?.percentage || 0}% kegagalan
+                </p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                  Status Performa
+                </h4>
+                {(() => {
+                  const avgFailure =
+                    operatorAchievementData.length > 0
+                      ? operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
+                        operatorAchievementData.length
+                      : 0;
+                  const performance = getPerformanceStatus(avgFailure);
+                  return (
+                    <>
+                      <p className={`text-lg font-bold ${performance.color}`}>
+                        {performance.status}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Berdasarkan rata-rata {avgFailure.toFixed(1)}% kegagalan
+                      </p>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
           {selectedParameterStats && (
             <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 max-h-80 overflow-y-auto">
               <div className="flex justify-between items-center mb-2">
