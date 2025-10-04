@@ -127,12 +127,28 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                 key={statName}
                 className="bg-gradient-to-r from-orange-200/50 to-red-200/50 dark:from-orange-900/40 dark:to-red-900/40 font-semibold"
               >
-                <td className="px-3 py-3 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 align-middle font-bold">
-                  {statName}
-                </td>
-                <td className="px-3 py-3 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 align-middle text-sm font-bold">
-                  -
-                </td>
+                {statName === t.average ||
+                statName === t.min ||
+                statName === t.max ||
+                statName === 'Counter Total' ? (
+                  <>
+                    <td
+                      colSpan={2}
+                      className="px-3 py-3 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 align-middle font-bold"
+                    >
+                      {statName}
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="px-3 py-3 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 align-middle font-bold">
+                      {statName}
+                    </td>
+                    <td className="px-3 py-3 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 align-middle text-sm font-bold">
+                      -
+                    </td>
+                  </>
+                )}
                 {allParams.map((param) => {
                   const value = statValues[param.id] || '-';
                   return (

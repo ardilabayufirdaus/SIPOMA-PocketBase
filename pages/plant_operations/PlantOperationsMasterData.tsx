@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import Modal from '../../components/Modal';
@@ -102,6 +103,7 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
     addRecord: addReportSetting,
     updateRecord: updateReportSetting,
     deleteRecord: deleteReportSetting,
+    updateOrder: updateReportSettingsOrder,
   } = useReportSettings();
   const [editingReportSetting, setEditingReportSetting] = useState<ReportSetting | null>(null);
 
@@ -397,6 +399,25 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
     totalPages: rsTotalPages,
     setCurrentPage: setRsCurrentPage,
   } = usePagination(filteredReportSettings, 10);
+
+  const maxReportSettingOrder = useMemo(() => {
+    return reportSettings.length > 0 ? Math.max(...reportSettings.map((rs) => rs.order)) + 1 : 0;
+  }, [reportSettings]);
+
+  // Drag and drop handlers for Report Settings
+  const handleReportSettingsDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination) return;
+
+      const items = Array.from(filteredReportSettings);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+
+      // Update order in database
+      updateReportSettingsOrder(items);
+    },
+    [filteredReportSettings, updateReportSettingsOrder]
+  );
 
   // Generic Handlers
   const handleOpenAddModal = (type: ModalType) => {
@@ -714,10 +735,11 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
             });
 
             if (invalidRows.length === 0) {
-              for (const row of reportData) {
+              for (const [index, row] of reportData.entries()) {
                 await addReportSetting({
                   parameter_id: String(row.Parameter_ID),
                   category: String(row.Category),
+                  order: reportSettings.length + index,
                 });
                 importCount++;
               }
@@ -1515,64 +1537,98 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['parameter']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['plant_category']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['unit']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['category']}
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">{t['actions']}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedReportSettings.map((setting) => {
-                const parameter = allParametersMap.get(setting.parameter_id);
-                return (
-                  <tr key={setting.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {parameter?.parameter || 'Unknown Parameter'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {parameter?.category || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {parameter?.unit || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {setting.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleOpenEditModal('reportSetting', setting)}
-                          className="p-2 text-slate-400 hover:text-red-600"
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          onClick={() => handleOpenDeleteModal(setting.id, 'reportSetting')}
-                          className="p-2 text-slate-400 hover:text-red-600"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <DragDropContext onDragEnd={handleReportSettingsDragEnd}>
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead className="bg-slate-50 dark:bg-slate-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['order'] || 'Order'}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['parameter']}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['plant_category']}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['unit']}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['category']}
+                  </th>
+                  <th className="relative px-6 py-3">
+                    <span className="sr-only">{t['actions']}</span>
+                  </th>
+                </tr>
+              </thead>
+              <Droppable droppableId="report-settings">
+                {(provided) => (
+                  <tbody
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700"
+                  >
+                    {paginatedReportSettings.map((setting, index) => {
+                      const parameter = allParametersMap.get(setting.parameter_id);
+                      return (
+                        <Draggable key={setting.id} draggableId={setting.id} index={index}>
+                          {(provided, snapshot) => (
+                            <tr
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                                snapshot.isDragging ? 'bg-slate-100 dark:bg-slate-600' : ''
+                              }`}
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                <div className="flex items-center gap-2">
+                                  <div {...provided.dragHandleProps} className="cursor-grab">
+                                    <GripVertical className="w-4 h-4" />
+                                  </div>
+                                  {setting.order}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {parameter?.parameter || 'Unknown Parameter'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                {parameter?.category || '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                {parameter?.unit || '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                {setting.category}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <button
+                                    onClick={() => handleOpenEditModal('reportSetting', setting)}
+                                    className="p-2 text-slate-400 hover:text-red-600"
+                                  >
+                                    <EditIcon />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleOpenDeleteModal(setting.id, 'reportSetting')
+                                    }
+                                    className="p-2 text-slate-400 hover:text-red-600"
+                                  >
+                                    <TrashIcon />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </tbody>
+                )}
+              </Droppable>
+            </table>
+          </DragDropContext>
         </div>
         <Pagination
           currentPage={rsCurrentPage}
@@ -1644,6 +1700,7 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
             existingParameterIds={reportSettings.map((rs) => rs.parameter_id)}
             selectedCategory={reportCategoryFilter}
             selectedUnit={reportUnitFilter}
+            maxOrder={maxReportSettingOrder}
           />
         )}
         {activeModal === 'picSetting' && (

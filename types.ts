@@ -93,6 +93,7 @@ export interface ReportSetting {
   id: string;
   parameter_id: string;
   category: string;
+  order: number;
 }
 
 export interface WhatsAppReportSetting {

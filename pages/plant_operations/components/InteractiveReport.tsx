@@ -79,9 +79,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         transition={{ delay: 0.1, duration: 0.4 }}
       >
         <div className="text-center flex-1">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">
-            {title}
-          </h1>
+          <h1 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">{title}</h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">{date}</p>
         </div>
       </motion.div>

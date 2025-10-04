@@ -8,7 +8,7 @@ export const useReportSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('report_settings').select('*').order('category');
+    const { data, error } = await supabase.from('report_settings').select('*').order('order');
 
     if (error) {
       console.error('Error fetching report settings:', error);
@@ -44,15 +44,15 @@ export const useReportSettings = () => {
           // Optimized state updates based on event type
           if (payload.eventType === 'INSERT' && payload.new) {
             setRecords((prev) =>
-              [...prev, payload.new as ReportSetting].sort((a, b) =>
-                a.category.localeCompare(b.category)
-              )
+              [...prev, payload.new as ReportSetting].sort((a, b) => a.order - b.order)
             );
           } else if (payload.eventType === 'UPDATE' && payload.new) {
             setRecords((prev) =>
-              prev.map((record) =>
-                record.id === payload.new.id ? (payload.new as ReportSetting) : record
-              )
+              prev
+                .map((record) =>
+                  record.id === payload.new.id ? (payload.new as ReportSetting) : record
+                )
+                .sort((a, b) => a.order - b.order)
             );
           } else if (payload.eventType === 'DELETE' && payload.old) {
             setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
@@ -111,5 +111,18 @@ export const useReportSettings = () => {
     [fetchRecords]
   );
 
-  return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords };
+  const updateOrder = useCallback(
+    async (orderedRecords: ReportSetting[]) => {
+      const promises = orderedRecords.map((record, index) =>
+        supabase.from('report_settings').update({ order: index }).eq('id', record.id)
+      );
+      const results = await Promise.all(promises);
+      const hasError = results.some((result) => result.error);
+      if (hasError) console.error('Error updating report settings order');
+      else fetchRecords();
+    },
+    [fetchRecords]
+  );
+
+  return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords, updateOrder };
 };

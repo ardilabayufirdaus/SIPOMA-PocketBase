@@ -425,6 +425,7 @@ export interface Database {
           id: string;
           parameter_id: string;
           category: string;
+          order: number;
           created_at: string;
           updated_at: string;
         };
@@ -432,6 +433,7 @@ export interface Database {
           id?: string;
           parameter_id: string;
           category: string;
+          order?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -439,6 +441,7 @@ export interface Database {
           id?: string;
           parameter_id?: string;
           category?: string;
+          order?: number;
           created_at?: string;
           updated_at?: string;
         };

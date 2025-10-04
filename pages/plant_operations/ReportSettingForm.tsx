@@ -19,11 +19,13 @@ interface FormProps {
   existingParameterIds: string[];
   selectedCategory?: string;
   selectedUnit?: string;
+  maxOrder: number;
 }
 
 interface FormData {
   parameter_id: string;
   category: string;
+  order: number;
 }
 
 interface ValidationErrors {
@@ -40,6 +42,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
   existingParameterIds,
   selectedCategory,
   selectedUnit,
+  maxOrder,
 }) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
@@ -51,6 +54,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
   const [formData, setFormData] = useState<FormData>({
     parameter_id: '',
     category: '',
+    order: maxOrder,
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,17 +86,22 @@ const ReportSettingForm: React.FC<FormProps> = ({
 
   // Validation functions
   const validateField = useCallback(
-    (name: keyof FormData, value: string): string => {
+    (name: keyof FormData, value: string | number): string => {
       switch (name) {
         case 'parameter_id':
           if (!value) return 'Parameter is required';
           if (!availableParameters.find((p) => p.id === value))
             return 'Selected parameter is not available';
           return '';
-        case 'category':
-          if (!value.trim()) return 'Category is required';
-          if (value.trim().length < 2) return 'Category must be at least 2 characters';
-          if (value.trim().length > 50) return 'Category must be less than 50 characters';
+        case 'category': {
+          if (!value) return 'Category is required';
+          const strValue = String(value);
+          if (strValue.trim().length < 2) return 'Category must be at least 2 characters';
+          if (strValue.trim().length > 50) return 'Category must be less than 50 characters';
+          return '';
+        }
+        case 'order':
+          // Order is auto-managed, no validation needed
           return '';
         default:
           return '';
@@ -126,6 +135,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
         // FIX: Use snake_case for parameter_id
         parameter_id: recordToEdit.parameter_id,
         category: recordToEdit.category,
+        order: recordToEdit.order,
       });
       setErrors({});
       setTouched({});
@@ -138,6 +148,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
         return {
           parameter_id: isCurrentValid ? currentParameterId : availableParameters[0]?.id || '',
           category: prev.category || '',
+          order: prev.order,
         };
       });
       setErrors({});
