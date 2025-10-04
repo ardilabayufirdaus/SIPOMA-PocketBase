@@ -7,7 +7,7 @@ import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useAuth } from '../../hooks/useAuth';
-import { CcrDowntimeData } from '../../types';
+import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
 
 import { Card } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -18,6 +18,39 @@ const formatIndonesianNumber = (num: number, decimals: number = 1): string => {
     minimumFractionDigits: 0,
     maximumFractionDigits: decimals,
   });
+};
+
+// Helper function to calculate mode (most frequent value) from array of strings
+const calculateTextMode = (
+  values: (string | number | null | undefined | { value: string | number })[]
+): string => {
+  const validValues = values
+    .filter((v) => v !== null && v !== undefined && v !== '')
+    .map((v) => {
+      // Handle both string/number values and complex objects with 'value' property
+      if (typeof v === 'object' && v && 'value' in v) {
+        return String(v.value).trim();
+      }
+      return String(v).trim();
+    })
+    .filter((v) => v !== '');
+  if (validValues.length === 0) return 'N/A';
+
+  const frequency: Record<string, number> = {};
+  validValues.forEach((value) => {
+    frequency[value] = (frequency[value] || 0) + 1;
+  });
+
+  let maxCount = 0;
+  let mode = 'N/A';
+  for (const [value, count] of Object.entries(frequency)) {
+    if (count > maxCount) {
+      maxCount = count;
+      mode = value;
+    }
+  }
+
+  return mode;
 };
 
 interface WhatsAppGroupReportPageProps {
@@ -93,6 +126,28 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       return 'PIC Tidak Diketahui';
     }
   }, [user]);
+
+  // Helper function to get operator name from CCR Parameter data
+  const getOperatorName = useCallback(
+    (parameterData: CcrParameterDataWithName[]): string => {
+      try {
+        // Find any record with a name field
+        const recordWithName = parameterData.find(
+          (record) => record.name && record.name.trim() !== ''
+        );
+        if (recordWithName) {
+          return recordWithName.name!;
+        }
+
+        // Fallback to current user
+        return user?.full_name || 'Operator Tidak Diketahui';
+      } catch (error) {
+        console.error('Error getting operator name:', error);
+        return 'Operator Tidak Diketahui';
+      }
+    },
+    [user]
+  );
 
   // Helper function to calculate total downtime duration for shift
   const calculateTotalDowntime = useCallback(
@@ -211,28 +266,21 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
           return (
             paramSetting &&
-            paramSetting.category === selectedPlantCategory &&
-            paramSetting.unit === unit &&
-            (paramSetting.parameter.toLowerCase().includes('product type') ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
-              paramSetting.parameter.toLowerCase().includes('cement type') ||
-              paramSetting.parameter.toLowerCase().includes('type produk'))
+            (paramSetting.parameter === 'Tipe Produk' ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
+            (paramSetting.unit === unit ||
+              paramSetting.unit.includes(unit) ||
+              unit.includes(paramSetting.unit)) && // More flexible unit matching
+            paramSetting.data_type === 'Text' // Pastikan data_type Text
           );
         });
 
         let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam) {
-          // Ambil nilai dari hourly_values (gunakan nilai terbaru atau rata-rata)
-          const productTypeValues = Object.values(productTypeParam.hourly_values).filter(
-            (v) => typeof v === 'string' && v.trim() !== ''
-          ) as string[];
-          if (productTypeValues.length > 0) {
-            // Gunakan nilai terakhir (jam terakhir)
-            const lastHour = Math.max(...Object.keys(productTypeParam.hourly_values).map(Number));
-            productType =
-              (productTypeParam.hourly_values[lastHour] as string) ||
-              productTypeValues[productTypeValues.length - 1];
-          }
+        if (productTypeParam && productTypeParam.hourly_values) {
+          // Ambil semua nilai dari hourly_values (jam 1-24) dan hitung mode
+          const allHours = Array.from({ length: 24 }, (_, i) => i + 1);
+          const productTypeValues = allHours.map((hour) => productTypeParam.hourly_values[hour]);
+          productType = calculateTextMode(productTypeValues);
         }
 
         report += `Tipe Produk  : ${productType}\n`;
@@ -314,7 +362,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift3Data.content
               ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m�, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
@@ -369,6 +417,10 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         month: 'short',
         year: 'numeric',
       });
+
+      // Get operator name from all parameter data
+      const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
+      const operatorName = getOperatorName(allParameterData);
 
       let report = `*Laporan Shift 1 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
 
@@ -429,26 +481,21 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
           return (
             paramSetting &&
-            paramSetting.category === selectedPlantCategory &&
-            paramSetting.unit === unit &&
-            (paramSetting.parameter.toLowerCase().includes('product type') ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
-              paramSetting.parameter.toLowerCase().includes('cement type') ||
-              paramSetting.parameter.toLowerCase().includes('type produk'))
+            (paramSetting.parameter === 'Tipe Produk' ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
+            (paramSetting.unit === unit ||
+              paramSetting.unit.includes(unit) ||
+              unit.includes(paramSetting.unit)) && // More flexible unit matching
+            paramSetting.data_type === 'Text' // Pastikan data_type Text
           );
         });
 
         let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam) {
-          // Ambil nilai dari hourly_values jam 7-15
-          const shift1Hours = [7, 8, 9, 10, 11, 12, 13, 14, 15];
-          const productTypeValues = shift1Hours
-            .map((hour) => productTypeParam.hourly_values[hour])
-            .filter((v) => typeof v === 'string' && v.trim() !== '') as string[];
-          if (productTypeValues.length > 0) {
-            // Gunakan nilai terakhir dalam shift 1
-            productType = productTypeValues[productTypeValues.length - 1];
-          }
+        if (productTypeParam && productTypeParam.hourly_values) {
+          // Ambil nilai dari hourly_values jam 8-15 dan hitung mode
+          const shift1Hours = [8, 9, 10, 11, 12, 13, 14, 15];
+          const productTypeValues = shift1Hours.map((hour) => productTypeParam.hourly_values[hour]);
+          productType = calculateTextMode(productTypeValues);
         }
 
         report += `Tipe Produk  : ${productType}\n`;
@@ -533,11 +580,12 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift1Data.content
               ? formatIndonesianNumber((shift1Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift1Data.emptySpace || 'N/A'} m�, Content ${shift1Data.content || 'N/A'} ton, ${percentage}%\n`;
+          report += `${siloName}: Empty ${shift1Data.emptySpace || 'N/A'} m, Content ${shift1Data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
-      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `\n*Operator: ${operatorName}*\n`;
+      report += `*Demikian laporan ini. Terima kasih.*\n\n`;
 
       return report;
     } catch (error) {
@@ -589,6 +637,10 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         month: 'short',
         year: 'numeric',
       });
+
+      // Get operator name from all parameter data
+      const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
+      const operatorName = getOperatorName(allParameterData);
 
       let report = `*Laporan Shift 2 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
 
@@ -649,26 +701,21 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
           return (
             paramSetting &&
-            paramSetting.category === selectedPlantCategory &&
-            paramSetting.unit === unit &&
-            (paramSetting.parameter.toLowerCase().includes('product type') ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
-              paramSetting.parameter.toLowerCase().includes('cement type') ||
-              paramSetting.parameter.toLowerCase().includes('type produk'))
+            (paramSetting.parameter === 'Tipe Produk' ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
+            (paramSetting.unit === unit ||
+              paramSetting.unit.includes(unit) ||
+              unit.includes(paramSetting.unit)) && // More flexible unit matching
+            paramSetting.data_type === 'Text' // Pastikan data_type Text
           );
         });
 
         let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam) {
-          // Ambil nilai dari hourly_values jam 15-23
-          const shift2Hours = [15, 16, 17, 18, 19, 20, 21, 22, 23];
-          const productTypeValues = shift2Hours
-            .map((hour) => productTypeParam.hourly_values[hour])
-            .filter((v) => typeof v === 'string' && v.trim() !== '') as string[];
-          if (productTypeValues.length > 0) {
-            // Gunakan nilai terakhir dalam shift 2
-            productType = productTypeValues[productTypeValues.length - 1];
-          }
+        if (productTypeParam && productTypeParam.hourly_values) {
+          // Ambil nilai dari hourly_values jam 16-22 dan hitung mode
+          const shift2Hours = [16, 17, 18, 19, 20, 21, 22];
+          const productTypeValues = shift2Hours.map((hour) => productTypeParam.hourly_values[hour]);
+          productType = calculateTextMode(productTypeValues);
         }
 
         report += `Tipe Produk  : ${productType}\n`;
@@ -753,11 +800,12 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift2Data.content
               ? formatIndonesianNumber((shift2Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift2Data.emptySpace || 'N/A'} m�, Content ${shift2Data.content || 'N/A'} ton, ${percentage}%\n`;
+          report += `${siloName}: Empty ${shift2Data.emptySpace || 'N/A'} m, Content ${shift2Data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
-      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `\n*Operator: ${operatorName}*\n`;
+      report += `*Demikian laporan ini. Terima kasih.*\n\n`;
 
       return report;
     } catch (error) {
@@ -818,6 +866,10 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         month: 'short',
         year: 'numeric',
       });
+
+      // Get operator name from all parameter data
+      const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
+      const operatorName = getOperatorName(allParameterData);
 
       let report = `*Laporan Shift 3 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
 
@@ -900,26 +952,21 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const paramSetting = parameterSettings.find((s) => s.id === p.parameter_id);
           return (
             paramSetting &&
-            paramSetting.category === selectedPlantCategory &&
-            paramSetting.unit === unit &&
-            (paramSetting.parameter.toLowerCase().includes('product type') ||
-              paramSetting.parameter.toLowerCase().includes('tipe produk') ||
-              paramSetting.parameter.toLowerCase().includes('cement type') ||
-              paramSetting.parameter.toLowerCase().includes('type produk'))
+            (paramSetting.parameter === 'Tipe Produk' ||
+              paramSetting.parameter.toLowerCase().includes('tipe produk')) && // More flexible parameter matching
+            (paramSetting.unit === unit ||
+              paramSetting.unit.includes(unit) ||
+              unit.includes(paramSetting.unit)) && // More flexible unit matching
+            paramSetting.data_type === 'Text' // Pastikan data_type Text
           );
         });
 
         let productType = 'N/A'; // Default jika tidak ada data
-        if (productTypeParam) {
-          // Ambil nilai dari hourly_values jam 23-07 (23 hari ini + 0-7 hari berikutnya)
-          const shift3Hours = [23, 0, 1, 2, 3, 4, 5, 6, 7];
-          const productTypeValues = shift3Hours
-            .map((hour) => productTypeParam.hourly_values[hour])
-            .filter((v) => typeof v === 'string' && v.trim() !== '') as string[];
-          if (productTypeValues.length > 0) {
-            // Gunakan nilai terakhir dalam shift 3
-            productType = productTypeValues[productTypeValues.length - 1];
-          }
+        if (productTypeParam && productTypeParam.hourly_values) {
+          // Ambil nilai dari hourly_values jam 1-7 dan 23-24 dan hitung mode
+          const shift3Hours = [1, 2, 3, 4, 5, 6, 7, 23, 24];
+          const productTypeValues = shift3Hours.map((hour) => productTypeParam.hourly_values[hour]);
+          productType = calculateTextMode(productTypeValues);
         }
 
         report += `Tipe Produk  : ${productType}\n`;
@@ -1018,11 +1065,12 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift3Data.content
               ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m�, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
         }
       });
 
-      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `\n*Operator: ${operatorName}*\n`;
+      report += `*Demikian laporan ini. Terima kasih.*\n\n`;
 
       return report;
     } catch (error) {
