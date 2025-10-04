@@ -1552,3 +1552,49 @@ html.dark .ccr-table input:hover:not(:focus) {
     @apply text-base;
   }
 }
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable hover animations */
+  .hover\:scale-105:hover {
+    transform: none !important;
+  }
+
+  .hover\:-translate-y-0\.5:hover {
+    transform: none !important;
+  }
+
+  /* Disable pulse animations */
+  .animate-pulse {
+    animation: none !important;
+    background-color: var(--color-neutral-200) !important;
+  }
+
+  /* Disable spin animations */
+  .animate-spin {
+    animation: none !important;
+  }
+
+  /* Disable bounce animations */
+  .animate-bounce {
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary-600: #000000;
+    --color-neutral-900: #000000;
+    --color-neutral-100: #ffffff;
+  }
+}

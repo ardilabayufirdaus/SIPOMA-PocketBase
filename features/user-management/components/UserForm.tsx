@@ -3,6 +3,7 @@ import { SHA256 } from 'crypto-js';
 import { useUserStore } from '../../../stores/userStore';
 import { translations } from '../../../translations';
 import { UserRole } from '../../../types';
+import { getColor, getSpacing, getBorderRadius, getShadow } from '../../../utils/designTokens';
 
 interface UserFormProps {
   user?: any; // For editing
@@ -98,20 +99,46 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
             {user ? t.edit_user_title || 'Edit User' : t.add_user_title || 'Add New User'}
           </h3>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+            role="form"
+            aria-labelledby="user-form-title"
+          >
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 {t.username || 'Username'}
               </label>
               <input
+                id="username"
                 type="text"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
                 required
                 autoComplete="username"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                aria-describedby={error ? 'username-error' : undefined}
+                aria-invalid={error ? 'true' : 'false'}
+                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:text-white"
+                style={{
+                  borderColor: error ? 'var(--color-error)' : 'var(--color-neutral-300)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--color-neutral-0)',
+                }}
               />
+              {error && (
+                <p
+                  id="username-error"
+                  className="mt-1 text-sm"
+                  style={{ color: 'var(--color-error)' }}
+                  role="alert"
+                >
+                  {error}
+                </p>
+              )}
             </div>
 
             <div>

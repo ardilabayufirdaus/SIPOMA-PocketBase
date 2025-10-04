@@ -1,4 +1,5 @@
 import React from 'react';
+import { getColor, getBorderRadius } from '../utils/designTokens';
 
 interface LoadingSkeletonProps {
   className?: string;
@@ -148,5 +149,91 @@ export const LoadingSpinner: React.FC<{
     />
   );
 };
+
+// Skeleton Presets for Common Components
+export const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`p-6 rounded-lg border bg-white dark:bg-gray-800 ${className}`}>
+    <LoadingSkeleton variant="text" height="24px" className="mb-4" />
+    <LoadingSkeleton variant="rectangular" height="120px" className="mb-4" />
+    <div className="flex space-x-2">
+      <LoadingSkeleton variant="rectangular" width="80px" height="32px" />
+      <LoadingSkeleton variant="rectangular" width="80px" height="32px" />
+    </div>
+  </div>
+);
+
+export const SkeletonTable: React.FC<{ rows?: number; columns?: number; className?: string }> = ({
+  rows = 5,
+  columns = 4,
+  className = '',
+}) => (
+  <div
+    className={`overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg ${className}`}
+  >
+    <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3">
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: columns }).map((_, i) => (
+          <LoadingSkeleton key={i} variant="text" height="16px" />
+        ))}
+      </div>
+    </div>
+    <div className="bg-white dark:bg-gray-800">
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <div key={rowIndex} className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-4 gap-4">
+            {Array.from({ length: columns }).map((_, colIndex) => (
+              <LoadingSkeleton key={colIndex} variant="text" height="14px" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export const SkeletonForm: React.FC<{ fields?: number; className?: string }> = ({
+  fields = 3,
+  className = '',
+}) => (
+  <div className={`space-y-6 ${className}`}>
+    {Array.from({ length: fields }).map((_, i) => (
+      <div key={i} className="space-y-2">
+        <LoadingSkeleton variant="text" width="120px" height="16px" />
+        <LoadingSkeleton variant="rectangular" height="40px" />
+      </div>
+    ))}
+    <div className="flex space-x-3">
+      <LoadingSkeleton variant="rectangular" width="100px" height="40px" />
+      <LoadingSkeleton variant="rectangular" width="100px" height="40px" />
+    </div>
+  </div>
+);
+
+export const SkeletonChart: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`p-6 bg-white dark:bg-gray-800 rounded-lg border ${className}`}>
+    <LoadingSkeleton variant="text" height="24px" width="200px" className="mb-4" />
+    <LoadingSkeleton variant="rectangular" height="300px" />
+  </div>
+);
+
+export const SkeletonList: React.FC<{ items?: number; className?: string }> = ({
+  items = 5,
+  className = '',
+}) => (
+  <div className={`space-y-3 ${className}`}>
+    {Array.from({ length: items }).map((_, i) => (
+      <div
+        key={i}
+        className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border"
+      >
+        <LoadingSkeleton variant="circular" width="40px" height="40px" />
+        <div className="flex-1 space-y-2">
+          <LoadingSkeleton variant="text" height="16px" width="60%" />
+          <LoadingSkeleton variant="text" height="14px" width="40%" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default LoadingSkeleton;

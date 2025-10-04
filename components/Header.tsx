@@ -1,22 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlusIcon from './icons/PlusIcon';
 import UserIcon from './icons/UserIcon';
 import CogIcon from './icons/CogIcon';
 import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
 import Bars3Icon from './icons/Bars3Icon';
-import { Page, Theme } from '../App';
+import { Page } from '../App';
 import { User } from '../types';
 import ShieldCheckIcon from './icons/ShieldCheckIcon';
 import QuestionMarkCircleIcon from './icons/QuestionMarkCircleIcon';
-import SunIcon from './icons/SunIcon';
-import MoonIcon from './icons/MoonIcon';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useNotifications } from '../hooks/useNotifications';
 import NotificationPanel from './NotificationPanel';
 
 // Import Enhanced Components
 import { EnhancedButton, SkipLinks, AccessibleTooltip } from './ui/EnhancedComponents';
+
+// Import design tokens
+import { getSpacing, getBorderRadius, getShadow } from '../utils/designTokens';
+
+// Import micro-interactions hook
+import { useMicroInteraction } from '../hooks/useMicroInteractions';
+
+// Import theme hook
+import { ThemeToggle } from '../components/ThemeProvider';
 
 interface HeaderProps {
   pageTitle: string;
@@ -25,8 +32,6 @@ interface HeaderProps {
   t: Record<string, string>;
   onNavigate: (page: Page) => void;
   onSignOut: () => void;
-  theme: Theme;
-  onToggleTheme: () => void;
   currentUser: User | null;
   onToggleSidebar?: () => void;
 }
@@ -38,8 +43,6 @@ const Header: React.FC<HeaderProps> = ({
   t,
   onNavigate,
   onSignOut,
-  theme,
-  onToggleTheme,
   currentUser,
   onToggleSidebar,
 }) => {
@@ -60,17 +63,18 @@ const Header: React.FC<HeaderProps> = ({
     updateSettings,
   } = useNotifications();
 
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+      setIsUserMenuOpen(false);
+    }
+  }, []);
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
-      }
-    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [handleClickOutside]);
 
   return (
     <>
@@ -84,15 +88,10 @@ const Header: React.FC<HeaderProps> = ({
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
         style={{
-          background: theme === 'dark' ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+          background: 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${
-            theme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : 'rgba(148, 163, 184, 0.2)'
-          }`,
-          boxShadow:
-            theme === 'dark'
-              ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-              : '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+          borderBottom: `1px solid rgba(148, 163, 184, 0.2)`,
+          boxShadow: getShadow('md'),
         }}
       >
         {/* Subtle gradient overlay for depth */}
@@ -100,9 +99,7 @@ const Header: React.FC<HeaderProps> = ({
           className="absolute inset-0 opacity-30"
           style={{
             background:
-              theme === 'dark'
-                ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)'
-                : 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
+              'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
           }}
         />
 
@@ -213,51 +210,7 @@ const Header: React.FC<HeaderProps> = ({
               )}
 
               {/* Theme Toggle */}
-              <AccessibleTooltip
-                content={
-                  theme === 'light'
-                    ? t.tooltip_switch_dark || 'Switch to dark mode'
-                    : t.tooltip_switch_light || 'Switch to light mode'
-                }
-                position="bottom"
-                delay={500}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05, rotate: 5 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                >
-                  <EnhancedButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={onToggleTheme}
-                    ariaLabel={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                    className="relative p-2 rounded-lg bg-gradient-to-br from-transparent via-white/5 to-white/10 hover:from-white/10 hover:via-white/15 hover:to-white/20 dark:from-transparent dark:via-black/5 dark:to-black/10 dark:hover:from-black/10 dark:hover:via-black/15 dark:hover:to-black/20 transition-all duration-300 group border border-transparent hover:border-white/20 dark:hover:border-white/10 shadow-sm hover:shadow-md"
-                    icon={
-                      <motion.div
-                        key={theme}
-                        initial={{ rotate: -90, opacity: 0 }}
-                        animate={{ rotate: 0, opacity: 1 }}
-                        exit={{ rotate: 90, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeOut' }}
-                        className="relative"
-                      >
-                        {theme === 'light' ? (
-                          <MoonIcon className="w-5 h-5 text-purple-400 group-hover:text-purple-300 transition-colors duration-200" />
-                        ) : (
-                          <SunIcon className="w-5 h-5 text-yellow-400 group-hover:text-yellow-300 transition-colors duration-200" />
-                        )}
-                        {/* Subtle glow effect */}
-                        <div className="absolute inset-0 rounded-full bg-current opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-200" />
-                      </motion.div>
-                    }
-                  >
-                    <span className="sr-only">
-                      Switch to {theme === 'light' ? 'dark' : 'light'} mode
-                    </span>
-                  </EnhancedButton>
-                </motion.div>
-              </AccessibleTooltip>
+              <ThemeToggle className="p-2" />
 
               {/* Notifications */}
               <AccessibleTooltip
@@ -389,25 +342,16 @@ const Header: React.FC<HeaderProps> = ({
                       <div
                         className="rounded-xl shadow-2xl border overflow-hidden"
                         style={{
-                          background:
-                            theme === 'dark'
-                              ? 'rgba(15, 23, 42, 0.95)'
-                              : 'rgba(255, 255, 255, 0.95)',
+                          background: 'rgba(255, 255, 255, 0.95)',
                           backdropFilter: 'blur(20px)',
-                          borderColor:
-                            theme === 'dark'
-                              ? 'rgba(148, 163, 184, 0.2)'
-                              : 'rgba(148, 163, 184, 0.3)',
+                          borderColor: 'rgba(148, 163, 184, 0.3)',
                         }}
                       >
                         {/* User Info Section */}
                         <div
                           className="p-4 border-b"
                           style={{
-                            borderColor:
-                              theme === 'dark'
-                                ? 'rgba(148, 163, 184, 0.2)'
-                                : 'rgba(148, 163, 184, 0.3)',
+                            borderColor: 'rgba(148, 163, 184, 0.3)',
                           }}
                         >
                           <div className="flex items-center gap-3">
@@ -506,53 +450,6 @@ const Header: React.FC<HeaderProps> = ({
                           </motion.div>
                         </div>
 
-                        {/* Theme Section */}
-                        <div
-                          className="p-3 border-t border-b"
-                          style={{
-                            borderColor:
-                              theme === 'dark'
-                                ? 'rgba(148, 163, 184, 0.2)'
-                                : 'rgba(148, 163, 184, 0.3)',
-                          }}
-                        >
-                          <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                            {t.theme_toggle}
-                          </p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                              <EnhancedButton
-                                variant={theme === 'light' ? 'primary' : 'ghost'}
-                                size="sm"
-                                onClick={() => theme !== 'light' && onToggleTheme()}
-                                icon={<SunIcon className="w-4 h-4" />}
-                                className={`justify-center transition-all duration-300 ${
-                                  theme === 'light'
-                                    ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 shadow-lg'
-                                    : 'hover:bg-white/10 dark:hover:bg-white/5'
-                                }`}
-                              >
-                                {t.theme_light}
-                              </EnhancedButton>
-                            </motion.div>
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                              <EnhancedButton
-                                variant={theme === 'dark' ? 'primary' : 'ghost'}
-                                size="sm"
-                                onClick={() => theme !== 'dark' && onToggleTheme()}
-                                icon={<MoonIcon className="w-4 h-4" />}
-                                className={`justify-center transition-all duration-300 ${
-                                  theme === 'dark'
-                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg'
-                                    : 'hover:bg-white/10 dark:hover:bg-white/5'
-                                }`}
-                              >
-                                {t.theme_dark}
-                              </EnhancedButton>
-                            </motion.div>
-                          </div>
-                        </div>
-
                         {/* Sign Out */}
                         <div className="p-2">
                           <motion.div
@@ -590,4 +487,5 @@ const Header: React.FC<HeaderProps> = ({
   );
 };
 
-export default Header;
+const HeaderMemo = React.memo(Header);
+export default HeaderMemo;

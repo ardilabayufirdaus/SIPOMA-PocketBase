@@ -1,6 +1,7 @@
 import React from 'react';
 import { useServiceWorker, useCacheStatus } from '../hooks/useServiceWorker';
 import { usePerformanceMonitoring } from '../hooks/usePerformanceMonitoring';
+import { getColor, getSpacing, getBorderRadius } from '../../utils/designTokens';
 
 // Performance dashboard component
 export const PerformanceDashboard: React.FC = () => {
@@ -50,8 +51,16 @@ export const PerformanceDashboard: React.FC = () => {
 
       {/* Core Web Vitals */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">LCP</h3>
+        <div
+          className="p-4 rounded-lg"
+          style={{
+            backgroundColor: getColor('primary', 50),
+            borderRadius: getBorderRadius('lg'),
+          }}
+        >
+          <h3 className="text-lg font-semibold mb-2" style={{ color: getColor('primary', 800) }}>
+            LCP
+          </h3>
           <p
             className={`text-2xl font-bold ${
               metrics.lcp > 2500 ? 'text-red-600' : 'text-green-600'
@@ -88,12 +97,22 @@ export const PerformanceDashboard: React.FC = () => {
       </div>
 
       {/* Memory Usage */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Memory Usage</h3>
+      <div
+        className="p-4 rounded-lg mb-6"
+        style={{
+          backgroundColor: getColor('neutral', 50),
+          borderRadius: getBorderRadius('lg'),
+        }}
+      >
+        <h3 className="text-lg font-semibold mb-4" style={{ color: getColor('neutral', 800) }}>
+          Memory Usage
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-600">Heap Used</p>
-            <p className="text-xl font-bold text-blue-600">{formatBytes(metrics.memoryUsage)}</p>
+            <p className="text-xl font-bold" style={{ color: getColor('primary', 600) }}>
+              {formatBytes(metrics.memoryUsage)}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Heap Limit</p>
@@ -101,10 +120,14 @@ export const PerformanceDashboard: React.FC = () => {
           </div>
         </div>
         <div className="mt-4">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="w-full rounded-full h-2"
+            style={{ backgroundColor: getColor('neutral', 200) }}
+          >
             <div
-              className="bg-blue-600 h-2 rounded-full"
+              className="h-2 rounded-full"
               style={{
+                backgroundColor: getColor('primary', 600),
                 width: `${
                   metrics.memoryLimit > 0 ? (metrics.memoryUsage / metrics.memoryLimit) * 100 : 0
                 }%`,

@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { getColor, getSpacing, getBorderRadius, getShadow } from '../../utils/designTokens';
 
 // Error boundary state interface
 interface ErrorBoundaryState {
@@ -254,7 +255,11 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               {retryCount < maxRetries && (
                 <button
                   onClick={this.handleRetry}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  className={`flex items-center px-3 py-2 text-white rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors`}
+                  style={{
+                    backgroundColor: getColor('primary', 600),
+                    borderRadius: getBorderRadius('md'),
+                  }}
                 >
                   <svg
                     className="w-4 h-4 mr-2"
@@ -276,7 +281,11 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               {/* Reset button */}
               <button
                 onClick={this.handleReset}
-                className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                className={`flex items-center px-3 py-2 text-white rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors`}
+                style={{
+                  backgroundColor: getColor('neutral', 600),
+                  borderRadius: getBorderRadius('md'),
+                }}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -292,7 +301,11 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               {/* Go Back button */}
               <button
                 onClick={this.handleGoBack}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                className={`flex items-center px-3 py-2 text-white rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors`}
+                style={{
+                  backgroundColor: getColor('success', 600),
+                  borderRadius: getBorderRadius('md'),
+                }}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -308,7 +321,11 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               {/* Reload button */}
               <button
                 onClick={this.handleReload}
-                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-colors"
+                className={`flex items-center px-3 py-2 text-white rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors`}
+                style={{
+                  backgroundColor: getColor('warning', 600),
+                  borderRadius: getBorderRadius('md'),
+                }}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -323,9 +340,18 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             </div>
 
             {/* Additional help text */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-              <h3 className="text-sm font-medium text-blue-800 mb-2">What happened?</h3>
-              <p className="text-sm text-blue-700">
+            <div
+              className="mt-6 p-4 border rounded-md"
+              style={{
+                backgroundColor: getColor('primary', 50),
+                borderColor: getColor('primary', 200),
+                borderRadius: getBorderRadius('md'),
+              }}
+            >
+              <h3 className="text-sm font-medium mb-2" style={{ color: getColor('primary', 800) }}>
+                What happened?
+              </h3>
+              <p className="text-sm" style={{ color: getColor('primary', 700) }}>
                 This error has been automatically reported to our development team. We&apos;re
                 working to fix this issue. In the meantime, you can try the actions above or contact
                 support if the problem persists.

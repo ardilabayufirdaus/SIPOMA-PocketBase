@@ -242,6 +242,32 @@ export default {
       },
       screens: {
         xs: '475px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1536px',
+        // Advanced breakpoints
+        tablet: '768px',
+        laptop: '1024px',
+        desktop: '1280px',
+        wide: '1536px',
+        // Orientation-based
+        portrait: { raw: '(orientation: portrait)' },
+        landscape: { raw: '(orientation: landscape)' },
+        // Device-specific
+        'tablet-portrait': {
+          raw: '(min-width: 768px) and (max-width: 1023px) and (orientation: portrait)',
+        },
+        'tablet-landscape': {
+          raw: '(min-width: 1024px) and (max-width: 1279px) and (orientation: landscape)',
+        },
+        'mobile-landscape': { raw: '(max-width: 767px) and (orientation: landscape)' },
+        // High DPI displays
+        retina: { raw: '(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi)' },
+        // Touch devices
+        touch: { raw: '(hover: none) and (pointer: coarse)' },
+        'no-touch': { raw: '(hover: hover) and (pointer: fine)' },
       },
       spacing: {
         18: '4.5rem',

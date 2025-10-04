@@ -25,6 +25,9 @@ import { PermissionGuard } from './utils/permissions';
 
 import { logSystemStatus } from './utils/systemStatus';
 
+// Import ThemeProvider for dark mode support
+import { ThemeProvider } from './components/ThemeProvider';
+
 // Preload critical routes with higher priority
 const preloadDashboard = () => import('./pages/ModernMainDashboardPage');
 const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
@@ -127,7 +130,6 @@ export type Theme = 'light' | 'dark';
 const App: React.FC = () => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useTranslation();
-  const [theme, setTheme] = useState<Theme>('light');
   const isMobile = useIsMobile();
 
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -172,14 +174,6 @@ const App: React.FC = () => {
     users: 'user_list',
   });
 
-  useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
   // Log system status on app load
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
@@ -203,10 +197,6 @@ const App: React.FC = () => {
   }, [isMobile]);
 
   // Sidebar keyboard shortcuts removed
-
-  const handleToggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  }, []);
 
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
@@ -304,230 +294,230 @@ const App: React.FC = () => {
   }
 
   return (
-    <ErrorBoundary
-      fallback={
-        <div className="flex items-center justify-center min-h-screen text-red-600">
-          Terjadi error pada aplikasi. Silakan refresh halaman.
-        </div>
-      }
-    >
-      <div>
-        <div className="min-h-screen bg-white dark:bg-slate-900 font-sans compact">
-          <Sidebar
-            currentPage={currentPage}
-            onNavigate={handleNavigate}
-            t={t}
-            currentLanguage={language}
-            onLanguageChange={setLanguage}
-            isOpen={isSidebarOpen}
-            onClose={handleCloseSidebar}
-            currentUser={currentUser}
-          />
-          <div
-            className="flex flex-col min-h-screen transition-all duration-300"
-            style={{
-              marginLeft: isMobile ? '0' : '5rem', // 80px untuk compact sidebar width (w-20)
-            }}
-          >
-            <Header
-              pageTitle={getPageTitle()}
-              showAddUserButton={false}
-              onAddUser={handleOpenAddUserModal}
-              t={t}
-              onNavigate={handleNavigate}
-              onSignOut={handleSignOutClick}
-              theme={theme}
-              onToggleTheme={handleToggleTheme}
-              currentUser={currentUser}
-              onToggleSidebar={handleToggleSidebar}
-            />
-            <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
-              <div className="max-w-none w-full">
-                <Suspense
-                  fallback={
-                    <LoadingSkeleton
-                      variant="rectangular"
-                      height={48}
-                      width={48}
-                      className="mx-auto mt-24"
-                    />
-                  }
-                >
-                  {/* Dashboard - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="dashboard"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'dashboard' && (
-                      <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
-                    )}
-
-                    {/* Inspection Module */}
-                    {currentPage === 'inspection' && (
-                      <InspectionPage
-                        language={language}
-                        subPage={activeSubPages.inspection}
-                        onNavigate={handleNavigate}
-                      />
-                    )}
-                  </PermissionGuard>
-                  {/* User Management - Only for Super Admin */}
-                  {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
-                    <>
-                      {activeSubPages.users === 'user_list' && <UserListPage />}
-
-                      {activeSubPages.users === 'user_activity' && (
-                        <UserActivityPage users={users} t={t} />
-                      )}
-                    </>
-                  )}
-                  {/* Settings - Accessible to all users */}
-                  {currentPage === 'settings' && (
-                    <SettingsPage
-                      t={t}
-                      user={currentUser}
-                      onOpenProfileModal={handleOpenProfileModal}
-                      currentLanguage={language}
-                      onLanguageChange={setLanguage}
-                    />
-                  )}
-                  {/* WhatsApp Reports - Accessible to all users */}
-                  {currentPage === 'whatsapp-reports' && (
-                    <WhatsAppReportsPage groupId="default-group" />
-                  )}
-                  {/* Plant Operations - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="plant_operations"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'operations' && (
-                      <PlantOperationsPage
-                        activePage={activeSubPages.operations}
-                        t={t}
-                        plantData={{
-                          loading: plantDataLoading,
-                        }}
-                      />
-                    )}
-                  </PermissionGuard>
-                  {/* Packing Plant - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="packing_plant"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'packing' && (
-                      <PackingPlantPage activePage={activeSubPages.packing} t={t} />
-                    )}
-                  </PermissionGuard>
-                  {/* Project Management */}
-                  {currentPage === 'projects' && (
-                    <ProjectManagementPage
-                      activePage={activeSubPages.projects}
-                      t={t}
-                      onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
-                    />
-                  )}
-                </Suspense>
-              </div>
-            </main>
+    <ThemeProvider>
+      <ErrorBoundary
+        fallback={
+          <div className="flex items-center justify-center min-h-screen text-red-600">
+            Terjadi error pada aplikasi. Silakan refresh halaman.
           </div>
-        </div>
-        <Modal
-          isOpen={isUserModalOpen}
-          onClose={handleCloseUserModal}
-          title={editingUser ? t.edit_user_title : t.add_user_title}
-        >
-          <UserForm
-            user={editingUser}
-            onClose={handleCloseUserModal}
-            onSuccess={handleCloseUserModal}
-            language={language}
-          />
-        </Modal>
-        <ProfileEditModal
-          isOpen={isProfileModalOpen}
-          onClose={handleCloseProfileModal}
-          user={currentUser}
-          onSave={(updatedUser) => {
-            if (currentUser) {
-              updateUser(currentUser.id, updatedUser);
-              setToastMessage(t.avatar_updated || 'Profile updated successfully!');
-              setToastType('success');
-              setShowToast(true);
-              handleCloseProfileModal();
-            }
-          }}
-          t={t}
-        />
-        {showPasswordDisplay && (
-          <PasswordDisplay
-            password={generatedPassword}
-            username={newUsername}
-            fullName={newUserFullName}
-            onClose={() => setShowPasswordDisplay(false)}
-            t={t}
-          />
-        )}
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          isVisible={showToast}
-          onClose={() => setShowToast(false)}
-          duration={4000}
-        />
-        <Modal
-          isOpen={isSignOutModalOpen}
-          onClose={handleSignOutCancel}
-          title={t.confirm_sign_out_title}
-        >
-          <div className="p-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600 dark:text-red-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-                  Konfirmasi Keluar
-                </h4>
-                <p className="text-slate-600 dark:text-slate-400">{t.confirm_sign_out_message}</p>
-              </div>
+        }
+      >
+        <div>
+          <div className="min-h-screen bg-white dark:bg-slate-900 font-sans compact">
+            <Sidebar
+              currentPage={currentPage}
+              onNavigate={handleNavigate}
+              t={t}
+              currentLanguage={language}
+              onLanguageChange={setLanguage}
+              isOpen={isSidebarOpen}
+              onClose={handleCloseSidebar}
+              currentUser={currentUser}
+            />
+            <div
+              className="flex flex-col min-h-screen transition-all duration-300"
+              style={{
+                marginLeft: isMobile ? '0' : '5rem', // 80px untuk compact sidebar width (w-20)
+              }}
+            >
+              <Header
+                pageTitle={getPageTitle()}
+                showAddUserButton={false}
+                onAddUser={handleOpenAddUserModal}
+                t={t}
+                onNavigate={handleNavigate}
+                onSignOut={handleSignOutClick}
+                currentUser={currentUser}
+                onToggleSidebar={handleToggleSidebar}
+              />
+              <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
+                <div className="max-w-none w-full">
+                  <Suspense
+                    fallback={
+                      <LoadingSkeleton
+                        variant="rectangular"
+                        height={48}
+                        width={48}
+                        className="mx-auto mt-24"
+                      />
+                    }
+                  >
+                    {/* Dashboard - Check permission */}
+                    <PermissionGuard
+                      user={currentUser}
+                      feature="dashboard"
+                      requiredLevel="READ"
+                      fallback={null}
+                    >
+                      {currentPage === 'dashboard' && (
+                        <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
+                      )}
+
+                      {/* Inspection Module */}
+                      {currentPage === 'inspection' && (
+                        <InspectionPage
+                          language={language}
+                          subPage={activeSubPages.inspection}
+                          onNavigate={handleNavigate}
+                        />
+                      )}
+                    </PermissionGuard>
+                    {/* User Management - Only for Super Admin */}
+                    {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
+                      <>
+                        {activeSubPages.users === 'user_list' && <UserListPage />}
+
+                        {activeSubPages.users === 'user_activity' && (
+                          <UserActivityPage users={users} t={t} />
+                        )}
+                      </>
+                    )}
+                    {/* Settings - Accessible to all users */}
+                    {currentPage === 'settings' && (
+                      <SettingsPage
+                        t={t}
+                        user={currentUser}
+                        onOpenProfileModal={handleOpenProfileModal}
+                        currentLanguage={language}
+                        onLanguageChange={setLanguage}
+                      />
+                    )}
+                    {/* WhatsApp Reports - Accessible to all users */}
+                    {currentPage === 'whatsapp-reports' && (
+                      <WhatsAppReportsPage groupId="default-group" />
+                    )}
+                    {/* Plant Operations - Check permission */}
+                    <PermissionGuard
+                      user={currentUser}
+                      feature="plant_operations"
+                      requiredLevel="READ"
+                      fallback={null}
+                    >
+                      {currentPage === 'operations' && (
+                        <PlantOperationsPage
+                          activePage={activeSubPages.operations}
+                          t={t}
+                          plantData={{
+                            loading: plantDataLoading,
+                          }}
+                        />
+                      )}
+                    </PermissionGuard>
+                    {/* Packing Plant - Check permission */}
+                    <PermissionGuard
+                      user={currentUser}
+                      feature="packing_plant"
+                      requiredLevel="READ"
+                      fallback={null}
+                    >
+                      {currentPage === 'packing' && (
+                        <PackingPlantPage activePage={activeSubPages.packing} t={t} />
+                      )}
+                    </PermissionGuard>
+                    {/* Project Management */}
+                    {currentPage === 'projects' && (
+                      <ProjectManagementPage
+                        activePage={activeSubPages.projects}
+                        t={t}
+                        onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
+                      />
+                    )}
+                  </Suspense>
+                </div>
+              </main>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-slate-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10 dark:border-slate-700/50">
-            <button
-              onClick={handleSignOutCancel}
-              className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
-            >
-              {t.cancel_button}
-            </button>
-            <button
-              onClick={handleSignOutConfirm}
-              className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
-            >
-              {t.header_sign_out}
-            </button>
-          </div>
-        </Modal>
-      </div>
-    </ErrorBoundary>
+          <Modal
+            isOpen={isUserModalOpen}
+            onClose={handleCloseUserModal}
+            title={editingUser ? t.edit_user_title : t.add_user_title}
+          >
+            <UserForm
+              user={editingUser}
+              onClose={handleCloseUserModal}
+              onSuccess={handleCloseUserModal}
+              language={language}
+            />
+          </Modal>
+          <ProfileEditModal
+            isOpen={isProfileModalOpen}
+            onClose={handleCloseProfileModal}
+            user={currentUser}
+            onSave={(updatedUser) => {
+              if (currentUser) {
+                updateUser(currentUser.id, updatedUser);
+                setToastMessage(t.avatar_updated || 'Profile updated successfully!');
+                setToastType('success');
+                setShowToast(true);
+                handleCloseProfileModal();
+              }
+            }}
+            t={t}
+          />
+          {showPasswordDisplay && (
+            <PasswordDisplay
+              password={generatedPassword}
+              username={newUsername}
+              fullName={newUserFullName}
+              onClose={() => setShowPasswordDisplay(false)}
+              t={t}
+            />
+          )}
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            isVisible={showToast}
+            onClose={() => setShowToast(false)}
+            duration={4000}
+          />
+          <Modal
+            isOpen={isSignOutModalOpen}
+            onClose={handleSignOutCancel}
+            title={t.confirm_sign_out_title}
+          >
+            <div className="p-8">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-red-600 dark:text-red-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                    Konfirmasi Keluar
+                  </h4>
+                  <p className="text-slate-600 dark:text-slate-400">{t.confirm_sign_out_message}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gradient-to-r from-slate-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10 dark:border-slate-700/50">
+              <button
+                onClick={handleSignOutCancel}
+                className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
+              >
+                {t.cancel_button}
+              </button>
+              <button
+                onClick={handleSignOutConfirm}
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
+              >
+                {t.header_sign_out}
+              </button>
+            </div>
+          </Modal>
+        </div>
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 };
 
