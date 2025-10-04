@@ -38,6 +38,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   onClose?: () => void;
   autoHide?: boolean; // New prop untuk mengaktifkan auto-hide
+  currentUser?: any; // Add currentUser prop
 }
 
 interface NavLinkProps {
@@ -341,11 +342,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   // Memoize page arrays untuk performa yang lebih baik
-  const plantOperationPages = useMemo(
-    () => [
+  const plantOperationPages = useMemo(() => {
+    const allPages = [
       { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
       {
         key: 'op_report',
+        icon: <ClipboardDocumentListIcon className={iconClass} />,
+      },
+      {
+        key: 'op_wag_report',
         icon: <ClipboardDocumentListIcon className={iconClass} />,
       },
       { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
@@ -370,9 +375,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         icon: <BuildingLibraryIcon className={iconClass} />,
       },
       { key: 'op_master_data', icon: <ArchiveBoxIcon className={iconClass} /> },
-    ],
-    [iconClass]
-  );
+    ];
+
+    // For Guest users, only allow specific pages
+    if (currentUser?.role === 'Guest') {
+      const allowedGuestPages = ['op_dashboard', 'op_report', 'op_wag_report'];
+      return allPages.filter((page) => allowedGuestPages.includes(page.key));
+    }
+
+    return allPages;
+  }, [iconClass, currentUser]);
 
   const packingPlantPages = useMemo(
     () => [

@@ -349,6 +349,13 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
               // TODO: Implement proper inspection permissions
               return true;
             })
+            .filter((page) => {
+              // For Guest users, hide New Inspection (insp_form)
+              if (currentUser?.role === 'Guest' && page.key === 'insp_form') {
+                return false;
+              }
+              return true;
+            })
             .map((page) => ({
               key: page.key,
               label:
@@ -359,6 +366,12 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
         case 'operations':
           return navigationData.plantOperationPages
             .filter((page) => {
+              // For Guest users, only allow specific pages
+              if (currentUser?.role === 'Guest') {
+                const allowedGuestPages = ['op_dashboard', 'op_report', 'op_wag_report'];
+                return allowedGuestPages.includes(page.key);
+              }
+
               // Hide Master Data for non-admin users
               if (page.key === 'op_master_data' && !isAdminOrSuperAdmin) {
                 return false;
@@ -606,14 +619,16 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             />
           )}
 
-          {/* Settings - Accessible to all users */}
-          <IconButton
-            ref={settingsButtonRef}
-            icon={<CogIcon className={iconClass} />}
-            label={t.header_settings}
-            isActive={currentPage === 'settings'}
-            onClick={() => handleNavigate('settings')}
-          />
+          {/* Settings - Accessible to all users except Guest */}
+          {currentUser?.role !== 'Guest' && (
+            <IconButton
+              ref={settingsButtonRef}
+              icon={<CogIcon className={iconClass} />}
+              label={t.header_settings}
+              isActive={currentPage === 'settings'}
+              onClick={() => handleNavigate('settings')}
+            />
+          )}
 
           {/* User Management - Only for Super Admin */}
           {currentUser?.role === 'Super Admin' && (

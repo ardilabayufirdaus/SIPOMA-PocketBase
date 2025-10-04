@@ -81,11 +81,29 @@ const LoginPage: React.FC = () => {
         is_active: true,
         permissions: {
           dashboard: 'READ',
-          plant_operations: {},
-          packing_plant: 'NONE',
-          project_management: 'NONE',
-          system_settings: 'NONE',
-          user_management: 'NONE',
+          plant_operations: {
+            'Tonasa 2/3': {
+              '220': 'READ',
+              '320': 'READ',
+            },
+            'Tonasa 4': {
+              '419': 'READ',
+              '420': 'READ',
+            },
+            'Tonasa 5': {
+              '552': 'READ',
+              '553': 'READ',
+            },
+            Packing: {
+              Unit1: 'READ',
+              Unit2: 'READ',
+            },
+          },
+          packing_plant: 'READ',
+          inspection: 'READ',
+          project_management: 'READ',
+          system_settings: 'READ',
+          user_management: 'READ',
         },
         last_active: new Date(),
         created_at: new Date(),

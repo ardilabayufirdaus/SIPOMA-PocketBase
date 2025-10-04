@@ -553,11 +553,13 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({
               icon={<ChartBarIcon className="w-5 h-5" />}
               onClick={() => onNavigate('operations', 'op_dashboard')}
             />
-            <QuickLinkCard
-              title="Settings"
-              icon={<CogIcon className="w-5 h-5" />}
-              onClick={() => onNavigate('settings')}
-            />
+            {currentUser?.role !== 'Guest' && (
+              <QuickLinkCard
+                title="Settings"
+                icon={<CogIcon className="w-5 h-5" />}
+                onClick={() => onNavigate('settings')}
+              />
+            )}
           </div>
         </motion.div>
 
