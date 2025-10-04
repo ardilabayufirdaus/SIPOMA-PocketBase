@@ -1,21 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CcrDowntimeData } from '../../types';
 import { usePicSettings } from '../../hooks/usePicSettings';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
   onSave: (record: CcrDowntimeData | Omit<CcrDowntimeData, 'id' | 'date'>) => void;
   onCancel: () => void;
-  t: any;
+  t: Record<string, string>;
   plantUnits: string[];
 }
 
@@ -26,21 +20,21 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   t,
   plantUnits,
 }) => {
-  // Enhanced accessibility hooks
-  const announceToScreenReader = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
-
   const { records: picSettings } = usePicSettings();
-  const [formData, setFormData] = useState({
+
+  // Track if we've set initial defaults to avoid overriding user changes
+  const hasSetDefaults = useRef(false);
+
+  // Initialize form data only once when component mounts
+  const [formData, setFormData] = useState(() => ({
     start_time: '00:00:00',
     end_time: '00:00:00',
     unit: plantUnits[0] || '',
     pic: picSettings[0]?.pic || '',
     problem: '',
-  });
+  }));
 
+  // Effect for editing mode - only reset when recordToEdit changes
   useEffect(() => {
     if (recordToEdit) {
       setFormData({
@@ -50,14 +44,23 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         pic: recordToEdit.pic,
         problem: recordToEdit.problem,
       });
-    } else {
-      setFormData({
-        start_time: '00:00:00',
-        end_time: '00:00:00',
-        unit: plantUnits.length > 0 ? plantUnits[0] : '',
-        pic: picSettings.length > 0 ? picSettings[0]?.pic || '' : '',
-        problem: '',
-      });
+      hasSetDefaults.current = true; // Mark as set for editing mode
+    }
+  }, [recordToEdit]);
+
+  // Effect for add mode - set default values only once when data becomes available
+  useEffect(() => {
+    if (
+      !recordToEdit &&
+      !hasSetDefaults.current &&
+      (picSettings.length > 0 || plantUnits.length > 0)
+    ) {
+      setFormData((prev) => ({
+        ...prev,
+        unit: prev.unit || (plantUnits.length > 0 ? plantUnits[0] : ''),
+        pic: prev.pic || (picSettings.length > 0 ? picSettings[0]?.pic || '' : ''),
+      }));
+      hasSetDefaults.current = true;
     }
   }, [recordToEdit, picSettings, plantUnits]);
 

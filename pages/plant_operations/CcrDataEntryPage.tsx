@@ -620,7 +620,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   // Downtime Data Hooks and State
   const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime, refetch } =
-    useCcrDowntimeData();
+    useCcrDowntimeData(selectedDate);
   const dailyDowntimeData = useMemo(() => {
     const allDowntimeForDate = getDowntimeForDate(selectedDate);
     if (!selectedCategory) {
