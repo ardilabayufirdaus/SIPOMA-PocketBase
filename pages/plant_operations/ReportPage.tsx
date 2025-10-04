@@ -342,7 +342,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         groupedHeaders: reportConfig,
         rows,
         footer: footerStats,
-        title: `${t.op_report_title} - ${selectedUnit}`,
+        title: `${t.op_report_title.toUpperCase()} - ${selectedUnit.toUpperCase()}`,
         date: formatDate(selectedDate),
         downtimeData: filteredDowntimeData,
         siloData: filteredSiloData,
@@ -394,14 +394,21 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       const rect = element.getBoundingClientRect();
       const canvas = await html2canvas(element, {
-        scale: 4,
+        scale: 8,
         width: rect.width,
         height: rect.height,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+        imageTimeout: 0,
       });
+
+      // Disable image smoothing for sharper image
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+      }
 
       // Restore original styling
       originalStyles.forEach(({ element, originalClass }) => {
