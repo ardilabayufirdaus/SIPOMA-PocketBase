@@ -31,20 +31,20 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
       <div className="p-2 border-b border-slate-200 dark:border-slate-700">
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+        <h3 className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
           {t.parameter_data}
         </h3>
       </div>
 
-      <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-xs min-w-max">
+      <div className="max-w-full overflow-hidden">
+        <table className="w-full text-xs sm:text-xs table-fixed">
           <thead>
             {/* Grouped Headers */}
             <tr className="bg-slate-50 dark:bg-slate-700">
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-slate-50 dark:bg-slate-700 z-10 min-w-10 align-middle">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-slate-50 dark:bg-slate-700 z-10 w-10 align-middle">
                 {t.hour}
               </th>
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 min-w-16 align-middle">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 w-12 align-middle">
                 {t.shift}
               </th>
               {groupedHeaders.map((group) => (
@@ -68,9 +68,9 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
               {allParams.map((param) => (
                 <th
                   key={param.id}
-                  className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600 last:border-r-0 min-w-16 align-middle"
+                  className="px-1 py-1 text-center font-medium text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-600 last:border-r-0 w-12 align-middle"
                 >
-                  <div className="text-xs leading-tight">{param.parameter}</div>
+                  <div className="text-xs leading-tight break-words">{param.parameter}</div>
                 </th>
               ))}
             </tr>
@@ -89,7 +89,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                 <td className="px-1 py-1 text-center font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-inherit z-10 align-middle">
                   {row.hour}
                 </td>
-                <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
+                <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-xs">
                   {row.shift}
                 </td>
                 {allParams.map((param) => {
@@ -102,7 +102,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                   return (
                     <td
                       key={param.id}
-                      className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 last:border-r-0 align-middle"
+                      className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 last:border-r-0 align-middle text-xs"
                     >
                       {displayValue}
                     </td>
@@ -117,7 +117,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                 <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 sticky left-0 bg-inherit z-10 align-middle">
                   {statName}
                 </td>
-                <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
+                <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-xs">
                   -
                 </td>
                 {allParams.map((param) => {
@@ -125,7 +125,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                   return (
                     <td
                       key={param.id}
-                      className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 last:border-r-0 align-middle"
+                      className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 last:border-r-0 align-middle text-xs"
                     >
                       {value}
                     </td>

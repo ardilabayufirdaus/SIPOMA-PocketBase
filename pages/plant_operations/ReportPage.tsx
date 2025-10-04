@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import html2canvas from 'html2canvas';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCcrParameterData } from '../../hooks/useCcrParameterData';
@@ -473,54 +474,56 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
     ctx.stroke();
   }
 
-  // 9. Draw Downtime Table (if data exists)
+  // 9. Draw Downtime Table (always show)
+  currentY += DOWNTIME_SPACING;
+  const downtimeTableStartY = currentY;
+
+  // Draw Title
+  ctx.font = `bold 18px ${FONT_FAMILY}`;
+  ctx.fillStyle = styles.textColor;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(t.downtime_report_title, PADDING, currentY + DOWNTIME_TITLE_HEIGHT / 2);
+  currentY += DOWNTIME_TITLE_HEIGHT;
+
+  // Define columns
+  const downtimeTableWidth = baseWidth - PADDING * 2;
+  const dtCols = {
+    start: 100,
+    end: 100,
+    duration: 120,
+    pic: 200,
+    problem: 0,
+  };
+  dtCols.problem = downtimeTableWidth - dtCols.start - dtCols.end - dtCols.duration - dtCols.pic;
+
+  const dtHeaders = [
+    { key: 'start_time', label: t.start_time, width: dtCols.start },
+    { key: 'end_time', label: t.end_time, width: dtCols.end },
+    { key: 'duration', label: t.duration, width: dtCols.duration },
+    { key: 'pic', label: t.pic, width: dtCols.pic },
+    { key: 'problem', label: t.problem, width: dtCols.problem },
+  ];
+
+  // Draw Headers
+  ctx.fillStyle = styles.tableHeaderBg;
+  ctx.fillRect(PADDING, currentY, downtimeTableWidth, DOWNTIME_HEADER_HEIGHT);
+  ctx.font = styles.tableHeaderTextBold;
+  ctx.fillStyle = styles.tableHeaderText;
+  ctx.textAlign = 'center';
+  let headerX = PADDING;
+  dtHeaders.forEach((header) => {
+    ctx.fillText(header.label, headerX + header.width / 2, currentY + DOWNTIME_HEADER_HEIGHT / 2);
+    headerX += header.width;
+  });
+  currentY += DOWNTIME_HEADER_HEIGHT;
+
+  // Draw Rows
+  ctx.font = styles.rowText;
+  ctx.fillStyle = styles.textColor;
+
   if (downtimeData && downtimeData.length > 0) {
-    currentY += DOWNTIME_SPACING;
-    const downtimeTableStartY = currentY;
-
-    // Draw Title
-    ctx.font = `bold 18px ${FONT_FAMILY}`;
-    ctx.fillStyle = styles.textColor;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(t.downtime_report_title, PADDING, currentY + DOWNTIME_TITLE_HEIGHT / 2);
-    currentY += DOWNTIME_TITLE_HEIGHT;
-
-    // Define columns
-    const downtimeTableWidth = baseWidth - PADDING * 2;
-    const dtCols = {
-      start: 100,
-      end: 100,
-      duration: 120,
-      pic: 200,
-      problem: 0,
-    };
-    dtCols.problem = downtimeTableWidth - dtCols.start - dtCols.end - dtCols.duration - dtCols.pic;
-
-    const dtHeaders = [
-      { key: 'start_time', label: t.start_time, width: dtCols.start },
-      { key: 'end_time', label: t.end_time, width: dtCols.end },
-      { key: 'duration', label: t.duration, width: dtCols.duration },
-      { key: 'pic', label: t.pic, width: dtCols.pic },
-      { key: 'problem', label: t.problem, width: dtCols.problem },
-    ];
-
-    // Draw Headers
-    ctx.fillStyle = styles.tableHeaderBg;
-    ctx.fillRect(PADDING, currentY, downtimeTableWidth, DOWNTIME_HEADER_HEIGHT);
-    ctx.font = styles.tableHeaderTextBold;
-    ctx.fillStyle = styles.tableHeaderText;
-    ctx.textAlign = 'center';
-    let headerX = PADDING;
-    dtHeaders.forEach((header) => {
-      ctx.fillText(header.label, headerX + header.width / 2, currentY + DOWNTIME_HEADER_HEIGHT / 2);
-      headerX += header.width;
-    });
-    currentY += DOWNTIME_HEADER_HEIGHT;
-
-    // Draw Rows
-    ctx.font = styles.rowText;
-    ctx.fillStyle = styles.textColor;
+    // Draw actual downtime data
     downtimeData.forEach((d: CcrDowntimeData, index: number) => {
       if (index % 2 !== 0) {
         ctx.fillStyle = '#F8FAFC';
@@ -554,25 +557,37 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
 
       currentY += DOWNTIME_ROW_HEIGHT;
     });
-
-    // Draw Borders for Downtime Table
-    ctx.strokeStyle = styles.borderColor;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(
-      PADDING,
-      downtimeTableStartY + DOWNTIME_TITLE_HEIGHT,
-      downtimeTableWidth,
-      currentY - (downtimeTableStartY + DOWNTIME_TITLE_HEIGHT)
+  } else {
+    // Draw empty row with message
+    ctx.fillStyle = '#F8FAFC';
+    ctx.fillRect(PADDING, currentY, downtimeTableWidth, DOWNTIME_ROW_HEIGHT);
+    ctx.fillStyle = styles.textColor;
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      t.no_downtime_recorded || 'Tidak ada downtime tercatat',
+      PADDING + downtimeTableWidth / 2,
+      currentY + DOWNTIME_ROW_HEIGHT / 2
     );
-    ctx.beginPath();
-    let vLineX = PADDING;
-    dtHeaders.slice(0, -1).forEach((h) => {
-      vLineX += h.width;
-      ctx.moveTo(vLineX, downtimeTableStartY + DOWNTIME_TITLE_HEIGHT);
-      ctx.lineTo(vLineX, currentY);
-    });
-    ctx.stroke();
+    currentY += DOWNTIME_ROW_HEIGHT;
   }
+
+  // Draw Borders for Downtime Table
+  ctx.strokeStyle = styles.borderColor;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(
+    PADDING,
+    downtimeTableStartY + DOWNTIME_TITLE_HEIGHT,
+    downtimeTableWidth,
+    currentY - (downtimeTableStartY + DOWNTIME_TITLE_HEIGHT)
+  );
+  ctx.beginPath();
+  let vLineX = PADDING;
+  dtHeaders.slice(0, -1).forEach((h) => {
+    vLineX += h.width;
+    ctx.moveTo(vLineX, downtimeTableStartY + DOWNTIME_TITLE_HEIGHT);
+    ctx.lineTo(vLineX, currentY);
+  });
+  ctx.stroke();
 };
 
 const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
@@ -621,7 +636,11 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     }>;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { records: reportSettings, loading: reportSettingsLoading } = useReportSettings();
   const { records: parameterSettings, loading: parameterSettingsLoading } = useParameterSettings();
@@ -723,10 +742,10 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   ]);
 
   const getShiftForHour = (h: number) => {
-    if (h >= 1 && h <= 7) return `${t.shift_3} (${t.shift_3_cont})`;
-    if (h >= 8 && h <= 15) return t.shift_1;
-    if (h >= 16 && h <= 22) return t.shift_2;
-    return t.shift_3;
+    if (h >= 1 && h <= 7) return 'S3C';
+    if (h >= 8 && h <= 15) return 'S1';
+    if (h >= 16 && h <= 22) return 'S2';
+    return 'S3';
   };
 
   const handleGenerateReport = useCallback(async () => {
@@ -794,18 +813,18 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         operatorData = [
           {
-            shift: `${t.shift_3} (${t.shift_3_cont})`,
+            shift: 'S3C',
             name: getOperatorForShift([1, 2, 3, 4, 5, 6, 7]),
           },
           {
-            shift: t.shift_1,
+            shift: 'S1',
             name: getOperatorForShift([8, 9, 10, 11, 12, 13, 14, 15]),
           },
           {
-            shift: t.shift_2,
+            shift: 'S2',
             name: getOperatorForShift([16, 17, 18, 19, 20, 21, 22]),
           },
-          { shift: t.shift_3, name: getOperatorForShift([23, 24]) },
+          { shift: 'S3', name: getOperatorForShift([23, 24]) },
         ];
       }
 
@@ -895,6 +914,52 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     parameterSettings,
   ]);
 
+  const handleCopyImage = async () => {
+    if (!reportRef.current) return;
+
+    setIsCopying(true);
+    setCopySuccess(false);
+
+    try {
+      const element = reportRef.current;
+      const rect = element.getBoundingClientRect();
+      const canvas = await html2canvas(element, {
+        scale: 4,
+        width: rect.width,
+        height: rect.height,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          setCopySuccess(true);
+          // Clear any existing timeout before setting new one
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => setCopySuccess(false), 2000);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to copy report as image:', error);
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md">
@@ -971,6 +1036,18 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 {isLoading ? t.generating_report_message : t.generate_report_button}
               </EnhancedButton>
+              {reportData && (
+                <EnhancedButton
+                  onClick={handleCopyImage}
+                  variant="secondary"
+                  size="md"
+                  className="w-full sm:w-auto"
+                  ariaLabel="Copy report as image"
+                  disabled={isCopying}
+                >
+                  {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
+                </EnhancedButton>
+              )}
             </div>
           </div>
         </div>
@@ -991,17 +1068,19 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
         {reportData && !isLoading && (
-          <InteractiveReport
-            groupedHeaders={reportData.groupedHeaders}
-            rows={reportData.rows}
-            footer={reportData.footer}
-            title={reportData.title}
-            date={reportData.date}
-            downtimeData={reportData.downtimeData}
-            siloData={reportData.siloData}
-            operatorData={reportData.operatorData}
-            t={t}
-          />
+          <div ref={reportRef}>
+            <InteractiveReport
+              groupedHeaders={reportData.groupedHeaders}
+              rows={reportData.rows}
+              footer={reportData.footer}
+              title={reportData.title}
+              date={reportData.date}
+              downtimeData={reportData.downtimeData}
+              siloData={reportData.siloData}
+              operatorData={reportData.operatorData}
+              t={t}
+            />
+          </div>
         )}
         {!isLoading && !reportData && reportConfig.length > 0 && (
           <div className="text-center text-slate-400 dark:text-slate-500">

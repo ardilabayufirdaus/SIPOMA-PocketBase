@@ -8,10 +8,6 @@ interface DowntimeTableProps {
 }
 
 export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t }) => {
-  if (!downtimeData || downtimeData.length === 0) {
-    return null;
-  }
-
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mt-6">
       <div className="p-2 border-b border-slate-200 dark:border-slate-700">
@@ -42,37 +38,53 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
             </tr>
           </thead>
           <tbody>
-            {downtimeData.map((downtime, index) => {
-              const { hours, minutes } = calculateDuration(downtime.start_time, downtime.end_time);
-              const durationText = formatDuration(hours, minutes);
+            {downtimeData && downtimeData.length > 0 ? (
+              downtimeData.map((downtime, index) => {
+                const { hours, minutes } = calculateDuration(
+                  downtime.start_time,
+                  downtime.end_time
+                );
+                const durationText = formatDuration(hours, minutes);
 
-              return (
-                <tr
-                  key={`${downtime.start_time}-${downtime.end_time}-${index}`}
-                  className={`${
-                    index % 2 === 0 ? 'bg-white dark:bg-slate-800' : 'bg-slate-50 dark:bg-slate-700'
-                  } hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors`}
+                return (
+                  <tr
+                    key={`${downtime.start_time}-${downtime.end_time}-${index}`}
+                    className={`${
+                      index % 2 === 0
+                        ? 'bg-white dark:bg-slate-800'
+                        : 'bg-slate-50 dark:bg-slate-700'
+                    } hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors`}
+                  >
+                    <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
+                      {downtime.start_time}
+                    </td>
+                    <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
+                      {downtime.end_time}
+                    </td>
+                    <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
+                      {durationText}
+                    </td>
+                    <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
+                      {downtime.pic}
+                    </td>
+                    <td className="px-2 py-2 text-slate-800 dark:text-slate-200 max-w-xs align-middle">
+                      <div className="truncate" title={downtime.problem}>
+                        {downtime.problem}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr className="bg-slate-50 dark:bg-slate-700">
+                <td
+                  colSpan={5}
+                  className="px-2 py-4 text-center text-slate-600 dark:text-slate-400 italic"
                 >
-                  <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
-                    {downtime.start_time}
-                  </td>
-                  <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
-                    {downtime.end_time}
-                  </td>
-                  <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
-                    {durationText}
-                  </td>
-                  <td className="px-2 py-2 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle">
-                    {downtime.pic}
-                  </td>
-                  <td className="px-2 py-2 text-slate-800 dark:text-slate-200 max-w-xs align-middle">
-                    <div className="truncate" title={downtime.problem}>
-                      {downtime.problem}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+                  {t.no_downtime_recorded || 'Tidak ada downtime tercatat'}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
