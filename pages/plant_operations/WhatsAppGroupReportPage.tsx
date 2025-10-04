@@ -207,10 +207,78 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         year: 'numeric',
       });
 
-      let report = `*Laporan Harian Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+      let report = `📊 *LAPORAN HARIAN PRODUKSI* 📊\n`;
+      report += `🏭 *${selectedPlantCategory}*\n`;
+      report += `📅 ${formattedDate}\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
+
+      // Summary Section
+      let totalProductionAll = 0;
+      let totalFeedAll = 0;
+      let totalHoursAll = 0;
+      let unitCount = 0;
+      let totalDowntimeHours = 0;
+
+      // Calculate summary data
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) continue;
+
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        const feedAvg = feedData?.average || feedData?.total || 0;
+        const runningHoursAvg = runningHoursData?.total || 0;
+        const totalProduction = productionData?.total || feedAvg * runningHoursAvg;
+
+        totalProductionAll += totalProduction;
+        totalFeedAll += feedAvg;
+        totalHoursAll += runningHoursAvg;
+        unitCount++;
+      }
+
+      // Calculate total downtime
+      const allDowntimeNotes = await getDowntimeForDate(date);
+      totalDowntimeHours = calculateTotalDowntime(allDowntimeNotes);
+
+      // Summary Header
+      report += `📈 *RINGKASAN HARIAN*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `├─ Total Unit Aktif: ${unitCount}\n`;
+      report += `├─ Total Produksi: ${formatIndonesianNumber(totalProductionAll, 1)} ton\n`;
+      report += `├─ Rata-rata Feed: ${formatIndonesianNumber(totalFeedAll / unitCount, 1)} tph\n`;
+      report += `├─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
+      report += `└─ Total Downtime: ${formatIndonesianNumber(totalDowntimeHours, 1)} jam\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
@@ -221,7 +289,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         const { parameterData: allParameterData } = unitData;
 
-        report += `*Plant Unit Cement Mill ${unit}*\n`;
+        report += `🏭 *UNIT MILL ${unit}*\n`;
+        report += `━━━━━━━━━━━━━━━━━━━━━\n`;
 
         // Get values from footer data (footer data is stored per category)
         // Filter footer data for parameters that belong to this unit
@@ -236,7 +305,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         // Cari data berdasarkan parameter_id di footer data
         const feedData = unitFooterData.find((f) => {
           const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return paramSetting && paramSetting.parameter === 'Feed \(tph\)';
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
         });
         const runningHoursData = unitFooterData.find((f) => {
           const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
@@ -283,13 +352,19 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           productType = calculateTextMode(productTypeValues);
         }
 
-        report += `Tipe Produk  : ${productType}\n`;
-        report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
-        report += `Jam Operasi  : ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
-        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+        // Production Overview dengan status
+        const efficiency =
+          runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
+        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
+
+        report += `📈 *PRODUKSI HARIAN* ${statusEmoji}\n`;
+        report += `├─ Tipe Produk: ${productType}\n`;
+        report += `├─ Feed Rate: ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
+        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
         // Pemakaian Bahan
-        report += `*Pemakaian Bahan*\n`;
+        report += `*PEMAKAIAN BAHAN*\n`;
         const bahanParams = [
           { name: 'Clinker', param: 'counter feeder clinker' },
           { name: 'Gypsum', param: 'counter feeder gypsum' },
@@ -308,10 +383,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
-          report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
         });
+        report += `\n`;
 
-        report += `\n*Setting Feeder*\n`;
+        report += `*SETTING FEEDER*\n`;
         const feederParams = [
           { name: 'Clinker', param: 'set. feeder clinker' },
           { name: 'Gypsum', param: 'set. feeder gypsum' },
@@ -330,25 +406,30 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          report += `- ${name} : ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
         });
+        report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
         // Catatan Tambahan - downtime data
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => d.unit.includes(unit));
-        const notes = unitDowntime
-          .map((d) => {
-            const start = new Date(`${d.date} ${d.start_time}`);
-            const end = new Date(`${d.date} ${d.end_time}`);
-            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
-          })
-          .join('\n');
-        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+        if (unitDowntime.length > 0) {
+          report += `⚠️ *CATATAN TAMBAHAN*\n`;
+          const notes = unitDowntime
+            .map((d) => {
+              const start = new Date(`${d.date} ${d.start_time}`);
+              const end = new Date(`${d.date} ${d.end_time}`);
+              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j)\n├─ Masalah: ${d.problem}\n└─ PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+            })
+            .join('\n');
+          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        }
       }
 
-      // Silo Data - hanya shift 3
-      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      // Silo Data - status akhir hari (shift 3)
+      report += `🏪 *STATUS SILO SEMEN*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         return siloInfo && siloInfo.plant_category === selectedPlantCategory;
@@ -362,11 +443,22 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift3Data.content
               ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+          const statusEmoji =
+            percentage !== 'N/A' && parseFloat(percentage) > 80
+              ? '🟢'
+              : percentage !== 'N/A' && parseFloat(percentage) > 50
+                ? '🟡'
+                : '🔴';
+          report += `├─ ${siloName}\n`;
+          report += `├─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m\n`;
+          report += `├─ 📦 Content: ${shift3Data.content || 'N/A'} ton\n`;
+          report += `└─ Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      report += `\n*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `✅ *Demikian laporan harian ini. Terima kasih.*\n\n`;
+      report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
     } catch (error) {
@@ -422,10 +514,73 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
       const operatorName = getOperatorName(allParameterData);
 
-      let report = `*Laporan Shift 1 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+      let report = `🌅 *LAPORAN SHIFT 1 PRODUKSI* 🌅\n`;
+      report += `🏭 *${selectedPlantCategory}*\n`;
+      report += `📅 ${formattedDate}\n`;
+      report += `⏰ Shift: 07:00 - 15:00\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
+
+      // Summary Section
+      let totalProductionAll = 0;
+      let totalFeedAll = 0;
+      let totalHoursAll = 0;
+      let unitCount = 0;
+
+      // Calculate summary data
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) continue;
+
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        const feedAvg = feedData?.shift1_average || 0;
+        const runningHoursAvg = runningHoursData?.shift1_total || 0;
+        const totalProduction = productionData?.shift1_total || feedAvg * runningHoursAvg;
+
+        totalProductionAll += totalProduction;
+        totalFeedAll += feedAvg;
+        totalHoursAll += runningHoursAvg;
+        unitCount++;
+      }
+
+      // Summary Header
+      report += `📊 *RINGKASAN SHIFT 1*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `├─ Total Unit Aktif: ${unitCount}\n`;
+      report += `├─ Total Produksi: ${formatIndonesianNumber(totalProductionAll, 1)} ton\n`;
+      report += `├─ Rata-rata Feed: ${formatIndonesianNumber(totalFeedAll / unitCount, 1)} tph\n`;
+      report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
@@ -436,7 +591,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         const { parameterData: allParameterData } = unitData;
 
-        report += `*Plant Unit Cement Mill ${unit}*\n`;
+        report += `🏭 *UNIT MILL ${unit}*\n`;
+        report += `━━━━━━━━━━━━━━━━━━━━\n`;
 
         // Get values from footer data (footer data is stored per category)
         // Filter footer data for parameters that belong to this unit
@@ -451,7 +607,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         // Cari data berdasarkan parameter_id di footer data
         const feedData = unitFooterData.find((f) => {
           const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-          return paramSetting && paramSetting.parameter === 'Feed \(tph\)';
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
         });
         const runningHoursData = unitFooterData.find((f) => {
           const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
@@ -498,13 +654,19 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           productType = calculateTextMode(productTypeValues);
         }
 
-        report += `Tipe Produk  : ${productType}\n`;
-        report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
-        report += `Jam Operasi  : ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
-        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+        // Production Overview dengan status
+        const efficiency =
+          runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
+        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
+
+        report += `📈 *PRODUKSI OVERVIEW* ${statusEmoji}\n`;
+        report += `├─ Tipe Produk: ${productType}\n`;
+        report += `├─ Feed Rate: ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
+        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
         // Pemakaian Bahan - menggunakan shift1_total
-        report += `*Pemakaian Bahan*\n`;
+        report += `*PEMAKAIAN BAHAN*\n`;
         const bahanParams = [
           { name: 'Clinker', param: 'counter feeder clinker' },
           { name: 'Gypsum', param: 'counter feeder gypsum' },
@@ -523,10 +685,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.shift1_difference || 0) : 0;
-          report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
         });
+        report += `\n`;
 
-        report += `\n*Setting Feeder*\n`;
+        report += `*SETTING FEEDER*\n`;
         const feederParams = [
           { name: 'Clinker', param: 'set. feeder clinker' },
           { name: 'Gypsum', param: 'set. feeder gypsum' },
@@ -545,8 +708,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.shift1_average || 0) : 0;
-          report += `- ${name} : ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
         });
+        report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
         // Catatan Tambahan - downtime data untuk shift 1 (jam 07-15)
         const downtimeNotes = await getDowntimeForDate(date);
@@ -554,19 +718,23 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const startHour = parseInt(d.start_time.split(':')[0]);
           return d.unit.includes(unit) && startHour >= 7 && startHour <= 15;
         });
-        const notes = unitDowntime
-          .map((d) => {
-            const start = new Date(`${d.date} ${d.start_time}`);
-            const end = new Date(`${d.date} ${d.end_time}`);
-            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
-          })
-          .join('\n');
-        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+        if (unitDowntime.length > 0) {
+          report += `⚠️ *CATATAN TAMBAHAN*\n`;
+          const notes = unitDowntime
+            .map((d) => {
+              const start = new Date(`${d.date} ${d.start_time}`);
+              const end = new Date(`${d.date} ${d.end_time}`);
+              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+            })
+            .join('\n');
+          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        }
       }
 
       // Silo Data - hanya shift 1
-      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      report += `🏪 *STATUS SILO SEMEN*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         return siloInfo && siloInfo.plant_category === selectedPlantCategory;
@@ -580,12 +748,24 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift1Data.content
               ? formatIndonesianNumber((shift1Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift1Data.emptySpace || 'N/A'} m, Content ${shift1Data.content || 'N/A'} ton, ${percentage}%\n`;
+          const statusEmoji =
+            percentage !== 'N/A' && parseFloat(percentage) > 80
+              ? '🟢'
+              : percentage !== 'N/A' && parseFloat(percentage) > 50
+                ? '🟡'
+                : '🔴';
+          report += `├─ ${siloName}\n`;
+          report += `├─ 📏 Empty: ${shift1Data.emptySpace || 'N/A'} m\n`;
+          report += `├─ 📦 Content: ${shift1Data.content || 'N/A'} ton\n`;
+          report += `└─ 📊 Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      report += `\n*Operator: ${operatorName}*\n`;
-      report += `*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `👷‍♂️ *OPERATOR: ${operatorName}*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `✅ *Demikian laporan Shift 1 ini. Terima kasih.*\n\n`;
+      report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
     } catch (error) {
@@ -642,10 +822,73 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
       const operatorName = getOperatorName(allParameterData);
 
-      let report = `*Laporan Shift 2 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+      let report = `🌆 *LAPORAN SHIFT 2 PRODUKSI* 🌆\n`;
+      report += `🏭 *${selectedPlantCategory}*\n`;
+      report += `📅 ${formattedDate}\n`;
+      report += `⏰ Shift: 15:00 - 23:00\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
+
+      // Summary Section
+      let totalProductionAll = 0;
+      let totalFeedAll = 0;
+      let totalHoursAll = 0;
+      let unitCount = 0;
+
+      // Calculate summary data
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) continue;
+
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        const feedAvg = feedData?.shift2_average || 0;
+        const runningHoursAvg = runningHoursData?.shift2_total || 0;
+        const totalProduction = productionData?.shift2_total || feedAvg * runningHoursAvg;
+
+        totalProductionAll += totalProduction;
+        totalFeedAll += feedAvg;
+        totalHoursAll += runningHoursAvg;
+        unitCount++;
+      }
+
+      // Summary Header
+      report += `📊 *RINGKASAN SHIFT 2*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `├─ Total Unit Aktif: ${unitCount}\n`;
+      report += `├─ Total Produksi: ${formatIndonesianNumber(totalProductionAll, 1)} ton\n`;
+      report += `├─ Rata-rata Feed: ${formatIndonesianNumber(totalFeedAll / unitCount, 1)} tph\n`;
+      report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
@@ -656,7 +899,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         const { parameterData: allParameterData } = unitData;
 
-        report += `*Plant Unit Cement Mill ${unit}*\n`;
+        report += `🏭 *UNIT MILL ${unit}*\n`;
+        report += `━━━━━━━━━━━━━━━━━━━━\n`;
 
         // Get values from footer data (footer data is stored per category)
         // Filter footer data for parameters that belong to this unit
@@ -718,13 +962,19 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           productType = calculateTextMode(productTypeValues);
         }
 
-        report += `Tipe Produk  : ${productType}\n`;
-        report += `Feed  : ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
-        report += `Jam Operasi  : ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
-        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+        // Production Overview dengan status
+        const efficiency =
+          runningHoursAvg > 0 ? (totalProduction / (feedAvg * runningHoursAvg)) * 100 : 0;
+        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
+
+        report += `📈 *PRODUKSI OVERVIEW* ${statusEmoji}\n`;
+        report += `├─ Tipe Produk: ${productType}\n`;
+        report += `├─ Feed Rate: ${formatIndonesianNumber(feedAvg, 2)} tph\n`;
+        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
+        report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
         // Pemakaian Bahan - menggunakan shift2_total
-        report += `*Pemakaian Bahan*\n`;
+        report += `*PEMAKAIAN BAHAN*\n`;
         const bahanParams = [
           { name: 'Clinker', param: 'counter feeder clinker' },
           { name: 'Gypsum', param: 'counter feeder gypsum' },
@@ -743,10 +993,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.shift2_difference || 0) : 0;
-          report += `- ${name} : ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
         });
+        report += `\n`;
 
-        report += `\n*Setting Feeder*\n`;
+        report += `*SETTING FEEDER*\n`;
         const feederParams = [
           { name: 'Clinker', param: 'set. feeder clinker' },
           { name: 'Gypsum', param: 'set. feeder gypsum' },
@@ -765,8 +1016,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.shift2_average || 0) : 0;
-          report += `- ${name} : ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
         });
+        report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
         // Catatan Tambahan - downtime data untuk shift 2 (jam 15-23)
         const downtimeNotes = await getDowntimeForDate(date);
@@ -774,19 +1026,23 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           const startHour = parseInt(d.start_time.split(':')[0]);
           return d.unit.includes(unit) && startHour >= 15 && startHour <= 23;
         });
-        const notes = unitDowntime
-          .map((d) => {
-            const start = new Date(`${d.date} ${d.start_time}`);
-            const end = new Date(`${d.date} ${d.end_time}`);
-            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
-          })
-          .join('\n');
-        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+        if (unitDowntime.length > 0) {
+          report += `⚠️ *CATATAN TAMBAHAN*\n`;
+          const notes = unitDowntime
+            .map((d) => {
+              const start = new Date(`${d.date} ${d.start_time}`);
+              const end = new Date(`${d.date} ${d.end_time}`);
+              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+            })
+            .join('\n');
+          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        }
       }
 
       // Silo Data - hanya shift 2
-      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      report += `🏪 *STATUS SILO SEMEN*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         return siloInfo && siloInfo.plant_category === selectedPlantCategory;
@@ -800,12 +1056,24 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift2Data.content
               ? formatIndonesianNumber((shift2Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift2Data.emptySpace || 'N/A'} m, Content ${shift2Data.content || 'N/A'} ton, ${percentage}%\n`;
+          const statusEmoji =
+            percentage !== 'N/A' && parseFloat(percentage) > 80
+              ? '🟢'
+              : percentage !== 'N/A' && parseFloat(percentage) > 50
+                ? '🟡'
+                : '🔴';
+          report += `├─ ${siloName}\n`;
+          report += `├─ 📏 Empty: ${shift2Data.emptySpace || 'N/A'} m\n`;
+          report += `├─ 📦 Content: ${shift2Data.content || 'N/A'} ton\n`;
+          report += `└─ 📊 Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      report += `\n*Operator: ${operatorName}*\n`;
-      report += `*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `👷‍♂️ *OPERATOR: ${operatorName}*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `✅ *Demikian laporan Shift 2 ini. Terima kasih.*\n\n`;
+      report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
     } catch (error) {
@@ -871,10 +1139,92 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
       const operatorName = getOperatorName(allParameterData);
 
-      let report = `*Laporan Shift 3 Produksi*\n*${selectedPlantCategory}*\n${formattedDate}\n===============================\n\n`;
+      let report = `🌙 *LAPORAN SHIFT 3 PRODUKSI* 🌙\n`;
+      report += `🏭 *${selectedPlantCategory}*\n`;
+      report += `📅 ${formattedDate}\n`;
+      report += `⏰ Shift: 23:00 - 07:00\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
+
+      // Summary Section
+      let totalProductionAll = 0;
+      let totalFeedAll = 0;
+      let totalHoursAll = 0;
+      let unitCount = 0;
+
+      // Calculate summary data
+      for (const unit of plantUnitsFiltered) {
+        const unitData = unitDataMap.get(unit);
+        if (!unitData) continue;
+
+        const unitParameterIds = parameterSettings
+          .filter((param) => param.category === selectedPlantCategory && param.unit === unit)
+          .map((param) => param.id);
+        const unitFooterData = categoryFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+        const nextDayUnitFooterData = nextDayFooterData.filter((f) =>
+          unitParameterIds.includes(f.parameter_id)
+        );
+
+        const feedData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return paramSetting && paramSetting.parameter === 'Feed (tph)';
+        });
+        const runningHoursData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('running hours') ||
+              paramSetting.parameter.toLowerCase().includes('jam operasi') ||
+              paramSetting.parameter.toLowerCase().includes('operation hours'))
+          );
+        });
+        const productionData = unitFooterData.find((f) => {
+          const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+          return (
+            paramSetting &&
+            (paramSetting.parameter.toLowerCase().includes('production') ||
+              paramSetting.parameter.toLowerCase().includes('total production'))
+          );
+        });
+
+        const feedAvg = feedData?.shift3_average || 0;
+        const feedContAvg =
+          nextDayUnitFooterData.find((f) => f.parameter_id === feedData?.parameter_id)
+            ?.shift3_cont_average || 0;
+        const combinedFeedAvg =
+          feedAvg && feedContAvg ? (feedAvg + feedContAvg) / 2 : feedAvg || feedContAvg;
+
+        const runningHoursTotal = runningHoursData?.shift3_total || 0;
+        const runningHoursContTotal =
+          nextDayUnitFooterData.find((f) => f.parameter_id === runningHoursData?.parameter_id)
+            ?.shift3_cont_total || 0;
+        const combinedRunningHours = runningHoursTotal + runningHoursContTotal;
+
+        const productionTotal = productionData?.shift3_total || 0;
+        const productionContTotal =
+          nextDayUnitFooterData.find((f) => f.parameter_id === productionData?.parameter_id)
+            ?.shift3_cont_total || 0;
+        const combinedProduction = productionTotal + productionContTotal;
+        const totalProduction = combinedProduction || combinedFeedAvg * combinedRunningHours;
+
+        totalProductionAll += totalProduction;
+        totalFeedAll += combinedFeedAvg;
+        totalHoursAll += combinedRunningHours;
+        unitCount++;
+      }
+
+      // Summary Header
+      report += `📊 *RINGKASAN SHIFT 3*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `├─ Total Unit Aktif: ${unitCount}\n`;
+      report += `├─ Total Produksi: ${formatIndonesianNumber(totalProductionAll, 1)} ton\n`;
+      report += `├─ Rata-rata Feed: ${formatIndonesianNumber(totalFeedAll / unitCount, 1)} tph\n`;
+      report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
@@ -885,7 +1235,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         const { parameterData: allParameterData } = unitData;
 
-        report += `*Plant Unit Cement Mill ${unit}*\n`;
+        report += `🏭 *UNIT MILL ${unit}*\n`;
+        report += `━━━━━━━━━━━━━━━━━━━━\n`;
 
         // Get values from footer data (footer data is stored per category)
         // Filter footer data for parameters that belong to this unit
@@ -969,13 +1320,21 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           productType = calculateTextMode(productTypeValues);
         }
 
-        report += `Tipe Produk  : ${productType}\n`;
-        report += `Feed  : ${formatIndonesianNumber(combinedFeedAvg, 2)} tph\n`;
-        report += `Jam Operasi  : ${formatIndonesianNumber(combinedRunningHours, 2)} jam\n`;
-        report += `Total Produksi  : ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+        // Production Overview dengan status
+        const efficiency =
+          combinedRunningHours > 0
+            ? (totalProduction / (combinedFeedAvg * combinedRunningHours)) * 100
+            : 0;
+        const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
+
+        report += `📈 *PRODUKSI OVERVIEW* ${statusEmoji}\n`;
+        report += `├─ Tipe Produk: ${productType}\n`;
+        report += `├─ Feed Rate: ${formatIndonesianNumber(combinedFeedAvg, 2)} tph\n`;
+        report += `├─ Jam Operasi: ${formatIndonesianNumber(combinedRunningHours, 2)} jam\n`;
+        report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
         // Pemakaian Bahan - menggunakan shift3_total + shift3_cont_total
-        report += `*Pemakaian Bahan*\n`;
+        report += `*PEMAKAIAN BAHAN*\n`;
         const bahanParams = [
           { name: 'Clinker', param: 'counter feeder clinker' },
           { name: 'Gypsum', param: 'counter feeder gypsum' },
@@ -998,10 +1357,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             nextDayUnitFooterData.find((f) => f.parameter_id === bahanData?.parameter_id)
               ?.shift3_cont_difference || 0;
           const combinedBahanTotal = bahanTotal + Number(bahanContTotal);
-          report += `- ${name} : ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
         });
+        report += `\n`;
 
-        report += `\n*Setting Feeder*\n`;
+        report += `*SETTING FEEDER*\n`;
         const feederParams = [
           { name: 'Clinker', param: 'set. feeder clinker' },
           { name: 'Gypsum', param: 'set. feeder gypsum' },
@@ -1024,8 +1384,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             nextDayUnitFooterData.find((f) => f.parameter_id === feederData?.parameter_id)
               ?.shift3_cont_average || 0;
           const combinedFeederAvg = (feederAvg + Number(feederContAvg)) / 2;
-          report += `- ${name} : ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
+          report += `├─ ${name}: ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
         });
+        report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
         // Catatan Tambahan - downtime data untuk shift 3 (jam 23 hari ini + 00-07 hari berikutnya)
         const downtimeNotes = await getDowntimeForDate(date);
@@ -1039,19 +1400,23 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           return d.unit.includes(unit) && startHour >= 0 && startHour <= 7;
         });
         const allDowntime = [...unitDowntime, ...nextDayUnitDowntime];
-        const notes = allDowntime
-          .map((d) => {
-            const start = new Date(`${d.date} ${d.start_time}`);
-            const end = new Date(`${d.date} ${d.end_time}`);
-            const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-            return `${d.start_time} - ${d.end_time} (${formatIndonesianNumber(duration, 2)} jam): ${d.problem} - PIC: ${d.pic || 'N/A'} - ${d.action || 'No action recorded'}`;
-          })
-          .join('\n');
-        report += `\n*Catatan Tambahan*\n${notes}\n\n`;
+        if (allDowntime.length > 0) {
+          report += `⚠️ *CATATAN TAMBAHAN*\n`;
+          const notes = allDowntime
+            .map((d) => {
+              const start = new Date(`${d.date} ${d.start_time}`);
+              const end = new Date(`${d.date} ${d.end_time}`);
+              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+            })
+            .join('\n');
+          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+        }
       }
 
       // Silo Data - shift 3
-      report += `*Ruang Kosong & Isi Silo Semen*\n`;
+      report += `🏪 *STATUS SILO SEMEN*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
       const filteredSiloData = siloData.filter((silo) => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         return siloInfo && siloInfo.plant_category === selectedPlantCategory;
@@ -1065,12 +1430,24 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             siloInfo && shift3Data.content
               ? formatIndonesianNumber((shift3Data.content / siloInfo.capacity) * 100, 1)
               : 'N/A';
-          report += `${siloName}: Empty ${shift3Data.emptySpace || 'N/A'} m, Content ${shift3Data.content || 'N/A'} ton, ${percentage}%\n`;
+          const statusEmoji =
+            percentage !== 'N/A' && parseFloat(percentage) > 80
+              ? '🟢'
+              : percentage !== 'N/A' && parseFloat(percentage) > 50
+                ? '🟡'
+                : '🔴';
+          report += `├─ ${siloName}\n`;
+          report += `├─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m\n`;
+          report += `├─ 📦 Content: ${shift3Data.content || 'N/A'} ton\n`;
+          report += `└─ 📊 Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
+      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      report += `\n*Operator: ${operatorName}*\n`;
-      report += `*Demikian laporan ini. Terima kasih.*\n\n`;
+      report += `👷‍♂️ *OPERATOR: ${operatorName}*\n`;
+      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += `✅ *Demikian laporan Shift 3 ini. Terima kasih.*\n\n`;
+      report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
     } catch (error) {
