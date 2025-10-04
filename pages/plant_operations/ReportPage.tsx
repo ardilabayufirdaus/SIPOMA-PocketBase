@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -41,8 +42,8 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   const FONT_FAMILY = 'Inter, sans-serif';
   const PADDING = 40;
   const HEADER_HEIGHT = 100;
-  const ROW_HEIGHT = 32;
-  const FOOTER_ROW_HEIGHT = 36;
+  const ROW_HEIGHT = 36;
+  const FOOTER_ROW_HEIGHT = 40;
   const COL_HOUR_WIDTH = 70;
   const COL_SHIFT_WIDTH = 110;
   const baseWidth = 2400; // The report's logical width for high quality
@@ -58,7 +59,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   const OPERATOR_SPACING = 40;
   const OPERATOR_TITLE_HEIGHT = 40;
   const OPERATOR_HEADER_HEIGHT = 40;
-  const OPERATOR_ROW_HEIGHT = 32;
+  const OPERATOR_ROW_HEIGHT = 36;
 
   const operatorTableHeight =
     operatorData && operatorData.length > 0
@@ -72,7 +73,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   const SILO_SPACING = 40;
   const SILO_TITLE_HEIGHT = 40;
   const SILO_HEADER_HEIGHT = 60; // For nested headers
-  const SILO_ROW_HEIGHT = 32;
+  const SILO_ROW_HEIGHT = 36;
 
   const siloTableHeight =
     siloData && siloData.length > 0
@@ -83,7 +84,7 @@ const drawReportOnCanvas = (canvas: HTMLCanvasElement, data: any, t: any) => {
   const DOWNTIME_SPACING = 40;
   const DOWNTIME_TITLE_HEIGHT = 40;
   const DOWNTIME_HEADER_HEIGHT = 40;
-  const DOWNTIME_ROW_HEIGHT = 32;
+  const DOWNTIME_ROW_HEIGHT = 42;
 
   const downtimeTableHeight =
     downtimeData && downtimeData.length > 0
@@ -922,6 +923,21 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
     try {
       const element = reportRef.current;
+
+      // Temporarily adjust styling for better image capture
+      const problemCells = element.querySelectorAll('.truncate');
+      const originalStyles: Array<{ element: Element; originalClass: string }> = [];
+
+      problemCells.forEach((cell) => {
+        const originalClass = cell.className;
+        originalStyles.push({ element: cell, originalClass });
+        // Remove truncate class and add word-wrap for better text rendering
+        cell.className = cell.className.replace('truncate', 'break-words whitespace-normal');
+      });
+
+      // Wait a bit for DOM to update
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const rect = element.getBoundingClientRect();
       const canvas = await html2canvas(element, {
         scale: 4,
@@ -931,6 +947,11 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
+      });
+
+      // Restore original styling
+      originalStyles.forEach(({ element, originalClass }) => {
+        element.className = originalClass;
       });
 
       canvas.toBlob(async (blob) => {
@@ -975,18 +996,21 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 {t.plant_category_label}:
               </label>
-              <select
-                id="report-category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-              >
-                {plantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="report-category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm appearance-none"
+                >
+                  {plantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <label
@@ -995,19 +1019,22 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 {t.unit_label}:
               </label>
-              <select
-                id="report-unit"
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                disabled={unitsForCategory.length === 0}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm disabled:bg-slate-100 dark:disabled:bg-slate-600"
-              >
-                {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="report-unit"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  disabled={unitsForCategory.length === 0}
+                  className="w-full pl-4 pr-8 py-2 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm disabled:bg-slate-100 dark:disabled:bg-slate-600 appearance-none"
+                >
+                  {unitsForCategory.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <label
@@ -1068,7 +1095,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
         {reportData && !isLoading && (
-          <div ref={reportRef}>
+          <div ref={reportRef} className="p-8 bg-white">
             <InteractiveReport
               groupedHeaders={reportData.groupedHeaders}
               rows={reportData.rows}

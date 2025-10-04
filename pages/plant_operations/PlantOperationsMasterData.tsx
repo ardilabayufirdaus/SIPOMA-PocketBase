@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import Modal from '../../components/Modal';
@@ -983,18 +984,21 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Plant Category:
               </label>
-              <select
-                id="param-cat-filter"
-                value={parameterCategoryFilter}
-                onChange={handleParameterCategoryChange}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {uniquePlantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="param-cat-filter"
+                  value={parameterCategoryFilter}
+                  onChange={handleParameterCategoryChange}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -1003,19 +1007,22 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Unit:
               </label>
-              <select
-                id="param-unit-filter"
-                value={parameterUnitFilter}
-                onChange={(e) => setParameterUnitFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                disabled={unitsForParameterFilter.length === 0}
-              >
-                {unitsForParameterFilter.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="param-unit-filter"
+                  value={parameterUnitFilter}
+                  onChange={(e) => setParameterUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForParameterFilter.length === 0}
+                >
+                  {unitsForParameterFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <button
               onClick={() => handleOpenAddModal('parameterSetting')}
@@ -1192,18 +1199,21 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Plant Category:
               </label>
-              <select
-                id="silo-cat-filter"
-                value={siloCategoryFilter}
-                onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {uniquePlantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="silo-cat-filter"
+                  value={siloCategoryFilter}
+                  onChange={(e) => setSiloCategoryFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -1212,19 +1222,22 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Unit:
               </label>
-              <select
-                id="silo-unit-filter"
-                value={siloUnitFilter}
-                onChange={(e) => setSiloUnitFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                disabled={unitsForSiloFilter.length === 0}
-              >
-                {unitsForSiloFilter.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="silo-unit-filter"
+                  value={siloUnitFilter}
+                  onChange={(e) => setSiloUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForSiloFilter.length === 0}
+                >
+                  {unitsForSiloFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <button
               onClick={() => handleOpenAddModal('siloCapacity')}
@@ -1334,18 +1347,21 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Plant Category:
               </label>
-              <select
-                id="cop-cat-filter"
-                value={copCategoryFilter}
-                onChange={(e) => setCopCategoryFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {uniquePlantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-cat-filter"
+                  value={copCategoryFilter}
+                  onChange={(e) => setCopCategoryFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -1354,19 +1370,22 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Unit:
               </label>
-              <select
-                id="cop-unit-filter"
-                value={copUnitFilter}
-                onChange={(e) => setCopUnitFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                disabled={unitsForCopFilter.length === 0}
-              >
-                {unitsForCopFilter.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-unit-filter"
+                  value={copUnitFilter}
+                  onChange={(e) => setCopUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForCopFilter.length === 0}
+                >
+                  {unitsForCopFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <button
               onClick={handleOpenCopModal}
@@ -1447,18 +1466,21 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Plant Category:
               </label>
-              <select
-                id="report-cat-filter"
-                value={reportCategoryFilter}
-                onChange={handleReportCategoryChange}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {uniquePlantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="report-cat-filter"
+                  value={reportCategoryFilter}
+                  onChange={handleReportCategoryChange}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -1467,19 +1489,22 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Unit:
               </label>
-              <select
-                id="report-unit-filter"
-                value={reportUnitFilter}
-                onChange={(e) => setReportUnitFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                disabled={unitsForReportFilter.length === 0}
-              >
-                {unitsForReportFilter.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="report-unit-filter"
+                  value={reportUnitFilter}
+                  onChange={(e) => setReportUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForReportFilter.length === 0}
+                >
+                  {unitsForReportFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <button
               onClick={() => handleOpenAddModal('reportSetting')}
@@ -1676,18 +1701,21 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Plant Category:
               </label>
-              <select
-                id="modal-cop-filter-category"
-                value={copCategoryFilter}
-                onChange={(e) => setCopCategoryFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {uniquePlantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="modal-cop-filter-category"
+                  value={copCategoryFilter}
+                  onChange={(e) => setCopCategoryFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -1696,19 +1724,22 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
               >
                 Unit:
               </label>
-              <select
-                id="modal-cop-filter-unit"
-                value={copUnitFilter}
-                onChange={(e) => setCopUnitFilter(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                disabled={unitsForCopFilter.length === 0}
-              >
-                {unitsForCopFilter.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="modal-cop-filter-unit"
+                  value={copUnitFilter}
+                  onChange={(e) => setCopUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForCopFilter.length === 0}
+                >
+                  {unitsForCopFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
           </div>
         </div>

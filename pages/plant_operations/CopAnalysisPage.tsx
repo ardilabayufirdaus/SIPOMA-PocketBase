@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
@@ -594,18 +595,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 Plant Category:
               </label>
-              <select
-                id="cop-filter-category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="flex-1 min-w-0 px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
-              >
-                {plantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-filter-category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full pl-4 pr-8 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
+                >
+                  {plantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -614,19 +618,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 Unit:
               </label>
-              <select
-                id="cop-filter-unit"
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                disabled={unitsForCategory.length === 0}
-              >
-                {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-filter-unit"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForCategory.length === 0}
+                >
+                  {unitsForCategory.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <label
@@ -635,15 +642,18 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 Cement Type:
               </label>
-              <select
-                id="cop-filter-cement-type"
-                value={selectedCementType}
-                onChange={(e) => setSelectedCementType(e.target.value)}
-                className="flex-1 min-w-0 px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
-              >
-                <option value="OPC">OPC</option>
-                <option value="PCC">PCC</option>
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-filter-cement-type"
+                  value={selectedCementType}
+                  onChange={(e) => setSelectedCementType(e.target.value)}
+                  className="w-full pl-4 pr-8 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
+                >
+                  <option value="OPC">OPC</option>
+                  <option value="PCC">PCC</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -652,18 +662,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 Month:
               </label>
-              <select
-                id="cop-filter-month"
-                value={filterMonth}
-                onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {monthOptions.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-filter-month"
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {monthOptions.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -672,18 +685,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               >
                 Year:
               </label>
-              <select
-                id="cop-filter-year"
-                value={filterYear}
-                onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                {yearOptions.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-filter-year"
+                  value={filterYear}
+                  onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
           </div>
         </div>

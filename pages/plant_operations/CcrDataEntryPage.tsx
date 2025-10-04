@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { ChevronDown } from 'lucide-react';
 import ExcelJS from 'exceljs';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
@@ -1510,19 +1511,22 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               >
                 {t.plant_category_label}:
               </label>
-              <select
-                id="ccr-category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
-              >
-                <option value="">Pilih Kategori</option>
-                {plantCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="ccr-category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  <option value="">Pilih Kategori</option>
+                  {plantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
@@ -1531,20 +1535,23 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               >
                 {t.unit_label}:
               </label>
-              <select
-                id="ccr-unit"
-                value={selectedUnit}
-                onChange={(e) => setSelectedUnit(e.target.value)}
-                disabled={unitsForCategory.length === 0}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-              >
-                <option value="">Pilih Unit</option>
-                {unitsForCategory.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="ccr-unit"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  disabled={unitsForCategory.length === 0}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                >
+                  <option value="">Pilih Unit</option>
+                  {unitsForCategory.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
