@@ -844,7 +844,13 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       allParams.forEach((param) => {
         // FIX: Use snake_case property `data_type`
         if (param.data_type === ParameterDataType.NUMBER) {
-          const values = rows.map((r) => Number(r.values[param.id])).filter((v) => !isNaN(v));
+          const values = rows
+            .map((r) => {
+              const val = r.values[param.id];
+              // Exclude empty strings, null, undefined, and convert to number
+              return val !== '' && val != null && val != undefined ? Number(val) : NaN;
+            })
+            .filter((v) => !isNaN(v) && v !== 0); // Exclude NaN and 0 values
           if (values.length > 0) {
             footerStats[t.average][param.id] = formatNumberIndonesian(
               values.reduce((a, b) => a + b, 0) / values.length
