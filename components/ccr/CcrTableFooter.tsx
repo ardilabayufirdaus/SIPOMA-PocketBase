@@ -4,10 +4,9 @@ import { ParameterSetting } from '../../types';
 interface CcrTableFooterProps {
   filteredParameterSettings: ParameterSetting[];
   parameterShiftFooterData: any;
-  parameterShiftDifferenceData: any;
   parameterShiftAverageData: any;
+  parameterShiftCounterData: any;
   parameterFooterData: any;
-  counterTotalData: any;
   formatStatValue: (value: number) => string;
   t: any;
   mainTableScrollElement?: HTMLElement | null;
@@ -16,10 +15,9 @@ interface CcrTableFooterProps {
 const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
   filteredParameterSettings,
   parameterShiftFooterData,
-  parameterShiftDifferenceData,
   parameterShiftAverageData,
+  parameterShiftCounterData,
   parameterFooterData,
-  counterTotalData,
   formatStatValue,
   t,
   mainTableScrollElement,
@@ -52,11 +50,6 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: 'border-t-2 border-slate-300',
     },
     {
-      label: `${t.total_shift_3_cont} Selisih`,
-      data: parameterShiftDifferenceData.shift3Cont,
-      className: 'bg-slate-50 dark:bg-slate-700',
-    },
-    {
       label: t.average_shift_3_cont,
       data: parameterShiftAverageData.shift3Cont,
       className: 'bg-slate-50 dark:bg-slate-700',
@@ -65,11 +58,6 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       label: t.total_shift_1,
       data: parameterShiftFooterData.shift1,
       className: 'border-t border-slate-200',
-    },
-    {
-      label: `${t.total_shift_1} Selisih`,
-      data: parameterShiftDifferenceData.shift1,
-      className: 'bg-slate-50 dark:bg-slate-700',
     },
     {
       label: t.average_shift_1,
@@ -82,11 +70,6 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: 'border-t border-slate-200',
     },
     {
-      label: `${t.total_shift_2} Selisih`,
-      data: parameterShiftDifferenceData.shift2,
-      className: 'bg-slate-50 dark:bg-slate-700',
-    },
-    {
       label: t.average_shift_2,
       data: parameterShiftAverageData.shift2,
       className: 'bg-slate-50 dark:bg-slate-700',
@@ -97,14 +80,29 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       className: 'border-t border-slate-200',
     },
     {
-      label: `${t.total_shift_3} Selisih`,
-      data: parameterShiftDifferenceData.shift3,
-      className: 'bg-slate-50 dark:bg-slate-700',
-    },
-    {
       label: t.average_shift_3,
       data: parameterShiftAverageData.shift3,
       className: 'bg-slate-50 dark:bg-slate-700',
+    },
+    {
+      label: 'Counter Shift 3 (Cont.)',
+      data: parameterShiftCounterData.shift3Cont,
+      className: 'border-t-2 border-blue-300 bg-blue-50 dark:bg-blue-900',
+    },
+    {
+      label: 'Counter Shift 1',
+      data: parameterShiftCounterData.shift1,
+      className: 'border-t border-blue-200 bg-blue-50 dark:bg-blue-900',
+    },
+    {
+      label: 'Counter Shift 2',
+      data: parameterShiftCounterData.shift2,
+      className: 'border-t border-blue-200 bg-blue-50 dark:bg-blue-900',
+    },
+    {
+      label: 'Counter Shift 3',
+      data: parameterShiftCounterData.shift3,
+      className: 'border-t border-blue-200 bg-blue-50 dark:bg-blue-900',
     },
     {
       label: t.total,
@@ -126,11 +124,6 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
       label: t.max,
       data: parameterFooterData,
       dataKey: 'max',
-    },
-    {
-      label: 'Counter Total',
-      data: counterTotalData,
-      className: 'border-t-2 border-slate-300 bg-blue-50 dark:bg-blue-900/20',
     },
   ];
 

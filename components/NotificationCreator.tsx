@@ -5,14 +5,20 @@ import { createDemoNotifications, clearDemoNotifications } from '../utils/demoNo
 import PlusIcon from './icons/PlusIcon';
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useNotificationStore } from '../stores/notificationStore';
 
 interface NotificationCreatorProps {
   t: any;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
+const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t, isOpen: externalIsOpen, onClose }) => {
   const { announceToScreenReader } = useAccessibility();
-  const [isOpen, setIsOpen] = useState(false);
+  const { currentUser } = useCurrentUser();
+  const { broadcastNotification } = useNotificationStore();
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [severity, setSeverity] = useState<AlertSeverity>(AlertSeverity.INFO);
   const [category, setCategory] = useState<
@@ -21,13 +27,31 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
 
   const { createNotification } = useNotifications();
 
+  // Use external control if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = onClose || setInternalIsOpen;
+
+  // Only show for Super Admin
+  if (currentUser?.role !== 'Super Admin') {
+    return null;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
 
-    await createNotification(message, severity, category);
+    await broadcastNotification({
+      title: 'Broadcast Notification',
+      message,
+      severity,
+      category,
+    });
     setMessage('');
-    setIsOpen(false);
+    if (onClose) {
+      onClose();
+    } else {
+      setIsOpen(false);
+    }
   };
 
   const severityOptions = [
@@ -56,7 +80,13 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
             Create Test Notification
           </h3>
           <EnhancedButton
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              if (onClose) {
+                onClose();
+              } else {
+                setIsOpen(false);
+              }
+            }}
             variant="ghost"
             size="sm"
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
@@ -118,7 +148,13 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t }) => {
           <div className="flex justify-end gap-3 pt-4">
             <EnhancedButton
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                if (onClose) {
+                  onClose();
+                } else {
+                  setIsOpen(false);
+                }
+              }}
               variant="secondary"
               size="sm"
               ariaLabel="Cancel creating notification"

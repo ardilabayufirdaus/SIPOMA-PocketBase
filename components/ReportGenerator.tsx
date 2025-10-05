@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { exportToExcel } from '../utils/excelUtils';
 import { useCcrParameterData } from '../hooks/useCcrParameterData';
 import { useCcrFooterData } from '../hooks/useCcrFooterData';
 import useCcrDowntimeData from '../hooks/useCcrDowntimeData';
 import { usePlantUnits } from '../hooks/usePlantUnits';
 import { useParameterSettings } from '../hooks/useParameterSettings';
+import { useReportSettings } from '../hooks/useReportSettings';
 import { useSiloCapacities } from '../hooks/useSiloCapacities';
 import { supabase } from '../utils/supabase';
 import { CcrDowntimeData } from '../types';
@@ -45,7 +46,51 @@ export const ReportGenerator: React.FC = () => {
   const { getDowntimeForDate } = useCcrDowntimeData();
   const { records: plantUnits } = usePlantUnits();
   const { records: parameterSettings } = useParameterSettings();
+  const { records: reportSettings } = useReportSettings();
   const { records: silos } = useSiloCapacities();
+
+  // Get unique plant categories from plant units
+  const plantCategories = useMemo(() => {
+    return [...new Set(plantUnits.map((unit) => unit.category).sort())];
+  }, [plantUnits]);
+
+  // Get bahan parameters dynamically from parameter settings
+  const getBahanParameters = useCallback(
+    (plantCategory: string, unit: string) => {
+      return parameterSettings
+        .filter(
+          (param) =>
+            param.category === plantCategory &&
+            param.unit === unit &&
+            param.parameter.toLowerCase().includes('counter feeder')
+        )
+        .map((param) => ({
+          name: param.parameter.replace('Counter Feeder ', '').replace('counter feeder ', ''),
+          param: param.parameter.toLowerCase(),
+          id: param.id,
+        }));
+    },
+    [parameterSettings]
+  );
+
+  // Get feeder parameters dynamically from parameter settings
+  const getFeederParameters = useCallback(
+    (plantCategory: string, unit: string) => {
+      return parameterSettings
+        .filter(
+          (param) =>
+            param.category === plantCategory &&
+            param.unit === unit &&
+            param.parameter.toLowerCase().includes('set. feeder')
+        )
+        .map((param) => ({
+          name: param.parameter.replace('Set. Feeder ', '').replace('set. feeder ', ''),
+          param: param.parameter.toLowerCase(),
+          id: param.id,
+        }));
+    },
+    [parameterSettings]
+  );
 
   // Export report to Excel
   const handleExportReport = useCallback(async () => {
@@ -57,6 +102,7 @@ export const ReportGenerator: React.FC = () => {
       exportToExcel(data, `Report_${reportData.date}`, 'Report');
     } catch (error) {
       console.error('Export failed:', error);
+      // TODO: Add proper error notification
     } finally {
       setIsExporting(false);
     }
@@ -69,12 +115,14 @@ export const ReportGenerator: React.FC = () => {
 
       if (error) {
         console.error('Error fetching silo data:', error);
+        // TODO: Add proper error notification
         return [];
       }
 
       return (data || []) as unknown as SiloData[];
     } catch (error) {
       console.error('Error in getSiloData:', error);
+      // TODO: Add proper error notification
       return [];
     }
   }, []);
@@ -198,44 +246,18 @@ export const ReportGenerator: React.FC = () => {
 
         // Pemakaian Bahan
         report += `/Pemakaian Bahan/\n`;
-        const bahanParams = [
-          { name: 'Clinker', param: 'counter feeder clinker' },
-          { name: 'Gypsum', param: 'counter feeder gypsum' },
-          { name: 'Batu Kapur', param: 'counter feeder limestone' },
-          { name: 'Trass', param: 'counter feeder trass' },
-          { name: 'FineTrass', param: 'counter feeder fine trass' },
-          { name: 'Fly Ash', param: 'counter feeder flyash' },
-          { name: 'CKD', param: 'counter feeder ckd' },
-        ];
-        bahanParams.forEach(({ name, param }) => {
-          const bahanData = unitFooterDataFiltered.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
+        const bahanParams = getBahanParameters(plantCategory, `Cement Mill ${unit}`);
+        bahanParams.forEach(({ name, id }) => {
+          const bahanData = unitFooterDataFiltered.find((f) => f.parameter_id === id);
           // For daily report, use counter_total
           const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
           report += `- ${name} : ${formatNumberIndonesian(bahanTotal)} ton\n`;
         });
 
         report += `\n/Setting Feeder/\n`;
-        const feederParams = [
-          { name: 'Clinker', param: 'set. feeder clinker' },
-          { name: 'Gypsum', param: 'set. feeder gypsum' },
-          { name: 'Batu Kapur', param: 'set. feeder limestone' },
-          { name: 'Trass', param: 'set. feeder trass' },
-          { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder flyash' },
-          { name: 'CKD', param: 'set. feeder ckd' },
-        ];
-        feederParams.forEach(({ name, param }) => {
-          const feederData = unitFooterDataFiltered.find((f) => {
-            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
-            return (
-              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
-            );
-          });
+        const feederParams = getFeederParameters(plantCategory, `Cement Mill ${unit}`);
+        feederParams.forEach(({ name, id }) => {
+          const feederData = unitFooterDataFiltered.find((f) => f.parameter_id === id);
           // For daily report, use regular average
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
           report += `- ${name} : ${formatNumberIndonesian(feederAvg)} %\n`;
@@ -281,6 +303,7 @@ export const ReportGenerator: React.FC = () => {
       setGeneratedReport(report);
     } catch (error) {
       console.error('Error generating daily report:', error);
+      // TODO: Add proper error notification
       setGeneratedReport('Error generating report');
     } finally {
       setIsGenerating(false);
@@ -301,15 +324,6 @@ export const ReportGenerator: React.FC = () => {
         getSiloData(date),
         getDowntimeForDate(date),
       ]);
-
-      // For shift 3, also fetch data from next day for shift3_cont_average
-      let nextDayFooterData: Awaited<ReturnType<typeof getFooterDataForDate>> = [];
-      if (shift === '3') {
-        const nextDate = new Date(date);
-        nextDate.setDate(nextDate.getDate() + 1);
-        const nextDateStr = nextDate.toISOString().split('T')[0];
-        nextDayFooterData = await getFooterDataForDate(nextDateStr);
-      }
 
       // Format date
       const reportDate = new Date(date);
@@ -453,6 +467,7 @@ export const ReportGenerator: React.FC = () => {
       setGeneratedReport(report);
     } catch (error) {
       console.error('Error generating shift report:', error);
+      // TODO: Add proper error notification
       setGeneratedReport('Error generating report');
     } finally {
       setIsGenerating(false);
@@ -543,6 +558,7 @@ export const ReportGenerator: React.FC = () => {
       setGeneratedReport(report);
     } catch (error) {
       console.error('Error generating feed report:', error);
+      // TODO: Add proper error notification
       setGeneratedReport('Error generating feed report');
     } finally {
       setIsGenerating(false);
@@ -581,9 +597,11 @@ export const ReportGenerator: React.FC = () => {
             onChange={(e) => setReportData((prev) => ({ ...prev, plantCategory: e.target.value }))}
             className="w-full p-2 border rounded"
           >
-            <option value="Cement Mill">Cement Mill</option>
-            <option value="Raw Mill">Raw Mill</option>
-            <option value="Packing Plant">Packing Plant</option>
+            {plantCategories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
         </div>
 

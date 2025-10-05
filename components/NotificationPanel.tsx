@@ -89,7 +89,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
         onClick={onToggle}
         variant="ghost"
         size="sm"
-        className="relative p-3 min-h-[44px] min-w-[44px] rounded-lg bg-gradient-to-br from-transparent via-white/5 to-white/10 hover:from-white/10 hover:via-white/15 hover:to-white/20 dark:from-transparent dark:via-black/5 dark:to-black/10 dark:hover:from-black/10 dark:hover:via-black/15 dark:hover:to-black/20 transition-all duration-300 group border border-transparent hover:border-white/20 dark:hover:border-white/10 shadow-sm hover:shadow-md"
+        className="relative p-3 min-h-[44px] min-w-[44px] rounded-lg bg-gradient-to-br from-transparent via-white/5 to-white/10 hover:from-white/10 hover:via-white/15 hover:to-white/20 dark:from-transparent dark:via-black/5 dark:to-black/10 dark:hover:from-black/10 dark:hover:via-black/15 dark:hover:to-black/20 transition-all duration-300 group shadow-sm hover:shadow-md border-0"
         ariaLabel={`View notifications. ${
           unreadCount > 0 ? `${unreadCount} unread notifications` : 'No new notifications'
         }`}

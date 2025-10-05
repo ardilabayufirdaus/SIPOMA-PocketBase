@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNotificationStore } from '../stores/notificationStore';
 
 export enum AlertSeverity {
   INFO = 'Info',
@@ -32,7 +33,7 @@ export interface ExtendedAlert extends Alert {
 }
 
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<ExtendedAlert[]>([]);
+  const notificationStore = useNotificationStore();
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<NotificationSettings>({
     email: true,
@@ -42,30 +43,20 @@ export const useNotifications = () => {
   });
 
   const markAsRead = useCallback(async (notificationId: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n))
-    );
-  }, []);
+    notificationStore.markAsRead(notificationId);
+  }, [notificationStore]);
 
   const markAllAsRead = useCallback(async () => {
-    const now = new Date().toISOString();
-    setNotifications((prev) => prev.map((n) => ({ ...n, read_at: now })));
-  }, []);
+    notificationStore.markAllAsRead();
+  }, [notificationStore]);
 
   const dismissNotification = useCallback(async (notificationId: string) => {
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notificationId ? { ...n, dismissed: true, read_at: new Date().toISOString() } : n
-      )
-    );
-  }, []);
+    notificationStore.dismissNotification(notificationId);
+  }, [notificationStore]);
 
   const snoozeNotification = useCallback(async (notificationId: string, minutes: number) => {
-    const snoozedUntil = new Date(Date.now() + minutes * 60 * 1000);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, snoozedUntil, read: true } : n))
-    );
-  }, []);
+    notificationStore.snoozeNotification(notificationId, minutes);
+  }, [notificationStore]);
 
   const createNotification = useCallback(
     async (
@@ -74,42 +65,51 @@ export const useNotifications = () => {
       category: ExtendedAlert['category'] = 'system',
       actionUrl?: string
     ) => {
-      const newNotification: ExtendedAlert = {
-        id: `local-${Date.now()}`,
+      notificationStore.addNotification({
+        title: 'Notification',
         message,
         severity,
-        created_at: new Date().toISOString(),
         category,
         actionUrl,
-      };
-
-      setNotifications((prev) => [newNotification, ...prev]);
+      });
     },
-    []
+    [notificationStore]
   );
 
   const updateSettings = useCallback((newSettings: Partial<NotificationSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   }, []);
 
-  const filteredNotifications = notifications.filter((notification) => {
-    if (settings.showCriticalOnly && notification.severity !== AlertSeverity.CRITICAL) {
-      return false;
-    }
-    if (notification.dismissed) {
-      return false;
-    }
-    if (notification.snoozedUntil && notification.snoozedUntil > new Date()) {
-      return false;
-    }
-    return true;
-  });
+  const filteredNotifications: ExtendedAlert[] = notificationStore.notifications
+    .filter((notification) => {
+      if (settings.showCriticalOnly && notification.severity !== AlertSeverity.CRITICAL) {
+        return false;
+      }
+      if (notification.dismissedAt) {
+        return false;
+      }
+      if (notification.snoozedUntil && notification.snoozedUntil > new Date()) {
+        return false;
+      }
+      return true;
+    })
+    .map((notification) => ({
+      id: notification.id,
+      message: notification.message,
+      severity: notification.severity,
+      created_at: notification.createdAt.toISOString(),
+      category: notification.category as ExtendedAlert['category'],
+      actionUrl: notification.actionUrl,
+      dismissed: !!notification.dismissedAt,
+      snoozedUntil: notification.snoozedUntil,
+      read_at: notification.readAt?.toISOString(),
+    }));
 
   const unreadCount = filteredNotifications.filter((n) => !n.read_at).length;
 
   return {
     notifications: filteredNotifications,
-    loading,
+    loading: notificationStore.loading,
     settings,
     unreadCount,
     markAsRead,

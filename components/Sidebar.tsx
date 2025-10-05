@@ -19,8 +19,10 @@ import TruckIcon from './icons/TruckIcon';
 import ChartPieIcon from './icons/ChartPieIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import CogIcon from './icons/CogIcon';
+import BellIcon from './icons/BellIcon';
 import ClockIcon from './icons/ClockIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
+import NotificationCreator from './NotificationCreator';
 
 // Import permission utilities
 import { usePermissions } from '../utils/permissions';
@@ -55,6 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const isMobile = useIsMobile();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [isNotificationCreatorOpen, setIsNotificationCreatorOpen] = useState(false);
 
   // Permission checker
   const permissionChecker = usePermissions(currentUser);
@@ -286,6 +289,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const inspectionButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
+  const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
   const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = useCallback(() => {
@@ -444,6 +448,17 @@ const Sidebar: React.FC<SidebarProps> = ({
               isExpanded={activeDropdown === 'users'}
             />
           )}
+
+          {/* Notification Creator - Only for Super Admin */}
+          {currentUser?.role === 'Super Admin' && (
+            <NavigationItem
+              ref={notificationCreatorButtonRef}
+              icon={<BellIcon className={iconClass} />}
+              label="Broadcast Notification"
+              isActive={false}
+              onClick={() => setIsNotificationCreatorOpen(true)}
+            />
+          )}
         </nav>
 
         {/* Language Switcher & Footer */}
@@ -465,6 +480,15 @@ const Sidebar: React.FC<SidebarProps> = ({
           position={dropdownPosition}
           onClose={handleDropdownClose}
           onSelect={(item) => handleNavigate(activeDropdown as Page, item.key)}
+        />
+      )}
+
+      {/* Notification Creator Modal */}
+      {isNotificationCreatorOpen && (
+        <NotificationCreator
+          t={t}
+          isOpen={isNotificationCreatorOpen}
+          onClose={() => setIsNotificationCreatorOpen(false)}
         />
       )}
     </>

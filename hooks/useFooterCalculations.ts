@@ -94,93 +94,6 @@ export const useFooterCalculations = ({
     return shiftTotals;
   }, [filteredParameterSettings, parameterDataMap]);
 
-  const parameterShiftDifferenceData = useMemo(() => {
-    const shiftDifferences: Record<string, Record<string, number>> = {
-      shift1: {},
-      shift2: {},
-      shift3: {},
-      shift3Cont: {},
-    };
-
-    const shiftHourRanges = {
-      shift1: { start: 8, end: 15 },
-      shift2: { start: 16, end: 22 },
-      shift3: { start: 23, end: 24 },
-      shift3Cont: { start: 1, end: 7 },
-    };
-
-    filteredParameterSettings.forEach((param) => {
-      if (param.data_type !== ParameterDataType.NUMBER) {
-        return;
-      }
-
-      const data = parameterDataMap.get(param.id);
-      if (!data || !data.hourly_values) {
-        return;
-      }
-
-      for (const [shiftKey, range] of Object.entries(shiftHourRanges)) {
-        const startData = data.hourly_values[range.start];
-        const endData = data.hourly_values[range.end];
-
-        const startValue =
-          typeof startData === 'object' && startData !== null && 'value' in startData
-            ? parseFloat(String(startData.value))
-            : parseFloat(String(startData));
-
-        const endValue =
-          typeof endData === 'object' && endData !== null && 'value' in endData
-            ? parseFloat(String(endData.value))
-            : parseFloat(String(endData));
-
-        if (!isNaN(startValue) && !isNaN(endValue)) {
-          shiftDifferences[shiftKey][param.id] = endValue - startValue;
-        } else {
-          shiftDifferences[shiftKey][param.id] = 0;
-        }
-      }
-    });
-
-    return shiftDifferences;
-  }, [filteredParameterSettings, parameterDataMap]);
-
-  const counterTotalData = useMemo(() => {
-    const counterTotals: Record<string, number> = {};
-
-    filteredParameterSettings.forEach((param) => {
-      if (param.data_type !== ParameterDataType.NUMBER) {
-        return;
-      }
-
-      const data = parameterDataMap.get(param.id);
-      if (!data || !data.hourly_values) {
-        counterTotals[param.id] = 0;
-        return;
-      }
-
-      const startData = data.hourly_values[1]; // Jam awal (jam 1)
-      const endData = data.hourly_values[24]; // Jam akhir (jam 24)
-
-      const startValue =
-        typeof startData === 'object' && startData !== null && 'value' in startData
-          ? parseFloat(String(startData.value))
-          : parseFloat(String(startData));
-
-      const endValue =
-        typeof endData === 'object' && endData !== null && 'value' in endData
-          ? parseFloat(String(endData.value))
-          : parseFloat(String(endData));
-
-      if (!isNaN(startValue) && !isNaN(endValue)) {
-        counterTotals[param.id] = endValue - startValue;
-      } else {
-        counterTotals[param.id] = 0;
-      }
-    });
-
-    return counterTotals;
-  }, [filteredParameterSettings, parameterDataMap]);
-
   const parameterShiftAverageData = useMemo(() => {
     const shiftAverages: Record<string, Record<string, number>> = {
       shift1: {},
@@ -225,11 +138,103 @@ export const useFooterCalculations = ({
     return shiftAverages;
   }, [filteredParameterSettings, parameterDataMap]);
 
+  const parameterShiftCounterData = useMemo(() => {
+    const shiftCounters: Record<string, Record<string, number>> = {
+      shift1: {},
+      shift2: {},
+      shift3: {},
+      shift3Cont: {},
+    };
+
+    filteredParameterSettings.forEach((param) => {
+      if (param.data_type !== ParameterDataType.NUMBER) {
+        return;
+      }
+
+      const data = parameterDataMap.get(param.id);
+      if (!data || !data.hourly_values) {
+        return;
+      }
+
+      // Counter Shift 3 (Cont.): Math.max dari data jam 1 sampai dengan jam 7
+      const shift3ContHours = [1, 2, 3, 4, 5, 6, 7];
+      const shift3ContValues = shift3ContHours
+        .map((hour) => {
+          const hourData = data.hourly_values[hour];
+          if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+            return parseFloat(String(hourData.value));
+          }
+          return parseFloat(String(hourData));
+        })
+        .filter((value) => !isNaN(value) && value !== 0);
+      shiftCounters.shift3Cont[param.id] =
+        shift3ContValues.length > 0 ? Math.max(...shift3ContValues) : 0;
+
+      // Counter Shift 1: Math.max dari data jam 8 sampai dengan jam 15 dikurangi dengan nilai data jam 7
+      const shift1Hours = [8, 9, 10, 11, 12, 13, 14, 15];
+      const shift1Values = shift1Hours
+        .map((hour) => {
+          const hourData = data.hourly_values[hour];
+          if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+            return parseFloat(String(hourData.value));
+          }
+          return parseFloat(String(hourData));
+        })
+        .filter((value) => !isNaN(value) && value !== 0);
+      const hour7Value = data.hourly_values[7];
+      const hour7Numeric =
+        typeof hour7Value === 'object' && hour7Value !== null && 'value' in hour7Value
+          ? parseFloat(String(hour7Value.value))
+          : parseFloat(String(hour7Value));
+      const shift1Max = shift1Values.length > 0 ? Math.max(...shift1Values) : 0;
+      shiftCounters.shift1[param.id] = shift1Max - (isNaN(hour7Numeric) ? 0 : hour7Numeric);
+
+      // Counter Shift 2: Math.max dari data jam 16 sampai dengan jam 22 dikurangi dengan nilai data jam 15
+      const shift2Hours = [16, 17, 18, 19, 20, 21, 22];
+      const shift2Values = shift2Hours
+        .map((hour) => {
+          const hourData = data.hourly_values[hour];
+          if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+            return parseFloat(String(hourData.value));
+          }
+          return parseFloat(String(hourData));
+        })
+        .filter((value) => !isNaN(value) && value !== 0);
+      const hour15Value = data.hourly_values[15];
+      const hour15Numeric =
+        typeof hour15Value === 'object' && hour15Value !== null && 'value' in hour15Value
+          ? parseFloat(String(hour15Value.value))
+          : parseFloat(String(hour15Value));
+      const shift2Max = shift2Values.length > 0 ? Math.max(...shift2Values) : 0;
+      shiftCounters.shift2[param.id] = shift2Max - (isNaN(hour15Numeric) ? 0 : hour15Numeric);
+
+      // Counter Shift 3: Math.max dari data jam 23 sampai dengan jam 24 dikurangi dengan nilai data jam 22
+      const shift3Hours = [23, 24];
+      const shift3Values = shift3Hours
+        .map((hour) => {
+          const hourData = data.hourly_values[hour];
+          if (typeof hourData === 'object' && hourData !== null && 'value' in hourData) {
+            return parseFloat(String(hourData.value));
+          }
+          return parseFloat(String(hourData));
+        })
+        .filter((value) => !isNaN(value) && value !== 0);
+      const hour22Value = data.hourly_values[22];
+      const hour22Numeric =
+        typeof hour22Value === 'object' && hour22Value !== null && 'value' in hour22Value
+          ? parseFloat(String(hour22Value.value))
+          : parseFloat(String(hour22Value));
+      const shift3Max = shift3Values.length > 0 ? Math.max(...shift3Values) : 0;
+      shiftCounters.shift3[param.id] = shift3Max - (isNaN(hour22Numeric) ? 0 : hour22Numeric);
+    });
+
+    return shiftCounters;
+  }, [filteredParameterSettings, parameterDataMap]);
+
   return {
     parameterFooterData,
     parameterShiftFooterData,
-    parameterShiftDifferenceData,
-    counterTotalData,
     parameterShiftAverageData,
+    parameterShiftCounterData,
   };
 };

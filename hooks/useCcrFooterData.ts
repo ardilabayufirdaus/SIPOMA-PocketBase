@@ -7,7 +7,6 @@ interface CcrFooterData {
   parameter_id: string;
   plant_unit?: string;
   total: number;
-  counter_total: number;
   average: number;
   minimum: number;
   maximum: number;
@@ -15,41 +14,10 @@ interface CcrFooterData {
   shift2_total: number;
   shift3_total: number;
   shift3_cont_total: number;
-  shift1_difference: number;
-  shift2_difference: number;
-  shift3_difference: number;
-  shift3_cont_difference: number;
-  shift1_average: number;
-  shift2_average: number;
-  shift3_average: number;
-  shift3_cont_average: number;
-}
-
-// Interface untuk response Supabase
-interface CcrFooterDataRow {
-  id: string;
-  date: string;
-  parameter_id: string;
-  plant_unit: string | null;
-  total: number | null;
-  counter_total: number | null;
-  average: number | null;
-  minimum: number | null;
-  maximum: number | null;
-  shift1_total: number | null;
-  shift2_total: number | null;
-  shift3_total: number | null;
-  shift3_cont_total: number | null;
-  shift1_difference: number | null;
-  shift2_difference: number | null;
-  shift3_difference: number | null;
-  shift3_cont_difference: number | null;
-  shift1_average: number | null;
-  shift2_average: number | null;
-  shift3_average: number | null;
-  shift3_cont_average: number | null;
-  created_at: string;
-  updated_at: string;
+  shift1_counter: number;
+  shift2_counter: number;
+  shift3_counter: number;
+  shift3_cont_counter: number;
 }
 
 export const useCcrFooterData = () => {
@@ -61,7 +29,6 @@ export const useCcrFooterData = () => {
           parameter_id: footerData.parameter_id,
           plant_unit: footerData.plant_unit || 'CCR',
           total: footerData.total,
-          counter_total: footerData.counter_total,
           average: footerData.average,
           minimum: footerData.minimum,
           maximum: footerData.maximum,
@@ -69,14 +36,10 @@ export const useCcrFooterData = () => {
           shift2_total: footerData.shift2_total,
           shift3_total: footerData.shift3_total,
           shift3_cont_total: footerData.shift3_cont_total,
-          shift1_difference: footerData.shift1_difference,
-          shift2_difference: footerData.shift2_difference,
-          shift3_difference: footerData.shift3_difference,
-          shift3_cont_difference: footerData.shift3_cont_difference,
-          shift1_average: footerData.shift1_average,
-          shift2_average: footerData.shift2_average,
-          shift3_average: footerData.shift3_average,
-          shift3_cont_average: footerData.shift3_cont_average,
+          shift1_counter: footerData.shift1_counter,
+          shift2_counter: footerData.shift2_counter,
+          shift3_counter: footerData.shift3_counter,
+          shift3_cont_counter: footerData.shift3_cont_counter,
           updated_at: new Date().toISOString(),
         },
         {
@@ -137,7 +100,6 @@ export const useCcrFooterData = () => {
           console.error('Error deleting CCR footer data:', error);
           throw error;
         }
-
       } catch (error) {
         console.error('Error in deleteFooterData:', error);
         throw error;

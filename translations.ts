@@ -414,6 +414,10 @@ export const translations = {
     average_shift_2: 'Average Shift 2',
     average_shift_3: 'Average Shift 3',
     average_shift_3_cont: 'Average Shift 3 (Cont.)',
+    counter_shift_1: 'Counter Shift 1',
+    counter_shift_2: 'Counter Shift 2',
+    counter_shift_3: 'Counter Shift 3',
+    counter_shift_3_cont: 'Counter Shift 3 (Cont.)',
 
     // Autonomous Data Entry
     autonomous_downtime_follow_up: 'Downtime Follow-up',
@@ -1111,6 +1115,10 @@ export const translations = {
     total_shift_2: 'Total Shift 2',
     total_shift_3: 'Total Shift 3',
     total_shift_3_cont: 'Total Shift 3 (Lanjutan)',
+    counter_shift_1: 'Counter Shift 1',
+    counter_shift_2: 'Counter Shift 2',
+    counter_shift_3: 'Counter Shift 3',
+    counter_shift_3_cont: 'Counter Shift 3 (Lanjutan)',
 
     // Autonomous Data Entry
     autonomous_downtime_follow_up: 'Tindak Lanjut Downtime',

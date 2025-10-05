@@ -52,6 +52,7 @@ interface NotificationState {
 
   // Actions
   addNotification: (notification: Omit<NotificationData, 'id' | 'createdAt'>) => void;
+  broadcastNotification: (notification: Omit<NotificationData, 'id' | 'createdAt' | 'userId'>) => Promise<void>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   dismissNotification: (id: string) => void;
@@ -136,6 +137,45 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     // Play sound
     if (state.preferences.sound) {
       playNotificationSound(state.preferences.soundVolume);
+    }
+  },
+
+  broadcastNotification: async (notificationData) => {
+    try {
+      set({ loading: true, error: null });
+
+      // Get all active users
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('is_active', true);
+
+      if (usersError) throw usersError;
+
+      if (!users || users.length === 0) return;
+
+      // Create notifications for all users
+      const notifications = users.map((user) => ({
+        title: notificationData.title,
+        message: notificationData.message,
+        severity: notificationData.severity,
+        category: notificationData.category,
+        action_url: notificationData.actionUrl,
+        action_label: notificationData.actionLabel,
+        metadata: notificationData.metadata,
+        user_id: (user as unknown as { id: string }).id,
+        created_at: new Date().toISOString(),
+      }));
+
+      const { error: insertError } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (insertError) throw insertError;
+
+      set({ loading: false });
+    } catch (error) {
+      set({ loading: false, error: error instanceof Error ? error.message : 'Failed to broadcast notification' });
     }
   },
 

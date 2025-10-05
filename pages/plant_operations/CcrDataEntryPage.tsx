@@ -499,9 +499,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const {
     parameterFooterData,
     parameterShiftFooterData,
-    parameterShiftDifferenceData,
     parameterShiftAverageData,
-    counterTotalData,
+    parameterShiftCounterData,
   } = useFooterCalculations({
     filteredParameterSettings,
     parameterDataMap,
@@ -516,8 +515,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       if (
         !parameterFooterData ||
         !parameterShiftFooterData ||
-        !parameterShiftDifferenceData ||
-        !parameterShiftAverageData
+        !parameterShiftAverageData ||
+        !parameterShiftCounterData
       ) {
         return;
       }
@@ -527,8 +526,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         for (const param of filteredParameterSettings) {
           const footerData = parameterFooterData[param.id];
           const shiftData = parameterShiftFooterData;
-          const differenceData = parameterShiftDifferenceData;
           const averageData = parameterShiftAverageData;
+          const counterData = parameterShiftCounterData;
 
           if (footerData) {
             await saveFooterData({
@@ -536,7 +535,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               parameter_id: param.id,
               plant_unit: selectedCategory || 'CCR',
               total: footerData.total,
-              counter_total: counterTotalData[param.id] || 0,
               average: footerData.avg,
               minimum: footerData.min,
               maximum: footerData.max,
@@ -544,14 +542,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               shift2_total: shiftData.shift2[param.id] || 0,
               shift3_total: shiftData.shift3[param.id] || 0,
               shift3_cont_total: shiftData.shift3Cont[param.id] || 0,
-              shift1_difference: differenceData.shift1[param.id] || 0,
-              shift2_difference: differenceData.shift2[param.id] || 0,
-              shift3_difference: differenceData.shift3[param.id] || 0,
-              shift3_cont_difference: differenceData.shift3Cont[param.id] || 0,
-              shift1_average: averageData.shift1[param.id] || 0,
-              shift2_average: averageData.shift2[param.id] || 0,
-              shift3_average: averageData.shift3[param.id] || 0,
-              shift3_cont_average: averageData.shift3Cont[param.id] || 0,
+              shift1_counter: counterData.shift1[param.id] || 0,
+              shift2_counter: counterData.shift2[param.id] || 0,
+              shift3_counter: counterData.shift3[param.id] || 0,
+              shift3_cont_counter: counterData.shift3Cont[param.id] || 0,
             });
           }
         }
@@ -568,9 +562,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   }, [
     parameterFooterData,
     parameterShiftFooterData,
-    parameterShiftDifferenceData,
     parameterShiftAverageData,
-    counterTotalData,
+    parameterShiftCounterData,
     filteredParameterSettings,
     selectedDate,
     selectedCategory,
@@ -2256,10 +2249,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               <CcrTableFooter
                 filteredParameterSettings={filteredParameterSettings}
                 parameterShiftFooterData={parameterShiftFooterData}
-                parameterShiftDifferenceData={parameterShiftDifferenceData}
                 parameterShiftAverageData={parameterShiftAverageData}
+                parameterShiftCounterData={parameterShiftCounterData}
                 parameterFooterData={parameterFooterData}
-                counterTotalData={counterTotalData}
                 formatStatValue={formatStatValue}
                 t={t}
                 mainTableScrollElement={tableWrapperRef.current}

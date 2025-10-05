@@ -14,16 +14,13 @@ import { useNotifications } from '../hooks/useNotifications';
 import NotificationPanel from './NotificationPanel';
 
 // Import Enhanced Components
-import { EnhancedButton, SkipLinks, AccessibleTooltip } from './ui/EnhancedComponents';
+import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
 
 // Import design tokens
-import { getSpacing, getBorderRadius, getShadow } from '../utils/designTokens';
+import { getShadow } from '../utils/designTokens';
 
 // Import micro-interactions hook
-import { useMicroInteraction } from '../hooks/useMicroInteractions';
-
-// Import theme hook
-import { ThemeToggle } from '../components/ThemeProvider';
+// import { useMicroInteraction } from '../hooks/useMicroInteractions'; // Commented out for now
 
 interface HeaderProps {
   pageTitle: string;
@@ -104,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({
         />
 
         <div className="relative z-10 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-18">
             {/* Left Section - Logo and Title */}
             <motion.div
               className="flex items-center gap-3 min-w-0 flex-1"
@@ -114,28 +111,22 @@ const Header: React.FC<HeaderProps> = ({
             >
               {/* Mobile Hamburger Menu */}
               {isMobile && onToggleSidebar && (
-                <AccessibleTooltip
-                  content={t.tooltip_toggle_menu || 'Toggle navigation menu'}
-                  position="bottom"
-                  delay={500}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  <EnhancedButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={onToggleSidebar}
+                    ariaLabel="Toggle navigation menu"
+                    className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-colors border-0 min-h-[44px] min-w-[44px]"
+                    icon={<Bars3Icon className="w-5 h-5" />}
                   >
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={onToggleSidebar}
-                      ariaLabel="Toggle navigation menu"
-                      className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
-                      icon={<Bars3Icon className="w-5 h-5" />}
-                    >
-                      <span className="sr-only">Toggle navigation menu</span>
-                    </EnhancedButton>
-                  </motion.div>
-                </AccessibleTooltip>
+                    <span className="sr-only">Toggle navigation menu</span>
+                  </EnhancedButton>
+                </motion.div>
               )}
 
               {/* Logo Container */}
@@ -164,11 +155,44 @@ const Header: React.FC<HeaderProps> = ({
                 >
                   {pageTitle}
                 </motion.h1>
+                {/* Breadcrumbs */}
+                <motion.nav
+                  className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.3 }}
+                  aria-label="Breadcrumb"
+                >
+                  <ol className="flex items-center space-x-1">
+                    <li>
+                      <button
+                        onClick={() => onNavigate('dashboard')}
+                        className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        Dashboard
+                      </button>
+                    </li>
+                    <li className="flex items-center">
+                      <svg
+                        className="w-3 h-3 mx-1 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="font-medium">{pageTitle}</span>
+                    </li>
+                  </ol>
+                </motion.nav>
                 <motion.p
                   className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate hidden sm:block"
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
                 >
                   {t.header_welcome}, {currentUser?.full_name?.split(' ')[0] || 'Admin'}!
                   <span className="ml-1 text-yellow-500">✨</span>
@@ -178,51 +202,32 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Right Section - Actions */}
             <motion.div
-              className="flex items-center gap-2 flex-shrink-0"
+              className="flex items-center gap-4 flex-shrink-0"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.3 }}
             >
               {/* Add User Button */}
               {showAddUserButton && (
-                <AccessibleTooltip
-                  content={t.tooltip_add_user || 'Create a new user account'}
-                  position="bottom"
-                  delay={500}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  <EnhancedButton
+                    variant="primary"
+                    size="sm"
+                    onClick={onAddUser}
+                    ariaLabel={t.add_user_button || 'Add new user'}
+                    icon={<PlusIcon className="w-4 h-4" />}
+                    className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 border-0 min-h-[44px] min-w-[44px]"
                   >
-                    <EnhancedButton
-                      variant="primary"
-                      size="sm"
-                      onClick={onAddUser}
-                      ariaLabel={t.add_user_button || 'Add new user'}
-                      icon={<PlusIcon className="w-4 h-4" />}
-                      className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      {t.add_user_button}
-                    </EnhancedButton>
-                  </motion.div>
-                </AccessibleTooltip>
+                    {t.add_user_button}
+                  </EnhancedButton>
+                </motion.div>
               )}
-
-              {/* Theme Toggle */}
-              <ThemeToggle className="p-2" />
-
               {/* Notifications */}
-              <AccessibleTooltip
-                content={
-                  unreadCount > 0
-                    ? t.tooltip_notifications_unread?.replace('{count}', unreadCount.toString()) ||
-                      `${unreadCount} unread notifications`
-                    : t.tooltip_notifications || 'View notifications'
-                }
-                position="bottom"
-                delay={500}
-              >
+              <div className="flex flex-col items-center gap-1">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -242,14 +247,10 @@ const Header: React.FC<HeaderProps> = ({
                     onToggle={() => setIsNotifMenuOpen(!isNotifMenuOpen)}
                   />
                 </motion.div>
-              </AccessibleTooltip>
-
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Notif</span>
+              </div>{' '}
               {/* Sign Out Button */}
-              <AccessibleTooltip
-                content={t.tooltip_sign_out || 'Sign out from application'}
-                position="bottom"
-                delay={500}
-              >
+              <div className="flex flex-col items-center gap-1">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -260,7 +261,7 @@ const Header: React.FC<HeaderProps> = ({
                     size="sm"
                     onClick={onSignOut}
                     ariaLabel="Sign out from application"
-                    className="relative p-2 rounded-lg bg-gradient-to-br from-transparent via-red-500/5 to-red-500/10 hover:from-red-500/10 hover:via-red-500/15 hover:to-red-500/20 dark:from-transparent dark:via-red-500/5 dark:to-red-500/10 dark:hover:from-red-500/10 dark:hover:via-red-500/15 dark:hover:to-red-500/20 transition-all duration-300 group border border-transparent hover:border-red-500/20 dark:hover:border-red-500/10 shadow-sm hover:shadow-md"
+                    className="relative p-3 rounded-lg bg-gradient-to-br from-transparent via-red-500/5 to-red-500/10 hover:from-red-500/10 hover:via-red-500/15 hover:to-red-500/20 dark:from-transparent dark:via-red-500/5 dark:to-red-500/10 dark:hover:from-red-500/10 dark:hover:via-red-500/15 dark:hover:to-red-500/20 transition-all duration-300 group shadow-sm hover:shadow-md border-0 min-h-[44px] min-w-[44px]"
                     icon={
                       <motion.div
                         whileHover={{ x: 2 }}
@@ -276,58 +277,52 @@ const Header: React.FC<HeaderProps> = ({
                     <span className="sr-only">Sign out from application</span>
                   </EnhancedButton>
                 </motion.div>
-              </AccessibleTooltip>
-
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                  {t.sign_out || 'Logout'}
+                </span>
+              </div>
               {/* User Profile Dropdown */}
-              <div className="relative" ref={userDropdownRef}>
-                <AccessibleTooltip
-                  content={
-                    isUserMenuOpen
-                      ? t.tooltip_close_user_menu || 'Close user menu'
-                      : t.tooltip_open_user_menu ||
-                        `${currentUser?.full_name || 'User'} profile & settings`
-                  }
-                  position="bottom"
-                  delay={500}
+              <div className="relative flex flex-col items-center gap-1" ref={userDropdownRef}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  <EnhancedButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                    ariaLabel={isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
+                    ariaExpanded={isUserMenuOpen}
+                    className="relative p-3 rounded-full bg-gradient-to-br from-white/10 via-white/5 to-transparent hover:from-white/20 hover:via-white/10 hover:to-white/5 dark:from-black/10 dark:via-black/5 dark:to-transparent dark:hover:from-black/20 dark:hover:via-black/10 dark:hover:to-black/5 transition-all duration-300 shadow-sm hover:shadow-lg group border-0 min-h-[44px] min-w-[44px]"
+                    icon={
+                      currentUser?.avatar_url ? (
+                        <div className="relative">
+                          <img
+                            className="h-8 w-8 rounded-full object-cover transition-all duration-200"
+                            src={currentUser.avatar_url}
+                            alt="User avatar"
+                          />
+                          {/* Online indicator */}
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full"></div>
+                        </div>
+                      ) : (
+                        <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center transition-all duration-200 shadow-md group-hover:shadow-lg">
+                          <UserIcon className="w-5 h-5 text-white" />
+                          {/* Online indicator */}
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                        </div>
+                      )
+                    }
                   >
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                      ariaLabel={isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
-                      ariaExpanded={isUserMenuOpen}
-                      className="relative p-1.5 rounded-full bg-gradient-to-br from-white/10 via-white/5 to-transparent hover:from-white/20 hover:via-white/10 hover:to-white/5 dark:from-black/10 dark:via-black/5 dark:to-transparent dark:hover:from-black/20 dark:hover:via-black/10 dark:hover:to-black/5 transition-all duration-300 ring-2 ring-transparent hover:ring-white/30 dark:hover:ring-white/20 shadow-sm hover:shadow-lg group"
-                      icon={
-                        currentUser?.avatar_url ? (
-                          <div className="relative">
-                            <img
-                              className="h-8 w-8 rounded-full object-cover ring-2 ring-white/20 group-hover:ring-white/40 transition-all duration-200"
-                              src={currentUser.avatar_url}
-                              alt="User avatar"
-                            />
-                            {/* Online indicator */}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
-                          </div>
-                        ) : (
-                          <div className="relative h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center ring-2 ring-white/20 group-hover:ring-white/40 transition-all duration-200 shadow-md group-hover:shadow-lg">
-                            <UserIcon className="w-5 h-5 text-white" />
-                            {/* Online indicator */}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></div>
-                          </div>
-                        )
-                      }
-                    >
-                      <span className="sr-only">
-                        {isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
-                      </span>
-                    </EnhancedButton>
-                  </motion.div>
-                </AccessibleTooltip>
+                    <span className="sr-only">
+                      {isUserMenuOpen ? 'Close user menu' : 'Open user menu'}
+                    </span>
+                  </EnhancedButton>
+                </motion.div>
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                  {t.profile || 'Profile'}
+                </span>
 
                 {/* Modern Dropdown Menu */}
                 <AnimatePresence>
@@ -487,5 +482,4 @@ const Header: React.FC<HeaderProps> = ({
   );
 };
 
-const HeaderMemo = React.memo(Header);
-export default HeaderMemo;
+export default Header;
