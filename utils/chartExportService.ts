@@ -1,4 +1,6 @@
 import { exportToExcel } from './lazyExcelUtils';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export type ChartDataRow = Record<string, string | number | boolean | Date>;
 
@@ -124,10 +126,11 @@ export class ChartExportService {
       }
 
       // Convert chart to image
-      const chartImageDataUrl = await toPng(element, {
+      const canvas = await html2canvas(element, {
         backgroundColor: '#ffffff',
-        pixelRatio: 2,
+        scale: 2,
       });
+      const chartImageDataUrl = canvas.toDataURL('image/png');
 
       // Calculate image dimensions to fit page
       const maxWidth = pageWidth - 2 * margin;

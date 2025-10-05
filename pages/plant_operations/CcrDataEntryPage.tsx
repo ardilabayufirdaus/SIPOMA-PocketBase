@@ -13,6 +13,7 @@ import {
   CcrSiloData,
   CcrParameterData,
   ParameterSetting,
+  DowntimeStatus,
 } from '../../types';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import Modal from '../../components/Modal';
@@ -1053,7 +1054,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           paramSetting.id,
                           hour,
                           String(value),
-                          loggedInUser?.name || 'Import User'
+                          loggedInUser?.full_name || 'Import User'
                         );
                         importCount++;
                         // Add small delay to prevent rate limiting
@@ -1140,13 +1141,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     parameter_id: String(parameterId),
                     plant_unit: row.Unit ? String(row.Unit) : selectedUnit,
                     total: row.Total ? Number(row.Total) : 0,
+                    counter_total: row.Counter_Total ? Number(row.Counter_Total) : 0,
                     average: row.Average ? Number(row.Average) : 0,
                     minimum: row.Minimum ? Number(row.Minimum) : 0,
                     maximum: row.Maximum ? Number(row.Maximum) : 0,
                     shift1_total: row.Shift1_Total ? Number(row.Shift1_Total) : 0,
+                    shift1_average: row.Shift1_Average ? Number(row.Shift1_Average) : 0,
                     shift2_total: row.Shift2_Total ? Number(row.Shift2_Total) : 0,
+                    shift2_average: row.Shift2_Average ? Number(row.Shift2_Average) : 0,
                     shift3_total: row.Shift3_Total ? Number(row.Shift3_Total) : 0,
+                    shift3_average: row.Shift3_Average ? Number(row.Shift3_Average) : 0,
                     shift3_cont_total: row.Shift3_Cont_Total ? Number(row.Shift3_Cont_Total) : 0,
+                    shift3_cont_average: row.Shift3_Cont_Average
+                      ? Number(row.Shift3_Cont_Average)
+                      : 0,
                     shift1_difference: row.Shift1_Difference ? Number(row.Shift1_Difference) : 0,
                     shift2_difference: row.Shift2_Difference ? Number(row.Shift2_Difference) : 0,
                     shift3_difference: row.Shift3_Difference ? Number(row.Shift3_Difference) : 0,
@@ -1246,7 +1254,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     corrective_action: row.Corrective_Action
                       ? String(row.Corrective_Action)
                       : undefined,
-                    status: row.Status ? String(row.Status) : 'Open',
+                    status:
+                      row.Status && (row.Status === 'Open' || row.Status === 'Close')
+                        ? (row.Status as DowntimeStatus)
+                        : DowntimeStatus.OPEN,
                   });
 
                   if (result.success) {

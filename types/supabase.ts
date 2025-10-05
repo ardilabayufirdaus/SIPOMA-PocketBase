@@ -63,9 +63,12 @@ export type SIRANI = {
 export type Alert = {
   id: string;
   message: string;
-  timestamp: string;
   severity: string;
-  read: boolean;
+  created_at: string;
+  read_at?: string;
+  category?: string;
+  dismissed?: boolean;
+  snoozed_until?: string;
 };
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -665,6 +668,38 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           updated_by?: string;
+        };
+      };
+      alerts: {
+        Row: {
+          id: string;
+          message: string;
+          severity: string;
+          created_at: string;
+          read_at: string | null;
+          category: string | null;
+          dismissed: boolean | null;
+          snoozed_until: string | null;
+        };
+        Insert: {
+          id?: string;
+          message: string;
+          severity: string;
+          created_at?: string;
+          read_at?: string | null;
+          category?: string | null;
+          dismissed?: boolean | null;
+          snoozed_until?: string | null;
+        };
+        Update: {
+          id?: string;
+          message?: string;
+          severity?: string;
+          created_at?: string;
+          read_at?: string | null;
+          category?: string | null;
+          dismissed?: boolean | null;
+          snoozed_until?: string | null;
         };
       };
       // Add more table definitions as needed

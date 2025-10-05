@@ -199,11 +199,11 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
           {/* Notifications List */}
           <div className="max-h-64 overflow-y-auto">
             {filteredNotifications.length > 0 ? (
-              filteredNotifications.map((notification) => (
+              filteredNotifications.map((notification: ExtendedAlert) => (
                 <div
                   key={notification.id}
                   className={`relative px-4 py-3 border-b border-slate-50 dark:border-slate-700/50 transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/30 ${
-                    !notification.read ? 'bg-red-50/50 dark:bg-red-500/5' : ''
+                    !notification.read_at ? 'bg-red-50/50 dark:bg-red-500/5' : ''
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -233,13 +233,13 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
 
                           {/* Timestamp */}
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {formatTimeSince(notification.timestamp)}
+                            {formatTimeSince(new Date(notification.created_at))}
                           </p>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-1">
-                          {!notification.read && (
+                          {!notification.read_at && (
                             <EnhancedButton
                               onClick={() => onMarkAsRead(notification.id)}
                               variant="ghost"

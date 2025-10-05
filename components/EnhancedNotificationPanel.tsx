@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NotificationData, NotificationPreferences } from '../stores/notificationStore';
-import { AlertSeverity } from '../types';
+import { AlertSeverity } from '../hooks/useNotifications';
 import { formatTimeSince } from '../utils/formatters';
 import BellIcon from './icons/BellIcon';
 import BellSlashIcon from './icons/BellSlashIcon';

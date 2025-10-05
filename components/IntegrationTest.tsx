@@ -21,7 +21,7 @@ import {
 } from './ui/EnhancedComponents';
 
 // Import existing SIPOMA components for comparison
-import { ModernButton } from './ModernComponents';
+// ModernButton replaced with EnhancedButton for testing
 
 export const IntegrationTest: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'enhanced' | 'modern'>('enhanced');
@@ -322,16 +322,16 @@ export const IntegrationTest: React.FC = () => {
                       </div>
 
                       <div className="flex gap-3">
-                        <ModernButton variant="primary" className="flex-1" disabled={isLoading}>
+                        <EnhancedButton variant="primary" className="flex-1" disabled={isLoading}>
                           {isLoading ? 'Submitting...' : 'Submit'}
-                        </ModernButton>
+                        </EnhancedButton>
 
-                        <ModernButton
+                        <EnhancedButton
                           variant="ghost"
                           onClick={() => setFormData({ name: '', email: '', feedback: '' })}
                         >
                           Clear
-                        </ModernButton>
+                        </EnhancedButton>
                       </div>
                     </form>
                   </EnhancedCard>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertSeverity } from '../types';
+import { AlertSeverity } from '../hooks/useNotifications';
 import { useNotifications } from '../hooks/useNotifications';
 import { createDemoNotifications, clearDemoNotifications } from '../utils/demoNotifications';
 import PlusIcon from './icons/PlusIcon';

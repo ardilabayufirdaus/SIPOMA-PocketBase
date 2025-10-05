@@ -78,7 +78,7 @@ export const useDashboardDataAggregator = (filters: DashboardFilters) => {
 
     // Filter risk data
     const filteredRiskData =
-      (riskData as RiskDataEntry[])?.filter((risk) => {
+      (riskData as unknown as RiskDataEntry[])?.filter((risk) => {
         const unitMatch = filters.plantUnit === 'all' || risk.unit === filters.plantUnit;
         const categoryMatch =
           filters.plantCategory === 'all' || risk.category === filters.plantCategory;

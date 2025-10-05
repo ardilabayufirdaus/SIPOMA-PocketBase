@@ -386,7 +386,7 @@ export const apiClient = {
         username: string;
         full_name: string;
         role: string;
-        password_hash: string;
+        password_hash?: string;
         is_active?: boolean;
       }
     ) {

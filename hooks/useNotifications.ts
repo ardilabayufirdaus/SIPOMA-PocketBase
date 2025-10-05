@@ -9,9 +9,12 @@ export enum AlertSeverity {
 export interface Alert {
   id: string;
   message: string;
-  timestamp: Date;
-  severity: AlertSeverity;
-  read: boolean;
+  severity: string;
+  created_at: string;
+  read_at?: string;
+  category?: string;
+  dismissed?: boolean;
+  snoozed_until?: string;
 }
 
 export interface NotificationSettings {
@@ -40,17 +43,20 @@ export const useNotifications = () => {
 
   const markAsRead = useCallback(async (notificationId: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n))
     );
   }, []);
 
   const markAllAsRead = useCallback(async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const now = new Date().toISOString();
+    setNotifications((prev) => prev.map((n) => ({ ...n, read_at: now })));
   }, []);
 
   const dismissNotification = useCallback(async (notificationId: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, dismissed: true, read: true } : n))
+      prev.map((n) =>
+        n.id === notificationId ? { ...n, dismissed: true, read_at: new Date().toISOString() } : n
+      )
     );
   }, []);
 
@@ -72,8 +78,7 @@ export const useNotifications = () => {
         id: `local-${Date.now()}`,
         message,
         severity,
-        timestamp: new Date(),
-        read: false,
+        created_at: new Date().toISOString(),
         category,
         actionUrl,
       };
@@ -100,7 +105,7 @@ export const useNotifications = () => {
     return true;
   });
 
-  const unreadCount = filteredNotifications.filter((n) => !n.read).length;
+  const unreadCount = filteredNotifications.filter((n) => !n.read_at).length;
 
   return {
     notifications: filteredNotifications,

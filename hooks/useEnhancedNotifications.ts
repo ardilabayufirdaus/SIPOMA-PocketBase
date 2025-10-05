@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useNotificationStore } from '../stores/notificationStore';
-import { AlertSeverity } from '../types';
+import { AlertSeverity } from './useNotifications';
 
 /**
  * Hook untuk mengelola notifikasi dengan mudah

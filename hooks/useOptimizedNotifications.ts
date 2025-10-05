@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { Alert, AlertSeverity } from '../types';
+import { Alert } from '../types/supabase';
+import { AlertSeverity, ExtendedAlert } from './useNotifications';
 import { supabase } from '../utils/supabase';
 
 // Enhanced debounce function with cancel support
@@ -29,13 +30,6 @@ export interface NotificationSettings {
   browser: boolean;
   sound: boolean;
   showCriticalOnly: boolean;
-}
-
-export interface ExtendedAlert extends Alert {
-  category?: 'system' | 'maintenance' | 'production' | 'user' | 'security';
-  actionUrl?: string;
-  dismissed?: boolean;
-  snoozedUntil?: Date;
 }
 
 // Optimized notification actions interface
@@ -83,9 +77,9 @@ export const useOptimizedNotifications = () => {
         if (error) throw error;
 
         const processedNotifications: ExtendedAlert[] =
-          data?.map((alert) => ({
+          (data as unknown as Alert[])?.map((alert) => ({
             ...alert,
-            category: alert.category || 'system',
+            category: (alert.category || 'system') as ExtendedAlert['category'],
             dismissed: alert.dismissed || false,
             snoozedUntil: alert.snoozed_until ? new Date(alert.snoozed_until) : undefined,
           })) || [];

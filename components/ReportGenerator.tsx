@@ -185,33 +185,11 @@ export const ReportGenerator: React.FC = () => {
           );
         });
 
-        // Calculate feed average
-        let feedAverage: number | null = null;
-        if (shift === '3' && feedData) {
-          // For shift 3, average between shift3_average (today) and shift3_cont_average (tomorrow)
-          const todayAvg = feedData.shift3_average || 0;
-          const tomorrowContAvg =
-            nextDayFooterData.find((f) => f.parameter_id === feedData.parameter_id)
-              ?.shift3_cont_average || 0;
-          feedAverage = (todayAvg + tomorrowContAvg) / 2;
-        } else {
-          // For other shifts, use regular average
-          feedAverage = feedData?.average || null;
-        }
+        // Calculate feed average (daily report uses regular average)
+        const feedAverage = feedData?.average || null;
 
-        // Calculate operation hours
-        let operationHours: number | null = null;
-        if (shift === '3' && operationHoursData) {
-          // For shift 3, sum of shift3_difference (today) and shift3_cont_difference (tomorrow)
-          const todayDiff = operationHoursData.shift3_difference || 0;
-          const tomorrowContDiff =
-            nextDayFooterData.find((f) => f.parameter_id === operationHoursData.parameter_id)
-              ?.shift3_cont_difference || 0;
-          operationHours = todayDiff + tomorrowContDiff;
-        } else {
-          // For other shifts, use total
-          operationHours = operationHoursData?.total || null;
-        }
+        // Calculate operation hours (daily report uses total)
+        const operationHours = operationHoursData?.total || null;
 
         report += `Tipe Produk  : ${productionData?.total || 'N/A'}\n`;
         report += `Feed  : ${feedAverage ? formatNumberIndonesian(Number(feedAverage)) : 'N/A'} tph\n`;
@@ -236,18 +214,8 @@ export const ReportGenerator: React.FC = () => {
               paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
             );
           });
-          let bahanTotal: number;
-          if (shift === '3' && bahanData) {
-            // For shift 3, sum of shift3_difference (today) and shift3_cont_difference (tomorrow)
-            const todayDiff = bahanData.shift3_difference || 0;
-            const tomorrowContDiff =
-              nextDayFooterData.find((f) => f.parameter_id === bahanData.parameter_id)
-                ?.shift3_cont_difference || 0;
-            bahanTotal = todayDiff + tomorrowContDiff;
-          } else {
-            // For other shifts, use counter_total
-            bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
-          }
+          // For daily report, use counter_total
+          const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
           report += `- ${name} : ${formatNumberIndonesian(bahanTotal)} ton\n`;
         });
 
@@ -268,18 +236,8 @@ export const ReportGenerator: React.FC = () => {
               paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
             );
           });
-          let feederAvg: number;
-          if (shift === '3' && feederData) {
-            // For shift 3, average between shift3_average (today) and shift3_cont_average (tomorrow)
-            const todayAvg = feederData.shift3_average || 0;
-            const tomorrowContAvg =
-              nextDayFooterData.find((f) => f.parameter_id === feederData.parameter_id)
-                ?.shift3_cont_average || 0;
-            feederAvg = (todayAvg + tomorrowContAvg) / 2;
-          } else {
-            // For other shifts, use regular average
-            feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          }
+          // For daily report, use regular average
+          const feederAvg = feederData ? Number(feederData.average || 0) : 0;
           report += `- ${name} : ${formatNumberIndonesian(feederAvg)} %\n`;
         });
 

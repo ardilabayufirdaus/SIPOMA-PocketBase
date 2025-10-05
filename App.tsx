@@ -157,9 +157,9 @@ const App: React.FC = () => {
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [showPasswordDisplay, setShowPasswordDisplay] = useState(false);
-  // const [generatedPassword, setGeneratedPassword] = useState('');
-  // const [newUsername, setNewUsername] = useState('');
-  // const [newUserFullName, setNewUserFullName] = useState('');
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [newUsername, setNewUsername] = useState('');
+  const [newUserFullName, setNewUserFullName] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'info' | 'warning'>('success');

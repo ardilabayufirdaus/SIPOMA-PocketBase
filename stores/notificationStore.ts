@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabase';
-import { AlertSeverity } from '../types';
+import { AlertSeverity } from '../hooks/useNotifications';
 
 export interface NotificationData {
   id: string;
