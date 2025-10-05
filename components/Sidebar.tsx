@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useDrag } from '@use-gesture/react';
 import { Page, Language } from '../App';
 import { useIsMobile } from '../hooks/useIsMobile';
-import ChevronDownIcon from './icons/ChevronDownIcon';
 import HomeIcon from './icons/HomeIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
 import FactoryIcon from './icons/FactoryIcon';
 import ArchiveBoxArrowDownIcon from './icons/ArchiveBoxArrowDownIcon';
 import ClipboardDocumentListIcon from './icons/ClipboardDocumentListIcon';
-import FlagENIcon from './icons/FlagENIcon';
-import FlagIDIcon from './icons/FlagIDIcon';
 import ChartBarIcon from './icons/ChartBarIcon';
 import EditIcon from './icons/EditIcon';
+import { isAdminRole } from '../utils/roleHelpers';
 import PresentationChartLineIcon from './icons/PresentationChartLineIcon';
 import ArrowTrendingUpIcon from './icons/ArrowTrendingUpIcon';
 import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
@@ -21,680 +20,453 @@ import ChartPieIcon from './icons/ChartPieIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import CogIcon from './icons/CogIcon';
 import ClockIcon from './icons/ClockIcon';
+import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
 
-import ShieldCheckIcon from './icons/ShieldCheckIcon';
+// Import permission utilities
+import { usePermissions } from '../utils/permissions';
+import { User } from '../types';
 
-// Import Design System
-import { designSystem } from '../utils/designSystem';
+// Import modular components
+import { NavigationItem, FloatingDropdown, FloatingDropdownItem } from './NavigationItem';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { SidebarHeader } from './SidebarHeader';
 
 interface SidebarProps {
   currentPage: Page;
-  activeSubPages: { [key: string]: string };
   onNavigate: (page: Page, subPage?: string) => void;
-  t: any;
+  t: Record<string, string>;
   currentLanguage: Language;
   onLanguageChange: (lang: Language) => void;
   isOpen: boolean;
-  isCollapsed: boolean;
   onClose?: () => void;
-  autoHide?: boolean; // New prop untuk mengaktifkan auto-hide
-  currentUser?: any; // Add currentUser prop
+  currentUser?: User | null;
 }
-
-interface NavLinkProps {
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-  isCollapsed?: boolean;
-}
-
-const NavLink: React.FC<NavLinkProps> = ({
-  icon,
-  label,
-  isActive,
-  onClick,
-  isCollapsed = false,
-}) => {
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onClick();
-    }
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      onKeyDown={handleKeyDown}
-      className={`w-full flex items-center ${
-        isCollapsed ? 'justify-center px-2 py-1.5' : 'text-left gap-2 px-2 py-1.5'
-      } rounded-md text-xs font-semibold transition-all duration-200 group relative min-h-[36px]`}
-      style={{
-        backgroundColor: isActive ? `${designSystem.colors.primary[500]}26` : 'transparent',
-        color: isActive ? designSystem.colors.primary[400] : designSystem.colors.neutral[100],
-        border: isActive ? `1px solid ${designSystem.colors.primary[500]}33` : 'none',
-        boxShadow: isActive ? designSystem.shadows.sm : 'none',
-      }}
-      onMouseEnter={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-          e.currentTarget.style.color = 'white';
-          e.currentTarget.style.transform = 'scale(1.01)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = 'transparent';
-          e.currentTarget.style.color = designSystem.colors.neutral[100];
-          e.currentTarget.style.transform = 'scale(1)';
-        }
-      }}
-      title={isCollapsed ? label : undefined}
-      aria-label={label}
-      aria-current={isActive ? 'page' : undefined}
-    >
-      <div
-        className={`transition-all duration-200 ${
-          isActive ? 'scale-105' : 'group-hover:scale-105'
-        }`}
-        aria-hidden="true"
-      >
-        {icon}
-      </div>
-      {!isCollapsed && <span className="relative text-xs truncate">{label}</span>}
-
-      {/* Tooltip untuk collapsed state */}
-      {isCollapsed && <div className="sidebar-tooltip">{label}</div>}
-
-      {isActive && (
-        <div
-          className="absolute inset-0 rounded-md border"
-          style={{
-            background: `linear-gradient(to right, ${designSystem.colors.primary[500]}13, ${designSystem.colors.primary[600]}13)`,
-            borderColor: `${designSystem.colors.primary[500]}26`,
-          }}
-        ></div>
-      )}
-    </button>
-  );
-};
-
-interface CollapsibleMenuProps {
-  icon: React.ReactNode;
-  label: string;
-  isActive: boolean;
-  pages: { key: string; icon: React.ReactNode }[];
-  activeSubPage: string;
-  onSelect: (pageKey: string) => void;
-  t: any;
-  isCollapsed?: boolean;
-}
-
-const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
-  icon,
-  label,
-  isActive,
-  pages,
-  activeSubPage,
-  onSelect,
-  t,
-  isCollapsed = false,
-}) => {
-  const [isOpen, setIsOpen] = useState(isActive && !isCollapsed);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    if (isCollapsed) {
-      setIsOpen(false);
-    } else if (isActive) {
-      setIsOpen(true);
-    }
-  }, [isCollapsed, isActive]);
-
-  const handleToggle = useCallback(() => {
-    if (!isCollapsed && !isTransitioning) {
-      setIsTransitioning(true);
-      setIsOpen(!isOpen);
-      // Reset transition state after animation
-      setTimeout(() => setIsTransitioning(false), 300);
-    }
-  }, [isCollapsed, isOpen, isTransitioning]);
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleToggle();
-    }
-  };
-
-  const handleSubItemKeyDown = (event: React.KeyboardEvent, pageKey: string) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      try {
-        onSelect(pageKey);
-      } catch (error) {
-        console.error('Error in menu selection:', error);
-      }
-    }
-  };
-
-  return (
-    <div>
-      <button
-        onClick={handleToggle}
-        onKeyDown={handleKeyDown}
-        className={`w-full flex items-center ${
-          isCollapsed ? 'justify-center px-2 py-1.5' : 'justify-between text-left gap-1 px-2 py-1.5'
-        } rounded-md text-xs font-semibold transition-all duration-200 group`}
-        style={{
-          color: isActive ? designSystem.colors.neutral[0] : designSystem.colors.neutral[100],
-          background: isActive
-            ? 'linear-gradient(to right, rgba(71, 85, 105, 0.4), rgba(51, 65, 85, 0.4))'
-            : 'transparent',
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive) {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-            e.currentTarget.style.color = 'white';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = designSystem.colors.neutral[100];
-          }
-        }}
-        title={isCollapsed ? label : undefined}
-        aria-expanded={!isCollapsed ? isOpen : undefined}
-        aria-controls={
-          !isCollapsed ? `submenu-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined
-        }
-        aria-label={`${label}${isActive ? ' (active)' : ''}`}
-      >
-        <div className={`flex items-center ${isCollapsed ? '' : 'gap-1'}`}>
-          <div
-            className={`transition-all duration-200 ${
-              isActive ? 'scale-105' : 'group-hover:scale-105'
-            }`}
-          >
-            {icon}
-          </div>
-          {!isCollapsed && <span className="text-xs truncate">{label}</span>}
-        </div>
-        {!isCollapsed && (
-          <ChevronDownIcon
-            className={`w-3 h-3 transition-all duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          />
-        )}
-      </button>
-      {isOpen && !isCollapsed && (
-        <div
-          className="ml-2 flex flex-col gap-2 p-2 rounded-lg border bg-slate-900/80 shadow-lg animate-fade-in-fast"
-          style={{
-            borderColor: `${designSystem.colors.neutral[700]}4D`,
-            backgroundColor: `${designSystem.colors.neutral[900]}CC`,
-          }}
-          id={`submenu-${label.replace(/\s+/g, '-').toLowerCase()}`}
-          role="menu"
-          aria-label={`${label} submenu`}
-        >
-          {pages.map((page) => (
-            <button
-              key={page.key}
-              onClick={() => onSelect(page.key)}
-              onKeyDown={(e) => handleSubItemKeyDown(e, page.key)}
-              className={`w-full text-left flex items-center gap-3 px-4 py-2 rounded-md text-sm transition-all duration-200 group`}
-              style={{
-                color:
-                  activeSubPage === page.key
-                    ? designSystem.colors.primary[400]
-                    : designSystem.colors.neutral[100],
-                backgroundColor:
-                  activeSubPage === page.key
-                    ? `${designSystem.colors.primary[500]}1A`
-                    : 'transparent',
-                borderLeft:
-                  activeSubPage === page.key
-                    ? `4px solid ${designSystem.colors.primary[500]}`
-                    : 'none',
-                fontWeight: activeSubPage === page.key ? '600' : 'normal',
-                boxShadow: activeSubPage === page.key ? designSystem.shadows.md : 'none',
-              }}
-              onMouseEnter={(e) => {
-                if (activeSubPage !== page.key) {
-                  e.currentTarget.style.backgroundColor = `${designSystem.colors.neutral[800]}99`;
-                  e.currentTarget.style.color = 'white';
-                  e.currentTarget.style.transform = 'translateX(4px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeSubPage !== page.key) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = designSystem.colors.neutral[100];
-                  e.currentTarget.style.transform = 'translateX(0)';
-                }
-              }}
-              role="menuitem"
-              aria-current={activeSubPage === page.key ? 'page' : undefined}
-            >
-              <div
-                className={`transition-all duration-200 ${
-                  activeSubPage === page.key ? 'scale-110' : 'group-hover:scale-105'
-                }`}
-              >
-                {page.icon}
-              </div>
-              <span className="truncate">{t[page.key as keyof typeof t] || page.key}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
-  activeSubPages,
   onNavigate,
   t,
   currentLanguage,
   onLanguageChange,
   isOpen,
   onClose,
-  autoHide = true, // Default true untuk desktop
+  currentUser,
 }) => {
   const isMobile = useIsMobile();
-  const iconClass = 'w-4 h-4';
-  const sidebarRef = useRef<HTMLElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-  // Tentukan apakah sidebar harus collapsed berdasarkan hover state
-  const shouldCollapse = !isMobile && autoHide && !isHovered;
+  // Permission checker
+  const permissionChecker = usePermissions(currentUser);
 
-  const handleMouseEnter = useCallback(() => {
-    if (!isMobile && autoHide) {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
+  const iconClass = 'w-6 h-6';
+
+  // Memoized navigation data
+  const navigationData = useMemo(
+    () => ({
+      plantOperationPages: [
+        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+        {
+          key: 'op_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
+        {
+          key: 'op_wag_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
+        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
+        {
+          key: 'op_autonomous_data_entry',
+          icon: <EditIcon className={iconClass} />,
+        },
+        {
+          key: 'op_monitoring',
+          icon: <PresentationChartLineIcon className={iconClass} />,
+        },
+        {
+          key: 'op_forecast',
+          icon: <ArrowTrendingUpIcon className={iconClass} />,
+        },
+        {
+          key: 'op_cop_analysis',
+          icon: <CurrencyDollarIcon className={iconClass} />,
+        },
+        {
+          key: 'op_work_instruction_library',
+          icon: <BuildingLibraryIcon className={iconClass} />,
+        },
+        {
+          key: 'op_master_data',
+          icon: <ArchiveBoxIcon className={iconClass} />,
+        },
+      ],
+      inspectionPages: [
+        { key: 'insp_dashboard', icon: <ClipboardCheckIcon className={iconClass} /> },
+        { key: 'insp_form', icon: <EditIcon className={iconClass} /> },
+        { key: 'insp_details', icon: <ChartBarIcon className={iconClass} /> },
+        { key: 'insp_reports', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+      ],
+      packingPlantPages: [
+        {
+          key: 'pack_stock_forecast',
+          icon: <ArrowTrendingUpIcon className={iconClass} />,
+        },
+        {
+          key: 'pack_logistics_performance',
+          icon: <TruckIcon className={iconClass} />,
+        },
+        {
+          key: 'pack_packer_performance',
+          icon: <ChartBarIcon className={iconClass} />,
+        },
+        {
+          key: 'pack_distributor_warehouse',
+          icon: <BuildingLibraryIcon className={iconClass} />,
+        },
+        {
+          key: 'pack_stock_data_entry',
+          icon: <EditIcon className={iconClass} />,
+        },
+        {
+          key: 'pack_master_data',
+          icon: <ArchiveBoxIcon className={iconClass} />,
+        },
+      ],
+      projectPages: [
+        { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
+        { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
+      ],
+      userManagementPages: [
+        { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
+        { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
+      ],
+    }),
+    [iconClass]
+  );
+
+  // Handle dropdown toggle
+  const handleDropdownToggle = useCallback(
+    (moduleKey: string, buttonRef: React.RefObject<HTMLButtonElement>) => {
+      if (activeDropdown === moduleKey) {
+        setActiveDropdown(null);
+      } else {
+        if (buttonRef.current) {
+          const rect = buttonRef.current.getBoundingClientRect();
+          setDropdownPosition({ top: rect.top, left: rect.right + 8 });
+        }
+        setActiveDropdown(moduleKey);
       }
-      setIsHovered(true);
-    }
-  }, [isMobile, autoHide]);
+    },
+    [activeDropdown]
+  );
 
-  const handleMouseLeave = useCallback(() => {
-    if (!isMobile && autoHide) {
-      // Delay untuk menghindari flicker saat cursor bergerak cepat
-      hoverTimeoutRef.current = setTimeout(() => {
-        setIsHovered(false);
-      }, 300);
-    }
-  }, [isMobile, autoHide]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-      }
-    };
+  const handleDropdownClose = useCallback(() => {
+    setActiveDropdown(null);
+    setDropdownPosition({ top: 0, left: 0 });
   }, []);
 
-  // Memoize page arrays untuk performa yang lebih baik
-  const plantOperationPages = useMemo(() => {
-    const allPages = [
-      { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
-      {
-        key: 'op_report',
-        icon: <ClipboardDocumentListIcon className={iconClass} />,
-      },
-      {
-        key: 'op_wag_report',
-        icon: <ClipboardDocumentListIcon className={iconClass} />,
-      },
-      { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
-      {
-        key: 'op_autonomous_data_entry',
-        icon: <EditIcon className={iconClass} />,
-      },
-      {
-        key: 'op_monitoring',
-        icon: <PresentationChartLineIcon className={iconClass} />,
-      },
-      {
-        key: 'op_forecast',
-        icon: <ArrowTrendingUpIcon className={iconClass} />,
-      },
-      {
-        key: 'op_cop_analysis',
-        icon: <CurrencyDollarIcon className={iconClass} />,
-      },
-      {
-        key: 'op_work_instruction_library',
-        icon: <BuildingLibraryIcon className={iconClass} />,
-      },
-      { key: 'op_master_data', icon: <ArchiveBoxIcon className={iconClass} /> },
-    ];
+  const getDropdownItems = useCallback(
+    (module: string) => {
+      const isAdminOrSuperAdmin = isAdminRole(currentUser?.role);
 
-    // For Guest users, only allow specific pages
-    if (currentUser?.role === 'Guest') {
-      const allowedGuestPages = ['op_dashboard', 'op_report', 'op_wag_report'];
-      return allPages.filter((page) => allowedGuestPages.includes(page.key));
-    }
+      switch (module) {
+        case 'inspection':
+          return navigationData.inspectionPages
+            .filter(() => {
+              // Allow access for all users for now
+              // TODO: Implement proper inspection permissions
+              return true;
+            })
+            .filter((page) => {
+              // For Guest users, hide New Inspection (insp_form)
+              if (currentUser?.role === 'Guest' && page.key === 'insp_form') {
+                return false;
+              }
+              return true;
+            })
+            .map((page) => ({
+              key: page.key,
+              label:
+                t[page.key as keyof typeof t] ||
+                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              icon: page.icon,
+            }));
+        case 'operations':
+          return navigationData.plantOperationPages
+            .filter((page) => {
+              // For Guest users, only allow specific pages
+              if (currentUser?.role === 'Guest') {
+                const allowedGuestPages = ['op_dashboard', 'op_report', 'op_wag_report'];
+                return allowedGuestPages.includes(page.key);
+              }
 
-    return allPages;
-  }, [iconClass, currentUser]);
-
-  const packingPlantPages = useMemo(
-    () => [
-      {
-        key: 'pack_stock_forecast',
-        icon: <ArrowTrendingUpIcon className={iconClass} />,
-      },
-      {
-        key: 'pack_logistics_performance',
-        icon: <TruckIcon className={iconClass} />,
-      },
-      {
-        key: 'pack_packer_performance',
-        icon: <ChartBarIcon className={iconClass} />,
-      },
-      {
-        key: 'pack_distributor_warehouse',
-        icon: <BuildingLibraryIcon className={iconClass} />,
-      },
-      {
-        key: 'pack_stock_data_entry',
-        icon: <EditIcon className={iconClass} />,
-      },
-      {
-        key: 'pack_master_data',
-        icon: <ArchiveBoxIcon className={iconClass} />,
-      },
-    ],
-    [iconClass]
+              // Hide Master Data for non-admin users
+              if (page.key === 'op_master_data' && !isAdminOrSuperAdmin) {
+                return false;
+              }
+              // For now, use main plant_operations permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission('plant_operations', 'READ');
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
+        case 'packing':
+          return navigationData.packingPlantPages
+            .filter((page) => {
+              // Hide Master Data and Stock Data Entry for non-admin users
+              if (
+                (page.key === 'pack_master_data' || page.key === 'pack_stock_data_entry') &&
+                !isAdminOrSuperAdmin
+              ) {
+                return false;
+              }
+              // For now, use main packing_plant permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission('packing_plant', 'READ');
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
+        case 'projects':
+          return navigationData.projectPages
+            .filter((page) => {
+              // Hide Project List for non-admin users
+              if (page.key === 'proj_list' && !isAdminOrSuperAdmin) {
+                return false;
+              }
+              // For now, use main project_management permission
+              // TODO: Implement granular permissions for each sub-menu
+              return permissionChecker.hasPermission('project_management', 'READ');
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
+        case 'users':
+          return navigationData.userManagementPages
+            .filter(() => {
+              // For now, use main system_settings permission with ADMIN level
+              // TODO: Implement more granular permissions for user management sub-pages
+              return permissionChecker.hasPermission('system_settings', 'ADMIN');
+            })
+            .map((page) => ({
+              key: page.key,
+              label:
+                t[page.key as keyof typeof t] ||
+                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+              icon: page.icon,
+            }));
+        default:
+          return [];
+      }
+    },
+    [navigationData, t, permissionChecker]
   );
 
-  const projectPages = useMemo(
-    () => [
-      { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
-      { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
-    ],
-    [iconClass]
-  );
-
-  const userManagementPages = useMemo(
-    () => [
-      { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
-
-      { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
-    ],
-    [iconClass]
-  );
-
-  // Auto-close sidebar on mobile when navigating
   const handleNavigate = useCallback(
     (page: Page, subPage?: string) => {
-      try {
-        onNavigate(page, subPage);
-        if (isMobile && onClose) {
-          onClose();
-        }
-      } catch (error) {
-        console.error('Navigation error:', error);
-        // Tetap tutup sidebar meskipun ada error navigasi
-        if (isMobile && onClose) {
-          onClose();
-        }
+      onNavigate(page, subPage);
+      if (isMobile && onClose) {
+        onClose();
       }
     },
     [onNavigate, isMobile, onClose]
   );
 
-  // Handle ESC key to close sidebar on mobile
+  // Create refs for dropdown positioning
+  const dashboardButtonRef = useRef<HTMLButtonElement>(null);
+  const operationsButtonRef = useRef<HTMLButtonElement>(null);
+  const packingButtonRef = useRef<HTMLButtonElement>(null);
+  const inspectionButtonRef = useRef<HTMLButtonElement>(null);
+  const projectsButtonRef = useRef<HTMLButtonElement>(null);
+  const usersButtonRef = useRef<HTMLButtonElement>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement>(null);
+
+  const handleMouseEnter = useCallback(() => {
+    // Tooltip will be handled by individual buttons
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    // Tooltip will be handled by individual buttons
+  }, []);
+
+  // ESC key handler for mobile
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isMobile && isOpen && onClose) {
-        event.preventDefault();
         onClose();
       }
     };
 
     if (isMobile && isOpen) {
-      document.addEventListener('keydown', handleKeyDown, { passive: false });
+      document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
     }
   }, [isMobile, isOpen, onClose]);
 
-  const sidebarClasses = `
-        ${
-          shouldCollapse ? 'w-16' : isMobile ? 'w-72' : 'w-56'
-        } text-white flex flex-col flex-shrink-0
-        fixed inset-y-0 left-0 z-50 backdrop-blur-xl
-        transform transition-all duration-300 ease-in-out
-        ${
-          isMobile
-            ? isOpen
-              ? 'translate-x-0 shadow-2xl'
-              : '-translate-x-full'
-            : 'translate-x-0 shadow-xl'
-        }
-        md:shadow-xl md:z-50
-    `;
+  // Touch gesture for mobile swipe to close
+  const bind = useDrag(
+    ({ down, movement: [mx], direction: [xDir], velocity }) => {
+      if (!isMobile || !isOpen) return;
 
-  const sidebarStyle = {
-    background: 'linear-gradient(to bottom, #0f172a, #1e293b, #0f172a)',
-    borderRight: `1px solid ${designSystem.colors.neutral[0]}1A`,
-  };
+      const trigger = Math.abs(mx) > 100 || (Math.abs(mx) > 50 && velocity[0] > 0.5);
+      const dir = xDir < 0 ? -1 : 1;
+
+      if (!down && trigger && dir === -1) {
+        // Swipe left to close
+        onClose?.();
+      }
+    },
+    {
+      axis: 'x',
+      filterTaps: true,
+      bounds: { left: -200, right: 0 },
+    }
+  );
 
   return (
     <>
       {/* Mobile Overlay */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
 
       <aside
-        ref={sidebarRef}
-        className={`sidebar-modern ${sidebarClasses}`}
-        role="navigation"
-        aria-label="Main navigation"
+        {...bind()}
+        className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 w-20 ${
+          isMobile
+            ? isOpen
+              ? 'translate-x-0 shadow-2xl'
+              : '-translate-x-full'
+            : 'translate-x-0 shadow-xl'
+        }`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{
-          touchAction: 'none',
-          ...sidebarStyle,
-        }}
+        role="navigation"
+        aria-label="Main navigation"
       >
-        <div
-          className={`sidebar-modern-header ${
-            shouldCollapse ? 'justify-center px-3' : 'justify-between px-4'
-          }`}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10"></div>
-          <div className={`flex items-center ${shouldCollapse ? '' : 'gap-2'} relative z-10`}>
-            <div className="p-1.5 rounded-lg bg-white/90 dark:bg-slate-800/90 shadow-lg border border-white/20 dark:border-slate-700/50">
-              <img
-                src="/sipoma-logo.png"
-                alt="Sipoma Logo"
-                className="w-6 h-6 object-contain"
-                style={{ borderRadius: '4px' }}
-                loading="lazy"
-                onError={(e) => {
-                  // Fallback jika logo tidak bisa dimuat
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </div>
-            {!shouldCollapse && (
-              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                SIPOMA
-              </span>
-            )}
-          </div>
+        {/* Header */}
+        <SidebarHeader isMobile={isMobile} onClose={onClose} />
 
-          {/* Mobile Close Button */}
-          {isMobile && !shouldCollapse && onClose && (
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors relative z-10"
-              aria-label={t.navigation?.closeSidebar || t.close || 'Close sidebar'}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 flex flex-col items-center space-y-4 overflow-y-auto">
+          {/* Dashboard - Check permission */}
+          {permissionChecker.hasPermission('dashboard', 'READ') && (
+            <NavigationItem
+              ref={dashboardButtonRef}
+              icon={<HomeIcon className={iconClass} />}
+              label={t.mainDashboard}
+              isActive={currentPage === 'dashboard'}
+              onClick={() => handleNavigate('dashboard')}
+            />
           )}
-        </div>
 
-        <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
-          <NavLink
-            label={t.mainDashboard}
-            icon={<HomeIcon className="w-5 h-5" />}
-            isActive={currentPage === 'dashboard'}
-            onClick={() => handleNavigate('dashboard')}
-            isCollapsed={shouldCollapse}
+          {/* Plant Operations - Check permission */}
+          {permissionChecker.hasPermission('plant_operations', 'READ') && (
+            <NavigationItem
+              ref={operationsButtonRef}
+              icon={<FactoryIcon className={iconClass} />}
+              label={t.plantOperations}
+              isActive={currentPage === 'operations'}
+              onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
+              hasDropdown={true}
+              isExpanded={activeDropdown === 'operations'}
+            />
+          )}
+
+          {/* Packing Plant - Check permission */}
+          {permissionChecker.hasPermission('packing_plant', 'READ') && (
+            <NavigationItem
+              ref={packingButtonRef}
+              icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
+              label={t.packingPlant}
+              isActive={currentPage === 'packing'}
+              onClick={() => handleDropdownToggle('packing', packingButtonRef)}
+              hasDropdown={true}
+              isExpanded={activeDropdown === 'packing'}
+            />
+          )}
+
+          {/* Inspection Module - All users */}
+          <NavigationItem
+            ref={inspectionButtonRef}
+            icon={<ClipboardCheckIcon className={iconClass} />}
+            label={t.inspection || 'Inspection'}
+            isActive={currentPage === 'inspection'}
+            onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
+            hasDropdown={true}
+            isExpanded={activeDropdown === 'inspection'}
           />
 
-          <CollapsibleMenu
-            label={t.plantOperations}
-            icon={<FactoryIcon className="w-5 h-5" />}
-            isActive={currentPage === 'operations'}
-            pages={plantOperationPages}
-            activeSubPage={activeSubPages.operations}
-            onSelect={(subPage) => handleNavigate('operations', subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
-          />
+          {/* Project Management - Check permission */}
+          {permissionChecker.hasPermission('project_management', 'READ') && (
+            <NavigationItem
+              ref={projectsButtonRef}
+              icon={<ClipboardDocumentListIcon className={iconClass} />}
+              label={t.projectManagement}
+              isActive={currentPage === 'projects'}
+              onClick={() => handleDropdownToggle('projects', projectsButtonRef)}
+              hasDropdown={true}
+              isExpanded={activeDropdown === 'projects'}
+            />
+          )}
 
-          <CollapsibleMenu
-            label={t.packingPlant}
-            icon={<ArchiveBoxArrowDownIcon className="w-5 h-5" />}
-            isActive={currentPage === 'packing'}
-            pages={packingPlantPages}
-            activeSubPage={activeSubPages.packing}
-            onSelect={(subPage) => handleNavigate('packing', subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
-          />
+          {/* Settings - Accessible to all users except Guest */}
+          {currentUser?.role !== 'Guest' && (
+            <NavigationItem
+              ref={settingsButtonRef}
+              icon={<CogIcon className={iconClass} />}
+              label={t.header_settings}
+              isActive={currentPage === 'settings'}
+              onClick={() => handleNavigate('settings')}
+            />
+          )}
 
-          <CollapsibleMenu
-            label={t.projectManagement}
-            icon={<ClipboardDocumentListIcon className="w-5 h-5" />}
-            isActive={currentPage === 'projects'}
-            pages={projectPages}
-            activeSubPage={activeSubPages.projects}
-            onSelect={(subPage) => handleNavigate('projects', subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
-          />
-
-          <CollapsibleMenu
-            label={t.userManagement}
-            icon={<UserGroupIcon className="w-5 h-5" />}
-            isActive={currentPage === 'users'}
-            pages={userManagementPages}
-            activeSubPage={activeSubPages.users}
-            onSelect={(subPage) => handleNavigate('users', subPage)}
-            t={t}
-            isCollapsed={shouldCollapse}
-          />
-
-          <NavLink
-            label={t.header_settings}
-            icon={<CogIcon className="w-5 h-5" />}
-            isActive={currentPage === 'settings'}
-            onClick={() => handleNavigate('settings')}
-            isCollapsed={shouldCollapse}
-          />
+          {/* User Management - Only for Super Admin */}
+          {currentUser?.role === 'Super Admin' && (
+            <NavigationItem
+              ref={usersButtonRef}
+              icon={<UserGroupIcon className={iconClass} />}
+              label={t.userManagement || 'User Management'}
+              isActive={currentPage === 'users'}
+              onClick={() => handleDropdownToggle('users', usersButtonRef)}
+              hasDropdown={true}
+              isExpanded={activeDropdown === 'users'}
+            />
+          )}
         </nav>
 
-        <div
-          className={`px-4 py-6 border-t border-white/10 bg-gradient-to-r from-slate-900/50 to-slate-800/50 ${
-            shouldCollapse ? 'px-2' : ''
-          }`}
-        >
-          {!shouldCollapse && (
-            <div className="mb-4">
-              <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">
-                Language
-              </p>
-              <div className="flex items-center justify-center space-x-3">
-                <button
-                  onClick={() => onLanguageChange('en')}
-                  className={`transition-all duration-200 rounded-lg p-1 ${
-                    currentLanguage === 'en'
-                      ? 'ring-2 ring-red-400 shadow-lg scale-105'
-                      : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
-                  }`}
-                  aria-label="Switch to English"
-                  disabled={currentLanguage === 'en'}
-                >
-                  <FlagENIcon className="w-8 h-auto rounded-md" />
-                </button>
-                <button
-                  onClick={() => onLanguageChange('id')}
-                  className={`transition-all duration-200 rounded-lg p-1 ${
-                    currentLanguage === 'id'
-                      ? 'ring-2 ring-red-400 shadow-lg scale-105'
-                      : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
-                  }`}
-                  aria-label="Switch to Indonesian"
-                  disabled={currentLanguage === 'id'}
-                >
-                  <FlagIDIcon className="w-8 h-auto rounded-md" />
-                </button>
-              </div>
-            </div>
-          )}
+        {/* Language Switcher & Footer */}
+        <div className="px-3 py-4 border-t border-slate-700 bg-slate-800/50">
+          {/* Language Switcher - Compact Design */}
+          <LanguageSwitcher currentLanguage={currentLanguage} onLanguageChange={onLanguageChange} />
 
-          {shouldCollapse ? (
-            <div className="flex flex-col items-center space-y-2">
-              <button
-                onClick={() => onLanguageChange('en')}
-                className={`transition-all duration-200 rounded-lg p-1 ${
-                  currentLanguage === 'en'
-                    ? 'ring-2 ring-red-400 shadow-lg scale-105'
-                    : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
-                }`}
-                aria-label="Switch to English"
-                title="English"
-                disabled={currentLanguage === 'en'}
-              >
-                <FlagENIcon className="w-6 h-auto rounded-md" />
-              </button>
-              <button
-                onClick={() => onLanguageChange('id')}
-                className={`transition-all duration-200 rounded-lg p-1 ${
-                  currentLanguage === 'id'
-                    ? 'ring-2 ring-red-400 shadow-lg scale-105'
-                    : 'opacity-60 hover:opacity-100 hover:scale-105 focus:opacity-100 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50'
-                }`}
-                aria-label="Switch to Indonesian"
-                title="Indonesian"
-                disabled={currentLanguage === 'id'}
-              >
-                <FlagIDIcon className="w-6 h-auto rounded-md" />
-              </button>
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-xs text-slate-400">© 2025 SIPOMA</p>
-            </div>
-          )}
+          {/* Footer */}
+          <div className="text-center">
+            <p className="text-xs text-slate-400">© 2025 SIPOMA</p>
+          </div>
         </div>
       </aside>
+
+      {/* Floating Dropdown */}
+      {activeDropdown && dropdownPosition && (
+        <FloatingDropdown
+          items={getDropdownItems(activeDropdown)}
+          position={dropdownPosition}
+          onClose={handleDropdownClose}
+          onSelect={(item) => handleNavigate(activeDropdown as Page, item.key)}
+        />
+      )}
     </>
   );
 };

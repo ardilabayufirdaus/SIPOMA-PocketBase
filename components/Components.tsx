@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface ModernButtonProps {
+interface ButtonProps {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'xs' | 'sm' | 'md' | 'lg';
@@ -13,7 +13,7 @@ interface ModernButtonProps {
   iconPosition?: 'left' | 'right';
 }
 
-export const ModernButton: React.FC<ModernButtonProps> = ({
+export const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
   size = 'md',
@@ -25,11 +25,11 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   icon,
   iconPosition = 'left',
 }) => {
-  const baseClasses = 'btn-modern';
+  const baseClasses = 'btn-component';
 
   const variantClasses = {
-    primary: 'btn-modern-primary',
-    secondary: 'btn-modern-secondary',
+    primary: 'btn-component-primary',
+    secondary: 'btn-component-secondary',
     ghost:
       'bg-transparent text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800',
     danger: 'bg-red-600 text-white hover:bg-red-700 border-red-600 hover:border-red-700',
@@ -64,20 +64,20 @@ export const ModernButton: React.FC<ModernButtonProps> = ({
   );
 };
 
-interface ModernCardProps {
+interface CardProps {
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
   glass?: boolean;
 }
 
-export const ModernCard: React.FC<ModernCardProps> = ({
+export const Card: React.FC<CardProps> = ({
   children,
   className = '',
   hover = true,
   glass = false,
 }) => {
-  const baseClasses = glass ? 'glass-modern' : 'card-modern';
+  const baseClasses = glass ? 'glass-component' : 'card-component';
   const hoverClasses = hover ? 'hover:shadow-lg hover:-translate-y-1' : '';
 
   const classes = [baseClasses, hoverClasses, className].filter(Boolean).join(' ');
@@ -85,37 +85,34 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   return <div className={classes}>{children}</div>;
 };
 
-interface ModernCardHeaderProps {
+interface CardHeaderProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export const ModernCardHeader: React.FC<ModernCardHeaderProps> = ({ children, className = '' }) => {
-  return <div className={`card-modern-header ${className}`}>{children}</div>;
+export const CardHeader: React.FC<CardHeaderProps> = ({ children, className = '' }) => {
+  return <div className={`card-component-header ${className}`}>{children}</div>;
 };
 
-interface ModernCardContentProps {
+interface CardContentProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export const ModernCardContent: React.FC<ModernCardContentProps> = ({
-  children,
-  className = '',
-}) => {
-  return <div className={`card-modern-content ${className}`}>{children}</div>;
+export const CardContent: React.FC<CardContentProps> = ({ children, className = '' }) => {
+  return <div className={`card-component-content ${className}`}>{children}</div>;
 };
 
-interface ModernCardFooterProps {
+interface CardFooterProps {
   children: React.ReactNode;
   className?: string;
 }
 
-export const ModernCardFooter: React.FC<ModernCardFooterProps> = ({ children, className = '' }) => {
-  return <div className={`card-modern-footer ${className}`}>{children}</div>;
+export const CardFooter: React.FC<CardFooterProps> = ({ children, className = '' }) => {
+  return <div className={`card-component-footer ${className}`}>{children}</div>;
 };
 
-interface ModernInputProps {
+interface InputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -127,7 +124,7 @@ interface ModernInputProps {
   className?: string;
 }
 
-export const ModernInput: React.FC<ModernInputProps> = ({
+export const Input: React.FC<InputProps> = ({
   value,
   onChange,
   placeholder = '',
@@ -139,7 +136,7 @@ export const ModernInput: React.FC<ModernInputProps> = ({
   className = '',
 }) => {
   const inputClasses = [
-    'input-modern',
+    'input-component',
     error ? 'border-red-500 focus:border-red-500' : '',
     className,
   ]
@@ -168,26 +165,26 @@ export const ModernInput: React.FC<ModernInputProps> = ({
   );
 };
 
-interface ModernBadgeProps {
+interface BadgeProps {
   children: React.ReactNode;
   variant?: 'success' | 'warning' | 'error' | 'info' | 'neutral';
   size?: 'sm' | 'md';
   className?: string;
 }
 
-export const ModernBadge: React.FC<ModernBadgeProps> = ({
+export const Badge: React.FC<BadgeProps> = ({
   children,
   variant = 'neutral',
   size = 'md',
   className = '',
 }) => {
-  const baseClasses = 'badge-modern';
+  const baseClasses = 'badge-component';
 
   const variantClasses = {
-    success: 'badge-modern-success',
-    warning: 'badge-modern-warning',
-    error: 'badge-modern-error',
-    info: 'badge-modern-info',
+    success: 'badge-component-success',
+    warning: 'badge-component-warning',
+    error: 'badge-component-error',
+    info: 'badge-component-info',
     neutral: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
   };
 
@@ -203,7 +200,7 @@ export const ModernBadge: React.FC<ModernBadgeProps> = ({
   return <span className={classes}>{children}</span>;
 };
 
-interface ModernModalProps {
+interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
@@ -212,7 +209,7 @@ interface ModernModalProps {
   className?: string;
 }
 
-export const ModernModal: React.FC<ModernModalProps> = ({
+export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   children,
@@ -231,9 +228,9 @@ export const ModernModal: React.FC<ModernModalProps> = ({
   };
 
   return (
-    <div className="modal-overlay-modern" onClick={onClose}>
+    <div className="modal-overlay-component" onClick={onClose}>
       <div
-        className={`modal-content-modern ${maxWidthClasses[maxWidth]} ${className}`}
+        className={`modal-content-component ${maxWidthClasses[maxWidth]} ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
@@ -249,13 +246,13 @@ export const ModernModal: React.FC<ModernModalProps> = ({
   );
 };
 
-interface ModernLoadingSkeletonProps {
+interface LoadingSkeletonProps {
   className?: string;
   lines?: number;
   height?: string;
 }
 
-export const ModernLoadingSkeleton: React.FC<ModernLoadingSkeletonProps> = ({
+export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   className = '',
   lines = 1,
   height = '1rem',
@@ -263,20 +260,20 @@ export const ModernLoadingSkeleton: React.FC<ModernLoadingSkeletonProps> = ({
   return (
     <div className={`space-y-2 ${className}`}>
       {Array.from({ length: lines }).map((_, index) => (
-        <div key={index} className="loading-skeleton-modern" style={{ height }} />
+        <div key={index} className="loading-skeleton-component" style={{ height }} />
       ))}
     </div>
   );
 };
 
-interface ModernTooltipProps {
+interface TooltipProps {
   children: React.ReactNode;
   content: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
   className?: string;
 }
 
-export const ModernTooltip: React.FC<ModernTooltipProps> = ({
+export const Tooltip: React.FC<TooltipProps> = ({
   children,
   content,
   position = 'top',
@@ -306,13 +303,13 @@ export const ModernTooltip: React.FC<ModernTooltipProps> = ({
   );
 };
 
-interface ModernSpinnerProps {
+interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   color?: 'primary' | 'white' | 'neutral';
   className?: string;
 }
 
-export const ModernSpinner: React.FC<ModernSpinnerProps> = ({
+export const Spinner: React.FC<SpinnerProps> = ({
   size = 'md',
   color = 'primary',
   className = '',
@@ -343,15 +340,15 @@ export const ModernSpinner: React.FC<ModernSpinnerProps> = ({
 
 // Export all components
 export default {
-  ModernButton,
-  ModernCard,
-  ModernCardHeader,
-  ModernCardContent,
-  ModernCardFooter,
-  ModernInput,
-  ModernBadge,
-  ModernModal,
-  ModernLoadingSkeleton,
-  ModernTooltip,
-  ModernSpinner,
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Input,
+  Badge,
+  Modal,
+  LoadingSkeleton,
+  Tooltip,
+  Spinner,
 };

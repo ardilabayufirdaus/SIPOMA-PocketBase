@@ -300,7 +300,7 @@ export default {
         'glow-ocean': '0 0 20px rgba(14, 165, 233, 0.4)',
         'glow-purple': '0 0 20px rgba(139, 92, 246, 0.4)',
         'glow-emerald': '0 0 20px rgba(16, 185, 129, 0.4)',
-        modern: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        component: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         lift: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         'lift-lg': '0 20px 40px -4px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.06)',
         neon: '0 0 5px currentColor, 0 0 20px currentColor, 0 0 35px currentColor',

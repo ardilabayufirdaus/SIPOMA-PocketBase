@@ -29,7 +29,7 @@ import {
   useColorScheme,
 } from '../ui/EnhancedComponents';
 
-// Modern Color Palette
+// Component Color Palette
 const colors = {
   primary: 'rgb(239, 68, 68)', // red-500
   secondary: 'rgb(59, 130, 246)', // blue-500
@@ -63,7 +63,7 @@ const scaleOnHover = {
 };
 
 // Enhanced Metric Card Component
-interface ModernMetricCardProps {
+interface MetricCardProps {
   title: string;
   value: string | number;
   unit?: string;
@@ -79,7 +79,7 @@ interface ModernMetricCardProps {
   className?: string;
 }
 
-const ModernMetricCard: React.FC<ModernMetricCardProps> = ({
+const MetricCard: React.FC<MetricCardProps> = ({
   title,
   value,
   unit,
@@ -349,7 +349,7 @@ const DashboardHeader: React.FC = () => {
 };
 
 export {
-  ModernMetricCard,
+  MetricCard,
   ChartContainer,
   QuickAction,
   DashboardHeader,

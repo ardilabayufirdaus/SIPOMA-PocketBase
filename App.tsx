@@ -17,10 +17,8 @@ import { User } from './types';
 import { usePlantUnits } from './hooks/usePlantUnits';
 import { useTranslation } from './hooks/useTranslation';
 
-import Sidebar from './components/ModernSidebar';
+import Sidebar from './components/Sidebar';
 import Header from './components/Header';
-
-// Import permission utilities
 import { PermissionGuard } from './utils/permissions';
 
 import { logSystemStatus } from './utils/systemStatus';
@@ -29,7 +27,7 @@ import { logSystemStatus } from './utils/systemStatus';
 import { ThemeProvider } from './components/ThemeProvider';
 
 // Preload critical routes with higher priority
-const preloadDashboard = () => import('./pages/ModernMainDashboardPage');
+const preloadDashboard = () => import('./pages/MainDashboardPage');
 const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
 const preloadPackingPlant = () => import('./pages/PackingPlantPage');
 
@@ -37,8 +35,8 @@ const preloadPackingPlant = () => import('./pages/PackingPlantPage');
 // Preload functions removed as they were unused
 
 // Enhanced lazy loading with better error boundaries and retries
-const ModernMainDashboardPage = lazy(() =>
-  import('./pages/ModernMainDashboardPage').catch(() => {
+const MainDashboardPage = lazy(() =>
+  import('./pages/MainDashboardPage').catch(() => {
     return {
       default: () =>
         React.createElement(
@@ -350,7 +348,7 @@ const App: React.FC = () => {
                       fallback={null}
                     >
                       {currentPage === 'dashboard' && (
-                        <ModernMainDashboardPage language={language} onNavigate={handleNavigate} />
+                        <MainDashboardPage language={language} onNavigate={handleNavigate} />
                       )}
 
                       {/* Inspection Module */}

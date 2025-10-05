@@ -1140,7 +1140,7 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 /* Enhanced table styles */
-.table-modern {
+.table-component {
   @apply w-full glass-card rounded-2xl overflow-hidden;
 }
 
@@ -1447,20 +1447,20 @@ html.dark .ccr-table input:hover:not(:focus) {
 }
 
 /* Header Styling - Consistent with App Theme */
-.header-modern {
+.header-component {
   @apply sticky top-0 z-40 w-full border-b border-white/10 dark:border-slate-700/50;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-.header-modern-content {
+.header-component-content {
   @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }
 
-.header-modern-title {
+.header-component-title {
   @apply text-lg sm:text-xl font-bold leading-tight;
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
@@ -1468,7 +1468,7 @@ html.dark .ccr-table input:hover:not(:focus) {
   background-clip: text;
 }
 
-.text-gradient-modern {
+.text-gradient-component {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1543,12 +1543,12 @@ html.dark .ccr-table input:hover:not(:focus) {
 
 /* Mobile Header Adjustments */
 @media (max-width: 640px) {
-  .header-modern-content {
+  .header-component-content {
     padding-left: 1rem;
     padding-right: 1rem;
   }
 
-  .header-modern-title {
+  .header-component-title {
     @apply text-base;
   }
 }

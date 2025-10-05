@@ -102,7 +102,7 @@ export default defineConfig({
               return 'page-settings';
             }
             // Dashboard pages
-            if (id.includes('MainDashboardPage') || id.includes('ModernMainDashboardPage')) {
+            if (id.includes('MainDashboardPage')) {
               return 'page-dashboard';
             }
             // Auth pages
