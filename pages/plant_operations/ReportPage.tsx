@@ -238,8 +238,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
             // Handle new structure: {value, user_name, timestamp} or legacy direct value
             let operator = '';
-            if (hourData && typeof hourData === 'object' && 'value' in hourData) {
-              operator = String(hourData.value || '');
+            if (hourData && typeof hourData === 'object' && 'value' in (hourData as object)) {
+              operator = String((hourData as { value: unknown }).value || '');
             } else if (typeof hourData === 'string' || typeof hourData === 'number') {
               operator = String(hourData);
             }
@@ -277,8 +277,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           const hourData = paramData?.hourly_values[hour];
 
           // Handle new structure: {value, user_name, timestamp} or legacy direct value
-          if (hourData && typeof hourData === 'object' && 'value' in hourData) {
-            values[param.id] = hourData.value;
+          if (hourData && typeof hourData === 'object' && 'value' in (hourData as object)) {
+            values[param.id] = (hourData as { value: string | number }).value;
           } else if (typeof hourData === 'string' || typeof hourData === 'number') {
             values[param.id] = hourData;
           } else {

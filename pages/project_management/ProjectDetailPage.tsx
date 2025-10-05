@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
-// import ExcelJS from 'exceljs'; // Lazy loaded
+import ExcelJS from 'exceljs';
 import { useProjects } from '../../hooks/useProjects';
 import { Project, ProjectTask } from '../../types';
 import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';

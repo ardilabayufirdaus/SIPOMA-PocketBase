@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
-import ExcelJS from 'exceljs';
+import ExcelJS, { CellValue } from 'exceljs';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -176,7 +176,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   } | null>(null);
 
   // Improved inputRefs management with cleanup
-  const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
+  const inputRefs = useRef<Map<string, HTMLInputElement | HTMLSelectElement>>(new Map());
   const debouncedUpdates = useRef<Map<string, { value: string; timer: NodeJS.Timeout }>>(new Map());
 
   // Ref for main table wrapper to sync scroll with footer
@@ -602,7 +602,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       if (input) {
         try {
           input.focus();
-          input.select(); // Select text for better UX
+          if ('select' in input) {
+            input.select(); // Select text for better UX
+          }
           setFocusedCell({ table, row, col });
         } catch (error) {
           console.warn('Error focusing cell:', error);
@@ -884,13 +886,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           // Add parameter values for this hour
           filteredParameterSettings.forEach((param) => {
             const paramData = parameterDataMap.get(param.id);
-            const hourData = paramData?.hourly_values[hour];
+            const hourData = paramData?.hourly_values?.[hour];
 
             // Extract value from new structure
             let paramValue = '';
-            if (hourData && typeof hourData === 'object' && 'value' in hourData) {
-              paramValue = String(hourData.value || '');
-            } else if (typeof hourData === 'string' || typeof hourData === 'number') {
+            if (
+              hourData != null &&
+              typeof hourData === 'object' &&
+              'value' in (hourData as object)
+            ) {
+              paramValue = String((hourData as { value: unknown }).value || '');
+            } else if (
+              hourData != null &&
+              (typeof hourData === 'string' || typeof hourData === 'number')
+            ) {
               paramValue = String(hourData);
             }
 
@@ -1004,7 +1013,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
           paramWorksheet.eachRow((row, rowNumber) => {
             if (rowNumber === 1) {
-              paramHeaders = row.values.map((v) => String(v || ''));
+              paramHeaders = (row.values as CellValue[]).map((v) => String(v || ''));
             } else {
               const rowData: Record<string, unknown> = {};
               row.eachCell((cell, colNumber) => {
@@ -1094,7 +1103,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
           footerWorksheet.eachRow((row, rowNumber) => {
             if (rowNumber === 1) {
-              footerHeaders = row.values.map((v) => String(v || ''));
+              footerHeaders = (row.values as CellValue[]).map((v) => String(v || ''));
             } else {
               const rowData: Record<string, unknown> = {};
               row.eachCell((cell, colNumber) => {
@@ -1187,7 +1196,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
           downtimeWorksheet.eachRow((row, rowNumber) => {
             if (rowNumber === 1) {
-              downtimeHeaders = row.values.map((v) => String(v || ''));
+              downtimeHeaders = (row.values as CellValue[]).map((v) => String(v || ''));
             } else {
               const rowData: Record<string, unknown> = {};
               row.eachCell((cell, colNumber) => {
@@ -1291,7 +1300,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
           siloWorksheet.eachRow((row, rowNumber) => {
             if (rowNumber === 1) {
-              siloHeaders = row.values.map((v) => String(v || ''));
+              siloHeaders = (row.values as CellValue[]).map((v) => String(v || ''));
             } else {
               const rowData: Record<string, unknown> = {};
               row.eachCell((cell, colNumber) => {
@@ -2050,29 +2059,31 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             {(() => {
                               const filledParam = filteredParameterSettings.find((param) => {
                                 const paramData = parameterDataMap.get(param.id);
-                                const hourData = paramData?.hourly_values[hour];
+                                const hourData = paramData?.hourly_values?.[hour];
                                 // Check if hour data exists and has a value
                                 return (
                                   paramData &&
                                   hourData !== undefined &&
                                   hourData !== '' &&
-                                  (hourData && typeof hourData === 'object' && 'value' in hourData
-                                    ? hourData.value !== ''
+                                  (hourData &&
+                                  typeof hourData === 'object' &&
+                                  'value' in (hourData as object)
+                                    ? (hourData as { value: unknown }).value !== ''
                                     : true)
                                 );
                               });
                               if (filledParam) {
                                 const paramData = parameterDataMap.get(filledParam.id);
-                                const hourData = paramData?.hourly_values[hour];
+                                const hourData = paramData?.hourly_values?.[hour];
 
                                 // Extract user name from new structure or fallback to legacy
                                 let userName = loggedInUser?.full_name || currentUser.full_name;
                                 if (
                                   hourData &&
                                   typeof hourData === 'object' &&
-                                  'user_name' in hourData
+                                  'user_name' in (hourData as object)
                                 ) {
-                                  userName = hourData.user_name;
+                                  userName = (hourData as { user_name: string }).user_name;
                                 } else if ((paramData as any)?.name) {
                                   userName = (paramData as any).name;
                                 }
@@ -2088,11 +2099,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           </div>
                         </td>
                         {filteredParameterSettings.map((param, paramIndex) => {
-                          const hourData = parameterDataMap.get(param.id)?.hourly_values[hour];
+                          const hourData = parameterDataMap.get(param.id)?.hourly_values?.[hour];
                           // Extract value from new structure (object with value/user_name) or legacy direct value
                           let value = '';
-                          if (hourData && typeof hourData === 'object' && 'value' in hourData) {
-                            value = String(hourData.value || '');
+                          if (
+                            hourData &&
+                            typeof hourData === 'object' &&
+                            'value' in (hourData as object)
+                          ) {
+                            value = String((hourData as { value: unknown }).value || '');
                           } else if (typeof hourData === 'string' || typeof hourData === 'number') {
                             value = String(hourData);
                           }

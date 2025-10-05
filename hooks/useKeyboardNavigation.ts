@@ -9,7 +9,7 @@ interface KeyboardNavigationOptions {
   getSiloTableDimensions: () => TableDimensions;
   getParameterTableDimensions: () => TableDimensions;
   focusCell: (table: 'silo' | 'parameter', row: number, col: number) => void;
-  inputRefs: React.MutableRefObject<Map<string, HTMLInputElement>>;
+  inputRefs: React.MutableRefObject<Map<string, HTMLInputElement | HTMLSelectElement>>;
 }
 
 export const useKeyboardNavigation = ({
@@ -19,7 +19,7 @@ export const useKeyboardNavigation = ({
   inputRefs,
 }: KeyboardNavigationOptions) => {
   const setInputRef = useCallback(
-    (key: string, element: HTMLInputElement | null) => {
+    (key: string, element: HTMLInputElement | HTMLSelectElement | null) => {
       if (element) {
         inputRefs.current.set(key, element);
       } else {

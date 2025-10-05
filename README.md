@@ -68,7 +68,7 @@ A modern, real-time plant operations management system built with React 18, Type
 - **Vitest** - Fast, modern testing framework
 - **Husky** - Git hooks for quality gates
 
-## 🚀 Quick Start
+## 🚀 Development Setup
 
 ### Prerequisites
 
@@ -105,14 +105,15 @@ A modern, real-time plant operations management system built with React 18, Type
    ```
 
 5. **Build for production**
+
    ```bash
    npm run build
    npm run preview
    ```
 
-## 📁 Project Structure
+## 📁 Basic Project Structure
 
-```
+```text
 sipoma-versi-2/
 ├── public/                 # Static assets
 ├── src/
@@ -174,11 +175,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email support@sipoma.com or join our [Discord community](https://discord.gg/sipoma).
+For support, email [support@sipoma.com](mailto:support@sipoma.com) or join our [Discord community](https://discord.gg/sipoma).
 
 ---
 
-**Built with ❤️ for industrial excellence**
+Built with ❤️ for industrial excellence
 
 ### State Management
 
@@ -193,7 +194,7 @@ For support, email support@sipoma.com or join our [Discord community](https://di
 - **Performance Monitoring** - Custom performance tracking
 - **Error Boundaries** - Graceful error handling
 
-## 📁 Project Structure
+## 📁 Detailed Project Structure
 
 ```text
 sipoma-versi-2/
@@ -217,9 +218,9 @@ sipoma-versi-2/
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Development Prerequisites
 
-### Installation
+### Development Installation
 
 1. **Clone repository**
 
@@ -351,7 +352,7 @@ npm run test:e2e
 - `GET /kpis` - Get KPI data
 - `GET /alerts` - Get system alerts
 
-## 🤝 Contributing
+## 🤝 API Development Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -379,7 +380,7 @@ npm run test:e2e
 - 🚀 Performance optimizations
 - 🛡️ Enhanced security dengan RLS
 
-## 📄 License
+## 📄 Project License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
@@ -390,7 +391,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - GitHub: [@ardilabayufirdaus](https://github.com/ardilabayufirdaus)
 - LinkedIn: [Ardila Bayu Firdaus](https://linkedin.com/in/ardilabayufirdaus)
 
-## 🙏 Acknowledgments
+## 🙏 Additional Acknowledgments
 
 - React Team untuk framework yang powerful
 - Supabase untuk backend-as-a-service

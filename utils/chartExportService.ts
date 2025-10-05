@@ -284,6 +284,17 @@ export class ChartExportService {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }
+  private async elementToCanvas(
+    element: HTMLElement,
+    backgroundColor: string
+  ): Promise<HTMLCanvasElement> {
+    return html2canvas(element, {
+      backgroundColor,
+      scale: 2, // Higher resolution
+      useCORS: true,
+      allowTaint: false,
+    });
+  }
 }
 
 // Export singleton instance

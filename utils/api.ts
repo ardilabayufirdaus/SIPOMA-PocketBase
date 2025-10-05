@@ -21,8 +21,26 @@ export const api = {
     async getRegistrationRequests() {
       return apiClient.users.getRegistrationRequests();
     },
-    async approveRegistrationRequest(requestId: string, userData: Partial<User>) {
-      return apiClient.users.approveRegistrationRequest(requestId, userData);
+    async approveRegistrationRequest(
+      requestId: string,
+      userData: {
+        username: string;
+        full_name: string;
+        role: string;
+        password_hash?: string;
+        is_active?: boolean;
+      }
+    ) {
+      return apiClient.users.approveRegistrationRequest(
+        requestId,
+        userData as {
+          username: string;
+          full_name: string;
+          role: string;
+          password_hash?: string;
+          is_active?: boolean;
+        }
+      );
     },
     async rejectRegistrationRequest(requestId: string) {
       return apiClient.users.rejectRegistrationRequest(requestId);
