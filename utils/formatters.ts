@@ -18,6 +18,30 @@ export const formatDate = (dateInput: Date | string): string => {
   return `${day}/${month}/${year}`;
 };
 
+// Function to format date with day of the week for reports
+export const formatDateWithDay = (dateInput: Date | string): string => {
+  if (!dateInput || (typeof dateInput !== 'string' && !(dateInput instanceof Date))) {
+    return '[Invalid Date]';
+  }
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) {
+    return '[Invalid Date]';
+  }
+  // Adjust for timezone offset to prevent day-before issues
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  const correctedDate = new Date(date.getTime() + userTimezoneOffset);
+
+  const day = String(correctedDate.getDate()).padStart(2, '0');
+  const month = String(correctedDate.getMonth() + 1).padStart(2, '0');
+  const year = correctedDate.getFullYear();
+
+  // Add day of the week in Indonesian
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const dayOfWeek = days[correctedDate.getDay()];
+
+  return `${dayOfWeek}, ${day}/${month}/${year}`;
+};
+
 // Function to format date for database queries (YYYY-MM-DD)
 export const formatDateForDB = (dateInput: Date | string): string => {
   if (!dateInput || (typeof dateInput !== 'string' && !(dateInput instanceof Date))) {

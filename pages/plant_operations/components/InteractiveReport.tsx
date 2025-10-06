@@ -66,6 +66,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   t,
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
+  const isDailyOperationalReport = title.toUpperCase().includes('DAILY OPERATIONAL REPORT');
 
   return (
     <motion.div
@@ -82,9 +83,25 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.4 }}
       >
-        <div className="text-center flex-1">
-          <h1 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">{title}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">{date}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex-shrink-0">
+            <img src="/sipoma-logo.png" alt="Sipoma Logo" className="h-9 w-auto" />
+          </div>
+          <div className="text-center flex-1">
+            <h1
+              className={`${isDailyOperationalReport ? 'text-xl' : 'text-2xl'} font-bold text-orange-600 dark:text-orange-400 mb-2`}
+            >
+              {title}
+            </h1>
+            <p
+              className={`${isDailyOperationalReport ? 'text-xs' : 'text-sm'} text-slate-600 dark:text-slate-400 font-medium`}
+            >
+              {date}
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <img src="/tonasa-logo.png" alt="Tonasa Logo" className="h-11 w-auto" />
+          </div>
         </div>
       </motion.div>
 

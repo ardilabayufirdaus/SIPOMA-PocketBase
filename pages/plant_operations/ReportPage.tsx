@@ -18,7 +18,7 @@ import {
 } from '../../types';
 import { CcrInformationData } from '../../hooks/useCcrInformationData';
 import {
-  formatDate,
+  formatDateWithDay,
   formatNumberIndonesian,
   calculateDuration,
   formatDuration,
@@ -347,7 +347,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         rows,
         footer: footerStats,
         title: `${t.op_report_title.toUpperCase()} - ${selectedUnit.toUpperCase()}`,
-        date: formatDate(selectedDate),
+        date: formatDateWithDay(selectedDate),
         downtimeData: filteredDowntimeData,
         siloData: filteredSiloData,
         informationData: getInformationForDate(selectedDate, selectedUnit),
