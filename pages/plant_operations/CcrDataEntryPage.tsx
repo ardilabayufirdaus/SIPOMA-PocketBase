@@ -901,18 +901,27 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       const downtimeData = getDowntimeForDate(selectedDate);
 
       // Export Parameter Data
-      if (parameterData && parameterData.length > 0) {
-        const paramExportData: Record<string, unknown>[] = [];
+      if (filteredParameterSettings.length > 0) {
+        const worksheetParam = workbook.addWorksheet('Parameter Data');
+
+        // Create headers
+        const headers = [
+          'Date',
+          'Hour',
+          'Shift',
+          'Unit',
+          ...filteredParameterSettings.map((p) => p.parameter),
+        ];
+        worksheetParam.addRow(headers);
 
         // Create rows for each hour (1-24)
         for (let hour = 1; hour <= 24; hour++) {
-          const shift = hour <= 8 ? '1' : hour <= 16 ? '2' : '3';
-          const row: Record<string, unknown> = {
-            Date: selectedDate,
-            Hour: hour,
-            Shift: shift,
-            Unit: selectedUnit,
-          };
+          let shift = '';
+          if (hour >= 1 && hour <= 7) shift = `${t.shift_3} (${t.shift_3_cont})`;
+          else if (hour >= 8 && hour <= 15) shift = t.shift_1;
+          else if (hour >= 16 && hour <= 22) shift = t.shift_2;
+          else shift = t.shift_3;
+          const rowData = [selectedDate, hour, shift, selectedUnit];
 
           // Add parameter values for this hour
           filteredParameterSettings.forEach((param) => {
@@ -934,14 +943,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               paramValue = String(hourData);
             }
 
-            row[param.parameter] = paramValue;
+            rowData.push(paramValue);
           });
 
-          paramExportData.push(row);
+          worksheetParam.addRow(rowData);
         }
-
-        const worksheetParam = workbook.addWorksheet('Parameter Data');
-        worksheetParam.addRows(paramExportData);
       }
 
       // Export Footer Data
@@ -1992,7 +1998,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   <col style={{ width: '140px' }} />
                   <col style={{ width: '200px' }} />
                   {filteredParameterSettings.map((_, index) => (
-                    <col key={index} style={{ width: '160px' }} />
+                    <col key={index} style={{ width: '100px' }} />
                   ))}
                 </colgroup>
                 <thead className="bg-slate-50 text-center sticky top-0 z-20" role="rowgroup">
@@ -2027,12 +2033,12 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         className={`px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center ${
                           shouldHighlightColumn(param) ? 'filtered-column' : ''
                         }`}
-                        style={{ width: '160px', minWidth: '160px' }}
+                        style={{ width: '100px', minWidth: '100px' }}
                         role="columnheader"
                         scope="col"
                       >
                         <div className="text-center">
-                          <div className="font-bold text-[11px] leading-tight uppercase tracking-wider">
+                          <div className="font-bold text-[8px] leading-tight uppercase tracking-wider">
                             {param.parameter}
                           </div>
                         </div>

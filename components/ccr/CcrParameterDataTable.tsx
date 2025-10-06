@@ -113,7 +113,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                   <col style={{ width: '140px' }} />
                   <col style={{ width: '200px' }} />
                   {filteredParameterSettings.map((_, index) => (
-                    <col key={index} style={{ width: '160px' }} />
+                    <col key={index} style={{ width: '100px' }} />
                   ))}
                 </colgroup>
                 <thead className="bg-slate-50 text-center sticky top-0 z-20" role="rowgroup">
@@ -148,12 +148,12 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                         className={`px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center ${
                           shouldHighlightColumn(param) ? 'filtered-column' : ''
                         }`}
-                        style={{ width: '160px', minWidth: '160px' }}
+                        style={{ width: '100px', minWidth: '100px' }}
                         role="columnheader"
                         scope="col"
                       >
                         <div className="text-center">
-                          <div className="font-bold text-[11px] leading-tight uppercase tracking-wider">
+                          <div className="font-bold text-[8px] leading-tight uppercase tracking-wider">
                             {param.parameter}
                           </div>
                           <div className="font-normal normal-case text-[10px] text-slate-500 mt-1">
