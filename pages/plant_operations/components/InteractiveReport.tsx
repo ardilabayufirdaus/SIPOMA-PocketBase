@@ -4,7 +4,9 @@ import { ParameterTable } from './ParameterTable';
 import { OperatorTable } from './OperatorTable';
 import { SiloTable } from './SiloTable';
 import { DowntimeTable } from './DowntimeTable';
+import { InformationTable } from './InformationTable';
 import { CcrDowntimeData } from '../../../types';
+import { CcrInformationData } from '../../../hooks/useCcrInformationData';
 
 interface InteractiveReportProps {
   groupedHeaders: Array<{
@@ -43,6 +45,7 @@ interface InteractiveReportProps {
       content?: number;
     };
   }>;
+  informationData: CcrInformationData | null;
   operatorData: Array<{
     shift: string;
     name: string;
@@ -58,6 +61,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   date,
   downtimeData,
   siloData,
+  informationData,
   operatorData,
   t,
 }) => {
@@ -93,11 +97,20 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         <ParameterTable groupedHeaders={groupedHeaders} rows={rows} footer={footer} t={t} />
       </motion.div>
 
-      {/* Operator Data Table */}
+      {/* Information Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
+      >
+        <InformationTable informationData={informationData} t={t} />
+      </motion.div>
+
+      {/* Operator Data Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
       >
         <OperatorTable operatorData={operatorData} t={t} />
       </motion.div>
@@ -106,7 +119,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
       >
         <SiloTable siloData={siloData} t={t} />
       </motion.div>
@@ -115,7 +128,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
+        transition={{ delay: 0.6, duration: 0.4 }}
       >
         <DowntimeTable downtimeData={downtimeData} t={t} />
       </motion.div>

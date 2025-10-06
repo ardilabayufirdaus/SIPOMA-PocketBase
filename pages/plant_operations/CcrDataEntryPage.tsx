@@ -28,6 +28,7 @@ import { formatNumber, formatNumberWithPrecision } from '../../utils/formatters'
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
+import { useCcrInformationData } from '../../hooks/useCcrInformationData';
 import {
   DocumentArrowDownIcon,
   DocumentArrowUpIcon,
@@ -638,6 +639,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     date: string;
   } | null>(null);
 
+  // Information Data Hook and State
+  const {
+    getInformationForDate,
+    saveInformation,
+    isSaving: isSavingInformation,
+  } = useCcrInformationData();
+  const [informationText, setInformationText] = useState('');
+
   const formatStatValue = (value: number | undefined, precision = 1) => {
     if (value === undefined || value === null) return '-';
     return formatNumber(value);
@@ -727,6 +736,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       inputRefs.current.clear();
     };
   }, [selectedDate, selectedCategory, selectedUnit]);
+
+  // Load information when date or plant unit changes
+  useEffect(() => {
+    if (selectedDate && selectedUnit) {
+      const existingInfo = getInformationForDate(selectedDate, selectedUnit);
+      setInformationText(existingInfo?.information || '');
+    }
+  }, [selectedDate, selectedUnit, getInformationForDate]);
 
   // Wrapper function for parameter data changes with optimistic updates
   const handleParameterDataChange = useCallback(
@@ -843,6 +860,27 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setDeleteModalOpen(false);
     setDeletingRecord(null);
   };
+
+  // Information change handler with debounced save
+  const handleInformationChange = useCallback(
+    (value: string) => {
+      setInformationText(value);
+
+      // Debounced save to Supabase
+      const timeoutId = setTimeout(() => {
+        if (selectedDate && selectedUnit) {
+          saveInformation({
+            date: selectedDate,
+            plantUnit: selectedUnit,
+            information: value,
+          });
+        }
+      }, 1000); // 1 second debounce
+
+      return () => clearTimeout(timeoutId);
+    },
+    [selectedDate, selectedUnit, saveInformation]
+  );
 
   // Export to Excel functionality
   const handleExport = async () => {
@@ -2261,111 +2299,140 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         )}
       </div>
 
-      {/* Downtime Data Table */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-            {t.downtime_data_entry_title}
-          </h3>
-          <EnhancedButton
-            variant="primary"
-            size="sm"
-            onClick={handleOpenAddDowntimeModal}
-            disabled={!permissionChecker.hasPermission('plant_operations', 'WRITE')}
-            aria-label={t.add_downtime_button || 'Add new downtime'}
-          >
-            <PlusIcon className="w-4 h-4 mr-2" />
-            {t.add_downtime_button}
-          </EnhancedButton>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.start_time}
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.end_time}
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.unit}
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.pic}
-                </th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t.problem}
-                </th>
-                <th className="relative px-4 py-2">
-                  <span className="sr-only">{t.actions}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {loading ? (
+      {/* Downtime Data Table and Keterangan */}
+      <div className="flex flex-col md:flex-row gap-6 md:justify-between">
+        {/* Downtime Data Table */}
+        <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+              {t.downtime_data_entry_title}
+            </h3>
+            <EnhancedButton
+              variant="primary"
+              size="sm"
+              onClick={handleOpenAddDowntimeModal}
+              disabled={!permissionChecker.hasPermission('plant_operations', 'WRITE')}
+              aria-label={t.add_downtime_button || 'Add new downtime'}
+            >
+              <PlusIcon className="w-4 h-4 mr-2" />
+              {t.add_downtime_button}
+            </EnhancedButton>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead className="bg-slate-50 dark:bg-slate-700">
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400 animate-pulse"
-                  >
-                    Loading data...
-                  </td>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t.start_time}
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t.end_time}
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t.unit}
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t.pic}
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t.problem}
+                  </th>
+                  <th className="relative px-4 py-2">
+                    <span className="sr-only">{t.actions}</span>
+                  </th>
                 </tr>
-              ) : dailyDowntimeData.length > 0 ? (
-                dailyDowntimeData.map((downtime, idx) => (
-                  <tr
-                    key={downtime.id}
-                    className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
-                      idx % 2 === 0 ? 'bg-slate-50 dark:bg-slate-700' : 'bg-white dark:bg-slate-800'
-                    } transition-colors duration-200`}
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
-                      {downtime.start_time}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
-                      {downtime.end_time}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
-                      {downtime.unit}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
-                      {downtime.pic}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 max-w-sm whitespace-pre-wrap">
-                      {downtime.problem}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleOpenEditDowntimeModal(downtime)}
-                          aria-label={`Edit downtime for ${downtime.unit}`}
-                        >
-                          <EditIcon />
-                        </EnhancedButton>
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleOpenDeleteModal(downtime.id, downtime.date)}
-                          aria-label={`Delete downtime for ${downtime.unit}`}
-                        >
-                          <TrashIcon />
-                        </EnhancedButton>
-                      </div>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                {loading ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="text-center py-10 text-slate-500 dark:text-slate-400 animate-pulse"
+                    >
+                      Loading data...
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="text-center py-6 text-slate-500">
-                    {t.no_downtime_recorded}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ) : dailyDowntimeData.length > 0 ? (
+                  dailyDowntimeData.map((downtime, idx) => (
+                    <tr
+                      key={downtime.id}
+                      className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                        idx % 2 === 0
+                          ? 'bg-slate-50 dark:bg-slate-700'
+                          : 'bg-white dark:bg-slate-800'
+                      } transition-colors duration-200`}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
+                        {downtime.start_time}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
+                        {downtime.end_time}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                        {downtime.unit}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                        {downtime.pic}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-600 max-w-sm whitespace-pre-wrap">
+                        {downtime.problem}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <EnhancedButton
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleOpenEditDowntimeModal(downtime)}
+                            aria-label={`Edit downtime for ${downtime.unit}`}
+                          >
+                            <EditIcon />
+                          </EnhancedButton>
+                          <EnhancedButton
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleOpenDeleteModal(downtime.id, downtime.date)}
+                            aria-label={`Delete downtime for ${downtime.unit}`}
+                          >
+                            <TrashIcon />
+                          </EnhancedButton>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-500">
+                      {t.no_downtime_recorded}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Keterangan Container */}
+        <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
+            {t.information}
+          </h3>
+          <div className="space-y-2">
+            <label
+              htmlFor="keterangan"
+              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              {t.information_label}
+            </label>
+            <textarea
+              id="keterangan"
+              rows={8}
+              value={informationText}
+              onChange={(e) => handleInformationChange(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical"
+              placeholder={t.information_placeholder}
+              disabled={isSavingInformation}
+            />
+          </div>
         </div>
       </div>
 

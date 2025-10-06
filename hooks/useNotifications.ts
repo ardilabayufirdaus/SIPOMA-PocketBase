@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNotificationStore } from '../stores/notificationStore';
 
 export enum AlertSeverity {
@@ -32,9 +32,8 @@ export interface ExtendedAlert extends Alert {
   snoozedUntil?: Date;
 }
 
-export const useNotifications = () => {
+export const useNotifications = (currentUser?: { id: string } | null) => {
   const notificationStore = useNotificationStore();
-  const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<NotificationSettings>({
     email: true,
     browser: true,
@@ -42,21 +41,41 @@ export const useNotifications = () => {
     showCriticalOnly: false,
   });
 
-  const markAsRead = useCallback(async (notificationId: string) => {
-    notificationStore.markAsRead(notificationId);
-  }, [notificationStore]);
+  // Load notifications on mount
+  useEffect(() => {
+    notificationStore.loadNotifications(currentUser?.id);
+    notificationStore.connectRealtime(currentUser?.id);
+    notificationStore.clearExpiredNotifications();
+
+    return () => {
+      notificationStore.disconnectRealtime();
+    };
+  }, [currentUser?.id]);
+
+  const markAsRead = useCallback(
+    async (notificationId: string) => {
+      notificationStore.markAsRead(notificationId);
+    },
+    [notificationStore]
+  );
 
   const markAllAsRead = useCallback(async () => {
     notificationStore.markAllAsRead();
   }, [notificationStore]);
 
-  const dismissNotification = useCallback(async (notificationId: string) => {
-    notificationStore.dismissNotification(notificationId);
-  }, [notificationStore]);
+  const dismissNotification = useCallback(
+    async (notificationId: string) => {
+      notificationStore.dismissNotification(notificationId);
+    },
+    [notificationStore]
+  );
 
-  const snoozeNotification = useCallback(async (notificationId: string, minutes: number) => {
-    notificationStore.snoozeNotification(notificationId, minutes);
-  }, [notificationStore]);
+  const snoozeNotification = useCallback(
+    async (notificationId: string, minutes: number) => {
+      notificationStore.snoozeNotification(notificationId, minutes);
+    },
+    [notificationStore]
+  );
 
   const createNotification = useCallback(
     async (

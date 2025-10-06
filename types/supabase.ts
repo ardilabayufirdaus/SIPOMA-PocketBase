@@ -119,6 +119,56 @@ export interface Database {
           permissions?: any;
         };
       };
+      notifications: {
+        Row: {
+          id: string;
+          title: string;
+          message: string;
+          severity: string;
+          category: string;
+          action_url: string | null;
+          action_label: string | null;
+          metadata: Json | null;
+          user_id: string;
+          created_at: string;
+          read_at: string | null;
+          dismissed_at: string | null;
+          snoozed_until: string | null;
+          expires_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          message: string;
+          severity: string;
+          category: string;
+          action_url?: string | null;
+          action_label?: string | null;
+          metadata?: Json | null;
+          user_id: string;
+          created_at?: string;
+          read_at?: string | null;
+          dismissed_at?: string | null;
+          snoozed_until?: string | null;
+          expires_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          message?: string;
+          severity?: string;
+          category?: string;
+          action_url?: string | null;
+          action_label?: string | null;
+          metadata?: Json | null;
+          user_id?: string;
+          created_at?: string;
+          read_at?: string | null;
+          dismissed_at?: string | null;
+          snoozed_until?: string | null;
+          expires_at?: string | null;
+        };
+      };
       parameter_settings: {
         Row: {
           id: string;

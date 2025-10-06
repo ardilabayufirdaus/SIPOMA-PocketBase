@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../utils/supabase';
 import { AlertSeverity } from '../hooks/useNotifications';
+import type { Json } from '../types/supabase';
 
 export interface NotificationData {
   id: string;
@@ -52,15 +53,17 @@ interface NotificationState {
 
   // Actions
   addNotification: (notification: Omit<NotificationData, 'id' | 'createdAt'>) => void;
-  broadcastNotification: (notification: Omit<NotificationData, 'id' | 'createdAt' | 'userId'>) => Promise<void>;
+  broadcastNotification: (
+    notification: Omit<NotificationData, 'id' | 'createdAt' | 'userId'>
+  ) => Promise<void>;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   dismissNotification: (id: string) => void;
   snoozeNotification: (id: string, minutes: number) => void;
   updatePreferences: (preferences: Partial<NotificationPreferences>) => void;
-  connectRealtime: () => void;
+  connectRealtime: (userId?: string) => void;
   disconnectRealtime: () => void;
-  loadNotifications: () => Promise<void>;
+  loadNotifications: (userId?: string) => Promise<void>;
   clearExpiredNotifications: () => void;
   requestBrowserPermission: () => Promise<boolean>;
 }
@@ -162,33 +165,47 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         category: notificationData.category,
         action_url: notificationData.actionUrl,
         action_label: notificationData.actionLabel,
-        metadata: notificationData.metadata,
+        metadata: notificationData.metadata as Json,
         user_id: (user as unknown as { id: string }).id,
         created_at: new Date().toISOString(),
       }));
 
-      const { error: insertError } = await supabase
-        .from('notifications')
-        .insert(notifications);
+      const { error: insertError } = await supabase.from('notifications').insert(notifications);
 
       if (insertError) throw insertError;
 
       set({ loading: false });
     } catch (error) {
-      set({ loading: false, error: error instanceof Error ? error.message : 'Failed to broadcast notification' });
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to broadcast notification',
+      });
     }
   },
 
-  markAsRead: (id) => {
-    set((state) => ({
-      notifications: state.notifications.map((n) =>
-        n.id === id ? { ...n, readAt: new Date() } : n
-      ),
-      unreadCount: Math.max(
-        0,
-        state.unreadCount - (state.notifications.find((n) => n.id === id && !n.readAt) ? 1 : 0)
-      ),
-    }));
+  markAsRead: async (id) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      set((state) => ({
+        notifications: state.notifications.map((n) =>
+          n.id === id ? { ...n, readAt: new Date() } : n
+        ),
+        unreadCount: Math.max(
+          0,
+          state.unreadCount - (state.notifications.find((n) => n.id === id && !n.readAt) ? 1 : 0)
+        ),
+      }));
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to mark notification as read',
+      });
+    }
   },
 
   markAllAsRead: () => {
@@ -233,15 +250,20 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
-  connectRealtime: async () => {
+  connectRealtime: async (userId?: string) => {
     const state = get();
     if (state.subscription || !state.preferences.enableRealtime) return;
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
+      let currentUserId = userId;
+
+      if (!currentUserId) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        currentUserId = user.id;
+      }
 
       const subscription = supabase
         .channel('notifications')
@@ -251,7 +273,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             event: 'INSERT',
             schema: 'public',
             table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
+            filter: `user_id=eq.${currentUserId}`,
           },
           (payload) => {
             const notification = payload.new as Record<string, unknown>;
@@ -287,37 +309,65 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
-  loadNotifications: async () => {
-    set({ loading: true, error: null });
-
+  loadNotifications: async (userId?: string) => {
     try {
-      // For now, load from localStorage - can be enhanced with database later
-      const savedNotifications = localStorage.getItem('sipoma_notifications');
-      let notifications: NotificationData[] = [];
+      set({ loading: true, error: null });
 
-      if (savedNotifications) {
-        const parsed = JSON.parse(savedNotifications);
-        notifications = parsed.map((n: Record<string, unknown>) => ({
-          ...n,
-          createdAt: new Date(String(n.createdAt)),
-          readAt: n.readAt ? new Date(String(n.readAt)) : undefined,
-          dismissedAt: n.dismissedAt ? new Date(String(n.dismissedAt)) : undefined,
-          snoozedUntil: n.snoozedUntil ? new Date(String(n.snoozedUntil)) : undefined,
-          expiresAt: n.expiresAt ? new Date(String(n.expiresAt)) : undefined,
-        })) as NotificationData[];
+      let currentUserId = userId;
+
+      if (!currentUserId) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          set({ loading: false });
+          return;
+        }
+        currentUserId = user.id;
       }
 
-      const unreadCount = notifications.filter((n) => !n.readAt && !n.dismissedAt).length;
+      const { data: notifications, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', currentUserId)
+        .is('dismissed_at', null)
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      set({
-        notifications,
-        unreadCount,
-        loading: false,
-      });
+      if (error) throw error;
+
+      if (notifications) {
+        const formattedNotifications: NotificationData[] = notifications.map((n: any) => ({
+          id: n.id,
+          title: String(n.title || ''),
+          message: String(n.message || ''),
+          severity: (n.severity as AlertSeverity) || AlertSeverity.INFO,
+          category: (n.category as NotificationData['category']) || 'system',
+          actionUrl: n.action_url ? String(n.action_url) : undefined,
+          actionLabel: n.action_label ? String(n.action_label) : undefined,
+          metadata: (n.metadata as Record<string, unknown>) || {},
+          userId: String(n.user_id || ''),
+          createdAt: new Date(n.created_at),
+          readAt: n.read_at ? new Date(n.read_at) : undefined,
+          dismissedAt: n.dismissed_at ? new Date(n.dismissed_at) : undefined,
+          snoozedUntil: n.snoozed_until ? new Date(n.snoozed_until) : undefined,
+          expiresAt: n.expires_at ? new Date(n.expires_at) : undefined,
+        }));
+
+        const unreadCount = formattedNotifications.filter((n) => !n.readAt).length;
+
+        set({
+          notifications: formattedNotifications,
+          unreadCount,
+          loading: false,
+        });
+      } else {
+        set({ loading: false });
+      }
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to load notifications',
         loading: false,
+        error: error instanceof Error ? error.message : 'Failed to load notifications',
       });
     }
   },

@@ -8,6 +8,7 @@ import { usePlantUnits } from '../../hooks/usePlantUnits';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
+import { useCcrInformationData } from '../../hooks/useCcrInformationData';
 import {
   ParameterSetting,
   CcrParameterData,
@@ -15,6 +16,7 @@ import {
   CcrDowntimeData,
   SiloCapacity,
 } from '../../types';
+import { CcrInformationData } from '../../hooks/useCcrInformationData';
 import {
   formatDate,
   formatNumberIndonesian,
@@ -73,6 +75,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       shift: string;
       name: string;
     }>;
+    informationData: CcrInformationData | null;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -87,6 +90,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { getDowntimeForDate } = useCcrDowntimeData();
   const { getDataForDate: getSiloDataForDate } = useCcrSiloData();
   const { records: siloMasterData, loading: siloMasterLoading } = useSiloCapacities();
+  const { getInformationForDate } = useCcrInformationData();
 
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
@@ -346,6 +350,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         date: formatDate(selectedDate),
         downtimeData: filteredDowntimeData,
         siloData: filteredSiloData,
+        informationData: getInformationForDate(selectedDate, selectedUnit),
         operatorData: operatorData,
       };
 
@@ -564,6 +569,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               date={reportData.date}
               downtimeData={reportData.downtimeData}
               siloData={reportData.siloData}
+              informationData={reportData.informationData}
               operatorData={reportData.operatorData}
               t={t}
             />
