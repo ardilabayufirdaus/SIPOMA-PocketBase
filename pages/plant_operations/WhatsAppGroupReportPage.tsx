@@ -857,7 +857,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       let report = `🌆 *LAPORAN SHIFT 2 PRODUKSI* 🌆\n`;
       report += `🏭 *${selectedPlantCategory}*\n`;
       report += `📅 ${formattedDate}\n`;
-      report += `⏰ Shift: 15:00 - 23:00\n`;
+      report += `⏰ Shift: 15:00 - 22:00\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       // Plant Units - use selected units
@@ -1161,7 +1161,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       let report = `🌙 *LAPORAN SHIFT 3 PRODUKSI* 🌙\n`;
       report += `🏭 *${selectedPlantCategory}*\n`;
       report += `📅 ${formattedDate}\n`;
-      report += `⏰ Shift: 23:00 - 07:00\n`;
+      report += `⏰ Shift: 22:00 - 07:00\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
       // Plant Units - use selected units
