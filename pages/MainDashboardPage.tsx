@@ -322,7 +322,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
         <DashboardHeader />
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <MetricCard
             title="Active Projects"
             value={activeProjects}

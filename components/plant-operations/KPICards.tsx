@@ -24,7 +24,7 @@ interface KPICardsProps {
 const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-4 gap-6">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
@@ -40,7 +40,7 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-4 gap-6">
       {kpis.map((kpi) => (
         <motion.div
           key={kpi.id}

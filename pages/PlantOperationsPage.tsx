@@ -7,6 +7,7 @@ import CopAnalysisPage from './plant_operations/CopAnalysisPage';
 import ReportPage from './plant_operations/ReportPage';
 import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibraryPage';
 import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
+import PlantOperationsDashboardPage from './plant_operations/PlantOperationsDashboardPage';
 
 interface PlantData {
   loading: boolean;
@@ -25,6 +26,8 @@ interface PageProps {
 
 const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t }) => {
   switch (activePage) {
+    case 'op_dashboard':
+      return <PlantOperationsDashboardPage t={t} />;
     case 'op_report':
       return <ReportPage t={t} />;
     case 'op_wag_report':

@@ -9,7 +9,7 @@ import { PlantUnit } from '../../types';
 export interface DashboardFilters {
   plantCategory: string;
   plantUnit: string;
-  timeRange: string;
+  timeRange: 'daily' | 'monthly';
   month: number;
   year: number;
 }
@@ -78,9 +78,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   };
 
   const activeFiltersCount = [
-    filters.plantCategory !== 'all',
-    filters.plantUnit !== 'all',
-    filters.timeRange !== 'all',
+    filters.plantCategory !== '',
+    filters.plantUnit !== '',
+    filters.timeRange !== 'daily', // Since daily is default
   ].filter(Boolean).length;
 
   return (
@@ -158,7 +158,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               className="overflow-hidden"
             >
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                   {/* Plant Category Filter */}
                   <motion.div
                     className="space-y-3"
@@ -303,6 +303,41 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                             </option>
                           );
                         })}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </motion.div>
+
+                  {/* Time Range Filter */}
+                  <motion.div
+                    className="space-y-3"
+                    animate={
+                      animatingField === 'timeRange'
+                        ? {
+                            scale: [1, 1.02, 1],
+                            transition: { duration: 0.3 },
+                          }
+                        : {}
+                    }
+                  >
+                    <label
+                      htmlFor="timeRange"
+                      className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                    >
+                      Time Range
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="timeRange"
+                        value={filters.timeRange}
+                        onChange={(e) =>
+                          handleFieldChange('timeRange', e.target.value as 'daily' | 'monthly')
+                        }
+                        disabled={isLoading}
+                        className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="monthly">Monthly</option>
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>

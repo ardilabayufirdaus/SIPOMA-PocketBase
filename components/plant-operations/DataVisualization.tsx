@@ -1,6 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3Icon, DatabaseIcon, AlertTriangleIcon } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Cell,
+} from 'recharts';
 
 interface RiskDataEntry {
   id: string;
@@ -11,17 +21,51 @@ interface RiskDataEntry {
   category: string;
 }
 
+interface AvailabilityData {
+  unit: string;
+  category: string;
+  runningHours: number;
+  downtimeHours: number;
+}
+
 interface DataVisualizationProps {
   riskData: RiskDataEntry[];
   ccrDataLength: number;
   siloCapacitiesLength: number;
+  availabilityData: AvailabilityData[];
+  timeRange: 'daily' | 'monthly';
+  month?: number;
+  year?: number;
 }
 
 const DataVisualization: React.FC<DataVisualizationProps> = ({
   riskData,
   ccrDataLength,
   siloCapacitiesLength,
+  availabilityData,
+  timeRange,
+  month,
+  year,
 }) => {
+  // Prepare chart data
+  const chartData = availabilityData.map((item) => {
+    const totalHours =
+      timeRange === 'daily'
+        ? 24
+        : new Date(
+            year || new Date().getFullYear(),
+            month || new Date().getMonth() + 1,
+            0
+          ).getDate() * 24;
+    const availability = ((item.runningHours - item.downtimeHours) / totalHours) * 100;
+    return {
+      unit: item.unit,
+      availability: Math.max(0, Math.min(100, availability)), // Clamp between 0-100
+      runningHours: item.runningHours,
+      downtimeHours: item.downtimeHours,
+    };
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -103,7 +147,7 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
         </div>
       </div>
 
-      {/* Placeholder for Charts */}
+      {/* Availability Chart */}
       <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -111,20 +155,68 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Performance Analytics
+              Plant Availability Chart
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Charts and visualizations will be displayed here
+              {timeRange === 'daily' ? 'Daily' : 'Monthly'} availability by unit
             </p>
           </div>
         </div>
 
-        <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg">
-          <div className="text-center text-slate-500 dark:text-slate-400">
-            <BarChart3Icon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>Chart visualization coming soon</p>
+        {chartData.length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="unit"
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                />
+                <YAxis
+                  domain={[0, 100]}
+                  tick={{ fontSize: 12 }}
+                  label={{ value: 'Availability (%)', angle: -90, position: 'insideLeft' }}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string) => {
+                    if (name === 'availability') {
+                      return [`${value.toFixed(1)}%`, 'Availability'];
+                    }
+                    return [
+                      `${value}h`,
+                      name === 'runningHours' ? 'Running Hours' : 'Downtime Hours',
+                    ];
+                  }}
+                  labelFormatter={(label) => `Unit: ${label}`}
+                />
+                <Bar dataKey="availability" fill="#10b981">
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        entry.availability >= 95
+                          ? '#10b981'
+                          : entry.availability >= 90
+                            ? '#f59e0b'
+                            : '#ef4444'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-        </div>
+        ) : (
+          <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg">
+            <div className="text-center text-slate-500 dark:text-slate-400">
+              <BarChart3Icon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>No availability data available</p>
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

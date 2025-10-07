@@ -135,7 +135,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
           <col style={{ width: '140px' }} />
           <col style={{ width: '200px' }} />
           {filteredParameterSettings.map((_, index) => (
-            <col key={index} style={{ width: '160px' }} />
+            <col key={index} style={{ width: '100px' }} />
           ))}
         </colgroup>
         <tbody role="rowgroup">
