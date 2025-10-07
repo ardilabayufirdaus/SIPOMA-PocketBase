@@ -230,6 +230,10 @@ export interface Database {
           shift2_total: number | null;
           shift3_total: number | null;
           shift3_cont_total: number | null;
+          shift1_average: number | null;
+          shift2_average: number | null;
+          shift3_average: number | null;
+          shift3_cont_average: number | null;
           shift1_counter: number | null;
           shift2_counter: number | null;
           shift3_counter: number | null;
@@ -250,6 +254,10 @@ export interface Database {
           shift2_total?: number | null;
           shift3_total?: number | null;
           shift3_cont_total?: number | null;
+          shift1_average?: number | null;
+          shift2_average?: number | null;
+          shift3_average?: number | null;
+          shift3_cont_average?: number | null;
           shift1_counter?: number | null;
           shift2_counter?: number | null;
           shift3_counter?: number | null;
@@ -270,6 +278,10 @@ export interface Database {
           shift2_total?: number | null;
           shift3_total?: number | null;
           shift3_cont_total?: number | null;
+          shift1_average?: number | null;
+          shift2_average?: number | null;
+          shift3_average?: number | null;
+          shift3_cont_average?: number | null;
           shift1_counter?: number | null;
           shift2_counter?: number | null;
           shift3_counter?: number | null;

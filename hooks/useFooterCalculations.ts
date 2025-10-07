@@ -33,7 +33,7 @@ export const useFooterCalculations = ({
           }
           return parseFloat(String(v));
         })
-        .filter((v) => !isNaN(v) && v !== 0);
+        .filter((v) => !isNaN(v)); // Include 0 values for data integrity (operator might correct mistakes)
 
       if (values.length === 0) {
         footer[param.id] = null;
@@ -85,7 +85,7 @@ export const useFooterCalculations = ({
             }
             return parseFloat(String(hourData));
           })
-          .filter((value) => !isNaN(value) && value !== 0);
+          .filter((value) => !isNaN(value)); // Include 0 values for data integrity
         const total = validValues.reduce((sum, value) => sum + value, 0);
         shiftTotals[shiftKey][param.id] = total;
       }
@@ -128,7 +128,7 @@ export const useFooterCalculations = ({
             }
             return parseFloat(String(hourData));
           })
-          .filter((value) => !isNaN(value) && value !== 0);
+          .filter((value) => !isNaN(value)); // Include 0 values for data integrity
         const total = validValues.reduce((sum, value) => sum + value, 0);
         const average = validValues.length > 0 ? total / validValues.length : 0;
         shiftAverages[shiftKey][param.id] = average;
@@ -166,7 +166,7 @@ export const useFooterCalculations = ({
           }
           return parseFloat(String(hourData));
         })
-        .filter((value) => !isNaN(value) && value !== 0);
+        .filter((value) => !isNaN(value)); // Include 0 values for data integrity
       shiftCounters.shift3Cont[param.id] =
         shift3ContValues.length > 0 ? Math.max(...shift3ContValues) : 0;
 
@@ -180,7 +180,7 @@ export const useFooterCalculations = ({
           }
           return parseFloat(String(hourData));
         })
-        .filter((value) => !isNaN(value) && value !== 0);
+        .filter((value) => !isNaN(value)); // Include 0 values for data integrity
       const hour7Value = data.hourly_values[7];
       const hour7Numeric =
         typeof hour7Value === 'object' && hour7Value !== null && 'value' in hour7Value
@@ -199,7 +199,7 @@ export const useFooterCalculations = ({
           }
           return parseFloat(String(hourData));
         })
-        .filter((value) => !isNaN(value) && value !== 0);
+        .filter((value) => !isNaN(value)); // Include 0 values for data integrity
       const hour15Value = data.hourly_values[15];
       const hour15Numeric =
         typeof hour15Value === 'object' && hour15Value !== null && 'value' in hour15Value
@@ -218,7 +218,7 @@ export const useFooterCalculations = ({
           }
           return parseFloat(String(hourData));
         })
-        .filter((value) => !isNaN(value) && value !== 0);
+        .filter((value) => !isNaN(value)); // Include 0 values for data integrity
       const hour22Value = data.hourly_values[22];
       const hour22Numeric =
         typeof hour22Value === 'object' && hour22Value !== null && 'value' in hour22Value

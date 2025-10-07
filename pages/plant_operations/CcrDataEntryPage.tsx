@@ -184,6 +184,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const tableWrapperRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Ref to prevent concurrent footer data saves
+  const footerSaveInProgress = useRef(false);
+
   const { users } = useUsers();
   const currentUser = users[0] || { full_name: 'Operator' };
 
@@ -510,9 +513,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   // Use custom hook for footer data persistence
   const { saveFooterData, getFooterDataForDate } = useCcrFooterData();
 
-  // Auto-save footer data when it changes
+  // Auto-save footer data when it changes - immediate save for data integrity
   useEffect(() => {
     const saveFooterDataAsync = async () => {
+      // Prevent concurrent saves
+      if (footerSaveInProgress.current) {
+        return;
+      }
+
       if (
         !parameterFooterData ||
         !parameterShiftFooterData ||
@@ -522,16 +530,18 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         return;
       }
 
+      footerSaveInProgress.current = true;
+
       try {
         // Save footer data for each parameter
-        for (const param of filteredParameterSettings) {
+        const savePromises = filteredParameterSettings.map(async (param) => {
           const footerData = parameterFooterData[param.id];
           const shiftData = parameterShiftFooterData;
           const averageData = parameterShiftAverageData;
           const counterData = parameterShiftCounterData;
 
           if (footerData) {
-            await saveFooterData({
+            return saveFooterData({
               date: selectedDate,
               parameter_id: param.id,
               plant_unit: selectedCategory || 'CCR',
@@ -543,22 +553,30 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               shift2_total: shiftData.shift2[param.id] || 0,
               shift3_total: shiftData.shift3[param.id] || 0,
               shift3_cont_total: shiftData.shift3Cont[param.id] || 0,
+              shift1_average: averageData.shift1[param.id] || 0,
+              shift2_average: averageData.shift2[param.id] || 0,
+              shift3_average: averageData.shift3[param.id] || 0,
+              shift3_cont_average: averageData.shift3Cont[param.id] || 0,
               shift1_counter: counterData.shift1[param.id] || 0,
               shift2_counter: counterData.shift2[param.id] || 0,
               shift3_counter: counterData.shift3[param.id] || 0,
               shift3_cont_counter: counterData.shift3Cont[param.id] || 0,
             });
           }
-        }
-      } catch (error) {
-        console.error('Error saving footer data:', error);
+        });
+
+        await Promise.all(savePromises.filter(Boolean));
+      } catch {
+        // Don't show error to user as this is background save
+        // Footer data will be recalculated and saved again on next change
+      } finally {
+        footerSaveInProgress.current = false;
       }
     };
 
-    // Only save if we have data and it's not the initial load
+    // Save immediately when footer data changes (no debounce for data integrity)
     if (filteredParameterSettings.length > 0 && selectedDate) {
-      const timeoutId = setTimeout(saveFooterDataAsync, 1000); // Debounce for 1 second
-      return () => clearTimeout(timeoutId);
+      saveFooterDataAsync();
     }
   }, [
     parameterFooterData,
@@ -1187,7 +1205,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     parameter_id: String(parameterId),
                     plant_unit: row.Unit ? String(row.Unit) : selectedUnit,
                     total: row.Total ? Number(row.Total) : 0,
-                    counter_total: row.Counter_Total ? Number(row.Counter_Total) : 0,
                     average: row.Average ? Number(row.Average) : 0,
                     minimum: row.Minimum ? Number(row.Minimum) : 0,
                     maximum: row.Maximum ? Number(row.Maximum) : 0,
@@ -1201,11 +1218,11 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     shift3_cont_average: row.Shift3_Cont_Average
                       ? Number(row.Shift3_Cont_Average)
                       : 0,
-                    shift1_difference: row.Shift1_Difference ? Number(row.Shift1_Difference) : 0,
-                    shift2_difference: row.Shift2_Difference ? Number(row.Shift2_Difference) : 0,
-                    shift3_difference: row.Shift3_Difference ? Number(row.Shift3_Difference) : 0,
-                    shift3_cont_difference: row.Shift3_Cont_Difference
-                      ? Number(row.Shift3_Cont_Difference)
+                    shift1_counter: row.Shift1_Counter ? Number(row.Shift1_Counter) : 0,
+                    shift2_counter: row.Shift2_Counter ? Number(row.Shift2_Counter) : 0,
+                    shift3_counter: row.Shift3_Counter ? Number(row.Shift3_Counter) : 0,
+                    shift3_cont_counter: row.Shift3_Cont_Counter
+                      ? Number(row.Shift3_Cont_Counter)
                       : 0,
                   });
                   importCount++;

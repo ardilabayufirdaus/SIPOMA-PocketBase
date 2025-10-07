@@ -22,7 +22,7 @@ interface FormData {
   category: string;
   plant_unit: string;
   report_type: 'daily' | 'shift';
-  kalkulasi: 'selisih' | 'total' | 'average' | 'min' | 'max' | 'counter_total';
+  kalkulasi: 'selisih' | 'total' | 'average' | 'min' | 'max';
 }
 
 interface ValidationErrors {
@@ -166,7 +166,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
           if (formData.jenis === 'number' && !value) return 'Kalkulasi is required for number type';
           if (
             formData.jenis === 'number' &&
-            !['selisih', 'total', 'average', 'min', 'max', 'counter_total'].includes(value)
+            !['selisih', 'total', 'average', 'min', 'max'].includes(value)
           )
             return 'Invalid kalkulasi selected';
           return '';
@@ -460,7 +460,6 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               <option value="average">Average</option>
               <option value="min">Min</option>
               <option value="max">Max</option>
-              <option value="counter_total">Counter Total</option>
             </select>
             {errors.kalkulasi && touched.kalkulasi && (
               <p

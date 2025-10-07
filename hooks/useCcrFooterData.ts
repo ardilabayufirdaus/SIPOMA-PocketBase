@@ -14,6 +14,10 @@ interface CcrFooterData {
   shift2_total: number;
   shift3_total: number;
   shift3_cont_total: number;
+  shift1_average: number;
+  shift2_average: number;
+  shift3_average: number;
+  shift3_cont_average: number;
   shift1_counter: number;
   shift2_counter: number;
   shift3_counter: number;
@@ -36,6 +40,10 @@ export const useCcrFooterData = () => {
           shift2_total: footerData.shift2_total,
           shift3_total: footerData.shift3_total,
           shift3_cont_total: footerData.shift3_cont_total,
+          shift1_average: footerData.shift1_average,
+          shift2_average: footerData.shift2_average,
+          shift3_average: footerData.shift3_average,
+          shift3_cont_average: footerData.shift3_cont_average,
           shift1_counter: footerData.shift1_counter,
           shift2_counter: footerData.shift2_counter,
           shift3_counter: footerData.shift3_counter,

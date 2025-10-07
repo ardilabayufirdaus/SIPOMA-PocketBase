@@ -249,8 +249,13 @@ export const ReportGenerator: React.FC = () => {
         const bahanParams = getBahanParameters(plantCategory, `Cement Mill ${unit}`);
         bahanParams.forEach(({ name, id }) => {
           const bahanData = unitFooterDataFiltered.find((f) => f.parameter_id === id);
-          // For daily report, use counter_total
-          const bahanTotal = bahanData ? Number(bahanData.counter_total || 0) : 0;
+          // Calculate total from shift counters since counter_total is no longer used
+          const bahanTotal = bahanData
+            ? (bahanData.shift1_counter || 0) +
+              (bahanData.shift2_counter || 0) +
+              (bahanData.shift3_counter || 0) +
+              (bahanData.shift3_cont_counter || 0)
+            : 0;
           report += `- ${name} : ${formatNumberIndonesian(bahanTotal)} ton\n`;
         });
 

@@ -104,7 +104,7 @@ export interface WhatsAppReportSetting {
   category: string; // For grouping in report
   plant_unit?: string; // Specific plant unit for this setting
   report_type: 'daily' | 'shift'; // Type of report this setting applies to
-  kalkulasi?: 'selisih' | 'total' | 'average' | 'min' | 'max' | 'counter_total'; // Calculation method for number type
+  kalkulasi?: 'selisih' | 'total' | 'average' | 'min' | 'max'; // Calculation method for number type
 }
 
 export interface PicSetting {
@@ -258,7 +258,6 @@ export interface CcrFooterData {
   parameter_id: string;
   plant_unit?: string;
   total: number;
-  counter_total: number;
   average: number;
   minimum: number;
   maximum: number;
@@ -266,8 +265,12 @@ export interface CcrFooterData {
   shift2_total: number;
   shift3_total: number;
   shift3_cont_total: number;
-  shift1_difference: number;
-  shift2_difference: number;
-  shift3_difference: number;
-  shift3_cont_difference: number;
+  shift1_average: number;
+  shift2_average: number;
+  shift3_average: number;
+  shift3_cont_average: number;
+  shift1_counter: number;
+  shift2_counter: number;
+  shift3_counter: number;
+  shift3_cont_counter: number;
 }
