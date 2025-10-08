@@ -98,6 +98,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const [showReorderModal, setShowReorderModal] = useState(false);
   const [modalParameterOrder, setModalParameterOrder] = useState<ParameterSetting[]>([]);
 
+  // Profile state
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [showSaveProfileModal, setShowSaveProfileModal] = useState(false);
+  const [showLoadProfileModal, setShowLoadProfileModal] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [profileDescription, setProfileDescription] = useState('');
+  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+
   // New state for undo stack
   const [undoStack, setUndoStack] = useState<
     Array<{
@@ -310,6 +318,76 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     loadParameterOrder();
   }, [selectedCategory, selectedUnit, loggedInUser?.id]);
 
+  // Fetch profiles
+  const fetchProfiles = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('parameter_order_profiles')
+        .select('*')
+        .eq('module', 'plant_operations')
+        .eq('parameter_type', 'ccr_parameters')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching profiles:', error);
+        setProfiles([]);
+      } else {
+        setProfiles(data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch profiles:', err);
+      setProfiles([]);
+    }
+  }, []);
+
+  // Save profile
+  const saveProfile = useCallback(async () => {
+    if (!loggedInUser?.id || !profileName.trim() || modalParameterOrder.length === 0) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from('parameter_order_profiles').insert({
+        name: profileName.trim(),
+        description: profileDescription.trim() || null,
+        user_id: loggedInUser.id,
+        module: 'plant_operations',
+        parameter_type: 'ccr_parameters',
+        category: selectedCategory,
+        unit: selectedUnit,
+        parameter_order: modalParameterOrder.map((p) => p.id),
+      });
+
+      if (error) {
+        console.error('Error saving profile:', error);
+        showToast('Failed to save profile');
+      } else {
+        showToast('Profile saved successfully');
+        setShowSaveProfileModal(false);
+        setProfileName('');
+        setProfileDescription('');
+        fetchProfiles();
+      }
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      showToast('Failed to save profile');
+    }
+  }, [
+    loggedInUser?.id,
+    profileName,
+    profileDescription,
+    modalParameterOrder,
+    selectedCategory,
+    selectedUnit,
+    fetchProfiles,
+    showToast,
+  ]);
+
+  // Load profiles on mount
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
+
   const unitsForCategory = useMemo(() => {
     if (!selectedCategory) return [];
     return plantUnits
@@ -419,6 +497,66 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       setModalParameterOrder([...filteredParameterSettings]);
     }
   }, [showReorderModal, filteredParameterSettings]);
+
+  // Load profile
+  const loadProfile = useCallback(
+    async (profile: any) => {
+      if (!profile?.parameter_order) return;
+
+      try {
+        // Update modal order
+        const orderedParams = profile.parameter_order
+          .map((id: string) => filteredParameterSettings.find((p) => p.id === id))
+          .filter(Boolean);
+
+        // Add any missing parameters at the end
+        const missingParams = filteredParameterSettings.filter(
+          (p) => !profile.parameter_order.includes(p.id)
+        );
+
+        setModalParameterOrder([...orderedParams, ...missingParams]);
+        setSelectedProfile(profile);
+        setShowLoadProfileModal(false);
+        showToast(`Profile "${profile.name}" loaded`);
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+        showToast('Failed to load profile');
+      }
+    },
+    [filteredParameterSettings, showToast]
+  );
+
+  // Delete profile
+  const deleteProfile = useCallback(
+    async (profile: any) => {
+      if (!profile?.id) return;
+
+      // Check if user owns the profile
+      if (profile.user_id !== loggedInUser?.id) {
+        showToast('You can only delete your own profiles');
+        return;
+      }
+
+      try {
+        const { error } = await supabase
+          .from('parameter_order_profiles')
+          .delete()
+          .eq('id', profile.id);
+
+        if (error) {
+          console.error('Error deleting profile:', error);
+          showToast('Failed to delete profile');
+        } else {
+          showToast(`Profile "${profile.name}" deleted`);
+          fetchProfiles(); // Refresh the profiles list
+        }
+      } catch (err) {
+        console.error('Failed to delete profile:', err);
+        showToast('Failed to delete profile');
+      }
+    },
+    [loggedInUser?.id, fetchProfiles, showToast]
+  );
 
   // Silo master map
   const siloMasterMap = useMemo(
@@ -2581,6 +2719,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           <div className="flex justify-end gap-3 pt-4 border-t">
             <EnhancedButton
               variant="outline"
+              onClick={() => setShowLoadProfileModal(true)}
+              aria-label="Load profile"
+            >
+              Load Profile
+            </EnhancedButton>
+            <EnhancedButton
+              variant="outline"
+              onClick={() => setShowSaveProfileModal(true)}
+              aria-label="Save profile"
+            >
+              Save Profile
+            </EnhancedButton>
+            <EnhancedButton
+              variant="outline"
               onClick={() => {
                 // Reset to default order (sorted by parameter name)
                 const defaultOrder = [...filteredParameterSettings].sort((a, b) =>
@@ -2603,6 +2755,156 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               aria-label="Save parameter order"
             >
               Done
+            </EnhancedButton>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Save Profile Modal */}
+      <Modal
+        isOpen={showSaveProfileModal}
+        onClose={() => setShowSaveProfileModal(false)}
+        title="Save Parameter Order Profile"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Save the current parameter order as a profile that can be loaded later.
+          </p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Profile Name *
+              </label>
+              <input
+                type="text"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder="Enter profile name"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Description (optional)
+              </label>
+              <textarea
+                value={profileDescription}
+                onChange={(e) => setProfileDescription(e.target.value)}
+                placeholder="Enter profile description"
+                rows={3}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <EnhancedButton
+              variant="outline"
+              onClick={() => {
+                setShowSaveProfileModal(false);
+                setProfileName('');
+                setProfileDescription('');
+              }}
+              aria-label="Cancel save profile"
+            >
+              Cancel
+            </EnhancedButton>
+            <EnhancedButton
+              variant="primary"
+              onClick={saveProfile}
+              disabled={!profileName.trim()}
+              aria-label="Save profile"
+            >
+              Save Profile
+            </EnhancedButton>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Load Profile Modal */}
+      <Modal
+        isOpen={showLoadProfileModal}
+        onClose={() => setShowLoadProfileModal(false)}
+        title="Load Parameter Order Profile"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Select a profile to load the parameter order.
+          </p>
+
+          <div className="max-h-96 overflow-y-auto space-y-2">
+            {profiles.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
+                No profiles available
+              </p>
+            ) : (
+              profiles.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                  onClick={() => loadProfile(profile)}
+                >
+                  <div>
+                    <div className="font-semibold text-slate-800 dark:text-slate-200">
+                      {profile.name}
+                    </div>
+                    {profile.description && (
+                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                        {profile.description}
+                      </div>
+                    )}
+                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                      Created by {profile.user_id === loggedInUser?.id ? 'You' : 'Another user'} •{' '}
+                      {new Date(profile.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <EnhancedButton
+                      variant="primary"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        loadProfile(profile);
+                      }}
+                      aria-label={`Load profile ${profile.name}`}
+                    >
+                      Load
+                    </EnhancedButton>
+                    {profile.user_id === loggedInUser?.id && (
+                      <EnhancedButton
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (
+                            window.confirm(
+                              `Are you sure you want to delete the profile "${profile.name}"?`
+                            )
+                          ) {
+                            deleteProfile(profile);
+                          }
+                        }}
+                        aria-label={`Delete profile ${profile.name}`}
+                        className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </EnhancedButton>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <EnhancedButton
+              variant="outline"
+              onClick={() => setShowLoadProfileModal(false)}
+              aria-label="Close load profile modal"
+            >
+              Close
             </EnhancedButton>
           </div>
         </div>
