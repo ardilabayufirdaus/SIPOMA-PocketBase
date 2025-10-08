@@ -32,6 +32,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     timeRange: 'daily',
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
+    date: new Date().toISOString().split('T')[0],
   });
 
   // Load downtime data on mount
@@ -137,9 +138,8 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
       const key = `${record.plant_unit}`;
       if (groupedData[key]) {
         if (filters.timeRange === 'daily') {
-          // For daily, use the latest running hours for today
-          const today = new Date().toISOString().split('T')[0];
-          if (record.date === today) {
+          // For daily, use running hours for selected date
+          if (record.date === filters.date) {
             groupedData[key].runningHours = record.total_running_hours;
           }
         } else {
@@ -165,9 +165,8 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         const downtimeHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
         if (filters.timeRange === 'daily') {
-          // For daily, check if downtime is for today
-          const today = new Date().toISOString().split('T')[0];
-          if (record.date === today) {
+          // For daily, check if downtime is for selected date
+          if (record.date === filters.date) {
             groupedData[key].downtimeHours += downtimeHours;
           }
         } else {
@@ -288,6 +287,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
       timeRange: 'daily',
       month: new Date().getMonth() + 1,
       year: new Date().getFullYear(),
+      date: new Date().toISOString().split('T')[0],
     });
   };
 
@@ -352,6 +352,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         timeRange={filters.timeRange}
         month={filters.month}
         year={filters.year}
+        date={filters.date}
       />
     </div>
   );

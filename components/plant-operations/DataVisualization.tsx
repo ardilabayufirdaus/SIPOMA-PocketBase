@@ -36,6 +36,7 @@ interface DataVisualizationProps {
   timeRange: 'daily' | 'monthly';
   month?: number;
   year?: number;
+  date?: string;
 }
 
 const DataVisualization: React.FC<DataVisualizationProps> = ({
@@ -46,6 +47,7 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
   timeRange,
   month,
   year,
+  date,
 }) => {
   // Prepare chart data
   const chartData = availabilityData.map((item) => {
@@ -63,6 +65,7 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
       availability: Math.max(0, Math.min(100, availability)), // Clamp between 0-100
       runningHours: item.runningHours,
       downtimeHours: item.downtimeHours,
+      totalHours: totalHours,
     };
   });
 
@@ -158,7 +161,9 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
               Plant Availability Chart
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              {timeRange === 'daily' ? 'Daily' : 'Monthly'} availability by unit
+              {timeRange === 'daily'
+                ? `Daily availability by unit (${date || 'today'})`
+                : `Monthly running hours by unit (${new Date(year || new Date().getFullYear(), (month || new Date().getMonth() + 1) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })})`}
             </p>
           </div>
         </div>
@@ -170,20 +175,30 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="unit"
-                  tick={{ fontSize: 12 }}
-                  angle={-45}
-                  textAnchor="end"
+                  tick={{ fontSize: 9 }}
+                  angle={0}
+                  textAnchor="middle"
                   height={60}
                 />
                 <YAxis
-                  domain={[0, 100]}
-                  tick={{ fontSize: 12 }}
-                  label={{ value: 'Availability (%)', angle: -90, position: 'insideLeft' }}
+                  domain={timeRange === 'daily' ? [0, 100] : [0, 'dataMax + 50']}
+                  tick={{ fontSize: 9 }}
+                  label={{
+                    value: timeRange === 'daily' ? 'Availability (%)' : 'Running Hours (jam)',
+                    angle: -90,
+                    position: 'insideLeft',
+                  }}
                 />
                 <Tooltip
                   formatter={(value: number, name: string) => {
-                    if (name === 'availability') {
-                      return [`${value.toFixed(1)}%`, 'Availability'];
+                    if (timeRange === 'daily') {
+                      if (name === 'availability') {
+                        return [`${value.toFixed(1)}%`, 'Availability'];
+                      }
+                    } else {
+                      if (name === 'runningHours') {
+                        return [`${value.toFixed(1)}h`, 'Running Hours'];
+                      }
                     }
                     return [
                       `${value}h`,
@@ -192,16 +207,25 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
                   }}
                   labelFormatter={(label) => `Unit: ${label}`}
                 />
-                <Bar dataKey="availability" fill="#10b981">
+                <Bar
+                  dataKey={timeRange === 'daily' ? 'availability' : 'runningHours'}
+                  fill="#10b981"
+                >
                   {chartData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={
-                        entry.availability >= 95
-                          ? '#10b981'
-                          : entry.availability >= 90
-                            ? '#f59e0b'
-                            : '#ef4444'
+                        timeRange === 'daily'
+                          ? entry.availability >= 95
+                            ? '#10b981'
+                            : entry.availability >= 90
+                              ? '#f59e0b'
+                              : '#ef4444'
+                          : entry.runningHours >= entry.totalHours * 0.95
+                            ? '#10b981'
+                            : entry.runningHours >= entry.totalHours * 0.9
+                              ? '#f59e0b'
+                              : '#ef4444'
                       }
                     />
                   ))}

@@ -12,6 +12,7 @@ export interface DashboardFilters {
   timeRange: 'daily' | 'monthly';
   month: number;
   year: number;
+  date: string;
 }
 
 interface FilterSectionProps {
@@ -78,9 +79,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   };
 
   const activeFiltersCount = [
-    filters.plantCategory !== '',
-    filters.plantUnit !== '',
-    filters.timeRange !== 'daily', // Since daily is default
+    filters.plantCategory !== 'all',
+    filters.plantUnit !== 'all',
+    filters.timeRange !== 'daily',
+    filters.timeRange === 'daily' && filters.date !== '',
   ].filter(Boolean).length;
 
   return (
@@ -158,7 +160,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               className="overflow-hidden"
             >
               <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                <div
+                  className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-${filters.timeRange === 'daily' ? '6' : '5'} gap-6`}
+                >
                   {/* Plant Category Filter */}
                   <motion.div
                     className="space-y-3"
@@ -342,6 +346,34 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                       <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
                   </motion.div>
+
+                  {/* Date Filter - shown only when timeRange is daily */}
+                  {filters.timeRange === 'daily' && (
+                    <motion.div
+                      className="space-y-3"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <label
+                        htmlFor="date"
+                        className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                      >
+                        Date
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          id="date"
+                          value={filters.date}
+                          onChange={(e) => handleFieldChange('date', e.target.value)}
+                          disabled={isLoading}
+                          className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
