@@ -36,7 +36,6 @@ describe('buildPermissionMatrix', () => {
     expect(result.plant_operations.Packing.Unit1).toBe('WRITE');
     expect(result.plant_operations.Packing.Unit2).toBe('WRITE');
     expect(result.user_management).toBe('ADMIN');
-    expect(result.packing_plant).toBe('NONE');
   });
 
   it('should handle empty permissions array', () => {

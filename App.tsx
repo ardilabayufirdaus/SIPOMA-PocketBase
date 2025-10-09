@@ -29,7 +29,6 @@ import { ThemeProvider } from './components/ThemeProvider';
 // Preload critical routes with higher priority
 const preloadDashboard = () => import('./pages/MainDashboardPage');
 const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
-const preloadPackingPlant = () => import('./pages/PackingPlantPage');
 
 // Preload secondary routes on user interaction
 // Preload functions removed as they were unused
@@ -53,14 +52,6 @@ const PlantOperationsPage = lazy(() =>
   import('./pages/PlantOperationsPage').catch(() => ({
     default: () => (
       <div className="text-center p-8">Error loading Plant Operations. Please refresh.</div>
-    ),
-  }))
-);
-
-const PackingPlantPage = lazy(() =>
-  import('./pages/PackingPlantPage').catch(() => ({
-    default: () => (
-      <div className="text-center p-8">Error loading Packing Plant. Please refresh.</div>
     ),
   }))
 );
@@ -185,7 +176,6 @@ const App: React.FC = () => {
       // Preload main dashboard and common pages
       preloadDashboard();
       preloadPlantOperations();
-      preloadPackingPlant();
     }
   }, [currentUser, currentUserLoading]);
 
@@ -258,8 +248,6 @@ const App: React.FC = () => {
         return t.header_settings;
       case 'operations':
         return t[activeSubPages.operations as keyof typeof t] || t.plantOperations;
-      case 'packing':
-        return t[activeSubPages.packing as keyof typeof t] || t.packingPlant;
       case 'inspection':
         return t[activeSubPages.inspection as keyof typeof t] || t.inspection || 'Inspection';
       case 'projects':
@@ -399,17 +387,6 @@ const App: React.FC = () => {
                             loading: plantDataLoading,
                           }}
                         />
-                      )}
-                    </PermissionGuard>
-                    {/* Packing Plant - Check permission */}
-                    <PermissionGuard
-                      user={currentUser}
-                      feature="packing_plant"
-                      requiredLevel="READ"
-                      fallback={null}
-                    >
-                      {currentPage === 'packing' && (
-                        <PackingPlantPage activePage={activeSubPages.packing} t={t} />
                       )}
                     </PermissionGuard>
                     {/* Project Management */}

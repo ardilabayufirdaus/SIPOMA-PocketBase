@@ -76,10 +76,6 @@ export default defineConfig({
             if (id.includes('PlantOperationsPage') || id.includes('plant_operations/')) {
               return 'page-plant-ops';
             }
-            // Packing plant pages
-            if (id.includes('PackingPlantPage') || id.includes('packing_plant/')) {
-              return 'page-packing';
-            }
             // User management pages
             if (
               id.includes('UserListPage') ||

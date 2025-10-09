@@ -5,7 +5,6 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import HomeIcon from './icons/HomeIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
 import FactoryIcon from './icons/FactoryIcon';
-import ArchiveBoxArrowDownIcon from './icons/ArchiveBoxArrowDownIcon';
 import ClipboardDocumentListIcon from './icons/ClipboardDocumentListIcon';
 import ChartBarIcon from './icons/ChartBarIcon';
 import EditIcon from './icons/EditIcon';
@@ -109,32 +108,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         { key: 'insp_details', icon: <ChartBarIcon className={iconClass} /> },
         { key: 'insp_reports', icon: <ClipboardDocumentListIcon className={iconClass} /> },
       ],
-      packingPlantPages: [
-        {
-          key: 'pack_stock_forecast',
-          icon: <ArrowTrendingUpIcon className={iconClass} />,
-        },
-        {
-          key: 'pack_logistics_performance',
-          icon: <TruckIcon className={iconClass} />,
-        },
-        {
-          key: 'pack_packer_performance',
-          icon: <ChartBarIcon className={iconClass} />,
-        },
-        {
-          key: 'pack_distributor_warehouse',
-          icon: <BuildingLibraryIcon className={iconClass} />,
-        },
-        {
-          key: 'pack_stock_data_entry',
-          icon: <EditIcon className={iconClass} />,
-        },
-        {
-          key: 'pack_master_data',
-          icon: <ArchiveBoxIcon className={iconClass} />,
-        },
-      ],
       projectPages: [
         { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
         { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
@@ -216,25 +189,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               label: t[page.key as keyof typeof t] || page.key,
               icon: page.icon,
             }));
-        case 'packing':
-          return navigationData.packingPlantPages
-            .filter((page) => {
-              // Hide Master Data and Stock Data Entry for non-admin users
-              if (
-                (page.key === 'pack_master_data' || page.key === 'pack_stock_data_entry') &&
-                !isAdminOrSuperAdmin
-              ) {
-                return false;
-              }
-              // For now, use main packing_plant permission
-              // TODO: Implement granular permissions for each sub-menu
-              return permissionChecker.hasPermission('packing_plant', 'READ');
-            })
-            .map((page) => ({
-              key: page.key,
-              label: t[page.key as keyof typeof t] || page.key,
-              icon: page.icon,
-            }));
         case 'projects':
           return navigationData.projectPages
             .filter((page) => {
@@ -285,7 +239,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Create refs for dropdown positioning
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const operationsButtonRef = useRef<HTMLButtonElement>(null);
-  const packingButtonRef = useRef<HTMLButtonElement>(null);
   const inspectionButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
@@ -385,19 +338,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
               hasDropdown={true}
               isExpanded={activeDropdown === 'operations'}
-            />
-          )}
-
-          {/* Packing Plant - Check permission */}
-          {permissionChecker.hasPermission('packing_plant', 'READ') && (
-            <NavigationItem
-              ref={packingButtonRef}
-              icon={<ArchiveBoxArrowDownIcon className={iconClass} />}
-              label={t.packingPlant}
-              isActive={currentPage === 'packing'}
-              onClick={() => handleDropdownToggle('packing', packingButtonRef)}
-              hasDropdown={true}
-              isExpanded={activeDropdown === 'packing'}
             />
           )}
 

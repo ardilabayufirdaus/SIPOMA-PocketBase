@@ -39,10 +39,7 @@ describe('useDashboardDataAggregator', () => {
 
     // Setup mock return values
     mockUsePlantUnits.mockReturnValue({
-      records: [
-        { id: '1', unit: 'Cement Mill 1', category: 'Cement Mill' },
-        { id: '2', unit: 'Packing Plant A', category: 'Packing Plant' },
-      ],
+      records: [{ id: '1', unit: 'Cement Mill 1', category: 'Cement Mill' }],
       loading: false,
     });
 

@@ -15,7 +15,7 @@ Added a new **Permissions** column to the User Management Users List that displa
 ### 2. **Permission Summary Display**
 
 - **Compact View**: Shows up to 2 main permissions + count of additional permissions
-- **Format**: "Dashboard: ADMIN, Packing Plant: READ (+3 more)"
+- **Format**: "Dashboard: ADMIN, Plant Operations: READ (+3 more)"
 - **No Access**: Shows "No Access" for users without permissions
 
 ### 3. **Detailed Permissions Modal**
@@ -97,7 +97,6 @@ Added a new **Permissions** column to the User Management Users List that displa
 
 ### 3. **Other Modules**
 
-- **Packing Plant**: Full module access level
 - **Project Management**: Full module access level
 - **System Settings**: Full module access level
 - **User Management**: Full module access level

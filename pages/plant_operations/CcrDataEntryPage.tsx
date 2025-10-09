@@ -52,6 +52,9 @@ import {
   useColorScheme,
 } from '../../components/ui/EnhancedComponents';
 
+// Import UI Components
+import { Button } from '../../components/ui';
+
 // Enhanced Debounce utility function with cancel capability
 const useDebounce = (value: any, delay: number) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -2012,9 +2015,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   accept=".xlsx, .xls"
                   className="hidden"
                 />
-                <EnhancedButton
-                  variant="secondary"
-                  size="md"
+                {/* Import Excel Button */}
+                <Button
+                  variant="warning"
+                  size="lg"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={
                     isImporting ||
@@ -2022,18 +2026,25 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     !selectedUnit ||
                     !permissionChecker.hasPermission('plant_operations', 'WRITE')
                   }
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                  loading={isImporting}
-                  aria-label={t.import_excel || 'Import Excel file'}
+                  leftIcon={
+                    isImporting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <DocumentArrowUpIcon className="w-5 h-5" />
+                    )
+                  }
+                  className="group relative overflow-hidden"
                 >
-                  <DocumentArrowUpIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">
-                    {isImporting ? 'Importing...' : t.import_excel}
+                  <span className="relative z-10">
+                    {isImporting ? 'Importing...' : t.import_excel || 'Import Excel'}
                   </span>
-                </EnhancedButton>
-                <EnhancedButton
-                  variant="secondary"
-                  size="md"
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                </Button>
+
+                {/* Export Excel Button */}
+                <Button
+                  variant="success"
+                  size="lg"
                   onClick={handleExport}
                   disabled={
                     isExporting ||
@@ -2042,40 +2053,72 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     filteredParameterSettings.length === 0 ||
                     !permissionChecker.hasPermission('plant_operations', 'READ')
                   }
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                  loading={isExporting}
-                  aria-label={t.export_excel || 'Export to Excel'}
+                  leftIcon={
+                    isExporting ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <DocumentArrowDownIcon className="w-5 h-5" />
+                    )
+                  }
+                  className="group relative overflow-hidden"
                 >
-                  <DocumentArrowDownIcon className="w-5 h-5" />
-                  <span className="text-sm font-medium">
-                    {isExporting ? 'Exporting...' : t.export_excel}
+                  <span className="relative z-10">
+                    {isExporting ? 'Exporting...' : t.export_excel || 'Export Excel'}
                   </span>
-                </EnhancedButton>
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                </Button>
               </div>
             )}
 
-            <EnhancedButton
-              variant="primary"
-              size="xs"
+            {/* Show/Hide Footer Button */}
+            <Button
+              variant="glass"
+              size="md"
               onClick={() => setIsFooterVisible(!isFooterVisible)}
               aria-label={isFooterVisible ? 'Hide footer' : 'Show footer'}
+              leftIcon={
+                isFooterVisible ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 15l7-7 7 7"
+                    />
+                  </svg>
+                )
+              }
+              className="group relative overflow-hidden backdrop-blur-sm"
             >
-              {isFooterVisible ? 'Hide Footer' : 'Show Footer'}
-            </EnhancedButton>
+              <span className="relative z-10">
+                {isFooterVisible ? 'Hide Footer' : 'Show Footer'}
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+            </Button>
 
-            <EnhancedButton
-              variant="secondary"
-              size="md"
+            {/* Reorder Parameters Button */}
+            <Button
+              variant="primary"
+              size="lg"
               onClick={() => setShowReorderModal(true)}
               disabled={
                 !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
               }
-              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-              aria-label="Reorder parameters"
+              leftIcon={<ArrowsUpDownIcon className="w-5 h-5" />}
+              className="group relative overflow-hidden"
             >
-              <ArrowsUpDownIcon className="w-5 h-5" />
-              <span className="text-sm font-medium">Reorder Parameters</span>
-            </EnhancedButton>
+              <span className="relative z-10">Reorder Parameters</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+            </Button>
           </div>
         </div>
 

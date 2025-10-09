@@ -99,7 +99,6 @@ const LoginPage: React.FC = () => {
               Unit2: 'READ',
             },
           },
-          packing_plant: 'READ',
           inspection: 'READ',
           project_management: 'READ',
           system_settings: 'READ',

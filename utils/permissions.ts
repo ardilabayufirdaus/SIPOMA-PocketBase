@@ -101,13 +101,6 @@ export class PermissionChecker {
   }
 
   /**
-   * Check if user can access packing plant features
-   */
-  canAccessPackingPlant(): boolean {
-    return this.hasPermission('packing_plant', 'READ');
-  }
-
-  /**
    * Check if user can access project management
    */
   canAccessProjectManagement(): boolean {

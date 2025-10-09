@@ -157,7 +157,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     const matrix: PermissionMatrix = {
       dashboard: 'NONE',
       plant_operations: {},
-      packing_plant: 'NONE',
       project_management: 'NONE',
       system_settings: 'NONE',
       user_management: 'NONE',
@@ -194,10 +193,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
             } else {
               console.log('No plant_units found or not an array');
             }
-            break;
-          case 'packing_plant':
-            matrix.packing_plant = perm.permission_level as PermissionLevel;
-            console.log(`Set packing_plant to ${perm.permission_level}`);
             break;
           case 'project_management':
             matrix.project_management = perm.permission_level as PermissionLevel;
@@ -290,7 +285,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       // Handle simple permissions
       const simplePermissions = [
         { module: 'dashboard', level: pendingPermissions.dashboard },
-        { module: 'packing_plant', level: pendingPermissions.packing_plant },
         {
           module: 'project_management',
           level: pendingPermissions.project_management,
@@ -466,7 +460,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
   const getPermissionSummary = (permissions: PermissionMatrix) => {
     const summary = [];
     if (permissions.dashboard !== 'NONE') summary.push('Dashboard');
-    if (permissions.packing_plant !== 'NONE') summary.push('Packing Plant');
     if (permissions.project_management !== 'NONE') summary.push('Projects');
     if (permissions.system_settings !== 'NONE') summary.push('Settings');
     if (permissions.user_management !== 'NONE') summary.push('Users');

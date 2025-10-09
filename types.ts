@@ -21,7 +21,6 @@ export interface PlantOperationsPermissions {
 export interface PermissionMatrix {
   dashboard: PermissionLevel;
   plant_operations: PlantOperationsPermissions;
-  packing_plant: PermissionLevel;
   inspection: PermissionLevel;
   project_management: PermissionLevel;
   system_settings: PermissionLevel;
@@ -192,28 +191,6 @@ export interface AutonomousRiskData {
   mitigation_plan: string;
   status: RiskStatus;
   date: string; // YYYY-MM-DD
-}
-
-// Packing Plant Master Data
-export interface PackingPlantMasterRecord {
-  id: string;
-  area: string;
-  plant_code: string;
-  silo_capacity: number;
-  dead_stock: number;
-  cement_type: string;
-}
-
-// Packing Plant Stock Data
-export interface PackingPlantStockRecord {
-  id: string;
-  record_id?: string;
-  date: string; // YYYY-MM-DD
-  area: string;
-  opening_stock: number;
-  stock_received: number;
-  stock_out: number;
-  closing_stock: number;
 }
 
 // Project Management Types

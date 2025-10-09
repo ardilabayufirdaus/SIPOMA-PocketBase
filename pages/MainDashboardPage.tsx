@@ -36,8 +36,6 @@ import { ProjectStatusChart } from '../components/charts/ProjectStatusChart';
 import { useProjects } from '../hooks/useProjects';
 import { usePlantData } from '../hooks/usePlantData';
 import { EnhancedButton } from '../components/ui/EnhancedComponents';
-import { usePackingPlantStockData } from '../hooks/usePackingPlantStockData';
-import { usePackingPlantMasterData } from '../hooks/usePackingPlantMasterData';
 import { useCcrSiloData } from '../hooks/useCcrSiloData';
 import { useTotalProduction } from '../hooks/useTotalProduction';
 import { formatNumber, formatPercentage } from '../utils/formatters';
@@ -103,65 +101,6 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
       <div className="h-80">
         <div className="flex items-center justify-center h-full text-slate-500">
           Chart will be implemented with Chart.js
-        </div>
-      </div>
-    </ChartContainer>
-  );
-};
-
-// Stock Overview Widget
-const StockInsights: React.FC<{ stockData: any[] }> = ({ stockData }) => {
-  const totalCapacity = stockData.reduce((acc, item) => acc + item.capacity, 0);
-  const totalStock = stockData.reduce((acc, item) => acc + item.currentStock, 0);
-  const utilizationRate = (totalStock / totalCapacity) * 100;
-
-  const pieData = stockData.map((item, index) => ({
-    name: item.area,
-    value: item.currentStock,
-    fill: `hsl(${(index * 60) % 360}, 70%, 60%)`,
-  }));
-
-  return (
-    <ChartContainer
-      title="Stock Distribution"
-      subtitle={`${utilizationRate.toFixed(1)}% capacity utilized`}
-      actions={
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            Last updated: {new Date().toLocaleTimeString('id-ID')}
-          </span>
-        </div>
-      }
-    >
-      <div className="grid grid-cols-2 gap-6">
-        <div className="h-64">
-          <StockDistributionChart stockData={stockData} />
-        </div>
-        <div className="space-y-3">
-          {stockData.slice(0, 5).map((item, index) => (
-            <div
-              key={item.area}
-              className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
-            >
-              <div className="flex items-center space-x-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: pieData[index]?.fill }}
-                />
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  {item.area}
-                </span>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  {formatNumber(item.currentStock)}
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  {((item.currentStock / item.capacity) * 100).toFixed(1)}%
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </ChartContainer>
@@ -252,8 +191,6 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
   // Hooks for data
   const { projects, tasks, loading: projectsLoading } = useProjects();
   const { loading: plantLoading } = usePlantData();
-  const { records: stockRecords, loading: stockLoading } = usePackingPlantStockData();
-  const { records: packingPlantMasterRecords } = usePackingPlantMasterData();
   const { totalProduction, loading: totalProductionLoading } = useTotalProduction();
 
   // Auto refresh every 30 seconds
@@ -289,31 +226,8 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
     });
   }, [projects, tasks]);
 
-  // Transform stock data
-  const transformedStockData = useMemo(() => {
-    const uniqueAreas = Array.from(new Set(stockRecords.map((record) => record.area)));
-
-    return uniqueAreas.slice(0, 5).map((area) => {
-      const latestRecord = stockRecords
-        .filter((record) => record.area === area)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-
-      const masterDataForArea = packingPlantMasterRecords.find((master) => master.area === area);
-
-      return {
-        area: area,
-        currentStock: latestRecord?.closing_stock || 0,
-        capacity: masterDataForArea?.silo_capacity || 1000,
-        trend: Math.random() > 0.5 ? 'up' : 'down',
-      };
-    });
-  }, [stockRecords, packingPlantMasterRecords, refreshKey]);
-
   // Calculate metrics
   const activeProjects = projects.filter((p) => p.status === 'active').length;
-  const totalCapacity = transformedStockData.reduce((acc, item) => acc + item.capacity, 0);
-  const totalStock = transformedStockData.reduce((acc, item) => acc + item.currentStock, 0);
-  const utilizationRate = totalCapacity > 0 ? (totalStock / totalCapacity) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -337,20 +251,6 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
           />
 
           <MetricCard
-            title="Stock Utilization"
-            value={utilizationRate.toFixed(1)}
-            unit="%"
-            icon={<PieChartIcon className="w-6 h-6" />}
-            variant={utilizationRate > 80 ? 'warning' : 'default'}
-            trend={{
-              value: 3.2,
-              direction: utilizationRate > 75 ? 'up' : 'down',
-              period: 'vs last month',
-            }}
-            onClick={() => onNavigate('packing')}
-          />
-
-          <MetricCard
             title="Total Production"
             value={totalProduction ? formatNumber(totalProduction) : 'Loading...'}
             unit="tons"
@@ -368,8 +268,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {/* Stock Insights */}
-          <StockInsights stockData={transformedStockData} />
+          {/* Stock Insights removed */}
         </div>
 
         {/* Secondary Widgets */}
