@@ -11,15 +11,15 @@ interface DowntimeTableProps {
 export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t }) => {
   return (
     <motion.div
-      className="bg-gradient-to-br from-white to-rose-50/30 dark:from-slate-800 dark:to-rose-900/10 rounded-xl shadow-xl overflow-hidden border border-rose-200/50 dark:border-rose-800/50 mt-6"
+      className="bg-gradient-to-br from-white to-red-50/30 dark:from-slate-800 dark:to-red-900/10 rounded-xl shadow-xl overflow-hidden border border-red-200/50 dark:border-red-800/50 mt-6"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.01 }}
     >
-      <div className="p-4 border-b border-rose-200/50 dark:border-rose-700/50 bg-gradient-to-r from-rose-500/10 to-pink-500/10">
+      <div className="p-4 border-b border-red-200/50 dark:border-red-700/50 bg-gradient-to-r from-red-500/10 to-pink-500/10">
         <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full"></div>
           {t.downtime_report_title || 'Downtime Report'}
         </h3>
       </div>
@@ -27,7 +27,7 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
       <div className="overflow-x-auto max-w-full">
         <table className="w-full text-[8px] min-w-max">
           <thead>
-            <tr className="bg-gradient-to-r from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30">
+            <tr className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30">
               <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
                 {t.start_time || 'Start Time'}
               </th>

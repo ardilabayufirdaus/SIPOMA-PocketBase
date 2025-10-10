@@ -23,7 +23,7 @@ interface CardProps {
   onClick?: () => void;
   ariaLabel?: string;
   ariaDescribedBy?: string;
-  gradientDirection?: 'fire' | 'ocean' | 'sunset' | 'forest' | 'purple' | 'rainbow';
+  gradientDirection?: 'fire' | 'ocean' | 'sunset' | 'forest';
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -74,7 +74,7 @@ export const Card: React.FC<CardProps> = ({
       'shadow-glow-fire hover:shadow-neon',
       'text-white'
     ),
-    floating: cn('bg-white dark:bg-gray-800 shadow-lift-lg', 'hover:shadow-lift animate-float'),
+    floating: cn('bg-white dark:bg-gray-800 shadow-lift-lg', 'hover:shadow-lift'),
     interactive: cn(
       'bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900',
       'border-2 border-transparent bg-clip-padding',

@@ -83,8 +83,8 @@ export const PerformanceDashboard: React.FC = () => {
           <p className="text-sm text-gray-600">First Input Delay</p>
         </div>
 
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-purple-800 mb-2">CLS</h3>
+        <div className="bg-slate-50 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold text-slate-800 mb-2">CLS</h3>
           <p
             className={`text-2xl font-bold ${
               metrics.cls > 0.1 ? 'text-red-600' : 'text-green-600'

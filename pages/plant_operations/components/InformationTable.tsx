@@ -13,15 +13,15 @@ export const InformationTable: React.FC<InformationTableProps> = ({ informationD
 
   return (
     <motion.div
-      className="bg-gradient-to-br from-white to-purple-50/30 dark:from-slate-800 dark:to-purple-900/10 rounded-xl shadow-xl overflow-hidden border border-purple-200/50 dark:border-purple-800/50 mt-6"
+      className="bg-gradient-to-br from-white to-blue-50/30 dark:from-slate-800 dark:to-blue-900/10 rounded-xl shadow-xl overflow-hidden border border-blue-200/50 dark:border-blue-800/50 mt-6"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.01 }}
     >
-      <div className="p-4 border-b border-purple-200/50 dark:border-purple-700/50 bg-gradient-to-r from-purple-500/10 to-indigo-500/10">
+      <div className="p-4 border-b border-blue-200/50 dark:border-blue-700/50 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
         <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></div>
           {t.information || 'Information'}
         </h3>
       </div>

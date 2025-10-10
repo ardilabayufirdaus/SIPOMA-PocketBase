@@ -469,7 +469,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -493,7 +493,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               size="sm"
               onClick={handleOpenAddRisk}
               aria-label={t.add_risk_button || 'Add new risk'}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              className="bg-gradient-fire hover:bg-gradient-ocean text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               {t.add_risk_button}

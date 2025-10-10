@@ -73,7 +73,7 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
             </div>
             <div className="bg-white p-4 rounded-lg shadow-md">
               <h4 className="text-sm font-medium text-gray-500">Engagement Rate</h4>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-primary-600">
                 {(latestReport.metrics.engagementRate * 100).toFixed(1)}%
               </p>
             </div>

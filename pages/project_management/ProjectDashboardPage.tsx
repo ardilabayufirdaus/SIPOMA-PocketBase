@@ -729,11 +729,11 @@ const ProjectDashboardPage: React.FC<{
                     {formatRupiah(overallMetrics.avgBudget)}
                   </p>
                 </div>
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-1.5 rounded border border-purple-200 dark:border-purple-700">
-                  <p className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                <div className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/30 dark:to-primary-800/30 p-1.5 rounded border border-primary-200 dark:border-primary-700">
+                  <p className="text-xs font-medium text-primary-700 dark:text-primary-300">
                     {t.high_budget_projects || 'High Budget Projects'}
                   </p>
-                  <p className="text-xs font-bold text-purple-900 dark:text-purple-100">
+                  <p className="text-xs font-bold text-primary-900 dark:text-primary-100">
                     {overallMetrics.highBudgetProjects}
                   </p>
                 </div>
@@ -1113,7 +1113,7 @@ const ProjectDashboardPage: React.FC<{
                     </span>
                   </div>
                   <div className="flex items-start gap-1">
-                    <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-0.5"></div>
+                    <div className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-0.5"></div>
                     <span className="text-slate-700 dark:text-slate-300">
                       Optimize resource allocation
                     </span>

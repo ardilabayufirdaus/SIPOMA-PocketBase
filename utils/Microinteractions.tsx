@@ -520,7 +520,6 @@ export const AnimatedIcon: React.FC<AnimatedIconProps> = ({
     spin: 'animate-spin',
     pulse: 'animate-pulse',
     bounce: 'animate-bounce',
-    wiggle: 'animate-wiggle',
     heartbeat: 'animate-heartbeat',
   };
 
@@ -836,7 +835,6 @@ Add these CSS animations to your stylesheet:
 .animate-fade-in { animation: fade-in 0.3s ease-out; }
 .animate-fade-out { animation: fade-out 0.3s ease-out; }
 .animate-slide-in-right { animation: slide-in-right 0.3s ease-out; }
-.animate-wiggle { animation: wiggle 0.5s ease-in-out; }
 .animate-heartbeat { animation: heartbeat 1s ease-in-out infinite; }
 .animate-success-check { animation: success-check 0.6s ease-out; }
 .animate-progress-fill { animation: progress-fill 0.5s ease-out; }

@@ -1081,7 +1081,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               {/* Modern Performance Metrics Section */}
               <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-slate-700/50">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
+                  <div className="p-2 bg-gradient-fire rounded-lg">
                     <Bars4Icon className="w-5 h-5 text-white" />
                   </div>
                   <div>

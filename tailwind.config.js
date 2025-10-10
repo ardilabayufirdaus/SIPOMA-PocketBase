@@ -66,18 +66,6 @@ export default {
           900: '#0c4a6e',
           950: '#082f49',
         },
-        accent: {
-          purple: '#8b5cf6',
-          emerald: '#10b981',
-          rose: '#f43f5e',
-          amber: '#f59e0b',
-          indigo: '#6366f1',
-          lime: '#84cc16',
-          pink: '#ec4899',
-          teal: '#14b8a6',
-          cyan: '#06b6d4',
-          violet: '#7c3aed',
-        },
         neutral: {
           0: '#ffffff',
           50: '#f9fafb',
@@ -145,6 +133,15 @@ export default {
           950: '#172554',
         },
       },
+      fontSize: {
+        sm: '0.875rem', // 14px - captions, labels
+        base: '1rem', // 16px - body text
+        lg: '1.125rem', // 18px - emphasized text
+        xl: '1.25rem', // 20px - h4
+        '2xl': '1.5rem', // 24px - h3
+        '3xl': '1.875rem', // 30px - h2
+        '4xl': '2.25rem', // 36px - h1
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'fade-in-fast': 'fadeIn 0.3s ease-in-out',
@@ -152,18 +149,9 @@ export default {
         'slide-down': 'slideDown 0.3s ease-out',
         'slide-in-left': 'slideInLeft 0.3s ease-out',
         'hover-lift': 'hoverLift 0.2s ease-in-out',
-        'bounce-subtle': 'bounceSubtle 0.6s ease-in-out',
         'scale-in': 'scaleIn 0.2s ease-out',
         loading: 'loading 1.5s infinite ease-in-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'bounce-slow': 'bounce 2s infinite',
-        'gradient-x': 'gradient-x 15s ease infinite',
-        'gradient-xy': 'gradient-xy 20s ease infinite',
-        'glow-pulse': 'glowPulse 2s ease-in-out infinite alternate',
-        float: 'float 6s ease-in-out infinite',
-        wiggle: 'wiggle 1s ease-in-out infinite',
-        shimmer: 'shimmer 2s linear infinite',
-        rainbow: 'rainbow 3s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -186,10 +174,6 @@ export default {
           '0%': { transform: 'translateY(0px)' },
           '100%': { transform: 'translateY(-2px)' },
         },
-        bounceSubtle: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' },
-        },
         scaleIn: {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
@@ -197,47 +181,6 @@ export default {
         loading: {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' },
-        },
-        'gradient-x': {
-          '0%, 100%': {
-            'background-size': '200% 200%',
-            'background-position': 'left center',
-          },
-          '50%': {
-            'background-size': '200% 200%',
-            'background-position': 'right center',
-          },
-        },
-        'gradient-xy': {
-          '0%, 100%': {
-            'background-size': '400% 400%',
-            'background-position': 'left center',
-          },
-          '50%': {
-            'background-size': '400% 400%',
-            'background-position': 'right center',
-          },
-        },
-        glowPulse: {
-          '0%': { boxShadow: '0 0 5px rgba(251, 107, 42, 0.3)' },
-          '100%': { boxShadow: '0 0 20px rgba(251, 107, 42, 0.8)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
-        wiggle: {
-          '0%, 100%': { transform: 'rotate(-3deg)' },
-          '50%': { transform: 'rotate(3deg)' },
-        },
-        shimmer: {
-          '0%': { transform: 'translateX(-100%)' },
-          '100%': { transform: 'translateX(100%)' },
-        },
-        rainbow: {
-          '0%': { backgroundPosition: '0% 82%' },
-          '50%': { backgroundPosition: '100% 19%' },
-          '100%': { backgroundPosition: '0% 82%' },
         },
       },
       screens: {
@@ -270,9 +213,19 @@ export default {
         'no-touch': { raw: '(hover: hover) and (pointer: fine)' },
       },
       spacing: {
-        18: '4.5rem',
-        88: '22rem',
-        128: '32rem',
+        0: '0',
+        1: '0.25rem',
+        2: '0.5rem',
+        3: '0.75rem',
+        4: '1rem',
+        5: '1.25rem',
+        6: '1.5rem',
+        8: '2rem',
+        10: '2.5rem',
+        12: '3rem',
+        16: '4rem',
+        20: '5rem',
+        24: '6rem',
       },
       backdropBlur: {
         xs: '2px',
@@ -282,28 +235,12 @@ export default {
         'gradient-ocean': 'linear-gradient(135deg, #0ea5e9, #0284c7)',
         'gradient-sunset': 'linear-gradient(135deg, #f59e0b, #ea5234)',
         'gradient-forest': 'linear-gradient(135deg, #10b981, #059669)',
-        'gradient-sky': 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-        'gradient-purple': 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
-        'gradient-rainbow': 'linear-gradient(135deg, #f43f5e, #8b5cf6, #0ea5e9, #10b981)',
-        'gradient-pink': 'linear-gradient(135deg, #ec4899, #f43f5e)',
-        'gradient-emerald': 'linear-gradient(135deg, #10b981, #14b8a6)',
-        'mesh-pattern':
-          'radial-gradient(circle at 25% 25%, rgba(251, 107, 42, 0.2) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(14, 165, 233, 0.2) 0%, transparent 50%)',
-        'dots-pattern': 'radial-gradient(circle, rgba(251, 107, 42, 0.3) 1px, transparent 1px)',
-        'grid-pattern':
-          'linear-gradient(rgba(251, 107, 42, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(251, 107, 42, 0.1) 1px, transparent 1px)',
       },
       boxShadow: {
         glass: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-        glow: '0 0 20px rgba(239, 68, 68, 0.3)',
-        'glow-fire': '0 0 20px rgba(251, 107, 42, 0.4)',
-        'glow-ocean': '0 0 20px rgba(14, 165, 233, 0.4)',
-        'glow-purple': '0 0 20px rgba(139, 92, 246, 0.4)',
-        'glow-emerald': '0 0 20px rgba(16, 185, 129, 0.4)',
         component: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         lift: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         'lift-lg': '0 20px 40px -4px rgba(0, 0, 0, 0.1), 0 8px 16px -4px rgba(0, 0, 0, 0.06)',
-        neon: '0 0 5px currentColor, 0 0 20px currentColor, 0 0 35px currentColor',
       },
       borderRadius: {
         none: '0',

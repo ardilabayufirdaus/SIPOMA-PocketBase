@@ -10,10 +10,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     | 'error'
     | 'outline'
     | 'ghost'
-    | 'gradient'
-    | 'neon'
-    | 'glass'
-    | 'rainbow';
+    | 'glass';
   size?: 'xs' | 'sm' | 'base' | 'lg' | 'xl';
   loading?: boolean;
   disabled?: boolean;
@@ -82,25 +79,10 @@ const Button: React.FC<ButtonProps> = ({
       'hover:shadow-xl hover:shadow-red-500/30 hover:from-red-400 hover:to-red-600',
       'focus:ring-red-500'
     ),
-    gradient: cn(
-      'bg-gradient-rainbow text-white shadow-lg animate-gradient-x',
-      'hover:shadow-xl hover:animate-gradient-xy',
-      'focus:ring-purple-500'
-    ),
-    neon: cn(
-      'bg-transparent border-2 border-primary-500 text-primary-500',
-      'shadow-neon hover:bg-primary-500 hover:text-white hover:shadow-glow-fire',
-      'focus:ring-primary-500'
-    ),
     glass: cn(
       'bg-white/10 backdrop-blur-md border border-white/20 text-gray-800 dark:text-white',
       'hover:bg-white/20 shadow-glass',
       'focus:ring-white/50'
-    ),
-    rainbow: cn(
-      'bg-gradient-rainbow text-white shadow-lg animate-rainbow',
-      'hover:shadow-xl hover:scale-110',
-      'focus:ring-purple-500'
     ),
     outline: cn(
       'border-2 border-primary-500 text-primary-500 bg-transparent',

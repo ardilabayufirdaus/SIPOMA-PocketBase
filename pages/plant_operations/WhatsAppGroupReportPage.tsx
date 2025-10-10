@@ -7,6 +7,7 @@ import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useAuth } from '../../hooks/useAuth';
+import { useCcrInformationData } from '../../hooks/useCcrInformationData';
 import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
 
 import { Card } from '../../components/ui/Card';
@@ -79,6 +80,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
   const { records: plantUnits } = usePlantUnits();
   const { records: parameterSettings } = useParameterSettings();
   const { records: silos } = useSiloCapacities();
+  const { getInformationForDate } = useCcrInformationData();
 
   const plantCategories = useMemo(() => {
     const categories = [...new Set(plantUnits.map((unit) => unit.category))];
@@ -480,20 +482,39 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data
+        // Catatan Tambahan - downtime data dan informasi CCR
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => d.unit.includes(unit));
-        if (unitDowntime.length > 0) {
+        const unitInformation = getInformationForDate(date, unit);
+
+        if (unitDowntime.length > 0 || (unitInformation && unitInformation.information)) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
-          const notes = unitDowntime
-            .map((d) => {
-              const start = new Date(`${d.date} ${d.start_time}`);
-              const end = new Date(`${d.date} ${d.end_time}`);
-              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j)\n├─ Masalah: ${d.problem}\n└─ PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
-            })
-            .join('\n');
-          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+          // Tambahkan informasi dari CCR Data Entry jika ada
+          if (unitInformation && unitInformation.information) {
+            report += `├─ *Informasi:*\n${unitInformation.information
+              .split('\n')
+              .map((line) => `│  ${line}`)
+              .join('\n')}\n`;
+            if (unitDowntime.length > 0) {
+              report += `├─ *Downtime:*\n`;
+            }
+          }
+
+          // Tambahkan downtime notes jika ada
+          if (unitDowntime.length > 0) {
+            const notes = unitDowntime
+              .map((d) => {
+                const start = new Date(`${d.date} ${d.start_time}`);
+                const end = new Date(`${d.date} ${d.end_time}`);
+                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j)\n├─ Masalah: ${d.problem}\n└─ PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+              })
+              .join('\n');
+            report += `${notes}\n`;
+          }
+
+          report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
         }
       }
 
@@ -794,23 +815,42 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data untuk shift 1 (jam 07-15)
+        // Catatan Tambahan - downtime data dan informasi CCR untuk shift 1 (jam 07-15)
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => {
           const startHour = parseInt(d.start_time.split(':')[0]);
           return d.unit.includes(unit) && startHour >= 7 && startHour <= 15;
         });
-        if (unitDowntime.length > 0) {
+        const unitInformation = getInformationForDate(date, unit);
+
+        if (unitDowntime.length > 0 || (unitInformation && unitInformation.information)) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
-          const notes = unitDowntime
-            .map((d) => {
-              const start = new Date(`${d.date} ${d.start_time}`);
-              const end = new Date(`${d.date} ${d.end_time}`);
-              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
-            })
-            .join('\n');
-          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+          // Tambahkan informasi dari CCR Data Entry jika ada
+          if (unitInformation && unitInformation.information) {
+            report += `├─ *Informasi:*\n${unitInformation.information
+              .split('\n')
+              .map((line) => `│  ${line}`)
+              .join('\n')}\n`;
+            if (unitDowntime.length > 0) {
+              report += `├─ *Downtime:*\n`;
+            }
+          }
+
+          // Tambahkan downtime notes jika ada
+          if (unitDowntime.length > 0) {
+            const notes = unitDowntime
+              .map((d) => {
+                const start = new Date(`${d.date} ${d.start_time}`);
+                const end = new Date(`${d.date} ${d.end_time}`);
+                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+              })
+              .join('\n');
+            report += `${notes}\n`;
+          }
+
+          report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
         }
       }
 
@@ -1114,23 +1154,42 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data untuk shift 2 (jam 15-23)
+        // Catatan Tambahan - downtime data dan informasi CCR untuk shift 2 (jam 15-23)
         const downtimeNotes = await getDowntimeForDate(date);
         const unitDowntime = downtimeNotes.filter((d) => {
           const startHour = parseInt(d.start_time.split(':')[0]);
           return d.unit.includes(unit) && startHour >= 15 && startHour <= 23;
         });
-        if (unitDowntime.length > 0) {
+        const unitInformation = getInformationForDate(date, unit);
+
+        if (unitDowntime.length > 0 || (unitInformation && unitInformation.information)) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
-          const notes = unitDowntime
-            .map((d) => {
-              const start = new Date(`${d.date} ${d.start_time}`);
-              const end = new Date(`${d.date} ${d.end_time}`);
-              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
-            })
-            .join('\n');
-          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+          // Tambahkan informasi dari CCR Data Entry jika ada
+          if (unitInformation && unitInformation.information) {
+            report += `├─ *Informasi:*\n${unitInformation.information
+              .split('\n')
+              .map((line) => `│  ${line}`)
+              .join('\n')}\n`;
+            if (unitDowntime.length > 0) {
+              report += `├─ *Downtime:*\n`;
+            }
+          }
+
+          // Tambahkan downtime notes jika ada
+          if (unitDowntime.length > 0) {
+            const notes = unitDowntime
+              .map((d) => {
+                const start = new Date(`${d.date} ${d.start_time}`);
+                const end = new Date(`${d.date} ${d.end_time}`);
+                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+              })
+              .join('\n');
+            report += `${notes}\n`;
+          }
+
+          report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
         }
       }
 
@@ -1497,7 +1556,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-        // Catatan Tambahan - downtime data untuk shift 3 (jam 23 hari ini + 00-07 hari berikutnya)
+        // Catatan Tambahan - downtime data dan informasi CCR untuk shift 3 (jam 23 hari ini + 00-07 hari berikutnya)
         const downtimeNotes = await getDowntimeForDate(date);
         const nextDayDowntimeNotes = await getDowntimeForDate(nextDateString);
         const unitDowntime = downtimeNotes.filter((d) => {
@@ -1509,17 +1568,36 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           return d.unit.includes(unit) && startHour >= 0 && startHour <= 7;
         });
         const allDowntime = [...unitDowntime, ...nextDayUnitDowntime];
-        if (allDowntime.length > 0) {
+        const unitInformation = getInformationForDate(date, unit);
+
+        if (allDowntime.length > 0 || (unitInformation && unitInformation.information)) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
-          const notes = allDowntime
-            .map((d) => {
-              const start = new Date(`${d.date} ${d.start_time}`);
-              const end = new Date(`${d.date} ${d.end_time}`);
-              const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-              return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
-            })
-            .join('\n');
-          report += `${notes}\n━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+          // Tambahkan informasi dari CCR Data Entry jika ada
+          if (unitInformation && unitInformation.information) {
+            report += `├─ *Informasi:*\n${unitInformation.information
+              .split('\n')
+              .map((line) => `│  ${line}`)
+              .join('\n')}\n`;
+            if (allDowntime.length > 0) {
+              report += `├─ *Downtime:*\n`;
+            }
+          }
+
+          // Tambahkan downtime notes jika ada
+          if (allDowntime.length > 0) {
+            const notes = allDowntime
+              .map((d) => {
+                const start = new Date(`${d.date} ${d.start_time}`);
+                const end = new Date(`${d.date} ${d.end_time}`);
+                const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 2)}j): ${d.problem}\n└─ 👤 PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+              })
+              .join('\n');
+            report += `${notes}\n`;
+          }
+
+          report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
         }
       }
 
@@ -1808,7 +1886,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700 flex items-center">
                 <svg
-                  className="w-4 h-4 mr-2 text-purple-500"
+                  className="w-4 h-4 mr-2 text-primary-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -2075,7 +2153,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
               className={`transition-all duration-300 ${
                 isGenerating
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl'
+                  : 'bg-gradient-fire hover:bg-gradient-ocean text-white shadow-lg hover:shadow-xl'
               }`}
             >
               <div className="flex items-center space-x-3">

@@ -1874,7 +1874,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       {/* Silo Data Table */}
       <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
             <svg
               className="w-5 h-5 text-white"
               fill="none"
@@ -1903,29 +1903,29 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700"
             aria-label="Silo Data Table"
           >
-            <thead className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white shadow-lg">
+            <thead className="bg-gradient-ocean text-white shadow-lg">
               <tr>
                 <th
                   rowSpan={2}
-                  className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-purple-300/30 align-middle"
+                  className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 align-middle"
                 >
                   {t.silo_name}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30 border-b border-purple-300/30"
+                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
                 >
                   {t.shift_1}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30 border-b border-purple-300/30"
+                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
                 >
                   {t.shift_2}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-purple-300/30"
+                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-300/30 dark:border-slate-600/30"
                 >
                   {t.shift_3}
                 </th>
@@ -1934,20 +1934,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 {[...Array(3)].flatMap((_, i) => [
                   <th
                     key={`es-${i}`}
-                    className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30"
+                    className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
                   >
                     {t.empty_space}
                   </th>,
                   <th
                     key={`c-${i}`}
-                    className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30"
+                    className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
                   >
                     {t.content}
                   </th>,
                   <th
                     key={`p-${i}`}
                     className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
-                      i < 2 ? 'border-r border-purple-300/30' : ''
+                      i < 2 ? 'border-r border-slate-300/30 dark:border-slate-600/30' : ''
                     }`}
                   >
                     {t.percentage}
@@ -1960,7 +1960,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 <tr>
                   <td colSpan={10} className="text-center py-16">
                     <div className="flex items-center justify-center">
-                      <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
                       <span className="ml-3 text-slate-600 dark:text-slate-400 font-medium">
                         Loading silo data...
                       </span>
@@ -2245,7 +2245,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               className="group relative overflow-hidden"
             >
               <span className="relative z-10">Reorder Parameters</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-ocean opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </Button>
           </div>
         </div>
@@ -2693,7 +2693,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               className="group relative overflow-hidden"
             >
               <span className="relative z-10">{t.add_downtime_button}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-ocean opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </EnhancedButton>
           </div>
           <div className="overflow-x-auto">
