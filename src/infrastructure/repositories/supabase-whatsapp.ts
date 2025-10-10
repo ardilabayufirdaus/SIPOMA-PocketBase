@@ -29,11 +29,20 @@ export class SupabaseWhatsAppGroupRepository implements IWhatsAppGroupRepository
     };
   }
 
-  async getAllGroups(): Promise<WhatsAppGroup[]> {
-    const { data, error } = await this.supabase
+  async getAllGroups(limit?: number, offset?: number): Promise<WhatsAppGroup[]> {
+    let query = this.supabase
       .from('whatsapp_groups')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+    if (offset) {
+      query = query.range(offset, offset + (limit || 1000) - 1);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
 

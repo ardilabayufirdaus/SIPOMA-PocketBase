@@ -2,11 +2,28 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
+import { Replay } from '@sentry/replay';
 import App from '../App';
 import LoginPage from './LoginPage';
 import { secureStorage } from '../utils/secureStorage';
 import { User } from '../types';
 import { TranslationProvider } from '../hooks/useTranslation';
+
+// Initialize Sentry for monitoring
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  integrations: [
+    new BrowserTracing({
+      tracePropagationTargets: ['localhost', /^https:\/\/yourdomain\.com/],
+    }),
+    new Replay(),
+  ],
+  tracesSampleRate: 1.0,
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
 
 // Create a client with optimized settings
 const queryClient = new QueryClient({

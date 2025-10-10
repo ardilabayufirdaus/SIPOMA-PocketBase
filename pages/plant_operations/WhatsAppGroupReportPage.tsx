@@ -428,7 +428,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.maximum || 0) : 0;
-          report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          if (bahanTotal > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          }
         });
         report += `\n`;
 
@@ -451,7 +453,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          if (feederAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
@@ -717,7 +721,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.shift1_counter || 0) : 0;
-          report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          if (bahanTotal > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          }
         });
         report += `\n`;
 
@@ -740,7 +746,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.shift1_average || 0) : 0;
-          report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          if (feederAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
@@ -1012,7 +1020,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.shift2_counter || 0) : 0;
-          report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          if (bahanTotal > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          }
         });
         report += `\n`;
 
@@ -1035,7 +1045,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.shift2_average || 0) : 0;
-          report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          if (feederAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
+          }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
@@ -1362,7 +1374,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             nextDayUnitFooterData.find((f) => f.parameter_id === bahanData?.parameter_id)
               ?.shift3_cont_counter || 0;
           const combinedBahanTotal = bahanTotal + Number(bahanContTotal);
-          report += `├─ ${name}: ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
+          if (combinedBahanTotal > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
+          }
         });
         report += `\n`;
 
@@ -1389,7 +1403,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             nextDayUnitFooterData.find((f) => f.parameter_id === feederData?.parameter_id)
               ?.shift3_cont_average || 0;
           const combinedFeederAvg = (feederAvg + Number(feederContAvg)) / 2;
-          report += `├─ ${name}: ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
+          if (combinedFeederAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
+          }
         });
         report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 

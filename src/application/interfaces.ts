@@ -2,7 +2,7 @@ import { WhatsAppGroup, Message, GroupMember, GroupReport } from '../domain/enti
 
 export interface IWhatsAppGroupRepository {
   getGroupById(id: string): Promise<WhatsAppGroup | null>;
-  getAllGroups(): Promise<WhatsAppGroup[]>;
+  getAllGroups(limit?: number, offset?: number): Promise<WhatsAppGroup[]>;
   createGroup(group: Omit<WhatsAppGroup, 'id'>): Promise<WhatsAppGroup>;
   updateGroup(id: string, updates: Partial<WhatsAppGroup>): Promise<WhatsAppGroup>;
   deleteGroup(id: string): Promise<void>;
