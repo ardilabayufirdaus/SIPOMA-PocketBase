@@ -408,6 +408,27 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
 
+        report += `*KUALITAS*\n`;
+        const qualityParams = [
+          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
+          { name: 'R45', param: 'r45', unit: '%' },
+          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
+        ];
+
+        qualityParams.forEach(({ name, param, unit }) => {
+          const qualityData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const qualityAvg = qualityData ? Number(qualityData.average || 0) : 0;
+          if (qualityAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${unit}\n`;
+          }
+        });
+        report += `\n`;
+
         // Pemakaian Bahan
         report += `*PEMAKAIAN BAHAN*\n`;
         const bahanParams = [
@@ -700,6 +721,27 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         report += `├─ Feed Rate: ${formatIndonesianNumber(calculatedFeedRate, 2)} tph\n`;
         report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+
+        report += `*KUALITAS*\n`;
+        const qualityParamsShift1 = [
+          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
+          { name: 'R45', param: 'r45', unit: '%' },
+          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
+        ];
+
+        qualityParamsShift1.forEach(({ name, param, unit }) => {
+          const qualityData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const qualityAvg = qualityData ? Number(qualityData.shift1_average || 0) : 0;
+          if (qualityAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${unit}\n`;
+          }
+        });
+        report += `\n`;
 
         // Pemakaian Bahan - menggunakan shift1_total
         report += `*PEMAKAIAN BAHAN*\n`;
@@ -999,6 +1041,27 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         report += `├─ Feed Rate: ${formatIndonesianNumber(calculatedFeedRate, 2)} tph\n`;
         report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+
+        report += `*KUALITAS*\n`;
+        const qualityParamsShift2 = [
+          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
+          { name: 'R45', param: 'r45', unit: '%' },
+          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
+        ];
+
+        qualityParamsShift2.forEach(({ name, param, unit }) => {
+          const qualityData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const qualityAvg = qualityData ? Number(qualityData.shift2_average || 0) : 0;
+          if (qualityAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(qualityAvg, 1)} ${unit}\n`;
+          }
+        });
+        report += `\n`;
 
         // Pemakaian Bahan - menggunakan shift2_total
         report += `*PEMAKAIAN BAHAN*\n`;
@@ -1349,6 +1412,31 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         report += `├─ Feed Rate: ${formatIndonesianNumber(calculatedFeedRate, 2)} tph\n`;
         report += `├─ Jam Operasi: ${formatIndonesianNumber(combinedRunningHours, 2)} jam\n`;
         report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+
+        report += `*KUALITAS*\n`;
+        const qualityParamsShift3 = [
+          { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
+          { name: 'R45', param: 'r45', unit: '%' },
+          { name: 'Indeks Klinker', param: 'indeks klinker', unit: '%' },
+        ];
+
+        qualityParamsShift3.forEach(({ name, param, unit }) => {
+          const qualityData = unitFooterData.find((f) => {
+            const paramSetting = parameterSettings.find((s) => s.id === f.parameter_id);
+            return (
+              paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
+            );
+          });
+          const qualityAvg = qualityData ? Number(qualityData.shift3_average || 0) : 0;
+          const qualityContAvg =
+            nextDayUnitFooterData.find((f) => f.parameter_id === qualityData?.parameter_id)
+              ?.shift3_cont_average || 0;
+          const combinedQualityAvg = (qualityAvg + Number(qualityContAvg)) / 2;
+          if (combinedQualityAvg > 0) {
+            report += `├─ ${name}: ${formatIndonesianNumber(combinedQualityAvg, 1)} ${unit}\n`;
+          }
+        });
+        report += `\n`;
 
         // Pemakaian Bahan - menggunakan shift3_total + shift3_cont_total
         report += `*PEMAKAIAN BAHAN*\n`;

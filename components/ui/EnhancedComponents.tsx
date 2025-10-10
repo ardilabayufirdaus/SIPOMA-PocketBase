@@ -279,12 +279,15 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { announceToScreenReader } = useAccessibility();
 
-  const handleClick = useCallback(() => {
-    if (haptic && 'vibrate' in navigator) {
-      navigator.vibrate(50);
-    }
-    onClick?.();
-  }, [onClick, haptic]);
+  const handleClick = useCallback(
+    (e?: React.SyntheticEvent<HTMLButtonElement>) => {
+      if (haptic && 'vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
+      onClick?.(e);
+    },
+    [onClick, haptic]
+  );
 
   const handleMouseDown = () => setIsPressed(true);
   const handleMouseUp = () => setIsPressed(false);

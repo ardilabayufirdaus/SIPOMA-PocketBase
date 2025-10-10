@@ -38,6 +38,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { usePermissions } from '../../utils/permissions';
 import { PermissionLevel } from '../../types';
+import { isSuperAdmin } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Import Supabase client
@@ -105,6 +106,8 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [showSaveProfileModal, setShowSaveProfileModal] = useState(false);
   const [showLoadProfileModal, setShowLoadProfileModal] = useState(false);
+  const [showDeleteProfileModal, setShowDeleteProfileModal] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<any>(null);
   const [profileName, setProfileName] = useState('');
   const [profileDescription, setProfileDescription] = useState('');
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
@@ -501,6 +504,81 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     }
   }, [showReorderModal, filteredParameterSettings]);
 
+  // Parameter reorder handlers - optimized for performance with debouncing
+  const reorderTimeoutRef = useRef<NodeJS.Timeout>();
+  const moveParameterUp = useCallback((index: number) => {
+    if (reorderTimeoutRef.current) return; // Prevent rapid clicks
+
+    setModalParameterOrder((prev) => {
+      if (index <= 0) return prev;
+      const newOrder = [...prev];
+      [newOrder[index], newOrder[index - 1]] = [newOrder[index - 1], newOrder[index]];
+      return newOrder;
+    });
+
+    // Debounce for 150ms to prevent rapid clicking
+    reorderTimeoutRef.current = setTimeout(() => {
+      reorderTimeoutRef.current = undefined;
+    }, 150);
+  }, []);
+
+  const moveParameterDown = useCallback((index: number) => {
+    if (reorderTimeoutRef.current) return; // Prevent rapid clicks
+
+    setModalParameterOrder((prev) => {
+      if (index >= prev.length - 1) return prev;
+      const newOrder = [...prev];
+      [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+      return newOrder;
+    });
+
+    // Debounce for 150ms to prevent rapid clicking
+    reorderTimeoutRef.current = setTimeout(() => {
+      reorderTimeoutRef.current = undefined;
+    }, 150);
+  }, []);
+
+  // Memoized parameter reorder item component for better performance
+  const ParameterReorderItem = React.memo(
+    ({ param, index }: { param: ParameterSetting; index: number }) => (
+      <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {index + 1}.
+          </span>
+          <div>
+            <div className="font-semibold text-slate-800 dark:text-slate-200">
+              {param.parameter}
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400">{param.unit}</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <EnhancedButton
+            variant="ghost"
+            size="xs"
+            onClick={() => moveParameterUp(index)}
+            disabled={index === 0}
+            aria-label={`Move ${param.parameter} up`}
+          >
+            ↑
+          </EnhancedButton>
+          <EnhancedButton
+            variant="ghost"
+            size="xs"
+            onClick={() => moveParameterDown(index)}
+            disabled={index === modalParameterOrder.length - 1}
+            aria-label={`Move ${param.parameter} down`}
+          >
+            ↓
+          </EnhancedButton>
+        </div>
+      </div>
+    )
+  );
+  ParameterReorderItem.displayName = 'ParameterReorderItem';
+
   // Load profile
   const loadProfile = useCallback(
     async (profile: any) => {
@@ -532,10 +610,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   // Delete profile
   const deleteProfile = useCallback(
     async (profile: any) => {
-      if (!profile?.id) return;
+      if (!profile?.id) {
+        showToast('Invalid profile selected');
+        return;
+      }
 
-      // Check if user owns the profile
-      if (profile.user_id !== loggedInUser?.id) {
+      // Check if user owns the profile or is Super Admin
+      const isOwner = profile.user_id === loggedInUser?.id;
+      const canDelete = isOwner || isSuperAdmin(loggedInUser?.role);
+
+      if (!canDelete) {
         showToast('You can only delete your own profiles');
         return;
       }
@@ -548,17 +632,17 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
         if (error) {
           console.error('Error deleting profile:', error);
-          showToast('Failed to delete profile');
+          showToast(`Failed to delete profile: ${error.message || 'Unknown error'}`);
         } else {
-          showToast(`Profile "${profile.name}" deleted`);
+          showToast(`Profile "${profile.name}" deleted successfully`);
           fetchProfiles(); // Refresh the profiles list
         }
       } catch (err) {
         console.error('Failed to delete profile:', err);
-        showToast('Failed to delete profile');
+        showToast('Failed to delete profile: Network or server error');
       }
     },
-    [loggedInUser?.id, fetchProfiles, showToast]
+    [loggedInUser?.id, loggedInUser?.role, fetchProfiles, showToast]
   );
 
   // Silo master map
@@ -2701,61 +2785,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
           <div className="max-h-96 overflow-y-auto space-y-2">
             {modalParameterOrder.map((param, index) => (
-              <div
-                key={param.id}
-                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {index + 1}.
-                  </span>
-                  <div>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
-                      {param.parameter}
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{param.unit}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <EnhancedButton
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => {
-                      const newOrder = [...modalParameterOrder];
-                      if (index > 0) {
-                        [newOrder[index], newOrder[index - 1]] = [
-                          newOrder[index - 1],
-                          newOrder[index],
-                        ];
-                        setModalParameterOrder(newOrder);
-                      }
-                    }}
-                    disabled={index === 0}
-                    aria-label={`Move ${param.parameter} up`}
-                  >
-                    ↑
-                  </EnhancedButton>
-                  <EnhancedButton
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => {
-                      const newOrder = [...modalParameterOrder];
-                      if (index < modalParameterOrder.length - 1) {
-                        [newOrder[index], newOrder[index + 1]] = [
-                          newOrder[index + 1],
-                          newOrder[index],
-                        ];
-                        setModalParameterOrder(newOrder);
-                      }
-                    }}
-                    disabled={index === modalParameterOrder.length - 1}
-                    aria-label={`Move ${param.parameter} down`}
-                  >
-                    ↓
-                  </EnhancedButton>
-                </div>
-              </div>
+              <ParameterReorderItem key={param.id} param={param} index={index} />
             ))}
           </div>
 
@@ -2915,19 +2945,14 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     >
                       Load
                     </EnhancedButton>
-                    {profile.user_id === loggedInUser?.id && (
+                    {(profile.user_id === loggedInUser?.id || isSuperAdmin(loggedInUser?.role)) && (
                       <EnhancedButton
                         variant="outline"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (
-                            window.confirm(
-                              `Are you sure you want to delete the profile "${profile.name}"?`
-                            )
-                          ) {
-                            deleteProfile(profile);
-                          }
+                          setProfileToDelete(profile);
+                          setShowDeleteProfileModal(true);
                         }}
                         aria-label={`Delete profile ${profile.name}`}
                         className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
@@ -2950,6 +2975,54 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               Close
             </EnhancedButton>
           </div>
+        </div>
+      </Modal>
+
+      {/* Delete Profile Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteProfileModal}
+        onClose={() => {
+          setShowDeleteProfileModal(false);
+          setProfileToDelete(null);
+        }}
+        title="Delete Parameter Order Profile"
+      >
+        <div className="p-6">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Are you sure you want to delete the profile &quot;{profileToDelete?.name}&quot;? This
+            action cannot be undone.
+          </p>
+        </div>
+        <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
+          <EnhancedButton
+            variant="warning"
+            onClick={async () => {
+              if (profileToDelete) {
+                await deleteProfile(profileToDelete);
+                setShowDeleteProfileModal(false);
+                setProfileToDelete(null);
+              }
+            }}
+            className="sm:ml-3 sm:w-auto"
+            rounded="lg"
+            elevation="sm"
+            aria-label="Confirm delete profile"
+          >
+            Delete Profile
+          </EnhancedButton>
+          <EnhancedButton
+            variant="outline"
+            onClick={() => {
+              setShowDeleteProfileModal(false);
+              setProfileToDelete(null);
+            }}
+            className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
+            rounded="lg"
+            elevation="sm"
+            aria-label="Cancel delete"
+          >
+            Cancel
+          </EnhancedButton>
         </div>
       </Modal>
 

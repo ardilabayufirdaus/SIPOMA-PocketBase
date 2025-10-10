@@ -211,7 +211,9 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const ccrDataMap = new Map(ccrDataForDate.map((d) => [d.parameter_id, d]));
 
       const downtimeDataForDate = getDowntimeForDate(selectedDate);
-      const filteredDowntimeData = downtimeDataForDate.filter((d) => d.unit === selectedUnit);
+      const filteredDowntimeData = downtimeDataForDate
+        .filter((d) => d.unit === selectedUnit)
+        .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
 
       // FIX: await async data fetching functions
       const allSiloDataForDate = await getSiloDataForDate(selectedDate);
