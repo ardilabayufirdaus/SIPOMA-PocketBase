@@ -1,4 +1,13 @@
-import ExcelJS from 'exceljs';
+// Lazy load ExcelJS to reduce initial bundle size
+let ExcelJS: any = null;
+
+const getExcelJS = async () => {
+  if (!ExcelJS) {
+    const module = await import('exceljs');
+    ExcelJS = module.default;
+  }
+  return ExcelJS;
+};
 
 /**
  * Interface untuk konfigurasi export Excel
@@ -9,8 +18,8 @@ export interface ExcelExportConfig {
   headers?: string[];
   data: Record<string, unknown>[];
   styling?: {
-    headerStyle?: Partial<ExcelJS.Style>;
-    dataStyle?: Partial<ExcelJS.Style>;
+    headerStyle?: any;
+    dataStyle?: any;
   };
 }
 
@@ -33,6 +42,7 @@ export const exportToExcel = async (
   sheetName: string = 'Sheet1'
 ) => {
   try {
+    const ExcelJS = await getExcelJS();
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(sheetName);
 
@@ -74,6 +84,7 @@ export const exportToExcel = async (
 export const exportToExcelAdvanced = async (config: ExcelExportConfig) => {
   try {
     const { data, filename, sheetName = 'Sheet1', headers, styling } = config;
+    const ExcelJS = await getExcelJS();
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(sheetName);
@@ -134,6 +145,7 @@ export const exportMultipleSheets = async (
   filename: string
 ) => {
   try {
+    const ExcelJS = await getExcelJS();
     const workbook = new ExcelJS.Workbook();
 
     sheets.forEach(({ name, data, headers }) => {
@@ -186,6 +198,7 @@ export const exportToExcelStyled = async (
   headers?: string[]
 ) => {
   try {
+    const ExcelJS = await getExcelJS();
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet(sheetName);
 
@@ -238,6 +251,7 @@ export const importFromExcel = async (
     reader.onload = async (e) => {
       try {
         const buffer = e.target?.result as ArrayBuffer;
+        const ExcelJS = await getExcelJS();
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buffer);
 
@@ -332,6 +346,7 @@ export const previewExcelFile = async (
     reader.onload = async (e) => {
       try {
         const buffer = e.target?.result as ArrayBuffer;
+        const ExcelJS = await getExcelJS();
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buffer);
 

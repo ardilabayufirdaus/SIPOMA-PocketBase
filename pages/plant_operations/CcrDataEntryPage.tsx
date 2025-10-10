@@ -1872,38 +1872,60 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Silo Data Table */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
-        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-          {t.ccr_data_entry_title}
-        </h3>
-        <div className="overflow-x-auto">
+      <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <svg
+              className="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              {t.ccr_data_entry_title}
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Data silo CCR untuk monitoring kapasitas
+            </p>
+          </div>
+        </div>
+        <div className="overflow-x-auto rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
           <table
-            className="min-w-full divide-y divide-slate-200 border border-slate-200"
+            className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700"
             aria-label="Silo Data Table"
           >
-            <thead className="bg-slate-50 text-center">
+            <thead className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 text-white shadow-lg">
               <tr>
                 <th
                   rowSpan={2}
-                  className="px-3 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r align-middle"
+                  className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-purple-300/30 align-middle"
                 >
                   {t.silo_name}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
+                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30 border-b border-purple-300/30"
                 >
                   {t.shift_1}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r border-b"
+                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30 border-b border-purple-300/30"
                 >
                   {t.shift_2}
                 </th>
                 <th
                   colSpan={3}
-                  className="px-3 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-b"
+                  className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-purple-300/30"
                 >
                   {t.shift_3}
                 </th>
@@ -1912,20 +1934,20 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 {[...Array(3)].flatMap((_, i) => [
                   <th
                     key={`es-${i}`}
-                    className="px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                    className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30"
                   >
                     {t.empty_space}
                   </th>,
                   <th
                     key={`c-${i}`}
-                    className="px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                    className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-purple-300/30"
                   >
                     {t.content}
                   </th>,
                   <th
                     key={`p-${i}`}
-                    className={`px-2 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider ${
-                      i < 2 ? 'border-r' : ''
+                    className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
+                      i < 2 ? 'border-r border-purple-300/30' : ''
                     }`}
                   >
                     {t.percentage}
@@ -1933,11 +1955,16 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 ])}
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm divide-y divide-slate-200/50 dark:divide-slate-700/50">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-10 text-slate-500 animate-pulse">
-                    Loading data...
+                  <td colSpan={10} className="text-center py-16">
+                    <div className="flex items-center justify-center">
+                      <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="ml-3 text-slate-600 dark:text-slate-400 font-medium">
+                        Loading silo data...
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -2075,16 +2102,33 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       </div>
 
       {/* Enhanced Parameter Data Table */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
+      <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-              {t.ccr_parameter_data_entry_title}
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Pastikan Plant Kategori dan Plant Unit sesuai dengan filter yang diterapkan sebelum
-              mengisi data parameter.
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                {t.ccr_parameter_data_entry_title}
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Pastikan Plant Kategori dan Plant Unit sesuai dengan filter yang diterapkan sebelum
+                mengisi data parameter.
+              </p>
+            </div>
           </div>
 
           {/* Enhanced Table Controls */}
@@ -2283,10 +2327,13 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     <col key={index} style={{ width: '100px' }} />
                   ))}
                 </colgroup>
-                <thead className="bg-slate-50 text-center sticky top-0 z-20" role="rowgroup">
-                  <tr className="border-b" role="row">
+                <thead
+                  className="bg-white/95 backdrop-blur-sm text-center sticky top-0 z-20 shadow-xl border-b-2 border-orange-400/50"
+                  role="rowgroup"
+                >
+                  <tr className="border-b border-orange-300/30" role="row">
                     <th
-                      className="px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r sticky left-0 bg-slate-50 z-30 sticky-col-header"
+                      className="px-2 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 sticky left-0 bg-white/95 backdrop-blur-sm z-30 sticky-col-header shadow-lg"
                       style={{ width: '90px' }}
                       role="columnheader"
                       scope="col"
@@ -2294,7 +2341,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       {t.hour}
                     </th>
                     <th
-                      className="px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                      className="px-2 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 bg-white/95 backdrop-blur-sm"
                       style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
@@ -2302,7 +2349,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       {t.shift}
                     </th>
                     <th
-                      className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-r"
+                      className="px-3 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 bg-white/95 backdrop-blur-sm"
                       style={{ width: '200px' }}
                       role="columnheader"
                       scope="col"
@@ -2312,7 +2359,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     {filteredParameterSettings.map((param, index) => (
                       <th
                         key={param.id}
-                        className={`px-2 py-3 text-xs font-semibold text-slate-600 border-r text-center ${
+                        className={`px-2 py-3 text-xs font-bold border-r border-orange-300/30 text-center bg-white/95 backdrop-blur-sm text-slate-900 ${
                           shouldHighlightColumn(param) ? 'filtered-column' : ''
                         }`}
                         style={{ width: '100px', minWidth: '100px' }}
@@ -2320,7 +2367,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                         scope="col"
                       >
                         <div className="text-center">
-                          <div className="font-bold text-[8px] leading-tight uppercase tracking-wider">
+                          <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-slate-700 drop-shadow-sm">
                             {param.parameter}
                           </div>
                         </div>
@@ -2328,7 +2375,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="bg-white" role="rowgroup">
+                <tbody
+                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm"
+                  role="rowgroup"
+                >
                   {loading ? (
                     <tr>
                       <td
@@ -2338,38 +2388,49 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             ? filteredParameterSettings.length
                             : 0)
                         }
-                        className="text-center py-10 text-slate-500 animate-pulse"
+                        className="text-center py-12 text-slate-500 dark:text-slate-400"
                       >
-                        Loading data...
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm font-medium">Loading data...</span>
+                        </div>
                       </td>
                     </tr>
                   ) : filteredParameterSettings.length > 0 ? (
                     Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
                       <tr
                         key={hour}
-                        className={`border-b group ${
-                          hour % 2 === 0 ? 'bg-slate-25' : 'bg-white'
-                        } hover:bg-slate-100 transition-colors duration-200`}
+                        className={`border-b border-slate-200/50 dark:border-slate-700/50 group ${
+                          hour % 2 === 0
+                            ? 'bg-white/40 dark:bg-slate-800/40'
+                            : 'bg-slate-50/30 dark:bg-slate-700/30'
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-300`}
                         role="row"
                       >
                         <td
-                          className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white group-hover:bg-slate-100 z-30 sticky-col"
+                          className="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200/50 dark:border-slate-700/50 sticky left-0 bg-white/90 dark:bg-slate-800/90 group-hover:bg-orange-50/80 dark:group-hover:bg-orange-900/30 z-30 sticky-col backdrop-blur-sm"
                           style={{ width: '90px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center justify-center h-8">
-                            {String(hour).padStart(2, '0')}:00
+                            <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                              {String(hour).padStart(2, '0')}:00
+                            </span>
                           </div>
                         </td>
                         <td
-                          className="px-3 py-2 whitespace-nowrap text-xs text-slate-600 border-r"
+                          className="px-3 py-3 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400 border-r border-slate-200/50 dark:border-slate-700/50"
                           style={{ width: '140px' }}
                           role="gridcell"
                         >
-                          <div className="flex items-center h-8">{getShiftForHour(hour)}</div>
+                          <div className="flex items-center h-8">
+                            <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-medium text-xs">
+                              {getShiftForHour(hour)}
+                            </span>
+                          </div>
                         </td>
                         <td
-                          className="px-3 py-2 whitespace-nowrap text-xs text-slate-800 border-r"
+                          className="px-3 py-3 whitespace-nowrap text-xs text-slate-800 dark:text-slate-200 border-r border-slate-200/50 dark:border-slate-700/50"
                           style={{ width: '200px' }}
                           role="gridcell"
                         >
@@ -2403,17 +2464,22 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                                   'user_name' in (hourData as object)
                                 ) {
                                   userName = (hourData as { user_name: string }).user_name;
-                                } else if ((paramData as any)?.name) {
-                                  userName = (paramData as any).name;
+                                } else if ((paramData as CcrParameterDataWithName)?.name) {
+                                  userName = (paramData as CcrParameterDataWithName).name;
                                 }
 
                                 return (
-                                  <span className="truncate" title={userName}>
+                                  <span
+                                    className="truncate font-medium text-slate-700 dark:text-slate-300"
+                                    title={userName}
+                                  >
                                     {userName}
                                   </span>
                                 );
                               }
-                              return <span className="text-slate-400 italic">-</span>;
+                              return (
+                                <span className="text-slate-400 dark:text-slate-500 italic">-</span>
+                              );
                             })()}
                           </div>
                         </td>
@@ -2590,88 +2656,118 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       {/* Downtime Data Table and Keterangan */}
       <div className="flex flex-col md:flex-row gap-6 md:justify-between">
         {/* Downtime Data Table */}
-        <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
+        <div className="flex-1 backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-              {t.downtime_data_entry_title}
-            </h3>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                  {t.downtime_data_entry_title}
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  Catat waktu downtime dan alasan untuk analisis efisiensi produksi.
+                </p>
+              </div>
+            </div>
             <EnhancedButton
               variant="primary"
-              size="sm"
+              size="lg"
               onClick={handleOpenAddDowntimeModal}
               disabled={!permissionChecker.hasPermission('plant_operations', 'WRITE')}
               aria-label={t.add_downtime_button || 'Add new downtime'}
+              leftIcon={<PlusIcon className="w-5 h-5" />}
+              className="group relative overflow-hidden"
             >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              {t.add_downtime_button}
+              <span className="relative z-10">{t.add_downtime_button}</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
             </EnhancedButton>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-              <thead className="bg-slate-50 dark:bg-slate-700">
+            <table className="w-full border-collapse">
+              <thead className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                     {t.start_time}
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                     {t.end_time}
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                     {t.pic}
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                     {t.problem}
                   </th>
-                  <th className="relative px-4 py-2">
+                  <th className="relative px-4 py-3 border-b border-orange-400/30">
                     <span className="sr-only">{t.actions}</span>
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
                 {loading ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="text-center py-10 text-slate-500 dark:text-slate-400 animate-pulse"
+                      className="text-center py-12 text-slate-500 dark:text-slate-400"
                     >
-                      Loading data...
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm font-medium">Loading data...</span>
+                      </div>
                     </td>
                   </tr>
                 ) : dailyDowntimeData.length > 0 ? (
                   dailyDowntimeData.map((downtime, idx) => (
                     <tr
                       key={downtime.id}
-                      className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                      className={`border-b border-slate-200/50 dark:border-slate-700/50 group ${
                         idx % 2 === 0
-                          ? 'bg-slate-50 dark:bg-slate-700'
-                          : 'bg-white dark:bg-slate-800'
-                      } transition-colors duration-200`}
+                          ? 'bg-white/40 dark:bg-slate-800/40'
+                          : 'bg-slate-50/30 dark:bg-slate-700/30'
+                      } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-300`}
                     >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
                         {downtime.start_time}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-slate-800">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
                         {downtime.end_time}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
-                        {downtime.unit}
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-medium text-xs">
+                          {downtime.unit}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
                         {downtime.pic}
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-600 max-w-sm whitespace-pre-wrap">
+                      <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
                         {downtime.problem}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <EnhancedButton
                             variant="ghost"
                             size="xs"
                             onClick={() => handleOpenEditDowntimeModal(downtime)}
                             aria-label={`Edit downtime for ${downtime.unit}`}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                           >
                             <EditIcon />
                           </EnhancedButton>
@@ -2680,6 +2776,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             size="xs"
                             onClick={() => handleOpenDeleteModal(downtime.id, downtime.date)}
                             aria-label={`Delete downtime for ${downtime.unit}`}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                           >
                             <TrashIcon />
                           </EnhancedButton>
@@ -2689,8 +2786,26 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center py-6 text-slate-500">
-                      {t.no_downtime_recorded}
+                    <td
+                      colSpan={6}
+                      className="text-center py-12 text-slate-500 dark:text-slate-400"
+                    >
+                      <div className="flex items-center justify-center space-x-3">
+                        <svg
+                          className="w-8 h-8 text-slate-400 dark:text-slate-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span className="text-sm font-medium">{t.no_downtime_recorded}</span>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -2700,26 +2815,58 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         </div>
 
         {/* Keterangan Container */}
-        <div className="flex-1 bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md space-y-4">
-          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
-            {t.information}
-          </h3>
-          <div className="space-y-2">
+        <div className="flex-1 backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                {t.information}
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Catat informasi penting terkait operasi CCR hari ini.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-3">
             <label
               htmlFor="keterangan"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
             >
               {t.information_label}
             </label>
-            <textarea
-              id="keterangan"
-              rows={8}
-              value={informationText}
-              onChange={(e) => handleInformationChange(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical"
-              placeholder={t.information_placeholder}
-              disabled={isSavingInformation}
-            />
+            <div className="relative">
+              <textarea
+                id="keterangan"
+                rows={8}
+                value={informationText}
+                onChange={(e) => handleInformationChange(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical transition-all duration-200 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm"
+                placeholder={t.information_placeholder}
+                disabled={isSavingInformation}
+              />
+              {isSavingInformation && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl">
+                  <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
+                    <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-medium">Menyimpan...</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

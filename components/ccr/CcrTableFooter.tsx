@@ -127,9 +127,41 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     },
   ];
 
+  const getCellStyling = (rowIndex: number) => {
+    // Rows with light backgrounds need dark text
+    const lightBackgroundRows = [1, 3, 5, 7]; // average rows with bg-slate-50
+    const blueBackgroundRows = [8, 9, 10, 11]; // counter rows with bg-blue-50
+
+    if (lightBackgroundRows.includes(rowIndex)) {
+      return 'text-slate-800 bg-slate-50/95 dark:text-slate-100 dark:bg-slate-700/95 hover:bg-slate-100/95 dark:hover:bg-slate-600/95';
+    } else if (blueBackgroundRows.includes(rowIndex)) {
+      return 'text-blue-900 bg-blue-50/95 dark:text-blue-100 dark:bg-blue-900/95 hover:bg-blue-100/95 dark:hover:bg-blue-800/95';
+    } else {
+      return 'text-slate-800 dark:text-slate-100 bg-white/90 dark:bg-slate-800/90 hover:bg-white/95 dark:hover:bg-slate-700/95';
+    }
+  };
+
   return (
-    <div className="ccr-table-footer-container" ref={footerRef}>
-      <table className="ccr-table" style={{ marginBottom: 0 }}>
+    <div className="ccr-table-footer-container bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-xl shadow-2xl border border-emerald-300/30 dark:border-emerald-700/30 p-4 mt-4">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-slate-900/80 backdrop-blur-sm flex items-center justify-center border border-white/20">
+          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+        <h4 className="text-lg font-bold text-slate-900 drop-shadow-sm bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/30">
+          Data Summary & Statistics
+        </h4>
+      </div>
+      <table
+        className="ccr-table text-xs bg-white/20 backdrop-blur-md rounded-lg overflow-hidden shadow-inner border border-white/30"
+        style={{ marginBottom: 0 }}
+      >
         <colgroup>
           <col style={{ width: '90px' }} />
           <col style={{ width: '140px' }} />
@@ -140,10 +172,14 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
         </colgroup>
         <tbody role="rowgroup">
           {footerRows.map((row, rowIndex) => (
-            <tr key={rowIndex} className={row.className || ''} role="row">
+            <tr
+              key={rowIndex}
+              className={`${row.className || ''} border-b border-white/30 last:border-b-0`}
+              role="row"
+            >
               <td
                 colSpan={3}
-                className="px-3 py-3 text-right font-bold text-slate-700 border-r sticky left-0 bg-slate-100 z-30"
+                className="px-4 py-3 text-right font-bold text-slate-900 bg-white/95 backdrop-blur-sm border-r border-white/40 sticky left-0 z-30 shadow-lg"
                 role="columnheader"
               >
                 {row.label}
@@ -160,7 +196,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
                 return (
                   <td
                     key={param.id}
-                    className="px-3 py-3 text-center font-semibold text-slate-800 border-r"
+                    className={`px-4 py-3 text-center font-bold border-r border-white/30 transition-all duration-200 backdrop-blur-sm ${getCellStyling(rowIndex)}`}
                     style={{ width: '160px', minWidth: '160px' }}
                     role="gridcell"
                   >
