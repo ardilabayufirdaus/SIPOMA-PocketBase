@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ParameterSetting } from '../types';
 import { supabase } from '../utils/supabase';
+import { cacheManager } from '../utils/cacheManager';
 
 export const useParameterSettings = () => {
   const [records, setRecords] = useState<ParameterSetting[]>([]);
@@ -8,6 +9,15 @@ export const useParameterSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
+
+    // Check cache first
+    const cacheKey = 'parameter_settings';
+    const cached = cacheManager.get<ParameterSetting[]>(cacheKey);
+    if (cached) {
+      setRecords(cached as unknown as ParameterSetting[]);
+      setLoading(false);
+      return;
+    }
 
     const { data, error } = await supabase
       .from('parameter_settings')
@@ -19,7 +29,10 @@ export const useParameterSettings = () => {
       console.error('Error fetching parameter settings:', error);
       setRecords([]);
     } else {
-      setRecords((data || []) as unknown as ParameterSetting[]);
+      const typedData = (data || []) as unknown as ParameterSetting[];
+      setRecords(typedData);
+      // Cache for 30 minutes since parameter settings don't change frequently
+      cacheManager.set(cacheKey, typedData, 30);
     }
     setLoading(false);
   }, []);
@@ -45,6 +58,9 @@ export const useParameterSettings = () => {
             payload.eventType,
             payload.new || payload.old
           );
+
+          // Clear cache when data changes
+          cacheManager.delete('parameter_settings');
 
           // Optimized state updates based on event type
           if (payload.eventType === 'INSERT' && payload.new) {

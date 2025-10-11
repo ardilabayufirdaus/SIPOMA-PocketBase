@@ -89,9 +89,12 @@ interface UserActivityState {
   loading: boolean;
   error: string | null;
   filter: ActivityFilter;
+  sessionsPage: number;
+  sessionsLimit: number;
+  totalSessions: number;
 
   // Actions
-  fetchSessions: () => Promise<void>;
+  fetchSessions: (page?: number) => Promise<void>;
   fetchActions: () => Promise<void>;
   fetchStats: () => Promise<void>;
   logUserAction: (action: Omit<UserAction, 'id' | 'timestamp'>) => Promise<void>;
@@ -125,29 +128,37 @@ export const useUserActivityStore = create<UserActivityState>()(
       loading: false,
       error: null,
       filter: defaultFilter,
+      sessionsPage: 1,
+      sessionsLimit: 100,
+      totalSessions: 0,
 
       // Fetch user sessions
-      fetchSessions: async () => {
+      fetchSessions: async (page: number = 1) => {
         set({ loading: true, error: null });
         try {
-          const { filter } = get();
+          const { filter, sessionsLimit } = get();
+          const from = (page - 1) * sessionsLimit;
+          const to = from + sessionsLimit - 1;
+
           let query = supabase
             .from('user_sessions')
             .select(
               `
               *,
               users!inner(username, full_name, role)
-            `
+            `,
+              { count: 'exact' }
             )
             .gte('session_start', filter.dateRange.start)
             .lte('session_start', filter.dateRange.end + 'T23:59:59')
-            .order('session_start', { ascending: false });
+            .order('session_start', { ascending: false })
+            .range(from, to);
 
           if (filter.users.length > 0) {
             query = query.in('user_id', filter.users);
           }
 
-          const { data, error } = await query;
+          const { data, error, count } = await query;
 
           if (error) throw error;
 
@@ -170,7 +181,7 @@ export const useUserActivityStore = create<UserActivityState>()(
               duration_minutes: session.duration_minutes || 0,
             })) || [];
 
-          set({ sessions, loading: false });
+          set({ sessions, sessionsPage: page, totalSessions: count || 0, loading: false });
         } catch (error) {
           console.error('Error fetching sessions:', error);
           set({ error: (error as Error).message, loading: false });
@@ -244,59 +255,90 @@ export const useUserActivityStore = create<UserActivityState>()(
         try {
           const { filter } = get();
 
-          // Get basic stats
+          // Get counts using separate queries to minimize data transfer
           const [
-            { data: sessionData },
-            { data: actionData },
-            { data: userData },
-            { data: topUsersData },
-            { data: topModulesData },
+            { count: totalSessions },
+            { count: totalActions },
+            { count: successfulActions },
+            { count: failedActions },
+            { count: totalUsers },
+            { count: activeUsers },
           ] = await Promise.all([
+            // Total sessions
             supabase
               .from('user_sessions')
-              .select('duration_minutes, is_active')
+              .select('*', { count: 'exact', head: true })
               .gte('session_start', filter.dateRange.start)
               .lte('session_start', filter.dateRange.end + 'T23:59:59'),
 
+            // Total actions
             supabase
               .from('user_actions')
-              .select('success')
+              .select('*', { count: 'exact', head: true })
               .gte('timestamp', filter.dateRange.start)
               .lte('timestamp', filter.dateRange.end + 'T23:59:59'),
 
-            supabase.from('users').select('id, is_active'),
-
+            // Successful actions
             supabase
               .from('user_actions')
-              .select(
-                `
-                user_id,
-                users!inner(username, full_name),
-                timestamp
-              `
-              )
+              .select('*', { count: 'exact', head: true })
               .gte('timestamp', filter.dateRange.start)
-              .lte('timestamp', filter.dateRange.end + 'T23:59:59'),
+              .lte('timestamp', filter.dateRange.end + 'T23:59:59')
+              .eq('success', true),
 
+            // Failed actions
             supabase
               .from('user_actions')
-              .select('module')
+              .select('*', { count: 'exact', head: true })
               .gte('timestamp', filter.dateRange.start)
-              .lte('timestamp', filter.dateRange.end + 'T23:59:59'),
+              .lte('timestamp', filter.dateRange.end + 'T23:59:59')
+              .eq('success', false),
+
+            // Total users
+            supabase.from('users').select('*', { count: 'exact', head: true }),
+
+            // Active users
+            supabase
+              .from('users')
+              .select('*', { count: 'exact', head: true })
+              .eq('is_active', true),
           ]);
 
-          // Calculate stats
-          const totalUsers = userData?.length || 0;
-          const activeUsers = userData?.filter((u) => u.is_active)?.length || 0;
-          const totalSessions = sessionData?.length || 0;
-          const averageSessionDuration =
-            sessionData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) /
-            Math.max(totalSessions, 1);
-          const totalActions = actionData?.length || 0;
-          const successfulActions = actionData?.filter((a) => a.success)?.length || 0;
-          const failedActions = totalActions - successfulActions;
+          // Get average session duration (fetch only duration_minutes)
+          const { data: sessionDurations } = await supabase
+            .from('user_sessions')
+            .select('duration_minutes')
+            .gte('session_start', filter.dateRange.start)
+            .lte('session_start', filter.dateRange.end + 'T23:59:59');
 
-          // Top users by activity
+          const averageSessionDuration =
+            sessionDurations?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) /
+            Math.max(totalSessions || 1, 1);
+
+          // Get top users (limit to 10 with minimal data)
+          const { data: topUsersData } = await supabase
+            .from('user_actions')
+            .select(
+              `
+              user_id,
+              users!inner(username, full_name),
+              timestamp
+            `
+            )
+            .gte('timestamp', filter.dateRange.start)
+            .lte('timestamp', filter.dateRange.end + 'T23:59:59')
+            .order('timestamp', { ascending: false })
+            .limit(1000); // Reasonable limit for calculation
+
+          // Get top modules (limit to 10)
+          const { data: topModulesData } = await supabase
+            .from('user_actions')
+            .select('module')
+            .gte('timestamp', filter.dateRange.start)
+            .lte('timestamp', filter.dateRange.end + 'T23:59:59')
+            .limit(1000);
+
+          // Calculate top users
           const userActivityMap = new Map();
           topUsersData?.forEach((action) => {
             const key = action.user_id;
@@ -320,7 +362,7 @@ export const useUserActivityStore = create<UserActivityState>()(
             .sort((a, b) => b.action_count - a.action_count)
             .slice(0, 10);
 
-          // Top modules
+          // Calculate top modules
           const moduleActivityMap = new Map();
           topModulesData?.forEach((action) => {
             const module = action.module;
@@ -332,13 +374,12 @@ export const useUserActivityStore = create<UserActivityState>()(
             .sort((a, b) => b.action_count - a.action_count)
             .slice(0, 10);
 
-          // Hourly activity (mock data for now)
+          // Mock hourly and daily activity (can be optimized later with proper aggregation)
           const hourlyActivity = Array.from({ length: 24 }, (_, hour) => ({
             hour,
             activity_count: Math.floor(Math.random() * 50),
           }));
 
-          // Daily activity (mock data for now)
           const dailyActivity = Array.from({ length: 7 }, (_, i) => {
             const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
             return {
@@ -350,13 +391,13 @@ export const useUserActivityStore = create<UserActivityState>()(
           }).reverse();
 
           const stats: ActivityStats = {
-            totalUsers,
-            activeUsers,
-            totalSessions,
+            totalUsers: totalUsers || 0,
+            activeUsers: activeUsers || 0,
+            totalSessions: totalSessions || 0,
             averageSessionDuration,
-            totalActions,
-            successfulActions,
-            failedActions,
+            totalActions: totalActions || 0,
+            successfulActions: successfulActions || 0,
+            failedActions: failedActions || 0,
             topUsers,
             topModules,
             hourlyActivity,

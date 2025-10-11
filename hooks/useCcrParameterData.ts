@@ -6,7 +6,7 @@ import { useCcrDataCache } from './useDataCache';
 import { useEffect } from 'react';
 
 // Extend CcrParameterData interface untuk include name property
-interface CcrParameterDataWithName extends CcrParameterData {
+export interface CcrParameterDataWithName extends CcrParameterData {
   name?: string;
 }
 
@@ -129,6 +129,119 @@ export const useCcrParameterData = () => {
       } catch (error) {
         console.error('Error in getDataForDate:', error);
         return [];
+      }
+    },
+    [parameters, paramsLoading]
+  );
+
+  const getDataForDatePaginated = useCallback(
+    async (
+      date: string,
+      plantUnit?: string,
+      page: number = 1,
+      pageSize: number = 100
+    ): Promise<{ data: CcrParameterDataWithName[]; total: number; hasMore: boolean }> => {
+      // Enhanced validation for date parameter
+      if (
+        paramsLoading ||
+        parameters.length === 0 ||
+        !date ||
+        typeof date !== 'string' ||
+        date.trim() === '' ||
+        date === 'undefined' ||
+        date === 'null'
+      ) {
+        return { data: [], total: 0, hasMore: false };
+      }
+
+      try {
+        // Support both DD/MM/YYYY and YYYY-MM-DD formats
+        let isoDate: string;
+        if (date.includes('/')) {
+          // DD/MM/YYYY format
+          const dateParts = date.split('/');
+          if (dateParts.length !== 3) {
+            console.error('Invalid date format:', date);
+            return { data: [], total: 0, hasMore: false };
+          }
+          const day = dateParts[0].padStart(2, '0');
+          const month = dateParts[1].padStart(2, '0');
+          const year = dateParts[2];
+          isoDate = `${year}-${month}-${day}`;
+        } else if (date.includes('-')) {
+          // YYYY-MM-DD format - already ISO
+          const dateParts = date.split('-');
+          if (dateParts.length !== 3 || dateParts[0].length !== 4) {
+            console.error('Invalid date format:', date);
+            return { data: [], total: 0, hasMore: false };
+          }
+          isoDate = date;
+        } else {
+          console.error('Invalid date format:', date);
+          return { data: [], total: 0, hasMore: false };
+        }
+
+        // Build query with optional plant_unit filter and pagination
+        let query = supabase
+          .from('ccr_parameter_data')
+          .select('*', { count: 'exact' })
+          .eq('date', isoDate);
+
+        // Add plant_unit filter if specified
+        if (plantUnit && plantUnit !== 'all') {
+          query = query.eq('plant_unit', plantUnit);
+        }
+
+        // Add pagination
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) {
+          console.error('Error fetching CCR parameter data:', error);
+          return { data: [], total: 0, hasMore: false };
+        }
+
+        // Filter parameters based on plant unit if specified
+        let filteredParameters = parameters;
+        if (plantUnit && plantUnit !== 'all') {
+          filteredParameters = parameters.filter((param) => param.unit === plantUnit);
+        }
+
+        // Map supabase response to application type with proper error handling
+        const supabaseData = (data || []) as any[];
+        const dailyRecords = new Map(supabaseData.map((d) => [d.parameter_id, d]));
+
+        const resultData = filteredParameters.map((param) => {
+          const record = dailyRecords.get(param.id);
+          if (record) {
+            return {
+              id: record.id,
+              parameter_id: record.parameter_id,
+              date: record.date,
+              hourly_values: record.hourly_values || {},
+              name: record.name ?? undefined,
+            } as CcrParameterDataWithName;
+          }
+          // Return empty record structure for parameters without data
+          return {
+            id: `${param.id}-${date}`,
+            parameter_id: param.id,
+            date: date,
+            hourly_values: {},
+            name: undefined,
+          } as CcrParameterDataWithName;
+        });
+
+        const total = count || 0;
+        const hasMore = from + pageSize < total;
+
+        return { data: resultData, total, hasMore };
+      } catch (error) {
+        console.error('Error in getDataForDatePaginated:', error);
+        return { data: [], total: 0, hasMore: false };
       }
     },
     [parameters, paramsLoading]
@@ -484,6 +597,7 @@ export const useCcrParameterData = () => {
 
   return {
     getDataForDate,
+    getDataForDatePaginated,
     getDataForDateRange,
     updateParameterData,
     loading: paramsLoading,

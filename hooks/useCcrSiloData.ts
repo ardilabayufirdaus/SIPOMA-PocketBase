@@ -80,7 +80,7 @@ export const useCcrSiloData = () => {
       const supabaseData = (data || []) as any[];
       const dailyRecords = new Map(supabaseData.map((d) => [d.silo_id, d]));
 
-      return silos
+      const resultData = silos
         .map((silo) => {
           const record = dailyRecords.get(silo.id);
           if (record) {
@@ -108,6 +108,79 @@ export const useCcrSiloData = () => {
           const siloB = silos.find((s) => s.id === b.silo_id);
           return (siloA?.silo_name || '').localeCompare(siloB?.silo_name || '');
         });
+
+      return resultData;
+    },
+    [silos, silosLoading]
+  );
+
+  const getDataForDatePaginated = useCallback(
+    async (
+      date: string,
+      page: number = 1,
+      pageSize: number = 50
+    ): Promise<{ data: CcrSiloData[]; total: number; hasMore: boolean }> => {
+      // Enhanced validation for date parameter
+      if (
+        silosLoading ||
+        silos.length === 0 ||
+        !date ||
+        typeof date !== 'string' ||
+        date.trim() === '' ||
+        date === 'undefined' ||
+        date === 'null'
+      ) {
+        return { data: [], total: 0, hasMore: false };
+      }
+
+      const { data, error, count } = await supabase
+        .from('ccr_silo_data')
+        .select('*', { count: 'exact' })
+        .eq('date', date)
+        .range((page - 1) * pageSize, page * pageSize - 1);
+
+      if (error) {
+        console.error('Error fetching CCR silo data:', error);
+        return { data: [], total: 0, hasMore: false };
+      }
+
+      // FIX: Map supabase camelCase response to application's snake_case type
+      const supabaseData = (data || []) as any[];
+      const dailyRecords = new Map(supabaseData.map((d) => [d.silo_id, d]));
+
+      const resultData = silos
+        .map((silo) => {
+          const record = dailyRecords.get(silo.id);
+          if (record) {
+            return {
+              id: record.id,
+              silo_id: record.silo_id,
+              date: record.date,
+              shift1: record.shift1,
+              shift2: record.shift2,
+              shift3: record.shift3,
+            } as CcrSiloData;
+          }
+          return {
+            id: `${silo.id}-${date}`,
+            silo_id: silo.id,
+            date: date,
+            shift1: {},
+            shift2: {},
+            shift3: {},
+          };
+        })
+        .sort((a, b) => {
+          // FIX: Use snake_case properties to match the CcrSiloData type and SiloCapacity type
+          const siloA = silos.find((s) => s.id === a.silo_id);
+          const siloB = silos.find((s) => s.id === b.silo_id);
+          return (siloA?.silo_name || '').localeCompare(siloB?.silo_name || '');
+        });
+
+      const total = count || 0;
+      const hasMore = page * pageSize < total;
+
+      return { data: resultData, total, hasMore };
     },
     [silos, silosLoading]
   );
@@ -240,6 +313,7 @@ export const useCcrSiloData = () => {
 
   return {
     getDataForDate,
+    getDataForDatePaginated,
     updateSiloData,
     deleteSiloData,
     loading: silosLoading,

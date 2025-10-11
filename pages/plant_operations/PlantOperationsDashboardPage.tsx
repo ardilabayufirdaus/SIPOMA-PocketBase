@@ -69,10 +69,23 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
           'ad3c23b2-3f4f-4e90-8e2a-c32eb37f78fc', // Cement Mill 552
           'a9998b7c-fbac-4089-9fce-8bd31d93c86d', // Cement Mill 553
         ];
-        const { data: footerData, error: footerError } = await supabase
+        let query = supabase
           .from('ccr_footer_data')
           .select('date, plant_unit, total, parameter_id')
           .in('parameter_id', parameterIds);
+
+        // Apply date filter to reduce data transfer
+        if (filters.timeRange === 'daily') {
+          query = query.eq('date', filters.date);
+        } else if (filters.timeRange === 'monthly') {
+          const startDate = new Date(filters.year, filters.month - 1, 1);
+          const endDate = new Date(filters.year, filters.month, 0);
+          query = query
+            .gte('date', startDate.toISOString().split('T')[0])
+            .lte('date', endDate.toISOString().split('T')[0]);
+        }
+
+        const { data: footerData, error: footerError } = await query;
 
         if (footerError) {
           setRunningHoursData([]);

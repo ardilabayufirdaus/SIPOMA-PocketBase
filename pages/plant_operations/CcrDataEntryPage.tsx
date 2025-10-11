@@ -4,7 +4,7 @@ import ExcelJS, { CellValue } from 'exceljs';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
-import { useCcrParameterData } from '../../hooks/useCcrParameterData';
+import { useCcrParameterData, CcrParameterDataWithName } from '../../hooks/useCcrParameterData';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
 import { useUsers } from '../../hooks/useUsers';
 import {
@@ -1118,7 +1118,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             information: value,
           });
         }
-      }, 1000); // 1 second debounce
+      }, 3500); // 3.5 second debounce
 
       return () => clearTimeout(timeoutId);
     },
