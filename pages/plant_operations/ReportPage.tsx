@@ -230,49 +230,42 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         })) // FIX: Use snake_case property `silo_id`
         .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
 
-      const operatorParam = parameterSettings.find((p) => p.parameter === 'Operator Name');
+      const allParams = reportConfig.flatMap((g) => g.parameters);
+
       let operatorData: { shift: string; name: string }[] = [];
 
-      if (operatorParam) {
-        const operatorDataRecord = ccrDataMap.get(operatorParam.id) as CcrParameterData | undefined;
+      // Helper function to get operator name for a shift from user_name in hourly_values
+      const getOperatorForShift = (hours: number[]): string => {
+        for (const hour of hours) {
+          // Get operator name for this hour from user_name in any parameter data
+          for (const param of allParams) {
+            const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
+            const hourData = paramData?.hourly_values[hour];
 
-        const getOperatorForShift = (hours: number[]) => {
-          if (!operatorDataRecord) return '-';
-          for (const hour of hours) {
-            // FIX: Use snake_case property `hourly_values`
-            const hourData = operatorDataRecord.hourly_values[hour];
-
-            // Handle new structure: {value, user_name, timestamp} or legacy direct value
-            let operator = '';
-            if (hourData && typeof hourData === 'object' && 'value' in (hourData as object)) {
-              operator = String((hourData as { value: unknown }).value || '');
-            } else if (typeof hourData === 'string' || typeof hourData === 'number') {
-              operator = String(hourData);
+            if (hourData && typeof hourData === 'object' && 'user_name' in (hourData as object)) {
+              const operatorName = String((hourData as { user_name: string }).user_name || '');
+              if (operatorName.trim() !== '') return operatorName;
             }
-
-            if (operator && operator.trim() !== '') return operator;
           }
-          return '-';
-        };
+        }
+        return '-';
+      };
 
-        operatorData = [
-          {
-            shift: 'S3C',
-            name: getOperatorForShift([1, 2, 3, 4, 5, 6, 7]),
-          },
-          {
-            shift: 'S1',
-            name: getOperatorForShift([8, 9, 10, 11, 12, 13, 14, 15]),
-          },
-          {
-            shift: 'S2',
-            name: getOperatorForShift([16, 17, 18, 19, 20, 21, 22]),
-          },
-          { shift: 'S3', name: getOperatorForShift([23, 24]) },
-        ];
-      }
-
-      const allParams = reportConfig.flatMap((g) => g.parameters);
+      operatorData = [
+        {
+          shift: 'S3C',
+          name: getOperatorForShift([1, 2, 3, 4, 5, 6, 7]),
+        },
+        {
+          shift: 'S1',
+          name: getOperatorForShift([8, 9, 10, 11, 12, 13, 14, 15]),
+        },
+        {
+          shift: 'S2',
+          name: getOperatorForShift([16, 17, 18, 19, 20, 21, 22]),
+        },
+        { shift: 'S3', name: getOperatorForShift([23, 24]) },
+      ];
 
       const rows = Array.from({ length: 24 }, (_, i) => {
         const hour = i + 1;
@@ -291,6 +284,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             values[param.id] = '';
           }
         });
+
         return {
           hour,
           shift: getShiftForHour(hour),

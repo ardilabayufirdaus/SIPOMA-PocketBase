@@ -114,23 +114,38 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         <ParameterTable groupedHeaders={groupedHeaders} rows={rows} footer={footer} t={t} />
       </motion.div>
 
-      {/* Information Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-      >
-        <InformationTable informationData={informationData} t={t} />
-      </motion.div>
+      {/* Information and Operator Data Tables */}
+      {isDailyOperationalReport ? (
+        <motion.div
+          className="grid grid-cols-2 gap-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        >
+          <InformationTable informationData={informationData} t={t} />
+          <OperatorTable operatorData={operatorData} t={t} />
+        </motion.div>
+      ) : (
+        <>
+          {/* Information Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
+            <InformationTable informationData={informationData} t={t} />
+          </motion.div>
 
-      {/* Operator Data Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
-      >
-        <OperatorTable operatorData={operatorData} t={t} />
-      </motion.div>
+          {/* Operator Data Table */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+          >
+            <OperatorTable operatorData={operatorData} t={t} />
+          </motion.div>
+        </>
+      )}
 
       {/* Silo Stock Table */}
       <motion.div
