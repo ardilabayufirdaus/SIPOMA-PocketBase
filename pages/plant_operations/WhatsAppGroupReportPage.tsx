@@ -451,7 +451,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.maximum || 0) : 0;
-          if (bahanTotal > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || bahanTotal > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
           }
         });
@@ -784,7 +786,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.shift1_counter || 0) : 0;
-          if (bahanTotal > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || bahanTotal > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
           }
         });
@@ -1123,7 +1127,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const bahanTotal = bahanData ? Number(bahanData.shift2_counter || 0) : 0;
-          if (bahanTotal > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || bahanTotal > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
           }
         });
@@ -1521,7 +1527,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             nextDayUnitFooterData.find((f) => f.parameter_id === bahanData?.parameter_id)
               ?.shift3_cont_counter || 0;
           const combinedBahanTotal = bahanTotal + Number(bahanContTotal);
-          if (combinedBahanTotal > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || combinedBahanTotal > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(combinedBahanTotal, 2)} ton\n`;
           }
         });
