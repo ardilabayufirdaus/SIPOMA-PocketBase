@@ -937,9 +937,17 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 
   const parseInputValue = (formattedValue: string): number | null => {
     if (!formattedValue || formattedValue.trim() === '') return null;
-    // Convert formatted value back to number
-    // Replace dots (thousands) and comma (decimal) back to standard format
-    const normalized = formattedValue.replace(/\./g, '').replace(',', '.');
+    // Handle both comma and dot as decimal separators
+    // If contains comma, treat comma as decimal separator (Indonesian format)
+    // If no comma, treat dot as decimal separator (standard format)
+    let normalized: string;
+    if (formattedValue.includes(',')) {
+      // Indonesian format: remove dots (thousands separator) and replace comma with dot
+      normalized = formattedValue.replace(/\./g, '').replace(',', '.');
+    } else {
+      // Standard format: dot is already decimal separator
+      normalized = formattedValue;
+    }
     const parsed = parseFloat(normalized);
     return isNaN(parsed) ? null : parsed;
   };

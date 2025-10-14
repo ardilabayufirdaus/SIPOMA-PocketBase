@@ -199,12 +199,6 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'framer-motion',
-      '@tanstack/react-query',
-      '@supabase/supabase-js',
-    ],
+    include: ['react', 'react-dom', '@tanstack/react-query', '@supabase/supabase-js'],
   },
 });
