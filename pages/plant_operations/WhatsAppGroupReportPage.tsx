@@ -513,7 +513,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 const start = new Date(`${d.date} ${d.start_time}`);
                 const end = new Date(`${d.date} ${d.end_time}`);
                 const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
-                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j)\n├─ Masalah: ${d.problem}\n└─ PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
+                return `├─ ${d.start_time}-${d.end_time} (${formatIndonesianNumber(duration, 1)}j): ${d.problem}\n└─ PIC: ${d.pic || 'N/A'} | ${d.action || 'No action recorded'}`;
               })
               .join('\n');
             report += `${notes}\n`;
@@ -546,9 +546,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `├─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m\n`;
-          report += `├─ 📦 Content: ${shift3Data.content || 'N/A'} ton\n`;
-          report += `└─ Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m | 📦 Content: ${shift3Data.content || 'N/A'} ton | Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -887,9 +885,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `├─ 📏 Empty: ${shift1Data.emptySpace || 'N/A'} m\n`;
-          report += `├─ 📦 Content: ${shift1Data.content || 'N/A'} ton\n`;
-          report += `└─ 📊 Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 Empty: ${shift1Data.emptySpace || 'N/A'} m | 📦 Content: ${shift1Data.content || 'N/A'} ton | 📊 Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -1231,9 +1227,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `├─ 📏 Empty: ${shift2Data.emptySpace || 'N/A'} m\n`;
-          report += `├─ 📦 Content: ${shift2Data.content || 'N/A'} ton\n`;
-          report += `└─ 📊 Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 Empty: ${shift2Data.emptySpace || 'N/A'} m | 📦 Content: ${shift2Data.content || 'N/A'} ton | 📊 Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -1644,9 +1638,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `├─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m\n`;
-          report += `├─ 📦 Content: ${shift3Data.content || 'N/A'} ton\n`;
-          report += `└─ 📊 Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m | 📦 Content: ${shift3Data.content || 'N/A'} ton | 📊 Fill: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
