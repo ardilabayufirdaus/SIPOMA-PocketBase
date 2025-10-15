@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ParameterSetting, CcrParameterData, ParameterDataType } from '../../types';
 
@@ -43,6 +43,40 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     parameterShiftFooterData,
     parameterFooterData,
   }) => {
+    // Virtual scrolling state
+    const [scrollTop, setScrollTop] = useState(0);
+    const [containerHeight, setContainerHeight] = useState(600);
+    const rowHeight = 48; // Approximate height per row
+    const visibleRows = Math.ceil(containerHeight / rowHeight) + 2; // Add buffer
+    const totalRows = 24;
+    
+    // Calculate visible range
+    const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - 1);
+    const endRow = Math.min(totalRows - 1, startRow + visibleRows);
+    const visibleHours = useMemo(() => 
+      Array.from({ length: endRow - startRow + 1 }, (_, i) => startRow + i + 1),
+      [startRow, endRow]
+    );
+    
+    // Handle scroll
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+      setScrollTop(e.currentTarget.scrollTop);
+    };
+
+    // Calculate total height for virtual scrolling
+    const totalHeight = totalRows * rowHeight;
+
+    // Update container height on mount
+    useEffect(() => {
+      const updateHeight = () => {
+        const viewportHeight = window.innerHeight;
+        setContainerHeight(Math.min(600, viewportHeight * 0.6)); // 60% of viewport, max 600px
+      };
+      
+      updateHeight();
+      window.addEventListener('resize', updateHeight);
+      return () => window.removeEventListener('resize', updateHeight);
+    }, []);
     const getShiftForHour = (h: number) => {
       if (h >= 1 && h <= 7) return `${t.shift_3} (${t.shift_3_cont})`;
       if (h >= 8 && h <= 15) return t.shift_1;
@@ -150,6 +184,8 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
             className="ccr-table-container overflow-x-auto rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner"
             role="grid"
             aria-label="Parameter Data Entry Table"
+            style={{ height: containerHeight }}
+            onScroll={handleScroll}
           >
             <div className="ccr-table-wrapper min-w-[600px]">
               <table className="ccr-table text-xs" role="grid">
@@ -217,14 +253,15 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                 <tbody
                   className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm"
                   role="rowgroup"
+                  style={{ height: totalHeight }}
                 >
+                  {/* Spacer for virtual scrolling */}
+                  <tr style={{ height: startRow * rowHeight }} />
+                  
                   {filteredParameterSettings.length > 0 ? (
-                    Array.from({ length: 24 }, (_, i) => i + 1).map((hour, index) => (
-                      <motion.tr
+                    visibleHours.map((hour) => (
+                      <tr
                         key={hour}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.02 }}
                         className={`border-b border-slate-200/50 dark:border-slate-700/50 group transition-all duration-200 ${
                           hour % 2 === 0
                             ? 'bg-slate-50/30 dark:bg-slate-700/30'
@@ -374,8 +411,8 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                               </div>
                             </td>
                           );
-                        })}
-                      </motion.tr>
+                        )}
+                      </tr>
                     ))
                   ) : (
                     <tr>
@@ -394,6 +431,9 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       </td>
                     </tr>
                   )}
+                  
+                  {/* Spacer for virtual scrolling */}
+                  <tr style={{ height: (totalRows - endRow - 1) * rowHeight }} />
                 </tbody>
               </table>
             </div>

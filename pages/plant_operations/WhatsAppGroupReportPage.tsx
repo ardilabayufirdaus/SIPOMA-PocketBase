@@ -466,7 +466,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           { name: 'Batu Kapur', param: 'set. feeder limestone' },
           { name: 'Trass', param: 'set. feeder trass' },
           { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'Fly Ash', param: 'set. feeder fly ash' },
           { name: 'CKD', param: 'set. feeder ckd' },
         ];
 
@@ -478,7 +478,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.average || 0) : 0;
-          if (feederAvg > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || feederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
           }
         });
@@ -802,7 +804,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           { name: 'Batu Kapur', param: 'set. feeder limestone' },
           { name: 'Trass', param: 'set. feeder trass' },
           { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'Fly Ash', param: 'set. feeder fly ash' },
           { name: 'CKD', param: 'set. feeder ckd' },
         ];
 
@@ -814,7 +816,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.shift1_average || 0) : 0;
-          if (feederAvg > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || feederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
           }
         });
@@ -1144,7 +1148,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           { name: 'Batu Kapur', param: 'set. feeder limestone' },
           { name: 'Trass', param: 'set. feeder trass' },
           { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'Fly Ash', param: 'set. feeder fly ash' },
           { name: 'CKD', param: 'set. feeder ckd' },
         ];
 
@@ -1156,7 +1160,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             );
           });
           const feederAvg = feederData ? Number(feederData.shift2_average || 0) : 0;
-          if (feederAvg > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || feederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(feederAvg, 2)} %\n`;
           }
         });
@@ -1545,7 +1551,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           { name: 'Batu Kapur', param: 'set. feeder limestone' },
           { name: 'Trass', param: 'set. feeder trass' },
           { name: 'FineTrass', param: 'set. feeder fine trass' },
-          { name: 'Fly Ash', param: 'set. feeder flyash' },
+          { name: 'Fly Ash', param: 'set. feeder fly ash' },
           { name: 'CKD', param: 'set. feeder ckd' },
         ];
 
@@ -1561,7 +1567,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
             nextDayUnitFooterData.find((f) => f.parameter_id === feederData?.parameter_id)
               ?.shift3_cont_average || 0;
           const combinedFeederAvg = (feederAvg + Number(feederContAvg)) / 2;
-          if (combinedFeederAvg > 0) {
+          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
+          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
+          if (alwaysDisplay || combinedFeederAvg > 0) {
             report += `├─ ${name}: ${formatIndonesianNumber(combinedFeederAvg, 2)} %\n`;
           }
         });

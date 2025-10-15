@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -315,27 +315,16 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         // Validate required data
         if (!selectedCategory || !selectedUnit) {
-          console.warn('COP Analysis: Missing required filters - category or unit not selected');
           setAnalysisData([]);
           setIsLoading(false);
           return;
         }
 
         if (filteredCopParameters.length === 0) {
-          console.warn('COP Analysis: No COP parameters found for selected category and unit');
           setAnalysisData([]);
           setIsLoading(false);
           return;
         }
-
-        console.log('COP Analysis: Starting data fetch for', {
-          category: selectedCategory,
-          unit: selectedUnit,
-          cementType: selectedCementType,
-          parameterCount: filteredCopParameters.length,
-          month: filterMonth,
-          year: filterYear,
-        });
 
         const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
         const dates = Array.from({ length: daysInMonth }, (_, i) => {
@@ -346,11 +335,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         const dailyAverages = new Map<string, Map<string, number>>();
 
         // Get footer data for all dates in the month
-        console.log('COP Analysis: Fetching footer data for', dates.length, 'dates');
         const footerDataPromises = dates.map((dateString) => getFooterDataForDate(dateString));
         const allFooterDataForMonth = await Promise.all(footerDataPromises);
 
-        console.log('COP Analysis: Processing footer data');
         allFooterDataForMonth.flat().forEach((footerData) => {
           // Use footer average data instead of calculating from hourly values
           if (
@@ -365,13 +352,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           }
         });
 
-        console.log('COP Analysis: Processing parameters');
         const data = filteredCopParameters
           .map((parameter) => {
             try {
               // Validate parameter has required fields
               if (!parameter || !parameter.id || !parameter.parameter) {
-                console.warn('COP Analysis: Invalid parameter data', parameter);
                 return null;
               }
 
@@ -380,14 +365,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                 // Validate average value
                 if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
-                  console.warn(
-                    'COP Analysis: Invalid average value for parameter',
-                    parameter.parameter,
-                    'on date',
-                    dateString,
-                    ':',
-                    avg
-                  );
                   return { value: null, raw: undefined };
                 }
 
@@ -399,24 +376,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                 // Validate min/max values
                 if (min_value === undefined || max_value === undefined) {
-                  console.warn(
-                    'COP Analysis: Missing min/max values for parameter',
-                    parameter.parameter,
-                    'cement type:',
-                    selectedCementType
-                  );
                   return { value: null, raw: avg };
                 }
 
                 if (max_value <= min_value) {
-                  console.warn(
-                    'COP Analysis: Invalid min/max range for parameter',
-                    parameter.parameter,
-                    ': min=',
-                    min_value,
-                    'max=',
-                    max_value
-                  );
                   return { value: null, raw: avg };
                 }
 
@@ -428,13 +391,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                 // Validate percentage calculation
                 if (isNaN(percentage) || !isFinite(percentage)) {
-                  console.warn('COP Analysis: Invalid percentage calculation', {
-                    parameter: parameter.parameter,
-                    avg,
-                    min_value,
-                    max_value,
-                    percentage,
-                  });
                   return { value: null, raw: avg };
                 }
 
@@ -465,25 +421,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 monthlyAverage,
                 monthlyAverageRaw,
               };
-            } catch (paramError) {
-              console.error(
-                'COP Analysis: Error processing parameter',
-                parameter?.parameter || 'unknown',
-                paramError
-              );
+            } catch {
               return null;
             }
           })
           .filter((p): p is NonNullable<typeof p> => p !== null);
 
-        console.log(
-          'COP Analysis: Data processing completed, setting analysis data with',
-          data.length,
-          'parameters'
-        );
         setAnalysisData(data);
       } catch (error) {
-        console.error('COP Analysis: Failed to load data', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         setError(
           `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
@@ -968,7 +913,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                       setAnalysisData(data);
                     } catch (retryError) {
-                      console.error('COP Analysis: Retry failed', retryError);
                       const errorMessage =
                         retryError instanceof Error ? retryError.message : 'Retry failed';
                       setError(

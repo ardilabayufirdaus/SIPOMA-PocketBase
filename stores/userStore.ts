@@ -3,6 +3,8 @@ import { supabase } from '../utils/supabaseClient';
 import { User } from '../types';
 import { passwordUtils } from '../utils/passwordUtils';
 import { buildPermissionMatrix } from '../utils/permissionUtils';
+import { dbCache } from '../utils/cacheUtils';
+import { debouncer } from '../utils/batchUtils';
 
 interface UserManagementState {
   users: User[];
@@ -57,42 +59,48 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
           table: 'users',
         },
         (payload) => {
-          console.log('Realtime user change:', payload);
-          const { eventType, new: newRecord, old: oldRecord } = payload;
+          // Debounce real-time updates to reduce database load
+          debouncer.debounce(() => {
+            const { eventType, new: newRecord, old: oldRecord } = payload;
 
-          set((state) => {
-            let updatedUsers = [...state.users];
+            set((state) => {
+              let updatedUsers = [...state.users];
 
-            if (eventType === 'INSERT' && newRecord) {
-              const newUser: User = {
-                id: newRecord.id,
-                username: newRecord.username,
-                full_name: newRecord.full_name || undefined,
-                role: newRecord.role,
-                is_active: newRecord.is_active,
-                created_at: new Date(newRecord.created_at),
-                updated_at: new Date(newRecord.updated_at),
-                permissions: buildPermissionMatrix([]),
-              };
-              updatedUsers.unshift(newUser); // Add to top
-            } else if (eventType === 'UPDATE' && newRecord) {
-              updatedUsers = updatedUsers.map((user) =>
-                user.id === newRecord.id
-                  ? {
-                      ...user,
-                      username: newRecord.username,
-                      full_name: newRecord.full_name || undefined,
-                      role: newRecord.role,
-                      is_active: newRecord.is_active,
-                      updated_at: new Date(newRecord.updated_at),
-                    }
-                  : user
-              );
-            } else if (eventType === 'DELETE' && oldRecord) {
-              updatedUsers = updatedUsers.filter((user) => user.id !== oldRecord.id);
-            }
+              if (eventType === 'INSERT' && newRecord) {
+                const newUser: User = {
+                  id: newRecord.id,
+                  username: newRecord.username,
+                  full_name: newRecord.full_name || undefined,
+                  role: newRecord.role,
+                  is_active: newRecord.is_active,
+                  created_at: new Date(newRecord.created_at),
+                  updated_at: new Date(newRecord.updated_at),
+                  permissions: buildPermissionMatrix([]),
+                };
+                updatedUsers.unshift(newUser); // Add to top
+                // Invalidate cache on data changes
+                dbCache.invalidateUsers();
+              } else if (eventType === 'UPDATE' && newRecord) {
+                updatedUsers = updatedUsers.map((user) =>
+                  user.id === newRecord.id
+                    ? {
+                        ...user,
+                        username: newRecord.username,
+                        full_name: newRecord.full_name || undefined,
+                        role: newRecord.role,
+                        is_active: newRecord.is_active,
+                        updated_at: new Date(newRecord.updated_at),
+                      }
+                    : user
+                );
+                dbCache.invalidateUsers();
+              } else if (eventType === 'DELETE' && oldRecord) {
+                updatedUsers = updatedUsers.filter((user) => user.id !== oldRecord.id);
+                dbCache.invalidateUsers();
+              }
 
-            return { users: updatedUsers };
+              return { users: updatedUsers };
+            });
           });
         }
       )
@@ -213,11 +221,29 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
   fetchUsers: async (page = 1, limit = 20, includePermissions = false) => {
     set({ isLoading: true, error: null });
+
+    // Check cache first
+    const cached = dbCache.getUsers(page, limit);
+    if (cached && !includePermissions) {
+      // Don't cache permission-included queries for security
+      set({
+        users: page === 1 ? cached.users : [...get().users, ...cached.users],
+        pagination: {
+          page,
+          limit,
+          total: cached.total,
+          hasMore: cached.total > page * limit,
+        },
+        isLoading: false,
+      });
+      return;
+    }
+
     try {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      let query = supabase
+      const query = supabase
         .from('users')
         .select(
           includePermissions
@@ -255,27 +281,35 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
       if (error) throw error;
 
-      const transformedUsers: User[] = (data || []).map((user: any) => ({
-        id: user.id,
-        username: user.username,
-        full_name: user.full_name || undefined,
-        role: user.role,
-        is_active: user.is_active,
-        created_at: new Date(user.created_at),
-        updated_at: new Date(user.updated_at),
+      const transformedUsers: User[] = (data || []).map((user: Record<string, unknown>) => ({
+        id: user.id as string,
+        username: user.username as string,
+        full_name: (user.full_name as string) || undefined,
+        role: user.role as string,
+        is_active: user.is_active as boolean,
+        created_at: new Date(user.created_at as string),
+        updated_at: new Date(user.updated_at as string),
         permissions: includePermissions
-          ? user.user_permissions?.reduce((acc: Record<string, any>, up: any) => {
-              const perm = up.permissions;
-              if (perm) {
-                acc[perm.module_name] = {
-                  level: perm.permission_level,
-                  plantUnits: perm.plant_units || [],
-                };
-              }
-              return acc;
-            }, {}) || {}
+          ? ((user.user_permissions as Record<string, unknown>[]) || []).reduce(
+              (acc: Record<string, unknown>, up: Record<string, unknown>) => {
+                const perm = up.permissions as Record<string, unknown>;
+                if (perm) {
+                  acc[perm.module_name as string] = {
+                    level: perm.permission_level,
+                    plantUnits: perm.plant_units || [],
+                  };
+                }
+                return acc;
+              },
+              {}
+            ) || {}
           : {},
       }));
+
+      // Cache the result if not including permissions
+      if (!includePermissions) {
+        dbCache.setUsers(page, limit, { users: transformedUsers, total: count || 0 });
+      }
 
       set({
         users: page === 1 ? transformedUsers : [...get().users, ...transformedUsers],

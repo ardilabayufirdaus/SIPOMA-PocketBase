@@ -40,6 +40,7 @@ import { usePermissions } from '../../utils/permissions';
 import { PermissionLevel } from '../../types';
 import { isSuperAdmin } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { useDebouncedParameterUpdates } from '../../hooks/useDebouncedParameterUpdates';
 
 // Import Supabase client
 import { supabase } from '../../utils/supabaseClient';
@@ -665,6 +666,24 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   }, [allDailySiloData, selectedCategory, selectedUnit, siloMasterMap]);
 
   const { getDataForDate: getParameterDataForDate, updateParameterData } = useCcrParameterData();
+
+  // Use debounced parameter updates for better performance
+  const {
+    updateParameterDataDebounced,
+    savingParameterId,
+    error: debouncedError,
+  } = useDebouncedParameterUpdates({
+    selectedDate,
+    updateParameterData,
+    getParameterDataForDate,
+    currentUserName: loggedInUser?.full_name || currentUser.full_name,
+    onSuccess: (parameterId, hour) => {
+      showToast(`Data parameter ${parameterId} jam ${hour} berhasil disimpan.`);
+    },
+    onError: (parameterId, error) => {
+      setError(`Failed to save data for parameter ${parameterId}: ${error}`);
+    },
+  });
   const [dailyParameterData, setDailyParameterData] = useState<CcrParameterData[]>([]);
   const [parameterDataTrigger, setParameterDataTrigger] = useState(0); // Trigger for real-time updates
 
@@ -980,9 +999,6 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     });
   };
 
-  // Alias for saving parameter ID
-  const savingParameterId = null;
-
   // Enhanced cleanup for inputRefs, debounced updates, and custom hooks
   useEffect(() => {
     return () => {
@@ -1000,7 +1016,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     }
   }, [selectedDate, selectedUnit, getInformationForDate]);
 
-  // Wrapper function for parameter data changes with optimistic updates
+  // Wrapper function for parameter data changes with optimistic updates and debouncing
   const handleParameterDataChange = useCallback(
     async (parameterId: string, hour: number, value: string) => {
       // Optimistic update for UI
@@ -1031,36 +1047,10 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
         return newArr;
       });
 
-      // Direct database update
-      try {
-        await updateParameterData(
-          selectedDate,
-          parameterId,
-          hour,
-          value === '' ? null : value,
-          loggedInUser?.full_name || currentUser.full_name
-        );
-        showToast(`Data parameter ${parameterId} jam ${hour} berhasil disimpan.`);
-      } catch (error) {
-        console.error('Error updating parameter data:', error);
-        setError(`Failed to save data for parameter ${parameterId}`);
-        // Revert optimistic update on error
-        setDailyParameterData((prev) => {
-          const idx = prev.findIndex((p) => p.parameter_id === parameterId);
-          if (idx === -1) return prev;
-
-          const param = prev[idx];
-          const revertedHourlyValues = { ...param.hourly_values };
-          delete revertedHourlyValues[hour]; // Remove the failed update
-
-          const revertedParam = { ...param, hourly_values: revertedHourlyValues };
-          const newArr = [...prev];
-          newArr[idx] = revertedParam;
-          return newArr;
-        });
-      }
+      // Use debounced database update for better performance
+      updateParameterDataDebounced(parameterId, hour, value);
     },
-    [updateParameterData, selectedDate, loggedInUser, currentUser, showToast]
+    [updateParameterDataDebounced]
   );
 
   const handleOpenAddDowntimeModal = () => {
