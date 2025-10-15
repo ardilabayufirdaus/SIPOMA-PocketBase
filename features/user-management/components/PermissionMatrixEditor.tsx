@@ -237,12 +237,6 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
       icon: <CogIcon className="w-5 h-5" />,
     },
     {
-      key: 'packing_plant',
-      label: 'Packing Plant',
-      description: 'Access to packing plant operations',
-      icon: <ShieldCheckIcon className="w-5 h-5" />,
-    },
-    {
       key: 'project_management',
       label: 'Project Management',
       description: 'Access to project management tools',

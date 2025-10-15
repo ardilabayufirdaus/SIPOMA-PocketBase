@@ -506,6 +506,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           // Tambahkan downtime notes jika ada
           if (unitDowntime.length > 0) {
             const notes = unitDowntime
+              .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
                 const start = new Date(`${d.date} ${d.start_time}`);
                 const end = new Date(`${d.date} ${d.end_time}`);
@@ -844,6 +845,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           // Tambahkan downtime notes jika ada
           if (unitDowntime.length > 0) {
             const notes = unitDowntime
+              .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
                 const start = new Date(`${d.date} ${d.start_time}`);
                 const end = new Date(`${d.date} ${d.end_time}`);
@@ -1185,6 +1187,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           // Tambahkan downtime notes jika ada
           if (unitDowntime.length > 0) {
             const notes = unitDowntime
+              .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
                 const start = new Date(`${d.date} ${d.start_time}`);
                 const end = new Date(`${d.date} ${d.end_time}`);
@@ -1595,6 +1598,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
           // Tambahkan downtime notes jika ada
           if (allDowntime.length > 0) {
             const notes = allDowntime
+              .sort((a, b) => a.start_time.localeCompare(b.start_time))
               .map((d) => {
                 const start = new Date(`${d.date} ${d.start_time}`);
                 const end = new Date(`${d.date} ${d.end_time}`);

@@ -6,16 +6,26 @@ export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<ProjectTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchProjectsAndTasks = useCallback(async () => {
+  const fetchProjectsAndTasks = useCallback(async (retryCount = 0) => {
     setLoading(true);
-    const { data: projectsData, error: projectsError } = await supabase
-      .from('projects')
-      .select('*');
-    const { data: tasksData, error: tasksError } = await supabase.from('project_tasks').select('*');
+    setError(null);
+    try {
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*');
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('project_tasks')
+        .select('*');
 
-    if (projectsError) console.error('Error fetching projects:', projectsError);
-    else {
+      if (projectsError) {
+        throw new Error(`Projects fetch error: ${projectsError.message}`);
+      }
+      if (tasksError) {
+        throw new Error(`Tasks fetch error: ${tasksError.message}`);
+      }
+
       // Map projects data to include required status field
       const mappedProjects = (projectsData || []).map((project: any) => ({
         id: project.id,
@@ -29,12 +39,7 @@ export const useProjects = () => {
         updated_at: project.updated_at,
       }));
       setProjects(mappedProjects);
-    }
 
-    if (tasksError) {
-      console.error('Error fetching tasks:', tasksError);
-      setTasks([]);
-    } else {
       const mappedTasks = (tasksData || []).map((task: any) => ({
         id: task.id,
         project_id: task.project_id,
@@ -46,9 +51,23 @@ export const useProjects = () => {
         percent_complete: task.percent_complete,
       }));
       setTasks(mappedTasks);
-    }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Error fetching projects and tasks:', errorMessage);
+      setError(errorMessage);
 
-    setLoading(false);
+      // Auto-retry for network errors, up to 3 times with exponential backoff
+      if (
+        retryCount < 3 &&
+        (errorMessage.includes('Failed to fetch') || errorMessage.includes('network'))
+      ) {
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+        setTimeout(() => fetchProjectsAndTasks(retryCount + 1), delay);
+        return;
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -196,6 +215,7 @@ export const useProjects = () => {
     projects,
     tasks,
     loading,
+    error,
     getTasksByProjectId,
     addTask,
     updateTask,
@@ -205,5 +225,6 @@ export const useProjects = () => {
     addProject,
     updateProject,
     deleteProject,
+    refetch: fetchProjectsAndTasks,
   };
 };

@@ -28,10 +28,7 @@ describe('FilterSection', () => {
       month: 1,
       year: 2024,
     },
-    plantUnits: [
-      { id: '1', unit: 'Cement Mill 1', category: 'Cement Mill', description: '' },
-      { id: '2', unit: 'Packing Plant A', category: 'Packing Plant', description: '' },
-    ],
+    plantUnits: [{ id: '1', unit: 'Cement Mill 1', category: 'Cement Mill', description: '' }],
     onFilterChange: jest.fn(),
   };
   beforeEach(() => {

@@ -7,7 +7,7 @@ interface CcrDowntimeDataTableProps {
   downtimeData: CcrDowntimeData[];
   handleDowntimeChange: (
     downtimeId: string,
-    field: 'start_time' | 'end_time' | 'problem',
+    field: 'start_time' | 'end_time' | 'problem' | 'action',
     value: string
   ) => void;
   handleAddDowntime: () => void;
@@ -61,6 +61,9 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
                   {t.reason}
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-r">
+                  {t.action}
+                </th>
                 <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   {t.actions}
                 </th>
@@ -69,7 +72,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
             <tbody className="bg-white divide-y divide-slate-200">
               {downtimeData.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-10 text-slate-500 dark:text-slate-400">
+                  <td colSpan={6} className="text-center py-10 text-slate-500 dark:text-slate-400">
                     {t.no_downtime_data}
                   </td>
                 </tr>
@@ -121,6 +124,18 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
                           className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
                           placeholder={t.enter_reason}
                           aria-label={`Problem for downtime ${index + 1}`}
+                        />
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm border-r">
+                        <input
+                          type="text"
+                          value={downtime.action || ''}
+                          onChange={(e) =>
+                            handleDowntimeChange(downtime.id, 'action', e.target.value)
+                          }
+                          className="w-full px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
+                          placeholder={t.enter_action || 'Enter action'}
+                          aria-label={`Action for downtime ${index + 1}`}
                         />
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-center">

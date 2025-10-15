@@ -1,4 +1,4 @@
-import { GenerateGroupReportUseCase } from '../domain/use-cases/whatsapp-report';
+import { GenerateGroupReportUseCase } from './whatsapp-report';
 
 // Mock repositories
 const mockMessageRepo = {

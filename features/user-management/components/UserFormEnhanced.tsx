@@ -57,7 +57,6 @@ const UserForm: React.FC<UserFormProps> = ({
   const [userPermissions, setUserPermissions] = useState<PermissionMatrix>({
     dashboard: 'NONE',
     plant_operations: {},
-    packing_plant: 'NONE',
     inspection: 'NONE',
     project_management: 'NONE',
     system_settings: 'NONE',
@@ -117,7 +116,6 @@ const UserForm: React.FC<UserFormProps> = ({
       const matrix: PermissionMatrix = {
         dashboard: 'NONE',
         plant_operations: {},
-        packing_plant: 'NONE',
         inspection: 'NONE',
         project_management: 'NONE',
         system_settings: 'NONE',
@@ -142,9 +140,6 @@ const UserForm: React.FC<UserFormProps> = ({
                   matrix.plant_operations[unit.category][unit.unit] = level;
                 });
               }
-              break;
-            case 'packing_plant':
-              matrix.packing_plant = level;
               break;
             case 'project_management':
               matrix.project_management = level;
@@ -182,7 +177,6 @@ const UserForm: React.FC<UserFormProps> = ({
       setUserPermissions({
         dashboard: 'NONE',
         plant_operations: {},
-        packing_plant: 'NONE',
         inspection: 'NONE',
         project_management: 'NONE',
         system_settings: 'NONE',
@@ -440,7 +434,6 @@ const UserForm: React.FC<UserFormProps> = ({
       // Handle simple permissions
       const simplePermissions = [
         { module: 'dashboard', level: userPermissions.dashboard },
-        { module: 'packing_plant', level: userPermissions.packing_plant },
         { module: 'project_management', level: userPermissions.project_management },
         { module: 'system_settings', level: userPermissions.system_settings },
         { module: 'user_management', level: userPermissions.user_management },

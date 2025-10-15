@@ -4,7 +4,7 @@ import '@testing-library/jest-dom';
 import UserPermissionManager from '../features/user-management/components/UserPermissionManager';
 
 // Mock Supabase
-jest.mock('../utils/supabase', () => ({
+jest.mock('../../utils/supabaseClient', () => ({
   supabase: {
     from: jest.fn(() => ({
       delete: jest.fn(() => ({
@@ -28,7 +28,7 @@ jest.mock('../utils/supabase', () => ({
 }));
 
 // Mock translations
-jest.mock('../translations', () => ({
+jest.mock('../../translations', () => ({
   t: {
     user_management: 'User Management',
     permissions: 'Permissions',

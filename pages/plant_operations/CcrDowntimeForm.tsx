@@ -32,6 +32,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
     unit: plantUnits[0] || '',
     pic: picSettings[0]?.pic || '',
     problem: '',
+    action: '',
   }));
 
   // Effect for editing mode - only reset when recordToEdit changes
@@ -43,6 +44,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         unit: recordToEdit.unit,
         pic: recordToEdit.pic,
         problem: recordToEdit.problem,
+        action: recordToEdit.action || '',
       });
       hasSetDefaults.current = true; // Mark as set for editing mode
     }
@@ -242,6 +244,19 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
             onChange={handleChange}
             rows={3}
             required
+            className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label htmlFor="action" className="block text-sm font-medium text-slate-700">
+            {t.action}
+          </label>
+          <textarea
+            name="action"
+            id="action"
+            value={formData.action}
+            onChange={handleChange}
+            rows={3}
             className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
           />
         </div>

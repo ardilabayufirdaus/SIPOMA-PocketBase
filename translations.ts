@@ -102,7 +102,6 @@ export const translations = {
     stat_active_projects: 'Active Projects',
     dashboard_quick_links_title: 'Quick Links',
     link_plant_dashboard: 'View Plant Dashboard',
-    link_packing_data_entry: 'Stock Data Entry',
     link_project_board: 'Open Project Board',
 
     // Settings Page
@@ -696,7 +695,6 @@ export const translations = {
     stat_active_projects: 'Proyek Aktif',
     dashboard_quick_links_title: 'Tautan Cepat',
     link_plant_dashboard: 'Lihat Dasbor Pabrik',
-    link_packing_data_entry: 'Entri Data Stok',
     link_project_board: 'Buka Papan Proyek',
 
     // Settings Page
@@ -1027,115 +1025,6 @@ export const translations = {
     add_risk_button: 'Tambah Risiko',
     edit_risk_title: 'Ubah Risiko',
     add_risk_title: 'Tambah Risiko Baru',
-
-    // Packing Plant Dropdown
-    pack_stock_forecast: 'Prognosa Stok',
-    pack_logistics_performance: 'Kinerja Logistik',
-    pack_packer_performance: 'Kinerja Packer',
-    pack_distributor_warehouse: 'Gudang Distributor',
-    pack_stock_data_entry: 'Entri Data Stok',
-    pack_master_data: 'Data Master',
-
-    // Packing Plant Logistics Performance
-    pack_logistics_performance_title: 'Kinerja Logistik',
-    turnover_rate: 'Tingkat Perputaran Silo',
-    silo_utilization: 'Utilisasi Silo',
-    over_slot_frequency: 'Frekuensi Over Slot',
-    total_stock_out: 'Total Stok Keluar',
-    total_silo_capacity: 'Total Kapasitas Silo',
-    total_dead_stock: 'Total Dead Stock',
-    total_live_stock_capacity: 'Total Kapasitas Live Stock',
-    avg_daily_stock: 'Rata-rata Stok Harian',
-    daily_stock_out_chart: 'Grafik Stok Keluar Harian',
-    detailed_stock_out_table: 'Rincian Stok Keluar',
-    all_areas: 'Semua Area',
-    times_unit: 'kali',
-    ton_unit: 'Ton',
-
-    // Packing Plant Stock Forecast
-    pack_stock_forecast_title: 'Prognosa Stok',
-    forecast_current_stock: 'Stok Akhir Terkini',
-    forecast_avg_daily_out: 'Rata-rata Stok Keluar Harian',
-    forecast_days_until_empty: 'Estimasi Hari Sampai Stok Habis',
-    forecast_stock_projection_chart: 'Grafik Proyeksi Stok',
-    forecast_this_month_projection_table: 'Rincian Proyeksi Bulan Ini',
-    forecast_projected_date: 'Tanggal Proyeksi',
-    forecast_projected_stock_out: 'Proyeksi Stok Keluar',
-    forecast_actual_stock_out: 'Aktual Stok Keluar',
-    forecast_projected_closing_stock: 'Proyeksi Stok Akhir',
-    forecast_actual_closing_stock: 'Aktual Stok Akhir',
-    forecast_stdev: 'StDev',
-    forecast_no_data: 'Data tidak cukup untuk membuat perkiraan untuk area ini.',
-    historical_data: 'Data Historis',
-    projected_data: 'Data Proyeksi',
-    legend_actual_stock: 'Stok Aktual',
-    legend_projected_stock: 'Stok Proyeksi',
-    legend_actual_stock_out: 'Stok Keluar Aktual',
-    legend_projected_stock_out: 'Stok Keluar Proyeksi',
-
-    // Packing Plant Master Data CRUD
-    add_data_button: 'Tambah Data',
-    edit_master_data_title: 'Ubah Data Master',
-    add_master_data_title: 'Tambah Data Master Baru',
-    delete_confirmation_title: 'Hapus Catatan',
-    delete_confirmation_message:
-      'Apakah Anda yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.',
-    confirm_delete_button: 'Hapus',
-    // Table Headers
-    area: 'Area',
-    plant_code: 'Kode Plant',
-    silo_capacity: 'Kapasitas Silo (Ton)',
-    dead_stock: 'Dead Stock (Ton)',
-    live_stock: 'Live Stock (Ton)',
-    cement_type: 'Tipe Semen',
-    // Form Labels
-    area_label: 'Area',
-    plant_code_label: 'Kode Plant',
-    silo_capacity_label: 'Kapasitas Silo (Ton)',
-    dead_stock_label: 'Dead Stock (Ton)',
-    cement_type_label: 'Tipe Semen',
-
-    // Packing Plant Stock Data Entry
-    pack_stock_data_entry_title: 'Entri Data Stok',
-    edit_stock_data_title: 'Ubah Data Stok',
-    add_stock_data_title: 'Tambah Data Stok Baru',
-    filter_by_area: 'Filter berdasarkan Area',
-    filter_by_month: 'Bulan',
-    filter_by_year: 'Tahun',
-    export_excel: 'Ekspor ke Excel',
-    import_excel: 'Impor dari Excel',
-    confirm_import_title: 'Konfirmasi Impor',
-    confirm_import_message:
-      'Ini akan mengganti SEMUA tugas yang ada untuk proyek ini. Apakah Anda yakin ingin melanjutkan?',
-    tasks_to_import: 'Tugas yang akan diimpor',
-    confirm_import_button: 'Impor & Ganti',
-    supported_date_formats:
-      'Format tanggal yang didukung: dd/mm/yyyy, dd-mm-yyyy, mm/dd/yyyy, yyyy-mm-dd, angka tanggal Excel',
-    import_columns_info:
-      'Kolom wajib: Aktivitas, Rencana Mulai, Rencana Selesai. Opsional: Aktual Mulai, Aktual Selesai, Persen Selesai',
-    // Table Headers
-    date: 'Tanggal',
-    opening_stock: 'Stok Awal',
-    stock_received: 'Stok Diterima',
-    stock_out: 'Stok Keluar',
-    closing_stock: 'Stok Akhir',
-    // Form Labels
-    date_label: 'Tanggal',
-    stock_out_label: 'Stok Keluar (Ton)',
-    closing_stock_label: 'Stok Akhir (Ton)',
-    // Months
-    month_jan: 'Januari',
-    month_feb: 'Februari',
-    month_mar: 'Maret',
-    month_apr: 'April',
-    month_may: 'Mei',
-    month_jun: 'Juni',
-    month_jul: 'Juli',
-    month_aug: 'Agustus',
-    month_sep: 'September',
-    month_oct: 'Oktober',
-    month_nov: 'November',
-    month_dec: 'Desember',
 
     // Project Management
     proj_dashboard: 'Dasbor',

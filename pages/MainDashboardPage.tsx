@@ -189,7 +189,13 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
 
   // Hooks for data
-  const { projects, tasks, loading: projectsLoading } = useProjects();
+  const {
+    projects,
+    tasks,
+    loading: projectsLoading,
+    error: projectsError,
+    refetch: refetchProjects,
+  } = useProjects();
   const { loading: plantLoading } = usePlantData();
   const { totalProduction, loading: totalProductionLoading } = useTotalProduction();
 
@@ -230,8 +236,33 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
   const activeProjects = projects.filter((p) => p.status === 'active').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="max-w-screen-xl mx-auto p-2 space-y-4">
+        {/* Error Handling */}
+        {projectsError && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <AlertTriangleIcon className="w-5 h-5 text-red-500" />
+                <div>
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Error Loading Projects
+                  </h3>
+                  <p className="text-sm text-red-600 dark:text-red-300 mt-1">{projectsError}</p>
+                </div>
+              </div>
+              <EnhancedButton
+                variant="outline"
+                size="sm"
+                onClick={() => refetchProjects()}
+                className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/20"
+              >
+                Retry
+              </EnhancedButton>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <DashboardHeader />
 

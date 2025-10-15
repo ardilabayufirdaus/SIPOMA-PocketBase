@@ -78,7 +78,14 @@ function testStockPrediction() {
 
     // Test 4: Critical stock detection
     const criticalStockFound = result.criticalStockDate !== null;
-      `Critical stock detection: ${criticalStockFound ? '✅ Working' : '❌ Not triggered'}`
+    console.log(`Critical stock detection: ${criticalStockFound ? '✅ Working' : '❌ Not triggered'}`);
+
+    if (criticalStockFound) {
+      const criticalDate = new Date(result.criticalStockDate!);
+      const today = new Date();
+      const daysUntilCritical = Math.ceil(
+        (criticalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
     );
 
     if (criticalStockFound) {

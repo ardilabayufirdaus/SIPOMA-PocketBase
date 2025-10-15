@@ -505,7 +505,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   }, [showReorderModal, filteredParameterSettings]);
 
   // Parameter reorder handlers - optimized for performance with debouncing
-  const reorderTimeoutRef = useRef<NodeJS.Timeout>();
+  const reorderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const moveParameterUp = useCallback((index: number) => {
     if (reorderTimeoutRef.current) return; // Prevent rapid clicks
 
@@ -865,13 +865,15 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   const dailyDowntimeData = useMemo(() => {
     const allDowntimeForDate = getDowntimeForDate(selectedDate);
     if (!selectedCategory) {
-      return allDowntimeForDate;
+      return allDowntimeForDate.sort((a, b) => a.start_time.localeCompare(b.start_time));
     }
-    return allDowntimeForDate.filter((downtime) => {
-      const categoryMatch = unitToCategoryMap.get(downtime.unit) === selectedCategory;
-      const unitMatch = !selectedUnit || downtime.unit === selectedUnit;
-      return categoryMatch && unitMatch;
-    });
+    return allDowntimeForDate
+      .filter((downtime) => {
+        const categoryMatch = unitToCategoryMap.get(downtime.unit) === selectedCategory;
+        const unitMatch = !selectedUnit || downtime.unit === selectedUnit;
+        return categoryMatch && unitMatch;
+      })
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
   }, [getDowntimeForDate, selectedDate, selectedCategory, selectedUnit, unitToCategoryMap]);
 
   const [isDowntimeModalOpen, setDowntimeModalOpen] = useState(false);
@@ -889,6 +891,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     isSaving: isSavingInformation,
   } = useCcrInformationData();
   const [informationText, setInformationText] = useState('');
+  const [hasUnsavedInformationChanges, setHasUnsavedInformationChanges] = useState(false);
 
   const formatStatValue = (value: number | undefined, precision = 1) => {
     if (value === undefined || value === null) return '-';
@@ -993,6 +996,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     if (selectedDate && selectedUnit) {
       const existingInfo = getInformationForDate(selectedDate, selectedUnit);
       setInformationText(existingInfo?.information || '');
+      setHasUnsavedInformationChanges(false);
     }
   }, [selectedDate, selectedUnit, getInformationForDate]);
 
@@ -1112,26 +1116,36 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
     setDeletingRecord(null);
   };
 
-  // Information change handler with debounced save
-  const handleInformationChange = useCallback(
-    (value: string) => {
-      setInformationText(value);
+  // Information change handler - local state update only
+  const handleInformationChange = useCallback((value: string) => {
+    setInformationText(value);
+    setHasUnsavedInformationChanges(true);
+  }, []);
 
-      // Debounced save to Supabase
-      const timeoutId = setTimeout(() => {
-        if (selectedDate && selectedUnit) {
-          saveInformation({
-            date: selectedDate,
-            plantUnit: selectedUnit,
-            information: value,
-          });
-        }
-      }, 3500); // 3.5 second debounce
+  // Manual save handler for Information
+  const handleSaveInformation = useCallback(async () => {
+    if (!selectedDate || !selectedUnit || isSavingInformation) return;
 
-      return () => clearTimeout(timeoutId);
-    },
-    [selectedDate, selectedUnit, saveInformation]
-  );
+    try {
+      await saveInformation({
+        date: selectedDate,
+        plantUnit: selectedUnit,
+        information: informationText,
+      });
+      setHasUnsavedInformationChanges(false);
+      showToast('Informasi berhasil disimpan');
+    } catch (error) {
+      console.error('Failed to save information:', error);
+      showToast('Gagal menyimpan informasi');
+    }
+  }, [
+    selectedDate,
+    selectedUnit,
+    informationText,
+    saveInformation,
+    isSavingInformation,
+    showToast,
+  ]);
 
   // Export to Excel functionality
   const handleExport = async () => {
@@ -2723,6 +2737,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                     {t.problem}
                   </th>
+                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                    {t.action}
+                  </th>
                   <th className="relative px-4 py-3 border-b border-orange-400/30">
                     <span className="sr-only">{t.actions}</span>
                   </th>
@@ -2732,7 +2749,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 {loading ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="text-center py-12 text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex items-center justify-center space-x-2">
@@ -2768,6 +2785,9 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                       <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
                         {downtime.problem}
                       </td>
+                      <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                        {downtime.action || '-'}
+                      </td>
                       <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <EnhancedButton
@@ -2795,7 +2815,7 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 ) : (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="text-center py-12 text-slate-500 dark:text-slate-400"
                     >
                       <div className="flex items-center justify-center space-x-3">
@@ -2864,17 +2884,26 @@ const CcrDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 onChange={(e) => handleInformationChange(e.target.value)}
                 className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical transition-all duration-200 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm"
                 placeholder={t.information_placeholder}
-                disabled={isSavingInformation}
               />
-              {isSavingInformation && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl">
-                  <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
-                    <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-medium">Menyimpan...</span>
-                  </div>
-                </div>
-              )}
             </div>
+            {hasUnsavedInformationChanges && (
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSaveInformation}
+                  disabled={isSavingInformation || !selectedDate || !selectedUnit}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center space-x-2"
+                >
+                  {isSavingInformation ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <span>Simpan Informasi</span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

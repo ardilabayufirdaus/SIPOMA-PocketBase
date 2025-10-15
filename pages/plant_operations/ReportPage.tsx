@@ -211,9 +211,14 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const ccrDataMap = new Map(ccrDataForDate.map((d) => [d.parameter_id, d]));
 
       const downtimeDataForDate = getDowntimeForDate(selectedDate);
+      // Helper function to convert HH:MM to total minutes for proper sorting
+      const timeToMinutes = (timeStr: string): number => {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
       const filteredDowntimeData = downtimeDataForDate
         .filter((d) => d.unit === selectedUnit)
-        .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+        .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
 
       // FIX: await async data fetching functions
       const allSiloDataForDate = await getSiloDataForDate(selectedDate);
