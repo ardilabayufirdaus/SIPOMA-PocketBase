@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 import { useCcrParameterData } from '../../hooks/useCcrParameterData';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { useCcrSiloData } from '../../hooks/useCcrSiloData';
@@ -55,10 +56,10 @@ const calculateTextMode = (
 };
 
 interface WhatsAppGroupReportPageProps {
-  t: Record<string, string>;
+  // t prop removed, using useTranslation hook instead
 }
 
-const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) => {
+const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedPlantCategory, setSelectedPlantCategory] = useState<string>('Cement Mill');
   const [selectedPlantUnits, setSelectedPlantUnits] = useState<string[]>(['220', '320']);
@@ -72,6 +73,19 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
   const reportCache = useMemo(() => new Map<string, string>(), []);
 
   const { user } = useAuth();
+  const { t } = useTranslation();
+
+  // Helper function to replace placeholders in translation strings
+  const translateWithVars = useCallback(
+    (key: string, vars: Record<string, string | number>) => {
+      let text = t[key] || key;
+      Object.entries(vars).forEach(([placeholder, value]) => {
+        text = text.replace(new RegExp(`\\$\\{${placeholder}\\}`, 'g'), String(value));
+      });
+      return text;
+    },
+    [t]
+  );
 
   const { getDataForDate: getParameterData } = useCcrParameterData();
   const { getFooterDataForDate } = useCcrFooterData();
@@ -266,10 +280,10 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         year: 'numeric',
       });
 
-      let report = `📊 *LAPORAN HARIAN PRODUKSI* 📊\n`;
-      report += `🏭 *${selectedPlantCategory}*\n`;
-      report += `📅 ${formattedDate}\n`;
-      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      let report = translateWithVars('wag_daily_report_title', {}) + '\n';
+      report += translateWithVars('wag_plant_category', { category: selectedPlantCategory }) + '\n';
+      report += translateWithVars('wag_date', { date: formattedDate }) + '\n';
+      report += t.wag_separator + '\n\n';
 
       // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
@@ -320,14 +334,29 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       totalDowntimeHours = calculateTotalDowntime(allDowntimeNotes);
 
       // Summary Header
-      report += `📈 *RINGKASAN HARIAN*\n`;
-      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
-      report += `├─ Total Unit Aktif: ${unitCount}\n`;
-      report += `├─ Total Produksi: ${formatIndonesianNumber(totalProductionAll, 1)} ton\n`;
-      report += `├─ Rata-rata Feed: ${formatIndonesianNumber(totalHoursAll > 0 ? totalProductionAll / totalHoursAll : 0, 1)} tph\n`;
-      report += `├─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
-      report += `└─ Total Downtime: ${formatIndonesianNumber(totalDowntimeHours, 1)} jam\n`;
-      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      report += t.wag_daily_summary + '\n';
+      report += t.wag_separator + '\n';
+      report += translateWithVars('wag_total_active_units', { count: unitCount }) + '\n';
+      report +=
+        translateWithVars('wag_total_production', {
+          value: formatIndonesianNumber(totalProductionAll, 1),
+        }) + '\n';
+      report +=
+        translateWithVars('wag_average_feed', {
+          value: formatIndonesianNumber(
+            totalHoursAll > 0 ? totalProductionAll / totalHoursAll : 0,
+            1
+          ),
+        }) + '\n';
+      report +=
+        translateWithVars('wag_total_operating_hours', {
+          value: formatIndonesianNumber(totalHoursAll, 1),
+        }) + '\n';
+      report +=
+        translateWithVars('wag_total_downtime', {
+          value: formatIndonesianNumber(totalDowntimeHours, 1),
+        }) + '\n';
+      report += t.wag_separator + '\n\n';
 
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
@@ -338,8 +367,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
 
         const { parameterData: allParameterData } = unitData;
 
-        report += `🏭 *UNIT MILL ${unit}*\n`;
-        report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+        report += translateWithVars('wag_unit_mill', { unit }) + '\n';
+        report += t.wag_separator + '\n';
 
         // Get values from footer data (footer data is stored per category)
         // Filter footer data for parameters that belong to this unit
@@ -404,13 +433,22 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         const statusEmoji = efficiency >= 95 ? '🟢' : efficiency >= 85 ? '🟡' : '🔴';
         const calculatedFeedRate = runningHoursAvg > 0 ? totalProduction / runningHoursAvg : 0;
 
-        report += `📈 *PRODUKSI HARIAN* ${statusEmoji}\n`;
-        report += `├─ Tipe Produk: ${productType}\n`;
-        report += `├─ Feed Rate: ${formatIndonesianNumber(calculatedFeedRate, 2)} tph\n`;
-        report += `├─ Jam Operasi: ${formatIndonesianNumber(runningHoursAvg, 2)} jam\n`;
-        report += `└─ Total Produksi: ${formatIndonesianNumber(totalProduction, 2)} ton\n\n`;
+        report += translateWithVars('wag_daily_production', { status: statusEmoji }) + '\n';
+        report += translateWithVars('wag_product_type', { type: productType }) + '\n';
+        report +=
+          translateWithVars('wag_feed_rate', {
+            value: formatIndonesianNumber(calculatedFeedRate, 2),
+          }) + '\n';
+        report +=
+          translateWithVars('wag_operating_hours', {
+            value: formatIndonesianNumber(runningHoursAvg, 2),
+          }) + '\n';
+        report +=
+          translateWithVars('wag_total_production_unit', {
+            value: formatIndonesianNumber(totalProduction, 2),
+          }) + '\n\n';
 
-        report += `*KUALITAS*\n`;
+        report += t.wag_quality + '\n';
         const qualityParams = [
           { name: 'Blaine', param: 'blaine', unit: 'm²/kg' },
           { name: 'R45', param: 'r45', unit: '%' },
@@ -432,7 +470,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
         report += `\n`;
 
         // Pemakaian Bahan
-        report += `*PEMAKAIAN BAHAN*\n`;
+        report += t.wag_material_usage + '\n';
         const bahanParams = [
           { name: 'Clinker', param: 'counter feeder clinker' },
           { name: 'Gypsum', param: 'counter feeder gypsum' },
@@ -524,8 +562,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       }
 
       // Silo Data - status akhir hari (shift 3)
-      report += `🏪 *STATUS SILO SEMEN*\n`;
-      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
+      report += t.wag_silo_status + '\n';
+      report += t.wag_separator + '\n';
       const filteredSiloData = siloData.filter((silo) => {
         const siloInfo = silos.find((s) => s.id === silo.silo_id);
         return siloInfo && siloInfo.plant_category === selectedPlantCategory;
@@ -546,18 +584,18 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `└─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m | 📦 Content: ${shift3Data.content || 'N/A'} ton | Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 ${t.wag_silo_empty}: ${shift3Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift3Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-      report += `✅ *Demikian laporan harian ini. Terima kasih.*\n\n`;
-      report += `🔧 *SIPOMA - Production Monitoring System*\n`;
+      report += t.wag_closing_statement + '\n\n';
+      report += t.wag_system_signature + '\n';
 
       return report;
     } catch (error) {
       console.error('Error generating daily report:', error);
-      return `*Laporan Harian Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
+      return t.wag_error_generating_report;
     } finally {
       setIsGenerating(false);
     }
@@ -570,6 +608,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
     getSiloData,
     getDowntimeForDate,
     parameterSettings,
+    translateWithVars,
+    t,
   ]);
 
   // Generate Shift 1 Report sesuai format yang diminta (jam 07-15)
@@ -608,11 +648,11 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       const allParameterData = unitDataArray.flatMap(({ parameterData }) => parameterData);
       const operatorName = getOperatorName(allParameterData);
 
-      let report = `🌅 *LAPORAN SHIFT 1 PRODUKSI* 🌅\n`;
-      report += `🏭 *${selectedPlantCategory}*\n`;
-      report += `📅 ${formattedDate}\n`;
-      report += `⏰ Shift: 07:00 - 15:00\n`;
-      report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      let report = t.wag_shift1_report_title + '\n';
+      report += translateWithVars('wag_plant_category', { category: selectedPlantCategory }) + '\n';
+      report += translateWithVars('wag_date', { date: formattedDate }) + '\n';
+      report += '⏰ Shift: 07:00 - 15:00\n';
+      report += t.wag_separator + '\n\n';
 
       // Plant Units - use selected units
       const plantUnitsFiltered = selectedPlantUnits;
@@ -658,10 +698,13 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
       }
 
       // Summary Header
-      report += `📊 *RINGKASAN SHIFT 1*\n`;
-      report += `━━━━━━━━━━━━━━━━━━━━━\n`;
-      report += `├─ Total Unit Aktif: ${unitCount}\n`;
-      report += `├─ Total Produksi: ${formatIndonesianNumber(totalProductionAll, 1)} ton\n`;
+      report += t.wag_shift1_summary + '\n';
+      report += t.wag_separator + '\n';
+      report += translateWithVars('wag_total_active_units', { count: unitCount }) + '\n';
+      report +=
+        translateWithVars('wag_total_production', {
+          value: formatIndonesianNumber(totalProductionAll, 1),
+        }) + '\n';
       report += `├─ Rata-rata Feed: ${formatIndonesianNumber(totalHoursAll > 0 ? totalProductionAll / totalHoursAll : 0, 1)} tph\n`;
       report += `└─ Total Jam Operasi: ${formatIndonesianNumber(totalHoursAll, 1)} jam\n`;
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -885,7 +928,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `└─ 📏 Empty: ${shift1Data.emptySpace || 'N/A'} m | 📦 Content: ${shift1Data.content || 'N/A'} ton | 📊 Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 ${t.wag_silo_empty}: ${shift1Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift1Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -912,6 +955,8 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
     getDowntimeForDate,
     parameterSettings,
     silos,
+    translateWithVars,
+    t,
   ]);
 
   // Generate Shift 2 Report sesuai format yang diminta (jam 15-23)
@@ -1227,7 +1272,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `└─ 📏 Empty: ${shift2Data.emptySpace || 'N/A'} m | 📦 Content: ${shift2Data.content || 'N/A'} ton | 📊 Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 ${t.wag_silo_empty}: ${shift2Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift2Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -1638,7 +1683,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                 ? '🟡'
                 : '🔴';
           report += `├─ ${siloName}\n`;
-          report += `└─ 📏 Empty: ${shift3Data.emptySpace || 'N/A'} m | 📦 Content: ${shift3Data.content || 'N/A'} ton | 📊 Fill: ${percentage}% ${statusEmoji}\n`;
+          report += `└─ 📏 ${t.wag_silo_empty}: ${shift3Data.emptySpace || 'N/A'} m | 📦 ${t.wag_silo_content}: ${shift3Data.content || 'N/A'} ton | ${t.wag_silo_fill}: ${percentage}% ${statusEmoji}\n`;
         }
       });
       report += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -2250,7 +2295,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                     </p>
                     {reportGenerated && (
                       <div className="flex items-center mt-2 text-green-200 animate-pulse">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
                           <path
                             fillRule="evenodd"
                             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -2297,7 +2342,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = ({ t }) 
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v-2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                       />
                     </svg>
                   }
