@@ -158,56 +158,58 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
           Data Summary & Statistics
         </h4>
       </div>
-      <table
-        className="ccr-table text-xs bg-white/20 backdrop-blur-md rounded-lg overflow-hidden shadow-inner border border-white/30"
-        style={{ marginBottom: 0 }}
-      >
-        <colgroup>
-          <col style={{ width: '90px' }} />
-          <col style={{ width: '140px' }} />
-          <col style={{ width: '200px' }} />
-          {filteredParameterSettings.map((_, index) => (
-            <col key={index} style={{ width: '100px' }} />
-          ))}
-        </colgroup>
-        <tbody role="rowgroup">
-          {footerRows.map((row, rowIndex) => (
-            <tr
-              key={rowIndex}
-              className={`${row.className || ''} border-b border-white/30 last:border-b-0`}
-              role="row"
-            >
-              <td
-                colSpan={3}
-                className="px-4 py-3 text-right font-bold text-slate-900 bg-white/95 backdrop-blur-sm border-r border-white/40 sticky left-0 z-30 shadow-lg"
-                role="columnheader"
+      <div className="ccr-footer-scroll-wrapper" ref={footerRef}>
+        <table
+          className="ccr-table text-xs bg-white/20 backdrop-blur-md rounded-lg overflow-hidden shadow-inner border border-white/30"
+          style={{ marginBottom: 0 }}
+        >
+          <colgroup>
+            <col style={{ width: '90px' }} />
+            <col style={{ width: '140px' }} />
+            <col style={{ width: '200px' }} />
+            {filteredParameterSettings.map((_, index) => (
+              <col key={index} style={{ width: '100px' }} />
+            ))}
+          </colgroup>
+          <tbody role="rowgroup">
+            {footerRows.map((row, rowIndex) => (
+              <tr
+                key={rowIndex}
+                className={`${row.className || ''} border-b border-white/30 last:border-b-0`}
+                role="row"
               >
-                {row.label}
-              </td>
-              {filteredParameterSettings.map((param) => {
-                let value;
-                if (row.dataKey) {
-                  const stats = row.data[param.id];
-                  value = stats ? stats[row.dataKey] : undefined;
-                } else {
-                  value = row.data[param.id];
-                }
+                <td
+                  colSpan={3}
+                  className="px-4 py-3 text-right font-bold text-slate-900 bg-white/95 backdrop-blur-sm border-r border-white/40 sticky left-0 z-30 shadow-lg"
+                  role="columnheader"
+                >
+                  {row.label}
+                </td>
+                {filteredParameterSettings.map((param) => {
+                  let value;
+                  if (row.dataKey) {
+                    const stats = row.data[param.id];
+                    value = stats ? stats[row.dataKey] : undefined;
+                  } else {
+                    value = row.data[param.id];
+                  }
 
-                return (
-                  <td
-                    key={param.id}
-                    className={`px-4 py-3 text-center font-bold border-r border-white/30 transition-all duration-200 backdrop-blur-sm ${getCellStyling(rowIndex)}`}
-                    style={{ width: '160px', minWidth: '160px' }}
-                    role="gridcell"
-                  >
-                    {value !== undefined ? formatStatValue(value) : '-'}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  return (
+                    <td
+                      key={param.id}
+                      className={`px-4 py-3 text-center font-bold border-r border-white/30 transition-all duration-200 backdrop-blur-sm ${getCellStyling(rowIndex)}`}
+                      style={{ width: '160px', minWidth: '160px' }}
+                      role="gridcell"
+                    >
+                      {value !== undefined ? formatStatValue(value) : '-'}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

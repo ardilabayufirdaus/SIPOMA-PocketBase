@@ -166,6 +166,18 @@ html {
   padding-bottom: 0;
 }
 
+/* Footer scroll wrapper for horizontal synchronization */
+.ccr-footer-scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.ccr-footer-scroll-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
 /* Footer should be outside scrollable area */
 .ccr-table-footer-container {
   flex-shrink: 0;
