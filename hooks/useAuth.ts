@@ -37,9 +37,12 @@ export const useAuth = () => {
 
         return permissionMatrix;
       } catch (error: any) {
-        if (attempt < maxRetries - 1 && (error.message?.includes('fetch') || error.message?.includes('network'))) {
+        if (
+          attempt < maxRetries - 1 &&
+          (error.message?.includes('fetch') || error.message?.includes('network'))
+        ) {
           console.warn(`Network error loading permissions on attempt ${attempt + 1}, retrying...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
           continue;
         }
         console.warn('Failed to load user permissions:', error);
@@ -96,9 +99,12 @@ export const useAuth = () => {
             break; // Success, exit retry loop
           } catch (networkError: any) {
             error = networkError;
-            if (attempt < maxRetries - 1 && (error.message?.includes('fetch') || error.message?.includes('network'))) {
+            if (
+              attempt < maxRetries - 1 &&
+              (error.message?.includes('fetch') || error.message?.includes('network'))
+            ) {
               console.warn(`Network error on attempt ${attempt + 1}, retrying...`);
-              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
+              await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
               continue;
             }
             break; // Max retries or non-network error
@@ -163,9 +169,12 @@ export const useAuth = () => {
             if (!updateError) break;
           } catch (networkError: any) {
             updateError = networkError;
-            if (attempt < maxRetries - 1 && (updateError.message?.includes('fetch') || updateError.message?.includes('network'))) {
+            if (
+              attempt < maxRetries - 1 &&
+              (updateError.message?.includes('fetch') || updateError.message?.includes('network'))
+            ) {
               console.warn(`Network error on update attempt ${attempt + 1}, retrying...`);
-              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+              await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
               continue;
             }
             break;
@@ -189,8 +198,13 @@ export const useAuth = () => {
         // Provide user-friendly error messages
         let errorMessage = 'Error logging in';
         if (error instanceof Error) {
-          if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('connection')) {
-            errorMessage = 'Network connection error. Please check your internet connection and try again.';
+          if (
+            error.message.includes('fetch') ||
+            error.message.includes('network') ||
+            error.message.includes('connection')
+          ) {
+            errorMessage =
+              'Network connection error. Please check your internet connection and try again.';
           } else if (error.message.includes('Invalid username or password')) {
             errorMessage = error.message;
           } else {
