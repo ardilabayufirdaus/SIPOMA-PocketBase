@@ -15,29 +15,38 @@ export const useAuth = () => {
 
   // Lazy load user permissions
   const loadUserPermissions = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_permissions')
-        .select(
+    const maxRetries = 3;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const { data, error } = await supabase
+          .from('user_permissions')
+          .select(
+            `
+            permissions (
+              module_name,
+              permission_level,
+              plant_units
+            )
           `
-          permissions (
-            module_name,
-            permission_level,
-            plant_units
           )
-        `
-        )
-        .eq('user_id', userId);
+          .eq('user_id', userId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      const permissionMatrix = buildPermissionMatrix(data || []);
+        const permissionMatrix = buildPermissionMatrix(data || []);
 
-      return permissionMatrix;
-    } catch (error) {
-      console.warn('Failed to load user permissions:', error);
-      return {}; // Return empty permissions on error
+        return permissionMatrix;
+      } catch (error: any) {
+        if (attempt < maxRetries - 1 && (error.message?.includes('fetch') || error.message?.includes('network'))) {
+          console.warn(`Network error loading permissions on attempt ${attempt + 1}, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          continue;
+        }
+        console.warn('Failed to load user permissions:', error);
+        return {}; // Return empty permissions on error
+      }
     }
+    return {};
   }, []);
 
   const login = useCallback(
@@ -58,25 +67,43 @@ export const useAuth = () => {
           return cachedUser;
         }
 
-        // Optimized query: only get basic user data first
-        const { data, error } = await supabase
-          .from('users')
-          .select(
-            `
-            id,
-            username,
-            password_hash,
-            full_name,
-            role,
-            last_active,
-            is_active,
-            avatar_url,
-            created_at
-          `
-          )
-          .eq('username', identifier)
-          .eq('is_active', true)
-          .single();
+        // Retry logic for network errors
+        let data: any = null;
+        let error: any = null;
+        const maxRetries = 3;
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          try {
+            const result = await supabase
+              .from('users')
+              .select(
+                `
+                id,
+                username,
+                password_hash,
+                full_name,
+                role,
+                last_active,
+                is_active,
+                avatar_url,
+                created_at
+              `
+              )
+              .eq('username', identifier)
+              .eq('is_active', true)
+              .single();
+            data = result.data;
+            error = result.error;
+            break; // Success, exit retry loop
+          } catch (networkError: any) {
+            error = networkError;
+            if (attempt < maxRetries - 1 && (error.message?.includes('fetch') || error.message?.includes('network'))) {
+              console.warn(`Network error on attempt ${attempt + 1}, retrying...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
+              continue;
+            }
+            break; // Max retries or non-network error
+          }
+        }
 
         if (error) {
           if (error.code === 'PGRST116') {
@@ -124,11 +151,30 @@ export const useAuth = () => {
           finalUserData.created_at = new Date(finalUserData.created_at);
         }
 
-        // Update last_active
-        await supabase
-          .from('users')
-          .update({ last_active: new Date().toISOString() })
-          .eq('id', finalUserData.id);
+        // Update last_active with retry
+        let updateError: any = null;
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          try {
+            const { error: updateErr } = await supabase
+              .from('users')
+              .update({ last_active: new Date().toISOString() })
+              .eq('id', finalUserData.id);
+            updateError = updateErr;
+            if (!updateError) break;
+          } catch (networkError: any) {
+            updateError = networkError;
+            if (attempt < maxRetries - 1 && (updateError.message?.includes('fetch') || updateError.message?.includes('network'))) {
+              console.warn(`Network error on update attempt ${attempt + 1}, retrying...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+              continue;
+            }
+            break;
+          }
+        }
+        if (updateError) {
+          console.warn('Failed to update last_active:', updateError);
+          // Don't throw, as login was successful
+        }
 
         // Cache the user data
         authCache.setUser(finalUserData as User);
@@ -140,7 +186,18 @@ export const useAuth = () => {
         secureStorage.setItem('currentUser', finalUserData);
         return finalUserData;
       } catch (error) {
-        handleError(error, 'Error logging in');
+        // Provide user-friendly error messages
+        let errorMessage = 'Error logging in';
+        if (error instanceof Error) {
+          if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('connection')) {
+            errorMessage = 'Network connection error. Please check your internet connection and try again.';
+          } else if (error.message.includes('Invalid username or password')) {
+            errorMessage = error.message;
+          } else {
+            errorMessage = 'Login failed. Please try again later.';
+          }
+        }
+        handleError(error, errorMessage);
         return null;
       } finally {
         setLoading(false);
