@@ -223,6 +223,8 @@ export default defineConfig({
       '/api/pb-proxy': {
         target: 'https://api.sipoma.site/',
         changeOrigin: true,
+        secure: true,
+        ws: false,
         rewrite: (path) => path.replace(/^\/api\/pb-proxy/, ''),
         configure: (proxy, options) => {
           // eslint-disable-next-line no-unused-vars
@@ -232,6 +234,13 @@ export default defineConfig({
           });
           // eslint-disable-next-line no-unused-vars
           proxy.on('proxyReq', (proxyReq, req, _res) => {
+            // Ensure proper headers are forwarded
+            if (req.headers['content-type']) {
+              proxyReq.setHeader('Content-Type', req.headers['content-type']);
+            }
+            if (req.headers['authorization']) {
+              proxyReq.setHeader('Authorization', req.headers['authorization']);
+            }
             // eslint-disable-next-line no-console
             console.log(
               'Proxying request:',
@@ -240,6 +249,11 @@ export default defineConfig({
               '->',
               options.target + proxyReq.path
             );
+          });
+          // eslint-disable-next-line no-unused-vars
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            // eslint-disable-next-line no-console
+            console.log('Proxy response:', proxyRes.statusCode, req.url);
           });
         },
       },
