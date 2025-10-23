@@ -43,7 +43,6 @@
   "buildCommand": "npm install @mui/material @emotion/react @emotion/styled && npm run build",
   "version": 2,
   "env": {
-    "VITE_POCKETBASE_URL": "https://141.11.25.69:8090",
-    "VITE_FORCE_PROXY": "true"
+    "VITE_POCKETBASE_URL": "https://141.11.25.69:8090"
   }
 }
