@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ReportSetting } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
 import { CacheKeys } from '../utils/cacheKeys';
 import { safeApiCall } from '../utils/connectionCheck';
@@ -207,3 +207,4 @@ export const useReportSettings = () => {
 
   return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords, updateOrder };
 };
+

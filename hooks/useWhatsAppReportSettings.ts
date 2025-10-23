@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { WhatsAppReportSetting } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 export const useWhatsAppReportSettings = () => {
   const [records, setRecords] = useState<WhatsAppReportSetting[]>([]);
@@ -99,3 +99,4 @@ export const useWhatsAppReportSettings = () => {
     refetch: fetchRecords,
   };
 };
+

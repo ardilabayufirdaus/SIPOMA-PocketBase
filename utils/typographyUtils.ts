@@ -259,3 +259,4 @@ export const validateContrast = (foreground: string, background: string): boolea
   );
 };
 
+

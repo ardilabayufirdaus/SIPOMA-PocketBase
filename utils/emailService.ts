@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 
 export interface EmailData {
   to: string;
@@ -173,3 +173,4 @@ export class EmailService {
 }
 
 export const emailService = EmailService.getInstance();
+

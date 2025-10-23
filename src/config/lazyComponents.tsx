@@ -121,3 +121,4 @@ export const WhatsAppReportsPage = createLazyComponent(
     errorFallback: <DefaultErrorFallback name="WhatsApp Reports" />,
   }
 );
+

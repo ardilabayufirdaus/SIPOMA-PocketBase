@@ -3,7 +3,7 @@ import Modal from './Modal';
 import { User } from '../types';
 import UserIcon from './icons/UserIcon';
 import PhotoIcon from './icons/PhotoIcon';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 // Utility functions for image optimization
 const compressImage = (
@@ -350,3 +350,4 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 };
 
 export default ProfileEditModal;
+

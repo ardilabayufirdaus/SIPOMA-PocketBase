@@ -74,3 +74,4 @@ export const SafeLazy: React.FC<SafeLazyProps> = ({
     <Suspense fallback={fallback}>{children}</Suspense>
   </ErrorBoundary>
 );
+

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { CcrParameterData } from '../types';
 import { useParameterSettings } from './useParameterSettings';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { useEffect, useRef } from 'react';
 import { validateParameterDataFlat } from '../utils/parameterDataValidatorFlat';
 
@@ -711,3 +711,4 @@ export const useCcrParameterDataBackwardCompatible = () => {
     loading: flatHook.loading,
   };
 };
+

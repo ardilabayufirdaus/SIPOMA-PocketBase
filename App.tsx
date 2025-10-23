@@ -409,7 +409,7 @@ const App: React.FC = () => {
             onSave={(updatedUser) => {
               if (currentUser) {
                 // Force a refresh of the auth record to get new avatar
-                import('./utils/pocketbase')
+                import('./utils/pocketbase-simple')
                   .then(({ pb }) => {
                     pb.collection('users').authRefresh();
                   })

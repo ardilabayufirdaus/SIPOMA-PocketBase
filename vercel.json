@@ -1,14 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/pb-proxy",
-      "destination": "/api/pb-proxy.js"
-    },
-    {
-      "source": "/api/pb-proxy/(.*)",
-      "destination": "/api/pb-proxy.js"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
@@ -17,33 +9,9 @@
       "destination": "/index.html"
     }
   ],
-  "headers": [
-    {
-      "source": "/api/pb-proxy(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "X-Requested-With, Content-Type, Accept, Authorization, Content-Length"
-        }
-      ]
-    }
-  ],
   "buildCommand": "npm install @mui/material @emotion/react @emotion/styled && npm run build",
   "version": 2,
   "env": {
-    "VITE_POCKETBASE_URL": "https://141.11.25.69",
-    "VITE_FORCE_PROXY": "true"
+    "VITE_POCKETBASE_URL": "https://api.sipoma.site/"
   }
 }

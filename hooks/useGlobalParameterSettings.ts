@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { useCurrentUser } from './useCurrentUser';
 
 export interface GlobalParameterSettings {
@@ -185,3 +185,4 @@ export const useGlobalParameterSettings = (): UseGlobalParameterSettingsReturn =
     loadSettings,
   };
 };
+

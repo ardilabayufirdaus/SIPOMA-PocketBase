@@ -82,3 +82,4 @@ const WhatsAppReports: React.FC<WhatsAppReportsProps> = ({ groupId = 'default' }
 };
 
 export default WhatsAppReports;
+

@@ -2,7 +2,7 @@
  * Utilitas untuk memeriksa koneksi jaringan dan ketersediaan PocketBase
  */
 
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { logger } from './logger';
 
 // Status koneksi saat ini
@@ -213,3 +213,4 @@ export const safeApiCall = async <T>(
 
   return null;
 };
+

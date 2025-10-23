@@ -218,9 +218,10 @@ export default defineConfig({
   },
   // Development server proxy for API calls
   server: {
+    host: true, // Allow external access
     proxy: {
       '/api/pb-proxy': {
-        target: 'http://141.11.25.69:8090',
+        target: 'https://api.sipoma.site/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/pb-proxy/, ''),
         configure: (proxy, options) => {

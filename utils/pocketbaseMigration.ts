@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 
 /**
  * Update database constraints to support Tonasa roles in PocketBase
@@ -71,3 +71,4 @@ export const getRoleConstraints = async (): Promise<string[]> => {
     return [];
   }
 };
+

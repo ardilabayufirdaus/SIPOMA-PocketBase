@@ -1,4 +1,4 @@
-import { pb, Collections } from '../services/pocketbase';
+import { pb, Collections } from '../utils/pocketbase-simple';
 
 // Tipe untuk collection schema
 interface CollectionSchema {

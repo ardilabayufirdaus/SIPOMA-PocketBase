@@ -9,7 +9,7 @@ import {
   GetGroupReportsUseCase,
   GetGroupAnalyticsUseCase,
 } from '../domain/use-cases/whatsapp-report';
-import { pb } from '../../utils/pocketbase';
+import { pb } from '../../utils/pocketbase-simple';
 
 class DependencyContainer {
   private _groupRepo: PocketBaseWhatsAppGroupRepository;

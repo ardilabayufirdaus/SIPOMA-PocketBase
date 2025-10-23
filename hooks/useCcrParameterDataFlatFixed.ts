@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { CcrParameterData } from '../types';
 import { useParameterSettings } from './useParameterSettings';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';
 
@@ -832,3 +832,4 @@ export const useCcrParameterDataFlat = () => {
 };
 
 export default useCcrParameterDataFlat;
+

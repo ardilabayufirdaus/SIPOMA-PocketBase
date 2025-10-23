@@ -3,7 +3,7 @@ import {
   getDefaultPermissionsFromDB,
   getAllDefaultPermissionsFromDB,
 } from '../services/defaultPermissionsService';
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 
 /**
  * Default permission configurations for Tonasa roles (fallback)
@@ -210,3 +210,4 @@ export const validateTonasaPermissions = (
 
   return hasCorrectUnits;
 };
+

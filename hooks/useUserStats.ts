@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 interface UserStats {
   total: number;
@@ -176,3 +176,4 @@ export const useUserStats = () => {
     refreshStats,
   };
 };
+

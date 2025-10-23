@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 
 // Re-export pb as supabase untuk kompatibilitas dengan kode lama
 export const supabase = pb;
@@ -375,3 +375,4 @@ export const apiClient = {
     },
   },
 };
+

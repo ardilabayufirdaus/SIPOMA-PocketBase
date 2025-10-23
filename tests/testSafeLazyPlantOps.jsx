@@ -55,3 +55,4 @@ function testSafeLazyImport() {
 
 // Export fungsi tes untuk digunakan dari command line atau modul lain
 export { testSafeLazyImport };
+

@@ -37,3 +37,4 @@ export const getLazyChartComponents = async () => {
     Pie: ReactChartJS.Pie,
   };
 };
+

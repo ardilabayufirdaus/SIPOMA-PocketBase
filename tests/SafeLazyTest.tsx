@@ -133,3 +133,4 @@ describe('SafeLazy Component', () => {
     expect(errorElement).toBeInTheDocument();
   });
 });
+

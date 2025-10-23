@@ -120,3 +120,4 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
 
   return matrix;
 };
+

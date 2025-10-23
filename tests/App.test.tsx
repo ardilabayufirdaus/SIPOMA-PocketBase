@@ -136,3 +136,4 @@ describe('App Component', () => {
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
   });
 });
+

@@ -177,3 +177,4 @@ export const ProductionTrendChart: React.FC<ProductionTrendChartProps> = ({
   );
 };
 
+

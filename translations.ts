@@ -1341,3 +1341,4 @@ export const translations = {
     registration_success: 'Permintaan Registrasi Berhasil!',
   },
 };
+

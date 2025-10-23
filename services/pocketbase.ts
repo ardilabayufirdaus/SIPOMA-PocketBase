@@ -1,12 +1,6 @@
 import PocketBase from 'pocketbase';
 import { ClientResponseError } from 'pocketbase';
 
-// Type definition untuk Vite environment variables
-interface ImportMetaEnv {
-  VITE_POCKETBASE_URL?: string;
-  [key: string]: string | undefined;
-}
-
 /**
  * File ini adalah service layer untuk PocketBase yang menyediakan konstanta koleksi,
  * tipe data interface yang sesuai dengan skema, dan fungsi helper untuk interaksi dengan PocketBase API.
@@ -15,7 +9,7 @@ interface ImportMetaEnv {
  */
 
 // Gunakan environment variable untuk URL PocketBase atau fallback ke URL default
-const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090';
+const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/';
 
 // Singleton pattern untuk mencegah multiple client instances
 let pbInstance: PocketBase | null = null;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { User, UserRole, PermissionMatrix } from '../types';
 import useErrorHandler from './useErrorHandler';
 
@@ -163,3 +163,4 @@ export const useCurrentUser = () => {
 
   return { currentUser, loading };
 };
+

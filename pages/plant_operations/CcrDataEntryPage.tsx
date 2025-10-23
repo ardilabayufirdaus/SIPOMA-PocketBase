@@ -51,7 +51,7 @@ import { isSuperAdmin } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Import PocketBase client and hooks
-import { pb } from '../../utils/pocketbase';
+import { pb } from '../../utils/pocketbase-simple';
 import { useUserParameterOrder } from '../../hooks/useUserParameterOrder';
 import { formatDateToISO8601, formatToWITA } from '../../utils/dateUtils';
 

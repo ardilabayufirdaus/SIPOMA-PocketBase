@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { WorkInstruction } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 export const useWorkInstructions = () => {
   const [instructions, setInstructions] = useState<WorkInstruction[]>([]);
@@ -84,3 +84,4 @@ export const useWorkInstructions = () => {
 
   return { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction };
 };
+

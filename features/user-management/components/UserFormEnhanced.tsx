@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { pb } from '../../../utils/pocketbase';
+import { pb } from '../../../utils/pocketbase-simple';
 import { passwordUtils } from '../../../utils/passwordUtils';
 import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';

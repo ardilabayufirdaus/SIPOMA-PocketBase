@@ -65,3 +65,4 @@ export const disableLogs = () => {
   config.debug = false;
   config.info = false;
 };
+

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { PlantUnit } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
 import { CacheKeys } from '../utils/cacheKeys';
 import { safeApiCall } from '../utils/connectionCheck';
@@ -209,3 +209,4 @@ export const usePlantUnits = () => {
     loading,
   };
 };
+

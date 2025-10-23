@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { logger } from '../utils/logger';
 import { safeApiCall } from '../utils/connectionCheck';
 
@@ -377,3 +377,4 @@ export function usePlantOperationsDataOptimizer() {
     isInitialized,
   };
 }
+

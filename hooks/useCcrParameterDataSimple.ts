@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { updateParameterDataFixed } from '../utils/parameterDataUpdater';
 import { formatParameterDataFlat } from '../utils/formatParameterDataFlat';
 import { CcrParameterDataFlat } from '../types/ccrParameterDataTypes';
@@ -194,3 +194,4 @@ export const useCcrParameterDataSimple = (
     pendingSaves: saveQueue.length,
   };
 };
+

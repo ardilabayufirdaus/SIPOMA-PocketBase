@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { pb } from '../../utils/pocketbase';
+import { pb } from '../../utils/pocketbase-simple';
 import { dataCache } from '../../utils/optimization/dataCache';
 import { connectionPool } from '../../utils/optimization/connectionPool';
 import { logger } from '../../utils/logger';
@@ -127,3 +127,4 @@ const DataPreloader: React.FC<DataPreloaderProps> = ({ children }) => {
 };
 
 export default DataPreloader;
+

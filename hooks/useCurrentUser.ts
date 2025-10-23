@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User, UserRole, PermissionMatrix } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { secureStorage } from '../utils/secureStorage';
 import { safeApiCall, isNetworkConnected } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';

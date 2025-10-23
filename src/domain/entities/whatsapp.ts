@@ -50,3 +50,4 @@ export interface GroupReport {
   generatedAt: Date;
 }
 
+

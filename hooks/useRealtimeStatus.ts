@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 interface UseRealtimeStatusReturn {
   isConnected: boolean;
@@ -74,3 +74,4 @@ export const useRealtimeStatus = (channelName: string): UseRealtimeStatusReturn 
     connectionErrors,
   };
 };
+

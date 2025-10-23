@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Project, ProjectTask, ProjectStatus } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -220,3 +220,4 @@ export const useProjects = () => {
     refetch: fetchProjectsAndTasks,
   };
 };
+

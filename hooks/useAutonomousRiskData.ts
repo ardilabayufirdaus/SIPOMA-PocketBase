@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { AutonomousRiskData } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 // Query keys for React Query
 const RISK_DATA_QUERY_KEY = ['autonomous-risk-data'];
@@ -117,3 +117,4 @@ export const useAutonomousRiskData = () => {
     refetch,
   };
 };
+

@@ -6,3 +6,4 @@ const CcrDataEntryPageSimple: React.FC<{ t: Record<string, string> }> = ({ t }) 
 };
 
 export default CcrDataEntryPageSimple;
+

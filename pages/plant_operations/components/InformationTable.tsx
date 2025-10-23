@@ -45,3 +45,4 @@ export const InformationTable: React.FC<InformationTableProps> = ({ informationD
   );
 };
 
+

@@ -294,3 +294,4 @@ export const withPermission = <P extends object>(
   WithPermissionComponent.displayName = `WithPermission(${getDisplayName(WrappedComponent)})`;
   return WithPermissionComponent;
 };
+

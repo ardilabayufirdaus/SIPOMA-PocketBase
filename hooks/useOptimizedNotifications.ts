@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Alert } from '../types/supabase';
 import { AlertSeverity, ExtendedAlert } from './useNotifications';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 // Enhanced debounce function with cancel support
 function debounce<T extends (...args: any[]) => any>(
@@ -289,3 +289,4 @@ export const useOptimizedNotifications = () => {
     isLoading: loading,
   };
 };
+

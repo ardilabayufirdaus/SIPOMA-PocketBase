@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { dataCache } from '../utils/dataCache';
 import { connectionPool } from '../utils/connectionPool';
 import { logger } from '../utils/logger';
@@ -107,3 +107,4 @@ const DataPreloader: React.FC<DataPreloaderProps> = ({ children }) => {
 };
 
 export default DataPreloader;
+

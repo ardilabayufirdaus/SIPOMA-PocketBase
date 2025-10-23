@@ -37,3 +37,4 @@ describe('buildPermissionMatrix', () => {
     expect(result.plant_operations).toEqual({});
   });
 });
+

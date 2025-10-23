@@ -1,4 +1,4 @@
-import { pb } from '../pocketbase';
+import { pb } from '../pocketbase-simple';
 import { dataCache } from './dataCache';
 import { logger } from '../logger';
 

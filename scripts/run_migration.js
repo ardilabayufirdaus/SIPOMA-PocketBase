@@ -18,3 +18,4 @@
 console.log('Migration script for adding cement type values to parameter_settings table');
 console.log('Please run the SQL script manually in Supabase SQL Editor');
 console.log('File location: scripts/migration_add_cement_values.sql');
+

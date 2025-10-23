@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { UserRole, PermissionMatrix } from '../types';
 import { getDefaultPermissionsForRole } from '../utils/tonasaPermissions';
 
@@ -385,3 +385,4 @@ export const useRealtimeUsers = (options: UseRealtimeUsersOptions = {}) => {
     optimisticAddUser,
   };
 };
+

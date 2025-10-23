@@ -51,3 +51,4 @@ export const normalizeShiftData = (
     return { emptySpace: undefined, content: undefined };
   }
 };
+

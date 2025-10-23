@@ -6,7 +6,7 @@
  * - Menampilkan indikator status koneksi
  */
 
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { logger } from './logger';
 
 // Extend Window interface for debugging

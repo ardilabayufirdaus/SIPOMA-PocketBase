@@ -1,4 +1,4 @@
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { PermissionMatrix } from '../types';
 
 // Cache untuk menyimpan hasil pengecekan hak akses sementara (TTL 5 menit)

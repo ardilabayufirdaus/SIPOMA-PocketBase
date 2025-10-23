@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { AlertSeverity } from '../hooks/useNotifications';
 
 export interface NotificationData {
@@ -450,3 +450,4 @@ if (savedPreferences) {
 }
 
 export default useNotificationStore;
+

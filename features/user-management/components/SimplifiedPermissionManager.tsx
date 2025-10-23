@@ -269,3 +269,4 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
 };
 
 export default SimplifiedPermissionManager;
+

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 const parameterIds = [
   'a3f7b380-1cad-41f3-b459-802d4c33da54',
@@ -42,3 +42,4 @@ export const useTotalProduction = () => {
 
   return { totalProduction, loading, error };
 };
+

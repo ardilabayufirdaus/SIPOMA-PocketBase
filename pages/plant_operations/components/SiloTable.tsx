@@ -140,3 +140,4 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
   );
 };
 
+

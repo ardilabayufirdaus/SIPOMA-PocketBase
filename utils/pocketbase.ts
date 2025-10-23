@@ -56,22 +56,7 @@ export const isSecureContext = (): boolean => {
 };
 
 const vercelDeployment = isVercelDeployment();
-const isHttps = isHttpsProtocol();
 const isProduction = import.meta.env.PROD || vercelDeployment;
-const forceHttp = import.meta.env.VITE_FORCE_HTTP === 'true';
-const forceProxy = import.meta.env.VITE_FORCE_PROXY === 'true';
-
-// Log environment detection
-if (isProduction && !vercelDeployment) {
-  currentProtocol = 'http';
-  logger.info('Deteksi lingkungan production: menggunakan HTTP');
-} else if (vercelDeployment) {
-  // On Vercel, we'll use our API proxy to avoid mixed content
-  logger.info('Deteksi lingkungan Vercel: menggunakan API proxy');
-} else if (isHttps) {
-  // If we're on HTTPS but not Vercel, we still need the API proxy (Cloudflare)
-  logger.info('Deteksi HTTPS: menggunakan Cloudflare API proxy untuk menghindari mixed content');
-}
 
 // Gunakan environment variable untuk URL PocketBase
 const pocketbaseUrlEnv = import.meta.env.VITE_POCKETBASE_URL;
@@ -81,79 +66,22 @@ const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar
 const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultnya true
 
 /**
- * Fungsi untuk mendapatkan URL PocketBase dengan protokol yang sesuai
+ * Fungsi untuk mendapatkan URL PocketBase
  *
- * Priority order:
- * 1. API Proxy when forced or when server is HTTP but client is HTTPS (mixed content prevention)
- * 2. Environment variable (direct connection if HTTPS)
- * 3. Force HTTP on production (fallback)
- * 4. Detected working protocol
+ * Sekarang menggunakan URL langsung tanpa proxy karena PocketBase sudah HTTPS.
  */
 export const getPocketbaseUrl = (): string => {
-  // Check if we're in a browser environment
-  const isBrowser = typeof window !== 'undefined';
-  const origin = isBrowser ? window.location.origin : '';
-
-  // In development, always use direct HTTP to avoid mixed content issues
-  const isDevelopment = import.meta.env.DEV;
-  if (isDevelopment) {
-    logger.debug('Development environment: using direct HTTP connection to avoid mixed content');
-    return `http://${pocketbaseHost}`;
-  }
-
-  // Force proxy usage if specified in environment or for sipoma.site domain (Cloudflare proxy)
-  if (forceProxy || (isBrowser && window.location.hostname === 'www.sipoma.site')) {
-    logger.debug(
-      'Force proxy enabled for sipoma.site domain (Cloudflare proxy) or VITE_FORCE_PROXY=true'
-    );
-    return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
-  } // Only use proxy if server is still HTTP and we're on HTTPS (mixed content prevention)
-  if (
-    isProduction &&
-    isBrowser &&
-    window.location.protocol === 'https:' &&
-    pocketbaseUrlEnv &&
-    pocketbaseUrlEnv.startsWith('http://')
-  ) {
-    logger.debug(
-      'Server is HTTP but client is HTTPS: using Cloudflare API proxy to avoid mixed content'
-    );
-    return `${origin}/api/pb-proxy`;
-  }
-
-  // Priority 2: Use environment variable if available
-  if (pocketbaseUrlEnv) {
-    // In production environment, ensure we use the right protocol to avoid mixed content
-    if (isProduction && isBrowser && window.location.protocol === 'https:') {
-      if (pocketbaseUrlEnv.startsWith('http://')) {
-        logger.debug('Converting environment URL from HTTP to HTTPS proxy to avoid mixed content');
-        return `${origin}/api/pb-proxy`;
-      }
-    }
-    logger.debug(`Using environment configured PocketBase URL: ${pocketbaseUrlEnv}`);
-    return pocketbaseUrlEnv;
-  }
-
-  // Priority 3: Force HTTP on production or when flag is set
-  if (isProduction || forceHttp) {
-    logger.debug('Using HTTP protocol for PocketBase due to production mode or forceHttp flag');
-    return `http://${pocketbaseHost}`;
-  }
-
-  // Priority 4: Use detected working protocol as fallback
-  logger.debug(`Using detected protocol (${currentProtocol}) for PocketBase connection`);
-  return `${currentProtocol}://${pocketbaseHost}`;
+  return 'https://api.sipoma.site/';
 };
 
-// Fungsi untuk mendeteksi protokol yang berfungsi
+// Fungsi untuk mendeteksi protokol yang berfungsi (dinonaktifkan)
 export const detectWorkingProtocol = async (): Promise<Protocol> => {
-  // Jika di Vercel atau production dengan force HTTP, langsung gunakan HTTP
-  if (isVercelDeployment || forceHttp) {
-    logger.info('Mode production/Vercel terdeteksi, menggunakan HTTP secara default');
-    return 'http';
-  }
-
-  // Jika protokol sudah ditentukan oleh environment, gunakan itu
+  // Selalu return https karena kita menggunakan HTTPS langsung
+  return 'https';
+};
+if (false) {
+  // Logic untuk force HTTP dinonaktifkan
+  logger.info('Force HTTP dinonaktifkan - menggunakan HTTPS langsung'); // Jika protokol sudah ditentukan oleh environment, gunakan itu
   if (pocketbaseUrlEnv) {
     // Di production environment, paksa HTTP meskipun env menggunakan HTTPS
     if (isProduction && pocketbaseUrlEnv.startsWith('https')) {
@@ -199,7 +127,7 @@ export const detectWorkingProtocol = async (): Promise<Protocol> => {
       return 'https';
     }
   }
-};
+}
 
 // Fungsi untuk mengatur kembali koneksi jika protokol perlu diganti
 export const resetConnection = async (): Promise<void> => {
@@ -361,31 +289,12 @@ export const pb = (() => {
     // Lakukan deteksi protokol secara asinkron dan reinit jika perlu
     (async () => {
       try {
-        // Untuk Vercel, langsung aktifkan mode HTTP tanpa perlu deteksi
-        if (isVercelDeployment || forceHttp) {
-          logger.info('Vercel/Production mode: Menggunakan HTTP untuk semua koneksi PocketBase');
-          currentProtocol = 'http';
-
-          // Jika URL asli menggunakan HTTPS, ganti dengan HTTP
-          if (pbInstance.baseUrl.startsWith('https://')) {
-            const newBaseUrl = pbInstance.baseUrl.replace('https://', 'http://');
-            logger.info(`Mengubah base URL dari ${pbInstance.baseUrl} ke ${newBaseUrl}`);
-            pbInstance = new PocketBase(newBaseUrl);
-            pbInstance.autoCancellation(false);
-          }
-        } else {
-          // Mode development: deteksi protokol yang optimal
-          const detectedProtocol = await detectWorkingProtocol();
-          if (detectedProtocol !== currentProtocol) {
-            currentProtocol = detectedProtocol;
-            logger.info(
-              `Mengganti protokol ke ${currentProtocol.toUpperCase()} dan melakukan reinit PocketBase`
-            );
-            pbInstance = await initializePocketBase();
-          }
-        }
+        // Karena kita sudah menggunakan HTTPS langsung tanpa proxy,
+        // tidak perlu lagi logika force HTTP untuk Vercel
+        // Logika ini dinonaktifkan untuk menghindari masalah CORS
+        logger.info('PocketBase diinisialisasi dengan HTTPS langsung');
       } catch (error) {
-        logger.error('Gagal mendeteksi protokol yang optimal:', error);
+        logger.error('Error saat inisialisasi PocketBase:', error);
       }
     })();
 

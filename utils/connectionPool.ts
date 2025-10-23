@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { logger } from './logger';
 
 // Class untuk mengelola koneksi pool ke PocketBase
@@ -145,3 +145,4 @@ export const useConnectionPreparation = () => {
     logger.error('Error saat pre-connect:', err);
   });
 };
+

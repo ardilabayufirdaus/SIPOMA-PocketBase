@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 const COLLECTION_NAME = 'cop_parameters';
 
@@ -88,3 +88,4 @@ export const useCopParameters = (plantCategory?: string, plantUnit?: string) => 
 
   return { copParameterIds, setCopParameterIds: saveCopParameters, loading };
 };
+

@@ -1,7 +1,7 @@
 // pocketbaseEnhancer.ts
 // File ini akan meningkatkan instans PocketBase dengan fitur optimasi
 
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { logger } from './logger';
 import { connectionPool } from './optimization/connectionPool';
 import { dataCache } from './optimization/dataCache';

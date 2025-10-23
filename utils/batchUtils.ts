@@ -133,3 +133,4 @@ export class DataCompressor {
 
 export const batchProcessor = new BatchProcessor();
 export const debouncer = new Debouncer(2000); // 2 second debounce for real-time updates
+

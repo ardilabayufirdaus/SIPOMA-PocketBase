@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 
 // Define types for hourly values
 export type HourlyValue = {
@@ -119,3 +119,4 @@ export const hourlyValuesAreDifferent = (current: HourlyValues, updated: HourlyV
 
   return false;
 };
+

@@ -34,3 +34,4 @@ export const checkDatabaseMigrationNeeded = async (): Promise<boolean> => {
 export const logSystemStatus = async (): Promise<void> => {
   // System status logging disabled
 };
+

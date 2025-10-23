@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { pb, ensureAuthenticated } from '../utils/pocketbase';
+import { pb, ensureAuthenticated } from '../utils/pocketbase-simple';
 
 // Define the types for our batch operations
 interface BatchOperation<T> {
@@ -550,3 +550,4 @@ export function useBatchedCrudOperations<T extends Record<string, unknown>>(
     clearCache,
   };
 }
+

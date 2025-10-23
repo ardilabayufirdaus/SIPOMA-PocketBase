@@ -86,3 +86,4 @@ export async function initializeCcrParameterIndices(pb) {
     // Don't crash the application if index creation fails
   }
 }
+

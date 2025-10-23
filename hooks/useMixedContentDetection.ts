@@ -43,9 +43,14 @@ export const useMixedContentDetection = () => {
     // Check for mixed content issues by attempting a connection to PocketBase
     const checkForMixedContent = async () => {
       try {
-        // Get backend URL from environment or use default
-        const backendUrl = import.meta.env.VITE_POCKETBASE_URL || '141.11.25.69:8090';
-        const url = backendUrl.startsWith('http') ? backendUrl : `http://${backendUrl}`;
+        // Get backend URL - use proxy in development, direct URL in production
+        const backendUrl = import.meta.env.DEV
+          ? '/api/pb-proxy/'
+          : import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/';
+        const url =
+          backendUrl.startsWith('http') || backendUrl.startsWith('/')
+            ? backendUrl
+            : `https://${backendUrl}`;
 
         await fetch(`${url}/api/health`, {
           method: 'GET',

@@ -38,3 +38,4 @@ export interface IGroupReportRepository {
   deleteReport(id: string): Promise<void>;
 }
 
+

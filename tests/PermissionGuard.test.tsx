@@ -154,3 +154,4 @@ describe('PermissionGuard Component', () => {
     expect(screen.getByTestId('element-component')).toBeInTheDocument();
   });
 });
+

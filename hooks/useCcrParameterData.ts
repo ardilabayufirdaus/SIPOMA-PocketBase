@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef } from 'react';
 import { CcrParameterData } from '../types';
 import { useParameterSettings } from './useParameterSettings';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { useCcrDataCache } from './useDataCache';
 import { logger } from '../utils/logger';
 

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { User } from '../types';
 import { passwordUtils } from '../utils/passwordUtils';
 import { buildPermissionMatrix } from '../utils/permissionUtils';

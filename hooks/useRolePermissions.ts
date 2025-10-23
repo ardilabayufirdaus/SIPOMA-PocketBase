@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { UserRole, PermissionMatrix } from '../types';
 import useErrorHandler from './useErrorHandler';
 
@@ -67,3 +67,4 @@ export const useRolePermissions = () => {
     refresh: fetchRolePermissions,
   };
 };
+

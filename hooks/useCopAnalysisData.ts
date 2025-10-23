@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 export interface CopAnalysisData {
   id: string;
@@ -41,3 +41,4 @@ export const useCopAnalysisData = () => {
 
   return { data, loading, error };
 };
+

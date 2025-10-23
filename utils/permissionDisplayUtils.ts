@@ -136,3 +136,4 @@ export const formatPermissionsDetailed = (
 
   return details;
 };
+

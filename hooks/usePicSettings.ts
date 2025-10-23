@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { PicSetting } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 
 export const usePicSettings = () => {
@@ -102,3 +102,4 @@ export const usePicSettings = () => {
 
   return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords };
 };
+

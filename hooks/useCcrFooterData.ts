@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';
 
@@ -178,3 +178,4 @@ export const useCcrFooterData = () => {
     deleteFooterData,
   };
 };
+

@@ -179,3 +179,4 @@ const DebugUserPermissions: React.FC<DebugUserPermissionsProps> = ({ isOpen, onC
 };
 
 export default DebugUserPermissions;
+

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { trackRealtimeSubscription, untrackRealtimeSubscription } from './realtimeMonitor';
 import { logger } from './logger';
 import { realtimeOptimizer } from './realtimeSubscriptionOptimizer';
@@ -142,3 +142,4 @@ export const subscribeOnce = async <T = unknown>(
     return () => {};
   }
 };
+

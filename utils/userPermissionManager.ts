@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { UserRole } from '../types';
 import {
   getDefaultPermissionsForRole,
@@ -386,3 +386,4 @@ export const getPermissionDescription = (role: UserRole): string => {
       return 'No special permissions';
   }
 };
+

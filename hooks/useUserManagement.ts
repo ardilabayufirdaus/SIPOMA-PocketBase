@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { User } from '../types';
 
 export const useUserManagement = (_currentUser?: User | null) => {
@@ -145,3 +145,4 @@ export const useUserManagement = (_currentUser?: User | null) => {
     refetch: fetchUsers,
   };
 };
+

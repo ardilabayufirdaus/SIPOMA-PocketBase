@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { formatDateToISO8601 } from '../utils/dateUtils';
 import { safeApiCall } from '../utils/connectionCheck';
 
@@ -129,3 +129,4 @@ export const useCcrInformationData = () => {
     isSaving: saveInformationMutation.isPending,
   };
 };
+

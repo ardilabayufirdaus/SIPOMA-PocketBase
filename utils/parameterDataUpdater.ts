@@ -1,4 +1,4 @@
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 // Helper function to ensure a parameter record includes the plant unit
 // This is used to fix the 400 Bad Request error when creating parameter data

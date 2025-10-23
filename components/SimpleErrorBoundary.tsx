@@ -35,3 +35,4 @@ class SimpleErrorBoundary extends React.Component<
 }
 
 export default SimpleErrorBoundary;
+

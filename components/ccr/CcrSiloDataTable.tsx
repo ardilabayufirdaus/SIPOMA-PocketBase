@@ -245,3 +245,4 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
 CcrSiloDataTable.displayName = 'CcrSiloDataTable';
 
 export default CcrSiloDataTable;
+

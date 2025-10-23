@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useCallback } from 'react';
 import { CcrDowntimeData } from '../types';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { logger } from '../utils/logger';
 
 // Debounce utility for real-time updates
@@ -460,3 +460,4 @@ const useCcrDowntimeData = (date?: string) => {
 };
 
 export default useCcrDowntimeData;
+

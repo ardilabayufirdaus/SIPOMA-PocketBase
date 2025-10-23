@@ -140,3 +140,4 @@ async function validateAndUpdateCcrDowntimeSchema() {
 }
 
 validateAndUpdateCcrDowntimeSchema().catch((error) => logger.error('Unhandled error:', error));
+

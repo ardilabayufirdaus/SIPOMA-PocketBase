@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { CcrParameterDataFlat } from '../hooks/useCcrParameterDataFlat';
 
 /**
@@ -217,3 +217,4 @@ export const prepareDataForSave = (
 
   return result;
 };
+

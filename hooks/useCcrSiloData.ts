@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useSiloCapacities } from './useSiloCapacities';
 import { formatDateToISO8601 } from '../utils/dateUtils';
-import pb from '../services/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 
 /**
  * Type definitions based on the exact PocketBase schema

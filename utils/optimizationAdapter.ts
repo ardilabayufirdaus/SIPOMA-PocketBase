@@ -1,4 +1,4 @@
-import { pb } from './pocketbase';
+import { pb } from './pocketbase-simple';
 import { optimizedQuery, optimizedGetOne } from './optimization/queryOptimizer';
 import { useCachedData } from './optimization/dataCache';
 import { logger } from './logger';
@@ -150,3 +150,4 @@ export async function getFullListOptimized(collection: string, options: Record<s
     return await pb.collection(collection).getFullList(options);
   }
 }
+

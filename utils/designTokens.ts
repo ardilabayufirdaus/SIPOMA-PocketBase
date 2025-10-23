@@ -173,3 +173,4 @@ export const createCSSCustomProperties = (): string => {
   return `:root {\n${properties.join('\n')}\n}`;
 };
 
+

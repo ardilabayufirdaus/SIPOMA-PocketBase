@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { pb } from '../../../utils/pocketbase';
+import { pb } from '../../../utils/pocketbase-simple';
 import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';
 import { useRealtimeUsers } from '../../../hooks/useRealtimeUsers';

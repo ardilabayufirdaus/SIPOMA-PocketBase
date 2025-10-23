@@ -640,3 +640,4 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
 };
 
 export default PermissionMatrixEditor;
+

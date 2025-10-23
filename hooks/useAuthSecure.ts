@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { User } from '../types';
 import useErrorHandler from './useErrorHandler';
 import { authCache } from '../utils/authCache';
@@ -173,3 +173,4 @@ export const useAuth = () => {
 
   return { user, loading, login, logout };
 };
+

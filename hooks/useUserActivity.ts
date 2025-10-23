@@ -499,3 +499,4 @@ export const useUserActivity = (userId?: string, options: ActivityTrackingOption
     endSession,
   };
 };
+

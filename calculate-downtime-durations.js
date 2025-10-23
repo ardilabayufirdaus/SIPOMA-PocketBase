@@ -83,3 +83,4 @@ Process completed:
 }
 
 calculateDowntimeDurations().catch((error) => logger.error('Unhandled error:', error));
+

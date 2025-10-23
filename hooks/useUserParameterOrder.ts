@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { useCurrentUser } from './useCurrentUser';
 import { safeApiCall } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';
@@ -187,3 +187,4 @@ export const useUserParameterOrder = ({
     refetch: loadParameterOrder,
   };
 };
+

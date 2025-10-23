@@ -1,4 +1,4 @@
-import { pb } from '../utils/pocketbase';
+import { pb } from '../utils/pocketbase-simple';
 import { UserRole, PermissionMatrix } from '../types';
 
 /**
@@ -89,3 +89,4 @@ export const getAllDefaultPermissionsFromDB = async (): Promise<
     return {} as Record<UserRole, PermissionMatrix>;
   }
 };
+
