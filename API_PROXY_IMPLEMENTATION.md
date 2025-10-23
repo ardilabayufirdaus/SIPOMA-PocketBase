@@ -4,21 +4,26 @@ This document summarizes all the changes made to implement the API proxy solutio
 
 ## Files Created
 
-1. **api/pb-proxy.js**
-   - Serverless function to proxy requests from HTTPS to HTTP
+1. **api/pb-proxy-edge.js**
+   - Edge Runtime serverless function to proxy requests from HTTPS to HTTP
+   - Optimized for Vercel's Edge Runtime for better compatibility and performance
    - Handles all HTTP methods, query parameters, and response types
    - Properly forwards headers and handles binary data
 
-2. **components/ApiProxyTester.tsx**
+2. **api/pb-proxy.js** (Fallback)
+   - Standard serverless function implementation
+   - Alternative approach if Edge Runtime has issues
+
+3. **components/ApiProxyTester.tsx**
    - Component to test the API proxy functionality
    - Allows testing health check and collections endpoints
    - Shows environment detection information
 
-3. **pages/TestProxy.tsx**
+4. **pages/TestProxy.tsx**
    - Route to access the API Proxy Tester
    - Access at `/test-proxy` after deployment
 
-4. **tests/api-proxy-test.js**
+5. **tests/api-proxy-test.js**
    - Test utilities for the API proxy
    - Functions to test GET, authentication, and file downloads
 
@@ -30,7 +35,7 @@ This document summarizes all the changes made to implement the API proxy solutio
    - Improved protocol handling and environment detection
 
 2. **vercel.json**
-   - Added specific route for API proxy
+   - Updated to route `/api/pb-proxy/*` to Edge Runtime handler
    - Added cache control headers for proxy requests
    - Ensured proper routing of all API requests
 
@@ -53,10 +58,28 @@ This document summarizes all the changes made to implement the API proxy solutio
    - On Vercel deployments: Uses `/api/pb-proxy` as the PocketBase URL
    - On other environments: Uses direct HTTP connection to PocketBase
 
-3. **Request Handling**
-   - All requests to `/api/pb-proxy/*` are routed to the serverless function
+3. **Request Handling with Edge Runtime**
+   - All requests to `/api/pb-proxy/*` are routed to the Edge Runtime function
+   - Edge Runtime provides better performance and compatibility
    - The function forwards the requests to the PocketBase server
    - Responses are returned to the client with appropriate headers
+
+## Key Improvements in Edge Runtime Version
+
+1. **Better Compatibility**
+   - Edge Runtime avoids issues with server runtime dependencies
+   - No more `switchToHttp` errors or similar compatibility issues
+   - Simpler implementation that works across all Vercel environments
+
+2. **Performance**
+   - Edge Runtime functions execute closer to the user
+   - Reduced cold start times for better responsiveness
+   - Lower latency for API requests
+
+3. **Reliability**
+   - Simplified error handling
+   - More direct control over request/response flow
+   - Better handling of binary data and different content types
 
 ## Testing the Solution
 
@@ -73,11 +96,11 @@ This document summarizes all the changes made to implement the API proxy solutio
 ## Next Steps
 
 1. **Monitor Performance**
-   - Watch for any performance issues with the proxy
-   - Be mindful of Vercel's serverless function limits
+   - Watch for any performance metrics on the Edge Runtime
+   - Track response times compared to direct API access
 
 2. **Add Error Tracking**
-   - Consider adding more detailed error logging
+   - Consider implementing more detailed error logging
    - Set up alerts for proxy failures
 
 3. **Consider SSL for PocketBase**

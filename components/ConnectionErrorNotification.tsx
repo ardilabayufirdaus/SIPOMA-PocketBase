@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Alert, AlertTitle, Button, Snackbar } from '@mui/material';
 import { translations } from '../translations';
 
+// Use English translations
+const enTranslations = translations.en;
+
 /**
  * Komponen untuk menampilkan notifikasi error koneksi PocketBase
  * dan menyediakan opsi untuk reload atau mengganti protokol
@@ -61,13 +64,10 @@ const ConnectionErrorNotification: React.FC = () => {
     window.location.reload();
   };
 
-  const switchToHttp = () => {
-    // Trigger protocol change event
-    window.dispatchEvent(
-      new CustomEvent('pocketbase:protocol:changed', {
-        detail: { protocol: 'http' },
-      })
-    );
+  // Protocol switching is now handled automatically via API proxy on Vercel
+  const handleRetryConnection = () => {
+    // Trigger a retry event instead
+    window.dispatchEvent(new CustomEvent('pocketbase:connection:retry', {}));
 
     // Close the notification
     setOpen(false);
@@ -87,21 +87,21 @@ const ConnectionErrorNotification: React.FC = () => {
         variant="filled"
         action={
           <>
-            <Button color="inherit" size="small" onClick={switchToHttp} sx={{ mr: 1 }}>
-              {translations.common.switchToHttp}
+            <Button color="inherit" size="small" onClick={handleRetryConnection} sx={{ mr: 1 }}>
+              {enTranslations.common.retry}
             </Button>
             <Button color="inherit" size="small" onClick={handleReload}>
-              {translations.common.reload}
+              {enTranslations.common.reload}
             </Button>
           </>
         }
         onClose={handleClose}
       >
-        <AlertTitle>{translations.errors.connectionError}</AlertTitle>
+        <AlertTitle>{enTranslations.errors.connectionError}</AlertTitle>
         {errorMessage}
         {errorCount > 1 && (
           <div style={{ marginTop: '8px', fontSize: '0.85rem' }}>
-            {translations.errors.multipleErrors.replace('{count}', errorCount.toString())}
+            {enTranslations.errors.multipleErrors.replace('{count}', errorCount.toString())}
           </div>
         )}
       </Alert>

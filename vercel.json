@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/pb-proxy/(.*)",
-      "destination": "/api/pb-proxy"
+      "destination": "/api/pb-proxy-edge"
     },
     {
       "source": "/api/(.*)",
