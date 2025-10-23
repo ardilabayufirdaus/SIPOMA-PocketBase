@@ -59,6 +59,7 @@ const vercelDeployment = isVercelDeployment();
 const isHttps = isHttpsProtocol();
 const isProduction = import.meta.env.PROD || vercelDeployment;
 const forceHttp = import.meta.env.VITE_FORCE_HTTP === 'true';
+const forceProxy = import.meta.env.VITE_FORCE_PROXY === 'true';
 
 // Log environment detection
 if (isProduction && !vercelDeployment) {
@@ -98,6 +99,12 @@ export const getPocketbaseUrl = (): string => {
   if (isDevelopment) {
     logger.debug('Development environment: using direct HTTP connection to avoid mixed content');
     return `http://${pocketbaseHost}`;
+  }
+
+  // Force proxy usage if specified in environment
+  if (forceProxy) {
+    logger.debug('Force proxy enabled: using API proxy for all connections');
+    return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
   }
 
   // Priority 1: Use API proxy on Vercel deployments or HTTPS contexts
