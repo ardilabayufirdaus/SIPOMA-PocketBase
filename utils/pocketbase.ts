@@ -84,9 +84,9 @@ const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultn
  * Fungsi untuk mendapatkan URL PocketBase dengan protokol yang sesuai
  *
  * Priority order:
- * 1. API Proxy when on HTTPS (Vercel or otherwise)
- * 2. Force HTTP on production
- * 3. Environment variable
+ * 1. API Proxy when forced or when server is HTTP but client is HTTPS (mixed content prevention)
+ * 2. Environment variable (direct connection if HTTPS)
+ * 3. Force HTTP on production (fallback)
  * 4. Detected working protocol
  */
 export const getPocketbaseUrl = (): string => {
@@ -107,10 +107,10 @@ export const getPocketbaseUrl = (): string => {
     return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
   }
 
-  // Force proxy usage for production (Vercel deployments)
-  if (isProduction || vercelDeployment) {
-    logger.debug('Production/Vercel deployment detected: using API proxy');
-    return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
+  // Only use proxy if server is still HTTP and we're on HTTPS (mixed content prevention)
+  if (isProduction && isBrowser && window.location.protocol === 'https:' && pocketbaseUrlEnv && pocketbaseUrlEnv.startsWith('http://')) {
+    logger.debug('Server is HTTP but client is HTTPS: using API proxy to avoid mixed content');
+    return `${origin}/api/pb-proxy`;
   }
 
   // Priority 2: Use environment variable if available
