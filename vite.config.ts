@@ -216,4 +216,32 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', '@tanstack/react-query', 'pocketbase'],
   },
+  // Development server proxy for API calls
+  server: {
+    proxy: {
+      '/api/pb-proxy': {
+        target: 'http://141.11.25.69:8090',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/pb-proxy/, ''),
+        configure: (proxy, options) => {
+          // eslint-disable-next-line no-unused-vars
+          proxy.on('error', (err, _req, _res) => {
+            // eslint-disable-next-line no-console
+            console.log('Proxy error:', err);
+          });
+          // eslint-disable-next-line no-unused-vars
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            // eslint-disable-next-line no-console
+            console.log(
+              'Proxying request:',
+              req.method,
+              req.url,
+              '->',
+              options.target + proxyReq.path
+            );
+          });
+        },
+      },
+    },
+  },
 });

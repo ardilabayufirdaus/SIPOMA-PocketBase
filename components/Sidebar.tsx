@@ -398,6 +398,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
           )}
 
+          {/* Connection Tester - Only for Super Admin */}
+          {currentUser?.role === 'Super Admin' && (
+            <NavigationItem
+              icon={<CogIcon className={iconClass} />}
+              label="Connection Tester"
+              isActive={currentPage === 'connection-test'}
+              onClick={() => handleNavigate('connection-test')}
+            />
+          )}
+
           {/* Notification Creator - Only for Super Admin */}
           {currentUser?.role === 'Super Admin' && (
             <NavigationItem

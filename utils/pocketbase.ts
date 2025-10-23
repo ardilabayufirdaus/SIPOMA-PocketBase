@@ -22,14 +22,41 @@ export const isVercelDeployment = (): boolean => {
 
   // Client-side detection
   if (typeof window !== 'undefined' && window.location) {
-    const { hostname } = window.location;
-    return hostname.includes('vercel.app') || hostname.includes('sipoma.site');
+    const { hostname, protocol } = window.location;
+    // Also check if we're on HTTPS protocol, which is required for Vercel
+    const isHttps = protocol === 'https:';
+    return (hostname.includes('vercel.app') || hostname.includes('sipoma.site')) && isHttps;
   }
 
   return false;
 };
 
+// Check if we're accessing from HTTPS in general
+export const isHttpsProtocol = (): boolean => {
+  if (typeof window !== 'undefined' && window.location) {
+    return window.location.protocol === 'https:';
+  }
+  return false;
+};
+
+// Check if we're in a secure context (HTTPS or localhost)
+export const isSecureContext = (): boolean => {
+  if (typeof window !== 'undefined') {
+    // Use the built-in isSecureContext if available
+    if (typeof window.isSecureContext === 'boolean') {
+      return window.isSecureContext;
+    }
+    // Fallback for older browsers: Check if HTTPS or localhost
+    return (
+      window.location.protocol === 'https:' ||
+      ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    );
+  }
+  return false;
+};
+
 const vercelDeployment = isVercelDeployment();
+const isHttps = isHttpsProtocol();
 const isProduction = import.meta.env.PROD || vercelDeployment;
 const forceHttp = import.meta.env.VITE_FORCE_HTTP === 'true';
 
@@ -40,6 +67,9 @@ if (isProduction && !vercelDeployment) {
 } else if (vercelDeployment) {
   // On Vercel, we'll use our API proxy to avoid mixed content
   logger.info('Deteksi lingkungan Vercel: menggunakan API proxy');
+} else if (isHttps) {
+  // If we're on HTTPS but not Vercel, we still need the API proxy
+  logger.info('Deteksi HTTPS: menggunakan API proxy untuk menghindari mixed content');
 }
 
 // Gunakan environment variable untuk URL PocketBase
@@ -53,33 +83,45 @@ const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultn
  * Fungsi untuk mendapatkan URL PocketBase dengan protokol yang sesuai
  *
  * Priority order:
- * 1. API Proxy on Vercel deployments
+ * 1. API Proxy when on HTTPS (Vercel or otherwise)
  * 2. Force HTTP on production
  * 3. Environment variable
  * 4. Detected working protocol
  */
 export const getPocketbaseUrl = (): string => {
-  // Priority 1: Use API proxy on Vercel deployments to bypass mixed content
-  if (vercelDeployment) {
-    // Use relative URL to proxy API requests through Vercel serverless function
-    return '/api/pb-proxy';
+  // Check if we're in a browser environment
+  const isBrowser = typeof window !== 'undefined';
+  const origin = isBrowser ? window.location.origin : '';
+
+  // Priority 1: Use API proxy on Vercel deployments or HTTPS contexts
+  // This handles the mixed content issue by routing through our API proxy
+  if (vercelDeployment || (isBrowser && isSecureContext())) {
+    logger.debug('Using API proxy because we detected Vercel deployment or secure context');
+    // If we're on the client, use the full origin + path, otherwise use relative path
+    return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
   }
 
-  // Priority 2: Force HTTP on production (to avoid mixed content issues)
-  if ((isProduction || forceHttp) && !pocketbaseUrlEnv) {
-    return `http://${pocketbaseHost}`;
-  }
-
-  // Priority 3: Use environment variable if available
+  // Priority 2: Use environment variable if available
   if (pocketbaseUrlEnv) {
-    // In production environment, force HTTP even if env uses HTTPS
-    if (isProduction && pocketbaseUrlEnv.startsWith('https')) {
-      return pocketbaseUrlEnv.replace('https://', 'http://');
+    // In production environment, ensure we use the right protocol to avoid mixed content
+    if (isProduction && isBrowser && window.location.protocol === 'https:') {
+      if (pocketbaseUrlEnv.startsWith('http://')) {
+        logger.debug('Converting environment URL from HTTP to HTTPS proxy to avoid mixed content');
+        return `${origin}/api/pb-proxy`;
+      }
     }
+    logger.debug(`Using environment configured PocketBase URL: ${pocketbaseUrlEnv}`);
     return pocketbaseUrlEnv;
   }
 
-  // Priority 4: Use detected working protocol
+  // Priority 3: Force HTTP on production or when flag is set
+  if (isProduction || forceHttp) {
+    logger.debug('Using HTTP protocol for PocketBase due to production mode or forceHttp flag');
+    return `http://${pocketbaseHost}`;
+  }
+
+  // Priority 4: Use detected working protocol as fallback
+  logger.debug(`Using detected protocol (${currentProtocol}) for PocketBase connection`);
   return `${currentProtocol}://${pocketbaseHost}`;
 };
 

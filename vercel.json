@@ -1,8 +1,12 @@
 {
   "rewrites": [
     {
+      "source": "/api/pb-proxy",
+      "destination": "/api/pocketbase-proxy.js"
+    },
+    {
       "source": "/api/pb-proxy/(.*)",
-      "destination": "/api/pb-proxy-edge"
+      "destination": "/api/pocketbase-proxy.js"
     },
     {
       "source": "/api/(.*)",
@@ -15,11 +19,23 @@
   ],
   "headers": [
     {
-      "source": "/api/pb-proxy/(.*)",
+      "source": "/api/pb-proxy(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Accept, Authorization, Content-Length"
         }
       ]
     }

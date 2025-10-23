@@ -29,6 +29,18 @@ export const MainDashboardPage = createLazyComponent(
 );
 
 /**
+ * API Connectivity Testing
+ */
+export const ConnectionTesterPage = createLazyComponent(
+  () => import('../../components/ConnectionTester'),
+  {
+    displayName: 'ConnectionTesterPage',
+    loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
+    errorFallback: <DefaultErrorFallback name="Connection Tester" />,
+  }
+);
+
+/**
  * Plant Operations Pages
  */
 export const PlantOperationsPage = createLazyComponent(

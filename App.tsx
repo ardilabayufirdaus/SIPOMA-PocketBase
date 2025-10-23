@@ -34,6 +34,7 @@ import {
   UserListPage,
   UserActivityPage,
   WhatsAppReportsPage,
+  ConnectionTesterPage,
 } from './src/config/lazyComponents';
 
 import { logSystemStatus } from './utils/systemStatus';
@@ -54,7 +55,8 @@ export type Page =
   | 'inspection'
   | 'projects'
   | 'settings'
-  | 'whatsapp-reports';
+  | 'whatsapp-reports'
+  | 'connection-test';
 export type Language = 'en' | 'id';
 export type Theme = 'light' | 'dark';
 
@@ -299,33 +301,34 @@ const App: React.FC = () => {
                       {currentPage === 'dashboard' && (
                         <MainDashboardPage language={language} onNavigate={handleNavigate} />
                       )}
-
-                      {/* Inspection Module - Check permission */}
-                      <PermissionGuard
-                        user={currentUser}
-                        feature="inspection"
-                        requiredLevel="READ"
-                        fallback={null}
-                      >
-                        {currentPage === 'inspection' && (
-                          <InspectionPage
-                            language={language}
-                            subPage={activeSubPages.inspection}
-                            onNavigate={handleNavigate}
-                          />
-                        )}
-                      </PermissionGuard>
                     </PermissionGuard>
+
+                    {/* Inspection Module - Check permission */}
+                    <PermissionGuard
+                      user={currentUser}
+                      feature="inspection"
+                      requiredLevel="READ"
+                      fallback={null}
+                    >
+                      {currentPage === 'inspection' && (
+                        <InspectionPage
+                          language={language}
+                          subPage={activeSubPages.inspection}
+                          onNavigate={handleNavigate}
+                        />
+                      )}
+                    </PermissionGuard>
+
                     {/* User Management - Only for Super Admin */}
                     {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
                       <>
                         {activeSubPages.users === 'user_list' && <UserListPage />}
-
                         {activeSubPages.users === 'user_activity' && (
                           <UserActivityPage users={users} t={t} />
                         )}
                       </>
                     )}
+
                     {/* Settings - Accessible to all users */}
                     {currentPage === 'settings' && (
                       <SettingsPage
@@ -336,9 +339,10 @@ const App: React.FC = () => {
                         onLanguageChange={setLanguage}
                       />
                     )}
+
                     {/* WhatsApp Reports - Accessible to all users */}
                     {currentPage === 'whatsapp-reports' && (
-                      <LazyContainer
+                      <React.Suspense
                         fallback={
                           <LoadingSkeleton
                             variant="rectangular"
@@ -347,20 +351,14 @@ const App: React.FC = () => {
                             className="mt-4"
                           />
                         }
-                        errorFallback={
-                          <div className="p-4 border border-red-400 bg-red-50 rounded text-center mt-4">
-                            <h3 className="font-medium text-red-600">
-                              Error Loading WhatsApp Reports
-                            </h3>
-                            <p className="text-sm mt-1">
-                              Please try again later or contact support.
-                            </p>
-                          </div>
-                        }
                       >
                         <WhatsAppReportsPage />
-                      </LazyContainer>
+                      </React.Suspense>
                     )}
+
+                    {/* Connection Test Page - For debugging connectivity issues */}
+                    {currentPage === 'connection-test' && <ConnectionTesterPage />}
+
                     {/* Plant Operations - Check permission */}
                     <PermissionGuard
                       user={currentUser}
@@ -378,6 +376,7 @@ const App: React.FC = () => {
                         />
                       )}
                     </PermissionGuard>
+
                     {/* Project Management */}
                     {currentPage === 'projects' && (
                       <ProjectManagementPage
