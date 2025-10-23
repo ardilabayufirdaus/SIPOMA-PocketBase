@@ -4,5 +4,6 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "buildCommand": "npm install @mui/material @emotion/react @emotion/styled && npm run build"
 }

@@ -19,8 +19,11 @@
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@hello-pangea/dnd": "^18.0.1",
     "@heroicons/react": "^2.2.0",
+    "@mui/material": "^5.18.0",
     "@sentry/react": "^10.19.0",
     "@sentry/replay": "^7.116.0",
     "@sentry/tracing": "^7.120.4",

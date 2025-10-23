@@ -1,0 +1,5 @@
+# Add @mui/material to the Vercel deployment
+name = "install-mui"
+command = "npm install @mui/material @emotion/react @emotion/styled"
+onSuccess = "build"
+onFailure = "fail"
