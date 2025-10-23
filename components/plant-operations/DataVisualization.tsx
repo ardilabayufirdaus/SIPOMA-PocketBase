@@ -247,3 +247,4 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
 };
 
 export default DataVisualization;
+

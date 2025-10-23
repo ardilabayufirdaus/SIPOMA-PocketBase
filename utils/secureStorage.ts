@@ -5,12 +5,16 @@ const generateSecureKey = (): string => {
   // Base key from environment variable (should be set in .env)
   const envKey = import.meta.env.VITE_ENCRYPTION_SEED || 'sipoma-default-seed';
 
+  // Add environment consistency flag - untuk konsistensi antara mode development dan production
+  const isAuthRequired = import.meta.env.VITE_AUTH_REQUIRED === 'true';
+
   // Browser fingerprint components
   const browserFingerprint = [
     navigator.userAgent,
     navigator.language,
     screen.width + 'x' + screen.height,
-    new Date().toDateString(), // Rotates daily for added security
+    // Hapus date untuk konsistensi antara mode development dan preview
+    isAuthRequired ? 'auth-required' : 'auth-optional',
     window.location.origin,
   ].join('|');
 
@@ -42,10 +46,40 @@ export class SecureStorage {
 
   decrypt(encryptedData: string): string | null {
     try {
+      // Validasi input terlebih dahulu
+      if (!encryptedData || typeof encryptedData !== 'string') {
+        console.warn('Failed to decrypt: Invalid input data');
+        return null;
+      }
+
       const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
-      return bytes.toString(CryptoJS.enc.Utf8);
+
+      try {
+        // Pisahkan proses toString ke dalam try-catch terpisah
+        // untuk menangkap khusus error Malformed UTF-8
+        const result = bytes.toString(CryptoJS.enc.Utf8);
+
+        // Validasi hasil dekripsi adalah string valid
+        if (result && result.length > 0) {
+          return result;
+        } else {
+          console.warn('Failed to decrypt: Empty result');
+          return null;
+        }
+      } catch (utfError) {
+        // Error spesifik untuk malformed UTF-8 data
+        console.warn('Failed to decrypt data: Malformed UTF-8 data', utfError);
+
+        // Hapus data yang rusak
+        this.removeCorruptedData();
+        return null;
+      }
     } catch (error) {
+      // Error umum dalam proses dekripsi
       console.warn('Failed to decrypt data:', error);
+
+      // Hapus data yang rusak
+      this.removeCorruptedData();
       return null;
     }
   }
@@ -66,9 +100,32 @@ export class SecureStorage {
       if (!encrypted) return null;
 
       const decrypted = this.decrypt(encrypted);
-      if (!decrypted) return null;
+      if (!decrypted) {
+        // Jika dekripsi gagal, coba ambil data dari localStorage tanpa dekripsi
+        // (fallback untuk backward compatibility)
+        try {
+          const plainItem = localStorage.getItem(`plain_${key}`);
+          if (plainItem) {
+            const parsed = JSON.parse(plainItem);
 
-      return JSON.parse(decrypted) as T;
+            // Jika berhasil, migrasi data ke format terenkripsi
+            this.setItem(key, parsed);
+
+            return parsed as T;
+          }
+        } catch (fallbackError) {
+          console.warn('Fallback retrieval failed:', fallbackError);
+        }
+        return null;
+      }
+
+      try {
+        return JSON.parse(decrypted) as T;
+      } catch (parseError) {
+        console.warn('Failed to parse decrypted data:', parseError);
+        this.removeItem(key);
+        return null;
+      }
     } catch (error) {
       console.warn('Failed to retrieve encrypted data:', error);
       // Clear corrupted data
@@ -79,6 +136,16 @@ export class SecureStorage {
 
   removeItem(key: string): void {
     localStorage.removeItem(key);
+  }
+
+  // Hapus data penting yang mungkin rusak
+  removeCorruptedData(): void {
+    // Hapus data autentikasi yang mungkin rusak
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('pb_auth');
+
+    // Tambahkan flag untuk menandai reset
+    sessionStorage.setItem('auth_reset', 'true');
   }
 
   clear(): void {

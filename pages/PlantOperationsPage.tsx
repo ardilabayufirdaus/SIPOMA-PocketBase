@@ -8,6 +8,7 @@ import ReportPage from './plant_operations/ReportPage';
 import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibraryPage';
 import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
 import PlantOperationsDashboardPage from './plant_operations/PlantOperationsDashboardPage';
+import UnifiedPlantOpsDashboard from './plant_operations/UnifiedPlantOpsDashboard';
 
 interface PlantData {
   loading: boolean;
@@ -15,23 +16,20 @@ interface PlantData {
 
 interface PlantOperationsPageProps {
   activePage: string;
-  t: any;
-  plantData: PlantData;
-}
-
-interface PageProps {
-  t: any;
-  plantData: PlantData;
+  t: Record<string, string>;
+  plantData?: PlantData;
 }
 
 const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t }) => {
   switch (activePage) {
     case 'op_dashboard':
       return <PlantOperationsDashboardPage t={t} />;
+    case 'op_optimized_dashboard':
+      return <UnifiedPlantOpsDashboard />;
     case 'op_report':
       return <ReportPage t={t} />;
     case 'op_wag_report':
-      return <WhatsAppGroupReportPage t={t} />;
+      return <WhatsAppGroupReportPage />;
     case 'op_master_data':
       return <PlantOperationsMasterData t={t} />;
     case 'op_ccr_data_entry':

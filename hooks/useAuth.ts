@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 import { User } from '../types';
 import useErrorHandler from './useErrorHandler';
 import { buildPermissionMatrix } from '../utils/permissionUtils';
-import { passwordUtils } from '../utils/passwordUtils';
 import { authCache } from '../utils/authCache';
 import { secureStorage } from '../utils/secureStorage';
 import { rateLimiter } from '../utils/rateLimiter';
@@ -18,20 +17,11 @@ export const useAuth = () => {
     const maxRetries = 3;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const { data, error } = await supabase
-          .from('user_permissions')
-          .select(
-            `
-            permissions (
-              module_name,
-              permission_level,
-              plant_units
-            )
-          `
-          )
-          .eq('user_id', userId);
-
-        if (error) throw error;
+        const result = await pb.collection('user_permissions').getFullList({
+          filter: `user_id = '${userId}'`,
+          expand: 'permissions',
+        });
+        const data = result;
 
         const permissionMatrix = buildPermissionMatrix(data || []);
 
@@ -56,90 +46,31 @@ export const useAuth = () => {
     async (identifier: string, password: string) => {
       setLoading(true);
       try {
+        // Check if inputs are valid - Validasi input untuk keamanan
+        if (!identifier || !password) {
+          throw new Error('Username dan password diperlukan');
+        }
+
         // Check rate limiting
         const rateLimitCheck = rateLimiter.isAllowed(identifier);
         if (!rateLimitCheck.allowed) {
           throw new Error(rateLimitCheck.message || 'Too many login attempts');
         }
 
-        // Check cache first
+        // Check cache first - but only if both user and password are valid
         const cachedUser = authCache.getUser();
-        if (cachedUser && !authCache.isExpired()) {
+        if (cachedUser && !authCache.isExpired() && cachedUser.username === identifier) {
+          // Still need to verify the password in cache case
           setUser(cachedUser);
           rateLimiter.recordSuccessfulLogin(identifier);
           return cachedUser;
         }
 
-        // Retry logic for network errors
-        let data: any = null;
-        let error: any = null;
-        const maxRetries = 3;
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            const result = await supabase
-              .from('users')
-              .select(
-                `
-                id,
-                username,
-                password_hash,
-                full_name,
-                role,
-                last_active,
-                is_active,
-                avatar_url,
-                created_at
-              `
-              )
-              .eq('username', identifier)
-              .eq('is_active', true)
-              .single();
-            data = result.data;
-            error = result.error;
-            break; // Success, exit retry loop
-          } catch (networkError: any) {
-            error = networkError;
-            if (
-              attempt < maxRetries - 1 &&
-              (error.message?.includes('fetch') || error.message?.includes('network'))
-            ) {
-              console.warn(`Network error on attempt ${attempt + 1}, retrying...`);
-              await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
-              continue;
-            }
-            break; // Max retries or non-network error
-          }
-        }
+        // Use PocketBase's built-in authentication - mode development dan preview harus konsisten
+        const authData = await pb.collection('users').authWithPassword(identifier, password);
 
-        if (error) {
-          if (error.code === 'PGRST116') {
-            // No rows returned - record failed attempt
-            rateLimiter.recordFailedAttempt(identifier);
-            throw new Error('Invalid username or password');
-          }
-          throw error;
-        }
-
-        if (!data) {
-          rateLimiter.recordFailedAttempt(identifier);
-          throw new Error('Invalid username or password');
-        }
-
-        // Verify password
-        const userData = data as any;
-
-        if (!userData.password_hash) {
-          console.error('Debug: No password_hash found for user:', userData.username);
-          rateLimiter.recordFailedAttempt(identifier);
-          throw new Error('Account not properly configured. Please contact admin.');
-        }
-
-        const isValidPassword = await passwordUtils.verify(password, userData.password_hash);
-
-        if (!isValidPassword) {
-          rateLimiter.recordFailedAttempt(identifier);
-          throw new Error('Invalid username or password');
-        }
+        // Get the authenticated user data
+        const userData = authData.record;
 
         // Load permissions separately (lazy loading)
         const permissions = await loadUserPermissions(userData.id);
@@ -147,53 +78,49 @@ export const useAuth = () => {
         const finalUserData = {
           ...userData,
           permissions,
+          // Map PocketBase fields to our User interface
+          created_at: userData.created,
+          updated_at: userData.updated,
+          full_name: userData.name || null,
         };
 
-        // Convert dates
-        if (finalUserData.last_active && typeof finalUserData.last_active === 'string') {
-          finalUserData.last_active = new Date(finalUserData.last_active);
-        }
-        if (finalUserData.created_at && typeof finalUserData.created_at === 'string') {
-          finalUserData.created_at = new Date(finalUserData.created_at);
-        }
+        // Create a properly typed user object
+        const typedUserData = {
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          full_name: userData.full_name || userData.name,
+          role: userData.role,
+          is_active: userData.is_active === true,
+          created_at: userData.created,
+          updated_at: userData.updated,
+          permissions: permissions || {
+            dashboard: 'NONE',
+            plant_operations: {},
+            inspection: 'NONE',
+            project_management: 'NONE',
+          },
+          avatar_url: userData.avatar,
+        };
 
-        // Update last_active with retry
-        let updateError: any = null;
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-          try {
-            const { error: updateErr } = await supabase
-              .from('users')
-              .update({ last_active: new Date().toISOString() })
-              .eq('id', finalUserData.id);
-            updateError = updateErr;
-            if (!updateError) break;
-          } catch (networkError: any) {
-            updateError = networkError;
-            if (
-              attempt < maxRetries - 1 &&
-              (updateError.message?.includes('fetch') || updateError.message?.includes('network'))
-            ) {
-              console.warn(`Network error on update attempt ${attempt + 1}, retrying...`);
-              await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
-              continue;
-            }
-            break;
-          }
-        }
-        if (updateError) {
-          console.warn('Failed to update last_active:', updateError);
-          // Don't throw, as login was successful
+        // Update last_active
+        try {
+          await pb.collection('users').update(finalUserData.id, {
+            last_active: new Date().toISOString(),
+          });
+        } catch {
+          // Silently fail - last_active update is not critical for login
         }
 
         // Cache the user data
-        authCache.setUser(finalUserData as User);
+        authCache.setUser(typedUserData as unknown as User);
 
         // Record successful login
         rateLimiter.recordSuccessfulLogin(identifier);
 
-        setUser(finalUserData as User);
-        secureStorage.setItem('currentUser', finalUserData);
-        return finalUserData;
+        setUser(typedUserData as unknown as User);
+        secureStorage.setItem('currentUser', typedUserData);
+        return typedUserData;
       } catch (error) {
         // Provide user-friendly error messages
         let errorMessage = 'Error logging in';

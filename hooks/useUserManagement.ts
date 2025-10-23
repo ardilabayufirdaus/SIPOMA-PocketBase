@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { pb } from '../utils/pocketbase';
 import { User } from '../types';
-import { SHA256 } from 'crypto-js';
 
-export const useUserManagement = (currentUser?: User | null) => {
+export const useUserManagement = (_currentUser?: User | null) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,56 +10,31 @@ export const useUserManagement = (currentUser?: User | null) => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
-        .from('users')
-        .select(
-          `
-          id,
-          username,
-          full_name,
-          role,
-          is_active,
-          created_at,
-          updated_at,
-          user_permissions (
-            permissions (
-              module_name,
-              permission_level,
-              plant_units
-            )
-          )
-        `
-        )
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const usersData = await pb.collection('users').getFullList({
+        sort: '-created',
+      });
 
       // Transform the data to match User type
-      const transformedUsers: User[] = (data || []).map((user) => ({
+      const transformedUsers: User[] = usersData.map((user) => ({
         id: user.id,
         username: user.username,
         full_name: user.full_name || undefined,
         role: user.role,
-        is_active: user.is_active,
-        created_at: new Date(user.created_at),
-        updated_at: new Date(user.updated_at),
-        // Transform permissions to the expected format
-        permissions:
-          user.user_permissions?.reduce((acc: any, up: any) => {
-            const perm = up.permissions;
-            if (perm) {
-              acc[perm.module_name] = {
-                level: perm.permission_level,
-                plantUnits: perm.plant_units || [],
-              };
-            }
-            return acc;
-          }, {}) || {},
+        is_active: user.is_active !== false,
+        created_at: new Date(user.created),
+        updated_at: new Date(user.updated),
+        last_active: user.last_active ? new Date(user.last_active) : undefined,
+        // Use permissions from user record (stored as JSON in PocketBase)
+        permissions: user.permissions || {
+          dashboard: 'READ',
+          plant_operations: {},
+          inspection: 'READ',
+          project_management: 'READ',
+        },
       }));
 
       setUsers(transformedUsers);
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch {
       setUsers([]);
     } finally {
       setLoading(false);
@@ -70,34 +44,25 @@ export const useUserManagement = (currentUser?: User | null) => {
   // Add new user
   const addUser = useCallback(
     async (userData: { username: string; password: string; full_name?: string; role: string }) => {
-      try {
-        // Hash the password
-        const password_hash = SHA256(userData.password).toString();
+      const userRecord = await pb.collection('users').create({
+        username: userData.username,
+        password: userData.password,
+        passwordConfirm: userData.password,
+        full_name: userData.full_name,
+        role: userData.role,
+        is_active: true,
+        permissions: {
+          dashboard: 'READ',
+          plant_operations: {},
+          inspection: 'READ',
+          project_management: 'READ',
+        },
+      });
 
-        const { data, error } = await (supabase as any)
-          .from('users')
-          .insert([
-            {
-              username: userData.username,
-              password_hash,
-              full_name: userData.full_name,
-              role: userData.role,
-              is_active: true,
-            },
-          ])
-          .select()
-          .single();
+      // Refresh users list
+      await fetchUsers();
 
-        if (error) throw error;
-
-        // Refresh users list
-        await fetchUsers();
-
-        return data;
-      } catch (error) {
-        console.error('Error adding user:', error);
-        throw error;
-      }
+      return userRecord;
     },
     [fetchUsers]
   );
@@ -114,32 +79,23 @@ export const useUserManagement = (currentUser?: User | null) => {
         is_active?: boolean;
       }
     ) => {
-      try {
-        const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
 
-        if (userData.username) updateData.username = userData.username;
-        if (userData.password) updateData.password_hash = SHA256(userData.password).toString();
-        if (userData.full_name !== undefined) updateData.full_name = userData.full_name;
-        if (userData.role) updateData.role = userData.role;
-        if (userData.is_active !== undefined) updateData.is_active = userData.is_active;
-
-        const { data, error } = await (supabase as any)
-          .from('users')
-          .update(updateData)
-          .eq('id', userId)
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Refresh users list
-        await fetchUsers();
-
-        return data;
-      } catch (error) {
-        console.error('Error updating user:', error);
-        throw error;
+      if (userData.username) updateData.username = userData.username;
+      if (userData.password) {
+        updateData.password = userData.password;
+        updateData.passwordConfirm = userData.password;
       }
+      if (userData.full_name !== undefined) updateData.full_name = userData.full_name;
+      if (userData.role) updateData.role = userData.role;
+      if (userData.is_active !== undefined) updateData.is_active = userData.is_active;
+
+      const updatedUser = await pb.collection('users').update(userId, updateData);
+
+      // Refresh users list
+      await fetchUsers();
+
+      return updatedUser;
     },
     [fetchUsers]
   );
@@ -147,17 +103,10 @@ export const useUserManagement = (currentUser?: User | null) => {
   // Delete user
   const deleteUser = useCallback(
     async (userId: string) => {
-      try {
-        const { error } = await (supabase as any).from('users').delete().eq('id', userId);
+      await pb.collection('users').delete(userId);
 
-        if (error) throw error;
-
-        // Refresh users list
-        await fetchUsers();
-      } catch (error) {
-        console.error('Error deleting user:', error);
-        throw error;
-      }
+      // Refresh users list
+      await fetchUsers();
     },
     [fetchUsers]
   );
@@ -165,28 +114,18 @@ export const useUserManagement = (currentUser?: User | null) => {
   // Toggle user active status
   const toggleUserStatus = useCallback(
     async (userId: string) => {
-      try {
-        // Get current status
-        const user = users.find((u) => u.id === userId);
-        if (!user) throw new Error('User not found');
+      // Get current status
+      const user = users.find((u) => u.id === userId);
+      if (!user) throw new Error('User not found');
 
-        const { data, error } = await (supabase as any)
-          .from('users')
-          .update({ is_active: !user.is_active })
-          .eq('id', userId)
-          .select()
-          .single();
+      const updatedUser = await pb.collection('users').update(userId, {
+        is_active: !user.is_active,
+      });
 
-        if (error) throw error;
+      // Refresh users list
+      await fetchUsers();
 
-        // Refresh users list
-        await fetchUsers();
-
-        return data;
-      } catch (error) {
-        console.error('Error toggling user status:', error);
-        throw error;
-      }
+      return updatedUser;
     },
     [users, fetchUsers]
   );

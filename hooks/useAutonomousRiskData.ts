@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { AutonomousRiskData } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 // Query keys for React Query
 const RISK_DATA_QUERY_KEY = ['autonomous-risk-data'];
@@ -18,18 +18,12 @@ export const useAutonomousRiskData = () => {
   } = useQuery({
     queryKey: RISK_DATA_QUERY_KEY,
     queryFn: async (): Promise<AutonomousRiskData[]> => {
-      const { data, error: fetchError } = await supabase
-        .from('autonomous_risk_data')
-        .select('*')
-        .order('date', { ascending: false })
-        .limit(1000);
+      const result = await pb.collection('autonomous_risk_data').getFullList({
+        sort: '-date',
+        limit: 1000,
+      });
 
-      if (fetchError) {
-        console.error('Error fetching autonomous risk data:', fetchError);
-        throw new Error(`Failed to fetch risk data: ${fetchError.message}`);
-      }
-
-      return (data || []) as unknown as AutonomousRiskData[];
+      return (result || []) as unknown as AutonomousRiskData[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -45,10 +39,7 @@ export const useAutonomousRiskData = () => {
   // Mutations for CRUD operations
   const addRecordMutation = useMutation({
     mutationFn: async (record: Omit<AutonomousRiskData, 'id'>) => {
-      const { error } = await supabase.from('autonomous_risk_data').insert([record]);
-      if (error) {
-        throw new Error(`Failed to add risk record: ${error.message}`);
-      }
+      await pb.collection('autonomous_risk_data').create(record);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
@@ -58,10 +49,7 @@ export const useAutonomousRiskData = () => {
   const updateRecordMutation = useMutation({
     mutationFn: async (updatedRecord: AutonomousRiskData) => {
       const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase.from('autonomous_risk_data').update(updateData).eq('id', id);
-      if (error) {
-        throw new Error(`Failed to update risk record: ${error.message}`);
-      }
+      await pb.collection('autonomous_risk_data').update(id, updateData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
@@ -70,10 +58,7 @@ export const useAutonomousRiskData = () => {
 
   const deleteRecordMutation = useMutation({
     mutationFn: async (recordId: string) => {
-      const { error } = await supabase.from('autonomous_risk_data').delete().eq('id', recordId);
-      if (error) {
-        throw new Error(`Failed to delete risk record: ${error.message}`);
-      }
+      await pb.collection('autonomous_risk_data').delete(recordId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
@@ -82,24 +67,18 @@ export const useAutonomousRiskData = () => {
 
   // Realtime subscription for autonomous_risk_data changes
   useEffect(() => {
-    const channel = supabase
-      .channel('autonomous_risk_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'autonomous_risk_data',
-        },
-        (payload) => {
-          console.log('Autonomous risk data change received!', payload);
-          queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
-        }
-      )
-      .subscribe();
+    let unsubscribe: (() => void) | undefined;
+
+    pb.collection('autonomous_risk_data')
+      .subscribe('*', () => {
+        queryClient.invalidateQueries({ queryKey: RISK_DATA_QUERY_KEY });
+      })
+      .then((unsub) => {
+        unsubscribe = unsub;
+      });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (unsubscribe) unsubscribe();
     };
   }, [queryClient]);
 
@@ -107,24 +86,24 @@ export const useAutonomousRiskData = () => {
   const addRecord = async (record: Omit<AutonomousRiskData, 'id'>) => {
     try {
       await addRecordMutation.mutateAsync(record);
-    } catch (error) {
-      console.error('Error adding risk record:', error);
+    } catch {
+      // Error handled by mutation
     }
   };
 
   const updateRecord = async (updatedRecord: AutonomousRiskData) => {
     try {
       await updateRecordMutation.mutateAsync(updatedRecord);
-    } catch (error) {
-      console.error('Error updating risk record:', error);
+    } catch {
+      // Error handled by mutation
     }
   };
 
   const deleteRecord = async (recordId: string) => {
     try {
       await deleteRecordMutation.mutateAsync(recordId);
-    } catch (error) {
-      console.error('Error deleting risk record:', error);
+    } catch {
+      // Error handled by mutation
     }
   };
 

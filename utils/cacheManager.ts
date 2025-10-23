@@ -15,8 +15,8 @@ class CacheManager {
     };
     try {
       localStorage.setItem(this.prefix + key, JSON.stringify(item));
-    } catch (error) {
-      console.warn('Failed to cache data:', error);
+    } catch {
+      // Silent failure - likely storage quota exceeded
     }
   }
 
@@ -32,8 +32,9 @@ class CacheManager {
       }
 
       return parsed.data;
-    } catch (error) {
-      console.warn('Failed to get cached data:', error);
+    } catch {
+      // Silent failure - possibly corrupted data
+      this.delete(key);
       return null;
     }
   }
@@ -41,8 +42,8 @@ class CacheManager {
   delete(key: string): void {
     try {
       localStorage.removeItem(this.prefix + key);
-    } catch (error) {
-      console.warn('Failed to delete cache:', error);
+    } catch {
+      // Silent failure
     }
   }
 
@@ -50,8 +51,23 @@ class CacheManager {
     try {
       const keys = Object.keys(localStorage).filter((key) => key.startsWith(this.prefix));
       keys.forEach((key) => localStorage.removeItem(key));
-    } catch (error) {
-      console.warn('Failed to clear cache:', error);
+    } catch {
+      // Silent failure
+    }
+  }
+
+  /**
+   * Get all cache keys (without prefix)
+   * @returns Array of cache keys
+   */
+  getKeys(): string[] {
+    try {
+      return Object.keys(localStorage)
+        .filter((key) => key.startsWith(this.prefix))
+        .map((key) => key.slice(this.prefix.length));
+    } catch {
+      // Silent failure
+      return [];
     }
   }
 }

@@ -3,23 +3,19 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import * as Sentry from '@sentry/react';
-import { BrowserTracing } from '@sentry/tracing';
+// BrowserTracing has been replaced with browserTracingIntegration in newer Sentry versions
 import { Replay } from '@sentry/replay';
 import App from '../App';
 import LoginPage from './LoginPage';
 import { secureStorage } from '../utils/secureStorage';
 import { User } from '../types';
 import { TranslationProvider } from '../hooks/useTranslation';
+import { useAuth } from '../hooks/useAuth';
 
 // Initialize Sentry for monitoring
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN,
-  integrations: [
-    new BrowserTracing({
-      tracePropagationTargets: ['localhost', /^https:\/\/yourdomain\.com/],
-    }),
-    new Replay(),
-  ],
+  integrations: [Sentry.browserTracingIntegration(), new Replay()],
   tracesSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
@@ -47,20 +43,30 @@ const queryClient = new QueryClient({
 const RootRouter: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
+  const { login } = useAuth();
 
-  const checkAuthStatus = useCallback(() => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const storedUser = secureStorage.getItem<User>('currentUser');
-      const loggedIn = !!storedUser;
-      setIsLoggedIn(loggedIn);
+      if (storedUser) {
+        setIsLoggedIn(true);
+        setChecking(false);
+        return true;
+      }
+
+      // Konsisten antara development dan preview mode
+      // Tidak ada auto-login seperti sebelumnya
+
+      setIsLoggedIn(false);
       setChecking(false);
-      return loggedIn;
+      return false;
     } catch (error) {
+      console.log('Auth check error:', error);
       setIsLoggedIn(false);
       setChecking(false);
       return false;
     }
-  }, []);
+  }, [login]);
 
   useEffect(() => {
     // Initial check

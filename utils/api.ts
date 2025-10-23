@@ -1,5 +1,5 @@
 import { User } from '../types';
-import { apiClient } from './supabaseClient';
+import { apiClient } from './pocketbaseClient';
 
 export const api = {
   users: {

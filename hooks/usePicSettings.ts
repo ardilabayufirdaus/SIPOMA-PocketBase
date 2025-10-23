@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { PicSetting } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
+import { safeApiCall } from '../utils/connectionCheck';
 
 export const usePicSettings = () => {
   const [records, setRecords] = useState<PicSetting[]>([]);
@@ -8,13 +9,21 @@ export const usePicSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('pic_settings').select('*').order('pic');
+    try {
+      const result = await safeApiCall(() =>
+        pb.collection('pic_settings').getFullList({
+          sort: 'pic',
+        })
+      );
 
-    if (error) {
-      console.error('Error fetching PIC settings:', error);
+      if (result) {
+        const typedData = result as unknown as PicSetting[];
+        setRecords(typedData);
+      } else {
+        setRecords([]);
+      }
+    } catch {
       setRecords([]);
-    } else {
-      setRecords((data || []) as unknown as PicSetting[]);
     }
     setLoading(false);
   }, []);
@@ -23,91 +32,73 @@ export const usePicSettings = () => {
     fetchRecords();
   }, [fetchRecords]);
 
-  // Enhanced realtime subscription for pic_settings changes
   useEffect(() => {
-    const channel = supabase
-      .channel('pic_settings_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'pic_settings',
-        },
-        (payload) => {
-          console.log(
-            'PIC settings realtime update:',
-            payload.eventType,
-            payload.new || payload.old
-          );
+    let unsubPromise: (() => void) | Promise<(() => void) | undefined> | undefined;
 
-          // Optimized state updates based on event type
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setRecords((prev) =>
-              [...prev, payload.new as PicSetting].sort((a, b) => a.pic.localeCompare(b.pic))
-            );
-          } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setRecords((prev) =>
-              prev.map((record) =>
-                record.id === payload.new.id ? (payload.new as PicSetting) : record
-              )
-            );
-          } else if (payload.eventType === 'DELETE' && payload.old) {
-            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
-          } else {
-            // Fallback to full refetch for complex changes
-            fetchRecords();
-          }
-        }
-      )
-      .subscribe();
+    const setupSubscription = async () => {
+      unsubPromise = await safeApiCall(() =>
+        pb.collection('pic_settings').subscribe('*', (_e) => {
+          // Log bisa menyebabkan konsol menjadi berantakan, sebaiknya komentar saja
+          // console.log('PIC settings realtime update:', e.action, e.record);
+          fetchRecords(); // Refetch all on any change
+        })
+      );
+    };
+
+    setupSubscription();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (unsubPromise) {
+        // Handle different types that might be returned by subscribe()
+        if (typeof unsubPromise === 'function') {
+          // If it's already a function, just call it
+          try {
+            unsubPromise();
+          } catch {
+            // Ignore cleanup errors
+          }
+        } else if (unsubPromise && typeof unsubPromise.then === 'function') {
+          // If it's a Promise, properly handle it
+          unsubPromise
+            .then((unsub) => {
+              if (typeof unsub === 'function') {
+                unsub();
+              }
+            })
+            .catch(() => {
+              // Ignore cleanup errors
+            });
+        }
+      }
     };
   }, [fetchRecords]);
 
-  const addRecord = useCallback(
-    async (record: Omit<PicSetting, 'id'>) => {
-      const { error } = await supabase.from('pic_settings').insert([record]);
-      if (error) console.error('Error adding PIC setting:', error);
-      else fetchRecords();
-    },
-    [fetchRecords]
-  );
+  const addRecord = useCallback(async (record: Omit<PicSetting, 'id'>) => {
+    await safeApiCall(() => pb.collection('pic_settings').create(record));
+  }, []);
 
-  const updateRecord = useCallback(
-    async (updatedRecord: PicSetting) => {
-      const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase.from('pic_settings').update(updateData).eq('id', id);
-      if (error) console.error('Error updating PIC setting:', error);
-      else fetchRecords();
-    },
-    [fetchRecords]
-  );
+  const updateRecord = useCallback(async (updatedRecord: PicSetting) => {
+    const { id, ...updateData } = updatedRecord;
+    await safeApiCall(() => pb.collection('pic_settings').update(id, updateData));
+  }, []);
 
-  const deleteRecord = useCallback(
-    async (recordId: string) => {
-      const { error } = await supabase.from('pic_settings').delete().eq('id', recordId);
-      if (error) console.error('Error deleting PIC setting:', error);
-      else fetchRecords();
-    },
-    [fetchRecords]
-  );
+  const deleteRecord = useCallback(async (recordId: string) => {
+    await safeApiCall(() => pb.collection('pic_settings').delete(recordId));
+  }, []);
 
-  const setAllRecords = useCallback(
-    async (newRecords: Omit<PicSetting, 'id'>[]) => {
-      const { error: deleteError } = await supabase.from('pic_settings').delete().neq('id', '0');
-      if (deleteError) {
-        console.error('Error clearing PIC settings:', deleteError);
-        return;
+  const setAllRecords = useCallback(async (newRecords: Omit<PicSetting, 'id'>[]) => {
+    const currentRecords = await safeApiCall(() => pb.collection('pic_settings').getFullList());
+
+    if (currentRecords) {
+      for (const record of currentRecords) {
+        await safeApiCall(() => pb.collection('pic_settings').delete(record.id));
       }
-      const { error: insertError } = await supabase.from('pic_settings').insert(newRecords);
-      if (insertError) console.error('Error bulk inserting PIC settings:', insertError);
-      else fetchRecords();
-    },
-    [fetchRecords]
-  );
+    }
+
+    for (const record of newRecords) {
+      await safeApiCall(() => pb.collection('pic_settings').create(record));
+    }
+  }, []);
 
   return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords };
 };

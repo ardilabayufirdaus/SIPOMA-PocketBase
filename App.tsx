@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
-import ErrorBoundary from './components/ErrorBoundary';
+import React, { useState, useCallback, useEffect } from 'react';
+// Using SimpleErrorBoundary instead
+import SimpleErrorBoundary from './components/SimpleErrorBoundary';
 import Modal from './components/Modal';
 import ProfileEditModal from './components/ProfileEditModal';
 import UserForm from './features/user-management/components/UserForm';
@@ -20,89 +21,29 @@ import { useTranslation } from './hooks/useTranslation';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import { PermissionGuard } from './utils/permissions';
+import { LazyContainer } from './src/utils/LazyLoadingFixed';
+
+// Import centralized lazy components
+import {
+  MainDashboardPage,
+  PlantOperationsPage,
+  ProjectManagementPage,
+  InspectionPage,
+  SettingsPage,
+  UserListPage,
+  UserActivityPage,
+  WhatsAppReportsPage,
+} from './src/config/lazyComponents';
 
 import { logSystemStatus } from './utils/systemStatus';
+import { startBackgroundHealthCheck } from './utils/connectionMonitor';
 
 // Import ThemeProvider for dark mode support
 import { ThemeProvider } from './components/ThemeProvider';
 
-// Preload critical routes with higher priority
+// Preload critical routes dengan higher priority - using relative paths
 const preloadDashboard = () => import('./pages/MainDashboardPage');
 const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
-
-// Preload secondary routes on user interaction
-// Preload functions removed as they were unused
-
-// Enhanced lazy loading with better error boundaries and retries
-const MainDashboardPage = lazy(() =>
-  import('./pages/MainDashboardPage').catch(() => {
-    return {
-      default: () =>
-        React.createElement(
-          'div',
-          { className: 'text-center p-8' },
-          'Error loading Dashboard. Please refresh.'
-        ),
-    };
-  })
-);
-
-// Heavy components with preload hints and dynamic imports
-const PlantOperationsPage = lazy(() =>
-  import('./pages/PlantOperationsPage').catch(() => ({
-    default: () => (
-      <div className="text-center p-8">Error loading Plant Operations. Please refresh.</div>
-    ),
-  }))
-);
-
-const ProjectManagementPage = lazy(() =>
-  import('./pages/ProjectManagementPage').catch(() => ({
-    default: () => (
-      <div className="text-center p-8">Error loading Project Management. Please refresh.</div>
-    ),
-  }))
-);
-
-// Inspection Page
-const InspectionPage = lazy(() =>
-  import('./pages/InspectionPage').catch(() => ({
-    default: () => <div className="text-center p-8">Error loading Inspection. Please refresh.</div>,
-  }))
-);
-
-// Lightweight components
-const SettingsPage = lazy(() =>
-  import('./pages/SettingsPage').catch(() => ({
-    default: () => <div className="text-center p-8">Error loading Settings. Please refresh.</div>,
-  }))
-);
-
-// WhatsApp Reports Page
-const WhatsAppReportsPage = lazy(() =>
-  import('./src/presentation/views/WhatsAppGroupReportContainer')
-    .then((module) => ({
-      default: module.WhatsAppGroupReportContainer,
-    }))
-    .catch(() => ({
-      default: () => (
-        <div className="text-center p-8">Error loading WhatsApp Reports. Please refresh.</div>
-      ),
-    }))
-);
-
-// User Management Pages - Load on demand
-const UserListPage = lazy(() =>
-  import('./features/user-management/pages/UserListPage').catch(() => ({
-    default: () => <div>Error loading User List. Please refresh.</div>,
-  }))
-);
-
-const UserActivityPage = lazy(() =>
-  import('./features/user-management/pages/UserActivityPage').catch(() => ({
-    default: () => <div>Error loading User Activity. Please refresh.</div>,
-  }))
-);
 
 export type Page =
   | 'dashboard'
@@ -163,11 +104,19 @@ const App: React.FC = () => {
     users: 'user_list',
   });
 
-  // Log system status on app load
+  // Log system status on app load and start connection monitor
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       logSystemStatus();
     }
+
+    // Start connection monitoring
+    const stopConnectionMonitor = startBackgroundHealthCheck(120000); // Check every 2 minutes
+
+    return () => {
+      // Clean up connection monitor on unmount
+      stopConnectionMonitor();
+    };
   }, []);
 
   // Preload critical routes after user authentication
@@ -281,7 +230,7 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      <ErrorBoundary
+      <SimpleErrorBoundary
         fallback={
           <div className="flex items-center justify-center min-h-screen text-red-600">
             Terjadi error pada aplikasi. Silakan refresh halaman.
@@ -318,14 +267,25 @@ const App: React.FC = () => {
               />
               <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
                 <div className="max-w-none w-full">
-                  <Suspense
+                  <LazyContainer
                     fallback={
                       <LoadingSkeleton
                         variant="rectangular"
-                        height={48}
-                        width={48}
+                        height={200}
+                        width="100%"
                         className="mx-auto mt-24"
                       />
+                    }
+                    errorFallback={
+                      <div className="p-4 border border-red-400 bg-red-50 rounded text-center mt-24">
+                        <p className="text-red-700">Failed to load content</p>
+                        <button
+                          onClick={() => window.location.reload()}
+                          className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          Reload
+                        </button>
+                      </div>
                     }
                   >
                     {/* Dashboard - Check permission */}
@@ -339,14 +299,21 @@ const App: React.FC = () => {
                         <MainDashboardPage language={language} onNavigate={handleNavigate} />
                       )}
 
-                      {/* Inspection Module */}
-                      {currentPage === 'inspection' && (
-                        <InspectionPage
-                          language={language}
-                          subPage={activeSubPages.inspection}
-                          onNavigate={handleNavigate}
-                        />
-                      )}
+                      {/* Inspection Module - Check permission */}
+                      <PermissionGuard
+                        user={currentUser}
+                        feature="inspection"
+                        requiredLevel="READ"
+                        fallback={null}
+                      >
+                        {currentPage === 'inspection' && (
+                          <InspectionPage
+                            language={language}
+                            subPage={activeSubPages.inspection}
+                            onNavigate={handleNavigate}
+                          />
+                        )}
+                      </PermissionGuard>
                     </PermissionGuard>
                     {/* User Management - Only for Super Admin */}
                     {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
@@ -370,7 +337,28 @@ const App: React.FC = () => {
                     )}
                     {/* WhatsApp Reports - Accessible to all users */}
                     {currentPage === 'whatsapp-reports' && (
-                      <WhatsAppReportsPage groupId="default-group" />
+                      <LazyContainer
+                        fallback={
+                          <LoadingSkeleton
+                            variant="rectangular"
+                            height={200}
+                            width="100%"
+                            className="mt-4"
+                          />
+                        }
+                        errorFallback={
+                          <div className="p-4 border border-red-400 bg-red-50 rounded text-center mt-4">
+                            <h3 className="font-medium text-red-600">
+                              Error Loading WhatsApp Reports
+                            </h3>
+                            <p className="text-sm mt-1">
+                              Please try again later or contact support.
+                            </p>
+                          </div>
+                        }
+                      >
+                        <WhatsAppReportsPage />
+                      </LazyContainer>
                     )}
                     {/* Plant Operations - Check permission */}
                     <PermissionGuard
@@ -397,7 +385,7 @@ const App: React.FC = () => {
                         onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
                       />
                     )}
-                  </Suspense>
+                  </LazyContainer>
                 </div>
               </main>
             </div>
@@ -420,11 +408,32 @@ const App: React.FC = () => {
             user={currentUser}
             onSave={(updatedUser) => {
               if (currentUser) {
-                updateUser(currentUser.id, updatedUser);
-                setToastMessage(t.avatar_updated || 'Profile updated successfully!');
-                setToastType('success');
-                setShowToast(true);
-                handleCloseProfileModal();
+                // Force a refresh of the auth record to get new avatar
+                import('./utils/pocketbase')
+                  .then(({ pb }) => {
+                    pb.collection('users').authRefresh();
+                  })
+                  .then(() => {
+                    // Update user in the store
+                    updateUser(currentUser.id, updatedUser);
+
+                    // Force refresh current user
+                    window.dispatchEvent(new CustomEvent('user-profile-updated'));
+
+                    setToastMessage(t.avatar_updated || 'Profile updated successfully!');
+                    setToastType('success');
+                    setShowToast(true);
+                    handleCloseProfileModal();
+                  })
+                  .catch((err) => {
+                    // Use logger instead of console.error
+                    import('./utils/logger').then(({ logger }) => {
+                      logger.error('Failed to refresh auth:', err);
+                    });
+                    setToastMessage('Profile updated but display may not refresh automatically');
+                    setToastType('warning');
+                    setShowToast(true);
+                  });
               }
             }}
             t={t}
@@ -491,7 +500,7 @@ const App: React.FC = () => {
             </div>
           </Modal>
         </div>
-      </ErrorBoundary>
+      </SimpleErrorBoundary>
     </ThemeProvider>
   );
 };

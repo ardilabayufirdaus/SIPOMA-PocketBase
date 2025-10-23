@@ -101,7 +101,6 @@ export const useOptimizedNavigation = (
       canViewDashboard: user?.permissions?.dashboard !== 'NONE',
       canViewUsers: user?.role === 'Super Admin',
       canViewOperations: Boolean(hasPlantOperationsAccess),
-      canViewPacking: user?.permissions?.packing_plant !== 'NONE',
       canViewProjects: user?.permissions?.project_management !== 'NONE',
       canViewSettings: true, // Settings always accessible
     };

@@ -69,3 +69,4 @@ export const ThemeSelector: React.FC<{ className?: string }> = ({ className = ''
   // Return null since we only have one theme now
   return null;
 };
+

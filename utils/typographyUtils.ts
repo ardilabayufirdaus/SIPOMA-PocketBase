@@ -258,3 +258,4 @@ export const validateContrast = (foreground: string, background: string): boolea
     mediumContrastPairs.some((mediumPair) => mediumPair[0] === pair[0] && mediumPair[1] === pair[1])
   );
 };
+

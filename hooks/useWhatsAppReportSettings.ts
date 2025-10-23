@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { WhatsAppReportSetting } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 export const useWhatsAppReportSettings = () => {
   const [records, setRecords] = useState<WhatsAppReportSetting[]>([]);
@@ -8,16 +8,14 @@ export const useWhatsAppReportSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('whatsapp_report_settings')
-      .select('*')
-      .order('category', { ascending: true });
-
-    if (error) {
+    try {
+      const result = await pb.collection('whatsapp_report_settings').getFullList({
+        sort: 'category',
+      });
+      setRecords(result as unknown as WhatsAppReportSetting[]);
+    } catch (error) {
       console.error('Error fetching WhatsApp report settings:', error);
       setRecords([]);
-    } else {
-      setRecords((data || []) as any[]);
     }
     setLoading(false);
   }, []);
@@ -28,9 +26,12 @@ export const useWhatsAppReportSettings = () => {
 
   const addRecord = useCallback(
     async (record: Omit<WhatsAppReportSetting, 'id'>) => {
-      const { error } = await supabase.from('whatsapp_report_settings').insert([record]);
-      if (error) console.error('Error adding WhatsApp report setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('whatsapp_report_settings').create(record);
+        fetchRecords();
+      } catch (error) {
+        console.error('Error adding WhatsApp report setting:', error);
+      }
     },
     [fetchRecords]
   );
@@ -38,46 +39,52 @@ export const useWhatsAppReportSettings = () => {
   const updateRecord = useCallback(
     async (updatedRecord: WhatsAppReportSetting) => {
       const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase
-        .from('whatsapp_report_settings')
-        .update(updateData)
-        .eq('id', id);
-      if (error) console.error('Error updating WhatsApp report setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('whatsapp_report_settings').update(id, updateData);
+        fetchRecords();
+      } catch (error) {
+        console.error('Error updating WhatsApp report setting:', error);
+      }
     },
     [fetchRecords]
   );
 
   const deleteRecord = useCallback(
     async (recordId: string) => {
-      const { error } = await supabase.from('whatsapp_report_settings').delete().eq('id', recordId);
-      if (error) console.error('Error deleting WhatsApp report setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('whatsapp_report_settings').delete(recordId);
+        fetchRecords();
+      } catch (error) {
+        console.error('Error deleting WhatsApp report setting:', error);
+      }
     },
     [fetchRecords]
   );
 
   const setAllRecords = useCallback(
     async (newRecords: Omit<WhatsAppReportSetting, 'id'>[]) => {
-      const { error: deleteError } = await supabase
-        .from('whatsapp_report_settings')
-        .delete()
-        .neq('id', '0');
-      if (deleteError) {
-        console.error('Error clearing WhatsApp report settings:', deleteError);
-        return;
-      }
+      try {
+        // First, get all existing records to delete them
+        const existingRecords = await pb.collection('whatsapp_report_settings').getFullList();
 
-      if (newRecords.length > 0) {
-        const { error: insertError } = await supabase
-          .from('whatsapp_report_settings')
-          .insert(newRecords);
-        if (insertError) {
-          console.error('Error inserting WhatsApp report settings:', insertError);
+        // Delete all existing records if any exist
+        if (existingRecords && existingRecords.length > 0) {
+          for (const record of existingRecords) {
+            await pb.collection('whatsapp_report_settings').delete(record.id);
+          }
         }
-      }
 
-      fetchRecords();
+        // Insert new records
+        if (newRecords.length > 0) {
+          for (const record of newRecords) {
+            await pb.collection('whatsapp_report_settings').create(record);
+          }
+        }
+
+        fetchRecords();
+      } catch (error) {
+        console.error('Error in setAllRecords:', error);
+      }
     },
     [fetchRecords]
   );

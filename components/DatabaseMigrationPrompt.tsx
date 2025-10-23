@@ -118,3 +118,4 @@ CHECK (role IN (
 };
 
 export default DatabaseMigrationPrompt;
+

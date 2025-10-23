@@ -39,3 +39,4 @@ const InspectionDetailsPage: React.FC<{
 };
 
 export default InspectionDetailsPage;
+

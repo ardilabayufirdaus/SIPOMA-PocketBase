@@ -5,7 +5,7 @@ import CogIcon from '../components/icons/CogIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import LanguageIcon from '../components/icons/LanguageIcon';
 import BellIcon from '../components/icons/BellIcon';
-import { supabase } from '../utils/supabase';
+import { supabase } from '../utils/pocketbaseClient';
 
 // Import Enhanced Components
 import {
@@ -93,10 +93,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       return;
     }
     try {
-      const { error } = await supabase.auth.updateUser({
+      // PocketBase requires the current password for password change
+      const result = await supabase.collection('users').update(user.id, {
         password: passwordData.new,
+        passwordConfirm: passwordData.confirm, // PocketBase requires password confirmation
+        oldPassword: passwordData.current,
       });
-      if (error) {
+
+      if (!result) {
         alert(t.password_update_failed || 'Failed to update password');
       } else {
         alert(t.password_updated);

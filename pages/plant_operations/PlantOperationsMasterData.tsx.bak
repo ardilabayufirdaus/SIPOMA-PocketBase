@@ -1,0 +1,1966 @@
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { ChevronDown, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
+import { useCopParameters } from '../../hooks/useCopParameters';
+import Modal from '../../components/Modal';
+import { SearchInput } from '../../components/ui/Input';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
+import PlusIcon from '../../components/icons/PlusIcon';
+import EditIcon from '../../components/icons/EditIcon';
+import TrashIcon from '../../components/icons/TrashIcon';
+import DocumentArrowDownIcon from '../../components/icons/DocumentArrowDownIcon';
+import DocumentArrowUpIcon from '../../components/icons/DocumentArrowUpIcon';
+import { formatNumber } from '../../utils/formatters';
+import { usePagination } from '../../hooks/usePagination';
+import Pagination from '../../components/Pagination';
+
+// Hooks
+import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useSiloCapacities } from '../../hooks/useSiloCapacities';
+import { useReportSettings } from '../../hooks/useReportSettings';
+import { usePicSettings } from '../../hooks/usePicSettings';
+
+// Types
+import {
+  PlantUnit,
+  ParameterSetting,
+  ParameterDataType,
+  SiloCapacity,
+  ReportSetting,
+  PicSetting,
+} from '../../types';
+
+type MasterDataRecord =
+  | PlantUnit
+  | Omit<PlantUnit, 'id'>
+  | ParameterSetting
+  | Omit<ParameterSetting, 'id'>
+  | SiloCapacity
+  | Omit<SiloCapacity, 'id'>
+  | ReportSetting
+  | Omit<ReportSetting, 'id'>
+  | PicSetting
+  | Omit<PicSetting, 'id'>;
+
+// Forms
+import PlantUnitForm from './PlantUnitForm';
+import ParameterSettingForm from './ParameterSettingForm';
+import SiloCapacityForm from './SiloCapacityForm';
+import ReportSettingForm from './ReportSettingForm';
+import PicSettingForm from './PicSettingForm';
+
+type ModalType =
+  | 'plantUnit'
+  | 'parameterSetting'
+  | 'siloCapacity'
+  | 'reportSetting'
+  | 'picSetting'
+  | null;
+
+const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Plant Units State
+  const {
+    records: plantUnits,
+    addRecord: addPlantUnit,
+    updateRecord: updatePlantUnit,
+    deleteRecord: deletePlantUnit,
+    loading: plantUnitsLoading,
+  } = usePlantUnits();
+  const [editingPlantUnit, setEditingPlantUnit] = useState<PlantUnit | null>(null);
+  const {
+    paginatedData: paginatedPlantUnits,
+    currentPage: puCurrentPage,
+    totalPages: puTotalPages,
+    setCurrentPage: setPuCurrentPage,
+  } = usePagination(plantUnits, 10);
+
+  // Parameter Settings State
+  const {
+    records: parameterSettings,
+    addRecord: addParameter,
+    updateRecord: updateParameter,
+    deleteRecord: deleteParameter,
+  } = useParameterSettings();
+  const [editingParameter, setEditingParameter] = useState<ParameterSetting | null>(null);
+
+  // Silo Capacity State
+  const {
+    records: siloCapacities,
+    addRecord: addSilo,
+    updateRecord: updateSilo,
+    deleteRecord: deleteSilo,
+  } = useSiloCapacities();
+  const [editingSilo, setEditingSilo] = useState<SiloCapacity | null>(null);
+
+  // Report Settings State
+  const {
+    records: reportSettings,
+    addRecord: addReportSetting,
+    updateRecord: updateReportSetting,
+    deleteRecord: deleteReportSetting,
+    updateOrder: updateReportSettingsOrder,
+  } = useReportSettings();
+  const [editingReportSetting, setEditingReportSetting] = useState<ReportSetting | null>(null);
+
+  // PIC Settings State
+  const {
+    records: picSettings,
+    addRecord: addPicSetting,
+    updateRecord: updatePicSetting,
+    deleteRecord: deletePicSetting,
+  } = usePicSettings();
+  const [editingPic, setEditingPic] = useState<PicSetting | null>(null);
+  const {
+    paginatedData: paginatedPicSettings,
+    currentPage: picCurrentPage,
+    totalPages: picTotalPages,
+    setCurrentPage: setPicCurrentPage,
+  } = usePagination(picSettings, 10);
+
+  // Modal State
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingRecord, setDeletingRecord] = useState<{
+    id: string;
+    type: ModalType;
+  } | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Filter States
+  const [parameterCategoryFilter, setParameterCategoryFilter] = useState('');
+  const [parameterUnitFilter, setParameterUnitFilter] = useState('');
+  const [parameterSearchQuery, setParameterSearchQuery] = useState('');
+  const [siloCategoryFilter, setSiloCategoryFilter] = useState('');
+  const [siloUnitFilter, setSiloUnitFilter] = useState('');
+  const [copCategoryFilter, setCopCategoryFilter] = useState('');
+  const [copUnitFilter, setCopUnitFilter] = useState('');
+  const [reportCategoryFilter, setReportCategoryFilter] = useState('');
+  const [reportUnitFilter, setReportUnitFilter] = useState('');
+
+  // COP Parameters State
+  const allParametersMap = useMemo(
+    () => new Map(parameterSettings.map((p) => [p.id, p])),
+    [parameterSettings]
+  );
+  const { copParameterIds, setCopParameterIds } = useCopParameters(
+    copCategoryFilter,
+    copUnitFilter
+  );
+  const [isCopModalOpen, setIsCopModalOpen] = useState(false);
+  const [tempCopSelection, setTempCopSelection] = useState<string[]>([]);
+
+  const copParameters = useMemo(() => {
+    // Filter COP Parameters by selected category and unit
+    if (!copCategoryFilter || !copUnitFilter) return [];
+    return copParameterIds
+      .map((id) => allParametersMap.get(id))
+      .filter((p): p is ParameterSetting => {
+        if (!p) return false;
+        const categoryMatch = p.category === copCategoryFilter;
+        const unitMatch = p.unit === copUnitFilter;
+        return categoryMatch && unitMatch;
+      });
+  }, [copParameterIds, allParametersMap, copCategoryFilter, copUnitFilter]);
+
+  const {
+    paginatedData: paginatedCopParams,
+    currentPage: copCurrentPage,
+    totalPages: copTotalPages,
+    setCurrentPage: setCopCurrentPage,
+  } = usePagination(copParameters, 10);
+
+  // Handlers for COP Parameters
+  const handleOpenCopModal = () => {
+    setTempCopSelection([...copParameterIds]);
+    setIsCopModalOpen(true);
+  };
+  const handleCloseCopModal = () => setIsCopModalOpen(false);
+  const handleCopSelectionChange = (paramId: string) => {
+    setTempCopSelection((prev) =>
+      prev.includes(paramId) ? prev.filter((id) => id !== paramId) : [...prev, paramId]
+    );
+  };
+  const handleSaveCopSelection = () => {
+    setCopParameterIds(tempCopSelection.sort());
+    handleCloseCopModal();
+  };
+  const handleRemoveCopParameter = (paramId: string) => {
+    setCopParameterIds(copParameterIds.filter((id) => id !== paramId));
+  };
+
+  // Parameter Search Handlers
+  const clearParameterSearch = useCallback(() => {
+    setParameterSearchQuery('');
+  }, []);
+
+  const isParameterSearchActive = useMemo(
+    () => parameterSearchQuery.trim().length > 0,
+    [parameterSearchQuery]
+  );
+
+  // Derived data for filters
+  const uniquePlantCategories = useMemo(
+    () => [...new Set(plantUnits.map((unit) => unit.category).sort())],
+    [plantUnits]
+  );
+
+  useEffect(() => {
+    if (uniquePlantCategories.length > 0) {
+      if (!parameterCategoryFilter || !uniquePlantCategories.includes(parameterCategoryFilter)) {
+        setParameterCategoryFilter(uniquePlantCategories[0]);
+      }
+      if (!siloCategoryFilter || !uniquePlantCategories.includes(siloCategoryFilter)) {
+        setSiloCategoryFilter(uniquePlantCategories[0]);
+      }
+      if (!copCategoryFilter || !uniquePlantCategories.includes(copCategoryFilter)) {
+        setCopCategoryFilter(uniquePlantCategories[0]);
+      }
+      if (!reportCategoryFilter || !uniquePlantCategories.includes(reportCategoryFilter)) {
+        setReportCategoryFilter(uniquePlantCategories[0]);
+      }
+    }
+  }, [
+    uniquePlantCategories,
+    parameterCategoryFilter,
+    siloCategoryFilter,
+    copCategoryFilter,
+    reportCategoryFilter,
+  ]);
+
+  // Keyboard shortcuts for parameter search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.querySelector(
+          '.parameter-search-input input'
+        ) as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+      if (e.key === 'Escape' && parameterSearchQuery) {
+        clearParameterSearch();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [parameterSearchQuery, clearParameterSearch]);
+
+  const unitsForParameterFilter = useMemo(() => {
+    if (!parameterCategoryFilter) return [];
+    return plantUnits
+      .filter((unit) => unit.category === parameterCategoryFilter)
+      .map((unit) => unit.unit)
+      .sort();
+  }, [plantUnits, parameterCategoryFilter]);
+
+  const unitsForSiloFilter = useMemo(() => {
+    if (!siloCategoryFilter) return [];
+    return plantUnits
+      .filter((unit) => unit.category === siloCategoryFilter)
+      .map((unit) => unit.unit)
+      .sort();
+  }, [plantUnits, siloCategoryFilter]);
+
+  const unitsForCopFilter = useMemo(() => {
+    if (!copCategoryFilter) return [];
+    return plantUnits
+      .filter((unit) => unit.category === copCategoryFilter)
+      .map((unit) => unit.unit)
+      .sort();
+  }, [plantUnits, copCategoryFilter]);
+
+  const unitsForReportFilter = useMemo(() => {
+    if (!reportCategoryFilter) return [];
+    return plantUnits
+      .filter((unit) => unit.category === reportCategoryFilter)
+      .map((unit) => unit.unit)
+      .sort();
+  }, [plantUnits, reportCategoryFilter]);
+
+  useEffect(() => {
+    if (unitsForParameterFilter.length > 0) {
+      if (!parameterUnitFilter || !unitsForParameterFilter.includes(parameterUnitFilter)) {
+        setParameterUnitFilter(unitsForParameterFilter[0]);
+      }
+    } else {
+      setParameterUnitFilter('');
+    }
+  }, [unitsForParameterFilter, parameterUnitFilter]);
+
+  useEffect(() => {
+    if (unitsForSiloFilter.length > 0) {
+      if (!siloUnitFilter || !unitsForSiloFilter.includes(siloUnitFilter)) {
+        setSiloUnitFilter(unitsForSiloFilter[0]);
+      }
+    } else {
+      setSiloUnitFilter('');
+    }
+  }, [unitsForSiloFilter, siloUnitFilter]);
+
+  useEffect(() => {
+    if (unitsForCopFilter.length > 0) {
+      if (!copUnitFilter || !unitsForCopFilter.includes(copUnitFilter)) {
+        setCopUnitFilter(unitsForCopFilter[0]);
+      }
+    } else {
+      setCopUnitFilter('');
+    }
+  }, [unitsForCopFilter, copUnitFilter]);
+
+  useEffect(() => {
+    if (unitsForReportFilter.length > 0) {
+      if (!reportUnitFilter || !unitsForReportFilter.includes(reportUnitFilter)) {
+        setReportUnitFilter(unitsForReportFilter[0]);
+      }
+    } else {
+      setReportUnitFilter('');
+    }
+  }, [unitsForReportFilter, reportUnitFilter]);
+
+  const handleParameterCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setParameterCategoryFilter(e.target.value);
+  };
+
+  const handleReportCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setReportCategoryFilter(e.target.value);
+  };
+
+  // Filtered data for tables
+  const filteredParameterSettings = useMemo(() => {
+    if (!parameterCategoryFilter || !parameterUnitFilter) return [];
+
+    let filtered = parameterSettings.filter((param) => {
+      // Direct check for unit and category fields
+      const categoryMatch = param.category === parameterCategoryFilter;
+      const unitMatch = param.unit === parameterUnitFilter;
+      return categoryMatch && unitMatch;
+    });
+
+    // Apply search filter if search query exists
+    if (parameterSearchQuery.trim()) {
+      const searchTerm = parameterSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (param) =>
+          param.parameter.toLowerCase().includes(searchTerm) ||
+          param.unit.toLowerCase().includes(searchTerm) ||
+          param.category.toLowerCase().includes(searchTerm) ||
+          param.data_type.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return filtered;
+  }, [parameterSettings, parameterCategoryFilter, parameterUnitFilter, parameterSearchQuery]);
+
+  const {
+    paginatedData: paginatedParams,
+    currentPage: paramsCurrentPage,
+    totalPages: paramsTotalPages,
+    setCurrentPage: setParamsCurrentPage,
+  } = usePagination(filteredParameterSettings, 10);
+
+  const filteredSiloCapacities = useMemo(() => {
+    if (!siloCategoryFilter || !siloUnitFilter) return [];
+    return siloCapacities.filter(
+      (silo) => silo.plant_category === siloCategoryFilter && silo.unit === siloUnitFilter
+    );
+  }, [siloCapacities, siloCategoryFilter, siloUnitFilter]);
+
+  const {
+    paginatedData: paginatedSilos,
+    currentPage: silosCurrentPage,
+    totalPages: silosTotalPages,
+    setCurrentPage: setSilosCurrentPage,
+  } = usePagination(filteredSiloCapacities, 10);
+
+  const filteredReportSettings = useMemo(() => {
+    if (!reportCategoryFilter || !reportUnitFilter) return [];
+    return reportSettings.filter((setting) => {
+      // Get the parameter associated with this report setting
+      const parameter = allParametersMap.get(setting.parameter_id);
+      if (!parameter) return false;
+
+      // Filter by parameter's category and unit
+      const categoryMatch = parameter.category === reportCategoryFilter;
+      const unitMatch = parameter.unit === reportUnitFilter;
+      return categoryMatch && unitMatch;
+    });
+  }, [reportSettings, reportCategoryFilter, reportUnitFilter, allParametersMap]);
+
+  const {
+    paginatedData: paginatedReportSettings,
+    currentPage: rsCurrentPage,
+    totalPages: rsTotalPages,
+    setCurrentPage: setRsCurrentPage,
+  } = usePagination(filteredReportSettings, 10);
+
+  const maxReportSettingOrder = useMemo(() => {
+    return reportSettings.length > 0 ? Math.max(...reportSettings.map((rs) => rs.order)) + 1 : 0;
+  }, [reportSettings]);
+
+  // Drag and drop handlers for Report Settings
+  const handleReportSettingsDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination) return;
+
+      const items = Array.from(filteredReportSettings);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+
+      // Update order in database
+      updateReportSettingsOrder(items);
+    },
+    [filteredReportSettings, updateReportSettingsOrder]
+  );
+
+  // Generic Handlers
+  const handleOpenAddModal = (type: ModalType) => {
+    if (type === 'plantUnit') setEditingPlantUnit(null);
+    if (type === 'parameterSetting') setEditingParameter(null);
+    if (type === 'siloCapacity') setEditingSilo(null);
+    if (type === 'reportSetting') setEditingReportSetting(null);
+    if (type === 'picSetting') setEditingPic(null);
+    setActiveModal(type);
+  };
+
+  const handleOpenEditModal = (type: ModalType, record: MasterDataRecord) => {
+    if (type === 'plantUnit') setEditingPlantUnit(record as PlantUnit);
+    if (type === 'parameterSetting') setEditingParameter(record as ParameterSetting);
+    if (type === 'siloCapacity') setEditingSilo(record as SiloCapacity);
+    if (type === 'reportSetting') setEditingReportSetting(record as ReportSetting);
+    if (type === 'picSetting') setEditingPic(record as PicSetting);
+    setActiveModal(type);
+  };
+
+  const handleOpenDeleteModal = (id: string, type: ModalType) => {
+    setDeletingRecord({ id, type });
+    setDeleteModalOpen(true);
+  };
+
+  const handleCloseModals = () => {
+    setActiveModal(null);
+    setDeleteModalOpen(false);
+    setEditingPlantUnit(null);
+    setEditingParameter(null);
+    setEditingSilo(null);
+    setEditingReportSetting(null);
+    setEditingPic(null);
+    setDeletingRecord(null);
+  };
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (deletingRecord) {
+      if (deletingRecord.type === 'plantUnit') deletePlantUnit(deletingRecord.id);
+      if (deletingRecord.type === 'parameterSetting') deleteParameter(deletingRecord.id);
+      if (deletingRecord.type === 'siloCapacity') deleteSilo(deletingRecord.id);
+      if (deletingRecord.type === 'reportSetting') deleteReportSetting(deletingRecord.id);
+      if (deletingRecord.type === 'picSetting') deletePicSetting(deletingRecord.id);
+    }
+    handleCloseModals();
+  }, [
+    deletingRecord,
+    deletePlantUnit,
+    deleteParameter,
+    deleteSilo,
+    deleteReportSetting,
+    deletePicSetting,
+  ]);
+
+  const handleSave = (type: ModalType, record: MasterDataRecord) => {
+    if (type === 'plantUnit') {
+      if ('id' in record) updatePlantUnit(record as PlantUnit);
+      else addPlantUnit(record as PlantUnit);
+    }
+    if (type === 'parameterSetting') {
+      if ('id' in record) updateParameter(record as ParameterSetting);
+      else addParameter(record as ParameterSetting);
+    }
+    if (type === 'siloCapacity') {
+      if ('id' in record) updateSilo(record as SiloCapacity);
+      else addSilo(record as SiloCapacity);
+    }
+    if (type === 'reportSetting') {
+      if ('id' in record) updateReportSetting(record as ReportSetting);
+      else addReportSetting(record as ReportSetting);
+    }
+    if (type === 'picSetting') {
+      if ('id' in record) updatePicSetting(record as PicSetting);
+      else addPicSetting(record as PicSetting);
+    }
+    handleCloseModals();
+  };
+
+  const handleExportAll = async () => {
+    if (isExporting) return;
+
+    setIsExporting(true);
+    try {
+      const sheets = [];
+
+      // Export Plant Units
+      if (plantUnits.length > 0) {
+        const plantUnitsData = plantUnits.map((unit) => ({
+          ID: unit.id,
+          Unit: unit.unit,
+          Category: unit.category,
+          Description: unit.description || '',
+        }));
+        sheets.push({ name: 'Plant Units', data: plantUnitsData });
+      }
+
+      // Export Parameter Settings
+      if (parameterSettings.length > 0) {
+        const paramData = parameterSettings.map((param) => ({
+          ID: param.id,
+          Parameter: param.parameter,
+          Data_Type: param.data_type,
+          Unit: param.unit,
+          Category: param.category,
+          Min_Value: param.min_value || '',
+          Max_Value: param.max_value || '',
+          OPC_Min_Value: param.opc_min_value || '',
+          OPC_Max_Value: param.opc_max_value || '',
+          PCC_Min_Value: param.pcc_min_value || '',
+          PCC_Max_Value: param.pcc_max_value || '',
+        }));
+        sheets.push({ name: 'Parameter Settings', data: paramData });
+      }
+
+      // Export Silo Capacities
+      if (siloCapacities.length > 0) {
+        const siloData = siloCapacities.map((silo) => ({
+          ID: silo.id,
+          Plant_Category: silo.plant_category,
+          Unit: silo.unit,
+          Silo_Name: silo.silo_name,
+          Capacity: silo.capacity,
+          Dead_Stock: silo.dead_stock,
+        }));
+        sheets.push({ name: 'Silo Capacities', data: siloData });
+      }
+
+      // Export Report Settings
+      if (reportSettings.length > 0) {
+        const reportData = reportSettings.map((setting) => ({
+          ID: setting.id,
+          Parameter_ID: setting.parameter_id,
+          Category: setting.category,
+        }));
+        sheets.push({ name: 'Report Settings', data: reportData });
+      }
+
+      // Export PIC Settings
+      if (picSettings.length > 0) {
+        const picData = picSettings.map((pic) => ({
+          ID: pic.id,
+          PIC: pic.pic,
+        }));
+        sheets.push({ name: 'PIC Settings', data: picData });
+      }
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split['T'][0];
+      const filename = `PlantOperations_MasterData_${timestamp}`;
+
+      // Export using utility
+      exportMultipleSheets(sheets, filename);
+    } catch (error) {
+      alert(
+        `An error occurred during export: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportAll = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (isImporting) return;
+
+    try {
+      let importCount = 0;
+      const errorMessages: string[] = [];
+      const { sheets } = await importMultipleSheets(file);
+
+      // Import Plant Units
+      if (sheets['Plant Units']) {
+        try {
+          const plantUnitsData = sheets['Plant Units'];
+          if (plantUnitsData.length > 0) {
+            // Validate data structure
+            const requiredFields = ['Unit', 'Category'];
+            const invalidRows = plantUnitsData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Plant Units row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              // Process valid data
+              for (const row of plantUnitsData) {
+                await addPlantUnit({
+                  unit: String(row.Unit),
+                  category: String(row.Category),
+                  description: row.Description ? String(row.Description) : null,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Plant Units import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Parameter Settings
+      if (sheets['Parameter Settings']) {
+        try {
+          const paramData = sheets['Parameter Settings'];
+          if (paramData.length > 0) {
+            const requiredFields = ['Parameter', 'Data_Type', 'Unit', 'Category'];
+            const invalidRows = paramData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Parameter Settings row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of paramData) {
+                const dataType = String(row.Data_Type);
+                // Validate data type
+                if (dataType !== 'Number' && dataType !== 'Text') {
+                  errorMessages.push(
+                    `Parameter Settings: Invalid data type "${dataType}". Must be "Number" or "Text"`
+                  );
+                  continue;
+                }
+
+                await addParameter({
+                  parameter: String(row.Parameter),
+                  data_type: dataType as ParameterDataType,
+                  unit: String(row.Unit),
+                  category: String(row.Category),
+                  min_value: row.Min_Value ? Number(row.Min_Value) : null,
+                  max_value: row.Max_Value ? Number(row.Max_Value) : null,
+                  opc_min_value: row.OPC_Min_Value ? Number(row.OPC_Min_Value) : null,
+                  opc_max_value: row.OPC_Max_Value ? Number(row.OPC_Max_Value) : null,
+                  pcc_min_value: row.PCC_Min_Value ? Number(row.PCC_Min_Value) : null,
+                  pcc_max_value: row.PCC_Max_Value ? Number(row.PCC_Max_Value) : null,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Parameter Settings import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Silo Capacities
+      if (sheets['Silo Capacities']) {
+        try {
+          const siloData = sheets['Silo Capacities'];
+          if (siloData.length > 0) {
+            const requiredFields = ['Plant_Category', 'Unit', 'Silo_Name', 'Capacity'];
+            const invalidRows = siloData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Silo Capacities row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of siloData) {
+                await addSilo({
+                  plant_category: String(row.Plant_Category),
+                  unit: String(row.Unit),
+                  silo_name: String(row.Silo_Name),
+                  capacity: Number(row.Capacity),
+                  dead_stock: row.Dead_Stock ? Number(row.Dead_Stock) : 0,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Silo Capacities import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import Report Settings
+      if (sheets['Report Settings']) {
+        try {
+          const reportData = sheets['Report Settings'];
+          if (reportData.length > 0) {
+            const requiredFields = ['Parameter_ID', 'Category'];
+            const invalidRows = reportData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `Report Settings row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const [index, row] of reportData.entries()) {
+                await addReportSetting({
+                  parameter_id: String(row.Parameter_ID),
+                  category: String(row.Category),
+                  order: reportSettings.length + index,
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `Report Settings import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Import PIC Settings
+      if (sheets['PIC Settings']) {
+        try {
+          const picData = sheets['PIC Settings'];
+          if (picData.length > 0) {
+            const requiredFields = ['PIC'];
+            const invalidRows = picData.filter((row, index) => {
+              const missingFields = requiredFields.filter((field) => !row[field]);
+              if (missingFields.length > 0) {
+                errorMessages.push(
+                  `PIC Settings row ${index + 2}: Missing required fields: ${missingFields.join(', ')}`
+                );
+                return true;
+              }
+              return false;
+            });
+
+            if (invalidRows.length === 0) {
+              for (const row of picData) {
+                await addPicSetting({
+                  pic: String(row.PIC),
+                });
+                importCount++;
+              }
+            }
+          }
+        } catch (error) {
+          errorMessages.push(
+            `PIC Settings import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        }
+      }
+
+      // Show results
+      if (importCount > 0) {
+        alert(`Successfully imported ${importCount} records.`);
+      }
+
+      if (errorMessages.length > 0) {
+        alert(`Import completed with errors:\n${errorMessages.join('\n')}`);
+      }
+    } catch (error) {
+      alert(
+        `An error occurred during import: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      );
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 pb-12">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 transition-all duration-200" title={t['op_master_data']}>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col items-start gap-2">
+            <div className="inline-flex items-center mb-1 gap-2">
+              <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium py-1 px-2 rounded-full">
+                {t['op_master_data']}
+              </span>
+              <RealtimeIndicator isConnected={true} lastUpdate={new Date()} className="text-xs" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+              {t['op_master_data']}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImportAll}
+              accept=".xlsx, .xls"
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <DocumentArrowUpIcon className="w-4.5 h-4.5" />
+              {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
+            </button>
+            <button
+              onClick={handleExportAll}
+              disabled={isExporting}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 rounded-lg shadow-sm hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <DocumentArrowDownIcon className="w-4.5 h-4.5" />
+              {isExporting ? t['exporting'] || 'Exporting...' : t['export_all']}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Plant Unit Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 transition-all duration-200 hover:shadow-xl" title={t['plant_unit_title']}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div>
+            <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium py-1 px-2 rounded-full mb-2 inline-block">
+              {t['plant_unit_title']}
+            </span>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+              {t['plant_unit_title']}
+            </h2>
+          </div>
+          <button
+            onClick={() => handleOpenAddModal('plantUnit')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700 transition-colors duration-200 w-full sm:w-auto justify-center"
+          >
+            <PlusIcon className="w-4 h-4" /> {t['add_data_button']}
+          </button>
+        </div>
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-100 dark:bg-slate-700/70">
+              <tr>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {t['unit']}
+                </th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {t['plant_category']}
+                </th>
+                <th className="relative px-6 py-3.5">
+                  <span className="sr-only">{t['actions']}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {plantUnitsLoading ? (
+                <tr>
+                  <td colSpan={3} className="px-6 py-10 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <LoadingSpinner size="md" className="text-red-500" />
+                      <span className="text-slate-500 dark:text-slate-400 animate-pulse">
+                        Loading plant units...
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedPlantUnits.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-10 text-center"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="rounded-full bg-slate-100 dark:bg-slate-700 p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938-9h13.856c1.54 0 2.502 1.667 1.732 3L13.732 15c-.77 1.333-2.694 1.333-3.464 0L3.34 7c-.77-1.333.192-3 1.732-3z" />
+                        </svg>
+                      </div>
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">No plant units found</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedPlantUnits.map((unit) => (
+                  <tr key={unit.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/70 transition-colors duration-150">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {unit.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium">
+                        {unit.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-1">
+                        <button
+                          onClick={() => handleOpenEditModal('plantUnit', unit)}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
+                          title="Edit"
+                        >
+                          <EditIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                          title="Delete"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex justify-between items-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Showing <span className="font-medium text-slate-700 dark:text-slate-300">{((puCurrentPage - 1) * 10) + 1}</span> to{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-300">
+              {Math.min(puCurrentPage * 10, plantUnits.length)}
+            </span> of{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-300">{plantUnits.length}</span> plant units
+          </p>
+          <Pagination
+            currentPage={puCurrentPage}
+            totalPages={puTotalPages}
+            onPageChange={setPuCurrentPage}
+            className="shadow-sm"
+          />
+        </div>
+      </div>
+
+      {/* PIC Settings Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 transition-all duration-200 hover:shadow-xl" title={t['pic_setting_title']}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div>
+            <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium py-1 px-2 rounded-full mb-2 inline-block">
+              {t['pic_setting_title']}
+            </span>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+              {t['pic_setting_title']}
+            </h2>
+          </div>
+          <button
+            onClick={() => handleOpenAddModal('picSetting')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700 transition-colors duration-200 w-full sm:w-auto justify-center"
+          >
+            <PlusIcon className="w-4 h-4" /> {t['add_data_button']}
+          </button>
+        </div>
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 shadow">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-100 dark:bg-slate-700/70">
+              <tr>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  {t['pic']}
+                </th>
+                <th className="relative px-6 py-3.5">
+                  <span className="sr-only">{t['actions']}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {paginatedPicSettings.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={2}
+                    className="px-6 py-10 text-center"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="rounded-full bg-slate-100 dark:bg-slate-700 p-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938-9h13.856c1.54 0 2.502 1.667 1.732 3L13.732 15c-.77 1.333-2.694 1.333-3.464 0L3.34 7c-.77-1.333.192-3 1.732-3z" />
+                        </svg>
+                      </div>
+                      <span className="text-slate-500 dark:text-slate-400 font-medium">No PIC settings found</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedPicSettings.map((pic) => (
+                  <tr key={pic.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/70 transition-colors duration-150">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+                          {pic.pic.substring(0, 1).toUpperCase()}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{pic.pic}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-1">
+                        <button
+                          onClick={() => handleOpenEditModal('picSetting', pic)}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"
+                          title="Edit"
+                        >
+                          <EditIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                          title="Delete"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-4 flex justify-between items-center">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Showing <span className="font-medium text-slate-700 dark:text-slate-300">{((picCurrentPage - 1) * 10) + 1}</span> to{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-300">
+              {Math.min(picCurrentPage * 10, picSettings.length)}
+            </span> of{" "}
+            <span className="font-medium text-slate-700 dark:text-slate-300">{picSettings.length}</span> PIC settings
+          </p>
+          <Pagination
+            currentPage={picCurrentPage}
+            totalPages={picTotalPages}
+            onPageChange={setPicCurrentPage}
+            className="shadow-sm"
+          />
+        </div>
+      </div>
+
+      {/* Parameter Settings Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 transition-all duration-200 hover:shadow-xl" title={t['parameter_settings_title']}>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div>
+              <span className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-medium py-1 px-2 rounded-full mb-2 inline-block">
+                {t['parameter_settings_title']}
+              </span>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
+                {t['parameter_settings_title']}
+              </h2>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                <div className="w-full flex flex-col gap-1.5">
+                  <label
+                    htmlFor="param-cat-filter"
+                    className="text-xs font-medium text-slate-600 dark:text-slate-400"
+                  >
+                    Plant Category
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="param-cat-filter"
+                      value={parameterCategoryFilter}
+                      onChange={handleParameterCategoryChange}
+                      className="w-full pl-3.5 pr-10 py-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-all duration-200"
+                    >
+                      {uniquePlantCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2.5 pointer-events-none text-slate-500">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
+                </div>
+                <div className="w-full flex flex-col gap-1.5">
+                  <label
+                    htmlFor="param-unit-filter"
+                    className="text-xs font-medium text-slate-600 dark:text-slate-400"
+                  >
+                    Unit
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="param-unit-filter"
+                      value={parameterUnitFilter}
+                      onChange={(e) => setParameterUnitFilter(e.target.value)}
+                      className="w-full pl-3.5 pr-10 py-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:text-slate-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed text-sm transition-all duration-200"
+                      disabled={unitsForParameterFilter.length === 0}
+                    >
+                      {unitsForParameterFilter.map((unit) => (
+                        <option key={unit} value={unit}>
+                          {unit}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2.5 pointer-events-none text-slate-500">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleOpenAddModal('parameterSetting')}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg shadow-sm hover:bg-red-700 transition-colors duration-200 w-full sm:w-auto"
+              >
+                <PlusIcon className="w-4 h-4" /> {t['add_data_button']}
+              </button>
+            </div>
+          </div>
+
+        {/* Parameter Search */}
+        <div className="mt-4 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+          <div className="flex-1 max-w-md">
+            <div className="parameter-search-input relative">
+              <SearchInput
+                placeholder={t['parameter_search_placeholder'] || "Search parameters..."}
+                value={parameterSearchQuery}
+                onChange={(e) => setParameterSearchQuery(e.target.value)}
+                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md pl-10 pr-3 py-2.5 text-sm"
+              />
+              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {isParameterSearchActive && (
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                <span className="font-medium text-slate-700 dark:text-slate-300">{filteredParameterSettings.length}</span>{' '}
+                {filteredParameterSettings.length === 1
+                  ? t['parameter_search_results']
+                  : t['parameter_search_results_plural']}
+              </div>
+              <button
+                onClick={clearParameterSearch}
+                className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors font-medium flex items-center gap-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                {t['parameter_clear_search']}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['parameter_id']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['parameter']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['data_type']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['unit']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['category']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['min_value']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['max_value']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  OPC Min
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  OPC Max
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  PCC Min
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  PCC Max
+                </th>
+                <th className="relative px-6 py-3">
+                  <span className="sr-only">{t['actions']}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {paginatedParams.map((param) => (
+                <tr key={param.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-500 dark:text-slate-400">
+                    {param.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {param.parameter}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.unit}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.category}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER ? (param.min_value ?? '-') : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER ? (param.max_value ?? '-') : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.opc_min_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.opc_max_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.pcc_min_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.data_type === ParameterDataType.NUMBER
+                      ? (param.pcc_max_value ?? '-')
+                      : '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-2">
+                      <button
+                        onClick={() => handleOpenEditModal('parameterSetting', param)}
+                        className="p-2 text-slate-400 hover:text-red-600"
+                      >
+                        <EditIcon />
+                      </button>
+                      <button
+                        onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
+                        className="p-2 text-slate-400 hover:text-red-600"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredParameterSettings.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="text-center py-10 text-slate-500 dark:text-slate-400">
+                    No parameters match the selected filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          currentPage={paramsCurrentPage}
+          totalPages={paramsTotalPages}
+          onPageChange={setParamsCurrentPage}
+        />
+      </div>
+
+      {/* Silo Capacity Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md" title={t['silo_capacity_title']}>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-2 gap-4">
+          <div>
+            <span className="text-sm font-medium text-red-600 dark:text-red-500 block mb-1">
+              {t['silo_capacity_title']}
+            </span>
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+              {t['silo_capacity_title']}
+            </h2>
+          </div>
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="silo-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="silo-cat-filter"
+                  value={siloCategoryFilter}
+                  onChange={(e) => setSiloCategoryFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="silo-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="silo-unit-filter"
+                  value={siloUnitFilter}
+                  onChange={(e) => setSiloUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForSiloFilter.length === 0}
+                >
+                  {unitsForSiloFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <button
+              onClick={() => handleOpenAddModal('siloCapacity')}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+            >
+              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
+            </button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['plant_category']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['unit']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['silo_name']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['capacity']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['dead_stock']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['silo_lifestock']}
+                </th>
+                <th className="relative px-6 py-3">
+                  <span className="sr-only">{t['actions']}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {paginatedSilos.map((silo) => {
+                const lifestock = silo.capacity - silo.dead_stock;
+                return (
+                  <tr key={silo.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {silo.plant_category}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {silo.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {silo.silo_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {formatNumber(silo.capacity)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {formatNumber(silo.dead_stock)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 dark:text-slate-200 font-semibold">
+                      {formatNumber(lifestock)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => handleOpenEditModal('siloCapacity', silo)}
+                          className="p-2 text-slate-400 hover:text-red-600"
+                        >
+                          <EditIcon />
+                        </button>
+                        <button
+                          onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
+                          className="p-2 text-slate-400 hover:text-red-600"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filteredSiloCapacities.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="text-center py-10 text-slate-500">
+                    No silo capacities match the selected filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          currentPage={silosCurrentPage}
+          totalPages={silosTotalPages}
+          onPageChange={setSilosCurrentPage}
+        />
+      </div>
+
+      {/* COP Parameters Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md" title={t['cop_parameters_title']}>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-2 gap-4">
+          <div>
+            <span className="text-sm font-medium text-red-600 dark:text-red-500 block mb-1">
+              {t['cop_parameters_title']}
+            </span>
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+              {t['cop_parameters_title']}
+            </h2>
+          </div>
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-cat-filter"
+                  value={copCategoryFilter}
+                  onChange={(e) => setCopCategoryFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="cop-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="cop-unit-filter"
+                  value={copUnitFilter}
+                  onChange={(e) => setCopUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForCopFilter.length === 0}
+                >
+                  {unitsForCopFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <button
+              onClick={handleOpenCopModal}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+            >
+              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
+            </button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['parameter']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['unit']}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  {t['category']}
+                </th>
+                <th className="relative px-6 py-3">
+                  <span className="sr-only">{t['actions']}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+              {paginatedCopParams.map((param) => (
+                <tr key={param.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {param.parameter}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.unit}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                    {param.category}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => handleRemoveCopParameter(param.id)}
+                      className="p-2 text-slate-400 hover:text-red-600"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {copParameters.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="text-center py-10 text-slate-500 dark:text-slate-400">
+                    No COP parameters selected.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          currentPage={copCurrentPage}
+          totalPages={copTotalPages}
+          onPageChange={setCopCurrentPage}
+        />
+      </div>
+
+      {/* Report Settings Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md" title={t['report_settings_title']}>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-2 gap-4">
+          <div>
+            <span className="text-sm font-medium text-red-600 dark:text-red-500 block mb-1">
+              {t['report_settings_title']}
+            </span>
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
+              {t['report_settings_title']}
+            </h2>
+          </div>
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="report-cat-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="report-cat-filter"
+                  value={reportCategoryFilter}
+                  onChange={handleReportCategoryChange}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="report-unit-filter"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="report-unit-filter"
+                  value={reportUnitFilter}
+                  onChange={(e) => setReportUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForReportFilter.length === 0}
+                >
+                  {unitsForReportFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <button
+              onClick={() => handleOpenAddModal('reportSetting')}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
+            >
+              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
+            </button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <DragDropContext onDragEnd={handleReportSettingsDragEnd}>
+            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+              <thead className="bg-slate-50 dark:bg-slate-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['order'] || 'Order'}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['parameter']}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['plant_category']}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['unit']}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                    {t['category']}
+                  </th>
+                  <th className="relative px-6 py-3">
+                    <span className="sr-only">{t['actions']}</span>
+                  </th>
+                </tr>
+              </thead>
+              <Droppable droppableId="report-settings">
+                {(provided) => (
+                  <tbody
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700"
+                  >
+                    {paginatedReportSettings.map((setting, index) => {
+                      const parameter = allParametersMap.get(setting.parameter_id);
+                      return (
+                        <Draggable key={setting.id} draggableId={setting.id} index={index}>
+                          {(provided, snapshot) => (
+                            <tr
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                                snapshot.isDragging ? 'bg-slate-100 dark:bg-slate-600' : ''
+                              }`}
+                            >
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                <div className="flex items-center gap-2">
+                                  <div {...provided.dragHandleProps} className="cursor-grab">
+                                    <GripVertical className="w-4 h-4" />
+                                  </div>
+                                  {setting.order}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {parameter?.parameter || 'Unknown Parameter'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                {parameter?.category || '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                {parameter?.unit || '-'}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                {setting.category}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <button
+                                    onClick={() => handleOpenEditModal('reportSetting', setting)}
+                                    className="p-2 text-slate-400 hover:text-red-600"
+                                  >
+                                    <EditIcon />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleOpenDeleteModal(setting.id, 'reportSetting')
+                                    }
+                                    className="p-2 text-slate-400 hover:text-red-600"
+                                  >
+                                    <TrashIcon />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Draggable>
+                      );
+                    })}
+                    {provided.placeholder}
+                  </tbody>
+                )}
+              </Droppable>
+            </table>
+          </DragDropContext>
+        </div>
+        <Pagination
+          currentPage={rsCurrentPage}
+          totalPages={rsTotalPages}
+          onPageChange={setRsCurrentPage}
+        />
+      </div>
+
+      {/* Modals */}
+      <Modal
+        isOpen={activeModal !== null && !isDeleteModalOpen}
+        onClose={handleCloseModals}
+        title={
+          activeModal === 'plantUnit'
+            ? editingPlantUnit
+              ? t['edit_plant_unit_title']
+              : t['add_plant_unit_title']
+            : activeModal === 'parameterSetting'
+              ? editingParameter
+                ? t['edit_parameter_title']
+                : t['add_parameter_title']
+              : activeModal === 'siloCapacity'
+                ? editingSilo
+                  ? t['edit_silo_title']
+                  : t['add_silo_title']
+                : activeModal === 'reportSetting'
+                  ? editingReportSetting
+                    ? t['edit_report_parameter_title']
+                    : t['add_report_parameter_title']
+                  : activeModal === 'picSetting'
+                    ? editingPic
+                      ? t['edit_pic_title']
+                      : t['add_pic_title']
+                    : ''
+        }
+      >
+        {activeModal === 'plantUnit' && (
+          <PlantUnitForm
+            recordToEdit={editingPlantUnit}
+            onSave={(r) => handleSave('plantUnit', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
+        )}
+        {activeModal === 'parameterSetting' && (
+          <ParameterSettingForm
+            recordToEdit={editingParameter}
+            onSave={(r) => handleSave('parameterSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
+        )}
+        {activeModal === 'siloCapacity' && (
+          <SiloCapacityForm
+            recordToEdit={editingSilo}
+            onSave={(r) => handleSave('siloCapacity', r)}
+            onCancel={handleCloseModals}
+            t={t}
+            plantUnits={plantUnits}
+          />
+        )}
+        {activeModal === 'reportSetting' && (
+          <ReportSettingForm
+            recordToEdit={editingReportSetting}
+            onSave={(r) => handleSave('reportSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+            allParameters={parameterSettings}
+            existingParameterIds={reportSettings.map((rs) => rs.parameter_id)}
+            selectedCategory={reportCategoryFilter}
+            selectedUnit={reportUnitFilter}
+            maxOrder={maxReportSettingOrder}
+          />
+        )}
+        {activeModal === 'picSetting' && (
+          <PicSettingForm
+            recordToEdit={editingPic}
+            onSave={(r) => handleSave('picSetting', r)}
+            onCancel={handleCloseModals}
+            t={t}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseModals}
+        title={t['delete_confirmation_title']}
+      >
+        <div className="p-6">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            {t['delete_confirmation_message']}
+          </p>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+          <button
+            onClick={handleDeleteConfirm}
+            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            {t['confirm_delete_button']}
+          </button>
+          <button
+            onClick={handleCloseModals}
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            {t['cancel_button']}
+          </button>
+        </div>
+      </Modal>
+
+      {/* COP Selection Modal */}
+      <Modal
+        isOpen={isCopModalOpen}
+        onClose={handleCloseCopModal}
+        title={t['cop_parameters_title']}
+      >
+        <div className="border-b border-slate-200 dark:border-slate-700 p-6">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            Select the parameters from Parameter Settings to be included in the COP (Cost of
+            Production) analysis. Only numerical parameters are shown.
+          </p>
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0 mt-4">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="modal-cop-filter-category"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Plant Category:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="modal-cop-filter-category"
+                  value={copCategoryFilter}
+                  onChange={(e) => setCopCategoryFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                >
+                  {uniquePlantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <label
+                htmlFor="modal-cop-filter-unit"
+                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+              >
+                Unit:
+              </label>
+              <div className="relative flex-1 min-w-0">
+                <select
+                  id="modal-cop-filter-unit"
+                  value={copUnitFilter}
+                  onChange={(e) => setCopUnitFilter(e.target.value)}
+                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  disabled={unitsForCopFilter.length === 0}
+                >
+                  {unitsForCopFilter.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {parameterSettings
+              .filter((p) => p.data_type === ParameterDataType.NUMBER)
+              .filter((p) => {
+                if (!copCategoryFilter || !copUnitFilter) return false;
+                const categoryMatch = p.category === copCategoryFilter;
+                const unitMatch = p.unit === copUnitFilter;
+                return categoryMatch && unitMatch;
+              })
+              .map((param) => (
+                <label
+                  key={param.id}
+                  className="flex items-center p-3 rounded-md border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={tempCopSelection.includes(param.id)}
+                    onChange={() => handleCopSelectionChange(param.id)}
+                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600 rounded"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 dark:text-slate-300 select-none">
+                    {param.parameter}{' '}
+                    <span className="text-slate-400 dark:text-slate-500">({param.category})</span>
+                  </span>
+                </label>
+              ))}
+          </div>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+          <button
+            onClick={handleSaveCopSelection}
+            type="button"
+            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            {t['save_button']}
+          </button>
+          <button
+            type="button"
+            onClick={handleCloseCopModal}
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+          >
+            {t['cancel_button']}
+          </button>
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+};
+
+export default PlantOperationsMasterData;

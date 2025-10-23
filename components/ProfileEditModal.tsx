@@ -3,8 +3,7 @@ import Modal from './Modal';
 import { User } from '../types';
 import UserIcon from './icons/UserIcon';
 import PhotoIcon from './icons/PhotoIcon';
-import { supabase } from '../utils/supabase';
-import { v4 as uuidv4 } from 'uuid';
+import { pb } from '../utils/pocketbase';
 
 // Utility functions for image optimization
 const compressImage = (
@@ -119,7 +118,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     [t]
   );
 
-  const uploadFileToSupabase = useCallback(
+  const uploadFileToPocketBase = useCallback(
     async (file: File, attempt: number = 1): Promise<string | null> => {
       const maxRetries = 3;
       abortControllerRef.current = new AbortController();
@@ -129,38 +128,32 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
           throw new Error('User not logged in');
         }
 
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}_${uuidv4()}.${fileExt}`;
-        const filePath = `${fileName}`;
+        // Prepare FormData object for file upload to PocketBase
+        const formData = new FormData();
+        formData.append('avatar', file); // 'avatar' is the name of the field in PocketBase
 
-        // Upload with progress tracking (simulated since Supabase doesn't support onUploadProgress)
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('avatars')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: true,
-          });
+        // Update the user with the new avatar
+        const updatedUser = await pb.collection('users').update(user.id, formData);
 
-        if (uploadError) {
-          console.error('Upload error details:', uploadError);
-          throw new Error(`Upload failed: ${uploadError.message}`);
+        if (!updatedUser || !updatedUser.avatar) {
+          throw new Error('Failed to upload avatar to PocketBase');
         }
 
-        // Get public URL
-        const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        // Get the file URL from PocketBase
+        const avatarUrl = pb.files.getUrl(updatedUser, updatedUser.avatar);
 
-        if (!data?.publicUrl) {
-          throw new Error('Failed to get public URL for uploaded file');
+        if (!avatarUrl) {
+          throw new Error('Failed to get avatar URL from PocketBase');
         }
 
-        return data.publicUrl;
+        return avatarUrl;
       } catch (error: unknown) {
         console.error(`Upload attempt ${attempt} failed:`, error);
 
         if (attempt < maxRetries && !abortControllerRef.current?.signal.aborted) {
           setRetryCount(attempt);
           await new Promise((resolve) => setTimeout(resolve, attempt * 2000));
-          return uploadFileToSupabase(file, attempt + 1);
+          return uploadFileToPocketBase(file, attempt + 1);
         }
 
         throw error;
@@ -200,8 +193,8 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
       };
       reader.readAsDataURL(compressedFile);
 
-      // Upload to Supabase with retry
-      const publicUrl = await uploadFileToSupabase(compressedFile);
+      // Upload to PocketBase with retry
+      const publicUrl = await uploadFileToPocketBase(compressedFile);
       setUploadedAvatarUrl(publicUrl);
       setUploadProgress(100);
     } catch (error: unknown) {
@@ -217,14 +210,32 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
 
-    onSave({
-      ...user,
-      full_name: fullName,
-      avatar_url: uploadedAvatarUrl || user.avatar_url,
-    });
+    try {
+      // Update user data in PocketBase
+      const formData = {
+        name: fullName, // PocketBase menggunakan 'name' bukan 'full_name'
+      };
+
+      // If we have a new avatar, it's already been uploaded in the uploadFileToPocketBase function
+      // So we don't need to include avatar in this update
+
+      // Update user in PocketBase
+      await pb.collection('users').update(user.id, formData);
+
+      // Notify parent component about the update
+      onSave({
+        ...user,
+        full_name: fullName,
+        avatar_url: uploadedAvatarUrl || user.avatar_url,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update profile:', err);
+      // You might want to add proper error handling/notification here
+    }
   };
 
   if (!user) {

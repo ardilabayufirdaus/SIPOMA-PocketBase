@@ -1,13 +1,10 @@
 export type UserRole =
   | 'Super Admin'
   | 'Admin'
-  | 'Admin Tonasa 2/3'
-  | 'Admin Tonasa 4'
-  | 'Admin Tonasa 5'
+  | 'Manager'
   | 'Operator'
-  | 'Operator Tonasa 2/3'
-  | 'Operator Tonasa 4'
-  | 'Operator Tonasa 5'
+  | 'Outsourcing'
+  | 'Autonomous'
   | 'Guest';
 
 export type PermissionLevel = 'NONE' | 'READ' | 'WRITE' | 'ADMIN';
@@ -19,12 +16,10 @@ export interface PlantOperationsPermissions {
 }
 
 export interface PermissionMatrix {
-  dashboard: PermissionLevel;
-  plant_operations: PlantOperationsPermissions;
-  inspection: PermissionLevel;
-  project_management: PermissionLevel;
-  system_settings: PermissionLevel;
-  user_management: PermissionLevel;
+  dashboard: PermissionLevel | PlantOperationsPermissions;
+  plant_operations: PermissionLevel | PlantOperationsPermissions;
+  inspection: PermissionLevel | PlantOperationsPermissions;
+  project_management: PermissionLevel | PlantOperationsPermissions;
 }
 
 export interface User {
@@ -36,10 +31,11 @@ export interface User {
   role: UserRole;
   avatar_url?: string;
   is_active: boolean;
-  last_active?: Date;
-  created_at: Date;
-  updated_at: Date;
+  last_active?: Date | string;
+  created_at: string | Date;
+  updated_at: string | Date;
   permissions: PermissionMatrix;
+  is_custom_permissions?: boolean; // Flag untuk menandai apakah permissions sudah di-custom
 }
 
 export interface AddUserData {
@@ -124,19 +120,28 @@ export interface WorkInstruction {
 
 // CCR Data Entry
 export interface CcrSiloData {
-  id: string; // combination of siloId and date
-  silo_id: string;
-  date: string; // YYY-MM-DD
-  shift1: { emptySpace?: number; content?: number };
-  shift2: { emptySpace?: number; content?: number };
-  shift3: { emptySpace?: number; content?: number };
+  id?: string; // combination of siloId and date
+  silo_id?: string;
+  date?: string; // YYYY-MM-DD
+  shift1: { emptySpace: number | undefined; content: number | undefined };
+  shift2: { emptySpace: number | undefined; content: number | undefined };
+  shift3: { emptySpace: number | undefined; content: number | undefined };
+  // Properti tambahan yang mungkin ada
+  capacity?: number;
+  percentage?: number;
+  silo_name?: string;
+  weight_value?: number;
+  status?: string;
+  unit_id?: string;
 }
 
 export interface CcrParameterData {
   id: string; // combination of parameterId and date
   parameter_id: string;
   date: string; // YYYY-MM-DD
-  hourly_values: { [hour: number]: string | number }; // hour is 1-24 - LEGACY
+  hourly_values: {
+    [hour: number]: string | number | { value: string | number; user_name: string };
+  }; // hour is 1-24
 }
 
 // Extended interface with name field for legacy compatibility

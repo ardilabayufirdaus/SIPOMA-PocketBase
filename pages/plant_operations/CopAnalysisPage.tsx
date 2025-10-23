@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
+import { useCopParameters } from '../../hooks/useCopParameters';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { ParameterSetting } from '../../types';
@@ -132,7 +132,6 @@ interface AnalysisDataRow {
 }
 
 const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
-  const { copParameterIds } = useCopParametersSupabase();
   const { records: allParameters } = useParameterSettings();
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
@@ -146,7 +145,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Set default filter so not all parameters are shown for all categories/units
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
-  const [selectedCementType, setSelectedCementType] = useState('OPC');
+  const [selectedCementType, setSelectedCementType] = useState('');
   const [selectedOperator, setSelectedOperator] = useState('');
   const [selectedParameterStats, setSelectedParameterStats] = useState<{
     parameter: string;
@@ -157,6 +156,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     stdev: number | null;
     qaf: number | null;
   } | null>(null);
+
+  const { copParameterIds } = useCopParameters(selectedCategory, selectedUnit);
 
   // State untuk urutan parameter per user
   const [parameterOrder, setParameterOrder] = useState<string[]>([]);
@@ -605,16 +606,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     () =>
       Array.from({ length: 12 }, (_, i) => ({
         value: i,
-        label:
-          t[
-            `month_${
-              ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][
-                i
-              ]
-            }`
-          ],
+        label: [
+          'Januari',
+          'Februari',
+          'Maret',
+          'April',
+          'Mei',
+          'Juni',
+          'Juli',
+          'Agustus',
+          'September',
+          'Oktober',
+          'November',
+          'Desember',
+        ][i],
       })),
-    [t]
+    []
   );
 
   const daysHeader = useMemo(
@@ -717,6 +724,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   onChange={(e) => setSelectedCementType(e.target.value)}
                   className="w-full pl-4 pr-8 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
                 >
+                  <option value="">Pilih Cement Type</option>
                   <option value="OPC">OPC</option>
                   <option value="PCC">PCC</option>
                 </select>

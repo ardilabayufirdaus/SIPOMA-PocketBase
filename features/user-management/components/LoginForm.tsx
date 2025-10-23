@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SHA256 } from 'crypto-js';
-import { supabase } from '../../../utils/supabaseClient';
+import { pb } from '../../../utils/pocketbase';
 import { useAuth } from '../../../hooks/useAuth';
 import { translations } from '../../../translations';
 

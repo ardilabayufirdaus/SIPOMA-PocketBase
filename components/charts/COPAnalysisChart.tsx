@@ -106,3 +106,4 @@ export const COPAnalysisChart: React.FC<COPAnalysisChartProps> = ({ data }) => {
     </div>
   );
 };
+

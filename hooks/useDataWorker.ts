@@ -127,3 +127,4 @@ export const useDataWorker = () => {
     isWorkerReady: !!workerRef.current,
   };
 };
+

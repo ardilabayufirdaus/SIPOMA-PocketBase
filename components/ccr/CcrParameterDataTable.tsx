@@ -23,6 +23,7 @@ interface CcrParameterDataTableProps {
   formatStatValue: (value: number | undefined, precision?: number) => string;
   parameterShiftFooterData: any;
   parameterFooterData: any;
+  currentUserName?: string;
 }
 
 const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
@@ -39,9 +40,10 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     shouldHighlightColumn,
     formatInputValue,
     parseInputValue,
-    formatStatValue,
-    parameterShiftFooterData,
-    parameterFooterData,
+    formatStatValue: _formatStatValue,
+    parameterShiftFooterData: _parameterShiftFooterData,
+    parameterFooterData: _parameterFooterData,
+    currentUserName,
   }) => {
     // Virtual scrolling state
     const [scrollTop, setScrollTop] = useState(0);
@@ -49,15 +51,15 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     const rowHeight = 48; // Approximate height per row
     const visibleRows = Math.ceil(containerHeight / rowHeight) + 2; // Add buffer
     const totalRows = 24;
-    
+
     // Calculate visible range
     const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - 1);
     const endRow = Math.min(totalRows - 1, startRow + visibleRows);
-    const visibleHours = useMemo(() => 
-      Array.from({ length: endRow - startRow + 1 }, (_, i) => startRow + i + 1),
+    const visibleHours = useMemo(
+      () => Array.from({ length: endRow - startRow + 1 }, (_, i) => startRow + i + 1),
       [startRow, endRow]
     );
-    
+
     // Handle scroll
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
       setScrollTop(e.currentTarget.scrollTop);
@@ -72,7 +74,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
         const viewportHeight = window.innerHeight;
         setContainerHeight(Math.min(600, viewportHeight * 0.6)); // 60% of viewport, max 600px
       };
-      
+
       updateHeight();
       window.addEventListener('resize', updateHeight);
       return () => window.removeEventListener('resize', updateHeight);
@@ -257,7 +259,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                 >
                   {/* Spacer for virtual scrolling */}
                   <tr style={{ height: startRow * rowHeight }} />
-                  
+
                   {filteredParameterSettings.length > 0 ? (
                     visibleHours.map((hour) => (
                       <tr
@@ -301,26 +303,31 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                               const filledParam = filteredParameterSettings.find((param) => {
                                 const paramData = parameterDataMap.get(param.id);
                                 if (!paramData?.hourly_values?.[hour]) return false;
-                                const hourData = paramData.hourly_values[hour] as any;
-                                if (!hourData || typeof hourData !== 'object') return false;
+                                const hourData = paramData.hourly_values[hour];
                                 return (
-                                  'value' in hourData &&
-                                  hourData.value !== undefined &&
-                                  hourData.value !== ''
+                                  hourData !== undefined && hourData !== '' && hourData !== null
                                 );
                               });
+
                               if (filledParam) {
                                 const paramData = parameterDataMap.get(filledParam.id);
-                                const hourData = paramData?.hourly_values?.[hour] as any;
-                                const userName =
+                                const hourData = paramData?.hourly_values?.[hour];
+
+                                // Extract user_name from data
+                                let userName = currentUserName || 'Unknown User';
+                                if (
                                   hourData &&
                                   typeof hourData === 'object' &&
-                                  hourData !== null &&
                                   'user_name' in hourData
-                                    ? String(hourData.user_name || '')
-                                    : '';
+                                ) {
+                                  userName = hourData.user_name;
+                                }
+
                                 return (
-                                  <span className="truncate" title={userName}>
+                                  <span
+                                    className="truncate font-medium text-slate-700 dark:text-slate-300"
+                                    title={userName}
+                                  >
                                     {userName}
                                   </span>
                                 );
@@ -330,7 +337,20 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                           </div>
                         </td>
                         {filteredParameterSettings.map((param, paramIndex) => {
-                          const value = parameterDataMap.get(param.id)?.hourly_values[hour] ?? '';
+                          const hourData = parameterDataMap.get(param.id)?.hourly_values?.[hour];
+
+                          // Extract value based on data format
+                          let value = '';
+                          if (hourData !== undefined && hourData !== null) {
+                            if (typeof hourData === 'object' && 'value' in hourData) {
+                              // New format with user tracking
+                              value = String(hourData.value);
+                            } else {
+                              // Legacy format (direct value)
+                              value = String(hourData);
+                            }
+                          }
+
                           const isCurrentlySaving = savingParameterId === param.id;
 
                           return (
@@ -411,7 +431,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                               </div>
                             </td>
                           );
-                        )}
+                        })}
                       </tr>
                     ))
                   ) : (
@@ -431,7 +451,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       </td>
                     </tr>
                   )}
-                  
+
                   {/* Spacer for virtual scrolling */}
                   <tr style={{ height: (totalRows - endRow - 1) * rowHeight }} />
                 </tbody>

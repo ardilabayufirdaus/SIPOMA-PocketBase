@@ -10,13 +10,7 @@ import { UserRole } from '../types';
 export const isAdminRole = (role: UserRole | undefined | null): boolean => {
   if (!role) return false;
 
-  return (
-    role === 'Super Admin' ||
-    role === 'Admin' ||
-    role === 'Admin Tonasa 2/3' ||
-    role === 'Admin Tonasa 4' ||
-    role === 'Admin Tonasa 5'
-  );
+  return role === 'Super Admin' || role === 'Admin' || role === 'Manager';
 };
 
 /**
@@ -32,12 +26,7 @@ export const hasAdminPrivileges = (role: UserRole | undefined | null): boolean =
 export const isOperatorRole = (role: UserRole | undefined | null): boolean => {
   if (!role) return false;
 
-  return (
-    role === 'Operator' ||
-    role === 'Operator Tonasa 2/3' ||
-    role === 'Operator Tonasa 4' ||
-    role === 'Operator Tonasa 5'
-  );
+  return role === 'Operator' || role === 'Outsourcing' || role === 'Autonomous';
 };
 
 /**
@@ -49,41 +38,27 @@ export const isSuperAdmin = (role: UserRole | undefined | null): boolean => {
 
 /**
  * Check if a user role is Tonasa-specific admin
+ * Note: With new role structure, this always returns false
  */
-export const isTonasaAdmin = (role: UserRole | undefined | null): boolean => {
-  if (!role) return false;
-
-  return role === 'Admin Tonasa 2/3' || role === 'Admin Tonasa 4' || role === 'Admin Tonasa 5';
+export const isTonasaAdmin = (_role: UserRole | undefined | null): boolean => {
+  return false; // No more Tonasa-specific roles
 };
 
 /**
  * Check if a user role is Tonasa-specific operator
+ * Note: With new role structure, this always returns false
  */
-export const isTonasaOperator = (role: UserRole | undefined | null): boolean => {
-  if (!role) return false;
-
-  return (
-    role === 'Operator Tonasa 2/3' || role === 'Operator Tonasa 4' || role === 'Operator Tonasa 5'
-  );
+export const isTonasaOperator = (_role: UserRole | undefined | null): boolean => {
+  return false; // No more Tonasa-specific roles
 };
 
 /**
  * Get the plant category for Tonasa roles
  */
-export const getTonasaPlantCategory = (role: UserRole | undefined | null): string | null => {
-  if (!role) return null;
-
-  switch (role) {
-    case 'Admin Tonasa 2/3':
-    case 'Operator Tonasa 2/3':
-      return 'Tonasa 2/3';
-    case 'Admin Tonasa 4':
-    case 'Operator Tonasa 4':
-      return 'Tonasa 4';
-    case 'Admin Tonasa 5':
-    case 'Operator Tonasa 5':
-      return 'Tonasa 5';
-    default:
-      return null;
-  }
+/**
+ * Get Tonasa plant category from role
+ * Note: With new role structure, this always returns null
+ */
+export const getTonasaPlantCategory = (_role: UserRole | undefined | null): string | null => {
+  return null; // No more Tonasa-specific roles
 };

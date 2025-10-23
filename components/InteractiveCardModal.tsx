@@ -340,3 +340,4 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
     </div>
   );
 };
+

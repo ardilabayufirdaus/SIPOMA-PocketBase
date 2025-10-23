@@ -24,6 +24,12 @@ interface UserActivityPageProps {
   t: Record<string, string>;
 }
 
+const tabs = [
+  { key: 'overview', label: 'Overview', icon: ChartBarIcon },
+  { key: 'sessions', label: 'User Sessions', icon: ClockIcon },
+  { key: 'actions', label: 'User Actions', icon: EyeIcon },
+];
+
 const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
   const {
     sessions,
@@ -35,6 +41,8 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
     fetchSessions,
     fetchActions,
     fetchStats,
+    deleteAllSessions,
+    deleteAllActions,
     setFilter,
     clearError,
   } = useUserActivityStore();
@@ -303,11 +311,7 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
       {/* Tabs */}
       <div className="border-b border-slate-200 dark:border-slate-700">
         <nav className="-mb-px flex space-x-8">
-          {[
-            { key: 'overview', label: 'Overview', icon: ChartBarIcon },
-            { key: 'sessions', label: 'User Sessions', icon: ClockIcon },
-            { key: 'actions', label: 'User Actions', icon: EyeIcon },
-          ].map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as typeof activeTab)}
@@ -334,7 +338,7 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
             </h3>
             <div className="space-y-3">
               {stats.topUsers.slice(0, 5).map((user, index) => (
-                <div key={user.user_id} className="flex items-center justify-between">
+                <div key={`${user.user_id}-${index}`} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                       {index + 1}
@@ -366,7 +370,10 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
             </h3>
             <div className="space-y-3">
               {stats.topModules.slice(0, 5).map((module, index) => (
-                <div key={module.module} className="flex items-center justify-between">
+                <div
+                  key={`${module.module}-${index}`}
+                  className="flex items-center justify-between"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                       {index + 1}
@@ -386,9 +393,30 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
       {activeTab === 'sessions' && (
         <EnhancedCard>
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
-              Recent User Sessions
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                Recent User Sessions
+              </h3>
+              <div className="flex gap-2">
+                <EnhancedButton
+                  variant="error"
+                  size="sm"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        'Are you sure you want to delete all user sessions? This action cannot be undone.'
+                      )
+                    ) {
+                      deleteAllSessions();
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  <XCircleIcon className="w-4 h-4 mr-2" />
+                  Delete All Sessions
+                </EnhancedButton>
+              </div>
+            </div>
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -460,9 +488,30 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
       {activeTab === 'actions' && (
         <EnhancedCard>
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
-              Recent User Actions
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                Recent User Actions
+              </h3>
+              <div className="flex gap-2">
+                <EnhancedButton
+                  variant="error"
+                  size="sm"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        'Are you sure you want to delete all user actions? This action cannot be undone.'
+                      )
+                    ) {
+                      deleteAllActions();
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  <XCircleIcon className="w-4 h-4 mr-2" />
+                  Delete All Actions
+                </EnhancedButton>
+              </div>
+            </div>
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -517,7 +566,7 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
                           {action.module.replace('_', ' ')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-100">
-                          {formatDate(action.timestamp)}
+                          {formatDate(action.created)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">

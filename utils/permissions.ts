@@ -38,14 +38,14 @@ export class PermissionChecker {
 
     const userPermission = this.user.permissions[feature];
 
-    // Handle different permission types
+    // Handle string permission format (recommended)
     if (typeof userPermission === 'string') {
       return this.comparePermissionLevel(userPermission, requiredLevel);
     }
 
-    // Handle plant operations permissions (object type)
-    if (feature === 'plant_operations' && typeof userPermission === 'object') {
-      // For plant operations, check if user has any access to any category/unit
+    // Handle object permission format (for plant_operations or granular permissions)
+    if (typeof userPermission === 'object' && userPermission !== null) {
+      // For object format, check if user has any access that meets the required level
       const plantOps = userPermission as PlantOperationsPermissions;
       return Object.values(plantOps).some((category) =>
         Object.values(category).some((level) => this.comparePermissionLevel(level, requiredLevel))
@@ -81,9 +81,10 @@ export class PermissionChecker {
 
   /**
    * Check if user can access system settings
+   * Settings are accessible to all users except Guest
    */
   canAccessSettings(): boolean {
-    return this.hasPermission('system_settings', 'READ');
+    return this.user?.role !== 'Guest';
   }
 
   /**
@@ -181,6 +182,53 @@ export class PermissionChecker {
 }
 
 /**
+ * Default permissions for each role - RECOMMENDED FORMAT
+ */
+export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
+  'Super Admin': {
+    dashboard: 'ADMIN',
+    plant_operations: 'ADMIN',
+    inspection: 'ADMIN',
+    project_management: 'ADMIN',
+  },
+  Admin: {
+    dashboard: 'ADMIN',
+    plant_operations: 'WRITE',
+    inspection: 'WRITE',
+    project_management: 'WRITE',
+  },
+  Operator: {
+    dashboard: 'READ',
+    plant_operations: 'READ',
+    inspection: 'NONE',
+    project_management: 'NONE',
+  },
+  Guest: {
+    dashboard: 'NONE',
+    plant_operations: 'NONE',
+    inspection: 'NONE',
+    project_management: 'NONE',
+  },
+};
+
+/**
+ * Get default permissions for a specific role
+ */
+export function getDefaultPermissionsForRole(role: string): PermissionMatrix {
+  return DEFAULT_ROLE_PERMISSIONS[role] || DEFAULT_ROLE_PERMISSIONS['Guest'];
+}
+
+/**
+ * Permission levels hierarchy for reference
+ */
+export const PERMISSION_LEVELS = {
+  NONE: 0, // No access
+  READ: 1, // View only
+  WRITE: 2, // View + Create/Edit
+  ADMIN: 3, // Full access + Delete + Manage others
+};
+
+/**
  * Hook to get permission checker for current user
  */
 export const usePermissions = (user: User | null) => {
@@ -251,7 +299,93 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     hasAccess = permissionChecker.hasPermission(feature, requiredLevel);
   }
 
-  return hasAccess
-    ? React.createElement(React.Fragment, null, children)
-    : React.createElement(React.Fragment, null, fallback);
+  // Jika tidak memiliki akses, langsung kembalikan fallback
+  if (!hasAccess) {
+    return React.createElement(React.Fragment, null, fallback);
+  }
+
+  // Gunakan safeRender untuk mencegah error saat rendering children
+  return safeRender(children);
 };
+
+/**
+ * Safely render React nodes, preventing "Cannot convert object to primitive value" errors
+ * by validating child types before rendering
+ */
+function safeRender(children: React.ReactNode): React.ReactElement {
+  // Deteksi kasus lazy component yang gagal
+  try {
+    // Safety check: stringify sebagai validasi awal
+    // Ini akan segera mendeteksi objek yang tidak dapat dikonversi ke string
+    // yang merupakan penyebab error "Cannot convert object to primitive value"
+    if (
+      children !== null &&
+      typeof children === 'object' &&
+      !React.isValidElement(children) &&
+      !Array.isArray(children)
+    ) {
+      try {
+        // Coba stringify untuk deteksi objek problematik
+        // Ini untuk mengecek apakah objek bisa dikonversi ke string tanpa error
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _ = '' + children;
+      } catch (_stringifyError) {
+        // Jika gagal stringify, ini menunjukkan objek problematik
+        // yang menyebabkan error "Cannot convert object to primitive value"
+        return React.createElement(
+          'div',
+          {
+            className: 'p-3 border border-red-400 bg-red-50 rounded',
+            'data-testid': 'invalid-object-error',
+          },
+          'Error: Invalid object structure detected'
+        );
+      }
+    }
+
+    // Jika null atau undefined, render fragment kosong
+    if (children == null) {
+      return React.createElement(React.Fragment);
+    }
+
+    // Jika primitive values (string, number, boolean), render langsung
+    if (
+      typeof children === 'string' ||
+      typeof children === 'number' ||
+      typeof children === 'boolean'
+    ) {
+      return React.createElement(React.Fragment, null, children);
+    }
+
+    // Jika valid React element, render langsung
+    if (React.isValidElement(children)) {
+      return React.createElement(React.Fragment, null, children);
+    }
+
+    // Jika array, render setiap item dengan safe rendering
+    if (Array.isArray(children)) {
+      return React.createElement(
+        React.Fragment,
+        null,
+        children.map((child, index) =>
+          React.createElement(React.Fragment, { key: index }, safeRender(child))
+        )
+      );
+    }
+
+    // Untuk object yang tidak dikenali atau tidak valid sebagai ReactNode,
+    // render error fallback untuk mencegah crash
+    return React.createElement(
+      'div',
+      { className: 'p-2 text-red-600 bg-red-50 rounded', 'data-testid': 'invalid-component' },
+      'Invalid component'
+    );
+  } catch (_renderError) {
+    // Tangkap segala error yang muncul dalam proses rendering
+    return React.createElement(
+      'div',
+      { className: 'p-3 border border-red-500 bg-red-50 rounded', 'data-testid': 'render-error' },
+      'Error rendering component'
+    );
+  }
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 export interface CopAnalysisData {
   id: string;
@@ -20,17 +20,16 @@ export const useCopAnalysisData = () => {
     const fetchCopAnalysisData = async () => {
       try {
         setLoading(true);
-        const { data: copData, error: fetchError } = await supabase
-          .from('cop_analysis')
-          .select('*')
-          .order('created_at', { ascending: false }) as { data: any; error: any };
+        const records = await pb.collection('cop_analysis').getFullList({
+          sort: '-created_at',
+        });
 
-        if (fetchError) {
-          setError(fetchError.message);
-        } else {
-          setData((copData || []) as CopAnalysisData[]);
-        }
+        setData(records as unknown as CopAnalysisData[]);
       } catch (err) {
+        // Handle autocancelled requests gracefully (common in React StrictMode)
+        if (err instanceof Error && err.message.includes('autocancelled')) {
+          return;
+        }
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);

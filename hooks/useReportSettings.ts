@@ -1,6 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ReportSetting } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
+import { cacheManager } from '../utils/cacheManager';
+import { CacheKeys } from '../utils/cacheKeys';
+import { safeApiCall } from '../utils/connectionCheck';
+
+// Constants for cache management
+const CACHE_KEY = CacheKeys.REPORT_SETTINGS;
+const CACHE_TIME = 15; // Minutes
 
 export const useReportSettings = () => {
   const [records, setRecords] = useState<ReportSetting[]>([]);
@@ -8,118 +15,192 @@ export const useReportSettings = () => {
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('report_settings').select('*').order('order');
 
-    if (error) {
-      console.error('Error fetching report settings:', error);
-      setRecords([]);
-    } else {
-      setRecords((data || []) as unknown as ReportSetting[]);
+    // Check cache first
+    const cached = cacheManager.get<ReportSetting[]>(CACHE_KEY);
+    if (cached) {
+      setRecords(cached);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const result = await safeApiCall(() =>
+        pb.collection('report_settings').getFullList({
+          sort: 'order',
+        })
+      );
+
+      if (result) {
+        const typedData = result as unknown as ReportSetting[];
+        setRecords(typedData);
+        // Cache for 15 minutes
+        cacheManager.set(CACHE_KEY, typedData, CACHE_TIME);
+      } else {
+        setRecords([]);
+      }
+    } catch (error) {
+      if (error.status === 404) {
+        // Collection doesn't exist yet
+        setRecords([]);
+      } else if (error.message?.includes('autocancelled')) {
+        // Ignore autocancelled requests
+      } else {
+        // Handle error silently
+        setRecords([]);
+      }
     }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchRecords();
-  }, [fetchRecords]);
 
-  // Enhanced realtime subscription for report_settings changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('report_settings_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'report_settings',
-        },
-        (payload) => {
-          console.log(
-            'Report settings realtime update:',
-            payload.eventType,
-            payload.new || payload.old
-          );
+    let isSubscribed = true;
+    let unsubPromise;
 
-          // Optimized state updates based on event type
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setRecords((prev) =>
-              [...prev, payload.new as ReportSetting].sort((a, b) => a.order - b.order)
-            );
-          } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setRecords((prev) =>
-              prev
-                .map((record) =>
-                  record.id === payload.new.id ? (payload.new as ReportSetting) : record
-                )
-                .sort((a, b) => a.order - b.order)
-            );
-          } else if (payload.eventType === 'DELETE' && payload.old) {
-            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
-          } else {
-            // Fallback to full refetch for complex changes
-            fetchRecords();
-          }
+    const subscribe = async () => {
+      try {
+        if (!isSubscribed) return;
+
+        unsubPromise = await safeApiCall(() =>
+          pb.collection('report_settings').subscribe('*', (e) => {
+            if (!isSubscribed) return;
+
+            // Clear cache when data changes
+            cacheManager.delete(CACHE_KEY);
+
+            if (e.action === 'create') {
+              setRecords((prev) =>
+                [...prev, e.record as unknown as ReportSetting].sort((a, b) => a.order - b.order)
+              );
+            } else if (e.action === 'update') {
+              setRecords((prev) =>
+                prev
+                  .map((record) =>
+                    record.id === e.record.id ? (e.record as unknown as ReportSetting) : record
+                  )
+                  .sort((a, b) => a.order - b.order)
+              );
+            } else if (e.action === 'delete') {
+              setRecords((prev) => prev.filter((record) => record.id !== e.record.id));
+            } else {
+              fetchRecords();
+            }
+          })
+        );
+      } catch (error) {
+        // Ignore connection errors to prevent excessive logging
+        if (!error.message?.includes('autocancelled') && !error.message?.includes('connection')) {
+          // Handle error silently
         }
-      )
-      .subscribe();
+      }
+    };
+
+    // Start subscription
+    subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      // Mark component as unmounted
+      isSubscribed = false;
+
+      // Cancel existing subscription
+      if (unsubPromise) {
+        // Handle different types that might be returned by subscribe()
+        if (typeof unsubPromise === 'function') {
+          // If it's already a function, just call it
+          try {
+            unsubPromise();
+          } catch {
+            // Ignore cleanup errors
+          }
+        } else if (unsubPromise && typeof unsubPromise.then === 'function') {
+          // If it's a Promise, properly handle it
+          unsubPromise
+            .then((unsub) => {
+              if (typeof unsub === 'function') {
+                unsub();
+              }
+            })
+            .catch(() => {
+              // Ignore cleanup errors
+            });
+        }
+      }
     };
   }, [fetchRecords]);
 
   const addRecord = useCallback(
     async (record: Omit<ReportSetting, 'id'>) => {
-      const { error } = await supabase.from('report_settings').insert([record]);
-      if (error) console.error('Error adding report setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('report_settings').create(record);
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently
+      }
     },
     [fetchRecords]
   );
 
   const updateRecord = useCallback(
     async (updatedRecord: ReportSetting) => {
-      const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase.from('report_settings').update(updateData).eq('id', id);
-      if (error) console.error('Error updating report setting:', error);
-      else fetchRecords();
+      try {
+        const { id, ...updateData } = updatedRecord;
+        await pb.collection('report_settings').update(id, updateData);
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently
+      }
     },
     [fetchRecords]
   );
 
   const deleteRecord = useCallback(
     async (recordId: string) => {
-      const { error } = await supabase.from('report_settings').delete().eq('id', recordId);
-      if (error) console.error('Error deleting report setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('report_settings').delete(recordId);
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently
+      }
     },
     [fetchRecords]
   );
 
   const setAllRecords = useCallback(
     async (newRecords: Omit<ReportSetting, 'id'>[]) => {
-      const { error: deleteError } = await supabase.from('report_settings').delete().neq('id', '0');
-      if (deleteError) {
-        console.error('Error clearing report settings:', deleteError);
-        return;
+      try {
+        const currentRecords = await pb.collection('report_settings').getFullList();
+        for (const record of currentRecords) {
+          await pb.collection('report_settings').delete(record.id);
+        }
+        for (const record of newRecords) {
+          await pb.collection('report_settings').create(record);
+        }
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently
       }
-      const { error: insertError } = await supabase.from('report_settings').insert(newRecords);
-      if (insertError) console.error('Error bulk inserting report settings:', insertError);
-      else fetchRecords();
     },
     [fetchRecords]
   );
 
   const updateOrder = useCallback(
     async (orderedRecords: ReportSetting[]) => {
-      const promises = orderedRecords.map((record, index) =>
-        supabase.from('report_settings').update({ order: index }).eq('id', record.id)
-      );
-      const results = await Promise.all(promises);
-      const hasError = results.some((result) => result.error);
-      if (hasError) console.error('Error updating report settings order');
-      else fetchRecords();
+      try {
+        const promises = orderedRecords.map((record, index) =>
+          pb.collection('report_settings').update(record.id, { order: index })
+        );
+        await Promise.all(promises);
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently
+      }
     },
     [fetchRecords]
   );

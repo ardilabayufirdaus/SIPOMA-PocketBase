@@ -1,12 +1,24 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { ChevronDown, GripVertical } from 'lucide-react';
+import {
+  ChevronDown,
+  GripVertical,
+  Database,
+  Users,
+  Settings,
+  BarChart3,
+  FileText,
+  Search,
+  Filter,
+} from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { motion, AnimatePresence } from 'framer-motion';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
-import { useCopParametersSupabase } from '../../hooks/useCopParametersSupabase';
+import { useCopParameters } from '../../hooks/useCopParameters';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import RealtimeIndicator from '../../components/ui/RealtimeIndicator';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 import PlusIcon from '../../components/icons/PlusIcon';
 import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
@@ -60,7 +72,7 @@ type ModalType =
   | 'picSetting'
   | null;
 
-const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t }) => {
+const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Plant Units State
@@ -91,6 +103,7 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
   // Silo Capacity State
   const {
     records: siloCapacities,
+    loading: siloCapacitiesLoading,
     addRecord: addSilo,
     updateRecord: updateSilo,
     deleteRecord: deleteSilo,
@@ -131,6 +144,31 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
   } | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const getDeletingRecordName = useMemo(() => {
+    if (!deletingRecord) return '';
+    switch (deletingRecord.type) {
+      case 'plantUnit':
+        return plantUnits.find((p) => p.id === deletingRecord.id)?.unit || 'Unknown Plant Unit';
+      case 'parameterSetting':
+        return (
+          parameterSettings.find((p) => p.id === deletingRecord.id)?.parameter ||
+          'Unknown Parameter'
+        );
+      case 'siloCapacity': {
+        const silo = siloCapacities.find((s) => s.id === deletingRecord.id);
+        return silo ? `${silo.plant_category} - ${silo.unit} - ${silo.silo_name}` : 'Unknown Silo';
+      }
+      case 'reportSetting':
+        return (
+          reportSettings.find((r) => r.id === deletingRecord.id)?.parameter_id ||
+          'Unknown Report Setting'
+        );
+      case 'picSetting':
+        return picSettings.find((p) => p.id === deletingRecord.id)?.pic || 'Unknown PIC';
+      default:
+        return 'Unknown Record';
+    }
+  }, [deletingRecord, plantUnits, parameterSettings, siloCapacities, reportSettings, picSettings]);
 
   // Filter States
   const [parameterCategoryFilter, setParameterCategoryFilter] = useState('');
@@ -148,7 +186,11 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
     () => new Map(parameterSettings.map((p) => [p.id, p])),
     [parameterSettings]
   );
-  const { copParameterIds, setCopParameterIds } = useCopParametersSupabase();
+  const {
+    copParameterIds,
+    setCopParameterIds,
+    loading: copParametersLoading,
+  } = useCopParameters(copCategoryFilter, copUnitFilter);
   const [isCopModalOpen, setIsCopModalOpen] = useState(false);
   const [tempCopSelection, setTempCopSelection] = useState<string[]>([]);
 
@@ -170,7 +212,7 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
     currentPage: copCurrentPage,
     totalPages: copTotalPages,
     setCurrentPage: setCopCurrentPage,
-  } = usePagination(copParameters, 10);
+  } = usePagination(copParameters as ParameterSetting[], 10);
 
   // Handlers for COP Parameters
   const handleOpenCopModal = () => {
@@ -324,12 +366,18 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
     }
   }, [unitsForReportFilter, reportUnitFilter]);
 
-  const handleParameterCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setParameterCategoryFilter(e.target.value);
-  };
-
   const handleReportCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setReportCategoryFilter(e.target.value);
+  };
+
+  const handleParameterCategoryFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setParameterCategoryFilter(e.target.value);
+    // Reset unit filter when category changes
+    setParameterUnitFilter('');
+  };
+
+  const handleParameterUnitFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setParameterUnitFilter(e.target.value);
   };
 
   // Filtered data for tables
@@ -565,7 +613,7 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
       }
 
       // Generate filename with timestamp
-      const timestamp = new Date().toISOString().split['T'][0];
+      const timestamp = new Date().toISOString().split('T')[0];
       const filename = `PlantOperations_MasterData_${timestamp}`;
 
       // Export using utility
@@ -809,1043 +857,1528 @@ const PlantOperationsMasterData: React.FC<{ t: (key: string) => string }> = ({ t
   };
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex flex-col items-start gap-2">
-            <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
-              {t['op_master_data']}
-            </h2>
-            <RealtimeIndicator isConnected={true} lastUpdate={new Date()} className="text-xs" />
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImportAll}
-              accept=".xlsx, .xls"
-              className="hidden"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isImporting}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <DocumentArrowUpIcon className="w-5 h-5" />
-              {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
-            </button>
-            <button
-              onClick={handleExportAll}
-              disabled={isExporting}
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <DocumentArrowDownIcon className="w-5 h-5" />
-              {isExporting ? t['exporting'] || 'Exporting...' : t['export_all']}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Plant Unit Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t['plant_unit_title']}
-          </h2>
-          <button
-            onClick={() => handleOpenAddModal('plantUnit')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
-          >
-            <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['unit']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['plant_category']}
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">{t['actions']}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {plantUnitsLoading ? (
-                <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <LoadingSpinner size="sm" />
-                      <span className="text-slate-500 dark:text-slate-400">
-                        Loading plant units...
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ) : paginatedPlantUnits.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={3}
-                    className="px-6 py-8 text-center text-slate-500 dark:text-slate-400"
-                  >
-                    No plant units found
-                  </td>
-                </tr>
-              ) : (
-                paginatedPlantUnits.map((unit) => (
-                  <tr key={unit.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {unit.unit}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {unit.category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleOpenEditModal('plantUnit', unit)}
-                          className="p-2 text-slate-400 hover:text-red-600"
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                          className="p-2 text-slate-400 hover:text-red-600"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          currentPage={puCurrentPage}
-          totalPages={puTotalPages}
-          onPageChange={setPuCurrentPage}
-        />
-      </div>
-
-      {/* PIC Settings Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t['pic_setting_title']}
-          </h2>
-          <button
-            onClick={() => handleOpenAddModal('picSetting')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
-          >
-            <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['pic']}
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">{t['actions']}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedPicSettings.map((pic) => (
-                <tr key={pic.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {pic.pic}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => handleOpenEditModal('picSetting', pic)}
-                        className="p-2 text-slate-400 hover:text-red-600"
-                      >
-                        <EditIcon />
-                      </button>
-                      <button
-                        onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                        className="p-2 text-slate-400 hover:text-red-600"
-                      >
-                        <TrashIcon />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          currentPage={picCurrentPage}
-          totalPages={picTotalPages}
-          onPageChange={setPicCurrentPage}
-        />
-      </div>
-
-      {/* Parameter Settings Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t['parameter_settings_title']}
-          </h2>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="param-cat-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="param-cat-filter"
-                  value={parameterCategoryFilter}
-                  onChange={handleParameterCategoryChange}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
-                >
-                  {uniquePlantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8"
+        >
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-red-100 rounded-xl">
+                <Database className="w-8 h-8 text-red-600" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">{t['op_master_data']}</h1>
+                <p className="text-slate-600 mt-1">
+                  Manage plant operations master data and configurations
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="param-unit-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="param-unit-filter"
-                  value={parameterUnitFilter}
-                  onChange={(e) => setParameterUnitFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
-                  disabled={unitsForParameterFilter.length === 0}
-                >
-                  {unitsForParameterFilter.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <button
-              onClick={() => handleOpenAddModal('parameterSetting')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
-            >
-              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
-            </button>
-          </div>
-        </div>
-
-        {/* Parameter Search */}
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex-1 max-w-md">
-            <div className="parameter-search-input">
-              <SearchInput
-                placeholder={t['parameter_search_placeholder']}
-                value={parameterSearchQuery}
-                onChange={(e) => setParameterSearchQuery(e.target.value)}
-                className="w-full"
-              />
-            </div>
-          </div>
-
-          {isParameterSearchActive && (
             <div className="flex items-center gap-3">
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                {filteredParameterSettings.length}{' '}
-                {filteredParameterSettings.length === 1
-                  ? t['parameter_search_results']
-                  : t['parameter_search_results_plural']}
-              </div>
-              <button
-                onClick={clearParameterSearch}
-                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
-              >
-                {t['parameter_clear_search']}
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['parameter_id']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['parameter']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['data_type']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['unit']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['category']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['min_value']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['max_value']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  OPC Min
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  OPC Max
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  PCC Min
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  PCC Max
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">{t['actions']}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedParams.map((param) => (
-                <tr key={param.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-500 dark:text-slate-400">
-                    {param.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {param.parameter}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.unit}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER ? (param.min_value ?? '-') : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER ? (param.max_value ?? '-') : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER
-                      ? (param.opc_min_value ?? '-')
-                      : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER
-                      ? (param.opc_max_value ?? '-')
-                      : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER
-                      ? (param.pcc_min_value ?? '-')
-                      : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.data_type === ParameterDataType.NUMBER
-                      ? (param.pcc_max_value ?? '-')
-                      : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        onClick={() => handleOpenEditModal('parameterSetting', param)}
-                        className="p-2 text-slate-400 hover:text-red-600"
-                      >
-                        <EditIcon />
-                      </button>
-                      <button
-                        onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
-                        className="p-2 text-slate-400 hover:text-red-600"
-                      >
-                        <TrashIcon />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredParameterSettings.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="text-center py-10 text-slate-500 dark:text-slate-400">
-                    No parameters match the selected filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          currentPage={paramsCurrentPage}
-          totalPages={paramsTotalPages}
-          onPageChange={setParamsCurrentPage}
-        />
-      </div>
-
-      {/* Silo Capacity Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t['silo_capacity_title']}
-          </h2>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="silo-cat-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="silo-cat-filter"
-                  value={siloCategoryFilter}
-                  onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+              <RealtimeIndicator isConnected={true} lastUpdate={new Date()} className="text-sm" />
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImportAll}
+                  accept=".xlsx, .xls"
+                  className="hidden"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  {uniquePlantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="silo-unit-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="silo-unit-filter"
-                  value={siloUnitFilter}
-                  onChange={(e) => setSiloUnitFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
-                  disabled={unitsForSiloFilter.length === 0}
+                  <DocumentArrowUpIcon className="w-5 h-5" />
+                  {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleExportAll}
+                  disabled={isExporting}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  {unitsForSiloFilter.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <DocumentArrowDownIcon className="w-5 h-5" />
+                  {isExporting ? t['exporting'] || 'Exporting...' : t['export_all']}
+                </motion.button>
               </div>
             </div>
-            <button
-              onClick={() => handleOpenAddModal('siloCapacity')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
-            >
-              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
-            </button>
           </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['plant_category']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['unit']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['silo_name']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['capacity']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['dead_stock']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['silo_lifestock']}
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">{t['actions']}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedSilos.map((silo) => {
-                const lifestock = silo.capacity - silo.dead_stock;
-                return (
-                  <tr key={silo.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {silo.plant_category}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {silo.unit}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {silo.silo_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {formatNumber(silo.capacity)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {formatNumber(silo.dead_stock)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 dark:text-slate-200 font-semibold">
-                      {formatNumber(lifestock)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                          className="p-2 text-slate-400 hover:text-red-600"
-                        >
-                          <EditIcon />
-                        </button>
-                        <button
-                          onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                          className="p-2 text-slate-400 hover:text-red-600"
-                        >
-                          <TrashIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredSiloCapacities.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="text-center py-10 text-slate-500">
-                    No silo capacities match the selected filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          currentPage={silosCurrentPage}
-          totalPages={silosTotalPages}
-          onPageChange={setSilosCurrentPage}
-        />
-      </div>
+        </motion.div>
 
-      {/* COP Parameters Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t['cop_parameters_title']}
-          </h2>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="cop-cat-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-cat-filter"
-                  value={copCategoryFilter}
-                  onChange={(e) => setCopCategoryFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+        {/* Data Cards Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Plant Unit Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Settings className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['plant_unit_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['plant_unit_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenAddModal('plantUnit')}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
                 >
-                  {uniquePlantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
               </div>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="cop-unit-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-unit-filter"
-                  value={copUnitFilter}
-                  onChange={(e) => setCopUnitFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
-                  disabled={unitsForCopFilter.length === 0}
-                >
-                  {unitsForCopFilter.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['unit']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['plant_category']}
+                      </th>
+                      <th className="relative px-4 py-3 w-20">
+                        <span className="sr-only">{t['actions']}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {plantUnitsLoading ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-8 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <LoadingSpinner size="sm" />
+                            <span className="text-slate-500">Loading plant units...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : paginatedPlantUnits.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                          No plant units found
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedPlantUnits.map((unit, _index) => (
+                        <tr
+                          key={unit.id}
+                          className="hover:bg-slate-50/50 transition-colors duration-200"
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                            {unit.unit}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {unit.category}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-1">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleOpenEditModal('plantUnit', unit)}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                              >
+                                <EditIcon className="w-4 h-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                              >
+                                <TrashIcon className="w-4 h-4" />
+                              </motion.button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={puCurrentPage}
+                  totalPages={puTotalPages}
+                  onPageChange={setPuCurrentPage}
+                />
               </div>
             </div>
-            <button
-              onClick={handleOpenCopModal}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
-            >
-              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
-            </button>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['parameter']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['unit']}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                  {t['category']}
-                </th>
-                <th className="relative px-6 py-3">
-                  <span className="sr-only">{t['actions']}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedCopParams.map((param) => (
-                <tr key={param.id} className="hover:bg-slate-50 dark:hover:bg-slate-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {param.parameter}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.unit}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {param.category}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleRemoveCopParameter(param.id)}
-                      className="p-2 text-slate-400 hover:text-red-600"
+          </motion.div>
+
+          {/* PIC Settings Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Users className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['pic_setting_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['pic_setting_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenAddModal('picSetting')}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['pic']}
+                      </th>
+                      <th className="relative px-4 py-3 w-20">
+                        <span className="sr-only">{t['actions']}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {paginatedPicSettings.map((pic, _index) => (
+                      <tr
+                        key={pic.id}
+                        className="hover:bg-slate-50/50 transition-colors duration-200"
+                      >
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                          {pic.pic}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-1">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleOpenEditModal('picSetting', pic)}
+                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                            >
+                              <EditIcon className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
+                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={picCurrentPage}
+                  totalPages={picTotalPages}
+                  onPageChange={setPicCurrentPage}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Parameter Settings Card - Full Width */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="col-span-1 xl:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['parameter_settings_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['parameter_settings_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenAddModal('parameterSetting')}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Parameter Filters and Search */}
+            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="param-cat-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
                     >
-                      <TrashIcon />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {copParameters.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="text-center py-10 text-slate-500 dark:text-slate-400">
-                    No COP parameters selected.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          currentPage={copCurrentPage}
-          totalPages={copTotalPages}
-          onPageChange={setCopCurrentPage}
-        />
-      </div>
+                      Plant Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="param-cat-filter"
+                        value={parameterCategoryFilter}
+                        onChange={handleParameterCategoryFilterChange}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                      >
+                        <option value="">{t['all_categories'] || 'All Categories'}</option>
+                        {uniquePlantCategories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="param-unit-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Unit:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="param-unit-filter"
+                        value={parameterUnitFilter}
+                        onChange={handleParameterUnitFilterChange}
+                        disabled={!parameterCategoryFilter}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                      >
+                        <option value="">{t['all_units'] || 'All Units'}</option>
+                        {unitsForParameterFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-      {/* Report Settings Section */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t['report_settings_title']}
-          </h2>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="report-cat-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="report-cat-filter"
-                  value={reportCategoryFilter}
-                  onChange={handleReportCategoryChange}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
-                >
-                  {uniquePlantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              {/* Search Row */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
+                <div className="flex items-center gap-3">
+                  <Search className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Search:</span>
+                </div>
+                <div className="flex-1 max-w-md">
+                  <div className="parameter-search-input">
+                    <SearchInput
+                      placeholder={t['parameter_search_placeholder']}
+                      value={parameterSearchQuery}
+                      onChange={(e) => setParameterSearchQuery(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                {isParameterSearchActive && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm text-slate-600">
+                      {filteredParameterSettings.length}{' '}
+                      {filteredParameterSettings.length === 1
+                        ? t['parameter_search_results']
+                        : t['parameter_search_results_plural']}
+                    </div>
+                    <button
+                      onClick={clearParameterSearch}
+                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium"
+                    >
+                      {t['parameter_clear_search']}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="report-unit-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="report-unit-filter"
-                  value={reportUnitFilter}
-                  onChange={(e) => setReportUnitFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
-                  disabled={unitsForReportFilter.length === 0}
-                >
-                  {unitsForReportFilter.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['parameter_id']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['parameter']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['data_type']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['unit']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['category']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['min_value']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['max_value']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['opc_min']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['opc_max']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['pcc_min']}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      {t['pcc_max']}
+                    </th>
+                    <th className="relative px-6 py-3">
+                      <span className="sr-only">{t['actions']}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                  {paginatedParams.map((param) => (
+                    <tr key={param.id} className="hover:bg-slate-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-500">
+                        {param.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                        {param.parameter}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.unit}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.category}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.min_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.max_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.opc_min_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.opc_max_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.pcc_min_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        {param.data_type === ParameterDataType.NUMBER
+                          ? (param.pcc_max_value ?? '-')
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => handleOpenEditModal('parameterSetting', param)}
+                            className="p-2 text-slate-400 hover:text-red-600"
+                          >
+                            <EditIcon />
+                          </button>
+                          <button
+                            onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
+                            className="p-2 text-slate-400 hover:text-red-600"
+                          >
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
                   ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  {filteredParameterSettings.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="text-center py-10 text-slate-500">
+                        No parameters match the selected filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              currentPage={paramsCurrentPage}
+              totalPages={paramsTotalPages}
+              onPageChange={setParamsCurrentPage}
+            />
+          </motion.div>
+
+          {/* Silo Capacities Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <Database className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['silo_capacity_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['silo_capacity_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenAddModal('siloCapacity')}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
               </div>
             </div>
-            <button
-              onClick={() => handleOpenAddModal('reportSetting')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700"
-            >
-              <PlusIcon className="w-5 h-5" /> {t['add_data_button']}
-            </button>
-          </div>
+
+            {/* Filters Section */}
+            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="silo-cat-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Plant Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="silo-cat-filter"
+                        value={siloCategoryFilter}
+                        onChange={(e) => setSiloCategoryFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                      >
+                        {uniquePlantCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="silo-unit-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Unit:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="silo-unit-filter"
+                        value={siloUnitFilter}
+                        onChange={(e) => setSiloUnitFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        disabled={unitsForSiloFilter.length === 0}
+                      >
+                        {unitsForSiloFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['plant_category']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['unit']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['silo_name']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['capacity']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['dead_stock']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['silo_lifestock']}
+                      </th>
+                      <th className="relative px-4 py-3 w-20">
+                        <span className="sr-only">{t['actions']}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {siloCapacitiesLoading ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <LoadingSpinner size="sm" />
+                            <span className="text-slate-500">Loading silo capacities...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredSiloCapacities.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                          No silo capacities match the selected filters
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedSilos.map((silo, _index) => {
+                        const lifestock = silo.capacity - silo.dead_stock;
+                        return (
+                          <tr
+                            key={silo.id}
+                            className="hover:bg-slate-50/50 transition-colors duration-200"
+                          >
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {silo.plant_category}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {silo.unit}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                              {silo.silo_name}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {formatNumber(silo.capacity)}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                              {formatNumber(silo.dead_stock)}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-800 font-semibold">
+                              {formatNumber(lifestock)}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleOpenEditModal('siloCapacity', silo)}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                >
+                                  <EditIcon className="w-4 h-4" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={silosCurrentPage}
+                  totalPages={silosTotalPages}
+                  onPageChange={setSilosCurrentPage}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* COP Parameters Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['cop_parameters_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['cop_parameters_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleOpenCopModal}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="cop-cat-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Plant Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cop-cat-filter"
+                        value={copCategoryFilter}
+                        onChange={(e) => setCopCategoryFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                      >
+                        {uniquePlantCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="cop-unit-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Unit:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cop-unit-filter"
+                        value={copUnitFilter}
+                        onChange={(e) => setCopUnitFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        disabled={unitsForCopFilter.length === 0}
+                      >
+                        {unitsForCopFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['parameter']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['unit']}
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        {t['category']}
+                      </th>
+                      <th className="relative px-4 py-3 w-20">
+                        <span className="sr-only">{t['actions']}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {copParametersLoading ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <LoadingSpinner size="sm" />
+                            <span className="text-slate-500">Loading COP parameters...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : paginatedCopParams.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                          No COP parameters selected for the current filters
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedCopParams.map((param, _index) => (
+                        <tr
+                          key={param.id}
+                          className="hover:bg-slate-50/50 transition-colors duration-200"
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                            {param.parameter}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {param.unit}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {param.category}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-1">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleRemoveCopParameter(param.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                              >
+                                <TrashIcon className="w-4 h-4" />
+                              </motion.button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={copCurrentPage}
+                  totalPages={copTotalPages}
+                  onPageChange={setCopCurrentPage}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Report Settings Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['report_settings_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['report_settings_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenAddModal('reportSetting')}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="report-cat-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Plant Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="report-cat-filter"
+                        value={reportCategoryFilter}
+                        onChange={handleReportCategoryChange}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                      >
+                        {uniquePlantCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="report-unit-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Unit:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="report-unit-filter"
+                        value={reportUnitFilter}
+                        onChange={(e) => setReportUnitFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        disabled={unitsForReportFilter.length === 0}
+                      >
+                        {unitsForReportFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <div className="p-6">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <GripVertical className="w-4 h-4" />
+                  <span>Drag rows to reorder report parameters</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <DragDropContext onDragEnd={handleReportSettingsDragEnd}>
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['order'] || 'Order'}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['parameter']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['plant_category']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['unit']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['category']}
+                        </th>
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <Droppable droppableId="report-settings">
+                      {(provided) => (
+                        <tbody
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="bg-white divide-y divide-slate-200"
+                        >
+                          {paginatedReportSettings.map((setting, index) => {
+                            const parameter = allParametersMap.get(setting.parameter_id);
+                            return (
+                              <Draggable key={setting.id} draggableId={setting.id} index={index}>
+                                {(provided, snapshot) => (
+                                  <tr
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className={`hover:bg-slate-50/50 transition-colors duration-200 ${
+                                      snapshot.isDragging ? 'bg-slate-100 shadow-lg' : ''
+                                    }`}
+                                  >
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      <div className="flex items-center gap-2">
+                                        <div
+                                          {...provided.dragHandleProps}
+                                          className="cursor-grab active:cursor-grabbing"
+                                        >
+                                          <GripVertical className="w-4 h-4 text-slate-400" />
+                                        </div>
+                                        <span className="font-medium">{setting.order}</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                      {parameter?.parameter || 'Unknown Parameter'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {parameter?.category || '-'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {parameter?.unit || '-'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {setting.category}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                      <div className="flex items-center justify-end space-x-1">
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() =>
+                                            handleOpenEditModal('reportSetting', setting)
+                                          }
+                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                        >
+                                          <EditIcon className="w-4 h-4" />
+                                        </motion.button>
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() =>
+                                            handleOpenDeleteModal(setting.id, 'reportSetting')
+                                          }
+                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                        >
+                                          <TrashIcon className="w-4 h-4" />
+                                        </motion.button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </tbody>
+                      )}
+                    </Droppable>
+                  </table>
+                </DragDropContext>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={rsCurrentPage}
+                  totalPages={rsTotalPages}
+                  onPageChange={setRsCurrentPage}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Modals */}
+          <Modal
+            isOpen={activeModal !== null && !isDeleteModalOpen}
+            onClose={handleCloseModals}
+            title={
+              activeModal === 'plantUnit'
+                ? editingPlantUnit
+                  ? t['edit_plant_unit_title']
+                  : t['add_plant_unit_title']
+                : activeModal === 'parameterSetting'
+                  ? editingParameter
+                    ? t['edit_parameter_title']
+                    : t['add_parameter_title']
+                  : activeModal === 'siloCapacity'
+                    ? editingSilo
+                      ? t['edit_silo_title']
+                      : t['add_silo_title']
+                    : activeModal === 'reportSetting'
+                      ? editingReportSetting
+                        ? t['edit_report_parameter_title']
+                        : t['add_report_parameter_title']
+                      : activeModal === 'picSetting'
+                        ? editingPic
+                          ? t['edit_pic_title']
+                          : t['add_pic_title']
+                        : ''
+            }
+          >
+            {activeModal === 'plantUnit' && (
+              <PlantUnitForm
+                recordToEdit={editingPlantUnit}
+                onSave={(r) => handleSave('plantUnit', r)}
+                onCancel={handleCloseModals}
+                t={t}
+              />
+            )}
+            {activeModal === 'parameterSetting' && (
+              <ParameterSettingForm
+                recordToEdit={editingParameter}
+                onSave={(r) => handleSave('parameterSetting', r)}
+                onCancel={handleCloseModals}
+                t={t}
+              />
+            )}
+            {activeModal === 'siloCapacity' && (
+              <SiloCapacityForm
+                recordToEdit={editingSilo}
+                onSave={(r) => handleSave('siloCapacity', r)}
+                onCancel={handleCloseModals}
+                t={t}
+                plantUnits={plantUnits}
+              />
+            )}
+            {activeModal === 'reportSetting' && (
+              <ReportSettingForm
+                recordToEdit={editingReportSetting}
+                onSave={(r) => handleSave('reportSetting', r)}
+                onCancel={handleCloseModals}
+                t={t}
+                allParameters={parameterSettings}
+                existingParameterIds={reportSettings.map((rs) => rs.parameter_id)}
+                selectedCategory={reportCategoryFilter}
+                selectedUnit={reportUnitFilter}
+                maxOrder={maxReportSettingOrder}
+              />
+            )}
+            {activeModal === 'picSetting' && (
+              <PicSettingForm
+                recordToEdit={editingPic}
+                onSave={(r) => handleSave('picSetting', r)}
+                onCancel={handleCloseModals}
+                t={t}
+              />
+            )}
+          </Modal>
         </div>
-        <div className="overflow-x-auto">
-          <DragDropContext onDragEnd={handleReportSettingsDragEnd}>
-            <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-              <thead className="bg-slate-50 dark:bg-slate-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                    {t['order'] || 'Order'}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                    {t['parameter']}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                    {t['plant_category']}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                    {t['unit']}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                    {t['category']}
-                  </th>
-                  <th className="relative px-6 py-3">
-                    <span className="sr-only">{t['actions']}</span>
-                  </th>
-                </tr>
-              </thead>
-              <Droppable droppableId="report-settings">
-                {(provided) => (
-                  <tbody
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700"
+
+        <Modal isOpen={isDeleteModalOpen} onClose={handleCloseModals} title="">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-lg overflow-hidden shadow-xl"
+          >
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4"
+            >
+              <div className="flex items-center space-x-3">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 500 }}
+                  className="flex-shrink-0"
+                >
+                  <TrashIcon className="h-6 w-6 text-white" />
+                </motion.div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    {t['delete_confirmation_title'] || 'Confirm Deletion'}
+                  </h2>
+                  <p className="text-red-100 text-sm mt-1">This action cannot be undone</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Body */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+              className="px-6 py-6"
+            >
+              <div className="flex items-start space-x-4">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.3, type: 'spring', stiffness: 400 }}
+                  className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center"
+                >
+                  <TrashIcon className="h-6 w-6 text-red-600" />
+                </motion.div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-medium text-slate-900 mb-2">Delete Record</h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    {t['delete_confirmation_message'] ||
+                      'Are you sure you want to delete this record? This action cannot be undone.'}
+                  </p>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                    <div className="flex items-center space-x-2">
+                      <Database className="h-4 w-4 text-slate-400" />
+                      <span className="text-sm font-medium text-slate-700">Record Details:</span>
+                    </div>
+                    <p className="text-sm text-slate-600 mt-2 font-mono">{getDeletingRecordName}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Footer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+              className="bg-slate-50 px-6 py-4 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0"
+            >
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <EnhancedButton
+                  type="button"
+                  variant="secondary"
+                  onClick={handleCloseModals}
+                  className="w-full sm:w-auto px-6 py-2"
+                >
+                  {t['cancel_button'] || 'Cancel'}
+                </EnhancedButton>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <EnhancedButton
+                  type="button"
+                  variant="error"
+                  onClick={handleDeleteConfirm}
+                  className="w-full sm:w-auto px-6 py-2 bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  {t['confirm_delete_button'] || 'Delete'}
+                </EnhancedButton>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        </Modal>
+
+        {/* COP Selection Modal */}
+        <Modal isOpen={isCopModalOpen} onClose={handleCloseCopModal} title="">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-lg overflow-hidden"
+          >
+            {/* Header with title */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4"
+            >
+              <div className="flex items-center space-x-3">
+                <BarChart3 className="h-6 w-6 text-white" />
+                <h2 className="text-xl font-semibold text-white">
+                  {t['cop_parameters_title'] || 'COP Parameters'}
+                </h2>
+              </div>
+              <p className="text-blue-100 text-sm mt-1">
+                {t['cop_parameters_subtitle'] || 'Critical operating parameters selection'}
+              </p>
+            </motion.div>
+
+            <div className="p-6">
+              {/* Description */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+              >
+                <div className="flex items-start space-x-3">
+                  <Filter className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-medium text-blue-800 mb-1">Parameter Selection</h3>
+                    <p className="text-sm text-blue-700">
+                      Select the parameters from Parameter Settings to be included in the COP (Cost
+                      of Production) analysis. Only numerical parameters are shown.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Filters */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
+                >
+                  <label
+                    htmlFor="modal-cop-filter-category"
+                    className="block text-sm font-medium text-slate-700 mb-2"
                   >
-                    {paginatedReportSettings.map((setting, index) => {
-                      const parameter = allParametersMap.get(setting.parameter_id);
-                      return (
-                        <Draggable key={setting.id} draggableId={setting.id} index={index}>
-                          {(provided, snapshot) => (
-                            <tr
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={`hover:bg-slate-50 dark:hover:bg-slate-700 ${
-                                snapshot.isDragging ? 'bg-slate-100 dark:bg-slate-600' : ''
+                    Plant Category
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <motion.select
+                    whileFocus={{ scale: 1.02 }}
+                    id="modal-cop-filter-category"
+                    value={copCategoryFilter}
+                    onChange={(e) => setCopCategoryFilter(e.target.value)}
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
+                  >
+                    <option value="">Select category...</option>
+                    {uniquePlantCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </motion.select>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <label
+                    htmlFor="modal-cop-filter-unit"
+                    className="block text-sm font-medium text-slate-700 mb-2"
+                  >
+                    Unit
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <motion.select
+                    whileFocus={{ scale: 1.02 }}
+                    id="modal-cop-filter-unit"
+                    value={copUnitFilter}
+                    onChange={(e) => setCopUnitFilter(e.target.value)}
+                    disabled={unitsForCopFilter.length === 0}
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                  >
+                    <option value="">
+                      {unitsForCopFilter.length === 0 ? 'No units available' : 'Select unit...'}
+                    </option>
+                    {unitsForCopFilter.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </motion.select>
+                </motion.div>
+              </motion.div>
+
+              {/* Parameters Grid */}
+              <AnimatePresence>
+                {copCategoryFilter && copUnitFilter && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6, duration: 0.3 }}
+                      className="border border-slate-200 rounded-lg p-4"
+                    >
+                      <h4 className="text-sm font-medium text-slate-700 mb-4">
+                        Available Parameters (
+                        {
+                          parameterSettings
+                            .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                            .filter((p) => {
+                              if (!copCategoryFilter || !copUnitFilter) return false;
+                              const categoryMatch = p.category === copCategoryFilter;
+                              const unitMatch = p.unit === copUnitFilter;
+                              return categoryMatch && unitMatch;
+                            }).length
+                        }
+                        )
+                      </h4>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+                        {parameterSettings
+                          .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                          .filter((p) => {
+                            if (!copCategoryFilter || !copUnitFilter) return false;
+                            const categoryMatch = p.category === copCategoryFilter;
+                            const unitMatch = p.unit === copUnitFilter;
+                            return categoryMatch && unitMatch;
+                          })
+                          .map((param, index) => (
+                            <motion.label
+                              key={param.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.7 + index * 0.05, duration: 0.3 }}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                                tempCopSelection.includes(param.id)
+                                  ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                               }`}
                             >
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                <div className="flex items-center gap-2">
-                                  <div {...provided.dragHandleProps} className="cursor-grab">
-                                    <GripVertical className="w-4 h-4" />
-                                  </div>
-                                  {setting.order}
+                              <motion.input
+                                type="checkbox"
+                                checked={tempCopSelection.includes(param.id)}
+                                onChange={() => handleCopSelectionChange(param.id)}
+                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                              />
+                              <div className="ml-3 flex-1 min-w-0">
+                                <div className="text-sm font-medium text-slate-900 truncate">
+                                  {param.parameter}
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
-                                {parameter?.parameter || 'Unknown Parameter'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                {parameter?.category || '-'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                {parameter?.unit || '-'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                {setting.category}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div className="flex items-center justify-end space-x-2">
-                                  <button
-                                    onClick={() => handleOpenEditModal('reportSetting', setting)}
-                                    className="p-2 text-slate-400 hover:text-red-600"
-                                  >
-                                    <EditIcon />
-                                  </button>
-                                  <button
-                                    onClick={() =>
-                                      handleOpenDeleteModal(setting.id, 'reportSetting')
-                                    }
-                                    className="p-2 text-slate-400 hover:text-red-600"
-                                  >
-                                    <TrashIcon />
-                                  </button>
+                                <div className="text-xs text-slate-500 truncate">
+                                  {param.category} • {param.unit}
                                 </div>
-                              </td>
-                            </tr>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                    {provided.placeholder}
-                  </tbody>
+                              </div>
+                              {tempCopSelection.includes(param.id) && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="ml-2 h-5 w-5 text-blue-600"
+                                >
+                                  ✓
+                                </motion.div>
+                              )}
+                            </motion.label>
+                          ))}
+                      </div>
+
+                      {parameterSettings
+                        .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                        .filter((p) => {
+                          if (!copCategoryFilter || !copUnitFilter) return false;
+                          const categoryMatch = p.category === copCategoryFilter;
+                          const unitMatch = p.unit === copUnitFilter;
+                          return categoryMatch && unitMatch;
+                        }).length === 0 && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-center py-8 text-slate-500"
+                        >
+                          <BarChart3 className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                          <p className="text-sm">
+                            No numerical parameters found for the selected category and unit.
+                          </p>
+                          <p className="text-xs mt-1">
+                            Please configure parameters in Master Data first.
+                          </p>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </motion.div>
                 )}
-              </Droppable>
-            </table>
-          </DragDropContext>
-        </div>
-        <Pagination
-          currentPage={rsCurrentPage}
-          totalPages={rsTotalPages}
-          onPageChange={setRsCurrentPage}
-        />
+              </AnimatePresence>
+            </div>
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.3 }}
+              className="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 px-6 pb-6"
+            >
+              <div className="flex space-x-3">
+                <EnhancedButton
+                  type="button"
+                  variant="secondary"
+                  onClick={handleCloseCopModal}
+                  className="px-6 py-2"
+                >
+                  {t['cancel_button']}
+                </EnhancedButton>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <EnhancedButton
+                    type="button"
+                    variant="primary"
+                    onClick={handleSaveCopSelection}
+                    disabled={!copCategoryFilter || !copUnitFilter}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Save Selection
+                  </EnhancedButton>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </Modal>
       </div>
-
-      {/* Modals */}
-      <Modal
-        isOpen={activeModal !== null && !isDeleteModalOpen}
-        onClose={handleCloseModals}
-        title={
-          activeModal === 'plantUnit'
-            ? editingPlantUnit
-              ? t['edit_plant_unit_title']
-              : t['add_plant_unit_title']
-            : activeModal === 'parameterSetting'
-              ? editingParameter
-                ? t['edit_parameter_title']
-                : t['add_parameter_title']
-              : activeModal === 'siloCapacity'
-                ? editingSilo
-                  ? t['edit_silo_title']
-                  : t['add_silo_title']
-                : activeModal === 'reportSetting'
-                  ? editingReportSetting
-                    ? t['edit_report_parameter_title']
-                    : t['add_report_parameter_title']
-                  : activeModal === 'picSetting'
-                    ? editingPic
-                      ? t['edit_pic_title']
-                      : t['add_pic_title']
-                    : ''
-        }
-      >
-        {activeModal === 'plantUnit' && (
-          <PlantUnitForm
-            recordToEdit={editingPlantUnit}
-            onSave={(r) => handleSave('plantUnit', r)}
-            onCancel={handleCloseModals}
-            t={t}
-          />
-        )}
-        {activeModal === 'parameterSetting' && (
-          <ParameterSettingForm
-            recordToEdit={editingParameter}
-            onSave={(r) => handleSave('parameterSetting', r)}
-            onCancel={handleCloseModals}
-            t={t}
-          />
-        )}
-        {activeModal === 'siloCapacity' && (
-          <SiloCapacityForm
-            recordToEdit={editingSilo}
-            onSave={(r) => handleSave('siloCapacity', r)}
-            onCancel={handleCloseModals}
-            t={t}
-            plantUnits={plantUnits}
-          />
-        )}
-        {activeModal === 'reportSetting' && (
-          <ReportSettingForm
-            recordToEdit={editingReportSetting}
-            onSave={(r) => handleSave('reportSetting', r)}
-            onCancel={handleCloseModals}
-            t={t}
-            allParameters={parameterSettings}
-            existingParameterIds={reportSettings.map((rs) => rs.parameter_id)}
-            selectedCategory={reportCategoryFilter}
-            selectedUnit={reportUnitFilter}
-            maxOrder={maxReportSettingOrder}
-          />
-        )}
-        {activeModal === 'picSetting' && (
-          <PicSettingForm
-            recordToEdit={editingPic}
-            onSave={(r) => handleSave('picSetting', r)}
-            onCancel={handleCloseModals}
-            t={t}
-          />
-        )}
-      </Modal>
-
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseModals}
-        title={t['delete_confirmation_title']}
-      >
-        <div className="p-6">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {t['delete_confirmation_message']}
-          </p>
-        </div>
-        <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-          <button
-            onClick={handleDeleteConfirm}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
-          >
-            {t['confirm_delete_button']}
-          </button>
-          <button
-            onClick={handleCloseModals}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-          >
-            {t['cancel_button']}
-          </button>
-        </div>
-      </Modal>
-
-      {/* COP Selection Modal */}
-      <Modal
-        isOpen={isCopModalOpen}
-        onClose={handleCloseCopModal}
-        title={t['cop_parameters_title']}
-      >
-        <div className="border-b border-slate-200 dark:border-slate-700 p-6">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Select the parameters from Parameter Settings to be included in the COP (Cost of
-            Production) analysis. Only numerical parameters are shown.
-          </p>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-4 min-w-0 mt-4">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="modal-cop-filter-category"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="modal-cop-filter-category"
-                  value={copCategoryFilter}
-                  onChange={(e) => setCopCategoryFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
-                >
-                  {uniquePlantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="modal-cop-filter-unit"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="modal-cop-filter-unit"
-                  value={copUnitFilter}
-                  onChange={(e) => setCopUnitFilter(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
-                  disabled={unitsForCopFilter.length === 0}
-                >
-                  {unitsForCopFilter.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {parameterSettings
-              .filter((p) => p.data_type === ParameterDataType.NUMBER)
-              .filter((p) => {
-                if (!copCategoryFilter || !copUnitFilter) return false;
-                const categoryMatch = p.category === copCategoryFilter;
-                const unitMatch = p.unit === copUnitFilter;
-                return categoryMatch && unitMatch;
-              })
-              .map((param) => (
-                <label
-                  key={param.id}
-                  className="flex items-center p-3 rounded-md border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={tempCopSelection.includes(param.id)}
-                    onChange={() => handleCopSelectionChange(param.id)}
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-slate-300 dark:border-slate-600 rounded"
-                  />
-                  <span className="ml-3 text-sm text-slate-700 dark:text-slate-300 select-none">
-                    {param.parameter}{' '}
-                    <span className="text-slate-400 dark:text-slate-500">({param.category})</span>
-                  </span>
-                </label>
-              ))}
-          </div>
-        </div>
-        <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-          <button
-            onClick={handleSaveCopSelection}
-            type="button"
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-          >
-            {t['save_button']}
-          </button>
-          <button
-            type="button"
-            onClick={handleCloseCopModal}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-          >
-            {t['cancel_button']}
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 };

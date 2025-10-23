@@ -8,7 +8,7 @@ import FactoryIcon from './icons/FactoryIcon';
 import ClipboardDocumentListIcon from './icons/ClipboardDocumentListIcon';
 import ChartBarIcon from './icons/ChartBarIcon';
 import EditIcon from './icons/EditIcon';
-import { isAdminRole } from '../utils/roleHelpers';
+import { isAdminRole, isSuperAdmin } from '../utils/roleHelpers';
 import PresentationChartLineIcon from './icons/PresentationChartLineIcon';
 import ArrowTrendingUpIcon from './icons/ArrowTrendingUpIcon';
 import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
@@ -68,6 +68,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     () => ({
       plantOperationPages: [
         { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+        {
+          key: 'op_optimized_dashboard',
+          icon: <PresentationChartLineIcon className={iconClass} />,
+        },
         {
           key: 'op_report',
           icon: <ClipboardDocumentListIcon className={iconClass} />,
@@ -149,9 +153,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         case 'inspection':
           return navigationData.inspectionPages
             .filter(() => {
-              // Allow access for all users for now
-              // TODO: Implement proper inspection permissions
-              return true;
+              // Use inspection permission for sub-menus
+              return permissionChecker.hasPermission('inspection', 'READ');
             })
             .filter((page) => {
               // For Guest users, hide New Inspection (insp_form)
@@ -176,8 +179,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 return allowedGuestPages.includes(page.key);
               }
 
-              // Hide Master Data for non-admin users
-              if (page.key === 'op_master_data' && !isAdminOrSuperAdmin) {
+              // Hide Master Data for non-admin users and non-Autonomous users
+              if (
+                page.key === 'op_master_data' &&
+                !isAdminOrSuperAdmin &&
+                currentUser?.role !== 'Autonomous'
+              ) {
                 return false;
               }
               // For now, use main plant_operations permission
@@ -208,9 +215,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         case 'users':
           return navigationData.userManagementPages
             .filter(() => {
-              // For now, use main system_settings permission with ADMIN level
-              // TODO: Implement more granular permissions for user management sub-pages
-              return permissionChecker.hasPermission('system_settings', 'ADMIN');
+              // User management is only accessible to Super Admin
+              return isSuperAdmin(currentUser?.role);
             })
             .map((page) => ({
               key: page.key,
@@ -300,6 +306,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         {...bind()}
+        style={{ touchAction: 'none' }} /* Fix for @use-gesture warning */
         className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 w-20 ${
           isMobile
             ? isOpen
@@ -341,16 +348,18 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
           )}
 
-          {/* Inspection Module - All users */}
-          <NavigationItem
-            ref={inspectionButtonRef}
-            icon={<ClipboardCheckIcon className={iconClass} />}
-            label={t.inspection || 'Inspection'}
-            isActive={currentPage === 'inspection'}
-            onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
-            hasDropdown={true}
-            isExpanded={activeDropdown === 'inspection'}
-          />
+          {/* Inspection Module - Check permission */}
+          {permissionChecker.hasPermission('inspection', 'READ') && (
+            <NavigationItem
+              ref={inspectionButtonRef}
+              icon={<ClipboardCheckIcon className={iconClass} />}
+              label={t.inspection || 'Inspection'}
+              isActive={currentPage === 'inspection'}
+              onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
+              hasDropdown={true}
+              isExpanded={activeDropdown === 'inspection'}
+            />
+          )}
 
           {/* Project Management - Check permission */}
           {permissionChecker.hasPermission('project_management', 'READ') && (

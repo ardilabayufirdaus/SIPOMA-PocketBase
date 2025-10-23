@@ -55,13 +55,9 @@ const calculateTextMode = (
   return mode;
 };
 
-interface WhatsAppGroupReportPageProps {
-  // t prop removed, using useTranslation hook instead
-}
-
-const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
+const WhatsAppGroupReportPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedPlantCategory, setSelectedPlantCategory] = useState<string>('Cement Mill');
+  const [selectedPlantCategory, setSelectedPlantCategory] = useState<string>('Tonasa 2/3');
   const [selectedPlantUnits, setSelectedPlantUnits] = useState<string[]>(['220', '320']);
   const [generatedReport, setGeneratedReport] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -326,7 +322,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
 
         totalProductionAll += totalProduction;
         totalHoursAll += runningHoursAvg;
-        unitCount++;
+        if (totalProduction > 0) {
+          unitCount++;
+        }
       }
 
       // Calculate total downtime
@@ -694,7 +692,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
 
         totalProductionAll += totalProduction;
         totalHoursAll += runningHoursAvg;
-        unitCount++;
+        if (totalProduction > 0) {
+          unitCount++;
+        }
       }
 
       // Summary Header
@@ -1041,7 +1041,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
 
         totalProductionAll += totalProduction;
         totalHoursAll += runningHoursAvg;
-        unitCount++;
+        if (totalProduction > 0) {
+          unitCount++;
+        }
       }
 
       // Summary Header
@@ -1407,7 +1409,9 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
 
         totalProductionAll += totalProduction;
         totalHoursAll += combinedRunningHours;
-        unitCount++;
+        if (totalProduction > 0) {
+          unitCount++;
+        }
       }
 
       // Summary Header
@@ -2062,7 +2066,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
           {/* Generate Button */}
           <div className="flex justify-center space-x-4">
             <Button
-              variant="gradient"
+              variant="primary"
               size="lg"
               onClick={handleGenerateReport}
               disabled={isGenerating}
@@ -2203,7 +2207,7 @@ const WhatsAppGroupReportPage: React.FC<WhatsAppGroupReportPageProps> = () => {
             </Button>
 
             <Button
-              variant="neon"
+              variant="secondary"
               size="lg"
               onClick={handleGenerateShift3Report}
               disabled={isGenerating}

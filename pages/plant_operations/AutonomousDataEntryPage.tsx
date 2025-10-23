@@ -663,3 +663,4 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 };
 
 export default AutonomousDataEntryPage;
+

@@ -99,3 +99,4 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
     </div>
   </div>
 );
+

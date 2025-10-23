@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, PermissionMatrix, PermissionLevel, UserRole } from '../../../types';
-import { supabase } from '../../../utils/supabaseClient';
+import { pb } from '../../../utils/pocketbase';
+import { supabase } from '../../../utils/pocketbaseClient';
 import PermissionMatrixEditor from './PermissionMatrixEditor';
+import { getDefaultPermissionsForRole } from '../../../utils/tonasaPermissions';
 
 // Enhanced Components
 import {
@@ -28,6 +30,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isPermissionEditorOpen, setIsPermissionEditorOpen] = useState(false);
   const [pendingPermissions, setPendingPermissions] = useState<PermissionMatrix | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -39,25 +42,16 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   // Realtime subscription for user permissions
   useEffect(() => {
-    const channel = supabase
-      .channel('user_permissions_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_permissions',
-        },
-        async (payload) => {
-          console.log('Realtime permission change:', payload);
-          // Refresh users when permissions change to get updated permission matrix
-          await fetchUsers();
-        }
-      )
-      .subscribe();
+    // Set up PocketBase realtime subscription
+    pb.collection('user_permissions').subscribe('*', async (data) => {
+      console.log('Realtime permission change:', data);
+      // Refresh users when permissions change to get updated permission matrix
+      await fetchUsers();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      // Clean up subscription
+      pb.collection('user_permissions').unsubscribe();
     };
   }, []);
 
@@ -157,9 +151,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     const matrix: PermissionMatrix = {
       dashboard: 'NONE',
       plant_operations: {},
+      inspection: 'NONE',
       project_management: 'NONE',
-      system_settings: 'NONE',
-      user_management: 'NONE',
     };
 
     userPermissions.forEach((up: UserPermissionData) => {
@@ -194,17 +187,13 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
               console.log('No plant_units found or not an array');
             }
             break;
+          case 'inspection':
+            matrix.inspection = perm.permission_level as PermissionLevel;
+            console.log(`Set inspection to ${perm.permission_level}`);
+            break;
           case 'project_management':
             matrix.project_management = perm.permission_level as PermissionLevel;
             console.log(`Set project_management to ${perm.permission_level}`);
-            break;
-          case 'system_settings':
-            matrix.system_settings = perm.permission_level as PermissionLevel;
-            console.log(`Set system_settings to ${perm.permission_level}`);
-            break;
-          case 'user_management':
-            matrix.user_management = perm.permission_level as PermissionLevel;
-            console.log(`Set user_management to ${perm.permission_level}`);
             break;
           default:
             console.log(`Unknown module: ${perm.module_name}`);
@@ -269,176 +258,34 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     console.log('✅ Pending permissions:', pendingPermissions);
 
     try {
-      // Delete existing permissions
-      const { error: deleteError } = await supabase
-        .from('user_permissions')
-        .delete()
-        .eq('user_id', selectedUser.id);
-      if (deleteError) {
-        console.error('Error deleting existing permissions:', deleteError);
-        throw deleteError;
-      }
+      // Import the correct save function from userPermissionManager
+      const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
 
-      // Insert new permissions
-      const permissionInserts = [];
+      // Save the pending permissions using the same API as other components
+      await saveUserPermissions(selectedUser.id, pendingPermissions, 'system');
 
-      // Handle simple permissions
-      const simplePermissions = [
-        { module: 'dashboard', level: pendingPermissions.dashboard },
-        {
-          module: 'project_management',
-          level: pendingPermissions.project_management,
-        },
-        { module: 'system_settings', level: pendingPermissions.system_settings },
-        { module: 'user_management', level: pendingPermissions.user_management },
-      ];
-
-      for (const perm of simplePermissions) {
-        if (perm.level !== 'NONE') {
-          console.log(`Processing simple permission: ${perm.module} = ${perm.level}`);
-
-          // Get or create permission record
-          const { data: existingPerm } = await supabase
-            .from('permissions')
-            .select('id')
-            .eq('module_name', perm.module)
-            .eq('permission_level', perm.level)
-            .single();
-
-          let permissionId;
-          if (existingPerm) {
-            permissionId = existingPerm.id;
-            console.log(`Found existing permission: ${permissionId}`);
-          } else {
-            console.log(`Creating new permission for ${perm.module}:${perm.level}`);
-            const { data: newPerm, error: insertError } = await supabase
-              .from('permissions')
-              .insert({
-                module_name: perm.module,
-                permission_level: perm.level,
-                plant_units: [],
-              })
-              .select('id')
-              .single();
-
-            if (insertError) {
-              console.error('Error creating permission:', insertError);
-              continue;
-            }
-
-            permissionId = newPerm?.id;
-            console.log(`Created new permission: ${permissionId}`);
-          }
-
-          if (permissionId) {
-            permissionInserts.push({
-              user_id: selectedUser.id,
-              permission_id: permissionId,
-            });
-          }
-        }
-      }
-
-      // Handle plant operations permissions
-      if (
-        pendingPermissions.plant_operations &&
-        Object.keys(pendingPermissions.plant_operations).length > 0
-      ) {
-        console.log(
-          'Processing plant operations permissions:',
-          pendingPermissions.plant_operations
-        );
-
-        const plantUnits: PlantUnitData[] = [];
-        Object.entries(pendingPermissions.plant_operations).forEach(([category, units]) => {
-          Object.entries(units).forEach(([unit, level]) => {
-            if (level !== 'NONE') {
-              plantUnits.push({ category, unit, level });
-            }
-          });
-        });
-
-        console.log('Plant units to save:', plantUnits);
-
-        if (plantUnits.length > 0) {
-          // Group by permission level
-          const levelGroups = plantUnits.reduce(
-            (acc, unit) => {
-              if (!acc[unit.level]) acc[unit.level] = [];
-              acc[unit.level].push({ category: unit.category, unit: unit.unit });
-              return acc;
-            },
-            {} as Record<string, Array<{ category: string; unit: string }>>
-          );
-
-          console.log('Level groups:', levelGroups);
-
-          for (const [level, units] of Object.entries(levelGroups)) {
-            console.log(`Processing plant operations level ${level} with units:`, units);
-
-            const { data: existingPerm } = await supabase
-              .from('permissions')
-              .select('id')
-              .eq('module_name', 'plant_operations')
-              .eq('permission_level', level)
-              .single();
-
-            let permissionId;
-            if (existingPerm) {
-              permissionId = existingPerm.id;
-              console.log(`Found existing plant permission: ${permissionId}`);
-            } else {
-              console.log(`Creating new plant permission for level ${level}`);
-              const { data: newPerm, error: insertError } = await supabase
-                .from('permissions')
-                .insert({
-                  module_name: 'plant_operations',
-                  permission_level: level,
-                  plant_units: units,
-                })
-                .select('id')
-                .single();
-
-              if (insertError) {
-                console.error('Error creating plant permission:', insertError);
-                continue;
-              }
-
-              permissionId = newPerm?.id;
-              console.log(`Created new plant permission: ${permissionId}`);
-            }
-
-            if (permissionId) {
-              permissionInserts.push({
-                user_id: selectedUser.id,
-                permission_id: permissionId,
-              });
-            }
-          }
-        }
-      }
-
-      console.log('Permission inserts:', permissionInserts);
-
-      if (permissionInserts.length > 0) {
-        const { error: insertError } = await supabase
-          .from('user_permissions')
-          .insert(permissionInserts);
-        if (insertError) {
-          console.error('Error inserting user permissions:', insertError);
-          throw insertError;
-        }
-        console.log('Successfully inserted user permissions');
-      }
+      // Update local state to reflect saved custom permissions
+      setHasUnsavedChanges(false);
 
       // Refresh users to get updated permissions
       console.log('Refreshing users data...');
       await fetchUsers();
 
-      console.log('Permission save completed successfully');
-    } catch (err: unknown) {
-      console.error('Error updating permissions:', err);
-      throw err; // Re-throw so PermissionMatrixEditor can handle the error
+      console.log('✅ Permissions saved successfully');
+    } catch (error) {
+      console.error('❌ Error saving permissions:', error);
+      throw error; // Re-throw so PermissionMatrixEditor can handle the error
+    }
+  };
+
+  const handleResetToDefault = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const defaultPerms = await getDefaultPermissionsForRole(selectedUser.role as UserRole);
+      setPendingPermissions(defaultPerms);
+    } catch (error) {
+      console.error('Error resetting to default permissions:', error);
     }
   };
 
@@ -461,8 +308,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     const summary = [];
     if (permissions.dashboard !== 'NONE') summary.push('Dashboard');
     if (permissions.project_management !== 'NONE') summary.push('Projects');
-    if (permissions.system_settings !== 'NONE') summary.push('Settings');
-    if (permissions.user_management !== 'NONE') summary.push('Users');
     if (Object.keys(permissions.plant_operations).length > 0) summary.push('Plant Ops');
 
     return summary.length > 0 ? summary.join(', ') : 'No permissions';
@@ -503,13 +348,10 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
               <option value="all">All Roles</option>
               <option value="Super Admin">Super Admin</option>
               <option value="Admin">Admin</option>
-              <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
-              <option value="Admin Tonasa 4">Admin Tonasa 4</option>
-              <option value="Admin Tonasa 5">Admin Tonasa 5</option>
+              <option value="Manager">Manager</option>
               <option value="Operator">Operator</option>
-              <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
-              <option value="Operator Tonasa 4">Operator Tonasa 4</option>
-              <option value="Operator Tonasa 5">Operator Tonasa 5</option>
+              <option value="Outsourcing">Outsourcing</option>
+              <option value="Autonomous">Autonomous</option>
               <option value="Guest">Guest</option>
             </select>
           </div>
@@ -605,6 +447,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
           currentPermissions={pendingPermissions || selectedUser.permissions}
           onPermissionsChange={handlePermissionsChange}
           onSave={handleSavePermissions}
+          onResetToDefault={handleResetToDefault}
           onClose={() => {
             setIsPermissionEditorOpen(false);
             setSelectedUser(null);

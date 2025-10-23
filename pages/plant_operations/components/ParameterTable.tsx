@@ -170,3 +170,4 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
     </motion.div>
   );
 };
+

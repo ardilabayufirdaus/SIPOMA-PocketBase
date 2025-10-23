@@ -1,43 +1,118 @@
-import { PermissionMatrix } from '../types';
+import { PermissionMatrix, PermissionLevel, PlantOperationsPermissions } from '../types';
 
 const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   dashboard: 'dashboard',
   plant_operations: 'plant_operations',
-  packing_plant: 'packing_plant',
   inspection: 'inspection',
   project_management: 'project_management',
-  system_settings: 'system_settings',
-  user_management: 'user_management',
 };
 
-export const buildPermissionMatrix = (userPermissions: any[]): PermissionMatrix => {
+export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatrix => {
+  // Create default permission matrix
   const matrix: PermissionMatrix = {
     dashboard: 'NONE',
     plant_operations: {},
-    packing_plant: 'NONE',
     inspection: 'NONE',
     project_management: 'NONE',
-    system_settings: 'NONE',
-    user_management: 'NONE',
   };
 
-  userPermissions.forEach((up: any) => {
-    const perm = up.permissions;
+  // Jika tidak ada izin, kembalikan matrix default
+  if (!userPermissions) {
+    return matrix;
+  }
+
+  // Menangani struktur di mana userPermissions adalah array dari user_permissions
+  // dan sudah bukan objek di user record
+
+  // If userPermissions is a string (role), return default matrix with basic permissions
+  if (typeof userPermissions === 'string') {
+    // Set basic permissions based on role
+    const role = userPermissions.toLowerCase();
+
+    // Define role-based default permissions
+    if (role.includes('admin')) {
+      matrix.dashboard = 'READ';
+    } else if (role.includes('operator')) {
+      matrix.dashboard = 'READ';
+    }
+
+    return matrix;
+  }
+
+  // Handle case when userPermissions is null or undefined
+  if (!userPermissions) {
+    return matrix;
+  }
+
+  // Ensure we're working with an array for permission objects
+  const permissionsArray = Array.isArray(userPermissions) ? userPermissions : [userPermissions];
+
+  permissionsArray.forEach((up: unknown) => {
+    // Safe type check for up
+    if (!up || typeof up !== 'object') return;
+
+    const upObj = up as Record<string, unknown>;
+
+    // Handle permissions_data field (JSON string from database)
+    const permissionsData = upObj.permissions_data;
+    if (typeof permissionsData === 'string') {
+      try {
+        const parsedPermissions = JSON.parse(permissionsData) as Record<string, unknown>;
+
+        // Process each module in the parsed permissions
+        Object.entries(parsedPermissions).forEach(([moduleName, permissionValue]) => {
+          const moduleKey = permissionModuleMap[moduleName];
+
+          if (moduleKey) {
+            if (
+              moduleKey === 'plant_operations' &&
+              typeof permissionValue === 'object' &&
+              permissionValue !== null
+            ) {
+              // Handle plant operations permissions
+              const plantOps = permissionValue as PlantOperationsPermissions;
+              matrix.plant_operations = plantOps;
+            } else if (typeof permissionValue === 'string') {
+              // Handle simple permission levels
+              matrix[moduleKey] = permissionValue as PermissionLevel;
+            }
+          }
+        });
+
+        return; // Skip the old permission structure processing
+      } catch {
+        // Error parsing permissions_data, skip this permission entry
+        return;
+      }
+    }
+
+    // Fallback to old permission structure (for backward compatibility)
+    const perm = upObj.permissions as Record<string, unknown> | undefined;
+
     if (perm) {
-      const moduleKey = permissionModuleMap[perm.module_name];
+      const moduleNameStr = String(perm.module_name || '');
+      const moduleKey = permissionModuleMap[moduleNameStr];
+
       if (moduleKey) {
         if (moduleKey === 'plant_operations') {
           // Handle plant operations permissions
-          if (perm.plant_units && Array.isArray(perm.plant_units)) {
-            perm.plant_units.forEach((unit: any) => {
-              if (!matrix.plant_operations[unit.category]) {
-                matrix.plant_operations[unit.category] = {};
+          const plantUnits = perm.plant_units;
+
+          if (plantUnits && Array.isArray(plantUnits)) {
+            plantUnits.forEach((unit: Record<string, unknown>) => {
+              const category = String(unit.category || '');
+              const unitName = String(unit.unit || '');
+              const level = String(perm.permission_level || 'NONE') as PermissionLevel;
+
+              if (!matrix.plant_operations[category]) {
+                matrix.plant_operations[category] = {};
               }
-              matrix.plant_operations[unit.category][unit.unit] = perm.permission_level;
+              matrix.plant_operations[category][unitName] = level;
             });
           }
         } else {
-          matrix[moduleKey] = perm.permission_level;
+          const level = String(perm.permission_level || 'NONE') as PermissionLevel;
+          matrix[moduleKey] = level;
         }
       }
     }

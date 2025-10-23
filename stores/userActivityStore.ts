@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { supabase } from '../utils/supabaseClient';
+import { pb } from '../utils/pocketbase';
+import { sanitizeForJSON } from '../utils/sanitizeJSON';
 
 // Types
 export interface UserSession {
@@ -28,7 +29,7 @@ export interface UserAction {
   module: string;
   description: string;
   ip_address: string;
-  timestamp: string;
+  created: string;
   metadata: Record<string, any>;
   success: boolean;
   error_message?: string;
@@ -97,13 +98,16 @@ interface UserActivityState {
   fetchSessions: (page?: number) => Promise<void>;
   fetchActions: () => Promise<void>;
   fetchStats: () => Promise<void>;
-  logUserAction: (action: Omit<UserAction, 'id' | 'timestamp'>) => Promise<void>;
+  logUserAction: (action: Omit<UserAction, 'id' | 'created'>) => Promise<void>;
+  sanitizeForJSON: (obj: any) => any;
   startUserSession: (
     userId: string,
     sessionData: Partial<UserSession>
   ) => Promise<UserSession | undefined>;
   endUserSession: (sessionId: string) => Promise<void>;
   updateLastActivity: (sessionId: string) => Promise<void>;
+  deleteAllSessions: () => Promise<void>;
+  deleteAllActions: () => Promise<void>;
   setFilter: (filter: Partial<ActivityFilter>) => void;
   clearError: () => void;
 }
@@ -140,35 +144,27 @@ export const useUserActivityStore = create<UserActivityState>()(
           const from = (page - 1) * sessionsLimit;
           const to = from + sessionsLimit - 1;
 
-          let query = supabase
-            .from('user_sessions')
-            .select(
-              `
-              *,
-              users!inner(username, full_name, role)
-            `,
-              { count: 'exact' }
-            )
-            .gte('session_start', filter.dateRange.start)
-            .lte('session_start', filter.dateRange.end + 'T23:59:59')
-            .order('session_start', { ascending: false })
-            .range(from, to);
+          const filterParts = [`session_start >= "${filter.dateRange.start}"`];
 
           if (filter.users.length > 0) {
-            query = query.in('user_id', filter.users);
+            filterParts.push(`user ~ "${filter.users.join(',')}"`);
           }
 
-          const { data, error, count } = await query;
+          const filterStr = filterParts.join(' && ');
 
-          if (error) throw error;
+          const result = await pb.collection('user_sessions').getList(page, sessionsLimit, {
+            filter: filterStr,
+            sort: '-session_start',
+            expand: 'user',
+          });
 
           const sessions: UserSession[] =
-            data?.map((session) => ({
+            result.items?.map((session) => ({
               id: session.id,
-              user_id: session.user_id,
-              username: session.users?.username || '',
-              full_name: session.users?.full_name || '',
-              role: session.users?.role || '',
+              user_id: session.user,
+              username: (session.expand as any)?.user?.username || '',
+              full_name: (session.expand as any)?.user?.full_name || '',
+              role: (session.expand as any)?.user?.role || '',
               session_start: session.session_start,
               session_end: session.session_end,
               ip_address: session.ip_address,
@@ -181,10 +177,20 @@ export const useUserActivityStore = create<UserActivityState>()(
               duration_minutes: session.duration_minutes || 0,
             })) || [];
 
-          set({ sessions, sessionsPage: page, totalSessions: count || 0, loading: false });
+          set({ sessions, sessionsPage: page, totalSessions: result.totalItems, loading: false });
         } catch (error) {
-          console.error('Error fetching sessions:', error);
-          set({ error: (error as Error).message, loading: false });
+          // If collection doesn't exist, set empty data
+          if ((error as any)?.response?.status === 404) {
+            set({
+              sessions: [],
+              sessionsPage: page,
+              totalSessions: 0,
+              loading: false,
+              error: 'User activity tracking not available - collections not created yet',
+            });
+          } else {
+            set({ error: (error as Error).message, loading: false });
+          }
         }
       },
 
@@ -193,50 +199,46 @@ export const useUserActivityStore = create<UserActivityState>()(
         set({ loading: true, error: null });
         try {
           const { filter } = get();
-          let query = supabase
-            .from('user_actions')
-            .select(
-              `
-              *,
-              users!inner(username, full_name)
-            `
-            )
-            .gte('timestamp', filter.dateRange.start)
-            .lte('timestamp', filter.dateRange.end + 'T23:59:59')
-            .order('timestamp', { ascending: false })
-            .limit(1000);
+          const filterParts = [
+            `created >= "${filter.dateRange.start}"`,
+            `created <= "${filter.dateRange.end}T23:59:59"`,
+          ];
 
           if (filter.users.length > 0) {
-            query = query.in('user_id', filter.users);
+            filterParts.push(`user ~ "${filter.users.join(',')}"`);
           }
 
           if (filter.actionTypes.length > 0) {
-            query = query.in('action_type', filter.actionTypes);
+            filterParts.push(`action_type ~ "${filter.actionTypes.join(',')}"`);
           }
 
           if (filter.modules.length > 0) {
-            query = query.in('module', filter.modules);
+            filterParts.push(`module ~ "${filter.modules.join(',')}"`);
           }
 
           if (filter.success !== undefined) {
-            query = query.eq('success', filter.success);
+            filterParts.push(`success = ${filter.success}`);
           }
 
-          const { data, error } = await query;
+          const filterStr = filterParts.join(' && ');
 
-          if (error) throw error;
+          const result = await pb.collection('user_actions').getList(1, 1000, {
+            filter: filterStr,
+            sort: '-created',
+            expand: 'user',
+          });
 
           const actions: UserAction[] =
-            data?.map((action) => ({
+            result.items?.map((action) => ({
               id: action.id,
-              user_id: action.user_id,
-              username: action.users?.username || '',
-              full_name: action.users?.full_name || '',
+              user_id: action.user,
+              username: (action.expand as any)?.user?.username || '',
+              full_name: (action.expand as any)?.user?.full_name || '',
               action_type: action.action_type,
               module: action.module,
               description: action.description,
               ip_address: action.ip_address,
-              timestamp: action.timestamp,
+              created: action.created,
               metadata: action.metadata || {},
               success: action.success,
               error_message: action.error_message,
@@ -244,8 +246,16 @@ export const useUserActivityStore = create<UserActivityState>()(
 
           set({ actions, loading: false });
         } catch (error) {
-          console.error('Error fetching actions:', error);
-          set({ error: (error as Error).message, loading: false });
+          // If collection doesn't exist, set empty data
+          if ((error as any)?.response?.status === 404) {
+            set({
+              actions: [],
+              loading: false,
+              error: 'User activity tracking not available - collections not created yet',
+            });
+          } else {
+            set({ error: (error as Error).message, loading: false });
+          }
         }
       },
 
@@ -257,104 +267,91 @@ export const useUserActivityStore = create<UserActivityState>()(
 
           // Get counts using separate queries to minimize data transfer
           const [
-            { count: totalSessions },
-            { count: totalActions },
-            { count: successfulActions },
-            { count: failedActions },
-            { count: totalUsers },
-            { count: activeUsers },
+            totalSessionsResult,
+            totalActionsResult,
+            successfulActionsResult,
+            failedActionsResult,
+            totalUsersResult,
+            activeUsersResult,
           ] = await Promise.all([
             // Total sessions
-            supabase
-              .from('user_sessions')
-              .select('*', { count: 'exact', head: true })
-              .gte('session_start', filter.dateRange.start)
-              .lte('session_start', filter.dateRange.end + 'T23:59:59'),
-
+            pb.collection('user_sessions').getList(1, 1, {
+              filter: `session_start >= "${filter.dateRange.start}" && session_start <= "${filter.dateRange.end}T23:59:59"`,
+              fields: 'id',
+            }),
             // Total actions
-            supabase
-              .from('user_actions')
-              .select('*', { count: 'exact', head: true })
-              .gte('timestamp', filter.dateRange.start)
-              .lte('timestamp', filter.dateRange.end + 'T23:59:59'),
-
+            pb.collection('user_actions').getList(1, 1, {
+              filter: `created >= "${filter.dateRange.start}" && created <= "${filter.dateRange.end}T23:59:59"`,
+              fields: 'id',
+            }),
             // Successful actions
-            supabase
-              .from('user_actions')
-              .select('*', { count: 'exact', head: true })
-              .gte('timestamp', filter.dateRange.start)
-              .lte('timestamp', filter.dateRange.end + 'T23:59:59')
-              .eq('success', true),
-
+            pb.collection('user_actions').getList(1, 1, {
+              filter: `created >= "${filter.dateRange.start}" && created <= "${filter.dateRange.end}T23:59:59" && success = true`,
+              fields: 'id',
+            }),
             // Failed actions
-            supabase
-              .from('user_actions')
-              .select('*', { count: 'exact', head: true })
-              .gte('timestamp', filter.dateRange.start)
-              .lte('timestamp', filter.dateRange.end + 'T23:59:59')
-              .eq('success', false),
-
+            pb.collection('user_actions').getList(1, 1, {
+              filter: `created >= "${filter.dateRange.start}" && created <= "${filter.dateRange.end}T23:59:59" && success = false`,
+              fields: 'id',
+            }),
             // Total users
-            supabase.from('users').select('*', { count: 'exact', head: true }),
-
+            pb.collection('users').getList(1, 1, { fields: 'id' }),
             // Active users
-            supabase
-              .from('users')
-              .select('*', { count: 'exact', head: true })
-              .eq('is_active', true),
+            pb.collection('users').getList(1, 1, {
+              filter: 'is_active = true',
+              fields: 'id',
+            }),
           ]);
 
+          const totalSessions = totalSessionsResult.totalItems;
+          const totalActions = totalActionsResult.totalItems;
+          const successfulActions = successfulActionsResult.totalItems;
+          const failedActions = failedActionsResult.totalItems;
+          const totalUsers = totalUsersResult.totalItems;
+          const activeUsers = activeUsersResult.totalItems;
+
           // Get average session duration (fetch only duration_minutes)
-          const { data: sessionDurations } = await supabase
-            .from('user_sessions')
-            .select('duration_minutes')
-            .gte('session_start', filter.dateRange.start)
-            .lte('session_start', filter.dateRange.end + 'T23:59:59');
+          const sessionDurationsResult = await pb.collection('user_sessions').getFullList({
+            filter: `session_start >= "${filter.dateRange.start}" && session_start <= "${filter.dateRange.end}T23:59:59"`,
+            fields: 'duration_minutes',
+          });
 
           const averageSessionDuration =
-            sessionDurations?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) /
+            sessionDurationsResult.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) /
             Math.max(totalSessions || 1, 1);
 
           // Get top users (limit to 10 with minimal data)
-          const { data: topUsersData } = await supabase
-            .from('user_actions')
-            .select(
-              `
-              user_id,
-              users!inner(username, full_name),
-              timestamp
-            `
-            )
-            .gte('timestamp', filter.dateRange.start)
-            .lte('timestamp', filter.dateRange.end + 'T23:59:59')
-            .order('timestamp', { ascending: false })
-            .limit(1000); // Reasonable limit for calculation
+          const topUsersData = await pb.collection('user_actions').getList(1, 1000, {
+            filter: `created >= "${filter.dateRange.start}" && created <= "${filter.dateRange.end}T23:59:59"`,
+            sort: '-created',
+            expand: 'user',
+            fields: 'user,created',
+          });
 
           // Get top modules (limit to 10)
-          const { data: topModulesData } = await supabase
-            .from('user_actions')
-            .select('module')
-            .gte('timestamp', filter.dateRange.start)
-            .lte('timestamp', filter.dateRange.end + 'T23:59:59')
-            .limit(1000);
+          const topModulesData = await pb.collection('user_actions').getList(1, 1000, {
+            filter: `created >= "${filter.dateRange.start}" && created <= "${filter.dateRange.end}T23:59:59"`,
+            fields: 'module',
+          });
 
           // Calculate top users
           const userActivityMap = new Map();
-          topUsersData?.forEach((action) => {
-            const key = action.user_id;
+          topUsersData.items?.forEach((action) => {
+            const key = action.user;
+            const user = (action.expand as any)?.user;
             if (!userActivityMap.has(key)) {
               userActivityMap.set(key, {
-                user_id: action.user_id,
-                username: (action as any).users?.username || '',
-                full_name: (action as any).users?.full_name || '',
+                user_id: action.user,
+                username: user?.username || '',
+                full_name: user?.full_name || '',
                 action_count: 0,
-                last_active: action.timestamp,
+                last_active: action.created,
               });
             }
-            const user = userActivityMap.get(key);
-            user.action_count++;
-            if (action.timestamp > user.last_active) {
-              user.last_active = action.timestamp;
+            const userData = userActivityMap.get(key);
+            userData.action_count++;
+            if (action.created > userData.last_active) {
+              userData.last_active = action.created;
             }
           });
 
@@ -364,7 +361,7 @@ export const useUserActivityStore = create<UserActivityState>()(
 
           // Calculate top modules
           const moduleActivityMap = new Map();
-          topModulesData?.forEach((action) => {
+          topModulesData.items?.forEach((action) => {
             const module = action.module;
             moduleActivityMap.set(module, (moduleActivityMap.get(module) || 0) + 1);
           });
@@ -406,92 +403,224 @@ export const useUserActivityStore = create<UserActivityState>()(
 
           set({ stats, loading: false });
         } catch (error) {
-          console.error('Error fetching stats:', error);
-          set({ error: (error as Error).message, loading: false });
+          // If collection doesn't exist, set empty stats
+          if ((error as any)?.response?.status === 404) {
+            set({
+              stats: {
+                totalUsers: 0,
+                activeUsers: 0,
+                totalSessions: 0,
+                averageSessionDuration: 0,
+                totalActions: 0,
+                successfulActions: 0,
+                failedActions: 0,
+                topUsers: [],
+                topModules: [],
+                hourlyActivity: [],
+                dailyActivity: [],
+              },
+              loading: false,
+              error: 'User activity tracking not available - collections not created yet',
+            });
+          } else {
+            set({ error: (error as Error).message, loading: false });
+          }
         }
       },
 
       // Log user action
       logUserAction: async (actionData) => {
-        try {
-          // Remove fields that don't exist in the user_actions table and handle ip_address
-          const { username, full_name, ...rawData } = actionData;
-          const insertData = {
-            ...rawData,
-            ip_address: rawData.ip_address === '' ? null : rawData.ip_address,
-          };
+        const logWithRetry = async (data: typeof actionData, retryCount = 0) => {
+          const maxRetries = 2;
+          const retryDelay = 1000 * Math.pow(2, retryCount); // Exponential backoff
 
-          const { data, error } = await supabase.from('user_actions').insert({
-            ...insertData,
-            timestamp: new Date().toISOString(),
-          });
+          try {
+            const { user_id, ...rest } = data;
+            const insertData = {
+              ...rest,
+              user: user_id,
+              ip_address: data.ip_address === '' ? null : data.ip_address,
+            };
 
-          if (error) throw error;
+            // Sanitize metadata to prevent circular references
+            const sanitizedData = {
+              ...insertData,
+              metadata: sanitizeForJSON(insertData.metadata),
+            };
 
-          // Refresh actions if needed
-          // get().fetchActions();
-        } catch (error) {
-          console.error('Error logging user action:', error);
-        }
+            await pb.collection('user_actions').create(sanitizedData);
+
+            // Refresh actions if needed
+            // get().fetchActions();
+          } catch (error: unknown) {
+            const err = error as Error;
+            const isNetworkError =
+              err?.message?.includes('ERR_NETWORK_CHANGED') ||
+              err?.message?.includes('Failed to fetch') ||
+              err?.message?.includes('NetworkError') ||
+              err?.message?.includes('autocancelled');
+
+            // For network errors, retry a few times but don't block the UI
+            if (isNetworkError && retryCount < maxRetries) {
+              console.warn(
+                `Network error logging user action, retrying in ${retryDelay}ms (attempt ${retryCount + 1}/${maxRetries})`
+              );
+              setTimeout(() => logWithRetry(data, retryCount + 1), retryDelay);
+              return;
+            }
+
+            // For network errors after retries, or other errors, log but don't throw
+            if (isNetworkError) {
+              console.warn(
+                'Network error while logging user action (giving up after retries):',
+                err?.message
+              );
+              return; // Silently fail for network issues
+            }
+
+            console.error('Failed to log user action:', err?.message || 'Unknown error');
+            // Handle case where user_actions collection doesn't exist
+            if (
+              err &&
+              (err.message.includes('404') ||
+                err.message.includes('autocancelled') ||
+                err.message.includes('circular'))
+            ) {
+              // Collection doesn't exist, silently ignore
+              return;
+            }
+
+            // For other errors, also silently fail to not block user experience
+            return;
+          }
+        };
+
+        // Start the logging process (fire and forget)
+        logWithRetry(actionData);
       },
 
       // Start user session
       startUserSession: async (userId, sessionData) => {
         try {
-          // Handle ip_address for INET type - convert empty string to null
           const processedSessionData = {
             ...sessionData,
             ip_address: sessionData.ip_address === '' ? null : sessionData.ip_address,
+            location: sessionData.location === '' ? null : sessionData.location,
           };
 
-          const { data, error } = await supabase.from('user_sessions').insert({
-            user_id: userId,
+          const sessionDataToInsert = {
+            user: userId,
             session_start: new Date().toISOString(),
             is_active: true,
             last_activity: new Date().toISOString(),
+            duration_minutes: 0,
             ...processedSessionData,
-          });
+          };
 
-          if (error) throw error;
+          const result = await pb.collection('user_sessions').create(sessionDataToInsert);
 
           // Return the created session data
-          return (data as UserSession[])?.[0];
+          return result as unknown as UserSession;
         } catch (error) {
-          console.error('Error starting user session:', error);
-          throw error;
+          // Silently fail if collection doesn't exist
+          if ((error as any)?.response?.status !== 404) {
+            throw error;
+          }
         }
       },
 
       // End user session
       endUserSession: async (sessionId) => {
         try {
-          const { data, error } = await supabase
-            .from('user_sessions')
-            .update({
-              session_end: new Date().toISOString(),
-              is_active: false,
-            })
-            .eq('id', sessionId);
-
-          if (error) throw error;
+          await pb.collection('user_sessions').update(sessionId, {
+            session_end: new Date().toISOString(),
+            is_active: false,
+          });
         } catch (error) {
-          console.error('Error ending user session:', error);
+          // Silently fail if collection doesn't exist
+          if ((error as any)?.response?.status !== 404) {
+            throw error;
+          }
         }
       },
 
       // Update last activity
       updateLastActivity: async (sessionId) => {
         try {
-          const { data, error } = await supabase
-            .from('user_sessions')
-            .update({
-              last_activity: new Date().toISOString(),
-            })
-            .eq('id', sessionId);
-
-          if (error) throw error;
+          await pb.collection('user_sessions').update(sessionId, {
+            last_activity: new Date().toISOString(),
+          });
         } catch (error) {
-          console.error('Error updating last activity:', error);
+          // Silently fail if collection doesn't exist
+          if ((error as any)?.response?.status !== 404) {
+            throw error;
+          }
+        }
+      },
+
+      // Delete all sessions
+      deleteAllSessions: async () => {
+        set({ loading: true, error: null });
+        try {
+          // Get all session IDs first
+          const result = await pb.collection('user_sessions').getList(1, 1000, {
+            fields: 'id',
+          });
+
+          if (result.items && result.items.length > 0) {
+            // Delete all sessions in batches to avoid overwhelming the server
+            const batchSize = 50;
+            for (let i = 0; i < result.items.length; i += batchSize) {
+              const batch = result.items.slice(i, i + batchSize);
+              await Promise.all(
+                batch.map((session) => pb.collection('user_sessions').delete(session.id))
+              );
+            }
+          }
+
+          // Refresh data
+          await get().fetchSessions();
+          await get().fetchStats();
+        } catch (error) {
+          if ((error as any)?.response?.status !== 404) {
+            set({ error: (error as Error).message, loading: false });
+          } else {
+            // Collection doesn't exist, just clear local data
+            set({ sessions: [], loading: false });
+          }
+        }
+      },
+
+      // Delete all actions
+      deleteAllActions: async () => {
+        set({ loading: true, error: null });
+        try {
+          // Get all action IDs first
+          const result = await pb.collection('user_actions').getList(1, 1000, {
+            fields: 'id',
+          });
+
+          if (result.items && result.items.length > 0) {
+            // Delete all actions in batches to avoid overwhelming the server
+            const batchSize = 50;
+            for (let i = 0; i < result.items.length; i += batchSize) {
+              const batch = result.items.slice(i, i + batchSize);
+              await Promise.all(
+                batch.map((action) => pb.collection('user_actions').delete(action.id))
+              );
+            }
+          }
+
+          // Refresh data
+          await get().fetchActions();
+          await get().fetchStats();
+        } catch (error) {
+          if ((error as any)?.response?.status !== 404) {
+            set({ error: (error as Error).message, loading: false });
+          } else {
+            // Collection doesn't exist, just clear local data
+            set({ actions: [], loading: false });
+          }
         }
       },
 

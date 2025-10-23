@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import { CcrParameterData } from '../types';
 import { useParameterSettings } from './useParameterSettings';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 import { useCcrDataCache } from './useDataCache';
-import { useEffect } from 'react';
+import { logger } from '../utils/logger';
 
 // Extend CcrParameterData interface untuk include name property
 export interface CcrParameterDataWithName extends CcrParameterData {
@@ -13,30 +13,39 @@ export interface CcrParameterDataWithName extends CcrParameterData {
 export const useCcrParameterData = () => {
   const { records: parameters, loading: paramsLoading } = useParameterSettings();
   const cache = useCcrDataCache();
+  // Version state untuk membantu trigger refresh manual saja
+  const [dataVersion, setDataVersion] = useState(0);
+  const [lastUpdateTime, setLastUpdateTime] = useState<string>(new Date().toISOString());
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
 
-  // Real-time subscription for ccr_parameter_data changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('ccr_parameter_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'ccr_parameter_data',
-        },
-        (payload) => {
-          console.log('CCR parameter data change received!', payload);
-          // Clear cache when data changes to trigger refetch
-          cache.clearCache();
-          // Trigger component re-render by updating a state (will be handled by component)
-        }
-      )
-      .subscribe();
+  // PERUBAHAN ARSITEKTUR:
+  // Tidak lagi menggunakan PocketBase realtime subscription
+  // Menerapkan arsitektur client-server standar dengan manual refresh
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  /**
+   * Fungsi untuk memicu refresh data secara manual
+   * Ini akan digunakan oleh tombol refresh di UI atau setelah operasi penyimpanan
+   */
+  const triggerRefresh = useCallback(async () => {
+    try {
+      setIsManualRefreshing(true);
+      logger.debug('Manual refresh triggered for CCR parameter data');
+
+      // Clear cache sehingga data akan di-fetch ulang
+      cache.clearCache();
+
+      // Increment version untuk memicu re-render
+      setDataVersion((prev) => prev + 1);
+
+      // Update last refresh time
+      const now = new Date();
+      setLastUpdateTime(now.toISOString());
+
+      // Delay sejenak untuk memastikan proses refresh terlihat oleh user
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    } finally {
+      setIsManualRefreshing(false);
+    }
   }, [cache]);
 
   const getDataForDate = useCallback(
@@ -82,19 +91,15 @@ export const useCcrParameterData = () => {
         }
 
         // Build query with optional plant_unit filter
-        let query = supabase.from('ccr_parameter_data').select('*').eq('date', isoDate);
-
-        // Add plant_unit filter if specified
+        // Use date-only filter to match database storage format
+        let filter = `date="${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          query = query.eq('plant_unit', plantUnit);
+          filter += ` && plant_unit="${plantUnit}"`;
         }
 
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Error fetching CCR parameter data:', error);
-          return [];
-        }
+        const data = await pb.collection('ccr_parameter_data').getFullList({
+          filter: filter,
+        });
 
         // Filter parameters based on plant unit if specified
         let filteredParameters = parameters;
@@ -102,18 +107,37 @@ export const useCcrParameterData = () => {
           filteredParameters = parameters.filter((param) => param.unit === plantUnit);
         }
 
-        // Map supabase response to application type with proper error handling
-        const supabaseData = (data || []) as any[];
-        const dailyRecords = new Map(supabaseData.map((d) => [d.parameter_id, d]));
+        // Map PocketBase response to application type with proper error handling
+        const pocketbaseData = (data || []) as unknown[];
+        const dailyRecords = new Map(pocketbaseData.map((d) => [(d as any).parameter_id, d]));
 
         return filteredParameters.map((param) => {
-          const record = dailyRecords.get(param.id);
+          const record = dailyRecords.get(param.id) as any;
           if (record) {
+            // Convert flat structure (hour1, hour2, ..., hour24) to hourly_values object
+            const hourly_values: Record<string, unknown> = {};
+            for (let hour = 1; hour <= 24; hour++) {
+              const hourField = `hour${hour}`;
+              const userField = `hour${hour}_user`;
+              const value = record[hourField];
+              const userName = record[userField];
+
+              if (value !== null && value !== undefined && value !== '') {
+                hourly_values[hour] = {
+                  value: value,
+                  user_name: userName || 'Unknown User',
+                  timestamp: record.updated || record.created || new Date().toISOString(),
+                };
+              } else {
+                hourly_values[hour] = null;
+              }
+            }
+
             return {
               id: record.id,
               parameter_id: record.parameter_id,
               date: record.date,
-              hourly_values: record.hourly_values || {},
+              hourly_values: hourly_values,
               name: record.name ?? undefined,
             } as CcrParameterDataWithName;
           }
@@ -182,27 +206,14 @@ export const useCcrParameterData = () => {
         }
 
         // Build query with optional plant_unit filter and pagination
-        let query = supabase
-          .from('ccr_parameter_data')
-          .select('*', { count: 'exact' })
-          .eq('date', isoDate);
-
-        // Add plant_unit filter if specified
+        let filter = `date="${isoDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          query = query.eq('plant_unit', plantUnit);
+          filter += ` && plant_unit="${plantUnit}"`;
         }
 
-        // Add pagination
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-        query = query.range(from, to);
-
-        const { data, error, count } = await query;
-
-        if (error) {
-          console.error('Error fetching CCR parameter data:', error);
-          return { data: [], total: 0, hasMore: false };
-        }
+        const data = await pb.collection('ccr_parameter_data').getList(page, pageSize, {
+          filter: filter,
+        });
 
         // Filter parameters based on plant unit if specified
         let filteredParameters = parameters;
@@ -210,12 +221,12 @@ export const useCcrParameterData = () => {
           filteredParameters = parameters.filter((param) => param.unit === plantUnit);
         }
 
-        // Map supabase response to application type with proper error handling
-        const supabaseData = (data || []) as any[];
-        const dailyRecords = new Map(supabaseData.map((d) => [d.parameter_id, d]));
+        // Map PocketBase response to application type with proper error handling
+        const pocketbaseData = (data.items || []) as unknown[];
+        const dailyRecords = new Map(pocketbaseData.map((d) => [(d as any).parameter_id, d]));
 
         const resultData = filteredParameters.map((param) => {
-          const record = dailyRecords.get(param.id);
+          const record = dailyRecords.get(param.id) as any;
           if (record) {
             return {
               id: record.id,
@@ -235,8 +246,8 @@ export const useCcrParameterData = () => {
           } as CcrParameterDataWithName;
         });
 
-        const total = count || 0;
-        const hasMore = from + pageSize < total;
+        const total = data.totalItems || 0;
+        const hasMore = data.page * data.perPage < total;
 
         return { data: resultData, total, hasMore };
       } catch (error) {
@@ -287,15 +298,13 @@ export const useCcrParameterData = () => {
 
         while (retryCount < maxRetries) {
           try {
-            const result = await supabase
-              .from('ccr_parameter_data')
-              .select('*')
-              .eq('date', date)
-              .eq('parameter_id', parameter_id)
-              .maybeSingle();
+            const filter = `date="${date}" && parameter_id="${parameter_id}"`;
+            const result = await pb.collection('ccr_parameter_data').getList(1, 1, {
+              filter: filter,
+            });
 
-            existing = result.data;
-            fetchError = result.error;
+            existing = result.items.length > 0 ? result.items[0] : null;
+            fetchError = null;
             break; // Success, exit retry loop
           } catch (networkError) {
             console.error(`Network error on attempt ${retryCount + 1}:`, networkError);
@@ -305,40 +314,14 @@ export const useCcrParameterData = () => {
               // Wait before retry (exponential backoff)
               await new Promise((resolve) => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
             } else {
-              // If it's a 406 error, try without .single() to see if that helps
-              try {
-                const fallbackResult = await supabase
-                  .from('ccr_parameter_data')
-                  .select('*')
-                  .eq('date', date)
-                  .eq('parameter_id', parameter_id)
-                  .limit(1);
-
-                if (fallbackResult.data && fallbackResult.data.length > 0) {
-                  existing = fallbackResult.data[0];
-                  fetchError = null;
-                } else {
-                  fetchError = fallbackResult.error || {
-                    code: 'PGRST116',
-                    message: 'No rows found',
-                  };
-                }
-              } catch (fallbackError) {
-                console.error('Fallback query also failed:', fallbackError);
-                throw fallbackError;
-              }
+              // If all retries failed, set error
+              fetchError = networkError;
             }
           }
         }
 
         if (fetchError) {
-          console.error('Error fetching existing parameter data:', {
-            error: fetchError,
-            code: fetchError.code,
-            message: fetchError.message,
-            details: fetchError.details,
-            hint: fetchError.hint,
-          });
+          console.error('Error fetching existing parameter data:', fetchError);
 
           if (fetchError.code !== 'PGRST116') {
             return;
@@ -388,19 +371,10 @@ export const useCcrParameterData = () => {
           };
         }
 
-        // If all hourly_values are empty, delete the record from Supabase
+        // If all hourly_values are empty, delete the record from PocketBase
         if (Object.keys(updatedHourlyValues).length === 0) {
-          const { error: deleteError } = await supabase
-            .from('ccr_parameter_data')
-            .delete()
-            .eq('date', date)
-            .eq('parameter_id', parameter_id);
-
-          if (deleteError) {
-            console.error('Error deleting CCR parameter data:', deleteError);
-            throw deleteError;
-          } else {
-            // Successfully deleted CCR parameter data record
+          if (existing) {
+            await pb.collection('ccr_parameter_data').delete(existing.id);
           }
         } else {
           // Prepare upsert data - always include name for backward compatibility
@@ -411,46 +385,21 @@ export const useCcrParameterData = () => {
             name: userName, // Keep for backward compatibility, but per-hour tracking is in hourly_values
           };
 
-          // Try upsert first, if it fails due to network issues, try manual approach
-          let upsertError = null;
-          try {
-            const result = await supabase
-              .from('ccr_parameter_data')
-              .upsert(upsertData, { onConflict: 'date,parameter_id' });
-            upsertError = result.error;
-            if (!upsertError) {
-              // Successfully upserted CCR parameter data via upsert
-            }
-          } catch (networkError) {
-            console.warn('Upsert failed due to network, trying manual approach:', networkError);
-            // Manual conflict resolution
-            if (existing) {
-              // Update existing record
-              const { error } = await supabase
-                .from('ccr_parameter_data')
-                .update({
-                  hourly_values: updatedHourlyValues,
-                  name: userName, // Update name for backward compatibility
-                })
-                .eq('date', date)
-                .eq('parameter_id', parameter_id);
-              upsertError = error;
-              if (!upsertError) {
-                console.log('Successfully updated CCR parameter data via manual update');
-              }
-            } else {
-              // Insert new record
-              const { error } = await supabase.from('ccr_parameter_data').insert(upsertData);
-              upsertError = error;
-              if (!upsertError) {
-                console.log('Successfully inserted CCR parameter data via manual insert');
-              }
-            }
-          }
+          // Prepare data for PocketBase
+          const recordData = {
+            date,
+            parameter_id,
+            hourly_values: updatedHourlyValues,
+            name: userName, // Keep for backward compatibility
+          };
 
-          if (upsertError) {
-            console.error('Error updating CCR parameter data:', upsertError);
-            throw upsertError;
+          // Update or create record
+          if (existing) {
+            // Update existing record
+            await pb.collection('ccr_parameter_data').update(existing.id, recordData);
+          } else {
+            // Create new record
+            await pb.collection('ccr_parameter_data').create(recordData);
           }
         }
       } catch (error) {
@@ -514,23 +463,14 @@ export const useCcrParameterData = () => {
         }
 
         // Build query with date range and optional plant_unit filter
-        let query = supabase
-          .from('ccr_parameter_data')
-          .select('*')
-          .gte('date', isoStartDate)
-          .lte('date', isoEndDate);
-
-        // Add plant_unit filter if specified
+        let filter = `date >= "${isoStartDate}" && date <= "${isoEndDate}"`;
         if (plantUnit && plantUnit !== 'all') {
-          query = query.eq('plant_unit', plantUnit);
+          filter += ` && plant_unit="${plantUnit}"`;
         }
 
-        const { data, error } = await query;
-
-        if (error) {
-          console.error('Error fetching CCR parameter data range:', error);
-          return [];
-        }
+        const result = await pb.collection('ccr_parameter_data').getFullList({
+          filter: filter,
+        });
 
         // Filter parameters based on plant unit if specified
         let filteredParameters = parameters;
@@ -538,9 +478,9 @@ export const useCcrParameterData = () => {
           filteredParameters = parameters.filter((param) => param.unit === plantUnit);
         }
 
-        // Map supabase response to application type with proper error handling
-        const supabaseData = (data || []) as any[];
-        const dailyRecords = new Map(supabaseData.map((d) => [d.parameter_id, d]));
+        // Map PocketBase response to application type with proper error handling
+        const pocketbaseData = (result || []) as unknown[];
+        const dailyRecords = new Map(pocketbaseData.map((d) => [(d as any).parameter_id, d]));
 
         // For range queries, we need to return data for ALL dates in range,
         // even if no data exists for some dates
@@ -559,7 +499,7 @@ export const useCcrParameterData = () => {
         datesInRange.forEach((date) => {
           filteredParameters.forEach((param) => {
             const recordKey = `${param.id}-${date}`;
-            const record = dailyRecords.get(param.id);
+            const record = dailyRecords.get(param.id) as any;
 
             if (record && record.date === date) {
               // Data exists for this date and parameter
@@ -596,10 +536,14 @@ export const useCcrParameterData = () => {
   );
 
   return {
+    dataVersion,
     getDataForDate,
     getDataForDatePaginated,
     getDataForDateRange,
     updateParameterData,
+    triggerRefresh,
+    lastUpdateTime,
+    isManualRefreshing,
     loading: paramsLoading,
   };
 };

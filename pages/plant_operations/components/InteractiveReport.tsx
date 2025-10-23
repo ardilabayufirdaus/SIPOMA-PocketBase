@@ -167,3 +167,4 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
     </motion.div>
   );
 };
+

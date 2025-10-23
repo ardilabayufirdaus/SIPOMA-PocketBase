@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Project, ProjectTask, ProjectStatus } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -12,48 +12,36 @@ export const useProjects = () => {
     setLoading(true);
     setError(null);
     try {
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select('*');
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('project_tasks')
-        .select('*');
-
-      if (projectsError) {
-        throw new Error(`Projects fetch error: ${projectsError.message}`);
-      }
-      if (tasksError) {
-        throw new Error(`Tasks fetch error: ${tasksError.message}`);
-      }
+      const projectsData = await pb.collection('projects').getFullList();
+      const tasksData = await pb.collection('project_tasks').getFullList();
 
       // Map projects data to include required status field
-      const mappedProjects = (projectsData || []).map((project: any) => ({
-        id: project.id,
-        title: project.title,
-        budget: project.budget,
-        status: project.status || ProjectStatus.ACTIVE, // Provide default status
-        description: project.description,
-        start_date: project.start_date,
-        end_date: project.end_date,
-        created_at: project.created_at,
-        updated_at: project.updated_at,
+      const mappedProjects = projectsData.map((project: Record<string, unknown>) => ({
+        id: String(project.id),
+        title: String(project.title),
+        budget: project.budget ? Number(project.budget) : undefined,
+        status: (project.status as ProjectStatus) || ProjectStatus.ACTIVE, // Provide default status
+        description: project.description ? String(project.description) : undefined,
+        start_date: project.start_date ? String(project.start_date) : undefined,
+        end_date: project.end_date ? String(project.end_date) : undefined,
+        created_at: project.created ? String(project.created) : undefined,
+        updated_at: project.updated ? String(project.updated) : undefined,
       }));
       setProjects(mappedProjects);
 
-      const mappedTasks = (tasksData || []).map((task: any) => ({
-        id: task.id,
-        project_id: task.project_id,
-        activity: task.activity,
-        planned_start: task.planned_start,
-        planned_end: task.planned_end,
-        actual_start: task.actual_start,
-        actual_end: task.actual_end,
-        percent_complete: task.percent_complete,
+      const mappedTasks = tasksData.map((task: Record<string, unknown>) => ({
+        id: String(task.id),
+        project_id: String(task.project_id),
+        activity: String(task.activity),
+        planned_start: task.planned_start ? String(task.planned_start) : undefined,
+        planned_end: task.planned_end ? String(task.planned_end) : undefined,
+        actual_start: task.actual_start ? String(task.actual_start) : null,
+        actual_end: task.actual_end ? String(task.actual_end) : null,
+        percent_complete: task.percent_complete ? Number(task.percent_complete) : 0,
       }));
       setTasks(mappedTasks);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Error fetching projects and tasks:', errorMessage);
       setError(errorMessage);
 
       // Auto-retry for network errors, up to 3 times with exponential backoff
@@ -93,9 +81,8 @@ export const useProjects = () => {
         percent_complete: taskData.percent_complete,
         project_id: projectId,
       };
-      const { error } = await supabase.from('project_tasks').insert([payload as any]);
-      if (error) console.error('Error adding task:', error);
-      else fetchProjectsAndTasks();
+      await pb.collection('project_tasks').create(payload);
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -112,21 +99,16 @@ export const useProjects = () => {
         percent_complete: rest.percent_complete,
         project_id: rest.project_id,
       };
-      const { error } = await supabase
-        .from('project_tasks')
-        .update(updateData as any)
-        .eq('id', id);
-      if (error) console.error('Error updating task:', error);
-      else fetchProjectsAndTasks();
+      await pb.collection('project_tasks').update(id, updateData);
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
 
   const deleteTask = useCallback(
     async (taskId: string) => {
-      const { error } = await supabase.from('project_tasks').delete().eq('id', taskId);
-      if (error) console.error('Error deleting task:', error);
-      else fetchProjectsAndTasks();
+      await pb.collection('project_tasks').delete(taskId);
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -142,9 +124,13 @@ export const useProjects = () => {
         percent_complete: task.percent_complete,
         project_id: projectId,
       }));
-      const { error } = await supabase.from('project_tasks').insert(tasksToAdd as any);
-      if (error) console.error('Error bulk adding tasks:', error);
-      else fetchProjectsAndTasks();
+
+      // Create tasks one by one since PocketBase doesn't support bulk insert in the same way
+      for (const task of tasksToAdd) {
+        await pb.collection('project_tasks').create(task);
+      }
+
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -152,13 +138,13 @@ export const useProjects = () => {
   const replaceBulkTasks = useCallback(
     async (projectId: string, newTasks: Omit<ProjectTask, 'id' | 'project_id'>[]) => {
       // First, delete all existing tasks for this project
-      const { error: deleteError } = await supabase
-        .from('project_tasks')
-        .delete()
-        .eq('project_id', projectId);
-      if (deleteError) {
-        console.error('Error deleting existing tasks:', deleteError);
-        return;
+      const existingTasks = await pb.collection('project_tasks').getFullList({
+        filter: `project_id="${projectId}"`,
+      });
+
+      // Delete existing tasks
+      for (const task of existingTasks) {
+        await pb.collection('project_tasks').delete(task.id);
       }
 
       // Then, add the new tasks
@@ -172,18 +158,20 @@ export const useProjects = () => {
         project_id: projectId,
       }));
 
-      const { error: insertError } = await supabase.from('project_tasks').insert(tasksToAdd as any);
-      if (insertError) console.error('Error replacing tasks:', insertError);
-      else fetchProjectsAndTasks();
+      // Create new tasks
+      for (const task of tasksToAdd) {
+        await pb.collection('project_tasks').create(task);
+      }
+
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
 
   const addProject = useCallback(
     async (projectData: Omit<Project, 'id'>) => {
-      const { error } = await supabase.from('projects').insert([projectData]);
-      if (error) console.error('Error adding project:', error);
-      else fetchProjectsAndTasks();
+      await pb.collection('projects').create(projectData);
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -191,9 +179,8 @@ export const useProjects = () => {
   const updateProject = useCallback(
     async (updatedProject: Project) => {
       const { id, ...rest } = updatedProject;
-      const { error } = await supabase.from('projects').update(rest).eq('id', id);
-      if (error) console.error('Error updating project:', error);
-      else fetchProjectsAndTasks();
+      await pb.collection('projects').update(id, rest);
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );
@@ -201,12 +188,17 @@ export const useProjects = () => {
   const deleteProject = useCallback(
     async (projectId: string) => {
       // Delete all tasks first
-      await supabase.from('project_tasks').delete().eq('project_id', projectId);
+      const existingTasks = await pb.collection('project_tasks').getFullList({
+        filter: `project_id="${projectId}"`,
+      });
+
+      for (const task of existingTasks) {
+        await pb.collection('project_tasks').delete(task.id);
+      }
 
       // Then delete the project
-      const { error } = await supabase.from('projects').delete().eq('id', projectId);
-      if (error) console.error('Error deleting project:', error);
-      else fetchProjectsAndTasks();
+      await pb.collection('projects').delete(projectId);
+      fetchProjectsAndTasks();
     },
     [fetchProjectsAndTasks]
   );

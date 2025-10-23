@@ -14,6 +14,11 @@ interface CcrSiloDataTableProps {
     field: 'emptySpace' | 'content',
     value: string
   ) => void;
+  handleSiloDataBlur: (
+    siloId: string,
+    shift: 'shift1' | 'shift2' | 'shift3',
+    field: 'emptySpace' | 'content'
+  ) => void;
   getInputRef: (table: 'silo' | 'parameter', row: number, col: number) => string;
   setInputRef: (key: string, element: HTMLInputElement | null) => void;
   handleKeyDown: (
@@ -34,6 +39,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
     formatInputValue,
     parseInputValue,
     handleSiloDataChange,
+    handleSiloDataBlur,
     getInputRef,
     setInputRef,
     handleKeyDown,
@@ -151,11 +157,8 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                     parsed !== null ? parsed.toString() : ''
                                   );
                                 }}
-                                onBlur={(e) => {
-                                  const parsed = parseInputValue(e.target.value);
-                                  if (parsed !== null) {
-                                    e.target.value = formatInputValue(parsed, 1);
-                                  }
+                                onBlur={() => {
+                                  handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
                                 }}
                                 onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
                                 className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
@@ -187,11 +190,8 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                     parsed !== null ? parsed.toString() : ''
                                   );
                                 }}
-                                onBlur={(e) => {
-                                  const parsed = parseInputValue(e.target.value);
-                                  if (parsed !== null) {
-                                    e.target.value = formatInputValue(parsed, 1);
-                                  }
+                                onBlur={() => {
+                                  handleSiloDataBlur(siloData.silo_id, shift, 'content');
                                 }}
                                 onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)}
                                 className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"

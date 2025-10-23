@@ -86,7 +86,7 @@ describe('useDashboardDataAggregator', () => {
 
     const mockPlantUnits = [
       { id: '1', unit: 'Cement Mill 1', category: 'Cement Mill' },
-      { id: '2', unit: 'Packing Plant A', category: 'Packing Plant' },
+      { id: '2', unit: 'Packaging A', category: 'Packaging' },
     ];
 
     const mockSiloData = [

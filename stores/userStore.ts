@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { supabase } from '../utils/supabaseClient';
+import { pb } from '../utils/pocketbase';
 import { User } from '../types';
 import { passwordUtils } from '../utils/passwordUtils';
 import { buildPermissionMatrix } from '../utils/permissionUtils';
@@ -49,174 +49,67 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
   // Realtime subscription
   initRealtimeSubscription: () => {
-    const channel = supabase
-      .channel('users_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'users',
-        },
-        (payload) => {
-          // Debounce real-time updates to reduce database load
-          debouncer.debounce(() => {
-            const { eventType, new: newRecord, old: oldRecord } = payload;
+    let unsubscribeUsers: (() => void) | undefined;
 
-            set((state) => {
-              let updatedUsers = [...state.users];
-
-              if (eventType === 'INSERT' && newRecord) {
-                const newUser: User = {
-                  id: newRecord.id,
-                  username: newRecord.username,
-                  full_name: newRecord.full_name || undefined,
-                  role: newRecord.role,
-                  is_active: newRecord.is_active,
-                  created_at: new Date(newRecord.created_at),
-                  updated_at: new Date(newRecord.updated_at),
-                  permissions: buildPermissionMatrix([]),
-                };
-                updatedUsers.unshift(newUser); // Add to top
-                // Invalidate cache on data changes
-                dbCache.invalidateUsers();
-              } else if (eventType === 'UPDATE' && newRecord) {
-                updatedUsers = updatedUsers.map((user) =>
-                  user.id === newRecord.id
-                    ? {
-                        ...user,
-                        username: newRecord.username,
-                        full_name: newRecord.full_name || undefined,
-                        role: newRecord.role,
-                        is_active: newRecord.is_active,
-                        updated_at: new Date(newRecord.updated_at),
-                      }
-                    : user
-                );
-                dbCache.invalidateUsers();
-              } else if (eventType === 'DELETE' && oldRecord) {
-                updatedUsers = updatedUsers.filter((user) => user.id !== oldRecord.id);
-                dbCache.invalidateUsers();
-              }
-
-              return { users: updatedUsers };
-            });
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'permissions',
-        },
-        (payload) => {
-          console.log('Realtime permission change:', payload);
-          const { eventType, new: newRecord, old: oldRecord } = payload;
-
+    // Subscribe to users collection changes
+    pb.collection('users')
+      .subscribe('*', (e) => {
+        // Debounce real-time updates to reduce database load
+        debouncer.debounce(() => {
           set((state) => {
-            let updatedPermissions = [...state.permissions];
+            let updatedUsers = [...state.users];
 
-            if (eventType === 'INSERT' && newRecord) {
-              updatedPermissions.unshift(newRecord);
-            } else if (eventType === 'UPDATE' && newRecord) {
-              updatedPermissions = updatedPermissions.map((perm) =>
-                perm.id === newRecord.id ? newRecord : perm
+            if (e.action === 'create' && e.record) {
+              const newUser: User = {
+                id: e.record.id,
+                username: e.record.username,
+                full_name: e.record.full_name || undefined,
+                role: e.record.role,
+                is_active: e.record.is_active,
+                created_at: new Date(e.record.created),
+                updated_at: new Date(e.record.updated),
+                permissions: buildPermissionMatrix([]),
+              };
+              updatedUsers.unshift(newUser); // Add to top
+              // Invalidate cache on data changes
+              dbCache.invalidateUsers();
+            } else if (e.action === 'update' && e.record) {
+              updatedUsers = updatedUsers.map((user) =>
+                user.id === e.record.id
+                  ? {
+                      ...user,
+                      username: e.record.username,
+                      full_name: e.record.full_name || undefined,
+                      role: e.record.role,
+                      is_active: e.record.is_active,
+                      avatar_url: e.record.avatar
+                        ? pb.files.getUrl(e.record, e.record.avatar)
+                        : user.avatar_url,
+                      updated_at: new Date(e.record.updated),
+                    }
+                  : user
               );
-            } else if (eventType === 'DELETE' && oldRecord) {
-              updatedPermissions = updatedPermissions.filter((perm) => perm.id !== oldRecord.id);
+              dbCache.invalidateUsers();
+            } else if (e.action === 'delete' && e.record) {
+              updatedUsers = updatedUsers.filter((user) => user.id !== e.record.id);
+              dbCache.invalidateUsers();
             }
 
-            return { permissions: updatedPermissions };
+            return { users: updatedUsers };
           });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'roles',
-        },
-        (payload) => {
-          console.log('Realtime role change:', payload);
-          const { eventType, new: newRecord, old: oldRecord } = payload;
+        });
+      })
+      .then((unsub) => {
+        unsubscribeUsers = unsub;
+      });
 
-          set((state) => {
-            let updatedRoles = [...state.roles];
-
-            if (eventType === 'INSERT' && newRecord) {
-              updatedRoles.unshift(newRecord);
-            } else if (eventType === 'UPDATE' && newRecord) {
-              updatedRoles = updatedRoles.map((role) =>
-                role.id === newRecord.id ? newRecord : role
-              );
-            } else if (eventType === 'DELETE' && oldRecord) {
-              updatedRoles = updatedRoles.filter((role) => role.id !== oldRecord.id);
-            }
-
-            return { roles: updatedRoles };
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_permissions',
-        },
-        async (payload) => {
-          console.log('Realtime user_permissions change:', payload);
-          const { eventType, new: newRecord, old: oldRecord } = payload;
-
-          // For user_permissions changes, we need to refetch the affected user's permissions
-          const record = newRecord || oldRecord;
-          if (record && (record as any).user_id) {
-            const userId = (record as any).user_id;
-            try {
-              // Refetch permissions for this user
-              const { data: userPermissions, error } = await supabase
-                .from('user_permissions')
-                .select(
-                  `
-                  permissions (
-                    module_name,
-                    permission_level,
-                    plant_units
-                  )
-                `
-                )
-                .eq('user_id', userId);
-
-              if (!error && userPermissions) {
-                const permissionsMatrix = buildPermissionMatrix(userPermissions);
-
-                set((state) => ({
-                  users: state.users.map((user) =>
-                    user.id === userId ? { ...user, permissions: permissionsMatrix } : user
-                  ),
-                }));
-              }
-            } catch (err) {
-              console.error('Error refetching user permissions:', err);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    // Store channel for cleanup if needed
-    (get() as any).realtimeChannel = channel;
+    return () => {
+      if (unsubscribeUsers) unsubscribeUsers();
+    };
   },
 
   cleanupRealtimeSubscription: () => {
-    const state = get() as any;
-    if (state.realtimeChannel) {
-      state.realtimeChannel.unsubscribe();
-      state.realtimeChannel = null;
-    }
+    // For now, cleanup is handled by the unsubscribe function returned by initRealtimeSubscription
   },
 
   fetchUsers: async (page = 1, limit = 20, includePermissions = false) => {
@@ -240,75 +133,36 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     }
 
     try {
-      const from = (page - 1) * limit;
-      const to = from + limit - 1;
+      const result = await pb.collection('users').getList(page, limit, {
+        sort: '-created',
+        expand: includePermissions ? 'user_permissions.permissions' : '',
+      });
 
-      const query = supabase
-        .from('users')
-        .select(
-          includePermissions
-            ? `
-          id,
-          username,
-          full_name,
-          role,
-          is_active,
-          created_at,
-          updated_at,
-          user_permissions (
-            permissions (
-              module_name,
-              permission_level,
-              plant_units
-            )
-          )
-        `
-            : `
-          id,
-          username,
-          full_name,
-          role,
-          is_active,
-          created_at,
-          updated_at
-        `,
-          { count: 'exact' }
-        )
-        .order('created_at', { ascending: false })
-        .range(from, to);
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
-      const transformedUsers: User[] = (data || []).map((user: Record<string, unknown>) => ({
-        id: user.id as string,
-        username: user.username as string,
-        full_name: (user.full_name as string) || undefined,
-        role: user.role as string,
-        is_active: user.is_active as boolean,
-        created_at: new Date(user.created_at as string),
-        updated_at: new Date(user.updated_at as string),
+      const transformedUsers: User[] = result.items.map((user: any) => ({
+        id: user.id,
+        username: user.username,
+        full_name: user.name || undefined, // PocketBase menggunakan field 'name' bukan 'full_name'
+        role: user.role,
+        is_active: user.is_active,
+        created_at: new Date(user.created),
+        updated_at: new Date(user.updated),
         permissions: includePermissions
-          ? ((user.user_permissions as Record<string, unknown>[]) || []).reduce(
-              (acc: Record<string, unknown>, up: Record<string, unknown>) => {
-                const perm = up.permissions as Record<string, unknown>;
-                if (perm) {
-                  acc[perm.module_name as string] = {
-                    level: perm.permission_level,
-                    plantUnits: perm.plant_units || [],
-                  };
-                }
-                return acc;
-              },
-              {}
-            ) || {}
+          ? ((user.expand?.user_permissions as any[]) || []).reduce((acc: any, up: any) => {
+              const perm = up.expand?.permissions;
+              if (perm) {
+                acc[perm.module_name] = {
+                  level: perm.permission_level,
+                  plantUnits: perm.plant_units || [],
+                };
+              }
+              return acc;
+            }, {}) || {}
           : {},
       }));
 
       // Cache the result if not including permissions
       if (!includePermissions) {
-        dbCache.setUsers(page, limit, { users: transformedUsers, total: count || 0 });
+        dbCache.setUsers(page, limit, { users: transformedUsers, total: result.totalItems });
       }
 
       set({
@@ -316,8 +170,8 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
         pagination: {
           page,
           limit,
-          total: count || 0,
-          hasMore: (count || 0) > page * limit,
+          total: result.totalItems,
+          hasMore: result.totalItems > page * limit,
         },
       });
     } catch (err: unknown) {
@@ -330,23 +184,23 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
 
   fetchRoles: async () => {
     try {
-      const { data, error } = await supabase.from('roles').select('*').order('name');
-
-      if (error) throw error;
-      set({ roles: data || [] });
-    } catch (err: any) {
-      set({ error: err.message || 'Failed to fetch roles' });
+      const result = await pb.collection('roles').getFullList({
+        sort: 'name',
+      });
+      set({ roles: result });
+    } catch {
+      set({ error: 'Failed to fetch roles' });
     }
   },
 
   fetchPermissions: async () => {
     try {
-      const { data, error } = await supabase.from('permissions').select('*').order('module_name');
-
-      if (error) throw error;
-      set({ permissions: data || [] });
-    } catch (err: any) {
-      set({ error: err.message || 'Failed to fetch permissions' });
+      const result = await pb.collection('permissions').getFullList({
+        sort: 'module_name',
+      });
+      set({ permissions: result });
+    } catch {
+      set({ error: 'Failed to fetch permissions' });
     }
   },
 
@@ -356,24 +210,37 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       if (!userData.password) {
         throw new Error('Password is required for new users');
       }
-      const passwordHash = await passwordUtils.hash(userData.password);
 
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          username: userData.username,
-          password_hash: passwordHash,
-          full_name: userData.full_name,
-          role: userData.role,
-          is_active: userData.is_active ?? true,
-        })
-        .select()
-        .single();
+      // Create user in PocketBase
+      const newUser = await pb.collection('users').create({
+        username: userData.username,
+        password: userData.password, // PocketBase will hash it automatically
+        passwordConfirm: userData.password, // PocketBase requires password confirmation
+        name: userData.full_name || '', // PocketBase menggunakan field 'name' bukan 'full_name'
+        role: userData.role,
+        is_active: userData.is_active ?? true,
+        permissions: userData.permissions || buildPermissionMatrix(userData.role),
+      });
 
-      if (error) throw error;
+      if (!newUser) {
+        throw new Error('Failed to create user');
+      }
+
+      // Map PocketBase response to our User type
+      const mappedUser = {
+        id: newUser.id,
+        username: newUser.username,
+        full_name: newUser.name, // PocketBase menggunakan field 'name' bukan 'full_name'
+        role: newUser.role,
+        is_active: newUser.is_active,
+        avatar_url: newUser.avatar ? pb.files.getUrl(newUser, newUser.avatar) : null,
+        created_at: new Date(newUser.created),
+        updated_at: new Date(newUser.updated),
+        permissions: newUser.permissions || buildPermissionMatrix(newUser.role),
+      };
 
       // No need to fetchUsers, realtime will update
-      return data;
+      return mappedUser;
     } catch (err: any) {
       set({ error: err.message || 'Failed to create user' });
       throw err;
@@ -385,12 +252,13 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
   updateUser: async (userId: string, userData: any) => {
     set({ isLoading: true, error: null });
     try {
-      const updateData: any = {
+      // Don't send avatar_url to PocketBase as it uses 'avatar' field for file uploads
+      // Avatar uploads are handled separately in ProfileEditModal
+      const updateData: Record<string, unknown> = {
         username: userData.username,
-        full_name: userData.full_name,
+        name: userData.full_name, // PocketBase menggunakan field 'name' bukan 'full_name'
         role: userData.role,
         is_active: userData.is_active,
-        avatar_url: userData.avatar_url,
         updated_at: new Date().toISOString(),
       };
 
@@ -398,17 +266,31 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
         updateData.password_hash = await passwordUtils.hash(userData.password);
       }
 
-      const { data, error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', userId)
-        .select()
-        .single();
+      // Update user data in PocketBase
+      const updatedUser = await pb.collection('users').update(userId, updateData);
 
-      if (error) throw error;
+      if (!updatedUser) {
+        throw new Error('Failed to update user');
+      }
+
+      // Manually trigger a refresh for all connected clients
+      pb.collection('users').authRefresh();
+
+      // Map PocketBase response to our User type
+      const mappedUser = {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        full_name: updatedUser.name, // PocketBase menggunakan field 'name' bukan 'full_name'
+        role: updatedUser.role,
+        is_active: updatedUser.is_active,
+        avatar_url: updatedUser.avatar ? pb.files.getUrl(updatedUser, updatedUser.avatar) : null,
+        created_at: new Date(updatedUser.created),
+        updated_at: new Date(updatedUser.updated),
+        permissions: updatedUser.permissions || buildPermissionMatrix(updatedUser.role),
+      };
 
       // No need to fetchUsers, realtime will update
-      return data;
+      return mappedUser;
     } catch (err: any) {
       set({ error: err.message || 'Failed to update user' });
       throw err;
@@ -420,9 +302,8 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
   deleteUser: async (userId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const { error } = await supabase.from('users').delete().eq('id', userId);
-
-      if (error) throw error;
+      // Delete user from PocketBase
+      await pb.collection('users').delete(userId);
 
       // No need to fetchUsers, realtime will update
     } catch (err: any) {
@@ -436,24 +317,40 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
   assignPermissions: async (userId: string, permissionIds: string[]) => {
     set({ isLoading: true, error: null });
     try {
-      // Remove existing permissions
-      await supabase.from('user_permissions').delete().eq('user_id', userId);
+      // Get the user
+      const user = await pb.collection('users').getOne(userId);
 
-      // Add new permissions
-      if (permissionIds.length > 0) {
-        const permissionInserts = permissionIds.map((permissionId) => ({
-          user_id: userId,
-          permission_id: permissionId,
-        }));
-
-        const { error } = await supabase.from('user_permissions').insert(permissionInserts);
-
-        if (error) throw error;
+      if (!user) {
+        throw new Error('User not found');
       }
 
-      await get().fetchUsers();
-    } catch (err: any) {
-      set({ error: err.message || 'Failed to assign permissions' });
+      // Hapus permissions lama dari user_permissions
+      const existingPerms = await pb.collection('user_permissions').getList(1, 100, {
+        filter: `user_id = "${userId}"`,
+      });
+
+      // Hapus semua izin yang ada
+      for (const perm of existingPerms.items) {
+        await pb.collection('user_permissions').delete(perm.id);
+      }
+
+      // Tambahkan izin baru di user_permissions
+      for (const permId of permissionIds) {
+        try {
+          await pb.collection('user_permissions').create({
+            user_id: userId,
+            permission_id: permId,
+          });
+        } catch (err) {
+          console.error(`Failed to assign permission ${permId}:`, err);
+        }
+      }
+
+      // Refresh users list after updating permissions
+      await get().fetchUsers(1, get().pagination.limit, true);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to assign permissions';
+      set({ error: errorMessage });
       throw err;
     } finally {
       set({ isLoading: false });

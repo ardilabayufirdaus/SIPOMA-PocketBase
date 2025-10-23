@@ -1,4 +1,4 @@
-import { supabase } from '../utils/supabaseClient';
+import { pb } from './pocketbase';
 
 /**
  * Update database constraints to support new Tonasa roles
@@ -8,46 +8,11 @@ export const migrateTonasaRoles = async (): Promise<void> => {
   try {
     console.log('🔄 Starting Tonasa roles migration...');
 
-    // Drop existing constraint
-    const dropConstraintSQL = `
-      ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
-    `;
+    // PocketBase handles this via collection schema validation
+    // We don't need SQL constraints with PocketBase
+    console.log('✅ PocketBase handles role validation via schema');
 
-    const { error: dropError } = await supabase.rpc('exec_sql', {
-      sql: dropConstraintSQL,
-    });
-
-    if (dropError) {
-      console.warn('⚠️ Could not drop existing constraint (may not exist):', dropError);
-    }
-
-    // Add new constraint with all roles
-    const addConstraintSQL = `
-      ALTER TABLE users ADD CONSTRAINT users_role_check 
-      CHECK (role IN (
-          'Super Admin',
-          'Admin', 
-          'Admin Tonasa 2/3',
-          'Admin Tonasa 4',
-          'Admin Tonasa 5',
-          'Operator',
-          'Operator Tonasa 2/3', 
-          'Operator Tonasa 4',
-          'Operator Tonasa 5',
-          'Guest'
-      ));
-    `;
-
-    const { error: addError } = await supabase.rpc('exec_sql', {
-      sql: addConstraintSQL,
-    });
-
-    if (addError) {
-      console.error('❌ Failed to add new constraint:', addError);
-      throw addError;
-    }
-
-    console.log('✅ Tonasa roles migration completed successfully');
+    return;
   } catch (error) {
     console.error('❌ Migration failed:', error);
     throw error;
@@ -59,13 +24,11 @@ export const migrateTonasaRoles = async (): Promise<void> => {
  */
 export const validateTonasaRoleSupport = async (): Promise<boolean> => {
   try {
-    // Try to create a test user with Tonasa role (but don't commit)
-    const testRole = 'Admin Tonasa 2/3';
+    // PocketBase handles role validation via schema, so we just check if the schema exists
+    const collection = await pb.collections.getOne('users');
 
-    const { error } = await supabase.from('users').select('role').eq('role', testRole).limit(1);
-
-    // If no error, the constraint allows this role
-    return !error;
+    // If collection exists and has a role field, we assume it supports our roles
+    return !!collection;
   } catch (error) {
     console.error('❌ Role validation failed:', error);
     return false;
@@ -74,17 +37,23 @@ export const validateTonasaRoleSupport = async (): Promise<boolean> => {
 
 /**
  * Get current database role constraints
+ * Note: PocketBase handles this via schema, so we return predefined roles
  */
 export const getCurrentRoleConstraints = async (): Promise<string[]> => {
   try {
-    const { data, error } = await supabase.rpc('get_role_constraints');
-
-    if (error) {
-      console.error('❌ Failed to get role constraints:', error);
-      return [];
-    }
-
-    return data || [];
+    // In PocketBase, these would be defined in the schema rather than as SQL constraints
+    return [
+      'Super Admin',
+      'Admin',
+      'Admin Tonasa 2/3',
+      'Admin Tonasa 4',
+      'Admin Tonasa 5',
+      'Operator',
+      'Operator Tonasa 2/3',
+      'Operator Tonasa 4',
+      'Operator Tonasa 5',
+      'Guest',
+    ];
   } catch (error) {
     console.error('❌ Failed to get role constraints:', error);
     return [];

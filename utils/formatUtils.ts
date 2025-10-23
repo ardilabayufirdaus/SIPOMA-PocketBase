@@ -22,3 +22,4 @@ export const formatIndonesianNumber = (num: number): string => {
 export const formatIndonesianCurrency = (amount: number): string => {
   return `Rp ${formatIndonesianNumber(amount)}`;
 };
+

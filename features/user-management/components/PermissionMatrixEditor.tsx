@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PermissionMatrix, PlantOperationsPermissions, PermissionLevel } from '../../../types';
-import { supabase } from '../../../utils/supabaseClient';
+import { pb } from '../../../utils/pocketbase';
 import { translations } from '../../../translations';
 
 // Enhanced Components
@@ -30,6 +30,7 @@ interface PermissionMatrixEditorProps {
   onPermissionsChange: (permissions: PermissionMatrix) => void;
   onSave?: () => Promise<void>;
   onClose: () => void;
+  onResetToDefault?: () => void;
   isOpen: boolean;
   language?: 'en' | 'id';
 }
@@ -40,6 +41,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   onPermissionsChange,
   onSave,
   onClose,
+  onResetToDefault,
   isOpen,
   language = 'en',
 }) => {
@@ -102,14 +104,12 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   } = useQuery({
     queryKey: ['plant-units'],
     queryFn: async (): Promise<any[]> => {
-      const { data, error } = await supabase
-        .from('plant_units')
-        .select('*')
-        .order('category', { ascending: true })
-        .order('unit', { ascending: true });
+      const { supabase } = await import('../../../utils/pocketbaseClient');
+      const records = await supabase.collection('plant_units').getList(1, 100, {
+        sort: 'category,unit',
+      });
 
-      if (error) throw error;
-      return data || [];
+      return records.items || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -237,21 +237,15 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
       icon: <CogIcon className="w-5 h-5" />,
     },
     {
-      key: 'project_management',
-      label: 'Project Management',
-      description: 'Access to project management tools',
+      key: 'inspection',
+      label: 'Inspection',
+      description: 'Access to inspection and quality control',
       icon: <ShieldCheckIcon className="w-5 h-5" />,
     },
     {
-      key: 'system_settings',
-      label: 'System Settings',
-      description: 'Access to system configuration',
-      icon: <CogIcon className="w-5 h-5" />,
-    },
-    {
-      key: 'user_management',
-      label: 'User Management',
-      description: 'Access to user management features',
+      key: 'project_management',
+      label: 'Project Management',
+      description: 'Access to project management tools',
       icon: <ShieldCheckIcon className="w-5 h-5" />,
     },
   ];
@@ -588,39 +582,57 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <EnhancedButton
-            variant="outline"
-            onClick={onClose}
-            disabled={saving}
-            className="px-6 py-2"
-          >
-            <div className="flex items-center gap-2">
-              <XMarkIcon className="w-4 h-4" />
-              Cancel
-            </div>
-          </EnhancedButton>
+        <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+          {/* Reset to Default Button */}
+          {onResetToDefault && (
+            <EnhancedButton
+              variant="outline"
+              onClick={onResetToDefault}
+              disabled={saving}
+              className="px-4 py-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-900/20"
+            >
+              <div className="flex items-center gap-2">
+                <CogIcon className="w-4 h-4" />
+                Reset to Default
+              </div>
+            </EnhancedButton>
+          )}
 
-          <EnhancedButton
-            variant="primary"
-            onClick={handleSave}
-            disabled={saving}
-            className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
-          >
-            <div className="flex items-center gap-2">
-              {saving ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <CheckIcon className="w-4 h-4" />
-                  Save Permissions
-                </>
-              )}
-            </div>
-          </EnhancedButton>
+          {/* Right-aligned action buttons */}
+          <div className="flex gap-3">
+            <EnhancedButton
+              variant="outline"
+              onClick={onClose}
+              disabled={saving}
+              className="px-6 py-2"
+            >
+              <div className="flex items-center gap-2">
+                <XMarkIcon className="w-4 h-4" />
+                Cancel
+              </div>
+            </EnhancedButton>
+
+            <EnhancedButton
+              variant="primary"
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
+            >
+              <div className="flex items-center gap-2">
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="w-4 h-4" />
+                    Save Permissions
+                  </>
+                )}
+              </div>
+            </EnhancedButton>
+          </div>
         </div>
       </div>
     </EnhancedModal>

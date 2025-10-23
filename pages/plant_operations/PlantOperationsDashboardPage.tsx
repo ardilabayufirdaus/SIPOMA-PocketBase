@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3Icon, TrendingUpIcon, ClockIcon } from 'lucide-react';
 import FilterSection, { DashboardFilters } from '../../components/plant-operations/FilterSection';
@@ -7,7 +7,7 @@ import DataVisualization from '../../components/plant-operations/DataVisualizati
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import useCcrDowntimeData from '../../hooks/useCcrDowntimeData';
 import { CcrDowntimeData } from '../../types';
-import { supabase } from '../../utils/supabase';
+import { supabase } from '../../utils/pocketbaseClient';
 
 interface PlantOperationsDashboardPageProps {
   t: Record<string, string>;
@@ -18,6 +18,25 @@ interface RunningHoursData {
   plant_unit: string;
   total_running_hours: number;
 }
+
+// Helper function to generate filter based on date range
+const generateDateFilter = (filters: DashboardFilters, parameterIds: string[]): string => {
+  // Base filter for parameter IDs
+  let filter = `parameter_id ?~ "${parameterIds.join('|')}"`;
+
+  // Apply date filter to reduce data transfer
+  if (filters.timeRange === 'daily') {
+    filter += ` && date = "${filters.date}"`;
+  } else if (filters.timeRange === 'monthly') {
+    const startDate = new Date(filters.year, filters.month - 1, 1);
+    const endDate = new Date(filters.year, filters.month, 0);
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    filter += ` && date >= "${startDateStr}" && date <= "${endDateStr}"`;
+  }
+
+  return filter;
+};
 
 const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> = ({ t: _t }) => {
   const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
@@ -44,48 +63,99 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     loadDowntimeData();
   }, [getAllDowntime]);
 
-  // Load running hours data
+  // Memoized running hours parameter data
+  const runningHoursParameters = useMemo(
+    () => [
+      { id: '1b42e1be-7639-491f-a311-e122d945c42f', unit: 'Cement Mill 420' },
+      { id: 'ffeb7485-94b9-49e8-817c-9d3e4a5f3320', unit: 'Cement Mill 320' },
+      { id: '6cf46af5-bf07-4df7-9ba6-6aa9b679f87b', unit: 'Cement Mill 220' },
+      { id: 'f6de08cb-7f63-4135-aa94-4eaca2947b12', unit: 'Cement Mill 419' },
+      { id: 'ad3c23b2-3f4f-4e90-8e2a-c32eb37f78fc', unit: 'Cement Mill 552' },
+      { id: 'a9998b7c-fbac-4089-9fce-8bd31d93c86d', unit: 'Cement Mill 553' },
+    ],
+    []
+  );
+
+  // Load running hours data with optimized pagination and error handling
   useEffect(() => {
     const loadRunningHoursData = async () => {
       setLoadingRunningHours(true);
       try {
-        // Get all parameters with name "Running Hours (jam)"
-        const parameterData = [
-          { id: '1b42e1be-7639-491f-a311-e122d945c42f', unit: 'Cement Mill 420' },
-          { id: 'ffeb7485-94b9-49e8-817c-9d3e4a5f3320', unit: 'Cement Mill 320' },
-          { id: '6cf46af5-bf07-4df7-9ba6-6aa9b679f87b', unit: 'Cement Mill 220' },
-          { id: 'f6de08cb-7f63-4135-aa94-4eaca2947b12', unit: 'Cement Mill 419' },
-          { id: 'ad3c23b2-3f4f-4e90-8e2a-c32eb37f78fc', unit: 'Cement Mill 552' },
-          { id: 'a9998b7c-fbac-4089-9fce-8bd31d93c86d', unit: 'Cement Mill 553' },
-        ];
+        // Get parameter IDs
+        const parameterIds = runningHoursParameters.map((p) => p.id);
 
-        // Get all footer data for running hours parameters
-        // Hardcode parameter IDs for testing
-        const parameterIds = [
-          '1b42e1be-7639-491f-a311-e122d945c42f', // Cement Mill 420
-          'ffeb7485-94b9-49e8-817c-9d3e4a5f3320', // Cement Mill 320
-          '6cf46af5-bf07-4df7-9ba6-6aa9b679f87b', // Cement Mill 220
-          'f6de08cb-7f63-4135-aa94-4eaca2947b12', // Cement Mill 419
-          'ad3c23b2-3f4f-4e90-8e2a-c32eb37f78fc', // Cement Mill 552
-          'a9998b7c-fbac-4089-9fce-8bd31d93c86d', // Cement Mill 553
-        ];
-        let query = supabase
-          .from('ccr_footer_data')
-          .select('date, plant_unit, total, parameter_id')
-          .in('parameter_id', parameterIds);
+        // Construct optimized filter for parameter_ids
+        const filter = generateDateFilter(filters, parameterIds);
 
-        // Apply date filter to reduce data transfer
-        if (filters.timeRange === 'daily') {
-          query = query.eq('date', filters.date);
-        } else if (filters.timeRange === 'monthly') {
-          const startDate = new Date(filters.year, filters.month - 1, 1);
-          const endDate = new Date(filters.year, filters.month, 0);
-          query = query
-            .gte('date', startDate.toISOString().split('T')[0])
-            .lte('date', endDate.toISOString().split('T')[0]);
+        // Use optimized pagination to avoid network issues
+        const allFooterData: Array<{
+          date: string;
+          plant_unit: string | null;
+          total: number | null;
+          parameter_id: string;
+        }> = [];
+        const batchSize = 100; // Reduced batch size for stability
+        let page = 1;
+        let hasMoreData = true;
+
+        while (hasMoreData) {
+          try {
+            const result = await supabase.collection('ccr_footer_data').getList(page, batchSize, {
+              filter: filter,
+              fields: 'date,plant_unit,total,parameter_id',
+            });
+
+            if (result.items && result.items.length > 0) {
+              allFooterData.push(...(result.items as unknown as typeof allFooterData));
+              page++;
+
+              // Check if we have more data
+              hasMoreData = result.items.length === batchSize;
+
+              // Small delay between batches to prevent network overload
+              if (hasMoreData) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              }
+            } else {
+              hasMoreData = false;
+            }
+          } catch (batchError) {
+            // Check if it's a network error
+            const isNetworkError =
+              batchError instanceof TypeError ||
+              (batchError instanceof Error &&
+                (batchError.message.includes('network') ||
+                  batchError.message.includes('ERR_NETWORK') ||
+                  batchError.message.includes('fetch')));
+
+            if (isNetworkError) {
+              // Retry once with longer delay for network errors
+              await new Promise((resolve) => setTimeout(resolve, 500));
+              try {
+                const retryResult = await supabase
+                  .collection('ccr_footer_data')
+                  .getList(page, batchSize, {
+                    filter: filter,
+                    fields: 'date,plant_unit,total,parameter_id',
+                  });
+                if (retryResult.items && retryResult.items.length > 0) {
+                  allFooterData.push(...(retryResult.items as unknown as typeof allFooterData));
+                  page++;
+                  hasMoreData = retryResult.items.length === batchSize;
+                  continue;
+                }
+              } catch {
+                // Retry failed - stop loading
+              }
+            }
+
+            // Stop loading more data if we encounter persistent errors
+            hasMoreData = false;
+          }
         }
 
-        const { data: footerData, error: footerError } = await query;
+        const footerData = allFooterData;
+        const footerError = !footerData || footerData.length === 0;
 
         if (footerError) {
           setRunningHoursData([]);
@@ -101,7 +171,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
           }>
         ).map((item) => {
           // Find the parameter to get the correct unit name
-          const param = parameterData.find((p) => p.id === item.parameter_id);
+          const param = runningHoursParameters.find((p) => p.id === item.parameter_id);
           return {
             date: item.date,
             plant_unit: param?.unit || item.plant_unit || 'CCR',
@@ -110,7 +180,19 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         });
 
         setRunningHoursData(formattedData);
-      } catch {
+      } catch (error) {
+        // Check if it's a network error
+        const isNetworkError =
+          error instanceof TypeError ||
+          (error instanceof Error &&
+            (error.message.includes('network') ||
+              error.message.includes('ERR_NETWORK') ||
+              error.message.includes('fetch')));
+
+        if (isNetworkError) {
+          // Network error detected - data may be incomplete
+        }
+
         setRunningHoursData([]);
       } finally {
         setLoadingRunningHours(false);
@@ -118,7 +200,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     };
 
     loadRunningHoursData();
-  }, []);
+  }, [filters, runningHoursParameters]);
 
   // Calculate availability data
   const availabilityData = useMemo(() => {
@@ -289,11 +371,13 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     ];
   }, [filteredData, filters]);
 
-  const handleFilterChange = (key: keyof DashboardFilters, value: string | number) => {
+  // Memoize filter change handler to prevent unnecessary re-renders
+  const handleFilterChange = useCallback((key: keyof DashboardFilters, value: string | number) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
-  const handleResetFilters = () => {
+  // Memoize filter reset handler to prevent unnecessary re-renders
+  const handleResetFilters = useCallback(() => {
     setFilters({
       plantCategory: '',
       plantUnit: '',
@@ -302,7 +386,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
       year: new Date().getFullYear(),
       date: new Date().toISOString().split('T')[0],
     });
-  };
+  }, []);
 
   if (plantUnitsLoading || downtimeLoading || loadingRunningHours) {
     return (

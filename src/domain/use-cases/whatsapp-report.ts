@@ -141,3 +141,4 @@ export class GetGroupAnalyticsUseCase {
       .sort((a, b) => b.messageCount - a.messageCount);
   }
 }
+

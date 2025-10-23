@@ -153,3 +153,4 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 };
 
 export default UserTable;
+

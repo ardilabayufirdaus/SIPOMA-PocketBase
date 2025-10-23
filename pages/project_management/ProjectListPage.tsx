@@ -341,3 +341,4 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 };
 
 export default ProjectListPage;
+

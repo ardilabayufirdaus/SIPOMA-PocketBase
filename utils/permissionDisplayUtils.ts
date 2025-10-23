@@ -1,4 +1,4 @@
-import { PermissionMatrix, PermissionLevel } from '../types';
+import { PermissionMatrix, PermissionLevel, PlantOperationsPermissions } from '../types';
 
 /**
  * Utility to format user permissions for display in the user table
@@ -29,10 +29,7 @@ export const formatPermissionsForDisplay = (permissions: PermissionMatrix): stri
 
   // Other modules
   const moduleMap: Record<string, string> = {
-    packing_plant: 'Packing Plant',
     project_management: 'Project Management',
-    system_settings: 'System Settings',
-    user_management: 'User Management',
   };
 
   Object.entries(moduleMap).forEach(([key, label]) => {
@@ -85,15 +82,24 @@ export const getPermissionLevelColor = (level: PermissionLevel): string => {
  */
 export const formatPermissionsDetailed = (
   permissions: PermissionMatrix
-): { module: string; access: string; level: PermissionLevel }[] => {
-  const details: { module: string; access: string; level: PermissionLevel }[] = [];
+): { module: string; access: string; level: string }[] => {
+  const details: { module: string; access: string; level: string }[] = [];
+
+  // Helper function to get permission level as string
+  const getPermissionLevel = (permission: PermissionLevel | PlantOperationsPermissions): string => {
+    if (typeof permission === 'string') {
+      return permission;
+    }
+    return 'Custom'; // For object permissions
+  };
 
   // Dashboard
-  if (permissions.dashboard !== 'NONE') {
+  const dashboardLevel = getPermissionLevel(permissions.dashboard);
+  if (dashboardLevel !== 'NONE') {
     details.push({
       module: 'Dashboard',
       access: 'Full Dashboard',
-      level: permissions.dashboard,
+      level: dashboardLevel,
     });
   }
 
@@ -115,12 +121,7 @@ export const formatPermissionsDetailed = (
   }
 
   // Other modules
-  const modules = [
-    { key: 'packing_plant', name: 'Packing Plant' },
-    { key: 'project_management', name: 'Project Management' },
-    { key: 'system_settings', name: 'System Settings' },
-    { key: 'user_management', name: 'User Management' },
-  ];
+  const modules = [{ key: 'project_management', name: 'Project Management' }];
 
   modules.forEach(({ key, name }) => {
     const level = permissions[key as keyof PermissionMatrix] as PermissionLevel;

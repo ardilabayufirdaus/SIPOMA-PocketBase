@@ -384,3 +384,4 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
 };
 
 export default EnhancedNotificationPanel;
+

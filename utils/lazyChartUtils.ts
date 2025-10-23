@@ -13,7 +13,7 @@ const getChartJS = async () => {
     ReactChartJS = reactChartModule;
 
     // Register common components
-    ChartJS.register(
+    chartModule.Chart.register(
       chartModule.ArcElement,
       chartModule.Tooltip,
       chartModule.Legend,

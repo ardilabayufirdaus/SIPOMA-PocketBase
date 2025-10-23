@@ -40,3 +40,4 @@ export const useErrorHandler = (): UseErrorHandlerReturn => {
 };
 
 export default useErrorHandler;
+

@@ -6,8 +6,15 @@ import {
   PlantOperationsPermissions,
   UserRole,
 } from '../../../types';
-import { supabase } from '../../../utils/supabaseClient';
-import PermissionMatrixEditor from './PermissionMatrixEditor';
+import { pb } from '../../../utils/pocketbase';
+import { supabase } from '../../../utils/pocketbaseClient';
+import {
+  fetchAllUsers,
+  deleteUserPermissions,
+  createPermissionModule,
+  createPlantOpsPerm,
+} from '../helpers/permissionManagerHelper';
+import SimplifiedPermissionManager from './SimplifiedPermissionManager';
 
 // Enhanced Components
 import {
@@ -50,25 +57,16 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   // Realtime subscription for user permissions
   useEffect(() => {
-    const channel = supabase
-      .channel('user_permissions_changes_new')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_permissions',
-        },
-        async (payload) => {
-          console.log('Realtime permission change (new):', payload);
-          // Refresh users when permissions change to get updated permission matrix
-          await fetchUsers();
-        }
-      )
-      .subscribe();
+    // Set up PocketBase realtime subscription
+    pb.collection('user_permissions').subscribe('*', async (data) => {
+      console.log('Realtime permission change (new):', data);
+      // Refresh users when permissions change to get updated permission matrix
+      await fetchUsers();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      // Clean up subscription
+      pb.collection('user_permissions').unsubscribe();
     };
   }, []);
 
@@ -79,46 +77,13 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     try {
       setIsLoading(true);
 
-      const { data, error } = await supabase
-        .from('users')
-        .select(
-          `
-          id,
-          username,
-          full_name,
-          role,
-          is_active,
-          created_at,
-          updated_at,
-          user_permissions (
-            permissions (
-              module_name,
-              permission_level,
-              plant_units
-            )
-          )
-        `
-        )
-        .order('created_at', { ascending: false });
+      // Use helper function to fetch users
+      const users = await fetchAllUsers();
 
-      if (error) throw error;
-
-      // Transform data to match User interface
-      const transformedUsers: User[] = (data || []).map((user: Record<string, unknown>) => ({
-        id: String(user.id),
-        username: String(user.username),
-        email: user.email ? String(user.email) : undefined,
-        full_name: user.full_name ? String(user.full_name) : undefined,
-        role: ['Super Admin', 'Admin', 'Operator', 'Guest'].includes(String(user.role))
-          ? (String(user.role) as UserRole)
-          : 'Guest',
-        is_active: Boolean(user.is_active),
-        last_active: user.last_active ? new Date(String(user.last_active)) : undefined,
-        created_at: user.created_at ? new Date(String(user.created_at)) : new Date(),
-        updated_at: user.updated_at ? new Date(String(user.updated_at)) : new Date(),
-        permissions: buildPermissionMatrix(
-          (user.user_permissions ?? []) as Array<{ permissions: unknown }>
-        ),
+      // Process users to build permission matrix
+      const transformedUsers = users.map((user) => ({
+        ...user,
+        permissions: buildPermissionMatrix((user.permissions ?? []) as Array<any>),
       }));
 
       setUsers(transformedUsers);
@@ -151,8 +116,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       plant_operations: {},
       inspection: 'NONE',
       project_management: 'NONE',
-      system_settings: 'NONE',
-      user_management: 'NONE',
     };
 
     userPermissions.forEach((up) => {
@@ -228,165 +191,11 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     try {
       setError('');
 
-      // Delete existing permissions
-      const { error: deleteError } = await supabase
-        .from('user_permissions')
-        .delete()
-        .eq('user_id', selectedUser.id);
+      // Import the correct save function from userPermissionManager
+      const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
 
-      if (deleteError) {
-        console.error('❌ Error deleting permissions:', deleteError);
-        throw deleteError;
-      }
-
-      // Insert new permissions
-      const permissionInserts = [];
-
-      // Handle simple permissions
-      const simplePermissions = [
-        { module: 'dashboard', level: pendingPermissions.dashboard },
-        {
-          module: 'project_management',
-          level: pendingPermissions.project_management,
-        },
-        {
-          module: 'system_settings',
-          level: pendingPermissions.system_settings,
-        },
-        {
-          module: 'user_management',
-          level: pendingPermissions.user_management,
-        },
-      ];
-
-      for (const perm of simplePermissions) {
-        if (perm.level !== 'NONE') {
-          // Check if permission exists
-          const { data: existingPerm, error: lookupError } = await supabase
-            .from('permissions')
-            .select('id')
-            .eq('module_name', perm.module)
-            .eq('permission_level', perm.level)
-            .single();
-
-          let permissionId = existingPerm?.id;
-
-          if (lookupError && lookupError.code !== 'PGRST116') {
-            // PGRST116 = no rows found
-            console.warn(`⚠️ Lookup error for ${perm.module}:`, lookupError);
-          }
-
-          if (!permissionId) {
-            const { data: newPerm, error: insertError } = await supabase
-              .from('permissions')
-              .insert({
-                module_name: perm.module,
-                permission_level: perm.level,
-                plant_units: [],
-              })
-              .select('id')
-              .single();
-
-            if (insertError) {
-              console.error(`❌ Error creating permission for ${perm.module}:`, insertError);
-              throw insertError;
-            }
-
-            permissionId = newPerm?.id;
-          }
-
-          if (permissionId) {
-            permissionInserts.push({
-              user_id: selectedUser.id,
-              permission_id: permissionId,
-            });
-          }
-        }
-      }
-
-      // Handle plant operations permissions
-      if (
-        pendingPermissions.plant_operations &&
-        Object.keys(pendingPermissions.plant_operations).length > 0
-      ) {
-        const plantUnits = [];
-        Object.entries(pendingPermissions.plant_operations).forEach(([category, units]) => {
-          Object.entries(units).forEach(([unit, level]) => {
-            if (level !== 'NONE') {
-              plantUnits.push({ category, unit, level });
-            }
-          });
-        });
-
-        if (plantUnits.length > 0) {
-          // Group by permission level
-          const levelGroups = plantUnits.reduce(
-            (acc, unit) => {
-              if (!acc[unit.level]) acc[unit.level] = [];
-              acc[unit.level].push({ category: unit.category, unit: unit.unit });
-              return acc;
-            },
-            {} as Record<string, unknown[]>
-          );
-
-          for (const [level, units] of Object.entries(levelGroups)) {
-            // Check if permission exists
-            const { data: existingPerm, error: lookupError } = await supabase
-              .from('permissions')
-              .select('id')
-              .eq('module_name', 'plant_operations')
-              .eq('permission_level', level)
-              .single();
-
-            let permissionId = existingPerm?.id;
-
-            if (lookupError && lookupError.code !== 'PGRST116') {
-              console.warn(`⚠️ Plant ops lookup error for level ${level}:`, lookupError);
-            }
-
-            if (!permissionId) {
-              const { data: newPerm, error: insertError } = await supabase
-                .from('permissions')
-                .insert({
-                  module_name: 'plant_operations',
-                  permission_level: level,
-                  plant_units: units,
-                })
-                .select('id')
-                .single();
-
-              if (insertError) {
-                console.error(
-                  `❌ Error creating plant permission for level ${level}:`,
-                  insertError
-                );
-                throw insertError;
-              }
-
-              permissionId = newPerm?.id;
-            }
-
-            if (permissionId) {
-              permissionInserts.push({
-                user_id: selectedUser.id,
-                permission_id: permissionId,
-              });
-            }
-          }
-        }
-      }
-
-      // Insert user permissions
-      if (permissionInserts.length > 0) {
-        const { error: insertError } = await supabase
-          .from('user_permissions')
-          .insert(permissionInserts);
-
-        if (insertError) {
-          console.error('❌ Error inserting user permissions:', insertError);
-          throw insertError;
-        }
-      }
+      // Save the pending permissions using the same API as other components
+      await saveUserPermissions(selectedUser.id, pendingPermissions, 'system');
 
       // Permissions will be updated via realtime subscription
       setSuccessMessage('✅ Permissions saved successfully!');
@@ -424,8 +233,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     const summary = [];
     if (permissions.dashboard !== 'NONE') summary.push('Dashboard');
     if (permissions.project_management !== 'NONE') summary.push('Projects');
-    if (permissions.system_settings !== 'NONE') summary.push('Settings');
-    if (permissions.user_management !== 'NONE') summary.push('Users');
     if (Object.keys(permissions.plant_operations).length > 0) summary.push('Plant Ops');
 
     return summary.length > 0 ? summary.join(', ') : 'No permissions';
@@ -435,12 +242,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
   const totalUsers = users.length;
   const activeUsers = users.filter((u) => u.is_active).length;
   const adminUsers = users.filter(
-    (u) =>
-      u.role === 'Super Admin' ||
-      u.role === 'Admin' ||
-      u.role === 'Admin Tonasa 2/3' ||
-      u.role === 'Admin Tonasa 4' ||
-      u.role === 'Admin Tonasa 5'
+    (u) => u.role === 'Super Admin' || u.role === 'Admin' || u.role === 'Manager'
   ).length;
   const usersWithPermissions = users.filter(
     (u) => getPermissionSummary(u.permissions) !== 'No permissions'
@@ -553,13 +355,10 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                 <option value="all">All Roles</option>
                 <option value="Super Admin">Super Admin</option>
                 <option value="Admin">Admin</option>
-                <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
-                <option value="Admin Tonasa 4">Admin Tonasa 4</option>
-                <option value="Admin Tonasa 5">Admin Tonasa 5</option>
+                <option value="Manager">Manager</option>
                 <option value="Operator">Operator</option>
-                <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
-                <option value="Operator Tonasa 4">Operator Tonasa 4</option>
-                <option value="Operator Tonasa 5">Operator Tonasa 5</option>
+                <option value="Outsourcing">Outsourcing</option>
+                <option value="Autonomous">Autonomous</option>
                 <option value="Guest">Guest</option>
               </select>
             </div>
@@ -846,8 +645,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
       {/* Permission Editor Modal */}
       {selectedUser && (
-        <PermissionMatrixEditor
-          userId={selectedUser.id}
+        <SimplifiedPermissionManager
+          user={selectedUser}
           currentPermissions={pendingPermissions || selectedUser.permissions}
           onPermissionsChange={handlePermissionsChange}
           onSave={handleSavePermissions}

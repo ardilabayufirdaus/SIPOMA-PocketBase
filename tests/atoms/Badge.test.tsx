@@ -12,3 +12,4 @@ describe('Badge', () => {
     expect(screen.getByText('Badge')).toHaveClass('badge-test');
   });
 });
+

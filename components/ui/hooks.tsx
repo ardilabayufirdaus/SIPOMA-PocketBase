@@ -113,3 +113,4 @@ export const useEnhancedKeyboardNavigation = (
 
   return { focusedIndex, handleKeyDown };
 };
+

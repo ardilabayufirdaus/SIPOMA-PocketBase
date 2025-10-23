@@ -109,8 +109,6 @@ const mockPermissions = {
   plant_operations: {},
   inspection: 'READ' as PermissionLevel,
   project_management: 'READ' as PermissionLevel,
-  system_settings: 'READ' as PermissionLevel,
-  user_management: 'READ' as PermissionLevel,
 };
 
 describe('Cache Utilities', () => {

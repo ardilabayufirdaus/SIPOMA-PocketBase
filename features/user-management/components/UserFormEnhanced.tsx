@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase, apiClient } from '../../../utils/supabaseClient';
+import { pb } from '../../../utils/pocketbase';
 import { passwordUtils } from '../../../utils/passwordUtils';
 import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';
@@ -7,6 +7,10 @@ import PermissionMatrixEditor from './PermissionMatrixEditor';
 import { useUserManagementPerformance } from '../../../hooks/usePerformanceMonitor';
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { getDefaultPermissionsForRole, isTonasaRole } from '../../../utils/tonasaPermissions';
+import {
+  initializeUserPermissions,
+  logPermissionChange,
+} from '../../../utils/userPermissionManager';
 import DatabaseMigrationPrompt from '../../../components/DatabaseMigrationPrompt';
 import { isAdminRole } from '../../../utils/roleHelpers';
 import {
@@ -59,9 +63,8 @@ const UserForm: React.FC<UserFormProps> = ({
     plant_operations: {},
     inspection: 'NONE',
     project_management: 'NONE',
-    system_settings: 'NONE',
-    user_management: 'NONE',
   });
+  const [isCustomPermissions, setIsCustomPermissions] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [optimisticUpdate, setOptimisticUpdate] = useState<{
@@ -86,78 +89,68 @@ const UserForm: React.FC<UserFormProps> = ({
     successes: number;
     failures: number;
   }>({ current: 0, total: 0, successes: 0, failures: 0 });
+  const [bulkConfig, setBulkConfig] = useState<{
+    usernames: string;
+    password: string;
+    role: UserRole;
+  }>({
+    usernames: '',
+    password: '',
+    role: 'Operator' as UserRole,
+  });
   const [showMigrationPrompt, setShowMigrationPrompt] = useState(false);
   const [migrationError, setMigrationError] = useState('');
 
   const t = translations[language];
 
-  const fetchUserPermissions = async () => {
+  const fetchUserPermissions = async (retryCount = 0) => {
     if (!user?.id) return;
 
+    const maxRetries = 3;
+    const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff, max 5s
+
     try {
-      // Single query with join to get all permissions at once
-      const { data, error } = await supabase
-        .from('user_permissions')
-        .select(
-          `
-          permission_id,
-          permissions (
-            module_name,
-            permission_level,
-            plant_units
-          )
-        `
-        )
-        .eq('user_id', user.id);
+      // Get user data from PocketBase - permissions are stored directly in the user record
+      const userData = await pb.collection('users').getOne(user.id);
 
-      if (error) throw error;
+      if (userData && userData.permissions) {
+        // Permissions are stored as a JSON object in PocketBase
+        const permissions = userData.permissions;
+        setUserPermissions(permissions);
+        // Check if permissions are custom (not default)
+        setIsCustomPermissions(userData.is_custom_permissions || false);
+      } else {
+        // Fallback to default permissions if none are set
+        const defaultPerms = await getDefaultPermissionsForRole(user.role);
+        setUserPermissions(defaultPerms);
+        setIsCustomPermissions(false);
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      const isNetworkError =
+        error?.message?.includes('ERR_NETWORK_CHANGED') ||
+        error?.message?.includes('Failed to fetch') ||
+        error?.message?.includes('NetworkError');
 
-      // Build permission matrix from data more efficiently
-      const matrix: PermissionMatrix = {
-        dashboard: 'NONE',
-        plant_operations: {},
-        inspection: 'NONE',
-        project_management: 'NONE',
-        system_settings: 'NONE',
-        user_management: 'NONE',
-      };
+      if (isNetworkError && retryCount < maxRetries) {
+        console.warn(
+          `Network error fetching user permissions, retrying in ${retryDelay}ms (attempt ${retryCount + 1}/${maxRetries})`
+        );
+        setTimeout(() => fetchUserPermissions(retryCount + 1), retryDelay);
+        return;
+      }
 
-      (data || []).forEach((up: any) => {
-        const perm = up.permissions;
-        if (perm) {
-          const level = perm.permission_level;
-          switch (perm.module_name) {
-            case 'dashboard':
-              matrix.dashboard = level;
-              break;
-            case 'plant_operations':
-              // Handle plant units more efficiently
-              if (perm.plant_units && Array.isArray(perm.plant_units)) {
-                perm.plant_units.forEach((unit: any) => {
-                  if (!matrix.plant_operations[unit.category]) {
-                    matrix.plant_operations[unit.category] = {};
-                  }
-                  matrix.plant_operations[unit.category][unit.unit] = level;
-                });
-              }
-              break;
-            case 'project_management':
-              matrix.project_management = level;
-              break;
-            case 'system_settings':
-              matrix.system_settings = level;
-              break;
-            case 'user_management':
-              matrix.user_management = level;
-              break;
-          }
-        }
-      });
+      // If it's not a network error or we've exhausted retries, fall back to default permissions
+      console.error('Error fetching user permissions:', error?.message || 'Unknown error');
+      console.log('Falling back to default permissions for role:', user.role);
+      const defaultPerms = await getDefaultPermissionsForRole(user.role);
+      setUserPermissions(defaultPerms);
+      setIsCustomPermissions(false);
 
-      setUserPermissions(matrix);
-    } catch (err: any) {
-      console.error('Error fetching user permissions:', err);
-      setError(err.message || 'Failed to fetch user permissions');
+      // Only set error state for non-network errors or after all retries
+      if (!isNetworkError || retryCount >= maxRetries) {
+        setError(`Failed to load user permissions: ${error?.message || 'Unknown error'}`);
+      }
     }
   };
 
@@ -179,8 +172,6 @@ const UserForm: React.FC<UserFormProps> = ({
         plant_operations: {},
         inspection: 'NONE',
         project_management: 'NONE',
-        system_settings: 'NONE',
-        user_management: 'NONE',
       });
     }
   }, [user]);
@@ -246,9 +237,6 @@ const UserForm: React.FC<UserFormProps> = ({
       permissions: { ...userPermissions },
     });
 
-    // Call onSuccess immediately for optimistic UI update
-    onSuccess();
-
     try {
       const submitData: any = {
         username: formData.username.trim(),
@@ -268,22 +256,32 @@ const UserForm: React.FC<UserFormProps> = ({
       if (user) {
         // Update user
         performanceMonitor.startOperation('user_update');
-        const { error: updateError } = await supabase
-          .from('users')
-          .update(submitData)
-          .eq('id', user.id);
+        const updateData = {
+          username: formData.username.trim(),
+          name: formData.full_name.trim() || null, // PocketBase menggunakan field 'name' bukan 'full_name'
+          role: formData.role,
+          is_active: formData.is_active,
+          permissions: userPermissions, // Simpan permissions di user record
+          is_custom_permissions: isCustomPermissions, // Flag untuk custom permissions
+        };
 
-        if (updateError) throw updateError;
+        const updatedUser = await pb.collection('users').update(user.id, updateData);
         performanceMonitor.endOperation('user_update', true);
       } else {
         // Create new user
         performanceMonitor.startOperation('user_creation');
-        const newUser = await apiClient.users.create({
+        const newUserData = {
           username: formData.username.trim(),
           password: formData.password,
-          full_name: formData.full_name.trim() || undefined,
+          passwordConfirm: formData.password, // PocketBase requires password confirmation
+          name: formData.full_name.trim() || '', // PocketBase menggunakan field 'name' bukan 'full_name'
           role: formData.role,
-        });
+          is_active: formData.is_active,
+          permissions: userPermissions, // Simpan permissions di user record
+          is_custom_permissions: isCustomPermissions, // Flag untuk custom permissions
+        };
+
+        const newUser = await pb.collection('users').create(newUserData);
         userId = newUser.id;
         performanceMonitor.endOperation('user_creation', true);
       }
@@ -291,12 +289,30 @@ const UserForm: React.FC<UserFormProps> = ({
       // Save permissions if userId exists
       if (userId) {
         performanceMonitor.startOperation('permission_save');
+
+        // Get old permissions for audit trail
+        let oldPermissions;
+        if (user) {
+          try {
+            const userData = await pb.collection('users').getOne(user.id);
+            oldPermissions = userData.permissions;
+          } catch (error) {
+            // Ignore error, old permissions might not exist
+          }
+        }
+
         await saveUserPermissions(userId);
+
+        // Log permission change for audit trail
+        const action = user ? (isCustomPermissions ? 'updated' : 'reset_to_default') : 'created';
+        await logPermissionChange(userId, action, oldPermissions, userPermissions);
+
         performanceMonitor.endOperation('permission_save', true);
       }
 
-      // Success - clear optimistic update
+      // Success - clear optimistic update and call onSuccess
       setOptimisticUpdate(null);
+      onSuccess();
       onClose();
     } catch (err: any) {
       console.error('User save error:', err);
@@ -382,26 +398,68 @@ const UserForm: React.FC<UserFormProps> = ({
     performanceMonitor.startOperation('bulk_user_creation', { userCount: bulkUsers.length });
 
     const results = { successes: 0, failures: 0 };
+    const errors: string[] = [];
 
     for (let i = 0; i < bulkUsers.length; i++) {
       const userData = bulkUsers[i];
       setBulkProgress((prev) => ({ ...prev, current: i + 1 }));
 
-      try {
-        // Create user using apiClient for proper password hashing
-        await apiClient.users.create({
-          username: userData.username,
-          password: userData.password,
-          full_name: userData.full_name || undefined,
-          role: userData.role,
-        });
+      let retryCount = 0;
+      const maxRetries = 3;
 
-        results.successes++;
-        setBulkProgress((prev) => ({ ...prev, successes: results.successes }));
-      } catch (err: any) {
-        console.error(`Failed to create user ${userData.username}:`, err);
-        results.failures++;
-        setBulkProgress((prev) => ({ ...prev, failures: results.failures }));
+      while (retryCount <= maxRetries) {
+        try {
+          // Create user using PocketBase directly - use correct field names
+          const pbUserData = {
+            username: userData.username,
+            password: userData.password,
+            passwordConfirm: userData.password, // PocketBase requires password confirmation
+            name: userData.full_name || userData.username, // PocketBase uses 'name' field
+            role: userData.role,
+            is_active: userData.is_active,
+          };
+
+          const newUser = await pb.collection('users').create(pbUserData);
+
+          // Initialize permissions for the new user
+          await initializeUserPermissions(newUser.id, userData.role as UserRole);
+
+          results.successes++;
+          setBulkProgress((prev) => ({ ...prev, successes: results.successes }));
+          break; // Success, exit retry loop
+        } catch (err: any) {
+          retryCount++;
+
+          const errorMessage = err?.message || err?.toString() || 'Unknown error';
+          console.error(
+            `Failed to create user ${userData.username} (attempt ${retryCount}/${maxRetries + 1}):`,
+            err
+          );
+
+          // Check if it's a network error that we should retry
+          const isNetworkError =
+            errorMessage.includes('ERR_NETWORK') ||
+            errorMessage.includes('fetch') ||
+            errorMessage.includes('network') ||
+            err?.name === 'TypeError';
+
+          if (isNetworkError && retryCount <= maxRetries) {
+            // Wait before retrying (exponential backoff)
+            const delay = Math.pow(2, retryCount) * 1000;
+            console.log(`Retrying user ${userData.username} creation in ${delay}ms...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            continue;
+          }
+
+          // Final failure
+          results.failures++;
+          setBulkProgress((prev) => ({ ...prev, failures: results.failures }));
+
+          // Add detailed error message
+          const detailedError = `User ${userData.username}: ${errorMessage}`;
+          errors.push(detailedError);
+          break; // Exit retry loop on final failure
+        }
       }
     }
 
@@ -412,104 +470,35 @@ const UserForm: React.FC<UserFormProps> = ({
     );
 
     setIsLoading(false);
-    onSuccess();
+
+    // Show detailed error summary if there were failures
+    if (errors.length > 0) {
+      const errorSummary = errors.slice(0, 5).join('\n'); // Show first 5 errors
+      const moreErrors = errors.length > 5 ? `\n... and ${errors.length - 5} more errors` : '';
+      setError(
+        `Bulk creation completed:\n${results.successes} successful, ${results.failures} failed\n\nErrors:\n${errorSummary}${moreErrors}`
+      );
+    }
+
+    if (results.successes > 0) {
+      onSuccess();
+    }
 
     if (results.failures === 0) {
       setIsBulkMode(false);
       setBulkUsers([]);
       onClose();
-    } else {
-      setError(`${results.successes} users created successfully, ${results.failures} failed`);
     }
   };
 
   const saveUserPermissions = async (userId: string) => {
     try {
-      // Delete existing user permissions first to avoid duplicates
-      await supabase.from('user_permissions').delete().eq('user_id', userId);
-
-      // Collect all permissions to insert
-      const permissionsToInsert = [];
-
-      // Handle simple permissions
-      const simplePermissions = [
-        { module: 'dashboard', level: userPermissions.dashboard },
-        { module: 'project_management', level: userPermissions.project_management },
-        { module: 'system_settings', level: userPermissions.system_settings },
-        { module: 'user_management', level: userPermissions.user_management },
-      ];
-
-      for (const perm of simplePermissions) {
-        if (perm.level !== 'NONE') {
-          permissionsToInsert.push({
-            module_name: perm.module,
-            permission_level: perm.level,
-            plant_units: [],
-          });
-        }
-      }
-
-      // Handle plant operations permissions
-      if (
-        userPermissions.plant_operations &&
-        Object.keys(userPermissions.plant_operations).length > 0
-      ) {
-        const plantUnits = [];
-        Object.entries(userPermissions.plant_operations).forEach(([category, units]) => {
-          Object.entries(units).forEach(([unit, level]) => {
-            if (level !== 'NONE') {
-              plantUnits.push({ category, unit, level });
-            }
-          });
-        });
-
-        if (plantUnits.length > 0) {
-          // Group by permission level
-          const levelGroups = plantUnits.reduce(
-            (acc, record) => {
-              if (!acc[record.level]) acc[record.level] = [];
-              acc[record.level].push({ category: record.category, unit: record.unit });
-              return acc;
-            },
-            {} as Record<string, Array<{ category: string; unit: string }>>
-          );
-
-          for (const [level, units] of Object.entries(levelGroups)) {
-            permissionsToInsert.push({
-              module_name: 'plant_operations',
-              permission_level: level,
-              plant_units: units,
-            });
-          }
-        }
-      }
-
-      if (permissionsToInsert.length === 0) return;
-
-      // Batch insert permissions
-      const { data: insertedPermissions, error: insertError } = await supabase
-        .from('permissions')
-        .upsert(permissionsToInsert, { onConflict: 'module_name,permission_level' })
-        .select('id, module_name, permission_level');
-
-      if (insertError) throw insertError;
-
-      // Create user_permissions entries
-      const userPermissionInserts = (insertedPermissions || []).map((perm: any) => ({
-        user_id: userId,
-        permission_id: perm.id,
-      }));
-
-      if (userPermissionInserts.length > 0) {
-        const { error: userPermError } = await supabase
-          .from('user_permissions')
-          .insert(userPermissionInserts);
-
-        if (userPermError) throw userPermError;
-      }
+      // Gunakan fungsi yang ada untuk menyimpan izin hanya di koleksi user_permissions
+      await initializeUserPermissions(userId, formData.role as UserRole);
     } catch (error) {
-      console.error('Error saving permissions:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save permissions';
+      console.error('Error saving permissions:', errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -522,8 +511,10 @@ const UserForm: React.FC<UserFormProps> = ({
     // Auto-assign default permissions when role changes
     if (field === 'role' && typeof value === 'string') {
       const role = value as UserRole;
-      const defaultPermissions = getDefaultPermissionsForRole(role);
-      setUserPermissions(defaultPermissions);
+      getDefaultPermissionsForRole(role).then((defaultPermissions) => {
+        setUserPermissions(defaultPermissions);
+        setIsCustomPermissions(false); // Reset to default when role changes
+      });
     }
 
     // Clear validation error when user starts typing
@@ -558,17 +549,106 @@ const UserForm: React.FC<UserFormProps> = ({
 
   const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
     setUserPermissions(newPermissions);
+    // Mark as custom permissions when user manually changes them
+    setIsCustomPermissions(true);
+  };
+
+  const handleResetToDefault = async () => {
+    if (!user) return;
+
+    try {
+      const defaultPerms = await getDefaultPermissionsForRole(user.role);
+      setUserPermissions(defaultPerms);
+      setIsCustomPermissions(false);
+    } catch (error) {
+      console.error('Error resetting to default permissions:', error);
+      setError('Failed to reset permissions to default');
+    }
+  };
+
+  const generateBulkUsers = () => {
+    if (!bulkConfig.usernames.trim()) {
+      setError('Please enter usernames');
+      return;
+    }
+
+    if (!bulkConfig.password.trim()) {
+      setError('Password is required');
+      return;
+    }
+
+    if (!bulkConfig.role) {
+      setError('Role selection is required');
+      return;
+    }
+
+    setError(''); // Clear any previous errors
+
+    // Parse usernames from comma-separated string
+    const usernameList = bulkConfig.usernames
+      .split(',')
+      .map((username) => username.trim())
+      .filter((username) => username.length > 0);
+
+    if (usernameList.length === 0) {
+      setError('No valid usernames found');
+      return;
+    }
+
+    if (usernameList.length > 100) {
+      setError('Maximum 100 users allowed at once');
+      return;
+    }
+
+    const users = [];
+    const existingUsernames = new Set();
+
+    for (const username of usernameList) {
+      // Check for duplicate usernames
+      if (existingUsernames.has(username)) {
+        users.push({
+          username,
+          password: bulkConfig.password,
+          full_name: username, // Use username as full name for now
+          role: bulkConfig.role,
+          is_active: true,
+          errors: [`Duplicate username: ${username}`],
+        });
+      } else {
+        existingUsernames.add(username);
+        users.push({
+          username,
+          password: bulkConfig.password,
+          full_name: username,
+          role: bulkConfig.role,
+          is_active: true,
+          errors: [],
+        });
+      }
+    }
+
+    setBulkUsers(users);
+    setBulkProgress({ current: 0, total: 0, successes: 0, failures: 0 });
   };
 
   const handleSavePermissions = async () => {
     if (!user?.id) return;
 
     try {
-      await saveUserPermissions(user.id);
+      // Import the correct save function from userPermissionManager
+      const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
+
+      // Save the edited permissions (userPermissions state) to user_permissions collection
+      await saveUserPermissions(user.id, userPermissions, 'system');
+
+      // Update local state to reflect saved custom permissions
+      setIsCustomPermissions(true);
+
       setIsPermissionEditorOpen(false);
-    } catch (err: any) {
-      console.error('Error saving permissions:', err);
-      setError(err.message || 'Failed to save permissions');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save permissions';
+      console.error('Error saving permissions:', errorMessage);
+      setError(errorMessage);
     }
   };
 
@@ -602,92 +682,153 @@ const UserForm: React.FC<UserFormProps> = ({
 
       {isBulkMode ? (
         <div className="space-y-6">
-          {/* Bulk Upload Section */}
+          {/* Bulk Generation Section */}
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="csv-upload"
-              />
-              <label htmlFor="csv-upload" className="cursor-pointer">
-                <div className="text-gray-600 dark:text-gray-400">
-                  <p className="text-lg font-medium">Upload CSV File</p>
-                  <p className="text-sm mt-1">Click to select or drag and drop</p>
-                  <p className="text-xs mt-2 text-gray-500">
-                    Format: username,password,full_name,role,is_active
-                  </p>
-                </div>
-              </label>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
+                Bulk User Creation
+              </h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Enter usernames separated by commas, all users will use the same password and role.
+              </p>
             </div>
 
-            {bulkUsers.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Preview ({bulkUsers.length} users)</h3>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Success: {bulkProgress.successes} | Failed: {bulkProgress.failures}
-                  </div>
-                </div>
-
-                <div className="max-h-60 overflow-y-auto border rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-800">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Username
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Full Name
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Role
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                      {bulkUsers.map((user, index) => (
-                        <tr key={index}>
-                          <td className="px-4 py-3 text-sm">{user.username}</td>
-                          <td className="px-4 py-3 text-sm">{user.full_name}</td>
-                          <td className="px-4 py-3 text-sm">{user.role}</td>
-                          <td className="px-4 py-3 text-sm">
-                            {user.errors && user.errors.length > 0 ? (
-                              <span className="text-red-600">Errors: {user.errors.join(', ')}</span>
-                            ) : (
-                              <span className="text-green-600">Valid</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {bulkProgress.total > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>
-                        Progress: {bulkProgress.current}/{bulkProgress.total}
-                      </span>
-                      <span>{Math.round((bulkProgress.current / bulkProgress.total) * 100)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Usernames (comma-separated)
+                </label>
+                <textarea
+                  value={bulkConfig.usernames}
+                  onChange={(e) =>
+                    setBulkConfig((prev) => ({ ...prev, usernames: e.target.value }))
+                  }
+                  placeholder="kadir, safruddin.haeruddin, muhammad.nur6218, antonius.sukma, bahrun..."
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white min-h-[100px] resize-y"
+                  rows={4}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter usernames separated by commas. Maximum 100 users at once.
+                </p>
               </div>
-            )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password (Same for all users)
+                </label>
+                <input
+                  type="password"
+                  value={bulkConfig.password}
+                  onChange={(e) => setBulkConfig((prev) => ({ ...prev, password: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  placeholder="password123"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Role
+                </label>
+                <select
+                  value={bulkConfig.role}
+                  onChange={(e) =>
+                    setBulkConfig((prev) => ({ ...prev, role: e.target.value as UserRole }))
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                >
+                  <option value="">Select Role</option>
+                  <option value="Super Admin">Super Admin</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Operator">Operator</option>
+                  <option value="Outsourcing">Outsourcing</option>
+                  <option value="Autonomous">Autonomous</option>
+                  <option value="Guest">Guest</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <EnhancedButton
+                variant="secondary"
+                onClick={generateBulkUsers}
+                disabled={!bulkConfig.usernames.trim() || !bulkConfig.password || !bulkConfig.role}
+              >
+                {bulkUsers.length > 0 ? 'Regenerate Users' : 'Generate Users'}
+              </EnhancedButton>
+
+              {bulkUsers.length > 0 && (
+                <EnhancedButton variant="outline" onClick={() => setBulkUsers([])}>
+                  Clear
+                </EnhancedButton>
+              )}
+            </div>
           </div>
+
+          {bulkUsers.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Preview ({bulkUsers.length} users)</h3>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Success: {bulkProgress.successes} | Failed: {bulkProgress.failures}
+                </div>
+              </div>
+
+              <div className="max-h-60 overflow-y-auto border rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Username
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Full Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Role
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                    {bulkUsers.map((user, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-3 text-sm">{user.username}</td>
+                        <td className="px-4 py-3 text-sm">{user.full_name}</td>
+                        <td className="px-4 py-3 text-sm">{user.role}</td>
+                        <td className="px-4 py-3 text-sm">
+                          {user.errors && user.errors.length > 0 ? (
+                            <span className="text-red-600">Errors: {user.errors.join(', ')}</span>
+                          ) : (
+                            <span className="text-green-600">Valid</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {bulkProgress.total > 0 && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>
+                      Progress: {bulkProgress.current}/{bulkProgress.total}
+                    </span>
+                    <span>{Math.round((bulkProgress.current / bulkProgress.total) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Bulk Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
@@ -843,17 +984,14 @@ const UserForm: React.FC<UserFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t.role_label || 'Role'} *
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { value: 'Guest', label: 'Guest', color: 'secondary' },
+                { value: 'Outsourcing', label: 'Outsourcing', color: 'primary' },
                 { value: 'Operator', label: 'Operator', color: 'primary' },
-                { value: 'Operator Tonasa 2/3', label: 'Operator Tonasa 2/3', color: 'primary' },
-                { value: 'Operator Tonasa 4', label: 'Operator Tonasa 4', color: 'primary' },
-                { value: 'Operator Tonasa 5', label: 'Operator Tonasa 5', color: 'primary' },
+                { value: 'Autonomous', label: 'Autonomous', color: 'primary' },
+                { value: 'Manager', label: 'Manager', color: 'warning' },
                 { value: 'Admin', label: 'Admin', color: 'warning' },
-                { value: 'Admin Tonasa 2/3', label: 'Admin Tonasa 2/3', color: 'warning' },
-                { value: 'Admin Tonasa 4', label: 'Admin Tonasa 4', color: 'warning' },
-                { value: 'Admin Tonasa 5', label: 'Admin Tonasa 5', color: 'warning' },
                 { value: 'Super Admin', label: 'Super Admin', color: 'error' },
               ].map((role) => (
                 <button
@@ -999,6 +1137,7 @@ const UserForm: React.FC<UserFormProps> = ({
         onPermissionsChange={handlePermissionsChange}
         onSave={handleSavePermissions}
         onClose={() => setIsPermissionEditorOpen(false)}
+        onResetToDefault={user ? handleResetToDefault : undefined}
         isOpen={isPermissionEditorOpen}
         language={language}
       />

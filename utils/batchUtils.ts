@@ -1,4 +1,5 @@
-import { supabase } from './supabaseClient';
+// Note: BatchProcessor was designed for Supabase but is not currently used in the application
+// Since we're migrating to PocketBase, this class remains for potential future use but is not implemented
 
 interface BatchOperation<T = Record<string, unknown>> {
   type: 'insert' | 'update' | 'delete';
@@ -80,58 +81,10 @@ class BatchProcessor {
     type: BatchOperation['type'],
     operations: BatchOperation[]
   ): Promise<Record<string, unknown>[]> {
-    const results: Record<string, unknown>[] = [];
-
-    // Process in chunks
-    for (let i = 0; i < operations.length; i += this.batchSize) {
-      const chunk = operations.slice(i, i + this.batchSize);
-
-      switch (type) {
-        case 'insert': {
-          const insertData = chunk.map((op) => op.data);
-          const { data: insertResult, error: insertError } = await supabase
-            .from(table)
-            .insert(insertData)
-            .select();
-
-          if (insertError) throw insertError;
-          results.push(...(insertResult || []));
-          break;
-        }
-
-        case 'update':
-          // For updates, execute individually since each may have different conditions
-          for (const op of chunk) {
-            if (!op.condition) continue;
-            const { data: updateResult, error: updateError } = await supabase
-              .from(table)
-              .update(op.data)
-              .match(op.condition)
-              .select();
-
-            if (updateError) throw updateError;
-            results.push(...(updateResult || []));
-          }
-          break;
-
-        case 'delete':
-          // For deletes, execute individually since each may have different conditions
-          for (const op of chunk) {
-            if (!op.condition) continue;
-            const { data: deleteResult, error: deleteError } = await supabase
-              .from(table)
-              .delete()
-              .match(op.condition)
-              .select();
-
-            if (deleteError) throw deleteError;
-            results.push(...(deleteResult || []));
-          }
-          break;
-      }
-    }
-
-    return results;
+    // Note: This method is not implemented for PocketBase
+    // It was designed for Supabase batch operations but is not currently used
+    console.warn(`executeBatch: ${type} operations on ${table} not implemented for PocketBase`);
+    return [];
   }
 }
 

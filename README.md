@@ -13,7 +13,7 @@ A modern, real-time plant operations management system built with React 18, Type
 
 - **Live KPI Tracking**: Production metrics, machine status, and performance indicators
 - **Plant Operations**: Real-time machine monitoring and automated alerts
-- **Packing Plant Management**: Inventory tracking and production data analysis
+- **Packaging Management**: Inventory tracking and production data analysis
 - **Project Management**: SLA monitoring and project lifecycle tracking
 
 ### 👥 Advanced User Management

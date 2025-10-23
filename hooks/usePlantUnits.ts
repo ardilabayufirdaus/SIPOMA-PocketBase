@@ -1,6 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { PlantUnit } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
+import { cacheManager } from '../utils/cacheManager';
+import { CacheKeys } from '../utils/cacheKeys';
+import { safeApiCall } from '../utils/connectionCheck';
+import { getFullListOptimized } from '../utils/optimizationAdapter';
+
+const CACHE_KEY = CacheKeys.PLANT_UNITS;
+const CACHE_TIME = 10; // Minutes
 
 export const usePlantUnits = () => {
   const [records, setRecords] = useState<PlantUnit[]>([]);
@@ -9,20 +16,41 @@ export const usePlantUnits = () => {
   const fetchRecords = useCallback(async () => {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('plant_units')
-      .select('*')
-      .order('category')
-      .order('unit')
-      .limit(500);
-
-    if (error) {
-      console.error('Error fetching plant units:', error);
-      setRecords([]);
-    } else {
-      setRecords((data || []) as unknown as PlantUnit[]);
+    // Check cache first
+    const cached = cacheManager.get<PlantUnit[]>(CACHE_KEY);
+    if (cached) {
+      setRecords(cached);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      // Gunakan fungsi optimasi untuk getFullList
+      const result = await safeApiCall(() =>
+        getFullListOptimized('plant_units', {
+          sort: 'category,unit',
+          limit: 500,
+        })
+      );
+
+      if (result) {
+        const typedData = result as unknown as PlantUnit[];
+        setRecords(typedData);
+        // Cache for 10 minutes (tetap gunakan cache manager yg ada)
+        cacheManager.set(CACHE_KEY, typedData, CACHE_TIME);
+      } else {
+        setRecords([]);
+      }
+    } catch (error) {
+      // If collection doesn't exist, set empty data
+      if ((error as { response?: { status?: number } })?.response?.status === 404) {
+        setRecords([]);
+      } else {
+        // Silently fail for other errors
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -31,74 +59,118 @@ export const usePlantUnits = () => {
 
   // Enhanced realtime subscription for plant_units changes
   useEffect(() => {
-    const channel = supabase
-      .channel('plant_units_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'plant_units',
-        },
-        (payload) => {
-          console.log(
-            'Plant units realtime update:',
-            payload.eventType,
-            payload.new || payload.old
-          );
+    let isSubscribed = true;
+    let unsubPromise;
 
-          // Optimized state updates based on event type
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setRecords((prev) =>
-              [...prev, payload.new as PlantUnit].sort(
-                (a, b) => a.category.localeCompare(b.category) || a.unit.localeCompare(b.unit)
-              )
-            );
-          } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setRecords((prev) =>
-              prev.map((record) =>
-                record.id === payload.new.id ? (payload.new as PlantUnit) : record
-              )
-            );
-          } else if (payload.eventType === 'DELETE' && payload.old) {
-            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
-          } else {
-            // Fallback to full refetch for complex changes
-            fetchRecords();
-          }
+    const subscribe = async () => {
+      try {
+        if (!isSubscribed) return;
+
+        unsubPromise = await safeApiCall(() =>
+          pb.collection('plant_units').subscribe('*', (e) => {
+            if (!isSubscribed) return;
+
+            // Clear cache when data changes
+            cacheManager.delete(CACHE_KEY);
+
+            // Optimized state updates based on event type
+            if (e.action === 'create' && e.record) {
+              setRecords((prev) =>
+                [...prev, e.record as unknown as PlantUnit].sort(
+                  (a, b) => a.category.localeCompare(b.category) || a.unit.localeCompare(b.unit)
+                )
+              );
+            } else if (e.action === 'update' && e.record) {
+              setRecords((prev) =>
+                prev.map((record) =>
+                  record.id === e.record.id ? (e.record as unknown as PlantUnit) : record
+                )
+              );
+            } else if (e.action === 'delete' && e.record) {
+              setRecords((prev) => prev.filter((record) => record.id !== e.record.id));
+            }
+          })
+        );
+      } catch (error) {
+        // Ignore connection errors to prevent excessive logging
+        if (!error.message?.includes('autocancelled') && !error.message?.includes('connection')) {
+          // Log error silently or handle through error monitoring
         }
-      )
-      .subscribe();
+      }
+    };
+
+    // Start subscription
+    subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      // Mark component as unmounted
+      isSubscribed = false;
+
+      // Cancel existing subscription
+      if (unsubPromise) {
+        // Handle different types that might be returned by subscribe()
+        if (typeof unsubPromise === 'function') {
+          // If it's already a function, just call it
+          try {
+            unsubPromise();
+          } catch {
+            // Ignore cleanup errors
+          }
+        } else if (unsubPromise && typeof unsubPromise.then === 'function') {
+          // If it's a Promise, properly handle it
+          unsubPromise
+            .then((unsub) => {
+              if (typeof unsub === 'function') {
+                unsub();
+              }
+            })
+            .catch(() => {
+              // Ignore cleanup errors
+            });
+        }
+      }
     };
-  }, [fetchRecords]);
+  }, []);
 
   const addRecord = useCallback(
     async (record: Omit<PlantUnit, 'id'>) => {
-      const { error } = await supabase.from('plant_units').insert([record]);
-      if (error) console.error('Error adding plant unit:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('plant_units').create(record);
+        // Clear cache on data change
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Error handled silently or could be logged
+      }
     },
     [fetchRecords]
   );
 
   const updateRecord = useCallback(
     async (updatedRecord: PlantUnit) => {
-      const { id, ...updateData } = updatedRecord;
-      const { error } = await supabase.from('plant_units').update(updateData).eq('id', id);
-      if (error) console.error('Error updating plant unit:', error);
-      else fetchRecords();
+      try {
+        const { id, ...updateData } = updatedRecord;
+        await pb.collection('plant_units').update(id, updateData);
+        // Clear cache on data change
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Error handled silently
+      }
     },
     [fetchRecords]
   );
 
   const deleteRecord = useCallback(
     async (recordId: string) => {
-      const { error } = await supabase.from('plant_units').delete().eq('id', recordId);
-      if (error) console.error('Error deleting plant unit:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('plant_units').delete(recordId);
+        // Clear cache on data change
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Error handled silently
+      }
     },
     [fetchRecords]
   );
@@ -106,46 +178,23 @@ export const usePlantUnits = () => {
   const setAllRecords = useCallback(
     async (newRecords: Omit<PlantUnit, 'id'>[]) => {
       try {
-        // First, get all existing records to delete them properly
-        const { data: existingRecords, error: fetchError } = await supabase
-          .from('plant_units')
-          .select('id');
+        // Get all existing records
+        const existingRecords = await pb.collection('plant_units').getFullList();
 
-        if (fetchError) {
-          console.error('Error fetching existing plant units:', fetchError);
-          return;
-        }
-
-        // Delete all existing records if any exist
-        if (existingRecords && existingRecords.length > 0) {
-          const { error: deleteError } = await supabase
-            .from('plant_units')
-            .delete()
-            .in(
-              'id',
-              (existingRecords as unknown as { id: string }[]).map((r) => r.id)
-            );
-
-          if (deleteError) {
-            console.error('Error clearing plant units:', deleteError);
-            return;
-          }
+        // Delete all existing records
+        for (const record of existingRecords) {
+          await pb.collection('plant_units').delete(record.id);
         }
 
         // Insert new records
-        if (newRecords.length > 0) {
-          const { error: insertError } = await supabase.from('plant_units').insert(newRecords);
-
-          if (insertError) {
-            console.error('Error bulk inserting plant units:', insertError);
-            return;
-          }
+        for (const record of newRecords) {
+          await pb.collection('plant_units').create(record);
         }
 
         // Refresh the data
         fetchRecords();
-      } catch (error) {
-        console.error('Error in setAllRecords:', error);
+      } catch {
+        // Error handled silently
       }
     },
     [fetchRecords]

@@ -3,7 +3,7 @@ import { usePlantUnits } from './usePlantUnits';
 import { useSiloCapacities } from './useSiloCapacities';
 import { useAutonomousRiskData } from './useAutonomousRiskData';
 import { useWorkInstructions } from './useWorkInstructions';
-import { useCopParametersSupabase } from './useCopParametersSupabase';
+import { useCopParameters } from './useCopParameters';
 import { useParameterSettings } from './useParameterSettings';
 import { useReportSettings } from './useReportSettings';
 import { RiskStatus } from '../types';
@@ -45,7 +45,10 @@ export const usePlantOperationsDashboard = (filters?: {
   const { records: siloCapacities, loading: siloLoading } = useSiloCapacities();
   const { records: riskData, loading: riskLoading } = useAutonomousRiskData();
   const { instructions: workInstructions, loading: workLoading } = useWorkInstructions();
-  const { copParameterIds, loading: copLoading } = useCopParametersSupabase();
+  const { copParameterIds, loading: copLoading } = useCopParameters(
+    filters?.plantCategory,
+    filters?.plantUnit
+  );
   const { records: parameterSettings, loading: paramLoading } = useParameterSettings();
   const { records: reportSettings, loading: reportLoading } = useReportSettings();
 

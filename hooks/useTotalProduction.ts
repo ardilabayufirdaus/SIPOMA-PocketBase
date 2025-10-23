@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { pb } from '../utils/pocketbase';
 
 const parameterIds = [
   'a3f7b380-1cad-41f3-b459-802d4c33da54',
@@ -19,15 +19,12 @@ export const useTotalProduction = () => {
     const fetchTotalProduction = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('ccr_footer_data')
-          .select('total')
-          .in('parameter_id', parameterIds);
+        const filter = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
+        const result = await pb.collection('ccr_footer_data').getFullList({
+          filter: filter,
+        });
 
-        if (error) {
-          setError(error.message);
-          return;
-        }
+        const data = result;
 
         if (data) {
           const sum = data.reduce((acc, row) => acc + (row.total || 0), 0);

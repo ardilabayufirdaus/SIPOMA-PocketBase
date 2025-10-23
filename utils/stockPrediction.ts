@@ -1,5 +1,5 @@
 /**
- * Stock Prediction Logic for Packing Plant
+ * Stock Prediction Logic for Packaging
  * Implementasi logika prediksi stok berdasarkan spesifikasi yang diberikan
  */
 

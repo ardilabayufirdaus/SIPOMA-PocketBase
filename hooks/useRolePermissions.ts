@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { pb } from '../utils/pocketbase';
 import { UserRole, PermissionMatrix } from '../types';
 import useErrorHandler from './useErrorHandler';
 
@@ -21,10 +21,11 @@ export const useRolePermissions = () => {
   const fetchRolePermissions = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('role_permissions').select('*').order('role'); // Urutkan berdasarkan nama peran
+      const result = await pb.collection('role_permissions').getFullList({
+        sort: 'role',
+      });
 
-      if (error) throw error;
-      setRolePermissions(data || []);
+      setRolePermissions((result || []) as unknown as RolePermission[]);
     } catch (err) {
       handleError(err, 'Error fetching role permissions');
     } finally {
@@ -40,9 +41,11 @@ export const useRolePermissions = () => {
     async (role: UserRole, updates: Partial<PermissionMatrix>) => {
       setLoading(true);
       try {
-        const { error } = await supabase.from('role_permissions').update(updates).eq('role', role);
+        const existing = await pb.collection('role_permissions').getFirstListItem(`role="${role}"`);
 
-        if (error) throw error;
+        if (existing) {
+          await pb.collection('role_permissions').update(existing.id, updates);
+        }
 
         // Ambil ulang data untuk memastikan UI sinkron
         await fetchRolePermissions();

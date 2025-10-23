@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import UserTable from '../components/UserTableEnhanced';
 import UserForm from '../components/UserFormEnhanced';
+import DefaultPermissionsModal from '../components/DefaultPermissionsModal';
 import { translations } from '../../../translations';
-import { supabase } from '../../../utils/supabaseClient';
 import { formatIndonesianNumber } from '../../../utils/formatUtils';
+import { useUserStats } from '../../../hooks/useUserStats';
+import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import { isSuperAdmin } from '../../../utils/roleHelpers';
 
 // Enhanced Components
 import {
@@ -18,6 +21,8 @@ import UserGroupIcon from '../../../components/icons/UserGroupIcon';
 import CheckIcon from '../../../components/icons/CheckIcon';
 import XCircleIcon from '../../../components/icons/XCircleIcon';
 import ShieldCheckIcon from '../../../components/icons/ShieldCheckIcon';
+import ArrowPathRoundedSquareIcon from '../../../components/icons/ArrowPathRoundedSquareIcon';
+import CogIcon from '../../../components/icons/CogIcon';
 
 interface User {
   id: string;
@@ -29,85 +34,26 @@ interface User {
   updated_at: string;
 }
 
-interface UserStats {
-  total: number;
-  active: number;
-  inactive: number;
-  admins: number;
-  superAdmins: number;
-  recent: number; // Added in last 30 days
-}
-
 const UserListPage: React.FC = () => {
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [stats, setStats] = useState<UserStats>({
-    total: 0,
-    active: 0,
-    inactive: 0,
-    admins: 0,
-    superAdmins: 0,
-    recent: 0,
-  });
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [showDefaultPermissions, setShowDefaultPermissions] = useState(false);
+
+  // Use the new hook for user stats
+  const { stats, isLoading: isLoadingStats, refreshStats } = useUserStats();
+  const { currentUser } = useCurrentUser();
 
   const t = translations.en; // Default to English
 
-  useEffect(() => {
-    fetchUserStats();
-  }, [refreshKey]);
-
-  const fetchUserStats = async () => {
-    try {
-      setIsLoadingStats(true);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      // Fetch stats in parallel
-      const [totalRes, activeRes, inactiveRes, adminRes, superAdminRes, recentRes] =
-        await Promise.all([
-          supabase.from('users').select('*', { count: 'exact', head: true }),
-          supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_active', true),
-          supabase.from('users').select('*', { count: 'exact', head: true }).eq('is_active', false),
-          supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'Admin'),
-          supabase
-            .from('users')
-            .select('*', { count: 'exact', head: true })
-            .eq('role', 'Super Admin'),
-          supabase
-            .from('users')
-            .select('*', { count: 'exact', head: true })
-            .gte('created_at', thirtyDaysAgo.toISOString()),
-        ]);
-
-      if (
-        totalRes.error ||
-        activeRes.error ||
-        inactiveRes.error ||
-        adminRes.error ||
-        superAdminRes.error ||
-        recentRes.error
-      ) {
-        throw new Error('Failed to fetch stats');
-      }
-
-      const stats: UserStats = {
-        total: totalRes.count || 0,
-        active: activeRes.count || 0,
-        inactive: inactiveRes.count || 0,
-        admins: adminRes.count || 0,
-        superAdmins: superAdminRes.count || 0,
-        recent: recentRes.count || 0,
-      };
-
-      setStats(stats);
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-    } finally {
-      setIsLoadingStats(false);
+  // Refresh stats only when refreshKey changes
+  // Using refreshKey pattern to trigger refreshes only when needed
+  React.useEffect(() => {
+    if (refreshKey > 0) {
+      // Skip initial render, let the hook's internal useEffect handle it
+      refreshStats();
     }
-  };
+  }, [refreshKey]); // Remove refreshStats from dependencies to prevent infinite loops
 
   const handleAddUser = () => {
     setEditingUser(null);
@@ -125,7 +71,9 @@ const UserListPage: React.FC = () => {
   };
 
   const handleFormSuccess = () => {
+    // Increment refresh key to trigger fetch of user stats and table data
     setRefreshKey((prev) => prev + 1);
+    // Note: refreshStats() is called automatically by the useEffect when refreshKey changes
   };
 
   const StatCard = ({
@@ -134,21 +82,44 @@ const UserListPage: React.FC = () => {
     icon: Icon,
     color = 'primary',
     subtitle,
+    isLoading = false,
+    children,
   }: {
     title: string;
     value: number | string;
     icon: React.ComponentType<{ className?: string }>;
     color?: string;
     subtitle?: string;
+    isLoading?: boolean;
+    children?: React.ReactNode;
   }) => (
-    <EnhancedCard className="p-6 hover:shadow-lg transition-shadow duration-200">
+    <EnhancedCard
+      className={`p-6 hover:shadow-lg transition-shadow duration-200 ${isLoading ? 'opacity-75' : ''}`}
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
-            {typeof value === 'number' ? formatIndonesianNumber(value) : value}
-          </p>
-          {subtitle && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>}
+          <div className="min-h-[36px] flex items-center">
+            {isLoading ? (
+              <div className="animate-pulse h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded mt-1"></div>
+            ) : (
+              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                {typeof value === 'number' ? formatIndonesianNumber(value) : value}
+              </p>
+            )}
+          </div>
+          {subtitle && (
+            <div className="min-h-[16px]">
+              {isLoading ? (
+                <div className="animate-pulse h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mt-1"></div>
+              ) : (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+              )}
+            </div>
+          )}
+
+          {/* Render children if provided */}
+          {children}
         </div>
         <div
           className={`p-3 rounded-full ${
@@ -183,7 +154,7 @@ const UserListPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t.user_management || 'User Management'}
+            {t.userManagement || 'User Management'}
           </h1>
           <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
             {t.user_list_description || 'Manage and view all users in the system'}
@@ -194,54 +165,120 @@ const UserListPage: React.FC = () => {
           <EnhancedBadge variant="secondary" className="px-3 py-1">
             Last updated: {new Date().toLocaleDateString()}
           </EnhancedBadge>
+          {isSuperAdmin(currentUser?.role) && (
+            <>
+              <EnhancedButton
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDefaultPermissions(true)}
+                className="flex items-center gap-2"
+              >
+                <CogIcon className="w-4 h-4" />
+                Default Permissions
+              </EnhancedButton>
+            </>
+          )}
+          <EnhancedButton
+            variant="secondary"
+            size="sm"
+            onClick={refreshStats}
+            disabled={isLoadingStats}
+            className="flex items-center gap-2"
+          >
+            <ArrowPathRoundedSquareIcon className="w-4 h-4" />
+            Refresh Stats
+          </EnhancedButton>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-        <StatCard title="Total Users" value={stats.total} icon={UserGroupIcon} color="primary" />
+      <div className="grid grid-cols-6 gap-6">
+        <StatCard
+          title="Total Users"
+          value={isLoadingStats ? '...' : stats.total}
+          icon={UserGroupIcon}
+          color="primary"
+          isLoading={isLoadingStats}
+        />
 
         <StatCard
           title="Active Users"
-          value={stats.active}
+          value={isLoadingStats ? '...' : stats.active}
           icon={CheckIcon}
           color="success"
-          subtitle={`${
-            stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0
-          }% of total`}
+          subtitle={
+            isLoadingStats
+              ? 'Loading...'
+              : `${stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% of total`
+          }
+          isLoading={isLoadingStats}
         />
 
         <StatCard
           title="Inactive Users"
-          value={stats.inactive}
+          value={isLoadingStats ? '...' : stats.inactive}
           icon={XCircleIcon}
           color="warning"
-          subtitle={`${
-            stats.total > 0 ? Math.round((stats.inactive / stats.total) * 100) : 0
-          }% of total`}
+          subtitle={
+            isLoadingStats
+              ? 'Loading...'
+              : `${
+                  stats.total > 0 ? Math.round((stats.inactive / stats.total) * 100) : 0
+                }% of total`
+          }
+          isLoading={isLoadingStats}
         />
 
         <StatCard
           title="Administrators"
-          value={stats.admins}
+          value={isLoadingStats ? '...' : stats.admins}
           icon={ShieldCheckIcon}
           color="warning"
+          isLoading={isLoadingStats}
         />
 
         <StatCard
           title="Super Admins"
-          value={stats.superAdmins}
+          value={isLoadingStats ? '...' : stats.superAdmins}
           icon={ShieldCheckIcon}
           color="error"
+          isLoading={isLoadingStats}
         />
 
         <StatCard
           title="Recent Users"
-          value={stats.recent}
+          value={isLoadingStats ? '...' : stats.recent}
           icon={UserIcon}
           color="secondary"
           subtitle="Added in last 30 days"
-        />
+          isLoading={isLoadingStats}
+        >
+          {!isLoadingStats && stats.recentUsers && stats.recentUsers.length > 0 && (
+            <div className="mt-4">
+              <div className="flex -space-x-2 overflow-hidden">
+                {stats.recentUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800"
+                    title={user.username}
+                  >
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.username}
+                        className="h-full w-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">
+                        {user.username.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </StatCard>
       </div>
 
       {/* User Table */}
@@ -255,6 +292,16 @@ const UserListPage: React.FC = () => {
         onClose={handleCloseForm}
         onSuccess={handleFormSuccess}
         isOpen={showUserForm}
+      />
+
+      {/* Default Permissions Modal */}
+      <DefaultPermissionsModal
+        isOpen={showDefaultPermissions}
+        onClose={() => setShowDefaultPermissions(false)}
+        onSuccess={() => {
+          // Refresh stats after permissions update
+          setRefreshKey((prev) => prev + 1);
+        }}
       />
     </div>
   );

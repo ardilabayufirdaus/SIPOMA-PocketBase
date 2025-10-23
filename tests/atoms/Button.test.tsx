@@ -38,3 +38,4 @@ describe('Button', () => {
     expect(button).toBeDisabled();
   });
 });
+

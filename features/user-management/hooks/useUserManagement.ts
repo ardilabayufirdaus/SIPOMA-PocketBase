@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../../utils/supabaseClient';
+import { pb } from '../../../utils/pocketbase';
 import { useAuth } from '../../../hooks/useAuth';
 import { cacheManager } from '../../../utils/cacheManager';
 
@@ -39,18 +39,13 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
   const fetchUsers = async (page: number = 1) => {
     try {
       setIsLoading(true);
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
 
-      const { data, error, count } = await supabase
-        .from('users')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(from, to);
+      const result = await pb.collection('users').getList(page, pageSize, {
+        sort: '-created',
+      });
 
-      if (error) throw error;
-      setUsers(data || []);
-      setTotalUsers(count || 0);
+      setUsers(result.items || []);
+      setTotalUsers(result.totalItems || 0);
       setCurrentPage(page);
     } catch (err: any) {
       console.error('Error fetching users:', err);
@@ -69,11 +64,12 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
     }
 
     try {
-      const { data, error } = await supabase.from('roles').select('*').order('name');
+      const result = await pb.collection('roles').getFullList({
+        sort: 'name',
+      });
 
-      if (error) throw error;
-      setRoles(data || []);
-      cacheManager.set(cacheKey, data || [], 60); // Cache for 1 hour
+      setRoles(result || []);
+      cacheManager.set(cacheKey, result || [], 60); // Cache for 1 hour
     } catch (err: any) {
       console.error('Error fetching roles:', err);
       setError(err.message || 'Failed to fetch roles');
@@ -89,11 +85,12 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
     }
 
     try {
-      const { data, error } = await supabase.from('permissions').select('*').order('module_name');
+      const result = await pb.collection('permissions').getFullList({
+        sort: 'module_name',
+      });
 
-      if (error) throw error;
-      setPermissions(data || []);
-      cacheManager.set(cacheKey, data || [], 60); // Cache for 1 hour
+      setPermissions(result || []);
+      cacheManager.set(cacheKey, result || [], 60); // Cache for 1 hour
     } catch (err: any) {
       console.error('Error fetching permissions:', err);
       setError(err.message || 'Failed to fetch permissions');
@@ -103,11 +100,10 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
   const createUser = async (userData: any) => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase.from('users').insert(userData).select().single();
+      const result = await pb.collection('users').create(userData);
 
-      if (error) throw error;
       refreshUsers();
-      return data;
+      return result;
     } catch (err: any) {
       console.error('Error creating user:', err);
       setError(err.message || 'Failed to create user');
@@ -120,16 +116,10 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
   const updateUser = async (userId: string, userData: any) => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from('users')
-        .update(userData)
-        .eq('id', userId)
-        .select()
-        .single();
+      const result = await pb.collection('users').update(userId, userData);
 
-      if (error) throw error;
       refreshUsers();
-      return data;
+      return result;
     } catch (err: any) {
       console.error('Error updating user:', err);
       setError(err.message || 'Failed to update user');
@@ -142,9 +132,8 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
   const deleteUser = async (userId: string) => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.from('users').delete().eq('id', userId);
+      await pb.collection('users').delete(userId);
 
-      if (error) throw error;
       refreshUsers();
     } catch (err: any) {
       console.error('Error deleting user:', err);
@@ -160,7 +149,13 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
       setIsLoading(true);
 
       // First, remove existing permissions
-      await supabase.from('user_permissions').delete().eq('user_id', userId);
+      const existingPermissions = await pb.collection('user_permissions').getFullList({
+        filter: `user_id="${userId}"`,
+      });
+
+      for (const perm of existingPermissions) {
+        await pb.collection('user_permissions').delete(perm.id);
+      }
 
       // Then, add new permissions
       if (permissionIds.length > 0) {
@@ -169,9 +164,9 @@ export const useUserManagement = (options: UserManagementOptions = {}) => {
           permission_id: permissionId,
         }));
 
-        const { error } = await supabase.from('user_permissions').insert(permissionInserts);
-
-        if (error) throw error;
+        for (const permData of permissionInserts) {
+          await pb.collection('user_permissions').create(permData);
+        }
       }
     } catch (err: any) {
       console.error('Error assigning permissions:', err);

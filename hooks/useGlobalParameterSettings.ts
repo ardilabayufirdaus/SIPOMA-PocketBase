@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 import { useCurrentUser } from './useCurrentUser';
 
 export interface GlobalParameterSettings {
@@ -40,62 +40,59 @@ export const useGlobalParameterSettings = (): UseGlobalParameterSettingsReturn =
       setError(null);
 
       try {
-        // Simplified query approach to avoid 406 errors
-        let query = supabase.from('global_parameter_settings').select('*');
+        let filter = '';
 
         if (currentUser.role === 'Super Admin') {
           // Super Admin: Load global settings only
-          query = query.eq('is_global', true);
+          filter = 'is_global = true';
         } else {
           // Regular users: Try to load their personal settings first
-          query = query.eq('user_id', currentUser.id);
+          filter = `user_id = "${currentUser.id}"`;
         }
 
         // Add plant filters if provided
         if (plantCategory) {
-          query = query.eq('plant_category', plantCategory);
+          filter += `${filter ? ' && ' : ''}plant_category = "${plantCategory}"`;
         }
         if (plantUnit) {
-          query = query.eq('plant_unit', plantUnit);
+          filter += `${filter ? ' && ' : ''}plant_unit = "${plantUnit}"`;
         }
 
-        const { data, error: fetchError } = (await query
-          .order('updated_at', { ascending: false })
-          .limit(1)) as { data: GlobalParameterSettings[] | null; error: any };
+        const records = await pb.collection('global_parameter_settings').getFullList({
+          filter: filter,
+          sort: '-updated_at',
+        });
 
-        if (fetchError) {
-          // If no personal settings found for regular users, try global settings
-          if (currentUser.role !== 'Super Admin' && fetchError.code === 'PGRST116') {
-            let globalQuery = supabase
-              .from('global_parameter_settings')
-              .select('*');
-
-            if (plantCategory) {
-              globalQuery = globalQuery.eq('plant_category', plantCategory);
-            }
-            if (plantUnit) {
-              globalQuery = globalQuery.eq('plant_unit', plantUnit);
-            }
-
-            const { data: globalData, error: globalError } = (await globalQuery
-              .order('updated_at', { ascending: false })
-              .limit(1)) as { data: GlobalParameterSettings[] | null; error: any };
-
-            if (globalError && globalError.code !== 'PGRST116') {
-              throw globalError;
-            }
-
-            setSettings(globalData?.[0] || null);
-            return;
-          }
-
-          if (fetchError.code !== 'PGRST116') {
-            throw fetchError;
-          }
+        if (records.length > 0) {
+          setSettings(records[0] as unknown as GlobalParameterSettings);
+          return;
         }
 
-        const resultSettings = data?.[0] || null;
-        setSettings(resultSettings);
+        // If no personal settings found for regular users, try global settings
+        if (currentUser.role !== 'Super Admin') {
+          let globalFilter = 'is_global = true';
+
+          if (plantCategory) {
+            globalFilter += ` && plant_category = "${plantCategory}"`;
+          }
+          if (plantUnit) {
+            globalFilter += ` && plant_unit = "${plantUnit}"`;
+          }
+
+          const globalRecords = await pb.collection('global_parameter_settings').getFullList({
+            filter: globalFilter,
+            sort: '-updated_at',
+          });
+
+          setSettings(
+            globalRecords.length > 0
+              ? (globalRecords[0] as unknown as GlobalParameterSettings)
+              : null
+          );
+          return;
+        }
+
+        setSettings(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load settings');
       } finally {
@@ -132,54 +129,38 @@ export const useGlobalParameterSettings = (): UseGlobalParameterSettingsReturn =
           updated_by: currentUser.email || currentUser.full_name || 'system',
         };
 
-        // Check if settings already exist with simplified query
-        let existingQuery = supabase.from('global_parameter_settings').select('id');
+        // Check if settings already exist
+        let filter = '';
 
         if (isGlobal) {
-          existingQuery = existingQuery
-            .eq('is_global', true)
-            .eq('plant_category', plantCategory)
-            .eq('plant_unit', plantUnit);
+          filter = `is_global = true && plant_category = "${plantCategory}" && plant_unit = "${plantUnit}"`;
         } else {
-          existingQuery = existingQuery.eq('user_id', currentUser.id).eq('is_global', false);
+          filter = `user_id = "${currentUser.id}" && is_global = false`;
 
-          if (plantCategory) existingQuery = existingQuery.eq('plant_category', plantCategory);
-          if (plantUnit) existingQuery = existingQuery.eq('plant_unit', plantUnit);
+          if (plantCategory) filter += ` && plant_category = "${plantCategory}"`;
+          if (plantUnit) filter += ` && plant_unit = "${plantUnit}"`;
         }
 
-        const { data: existing, error: fetchError } = (await existingQuery.limit(1)) as { data: { id: string }[] | null; error: any };
-
-        if (fetchError) {
-          // Continue with insert if error checking existing
-        }
+        const existingRecords = await pb.collection('global_parameter_settings').getFullList({
+          filter: filter,
+        });
 
         let result;
-        if (existing && existing.length > 0) {
+        if (existingRecords.length > 0) {
           // Update existing settings
-          result = await supabase
-            .from('global_parameter_settings')
-            .update(settingsData)
-            .eq('id', existing[0].id)
-            .select();
+          result = await pb
+            .collection('global_parameter_settings')
+            .update(existingRecords[0].id, settingsData);
         } else {
           // Create new settings
-          result = await supabase
-            .from('global_parameter_settings')
-            .insert({
-              ...settingsData,
-              created_at: new Date().toISOString(),
-            })
-            .select();
+          result = await pb.collection('global_parameter_settings').create({
+            ...settingsData,
+            created_at: new Date().toISOString(),
+          });
         }
 
-        if (result.error) {
-          console.error('Save error:', result.error);
-          throw result.error;
-        }
-
-        setSettings(result.data?.[0] || null);
+        setSettings(result as unknown as GlobalParameterSettings);
       } catch (err) {
-        console.error('Error saving global parameter settings:', err);
         setError(err instanceof Error ? err.message : 'Failed to save settings');
         throw err;
       } finally {

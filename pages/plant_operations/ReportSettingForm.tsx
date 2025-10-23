@@ -1,20 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ReportSetting, ParameterSetting, ParameterDataType } from '../../types';
+import { FileText, AlertCircle, CheckCircle, Filter } from 'lucide-react';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: ReportSetting | null;
   onSave: (record: ReportSetting | Omit<ReportSetting, 'id'>) => void;
   onCancel: () => void;
-  t: any;
+  t: Record<string, string>;
   allParameters: ParameterSetting[];
   existingParameterIds: string[];
   selectedCategory?: string;
@@ -44,12 +40,6 @@ const ReportSettingForm: React.FC<FormProps> = ({
   selectedUnit,
   maxOrder,
 }) => {
-  // Enhanced accessibility hooks
-  const announceToScreenReader = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
-
   // State management
   const [formData, setFormData] = useState<FormData>({
     parameter_id: '',
@@ -240,8 +230,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
         } else {
           await onSave(formData);
         }
-      } catch (error) {
-        console.error('Error saving report setting:', error);
+      } catch {
         // Add user-friendly error feedback
         setErrors({
           parameter_id: 'Failed to save report setting. Please try again.',
@@ -254,135 +243,227 @@ const ReportSettingForm: React.FC<FormProps> = ({
   );
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div className="p-6 space-y-4">
-        {selectedCategory && selectedUnit && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-md p-3 mb-4">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
-              <strong>Filter Applied:</strong> Showing parameters for {selectedCategory} -{' '}
-              {selectedUnit}
-            </p>
-          </div>
-        )}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white rounded-lg shadow-lg overflow-hidden"
+    >
+      {/* Header with title */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.3 }}
+        className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4"
+      >
+        <div className="flex items-center space-x-3">
+          <FileText className="h-6 w-6 text-white" />
+          <h2 className="text-xl font-semibold text-white">
+            {t.report_settings_title || 'Report Settings'}
+          </h2>
+        </div>
+        <p className="text-green-100 text-sm mt-1">
+          {t.report_settings_description ||
+            'Configure report parameter ordering and display settings'}
+        </p>
+      </motion.div>
 
-        <div>
-          <label
-            htmlFor="parameter_id"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+      <form onSubmit={handleSubmit} noValidate className="p-6">
+        {/* Filter Info */}
+        <AnimatePresence>
+          {selectedCategory && selectedUnit && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+            >
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">Filter Applied</span>
+              </div>
+              <p className="text-sm text-blue-700 mt-1">
+                Showing parameters for <strong>{selectedCategory}</strong> -{' '}
+                <strong>{selectedUnit}</strong>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="space-y-6"
+        >
+          {/* Parameter Selection */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
           >
-            {t.parameter_select_label}
-            <span className="text-red-500 ml-1">*</span>
-          </label>
-          <select
-            name="parameter_id"
-            id="parameter_id"
-            value={formData.parameter_id}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            required
-            disabled={availableParameters.length === 0 || isSubmitting}
-            aria-describedby={errors.parameter_id ? 'parameter_id-error' : undefined}
-            aria-invalid={!!errors.parameter_id}
-            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white dark:bg-slate-800 text-base border text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed ${
-              errors.parameter_id
-                ? 'border-red-500 dark:border-red-500'
-                : 'border-slate-300 dark:border-slate-600'
-            }`}
-          >
-            <option value="">
-              {availableParameters.length === 0
-                ? 'No parameters available'
-                : 'Select a parameter...'}
-            </option>
-            {availableParameters.map((param) => (
-              <option key={param.id} value={param.id}>
-                {param.parameter} - {param.category} ({param.unit})
+            <label htmlFor="parameter_id" className="block text-sm font-medium text-slate-700 mb-2">
+              {t.parameter_select_label}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <motion.select
+              whileFocus={{ scale: 1.02 }}
+              name="parameter_id"
+              id="parameter_id"
+              value={formData.parameter_id}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              required
+              disabled={availableParameters.length === 0 || isSubmitting}
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
+                errors.parameter_id ? 'border-red-500' : 'border-slate-300'
+              }`}
+            >
+              <option value="">
+                {availableParameters.length === 0
+                  ? 'No parameters available'
+                  : 'Select a parameter...'}
               </option>
-            ))}
-          </select>
-          {availableParameters.length === 0 && (
-            <p className="mt-1 text-sm text-amber-600 dark:text-amber-400">
-              No numeric parameters available for the selected category and unit. Please configure
-              parameters in Master Data first.
-            </p>
-          )}
-          {errors.parameter_id && touched.parameter_id && (
-            <p
-              id="parameter_id-error"
-              className="mt-1 text-sm text-red-600 dark:text-red-400"
-              role="alert"
-            >
-              {errors.parameter_id}
-            </p>
-          )}
-        </div>
+              {availableParameters.map((param) => (
+                <motion.option
+                  key={param.id}
+                  value={param.id}
+                  whileHover={{ backgroundColor: '#f0fdf4' }}
+                  className="py-2"
+                >
+                  {param.parameter} - {param.category} ({param.unit})
+                </motion.option>
+              ))}
+            </motion.select>
 
-        <div>
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            <AnimatePresence>
+              {availableParameters.length === 0 && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-2 text-sm text-amber-600 flex items-center"
+                >
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  No numeric parameters available for the selected category and unit. Please
+                  configure parameters in Master Data first.
+                </motion.p>
+              )}
+              {errors.parameter_id && touched.parameter_id && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-2 text-sm text-red-600 flex items-center"
+                  role="alert"
+                >
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.parameter_id}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Category Input */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
           >
-            {t.report_category_label}
-            <span className="text-red-500 ml-1">*</span>
-          </label>
-          <input
-            type="text"
-            name="category"
-            id="category"
-            value={formData.category}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            required
-            disabled={isSubmitting}
-            aria-describedby={errors.category ? 'category-error' : undefined}
-            aria-invalid={!!errors.category}
-            placeholder="Enter category name..."
-            className={`mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-800 border rounded-md shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors disabled:bg-slate-100 dark:disabled:bg-slate-700 disabled:cursor-not-allowed ${
-              errors.category
-                ? 'border-red-500 dark:border-red-500'
-                : 'border-slate-300 dark:border-slate-600'
-            }`}
-          />
-          {errors.category && touched.category && (
-            <p
-              id="category-error"
-              className="mt-1 text-sm text-red-600 dark:text-red-400"
-              role="alert"
+            <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">
+              {t.report_category_label}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
+            <motion.input
+              whileFocus={{ scale: 1.02 }}
+              type="text"
+              name="category"
+              id="category"
+              value={formData.category}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              required
+              disabled={isSubmitting}
+              placeholder="Enter category name..."
+              className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
+                errors.category ? 'border-red-500' : 'border-slate-300'
+              }`}
+            />
+            <AnimatePresence>
+              {errors.category && touched.category && (
+                <motion.p
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-2 text-sm text-red-600 flex items-center"
+                  role="alert"
+                >
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  {errors.category}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+
+        {/* Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.3 }}
+          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-slate-200"
+        >
+          <AnimatePresence>
+            {isSubmitting && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center justify-center space-x-2 text-green-600 bg-green-50 px-4 py-2 rounded-lg"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full"
+                />
+                <span className="text-sm font-medium">
+                  {recordToEdit ? 'Updating report settings...' : 'Adding parameter...'}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex space-x-3">
+            <EnhancedButton
+              type="button"
+              variant="secondary"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="px-6 py-2"
             >
-              {errors.category}
-            </p>
-          )}
-        </div>
-      </div>
-      <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-600">
-        <EnhancedButton
-          type="submit"
-          variant="primary"
-          disabled={
-            isSubmitting ||
-            (availableParameters.length === 0 && !recordToEdit) ||
-            !formData.parameter_id ||
-            !formData.category.trim()
-          }
-          loading={isSubmitting}
-          loadingText={recordToEdit ? 'Updating...' : 'Saving...'}
-          className="sm:ml-3 sm:w-auto"
-          aria-label={recordToEdit ? t.save_button || 'Update report setting' : 'Add parameter'}
-        >
-          {recordToEdit ? t.save_button : 'Add Parameter'}
-        </EnhancedButton>
-        <EnhancedButton
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isSubmitting}
-          className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || 'Cancel'}
-        >
-          {t.cancel_button}
-        </EnhancedButton>
-      </div>
-    </form>
+              {t.cancel_button}
+            </EnhancedButton>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <EnhancedButton
+                type="submit"
+                variant="primary"
+                disabled={
+                  isSubmitting ||
+                  (availableParameters.length === 0 && !recordToEdit) ||
+                  !formData.parameter_id ||
+                  !formData.category.trim()
+                }
+                className="px-6 py-2 bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {recordToEdit ? t.save_button : 'Add Parameter'}
+              </EnhancedButton>
+            </motion.div>
+          </div>
+        </motion.div>
+      </form>
+    </motion.div>
   );
 };
 

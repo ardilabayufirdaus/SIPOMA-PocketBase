@@ -1,39 +1,30 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
-  SupabaseWhatsAppGroupRepository,
-  SupabaseMessageRepository,
-  SupabaseGroupMemberRepository,
-  SupabaseGroupReportRepository,
-} from './repositories/supabase-whatsapp';
+  PocketBaseWhatsAppGroupRepository,
+  PocketBaseMessageRepository,
+  PocketBaseGroupMemberRepository,
+  PocketBaseGroupReportRepository,
+} from './repositories/pocketbase-whatsapp';
 import {
   GenerateGroupReportUseCase,
   GetGroupReportsUseCase,
   GetGroupAnalyticsUseCase,
 } from '../domain/use-cases/whatsapp-report';
+import { pb } from '../../utils/pocketbase';
 
 class DependencyContainer {
-  private supabase: SupabaseClient;
-  private _groupRepo: SupabaseWhatsAppGroupRepository;
-  private _messageRepo: SupabaseMessageRepository;
-  private _memberRepo: SupabaseGroupMemberRepository;
-  private _reportRepo: SupabaseGroupReportRepository;
+  private _groupRepo: PocketBaseWhatsAppGroupRepository;
+  private _messageRepo: PocketBaseMessageRepository;
+  private _memberRepo: PocketBaseGroupMemberRepository;
+  private _reportRepo: PocketBaseGroupReportRepository;
 
   constructor() {
-    // Initialize Supabase client
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase environment variables');
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    // PocketBase client is already initialized as singleton in utils/pocketbase.ts
 
     // Initialize repositories
-    this._groupRepo = new SupabaseWhatsAppGroupRepository(this.supabase);
-    this._messageRepo = new SupabaseMessageRepository(this.supabase);
-    this._memberRepo = new SupabaseGroupMemberRepository(this.supabase);
-    this._reportRepo = new SupabaseGroupReportRepository(this.supabase);
+    this._groupRepo = new PocketBaseWhatsAppGroupRepository(pb);
+    this._messageRepo = new PocketBaseMessageRepository(pb);
+    this._memberRepo = new PocketBaseGroupMemberRepository(pb);
+    this._reportRepo = new PocketBaseGroupReportRepository(pb);
   }
 
   // Repository getters

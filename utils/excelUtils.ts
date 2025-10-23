@@ -1,12 +1,12 @@
 // Lazy load ExcelJS to reduce initial bundle size
-let ExcelJS: any = null;
+let ExcelLibrary: typeof import('exceljs') | null = null;
 
 const getExcelJS = async () => {
-  if (!ExcelJS) {
+  if (!ExcelLibrary) {
     const module = await import('exceljs');
-    ExcelJS = module.default;
+    ExcelLibrary = module.default;
   }
-  return ExcelJS;
+  return ExcelLibrary;
 };
 
 /**
@@ -18,8 +18,8 @@ export interface ExcelExportConfig {
   headers?: string[];
   data: Record<string, unknown>[];
   styling?: {
-    headerStyle?: any;
-    dataStyle?: any;
+    headerStyle?: Record<string, unknown>;
+    dataStyle?: Record<string, unknown>;
   };
 }
 
@@ -393,6 +393,7 @@ export const importMultipleSheets = async (
     reader.onload = async (e) => {
       try {
         const buffer = e.target?.result as ArrayBuffer;
+        const ExcelJS = await getExcelJS();
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(buffer);
 

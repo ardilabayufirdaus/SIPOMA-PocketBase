@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FilterIcon, X, ChevronDown, RefreshCw } from 'lucide-react';
 import { EnhancedButton } from '../ui/EnhancedComponents';
@@ -434,3 +434,4 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 };
 
 export default FilterSection;
+

@@ -44,3 +44,4 @@ export const InformationTable: React.FC<InformationTableProps> = ({ informationD
     </motion.div>
   );
 };
+

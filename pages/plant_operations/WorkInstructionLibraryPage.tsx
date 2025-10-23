@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useWorkInstructions } from '../../hooks/useWorkInstructions';
+import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { WorkInstruction } from '../../types';
 import Modal from '../../components/Modal';
 import WorkInstructionForm from './WorkInstructionForm';
@@ -13,6 +14,7 @@ import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleI
 const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   const { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction } =
     useWorkInstructions();
+  const { records: plantUnits } = usePlantUnits();
 
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -22,6 +24,8 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActivity, setFilterActivity] = useState('');
+  const [filterPlantCategory, setFilterPlantCategory] = useState('');
+  const [filterPlantUnit, setFilterPlantUnit] = useState('');
   const [sortColumn, setSortColumn] = useState<string>('doc_code');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -79,7 +83,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   );
 
   const groupedInstructions = useMemo(() => {
-    // First filter instructions based on search term and activity filter
+    // First filter instructions based on search term and filters
     const filtered = instructions.filter((instruction) => {
       const matchesSearch =
         !searchTerm ||
@@ -89,8 +93,11 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
         instruction.plant_category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesActivity = !filterActivity || instruction.activity === filterActivity;
+      const matchesPlantCategory =
+        !filterPlantCategory || instruction.plant_category === filterPlantCategory;
+      const matchesPlantUnit = !filterPlantUnit || instruction.plant_unit === filterPlantUnit;
 
-      return matchesSearch && matchesActivity;
+      return matchesSearch && matchesActivity && matchesPlantCategory && matchesPlantUnit;
     });
 
     // Sort filtered instructions
@@ -121,7 +128,15 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
     );
 
     return Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b));
-  }, [instructions, searchTerm, filterActivity, sortColumn, sortDirection]);
+  }, [
+    instructions,
+    searchTerm,
+    filterActivity,
+    filterPlantCategory,
+    filterPlantUnit,
+    sortColumn,
+    sortDirection,
+  ]);
 
   const tableHeaders = [
     'doc_code',
@@ -181,6 +196,50 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
               .map((activity) => (
                 <option key={activity} value={activity}>
                   {activity}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="sm:w-64">
+          <label htmlFor="plant-category-filter" className="sr-only">
+            Filter by plant category
+          </label>
+          <select
+            id="plant-category-filter"
+            value={filterPlantCategory}
+            onChange={(e) => {
+              setFilterPlantCategory(e.target.value);
+              setFilterPlantUnit(''); // Reset unit filter when category changes
+            }}
+            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+          >
+            <option value="">All Plant Categories</option>
+            {Array.from(new Set(plantUnits.map((unit) => unit.category)))
+              .sort()
+              .map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="sm:w-64">
+          <label htmlFor="plant-unit-filter" className="sr-only">
+            Filter by plant unit
+          </label>
+          <select
+            id="plant-unit-filter"
+            value={filterPlantUnit}
+            onChange={(e) => setFilterPlantUnit(e.target.value)}
+            disabled={!filterPlantCategory}
+            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="">All Plant Units</option>
+            {plantUnits
+              .filter((unit) => !filterPlantCategory || unit.category === filterPlantCategory)
+              .map((unit) => (
+                <option key={unit.id} value={unit.unit}>
+                  {unit.unit}
                 </option>
               ))}
           </select>

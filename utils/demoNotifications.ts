@@ -7,3 +7,4 @@ export const createDemoNotifications = async () => {
 export const clearDemoNotifications = async () => {
   // No-op: tabel alerts sudah dihapus
 };
+

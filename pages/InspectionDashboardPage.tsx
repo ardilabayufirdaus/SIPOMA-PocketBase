@@ -39,3 +39,4 @@ const InspectionDashboardPage: React.FC<{
 };
 
 export default InspectionDashboardPage;
+

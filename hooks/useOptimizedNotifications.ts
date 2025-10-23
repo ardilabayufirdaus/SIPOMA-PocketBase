@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Alert } from '../types/supabase';
 import { AlertSeverity, ExtendedAlert } from './useNotifications';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 // Enhanced debounce function with cancel support
 function debounce<T extends (...args: any[]) => any>(
@@ -68,16 +68,13 @@ export const useOptimizedNotifications = () => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('alerts')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50);
-
-        if (error) throw error;
+        const records = await pb.collection('alerts').getFullList({
+          sort: '-created_at',
+          limit: 50,
+        });
 
         const processedNotifications: ExtendedAlert[] =
-          (data as unknown as Alert[])?.map((alert) => ({
+          (records as unknown as Alert[])?.map((alert) => ({
             ...alert,
             category: (alert.category || 'system') as ExtendedAlert['category'],
             dismissed: alert.dismissed || false,
@@ -137,7 +134,7 @@ export const useOptimizedNotifications = () => {
 
     // Async update to database
     try {
-      await supabase.from('alerts').update({ read_at: new Date().toISOString() }).eq('id', id);
+      await pb.collection('alerts').update(id, { read_at: new Date().toISOString() });
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -154,7 +151,10 @@ export const useOptimizedNotifications = () => {
 
     // Async batch update to database
     try {
-      await supabase.from('alerts').update({ read_at: now }).is('read_at', null);
+      const unreadNotifications = notifications.filter((n) => !n.read_at);
+      for (const notification of unreadNotifications) {
+        await pb.collection('alerts').update(notification.id, { read_at: now });
+      }
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
     }
@@ -169,7 +169,7 @@ export const useOptimizedNotifications = () => {
     );
 
     try {
-      await supabase.from('alerts').update({ dismissed: true }).eq('id', id);
+      await pb.collection('alerts').update(id, { dismissed: true });
     } catch (error) {
       console.error('Failed to dismiss notification:', error);
     }
@@ -186,10 +186,7 @@ export const useOptimizedNotifications = () => {
     );
 
     try {
-      await supabase
-        .from('alerts')
-        .update({ snoozed_until: snoozedUntil.toISOString() })
-        .eq('id', id);
+      await pb.collection('alerts').update(id, { snoozed_until: snoozedUntil.toISOString() });
     } catch (error) {
       console.error('Failed to snooze notification:', error);
     }
@@ -242,49 +239,43 @@ export const useOptimizedNotifications = () => {
     debouncedFetch();
 
     // Setup real-time subscription for critical alerts only
-    const criticalSubscription = supabase
-      .channel('critical_alerts')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'alerts',
-          filter: 'severity=eq.CRITICAL',
-        },
-        (payload) => {
-          const newAlert = payload.new as ExtendedAlert;
-          setNotifications((prev) => [newAlert, ...prev]);
-          showBrowserNotification(newAlert);
+    let criticalUnsubscribe: (() => void) | undefined;
+    pb.collection('alerts')
+      .subscribe('*', (e) => {
+        if (e.action === 'create') {
+          const newAlert = e.record as unknown as ExtendedAlert;
+          if (newAlert.severity === 'CRITICAL') {
+            setNotifications((prev) => [newAlert, ...prev]);
+            showBrowserNotification(newAlert);
+          }
         }
-      )
-      .subscribe();
+      })
+      .then((unsub) => {
+        criticalUnsubscribe = unsub;
+      });
 
     // Setup real-time subscription for info alerts (registration requests)
-    const infoSubscription = supabase
-      .channel('info_alerts')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'alerts',
-          filter: 'severity=eq.INFO',
-        },
-        (payload) => {
-          const newAlert = payload.new as ExtendedAlert;
-          setNotifications((prev) => [newAlert, ...prev]);
-          showBrowserNotification(newAlert);
+    let infoUnsubscribe: (() => void) | undefined;
+    pb.collection('alerts')
+      .subscribe('*', (e) => {
+        if (e.action === 'create') {
+          const newAlert = e.record as unknown as ExtendedAlert;
+          if (newAlert.severity === 'INFO') {
+            setNotifications((prev) => [newAlert, ...prev]);
+            showBrowserNotification(newAlert);
+          }
         }
-      )
-      .subscribe();
+      })
+      .then((unsub) => {
+        infoUnsubscribe = unsub;
+      });
 
     // Cleanup polling interval (less frequent for optimization)
     const pollInterval = setInterval(debouncedFetch, 60000); // Poll every minute
 
     return () => {
-      criticalSubscription.unsubscribe();
-      infoSubscription.unsubscribe();
+      if (criticalUnsubscribe) criticalUnsubscribe();
+      if (infoUnsubscribe) infoUnsubscribe();
       clearInterval(pollInterval);
       debouncedFetch.cancel();
     };

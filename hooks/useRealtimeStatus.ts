@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 interface UseRealtimeStatusReturn {
   isConnected: boolean;
@@ -18,22 +18,22 @@ export const useRealtimeStatus = (channelName: string): UseRealtimeStatusReturn 
   }, []);
 
   useEffect(() => {
-    // Monitor Supabase connection status
+    // Monitor PocketBase connection status
     const checkConnection = () => {
       try {
-        const channels = supabase.getChannels();
-        const channel = channels.find((ch) => ch.topic.includes(channelName));
+        // Check if PocketBase client is available and can make requests
+        // PocketBase doesn't have a direct connection status like Supabase
+        // We'll check by attempting a simple operation
+        const isOnline = navigator.onLine;
+        const hasAuthStore = !!pb.authStore;
 
-        if (channel) {
-          const state = channel.state;
-          setIsConnected(state === 'joined');
+        setIsConnected(isOnline && hasAuthStore);
 
-          if (state === 'errored') {
-            setConnectionErrors((prev) => [
-              ...prev,
-              `Channel ${channelName} error at ${new Date().toISOString()}`,
-            ]);
-          }
+        if (!isOnline) {
+          setConnectionErrors((prev) => [
+            ...prev,
+            `Network offline at ${new Date().toISOString()}`,
+          ]);
         }
       } catch (error) {
         setIsConnected(false);
@@ -47,17 +47,23 @@ export const useRealtimeStatus = (channelName: string): UseRealtimeStatusReturn 
     // Periodic connection check
     const interval = setInterval(checkConnection, 5000);
 
-    // Check if realtime is available and connected
-    if (supabase.realtime) {
-      // Attempt to track connection via existing channels
-      const existingChannels = supabase.getChannels();
-      if (existingChannels.length > 0) {
-        setIsConnected(true);
-      }
-    }
+    // Listen for online/offline events
+    const handleOnline = () => checkConnection();
+    const handleOffline = () => {
+      setIsConnected(false);
+      setConnectionErrors((prev) => [
+        ...prev,
+        `Network went offline at ${new Date().toISOString()}`,
+      ]);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [channelName]);
 

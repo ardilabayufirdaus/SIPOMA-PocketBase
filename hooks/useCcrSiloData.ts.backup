@@ -1,0 +1,193 @@
+import { useCallback, useState } from 'react';
+import { useBatchedCrudOperations } from './useBatchedCrudOperations';
+import { useSiloCapacities } from './useSiloCapacities';
+import { formatDateToISO8601 } from '../utils/dateUtils';
+
+// Define type for Silo Data
+interface SiloData {
+  id?: string;
+  date?: string;
+  silo_id?: string;
+  capacity?: number;
+  silo_name?: string;
+  percentage?: number;
+  status?: string;
+  unit_id?: string;
+  weight_value?: number;
+  // Additional fields based on your schema
+  [key: string]: unknown;
+}
+
+interface SiloDataParams {
+  unit_id?: string;
+  date?: string;
+  silo_id?: string;
+  page?: number;
+  perPage?: number;
+}
+
+/**
+ * Hook for managing CCR Silo data with optimized CRUD operations
+ * Uses the batched operation hook to reduce server requests
+ */
+export const useCcrSiloData = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  // Use our optimized batch operations hook
+  const {
+    getList,
+    getFullList,
+    update,
+    create,
+    pendingOperations
+  } = useBatchedCrudOperations<SiloData>({
+    enableCache: true,
+    cacheTTL: 60000, // 1 minute cache for silo data
+    batchInterval: 1000,
+    maxBatchSize: 20,
+    immediateFirstOperation: true,
+  });
+  
+  // Get silo capacities for reference data
+  const { siloCapacities } = useSiloCapacities();
+
+  /**
+   * Get silo data for a specific date with pagination
+   */
+  const getDataForDatePaginated = useCallback(async (params: SiloDataParams) => {
+    if (!params.date || !params.unit_id) {
+      return { items: [], totalItems: 0, totalPages: 0 };
+    }
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const formattedDate = formatDateToISO8601(params.date);
+      const page = params.page || 1;
+      const perPage = params.perPage || 20;
+      
+      const filter = params.silo_id 
+        ? `date="${formattedDate}" && unit_id="${params.unit_id}" && silo_id="${params.silo_id}"`
+        : `date="${formattedDate}" && unit_id="${params.unit_id}"`;
+      
+      const result = await getList(
+        'ccr_silo_data',
+        page,
+        perPage,
+        { filter, sort: 'created', expand: 'silo_id' }
+      );
+      
+      // Enhance data with capacities
+      const enhancedData = result.items.map(item => {
+        const capacity = siloCapacities.find(cap => cap.id === item.silo_id)?.capacity || 0;
+        const percentage = capacity > 0 ? ((item.weight_value as number || 0) / capacity) * 100 : 0;
+        
+        return {
+          ...item,
+          capacity,
+          percentage: Math.min(percentage, 100),
+          silo_name: siloCapacities.find(cap => cap.id === item.silo_id)?.silo_name || '',
+        };
+      });
+      
+      return {
+        items: enhancedData,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages
+      };
+      
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+      return { items: [], totalItems: 0, totalPages: 0 };
+    } finally {
+      setLoading(false);
+    }
+  }, [siloCapacities, getList]);
+  
+  /**
+   * Get all silo data for a specific date (no pagination)
+   */
+  const getDataForDate = useCallback(async (date: string, unit_id: string) => {
+    if (!date || !unit_id) {
+      return [];
+    }
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const formattedDate = formatDateToISO8601(date);
+      const filter = `date="${formattedDate}" && unit_id="${unit_id}"`;
+      
+      const items = await getFullList(
+        'ccr_silo_data',
+        { filter, sort: 'created', expand: 'silo_id' }
+      );
+      
+      // Enhance data with capacities
+      return items.map(item => {
+        const capacity = siloCapacities.find(cap => cap.id === item.silo_id)?.capacity || 0;
+        const percentage = capacity > 0 ? ((item.weight_value as number || 0) / capacity) * 100 : 0;
+        
+        return {
+          ...item,
+          capacity,
+          percentage: Math.min(percentage, 100),
+          silo_name: siloCapacities.find(cap => cap.id === item.silo_id)?.silo_name || '',
+        };
+      });
+      
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, [siloCapacities, getFullList]);
+  
+  /**
+   * Update silo data with optimistic update
+   */
+  const updateSiloData = useCallback(async (id: string, data: Partial<SiloData>) => {
+    if (!id) {
+      throw new Error('ID is required');
+    }
+    
+    try {
+      return await update('ccr_silo_data', id, data);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to update silo data'));
+      throw err;
+    }
+  }, [update]);
+  
+  /**
+   * Create new silo data record
+   */
+  const createSiloData = useCallback(async (data: SiloData) => {
+    try {
+      // Format the date if provided
+      if (data.date) {
+        data.date = formatDateToISO8601(data.date);
+      }
+      
+      return await create('ccr_silo_data', data);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to create silo data'));
+      throw err;
+    }
+  }, [create]);
+
+  return {
+    getDataForDate,
+    getDataForDatePaginated,
+    updateSiloData,
+    createSiloData,
+    loading,
+    error,
+    hasPendingOperations: pendingOperations > 0,
+    pendingOperations
+  };
+};

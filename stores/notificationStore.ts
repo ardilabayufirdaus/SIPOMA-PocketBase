@@ -1,7 +1,6 @@
 import { create } from 'zustand';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 import { AlertSeverity } from '../hooks/useNotifications';
-import type { Json } from '../types/supabase';
 
 export interface NotificationData {
   id: string;
@@ -47,7 +46,7 @@ interface NotificationState {
   unreadCount: number;
   preferences: NotificationPreferences;
   isConnected: boolean;
-  subscription: any;
+  subscription: (() => void) | { unsubscribe: () => void } | null;
   loading: boolean;
   error: string | null;
 
@@ -148,12 +147,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       set({ loading: true, error: null });
 
       // Get all active users
-      const { data: users, error: usersError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('is_active', true);
-
-      if (usersError) throw usersError;
+      const users = await pb.collection('users').getFullList({
+        filter: 'is_active=true',
+      });
 
       if (!users || users.length === 0) return;
 
@@ -163,16 +159,17 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         message: notificationData.message,
         severity: notificationData.severity,
         category: notificationData.category,
-        action_url: notificationData.actionUrl,
+        actio_url: notificationData.actionUrl,
         action_label: notificationData.actionLabel,
-        metadata: notificationData.metadata as Json,
-        user_id: (user as unknown as { id: string }).id,
+        metadata: notificationData.metadata,
+        user_id: user.id,
         created_at: new Date().toISOString(),
       }));
 
-      const { error: insertError } = await supabase.from('notifications').insert(notifications);
-
-      if (insertError) throw insertError;
+      // Insert notifications in batch
+      for (const notification of notifications) {
+        await pb.collection('notifications').create(notification);
+      }
 
       set({ loading: false });
     } catch (error) {
@@ -185,12 +182,9 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   markAsRead: async (id) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ read_at: new Date().toISOString() })
-        .eq('id', id);
-
-      if (error) throw error;
+      await pb.collection('notifications').update(id, {
+        read_at: new Date().toISOString(),
+      });
 
       set((state) => ({
         notifications: state.notifications.map((n) =>
@@ -258,31 +252,24 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       let currentUserId = userId;
 
       if (!currentUserId) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        // In PocketBase, we can get current user from pb.authStore
+        const user = pb.authStore.model;
         if (!user) return;
         currentUserId = user.id;
       }
 
-      const subscription = supabase
-        .channel('notifications')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${currentUserId}`,
-          },
-          (payload) => {
-            const notification = payload.new as Record<string, unknown>;
+      let unsubscribe: (() => void) | undefined;
+
+      pb.collection('notifications')
+        .subscribe('*', (e) => {
+          if (e.record.user_id === currentUserId && e.action === 'create') {
+            const notification = e.record;
             state.addNotification({
               title: String(notification.title || ''),
               message: String(notification.message || ''),
               severity: (notification.severity as AlertSeverity) || AlertSeverity.INFO,
               category: (notification.category as NotificationData['category']) || 'system',
-              actionUrl: notification.action_url ? String(notification.action_url) : undefined,
+              actionUrl: notification.actio_url ? String(notification.actio_url) : undefined,
               actionLabel: notification.action_label
                 ? String(notification.action_label)
                 : undefined,
@@ -290,12 +277,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
               userId: String(notification.user_id || ''),
             });
           }
-        )
-        .subscribe((status) => {
-          set({ isConnected: status === 'SUBSCRIBED' });
+        })
+        .then((unsub) => {
+          unsubscribe = unsub;
         });
 
-      set({ subscription });
+      set({ subscription: unsubscribe, isConnected: true });
     } catch {
       set({ error: 'Failed to connect to realtime notifications' });
     }
@@ -304,7 +291,12 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   disconnectRealtime: () => {
     const state = get();
     if (state.subscription) {
-      state.subscription.unsubscribe();
+      // For PocketBase, subscription is a function that we call to unsubscribe
+      if (typeof state.subscription === 'function') {
+        state.subscription();
+      } else if (typeof state.subscription.unsubscribe === 'function') {
+        state.subscription.unsubscribe();
+      }
       set({ subscription: null, isConnected: false });
     }
   },
@@ -316,9 +308,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       let currentUserId = userId;
 
       if (!currentUserId) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const user = pb.authStore.model;
         if (!user) {
           set({ loading: false });
           return;
@@ -326,33 +316,31 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         currentUserId = user.id;
       }
 
-      const { data: notifications, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .is('dismissed_at', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const result = await pb.collection('notifications').getList(1, 50, {
+        filter: `user_id = '${currentUserId}'`,
+        sort: '-created',
+      });
 
-      if (error) throw error;
-
-      if (notifications) {
-        const formattedNotifications: NotificationData[] = notifications.map((n: any) => ({
-          id: n.id,
-          title: String(n.title || ''),
-          message: String(n.message || ''),
-          severity: (n.severity as AlertSeverity) || AlertSeverity.INFO,
-          category: (n.category as NotificationData['category']) || 'system',
-          actionUrl: n.action_url ? String(n.action_url) : undefined,
-          actionLabel: n.action_label ? String(n.action_label) : undefined,
-          metadata: (n.metadata as Record<string, unknown>) || {},
-          userId: String(n.user_id || ''),
-          createdAt: new Date(n.created_at),
-          readAt: n.read_at ? new Date(n.read_at) : undefined,
-          dismissedAt: n.dismissed_at ? new Date(n.dismissed_at) : undefined,
-          snoozedUntil: n.snoozed_until ? new Date(n.snoozed_until) : undefined,
-          expiresAt: n.expires_at ? new Date(n.expires_at) : undefined,
-        }));
+      const notifications = result.items;
+      if (notifications && notifications.length > 0) {
+        const formattedNotifications: NotificationData[] = notifications.map(
+          (n: Record<string, unknown>) => ({
+            id: String(n.id || ''),
+            title: String(n.title || ''),
+            message: String(n.message || ''),
+            severity: (n.severity as AlertSeverity) || AlertSeverity.INFO,
+            category: (n.category as NotificationData['category']) || 'system',
+            actionUrl: n.actio_url ? String(n.actio_url) : undefined,
+            actionLabel: n.action_label ? String(n.action_label) : undefined,
+            metadata: (n.metadata as Record<string, unknown>) || {},
+            userId: String(n.user_id || ''),
+            createdAt: new Date(String(n.created_at || '')),
+            readAt: n.read_at ? new Date(String(n.read_at)) : undefined,
+            dismissedAt: n.dismissed_at ? new Date(String(n.dismissed_at)) : undefined,
+            snoozedUntil: n.snoozed_until ? new Date(String(n.snoozed_until)) : undefined,
+            expiresAt: n.expires_at ? new Date(String(n.expires_at)) : undefined,
+          })
+        );
 
         const unreadCount = formattedNotifications.filter((n) => !n.readAt).length;
 

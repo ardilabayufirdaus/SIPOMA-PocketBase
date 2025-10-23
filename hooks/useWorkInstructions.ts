@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { WorkInstruction } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 
 export const useWorkInstructions = () => {
   const [instructions, setInstructions] = useState<WorkInstruction[]>([]);
@@ -10,17 +10,27 @@ export const useWorkInstructions = () => {
   const fetchInstructions = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase
-      .from('work_instructions')
-      .select('*')
-      .order('activity')
-      .order('doc_title');
+    try {
+      const records = await pb.collection('work_instructions').getFullList({
+        sort: 'activity,doc_title',
+      });
+      // Transform RecordModel to WorkInstruction
+      const transformedRecords = records.map((record) => ({
+        id: record.id,
+        activity: record.activity,
+        doc_code: record.doc_code,
+        doc_title: record.doc_title,
+        description: record.description,
+        link: record.link,
+        plant_category: record.plant_category,
+        plant_unit: record.plant_unit,
+      })) as WorkInstruction[];
 
-    if (error) {
+      setInstructions(transformedRecords);
+    } catch (_error) {
+      // eslint-disable-line @typescript-eslint/no-unused-vars
       setError('Failed to fetch work instructions');
       setInstructions([]);
-    } else {
-      setInstructions((data || []) as unknown as WorkInstruction[]);
     }
     setLoading(false);
   }, []);
@@ -32,11 +42,12 @@ export const useWorkInstructions = () => {
   const addInstruction = useCallback(
     async (instruction: Omit<WorkInstruction, 'id'>) => {
       setError(null);
-      const { error } = await supabase.from('work_instructions').insert([instruction]);
-      if (error) {
-        setError('Failed to add work instruction');
-      } else {
+      try {
+        await pb.collection('work_instructions').create(instruction);
         fetchInstructions();
+      } catch (_error) {
+        // eslint-disable-line @typescript-eslint/no-unused-vars
+        setError('Failed to add work instruction');
       }
     },
     [fetchInstructions]
@@ -46,11 +57,12 @@ export const useWorkInstructions = () => {
     async (updatedInstruction: WorkInstruction) => {
       setError(null);
       const { id, ...updateData } = updatedInstruction;
-      const { error } = await supabase.from('work_instructions').update(updateData).eq('id', id);
-      if (error) {
-        setError('Failed to update work instruction');
-      } else {
+      try {
+        await pb.collection('work_instructions').update(id, updateData);
         fetchInstructions();
+      } catch (_error) {
+        // eslint-disable-line @typescript-eslint/no-unused-vars
+        setError('Failed to update work instruction');
       }
     },
     [fetchInstructions]
@@ -59,11 +71,12 @@ export const useWorkInstructions = () => {
   const deleteInstruction = useCallback(
     async (instructionId: string) => {
       setError(null);
-      const { error } = await supabase.from('work_instructions').delete().eq('id', instructionId);
-      if (error) {
-        setError('Failed to delete work instruction');
-      } else {
+      try {
+        await pb.collection('work_instructions').delete(instructionId);
         fetchInstructions();
+      } catch (_error) {
+        // eslint-disable-line @typescript-eslint/no-unused-vars
+        setError('Failed to delete work instruction');
       }
     },
     [fetchInstructions]

@@ -230,3 +230,4 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
     </motion.div>
   );
 };
+

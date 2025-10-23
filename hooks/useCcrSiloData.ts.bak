@@ -1,0 +1,260 @@
+import { useCallback } from 'react';
+import { CcrSiloData } from '../types';
+import { useSiloCapacities } from './useSiloCapacities';
+import { useBatchedCrudOperations } from './useBatchedCrudOperations';
+
+export const useCcrSiloData = () => {
+  const { records: silos, loading: silosLoading } = useSiloCapacities();
+  
+  // Use our optimized CRUD operations hook
+  const crud = useBatchedCrudOperations<CcrSiloData>({
+    batchInterval: 1500, // 1.5 seconds batch interval
+    maxBatchSize: 10,    // Process after 10 operations
+    enableCache: true,   // Enable caching for read operations
+    cacheTTL: 60000,     // Cache valid for 60 seconds
+  });
+
+  const getDataForDate = useCallback(
+    async (date: string): Promise<CcrSiloData[]> => {
+      // Enhanced validation for date parameter
+      if (
+        silosLoading ||
+        silos.length === 0 ||
+        !date ||
+        typeof date !== 'string' ||
+        date.trim() === '' ||
+        date === 'undefined' ||
+        date === 'null'
+      ) {
+        return [];
+      }
+
+      // Use the cached/optimized getList operation
+      const result = await crud.getList('ccr_silo_data', 1, 50, {
+        filter: `date = '${date}'`,
+        sort: '-created',
+      });
+
+      // Map the results to the expected format
+      const supabaseData = result.items;
+      const dailyRecords = new Map(supabaseData.map((d) => [d.silo_id, d]));
+
+      const resultData = silos
+        .map((silo) => {
+          const record = dailyRecords.get(silo.id);
+          if (record) {
+            return {
+              id: record.id,
+              silo_id: record.silo_id,
+              date: record.date,
+              shift1: record.shift1,
+              shift2: record.shift2,
+              shift3: record.shift3,
+            } as CcrSiloData;
+          }
+          return {
+            id: `${silo.id}-${date}`,
+            silo_id: silo.id,
+            date: date,
+            shift1: {},
+            shift2: {},
+            shift3: {},
+          };
+        })
+        .sort((a, b) => {
+          // Use snake_case properties to match the CcrSiloData type and SiloCapacity type
+          const siloA = silos.find((s) => s.id === a.silo_id);
+          const siloB = silos.find((s) => s.id === b.silo_id);
+          return (siloA?.silo_name || '').localeCompare(siloB?.silo_name || '');
+        });
+
+      return resultData;
+    },
+    [silos, silosLoading, crud]
+  );
+
+  const getDataForDatePaginated = useCallback(
+    async (
+      date: string,
+      page: number = 1,
+      pageSize: number = 50
+    ): Promise<{ data: CcrSiloData[]; total: number; hasMore: boolean }> => {
+      // Enhanced validation for date parameter
+      if (
+        silosLoading ||
+        silos.length === 0 ||
+        !date ||
+        typeof date !== 'string' ||
+        date.trim() === '' ||
+        date === 'undefined' ||
+        date === 'null'
+      ) {
+        return { data: [], total: 0, hasMore: false };
+      }
+
+      // Use the cached/optimized getList operation
+      const result = await crud.getList('ccr_silo_data', page, pageSize, {
+        filter: `date = "${date}"`,
+      });
+
+      // Map the results to the expected format
+      const pocketbaseData = result.items;
+      const dailyRecords = new Map(pocketbaseData.map((d) => [d.silo_id, d]));
+
+      const resultData = silos
+        .map((silo) => {
+          const record = dailyRecords.get(silo.id);
+          if (record) {
+            return {
+              id: record.id,
+              silo_id: record.silo_id,
+              date: record.date,
+              shift1: record.shift1,
+              shift2: record.shift2,
+              shift3: record.shift3,
+            } as CcrSiloData;
+          }
+          return {
+            id: `${silo.id}-${date}`,
+            silo_id: silo.id,
+            date: date,
+            shift1: {},
+            shift2: {},
+            shift3: {},
+          };
+        })
+        .sort((a, b) => {
+          // Use snake_case properties to match the CcrSiloData type and SiloCapacity type
+          const siloA = silos.find((s) => s.id === a.silo_id);
+          const siloB = silos.find((s) => s.id === b.silo_id);
+          return (siloA?.silo_name || '').localeCompare(siloB?.silo_name || '');
+        });
+
+      const hasMore = page * pageSize < result.totalItems;
+
+      return { data: resultData, total: result.totalItems, hasMore };
+    },
+    [silos, silosLoading, crud]
+  );
+
+  const updateSiloData = useCallback(
+    async (
+      date: string,
+      siloId: string,
+      shift: 'shift1' | 'shift2' | 'shift3',
+      field: 'emptySpace' | 'content',
+      value: number | undefined
+    ) => {
+      // Enhanced validation for date parameter
+      if (
+        !date ||
+        typeof date !== 'string' ||
+        date.trim() === '' ||
+        date === 'undefined' ||
+        date === 'null'
+      ) {
+        console.error('Invalid date provided to updateSiloData:', date);
+        return;
+      }
+
+      try {
+        // Try to find existing record using optimized getList
+        const existingRecordsResult = await crud.getList('ccr_silo_data', 1, 1, {
+          filter: `date = "${date}" && silo_id = "${siloId}"`,
+        });
+        
+        const existing = existingRecordsResult.items.length > 0 ? existingRecordsResult.items[0] : null;
+
+        const currentShiftData =
+          typeof existing?.[shift] === 'object' && existing?.[shift] !== null ? existing[shift] : {};
+        const updatedShiftData = {
+          ...currentShiftData,
+          [field]: value,
+        };
+
+        // Combine shift data
+        const shift1 = shift === 'shift1' ? updatedShiftData : (existing?.shift1 ?? {});
+        const shift2 = shift === 'shift2' ? updatedShiftData : (existing?.shift2 ?? {});
+        const shift3 = shift === 'shift3' ? updatedShiftData : (existing?.shift3 ?? {});
+
+        // Check if all shift fields are empty
+        const isEmpty = [shift1, shift2, shift3].every((s) => {
+          if (typeof s === 'object' && s !== null && !Array.isArray(s)) {
+            return (
+              (s['emptySpace'] === undefined || s['emptySpace'] === null) &&
+              (s['content'] === undefined || s['content'] === null)
+            );
+          }
+          return true;
+        });
+
+        if (isEmpty) {
+          // Delete data if it exists (batched)
+          if (existing) {
+            await crud.delete('ccr_silo_data', existing.id);
+          }
+          return;
+        }
+
+        // Build data for update/create
+        const recordData = {
+          silo_id: siloId,
+          date,
+          shift1,
+          shift2,
+          shift3,
+        };
+
+        if (existing) {
+          // Update existing record (batched)
+          await crud.update('ccr_silo_data', existing.id, recordData);
+        } else {
+          // Create new record (batched)
+          await crud.create('ccr_silo_data', recordData);
+        }
+      } catch (error) {
+        console.error('Error updating silo data:', error);
+      }
+    },
+    [crud]
+  );
+
+  const deleteSiloData = useCallback(
+    async (date: string, siloId: string) => {
+      // Enhanced validation for date parameter
+      if (
+        !date ||
+        typeof date !== 'string' ||
+        date.trim() === '' ||
+        date === 'undefined' ||
+        date === 'null'
+      ) {
+        console.error('Invalid date provided to deleteSiloData:', date);
+        return;
+      }
+
+      try {
+        // Use batched delete operation
+        await crud.delete('ccr_silo_data', date + '_' + siloId);
+      } catch (error) {
+        console.error('Error deleting CCR silo data:', error);
+      }
+    },
+    [crud]
+  );
+
+  const flushPendingChanges = useCallback(async () => {
+    await crud.flush();
+  }, [crud]);
+
+  return {
+    getDataForDate,
+    getDataForDatePaginated,
+    updateSiloData,
+    deleteSiloData,
+    flushPendingChanges,
+    hasPendingChanges: crud.hasPendingOperations,
+    pendingChangesCount: crud.pendingOperations,
+    loading: silosLoading,
+  };
+};

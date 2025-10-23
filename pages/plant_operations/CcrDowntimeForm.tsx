@@ -11,6 +11,7 @@ interface FormProps {
   onCancel: () => void;
   t: Record<string, string>;
   plantUnits: string[];
+  selectedUnit: string;
 }
 
 const CcrDowntimeForm: React.FC<FormProps> = ({
@@ -19,18 +20,23 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   onCancel,
   t,
   plantUnits,
+  selectedUnit,
 }) => {
   const { records: picSettings } = usePicSettings();
 
   // Track if we've set initial defaults to avoid overriding user changes
   const hasSetDefaults = useRef(false);
 
+  // Form validation state
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   // Initialize form data only once when component mounts
   const [formData, setFormData] = useState(() => ({
-    start_time: '00:00:00',
-    end_time: '00:00:00',
-    unit: plantUnits[0] || '',
-    pic: picSettings[0]?.pic || '',
+    start_time: '00:00',
+    end_time: '00:00',
+    unit: '',
+    pic: '',
     problem: '',
     action: '',
   }));
@@ -47,6 +53,8 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         action: recordToEdit.action || '',
       });
       hasSetDefaults.current = true; // Mark as set for editing mode
+      setErrors({});
+      setTouched({});
     }
   }, [recordToEdit]);
 
@@ -59,17 +67,72 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
     ) {
       setFormData((prev) => ({
         ...prev,
-        unit: prev.unit || (plantUnits.length > 0 ? plantUnits[0] : ''),
-        pic: prev.pic || (picSettings.length > 0 ? picSettings[0]?.pic || '' : ''),
+        unit: selectedUnit,
       }));
       hasSetDefaults.current = true;
     }
-  }, [recordToEdit, picSettings, plantUnits]);
+  }, [recordToEdit, picSettings, plantUnits, selectedUnit]);
 
-  // Helper function to convert HH:MM:SS to HH:MM for time input
+  // Helper function to ensure time is always in HH:MM format
   const formatTimeForInput = (timeStr: string) => {
     if (!timeStr) return '';
+
+    // Handle various time formats that might exist in the database
+    if (timeStr.includes(':')) {
+      // Format HH:MM:SS or HH:MM
+      const parts = timeStr.split(':');
+      if (parts.length >= 2) {
+        return parts[0].padStart(2, '0') + ':' + parts[1].padStart(2, '0');
+      }
+    }
+
+    // For unrecognized formats, return as is (limited to 5 characters for HH:MM)
     return timeStr.length > 5 ? timeStr.substring(0, 5) : timeStr;
+  };
+
+  // Validation functions
+  const validateField = (name: string, value: string) => {
+    const newErrors = { ...errors };
+
+    switch (name) {
+      case 'start_time':
+      case 'end_time':
+        if (!value) {
+          newErrors[name] = 'Time is required';
+        } else if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
+          newErrors[name] = 'Invalid time format (HH:MM)';
+        } else {
+          delete newErrors[name];
+        }
+        break;
+      case 'unit':
+        if (!value) {
+          newErrors.unit = 'Unit is required';
+        } else {
+          delete newErrors.unit;
+        }
+        break;
+      case 'pic':
+        if (!value) {
+          newErrors.pic = 'PIC is required';
+        } else {
+          delete newErrors.pic;
+        }
+        break;
+      case 'problem':
+        if (!value.trim()) {
+          newErrors.problem = 'Problem description is required';
+        } else if (value.trim().length < 10) {
+          newErrors.problem = 'Problem description must be at least 10 characters';
+        } else {
+          delete newErrors.problem;
+        }
+        break;
+      default:
+        break;
+    }
+
+    setErrors(newErrors);
   };
 
   const handleChange = (
@@ -77,46 +140,87 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   ) => {
     const { name, value } = e.target;
 
-    // Convert time input from HH:MM to HH:MM:SS for database consistency
-    if ((name === 'start_time' || name === 'end_time') && value && !value.includes(':00', 5)) {
-      const timeValue = value + ':00';
-      setFormData((prev) => ({ ...prev, [name]: timeValue }));
+    // Use HH:MM format directly for time values - don't add seconds
+    if (name === 'start_time' || name === 'end_time') {
+      // Ensure time is in HH:MM format
+      const formattedTime = value.split(':').slice(0, 2).join(':');
+      setFormData((prev) => ({ ...prev, [name]: formattedTime }));
+      if (touched[name]) {
+        validateField(name, formattedTime);
+      }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+      if (touched[name]) {
+        validateField(name, value);
+      }
     }
+  };
+
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    validateField(name, value);
   };
 
   const validateTimeRange = () => {
     const startTime = formData.start_time;
     const endTime = formData.end_time;
 
-    if (startTime && endTime) {
-      // Parse time format HH:MM:SS or HH:MM
+    if (startTime && endTime && !errors.start_time && !errors.end_time) {
+      // Parse time format ensuring HH:MM format for database consistency
       const parseTime = (timeStr: string) => {
         const parts = timeStr.split(':');
         const hours = parseInt(parts[0], 10);
         const minutes = parseInt(parts[1], 10);
-        const seconds = parseInt(parts[2] || '0', 10);
-        return hours * 3600 + minutes * 60 + seconds;
+        // Skip seconds for consistency with database format
+        return hours * 60 + minutes; // Calculate in minutes instead
       };
 
       const startSeconds = parseTime(startTime);
       const endSeconds = parseTime(endTime);
 
       if (startSeconds > endSeconds) {
-        return 'End time must be after or equal to start time';
+        setErrors((prev) => ({
+          ...prev,
+          end_time: 'End time must be after or equal to start time',
+        }));
+        return false;
+      } else {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.end_time;
+          return newErrors;
+        });
       }
     }
-    return null;
+    return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Mark all fields as touched
+    const allFields = ['start_time', 'end_time', 'unit', 'pic', 'problem'];
+    const newTouched: Record<string, boolean> = {};
+    allFields.forEach((field) => {
+      newTouched[field] = true;
+    });
+    setTouched(newTouched);
+
+    // Validate all fields
+    allFields.forEach((field) => {
+      validateField(field, formData[field as keyof typeof formData] as string);
+    });
+
     // Validate time range
-    const timeError = validateTimeRange();
-    if (timeError) {
-      alert(timeError);
+    const timeRangeValid = validateTimeRange();
+
+    // Check for any errors
+    const hasErrors = Object.keys(errors).length > 0 || !timeRangeValid;
+
+    if (hasErrors) {
       return;
     }
 
@@ -126,161 +230,283 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       return;
     }
 
-    if (!formData.unit) {
-      alert('Unit is required');
-      return;
-    }
-
     if (picSettings.length === 0) {
       alert('No PIC settings available. Please configure PIC settings first.');
       return;
     }
 
-    if (!formData.pic) {
-      alert('PIC is required');
-      return;
-    }
-
-    if (!formData.problem.trim()) {
-      alert('Problem description is required');
-      return;
-    }
+    // Ensure time format is consistent as HH:MM
+    const formattedData = {
+      ...formData,
+      // Explicitly format times to HH:MM
+      start_time: formData.start_time.split(':').slice(0, 2).join(':'),
+      end_time: formData.end_time.split(':').slice(0, 2).join(':'),
+    };
 
     if (recordToEdit) {
-      onSave({ ...recordToEdit, ...formData });
+      onSave({ ...recordToEdit, ...formattedData });
     } else {
-      onSave(formData);
+      onSave(formattedData);
     }
   };
 
+  const isFieldInvalid = (fieldName: string) => {
+    return touched[fieldName] && errors[fieldName];
+  };
+
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="p-4 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="start_time" className="block text-sm font-medium text-slate-700">
-              {t.start_time}
-            </label>
-            <input
-              type="time"
-              name="start_time"
-              id="start_time"
-              value={formatTimeForInput(formData.start_time)}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm no-spinner"
-            />
+    <div className="p-6 bg-white dark:bg-slate-900 rounded-xl shadow-md">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Time Section */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+              Time Period
+            </h4>
           </div>
-          <div>
-            <label htmlFor="end_time" className="block text-sm font-medium text-slate-700">
-              {t.end_time}
-            </label>
-            <input
-              type="time"
-              name="end_time"
-              id="end_time"
-              value={formatTimeForInput(formData.end_time)}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm no-spinner"
-            />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="start_time"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                {t.start_time}
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="time"
+                  name="start_time"
+                  id="start_time"
+                  value={formatTimeForInput(formData.start_time)}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 ${
+                    isFieldInvalid('start_time')
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                  }`}
+                />
+                {isFieldInvalid('start_time') && (
+                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">
+                    {errors.start_time}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="end_time"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                {t.end_time}
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="time"
+                  name="end_time"
+                  id="end_time"
+                  value={formatTimeForInput(formData.end_time)}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  required
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 ${
+                    isFieldInvalid('end_time')
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                  }`}
+                />
+                {isFieldInvalid('end_time') && (
+                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">
+                    {errors.end_time}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
-            {t.unit}
-          </label>
-          <select
-            name="unit"
-            id="unit"
-            value={formData.unit}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full pl-3 pr-10 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-            disabled={plantUnits.length === 0}
+
+        {/* Assignment Section */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+              Assignment
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="unit"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                {t.unit}
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="unit"
+                  id="unit"
+                  value={formData.unit}
+                  readOnly
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm text-slate-900 dark:text-slate-100 cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="pic"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                {t.pic}
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  name="pic"
+                  id="pic"
+                  value={formData.pic}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 appearance-none ${
+                    isFieldInvalid('pic')
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                  }`}
+                  disabled={picSettings.length === 0}
+                >
+                  {picSettings.length === 0 ? (
+                    <option value="">No PIC available</option>
+                  ) : (
+                    <>
+                      <option value="">Pilih PIC</option>
+                      {picSettings.map((picSetting) => (
+                        <option key={picSetting.id} value={picSetting.pic}>
+                          {picSetting.pic}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                  <svg
+                    className="w-4 h-4 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+                {isFieldInvalid('pic') && (
+                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">{errors.pic}</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Details Section */}
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+              Details
+            </h4>
+          </div>
+
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <label
+                htmlFor="problem"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                {t.problem}
+                <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <textarea
+                  name="problem"
+                  id="problem"
+                  value={formData.problem}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  rows={4}
+                  required
+                  placeholder="Describe the problem that occurred..."
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 resize-none ${
+                    isFieldInvalid('problem')
+                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                  }`}
+                />
+                {isFieldInvalid('problem') && (
+                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">
+                    {errors.problem}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="action"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                {t.action}
+              </label>
+              <textarea
+                name="action"
+                id="action"
+                value={formData.action}
+                onChange={handleChange}
+                rows={4}
+                placeholder="Describe the actions taken to resolve the issue..."
+                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-row justify-end space-x-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+          <EnhancedButton
+            type="button"
+            variant="secondary"
+            onClick={onCancel}
+            className="w-28 px-6 py-2.5 flex items-center justify-center"
+            rounded="xl"
+            elevation="sm"
+            aria-label={t.cancel_button || 'Cancel'}
           >
-            {plantUnits.length === 0 ? (
-              <option value="">No units available</option>
-            ) : (
-              plantUnits.map((unit) => (
-                <option key={unit} value={unit}>
-                  {unit}
-                </option>
-              ))
-            )}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="pic" className="block text-sm font-medium text-slate-700">
-            {t.pic}
-          </label>
-          <select
-            name="pic"
-            id="pic"
-            value={formData.pic}
-            onChange={handleChange}
-            className="mt-1 block w-full pl-3 pr-10 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-            disabled={picSettings.length === 0}
+            {t.cancel_button}
+          </EnhancedButton>
+          <EnhancedButton
+            type="submit"
+            variant="primary"
+            className="w-28 px-6 py-2.5 flex items-center justify-center"
+            rounded="xl"
+            elevation="sm"
+            aria-label={t.save_button || 'Save downtime record'}
           >
-            {picSettings.length === 0 ? (
-              <option value="">No PIC available</option>
-            ) : (
-              picSettings.map((picSetting) => (
-                <option key={picSetting.id} value={picSetting.pic}>
-                  {picSetting.pic}
-                </option>
-              ))
-            )}
-          </select>
+            {t.save_button}
+          </EnhancedButton>
         </div>
-        <div>
-          <label htmlFor="problem" className="block text-sm font-medium text-slate-700">
-            {t.problem}
-          </label>
-          <textarea
-            name="problem"
-            id="problem"
-            value={formData.problem}
-            onChange={handleChange}
-            rows={3}
-            required
-            className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label htmlFor="action" className="block text-sm font-medium text-slate-700">
-            {t.action}
-          </label>
-          <textarea
-            name="action"
-            id="action"
-            value={formData.action}
-            onChange={handleChange}
-            rows={3}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
-          />
-        </div>
-      </div>
-      <div className="bg-slate-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
-        <EnhancedButton
-          type="submit"
-          variant="primary"
-          className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || 'Save downtime record'}
-        >
-          {t.save_button}
-        </EnhancedButton>
-        <EnhancedButton
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
-          aria-label={t.cancel_button || 'Cancel'}
-        >
-          {t.cancel_button}
-        </EnhancedButton>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
 

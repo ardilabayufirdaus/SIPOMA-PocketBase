@@ -21,3 +21,4 @@ const SpeakerWaveIcon: React.FC<{
 );
 
 export default SpeakerWaveIcon;
+

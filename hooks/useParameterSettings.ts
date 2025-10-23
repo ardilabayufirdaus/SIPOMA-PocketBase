@@ -1,7 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ParameterSetting } from '../types';
-import { supabase } from '../utils/supabase';
+import { pb } from '../utils/pocketbase';
 import { cacheManager } from '../utils/cacheManager';
+import { CacheKeys } from '../utils/cacheKeys';
+import { safeApiCall } from '../utils/connectionCheck';
+
+// Constants for cache management
+const CACHE_KEY = CacheKeys.PARAMETER_SETTINGS;
+const CACHE_TIME = 30; // Minutes
 
 export const useParameterSettings = () => {
   const [records, setRecords] = useState<ParameterSetting[]>([]);
@@ -11,28 +17,38 @@ export const useParameterSettings = () => {
     setLoading(true);
 
     // Check cache first
-    const cacheKey = 'parameter_settings';
-    const cached = cacheManager.get<ParameterSetting[]>(cacheKey);
+    const cached = cacheManager.get<ParameterSetting[]>(CACHE_KEY);
     if (cached) {
-      setRecords(cached as unknown as ParameterSetting[]);
+      setRecords(cached);
       setLoading(false);
       return;
     }
 
-    const { data, error } = await supabase
-      .from('parameter_settings')
-      .select('*')
-      .order('parameter')
-      .limit(500);
+    try {
+      const result = await safeApiCall(() =>
+        pb.collection('parameter_settings').getFullList({
+          sort: 'parameter',
+        })
+      );
 
-    if (error) {
-      console.error('Error fetching parameter settings:', error);
-      setRecords([]);
-    } else {
-      const typedData = (data || []) as unknown as ParameterSetting[];
-      setRecords(typedData);
-      // Cache for 30 minutes since parameter settings don't change frequently
-      cacheManager.set(cacheKey, typedData, 30);
+      if (result) {
+        const typedData = result as unknown as ParameterSetting[];
+        setRecords(typedData);
+        // Cache for 30 minutes since parameter settings don't change frequently
+        cacheManager.set(CACHE_KEY, typedData, CACHE_TIME);
+      } else {
+        setRecords([]);
+      }
+    } catch (error) {
+      if (error.status === 404) {
+        // Collection doesn't exist yet
+        setRecords([]);
+      } else if (error.message?.includes('autocancelled')) {
+        // Ignore autocancelled requests
+      } else {
+        // Handle error silently or through error monitoring
+        setRecords([]);
+      }
     }
     setLoading(false);
   }, []);
@@ -43,50 +59,98 @@ export const useParameterSettings = () => {
 
   // Enhanced realtime subscription for parameter_settings changes
   useEffect(() => {
-    const channel = supabase
-      .channel('parameter_settings_realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'parameter_settings',
-        },
-        (payload) => {
-          console.log(
-            'Parameter settings realtime update:',
-            payload.eventType,
-            payload.new || payload.old
-          );
+    // Gunakan variabel untuk mencegah multiple subscriptions
+    let isSubscribed = true;
+    let unsubPromise;
 
-          // Clear cache when data changes
-          cacheManager.delete('parameter_settings');
+    const subscribe = async () => {
+      try {
+        if (!isSubscribed) return;
 
-          // Optimized state updates based on event type
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setRecords((prev) =>
-              [...prev, payload.new as ParameterSetting].sort((a, b) =>
-                a.parameter.localeCompare(b.parameter)
-              )
-            );
-          } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setRecords((prev) =>
-              prev.map((record) =>
-                record.id === payload.new.id ? (payload.new as ParameterSetting) : record
-              )
-            );
-          } else if (payload.eventType === 'DELETE' && payload.old) {
-            setRecords((prev) => prev.filter((record) => record.id !== payload.old.id));
-          } else {
-            // Fallback to full refetch for complex changes
-            fetchRecords();
-          }
+        unsubPromise = await safeApiCall(() =>
+          pb.collection('parameter_settings').subscribe('*', (e) => {
+            if (!isSubscribed) return;
+
+            // Clear cache when data changes
+            cacheManager.delete(CACHE_KEY);
+
+            // Optimized state updates based on event type
+            if (e.action === 'create') {
+              setRecords((prev) =>
+                [
+                  ...prev,
+                  {
+                    ...e.record,
+                    parameter: e.record.parameter,
+                    data_type: e.record.data_type,
+                    unit: e.record.unit,
+                    category: e.record.category,
+                  } as ParameterSetting,
+                ].sort((a, b) => a.parameter.localeCompare(b.parameter))
+              );
+            } else if (e.action === 'update') {
+              setRecords((prev) =>
+                prev
+                  .map((record) =>
+                    record.id === e.record.id
+                      ? ({
+                          ...e.record,
+                          parameter: e.record.parameter,
+                          data_type: e.record.data_type,
+                          unit: e.record.unit,
+                          category: e.record.category,
+                        } as ParameterSetting)
+                      : record
+                  )
+                  .sort((a, b) => a.parameter.localeCompare(b.parameter))
+              );
+            } else if (e.action === 'delete') {
+              setRecords((prev) =>
+                prev
+                  .filter((record) => record.id !== e.record.id)
+                  .sort((a, b) => a.parameter.localeCompare(b.parameter))
+              );
+            }
+          })
+        );
+      } catch (error) {
+        // Ignore connection errors to prevent excessive logging
+        if (!error.message?.includes('autocancelled') && !error.message?.includes('connection')) {
+          // Handle error silently or through error monitoring
         }
-      )
-      .subscribe();
+      }
+    };
+
+    // Start subscription
+    subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      // Tandai komponen sebagai di-unmount
+      isSubscribed = false;
+
+      // Batalkan subscription yang ada
+      if (unsubPromise) {
+        // Handle different types that might be returned by subscribe()
+        if (typeof unsubPromise === 'function') {
+          // If it's already a function, just call it
+          try {
+            unsubPromise();
+          } catch {
+            // Ignore cleanup errors
+          }
+        } else if (unsubPromise && typeof unsubPromise.then === 'function') {
+          // If it's a Promise, properly handle it
+          unsubPromise
+            .then((unsub) => {
+              if (typeof unsub === 'function') {
+                unsub();
+              }
+            })
+            .catch(() => {
+              // Ignore cleanup errors
+            });
+        }
+      }
     };
   }, [fetchRecords]);
 
@@ -103,9 +167,12 @@ export const useParameterSettings = () => {
         pcc_max_value: record.pcc_max_value === undefined ? null : record.pcc_max_value,
       };
 
-      const { error } = await supabase.from('parameter_settings').insert([cleanedRecord]);
-      if (error) console.error('Error adding parameter setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('parameter_settings').create(cleanedRecord);
+        fetchRecords();
+      } catch {
+        // Handle error silently or through error monitoring
+      }
     },
     [fetchRecords]
   );
@@ -125,21 +192,26 @@ export const useParameterSettings = () => {
         pcc_max_value: updateData.pcc_max_value === undefined ? null : updateData.pcc_max_value,
       };
 
-      const { error } = await supabase
-        .from('parameter_settings')
-        .update(cleanedUpdateData)
-        .eq('id', id);
-      if (error) console.error('Error updating parameter setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('parameter_settings').update(id, cleanedUpdateData);
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently or through error monitoring
+      }
     },
     [fetchRecords]
   );
 
   const deleteRecord = useCallback(
     async (recordId: string) => {
-      const { error } = await supabase.from('parameter_settings').delete().eq('id', recordId);
-      if (error) console.error('Error deleting parameter setting:', error);
-      else fetchRecords();
+      try {
+        await pb.collection('parameter_settings').delete(recordId);
+        cacheManager.delete(CACHE_KEY);
+        fetchRecords();
+      } catch {
+        // Handle error silently or through error monitoring
+      }
     },
     [fetchRecords]
   );
@@ -148,47 +220,27 @@ export const useParameterSettings = () => {
     async (newRecords: Omit<ParameterSetting, 'id'>[]) => {
       try {
         // First, get all existing records to delete them properly
-        const { data: existingRecords, error: fetchError } = await supabase
-          .from('parameter_settings')
-          .select('id');
-
-        if (fetchError) {
-          console.error('Error fetching existing parameter settings:', fetchError);
-          return;
-        }
+        const existingRecords = await pb.collection('parameter_settings').getFullList();
 
         // Delete all existing records if any exist
         if (existingRecords && existingRecords.length > 0) {
-          const { error: deleteError } = await supabase
-            .from('parameter_settings')
-            .delete()
-            .in(
-              'id',
-              (existingRecords as unknown as { id: string }[]).map((r) => r.id)
-            );
-
-          if (deleteError) {
-            console.error('Error clearing parameter settings:', deleteError);
-            return;
+          for (const record of existingRecords) {
+            await pb.collection('parameter_settings').delete(record.id);
           }
         }
 
         // Insert new records
         if (newRecords.length > 0) {
-          const { error: insertError } = await supabase
-            .from('parameter_settings')
-            .insert(newRecords);
-
-          if (insertError) {
-            console.error('Error bulk inserting parameter settings:', insertError);
-            return;
+          for (const record of newRecords) {
+            await pb.collection('parameter_settings').create(record);
           }
         }
 
-        // Refresh the data
+        // Clear cache and refresh data
+        cacheManager.delete(CACHE_KEY);
         fetchRecords();
-      } catch (error) {
-        console.error('Error in setAllRecords:', error);
+      } catch {
+        // Handle error silently or through error monitoring
       }
     },
     [fetchRecords]

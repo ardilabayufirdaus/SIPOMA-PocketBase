@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { pb } from './pocketbase';
 
 export interface EmailData {
   to: string;
@@ -21,21 +21,20 @@ export class EmailService {
 
   async sendEmail(emailData: EmailData): Promise<boolean> {
     try {
-      // For now, we'll use Supabase's built-in email service
-      // In production, you might want to use services like SendGrid, Mailgun, etc.
-
-      const { error } = await supabase.functions.invoke('send-email', {
-        body: emailData,
+      // Using PocketBase email service (assuming there's an email_queue collection)
+      // This needs to be configured in PocketBase or use an external email service
+      await pb.collection('email_queue').create({
+        to: emailData.to,
+        subject: emailData.subject,
+        html_body: emailData.html,
+        text_body: emailData.text || '',
+        status: 'queued',
+        created: new Date().toISOString(),
       });
 
-      if (error) {
-        console.error('Failed to send email:', error);
-        return false;
-      }
-
       return true;
-    } catch (error) {
-      console.error('Email service error:', error);
+    } catch {
+      // Error handling silently to prevent app crashes
       return false;
     }
   }

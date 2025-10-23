@@ -65,3 +65,4 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose 
     </motion.div>
   );
 };
+

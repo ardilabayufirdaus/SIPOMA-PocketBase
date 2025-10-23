@@ -21,21 +21,13 @@ describe('buildPermissionMatrix', () => {
           ],
         },
       },
-      {
-        permissions: {
-          module_name: 'user_management',
-          permission_level: 'ADMIN',
-          plant_units: null,
-        },
-      },
     ];
 
     const result: PermissionMatrix = buildPermissionMatrix(userPermissions);
 
     expect(result.dashboard).toBe('READ');
-    expect(result.plant_operations.Packing.Unit1).toBe('WRITE');
-    expect(result.plant_operations.Packing.Unit2).toBe('WRITE');
-    expect(result.user_management).toBe('ADMIN');
+    expect((result.plant_operations as any).Packing.Unit1).toBe('WRITE');
+    expect((result.plant_operations as any).Packing.Unit2).toBe('WRITE');
   });
 
   it('should handle empty permissions array', () => {
@@ -43,6 +35,5 @@ describe('buildPermissionMatrix', () => {
 
     expect(result.dashboard).toBe('NONE');
     expect(result.plant_operations).toEqual({});
-    expect(result.user_management).toBe('NONE');
   });
 });

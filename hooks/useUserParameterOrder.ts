@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../utils/supabaseClient';
+import { pb } from '../utils/pocketbase';
 import { useCurrentUser } from './useCurrentUser';
+import { safeApiCall } from '../utils/connectionCheck';
+import { logger } from '../utils/logger';
 
 interface UserParameterOrder {
   id: string;
@@ -43,27 +45,53 @@ export const useUserParameterOrder = ({
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('user_parameter_orders')
-        .select('parameter_order')
-        .eq('user_id', currentUser.id)
-        .eq('module', module)
-        .eq('parameter_type', parameterType)
-        .eq('category', category || null)
-        .eq('unit', unit || null)
-        .limit(1);
+      // For relation fields, we can use the simpler syntax
+      // PocketBase handles both syntaxes: user_id="id" or user_id.id="id"
+      const filterParts = [
+        `user_id = "${currentUser.id}"`,
+        `module = "${module}"`,
+        `parameter_type = "${parameterType}"`,
+      ];
 
-      if (fetchError) {
-        throw fetchError;
-      }
+      if (category) filterParts.push(`category = "${category}"`);
+      if (unit) filterParts.push(`unit = "${unit}"`);
 
-      if (data && data.length > 0) {
-        setParameterOrder(data[0].parameter_order);
-      } else {
+      const filter = filterParts.join(' && ');
+
+      try {
+        // Use safeApiCall with getList to handle connection issues better
+        const result = await safeApiCall(
+          () => pb.collection('user_parameter_orders').getList(1, 1, { filter }),
+          { retries: 2, retryDelay: 1000 } // Retry up to 2 times with 1s delay
+        );
+
+        if (result && result.items.length > 0) {
+          setParameterOrder(result.items[0].parameter_order);
+        } else {
+          // No records found or API call returned null (offline/connection issue)
+          // This is normal for first-time use or offline mode
+          setParameterOrder([]);
+        }
+      } catch (apiError) {
+        // Handle specific API errors
+        logger.warn('API error loading parameter order:', apiError);
         setParameterOrder([]);
       }
     } catch (err) {
-      console.error('Error loading parameter order:', err);
+      // Handle known error cases gracefully
+      if (err instanceof Error) {
+        if (err.message?.includes('404')) {
+          // 404 is normal when no order exists yet
+          setParameterOrder([]);
+          return;
+        } else if (err.message?.includes('autocancelled')) {
+          // Autocancellation happens on unmount - don't update state
+          return;
+        }
+      }
+
+      // Other unexpected errors
+      logger.error('Error loading parameter order:', err);
       setError(err instanceof Error ? err.message : 'Failed to load parameter order');
       setParameterOrder([]);
     } finally {
@@ -82,28 +110,53 @@ export const useUserParameterOrder = ({
         setLoading(true);
         setError(null);
 
-        const { error: upsertError } = await supabase.from('user_parameter_orders').upsert(
-          {
-            user_id: currentUser.id,
+        // For relation fields, we use the simple syntax
+        const filterParts = [
+          `user_id = "${currentUser.id}"`,
+          `module = "${module}"`,
+          `parameter_type = "${parameterType}"`,
+        ];
+
+        if (category) filterParts.push(`category = "${category}"`);
+        if (unit) filterParts.push(`unit = "${unit}"`);
+
+        const filter = filterParts.join(' && ');
+
+        // Use getList instead of getFirstListItem for consistent behavior
+        const records = await pb
+          .collection('user_parameter_orders')
+          .getList(1, 1, { filter })
+          .catch(() => ({ items: [] }));
+
+        const existing = records.items.length > 0 ? records.items[0] : null;
+
+        if (existing) {
+          await pb.collection('user_parameter_orders').update(existing.id, {
+            parameter_order: newOrder,
+            updated_at: new Date().toISOString(),
+          });
+        } else {
+          // For relation fields, we pass the ID as the value
+          await pb.collection('user_parameter_orders').create({
+            user_id: currentUser.id, // This maps to a relation in PocketBase
             module,
             parameter_type: parameterType,
             category: category || null,
             unit: unit || null,
             parameter_order: newOrder,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'user_id,module,parameter_type,category,unit',
-          }
-        );
-
-        if (upsertError) {
-          throw upsertError;
+          });
         }
 
         setParameterOrder(newOrder);
       } catch (err) {
-        console.error('Error saving parameter order:', err);
+        // Handle autocancellation gracefully
+        if (err instanceof Error && err.message?.includes('autocancelled')) {
+          // Just ignore autocancellation errors
+          setLoading(false);
+          return;
+        }
+
+        logger.error('Error saving parameter order:', err);
         setError(err instanceof Error ? err.message : 'Failed to save parameter order');
       } finally {
         setLoading(false);

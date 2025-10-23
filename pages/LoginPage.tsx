@@ -17,18 +17,21 @@ const LoginPage: React.FC = () => {
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [loginAttempted, setLoginAttempted] = useState(false);
 
-  // Redirect if already logged in
+  // Redirect if already logged in, but only if a login was actually attempted
+  // Ini mencegah redirect otomatis tanpa tindakan user
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && loginAttempted) {
       navigate('/', { replace: true });
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, loginAttempted]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    setLoginAttempted(true); // Tandai bahwa login telah dicoba
 
     if (!identifier.trim()) {
       setError(t.login_username_required);
@@ -67,55 +70,29 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // Modified guest login to use proper authentication
   const handleGuestLogin = async () => {
     setError(null);
     setIsSubmitting(true);
+    setLoginAttempted(true);
 
     try {
-      // Create temporary guest session directly without trying to login first
-      const tempGuestUser = {
-        id: 'guest-' + Date.now(),
-        username: 'guest',
-        full_name: 'Guest User',
-        role: 'Guest' as const,
-        is_active: true,
-        permissions: {
-          dashboard: 'READ',
-          plant_operations: {
-            'Tonasa 2/3': {
-              '220': 'READ',
-              '320': 'READ',
-            },
-            'Tonasa 4': {
-              '419': 'READ',
-              '420': 'READ',
-            },
-            'Tonasa 5': {
-              '552': 'READ',
-              '553': 'READ',
-            },
-            Packing: {
-              Unit1: 'READ',
-              Unit2: 'READ',
-            },
-          },
-          inspection: 'READ',
-          project_management: 'READ',
-          system_settings: 'READ',
-          user_management: 'READ',
-        },
-        last_active: new Date(),
-        created_at: new Date(),
-      };
+      // Gunakan kredensial guest yang valid dari database
+      const guestUsername = import.meta.env.VITE_GUEST_USERNAME || 'guest';
+      const guestPassword = import.meta.env.VITE_GUEST_PASSWORD || 'guest123';
 
-      // Store guest user in secure storage
-      secureStorage.setItem('currentUser', tempGuestUser);
+      // Authenticate through PocketBase - harus lewat validasi normal
+      const loggedInUser = await login(guestUsername, guestPassword);
 
-      // Dispatch auth state change event
-      window.dispatchEvent(new CustomEvent('authStateChanged'));
+      if (loggedInUser) {
+        // Dispatch auth state change event
+        window.dispatchEvent(new CustomEvent('authStateChanged'));
 
-      // Navigate immediately
-      navigate('/', { replace: true });
+        // Navigate immediately
+        navigate('/', { replace: true });
+      } else {
+        setError(t.login_guest_error);
+      }
     } catch (error) {
       console.error('Guest login error:', error);
       setError(t.login_guest_error);
@@ -258,7 +235,6 @@ const LoginPage: React.FC = () => {
             &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
           </div>
         </motion.div>
-        {/* Animasi fadein dipindahkan ke file CSS global agar konsisten di seluruh aplikasi */}
       </div>
 
       {showRegistration && (

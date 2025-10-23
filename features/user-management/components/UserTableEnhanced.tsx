@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../utils/supabaseClient';
+import { pb } from '../../../utils/pocketbase';
 import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';
 import { useRealtimeUsers } from '../../../hooks/useRealtimeUsers';
@@ -48,14 +48,14 @@ interface UserTableProps {
   language?: 'en' | 'id';
 }
 
-type SortField = 'username' | 'full_name' | 'role' | 'is_active' | 'created_at';
+type SortField = 'username' | 'full_name' | 'role' | 'is_active' | 'created';
 type SortDirection = 'asc' | 'desc';
 
 const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language = 'en' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortField, setSortField] = useState<SortField>('created');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -85,11 +85,11 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
     itemsPerPage,
   });
 
-  // Minimal debounce for search input - instant updates with small delay to prevent excessive API calls
+  // Minimal debounce for search input - allow continuous typing without interruption
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 100); // Reduced to 100ms for near-instant response
+    }, 300); // Increased to 300ms to allow smooth typing
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -132,13 +132,12 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
     });
 
     try {
-      const { error } = await supabase.from('users').delete().eq('id', userId);
-
-      if (error) throw error;
+      await pb.collection('users').delete(userId);
       // Real-time subscription will handle the actual update
     } catch (err: unknown) {
-      console.error('Error deleting user:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete user');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete user';
+      console.error('Error deleting user:', errorMessage);
+      setError(errorMessage);
       // Note: The real-time subscription will correct the UI if the delete failed
     }
   };
@@ -151,16 +150,15 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
     });
 
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ is_active: !isActive, updated_at: new Date().toISOString() })
-        .eq('id', userId);
-
-      if (error) throw error;
+      await pb.collection('users').update(userId, {
+        is_active: !isActive,
+        updated_at: new Date().toISOString(),
+      });
       // Real-time subscription will handle the actual update
     } catch (err: unknown) {
-      console.error('Error updating user status:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update user status');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update user status';
+      console.error('Error updating user status:', errorMessage);
+      setError(errorMessage);
       // Note: The real-time subscription will correct the UI if the update failed
     }
   };
@@ -177,19 +175,23 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
     });
 
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ is_active: activate, updated_at: new Date().toISOString() })
-        .in('id', selectedUserIds);
+      // PocketBase doesn't have a direct bulk update, so we need to update each user individually
+      const updatePromises = selectedUserIds.map((userId) =>
+        pb.collection('users').update(userId, {
+          is_active: activate,
+          updated_at: new Date().toISOString(),
+        })
+      );
 
-      if (error) throw error;
+      await Promise.all(updatePromises);
 
       setSelectedUsers(new Set());
       setShowBulkActions(false);
       // Real-time subscription will handle the actual updates
     } catch (err: unknown) {
-      console.error('Error bulk updating users:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update users');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update users';
+      console.error('Error bulk updating users:', errorMessage);
+      setError(errorMessage);
       // Note: The real-time subscription will correct the UI if the update failed
     }
   };
@@ -207,16 +209,35 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
     });
 
     try {
-      const { error } = await supabase.from('users').delete().in('id', selectedUserIds);
+      // Delete user permissions first, then users (to avoid foreign key constraints)
+      for (const userId of selectedUserIds) {
+        // Delete user permissions
+        const userPermissions = await pb.collection('user_permissions').getList(1, 50, {
+          filter: `user_id = "${userId}"`,
+          fields: 'id',
+        });
 
-      if (error) throw error;
+        // Delete permissions individually
+        const permissionDeletePromises = userPermissions.items.map(
+          (perm) =>
+            pb
+              .collection('user_permissions')
+              .delete(perm.id)
+              .catch(() => null) // Ignore errors
+        );
+        await Promise.all(permissionDeletePromises);
+
+        // Now delete the user
+        await pb.collection('users').delete(userId);
+      }
 
       setSelectedUsers(new Set());
       setShowBulkActions(false);
       // Real-time subscription will handle the actual updates
     } catch (err: unknown) {
-      console.error('Error bulk deleting users:', err);
-      setError(err instanceof Error ? err.message : 'Failed to delete users');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete users';
+      console.error('Error bulk deleting users:', errorMessage);
+      setError(`Bulk delete failed: ${errorMessage}. Some users may have been partially deleted.`);
       // Note: The real-time subscription will correct the UI if the delete failed
     }
   };
@@ -332,13 +353,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             <option value="all">All Roles</option>
             <option value="Super Admin">Super Admin</option>
             <option value="Admin">Admin</option>
-            <option value="Admin Tonasa 2/3">Admin Tonasa 2/3</option>
-            <option value="Admin Tonasa 4">Admin Tonasa 4</option>
-            <option value="Admin Tonasa 5">Admin Tonasa 5</option>
+            <option value="Manager">Manager</option>
             <option value="Operator">Operator</option>
-            <option value="Operator Tonasa 2/3">Operator Tonasa 2/3</option>
-            <option value="Operator Tonasa 4">Operator Tonasa 4</option>
-            <option value="Operator Tonasa 5">Operator Tonasa 5</option>
+            <option value="Outsourcing">Outsourcing</option>
+            <option value="Autonomous">Autonomous</option>
             <option value="Guest">Guest</option>
           </select>
 
