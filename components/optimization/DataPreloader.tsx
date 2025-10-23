@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { pb } from '../../utils/pocketbase';
 import { dataCache } from '../../utils/optimization/dataCache';
 import { connectionPool } from '../../utils/optimization/connectionPool';
 import { logger } from '../../utils/logger';
+
+// Lazy load the MixedContentDetector for better performance
+const MixedContentDetector = lazy(() => import('../MixedContentDetector'));
 
 // Daftar koleksi dan data yang sering diakses untuk di-prefetch
 const PREFETCH_COLLECTIONS = [
@@ -110,8 +113,17 @@ const DataPreloader: React.FC<DataPreloaderProps> = ({ children }) => {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Render children seperti biasa
-  return <>{children}</>;
+  // Render children dengan MixedContentDetector
+  return (
+    <>
+      {typeof window !== 'undefined' && window.location.protocol === 'https:' && (
+        <Suspense fallback={null}>
+          <MixedContentDetector />
+        </Suspense>
+      )}
+      {children}
+    </>
+  );
 };
 
 export default DataPreloader;

@@ -9,6 +9,23 @@ export const translations = {
       serverUnavailable: 'Server is currently unavailable',
       multipleErrors: '{count} connection errors have occurred',
       retryingConnection: 'Retrying connection...',
+
+      // Mixed content errors
+      mixedContentTitle: 'Mixed Content Issues Detected',
+      mixedContentDescription:
+        'Your browser is blocking connections to the SIPOMA backend server because it uses HTTP (insecure) while the website is loaded over HTTPS (secure).',
+      whyThisHappens: 'Why is this happening?',
+      mixedContentExplanation:
+        'Modern browsers block "mixed content" (HTTP resources on HTTPS pages) by default for security. The SIPOMA backend server uses HTTP, but your browser is accessing this site through HTTPS.',
+      howToFix: 'How to fix this:',
+      option1: 'Option 1: Allow insecure content for this site',
+      option2: 'Option 2: Access the site directly via HTTP',
+      useHttpInstead: 'Try accessing the application using HTTP directly:',
+      openWithHttp: 'Open with HTTP',
+      learnMoreButton: 'Learn how to allow mixed content',
+      noteForAdmins: 'Note for Administrators',
+      adminSolution:
+        'To permanently fix this issue, consider configuring SSL/TLS on your PocketBase server or setting up a reverse proxy with SSL termination.',
     },
 
     common: {

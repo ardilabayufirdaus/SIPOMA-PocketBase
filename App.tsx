@@ -17,6 +17,7 @@ import { useIsMobile } from './hooks/useIsMobile';
 import { User } from './types';
 import { usePlantUnits } from './hooks/usePlantUnits';
 import { useTranslation } from './hooks/useTranslation';
+import ConnectionStatusIndicator from './components/ConnectionStatusIndicator';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -500,6 +501,9 @@ const App: React.FC = () => {
             </div>
           </Modal>
         </div>
+
+        {/* Connection status indicator in the bottom-right corner */}
+        <ConnectionStatusIndicator />
       </SimpleErrorBoundary>
     </ThemeProvider>
   );

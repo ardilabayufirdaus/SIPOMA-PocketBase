@@ -8,6 +8,7 @@ import { connectionPool } from './utils/optimization/connectionPool';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import MixedContentDetector from './components/MixedContentDetector';
 
 // Konfigurasi React Query dengan optimasi untuk koneksi lambat
 const queryClient = new QueryClient({
@@ -74,6 +75,7 @@ const AppWrapper: React.FC = () => {
         <BrowserRouter>
           <DataPreloader>
             <App />
+            {/* MixedContentDetector is included in DataPreloader */}
           </DataPreloader>
         </BrowserRouter>
         <ToastContainer
