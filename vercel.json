@@ -1,9 +1,31 @@
 {
   "rewrites": [
     {
+      "source": "/api/pb-proxy/(.*)",
+      "destination": "/api/pb-proxy"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
-  "buildCommand": "npm install @mui/material @emotion/react @emotion/styled && npm run build"
+  "headers": [
+    {
+      "source": "/api/pb-proxy/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "buildCommand": "npm install @mui/material @emotion/react @emotion/styled && npm run build",
+  "env": {
+    "VITE_POCKETBASE_URL": "http://141.11.25.69:8090"
+  }
 }

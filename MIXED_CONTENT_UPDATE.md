@@ -1,48 +1,69 @@
-# Mixed Content Solution Update
+# Mixed Content Solution Update - API Proxy Implementation
 
-This document summarizes the updates made to address mixed content issues when accessing SIPOMA over HTTPS (especially on Vercel deployments).
+This document summarizes the updates made to address mixed content issues when accessing SIPOMA over HTTPS, particularly on Vercel deployments.
 
-## Key Changes Made
+## Implemented API Proxy Solution
 
-1. **Enhanced MixedContentDetector**
-   - Now auto-detects Vercel deployments
-   - Shows help automatically when on HTTPS Vercel sites
-   - More robust event handling for showing help
+We've now implemented a complete API proxy solution that automatically handles mixed content issues on Vercel deployments:
 
-2. **Improved ConnectionHelp Component**
-   - Added Vercel-specific guidance
-   - Added visual indicators for Vercel deployments
-   - Updated HTTP option to show special message on Vercel
+1. **Serverless API Proxy**
+   - Created `api/pb-proxy.js` serverless function
+   - Transparently proxies all requests from HTTPS to HTTP backend
+   - Handles all HTTP methods, query parameters, and binary responses
 
-3. **Better useMixedContentDetection Hook**
-   - Auto-detects mixed content issues on Vercel
-   - More accurate detection of HTTPS environments
-   - Exposes helpful flags for conditional rendering
+2. **Automatic Environment Detection**
+   - Updated `utils/pocketbase.ts` to auto-detect Vercel deployments
+   - Uses `/api/pb-proxy` path on Vercel
+   - Falls back to direct HTTP connection on non-Vercel environments
 
-4. **More Visible Connection Status Indicator**
-   - Shows prominently at the top of the screen on Vercel
-   - Clearer messaging about mixed content blocking
-   - Easy access to help via "Show Solution" button
+3. **Vercel Configuration**
+   - Configured `vercel.json` to handle API routes
+   - Set up proper routing for API proxy requests
 
-5. **Comprehensive Documentation**
-   - Updated MIXED_CONTENT_SOLUTION.md with Vercel-specific guidance
-   - Added example implementation of a Vercel API proxy
-   - Better description of the problem and solutions
+4. **Comprehensive Error Handling**
+   - Added robust error handling in the proxy
+   - Safely forwards headers and response data
+   - Handles binary data and file downloads
 
-## To Deploy and Test
+5. **Updated Documentation**
+   - Updated MIXED_CONTENT_SOLUTION.md with API proxy implementation details
+   - Added code samples and explanations
 
-1. Push these changes to your repository
-2. Deploy to Vercel
-3. The mixed content detection should trigger automatically
-4. Users will see clear guidance on how to allow mixed content
+## Benefits of This Solution
 
-## Long-term Solution
+1. **No User Action Required**
+   - Users don't need to change any browser settings
+   - No mixed content warnings displayed
+   - Seamless experience regardless of environment
 
-The most recommended permanent solution is to:
+2. **Automatic Switching**
+   - Local development still uses direct connections
+   - Vercel deployments automatically use the API proxy
+   - No code changes required when deploying
 
-1. Add SSL/TLS to your PocketBase server (141.11.25.69:8090)
-2. Update application to connect via HTTPS
+3. **Security Maintained**
+   - All client-side traffic remains on HTTPS
+   - API proxy provides controlled access to the HTTP backend
+   - Properly handles authentication headers and tokens
 
-This would eliminate the mixed content issue completely and provide the best security for your users.
+## How to Test
 
-Alternatively, implement the Vercel API proxy as described in MIXED_CONTENT_SOLUTION.md to work around the issue.
+1. Deploy to Vercel
+2. Access the application via HTTPS (https://your-app.vercel.app)
+3. Verify that all API requests work without mixed content errors
+4. Test login, data loading, and file uploads/downloads
+
+## Future Improvements
+
+While this solution solves the immediate problem, consider these long-term improvements:
+
+1. **Add SSL/TLS to PocketBase Server**
+   - Setting up HTTPS on your PocketBase server would be the most secure solution
+   - Would eliminate the need for the proxy entirely
+
+2. **Performance Monitoring**
+   - Monitor the performance of the API proxy
+   - Be aware of Vercel's serverless function limits for high-traffic applications
+
+3. **Caching Strategies**
+   - Consider adding caching to reduce load on the proxy for frequently accessed data

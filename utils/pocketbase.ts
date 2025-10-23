@@ -6,16 +6,40 @@ type Protocol = 'https' | 'http';
 let currentProtocol: Protocol = 'http'; // Default ke HTTP untuk lingkungan produksi
 let protocolRetries = 0;
 
-// Deteksi apakah aplikasi berjalan di Vercel atau lingkungan produksi lain
-const isVercelProd =
-  typeof window !== 'undefined' && window.location?.hostname?.includes('sipoma.site');
-const isProduction = import.meta.env.PROD || isVercelProd;
+/**
+ * Deteksi apakah aplikasi berjalan di lingkungan Vercel
+ *
+ * Criteria:
+ * 1. Vercel environment variable is set
+ * 2. Hostname includes 'vercel.app'
+ * 3. Hostname includes 'sipoma.site' (our custom domain on Vercel)
+ */
+export const isVercelDeployment = (): boolean => {
+  // Server-side detection
+  if (typeof process !== 'undefined' && process.env && process.env.VERCEL === '1') {
+    return true;
+  }
+
+  // Client-side detection
+  if (typeof window !== 'undefined' && window.location) {
+    const { hostname } = window.location;
+    return hostname.includes('vercel.app') || hostname.includes('sipoma.site');
+  }
+
+  return false;
+};
+
+const vercelDeployment = isVercelDeployment();
+const isProduction = import.meta.env.PROD || vercelDeployment;
 const forceHttp = import.meta.env.VITE_FORCE_HTTP === 'true';
 
-// Pastikan gunakan HTTP untuk Vercel dan production
-if (isVercelProd || isProduction) {
+// Log environment detection
+if (isProduction && !vercelDeployment) {
   currentProtocol = 'http';
-  logger.info('Deteksi lingkungan production/Vercel: menggunakan HTTP');
+  logger.info('Deteksi lingkungan production: menggunakan HTTP');
+} else if (vercelDeployment) {
+  // On Vercel, we'll use our API proxy to avoid mixed content
+  logger.info('Deteksi lingkungan Vercel: menggunakan API proxy');
 }
 
 // Gunakan environment variable untuk URL PocketBase
@@ -25,30 +49,44 @@ const pocketbaseEmail = import.meta.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus
 const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
 const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultnya true
 
-// Fungsi untuk mendapatkan URL PocketBase dengan protokol yang sesuai
+/**
+ * Fungsi untuk mendapatkan URL PocketBase dengan protokol yang sesuai
+ *
+ * Priority order:
+ * 1. API Proxy on Vercel deployments
+ * 2. Force HTTP on production
+ * 3. Environment variable
+ * 4. Detected working protocol
+ */
 export const getPocketbaseUrl = (): string => {
-  // Prioritas 1: Force HTTP di production (untuk mengatasi masalah mixed content)
+  // Priority 1: Use API proxy on Vercel deployments to bypass mixed content
+  if (vercelDeployment) {
+    // Use relative URL to proxy API requests through Vercel serverless function
+    return '/api/pb-proxy';
+  }
+
+  // Priority 2: Force HTTP on production (to avoid mixed content issues)
   if ((isProduction || forceHttp) && !pocketbaseUrlEnv) {
     return `http://${pocketbaseHost}`;
   }
 
-  // Prioritas 2: Gunakan URL dari env jika ada
+  // Priority 3: Use environment variable if available
   if (pocketbaseUrlEnv) {
-    // Di Vercel production, paksa gunakan HTTP meskipun env menggunakan HTTPS
-    if (isVercelProd && pocketbaseUrlEnv.startsWith('https')) {
+    // In production environment, force HTTP even if env uses HTTPS
+    if (isProduction && pocketbaseUrlEnv.startsWith('https')) {
       return pocketbaseUrlEnv.replace('https://', 'http://');
     }
     return pocketbaseUrlEnv;
   }
 
-  // Prioritas 3: Gunakan protokol yang terdeteksi berfungsi
+  // Priority 4: Use detected working protocol
   return `${currentProtocol}://${pocketbaseHost}`;
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi
 export const detectWorkingProtocol = async (): Promise<Protocol> => {
   // Jika di Vercel atau production dengan force HTTP, langsung gunakan HTTP
-  if (isVercelProd || forceHttp) {
+  if (isVercelDeployment || forceHttp) {
     logger.info('Mode production/Vercel terdeteksi, menggunakan HTTP secara default');
     return 'http';
   }
@@ -247,7 +285,7 @@ const initializePocketBase = async (): Promise<PocketBase> => {
 export const pb = (() => {
   if (!pbInstance) {
     // Di Vercel/production, paksa gunakan HTTP untuk mengatasi masalah mixed content
-    if (isVercelProd || forceHttp) {
+    if (isVercelDeployment || forceHttp) {
       logger.info('Mode production/Vercel terdeteksi, koneksi PocketBase dipaksa menggunakan HTTP');
       currentProtocol = 'http';
     }
@@ -262,7 +300,7 @@ export const pb = (() => {
     (async () => {
       try {
         // Untuk Vercel, langsung aktifkan mode HTTP tanpa perlu deteksi
-        if (isVercelProd || forceHttp) {
+        if (isVercelDeployment || forceHttp) {
           logger.info('Vercel/Production mode: Menggunakan HTTP untuk semua koneksi PocketBase');
           currentProtocol = 'http';
 
@@ -325,7 +363,7 @@ export const pb = (() => {
 
             // Jika di Vercel atau forced HTTP, selalu ganti HTTPS ke HTTP
             if (
-              (isSSLError || isVercelProd || forceHttp) &&
+              (isSSLError || isVercelDeployment || forceHttp) &&
               (currentProtocol === 'https' ||
                 (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')))
             ) {
@@ -367,7 +405,7 @@ export const pb = (() => {
                 logger.error('Request dengan HTTP juga gagal:', httpError);
 
                 // Jika di Vercel dan tetap gagal, coba lagi dengan URL yang dikonfigurasi manual
-                if (isVercelProd || forceHttp) {
+                if (isVercelDeployment || forceHttp) {
                   try {
                     // Pastikan baseUrl juga menggunakan HTTP
                     if (pbInstance?.baseUrl?.startsWith('https://')) {
@@ -557,7 +595,7 @@ export const pb = (() => {
       }
 
       // Force HTTP protocol for all Vercel production requests
-      if (isVercelProd || forceHttp) {
+      if (isVercelDeployment || forceHttp) {
         if (typeof url === 'string' && url.startsWith('https://')) {
           url = url.replace('https://', 'http://');
           logger.debug(`Vercel prod: URL dikonversi ke HTTP: ${url}`);
@@ -573,7 +611,7 @@ export const pb = (() => {
           // Ganti URL HTTPS ke HTTP untuk semua request di Vercel atau jika force HTTP diaktifkan
           if (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')) {
             // Untuk Vercel production atau jika force HTTP diaktifkan, selalu gunakan HTTP
-            if (isVercelProd || forceHttp) {
+            if (isVercelDeployment || forceHttp) {
               args[0] = args[0].replace('https://', 'http://');
               logger.debug(`Vercel prod: URL dikonversi ke HTTP: ${args[0]}`);
             }
@@ -650,7 +688,7 @@ export const pb = (() => {
             error.message?.includes('certificate') ||
             error.message?.includes('Failed to fetch');
 
-          if (isSSLError || isVercelProd || forceHttp) {
+          if (isSSLError || isVercelDeployment || forceHttp) {
             logger.warn(`Koneksi error terdeteksi: ${error.message}`);
 
             // Jika URL menggunakan HTTPS, coba dengan HTTP
