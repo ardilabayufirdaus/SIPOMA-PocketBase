@@ -1,0 +1,38 @@
+# Caddy Configuration for PocketBase HTTPS
+# Save this as /etc/caddy/Caddyfile
+
+141.11.25.69 {
+    # Enable automatic HTTPS
+    tls {
+        protocols tls1.2 tls1.3
+    }
+
+    # Security headers
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "no-referrer-when-downgrade"
+        Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'"
+    }
+
+    # Gzip compression
+    encode gzip
+
+    # Proxy to PocketBase
+    reverse_proxy 127.0.0.1:8090 {
+        # WebSocket support
+        header_up Upgrade {http_upgrade}
+        header_up Connection {http_connection}
+    }
+
+    # Cache static files
+    @static {
+        file {
+            try_files {path} {path}/
+        }
+        path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg
+    }
+    header @static Cache-Control "public, max-age=31536000"
+}</content>
+<parameter name="filePath">d:\Repository Github\sipoma-ver-2\sipoma-versi-2\Caddyfile
