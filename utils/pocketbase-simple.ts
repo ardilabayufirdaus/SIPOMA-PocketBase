@@ -42,11 +42,15 @@ export const isSecureContext = (): boolean => {
 
 /**
  * Fungsi untuk mendapatkan URL PocketBase
- * Selalu menggunakan proxy untuk menghindari CORS issues
+ * Di development menggunakan proxy, di production menggunakan HTTPS langsung
  */
 export const getPocketbaseUrl = (): string => {
-  // Always use proxy to avoid CORS issues in both development and production
-  return '/api/pb-proxy/';
+  // In development, use the proxy to avoid CORS issues
+  if (import.meta.env.DEV) {
+    return '/api/pb-proxy/';
+  }
+  // In production, use direct HTTPS
+  return 'https://api.sipoma.site/';
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (selalu return https)

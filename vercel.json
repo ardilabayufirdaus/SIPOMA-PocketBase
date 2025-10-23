@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/pb-proxy/(.*)",
-      "destination": "https://api.sipoma.site/api/$1"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

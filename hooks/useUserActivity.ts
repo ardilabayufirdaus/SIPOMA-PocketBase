@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useUserActivityStore } from '../stores/userActivityStore';
 import { sanitizeForJSON } from '../utils/sanitizeJSON';
+import { getPocketbaseUrl } from '../utils/pocketbase-simple';
 
 interface ActivityTrackingOptions {
   trackPageViews?: boolean;
@@ -135,19 +136,16 @@ export const useUserActivity = (userId?: string, options: ActivityTrackingOption
         if (error.message.includes('autocancelled')) {
           // For autocancellation errors, try a direct fetch as fallback
           try {
-            await fetch(
-              `${import.meta.env.VITE_POCKETBASE_URL}/api/collections/user_sessions/records/${sessionId}`,
-              {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  session_end: new Date().toISOString(),
-                  is_active: false,
-                }),
-              }
-            );
+            await fetch(`${getPocketbaseUrl()}api/collections/user_sessions/records/${sessionId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                session_end: new Date().toISOString(),
+                is_active: false,
+              }),
+            });
             // Success, clear the session ID
             sessionIdRef.current = null;
           } catch {
@@ -182,18 +180,15 @@ export const useUserActivity = (userId?: string, options: ActivityTrackingOption
       if (error instanceof Error && error.message.includes('autocancelled')) {
         // For autocancellation errors, try a direct fetch as fallback
         try {
-          await fetch(
-            `${import.meta.env.VITE_POCKETBASE_URL}/api/collections/user_sessions/records/${sessionId}`,
-            {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                last_activity: new Date().toISOString(),
-              }),
-            }
-          );
+          await fetch(`${getPocketbaseUrl()}api/collections/user_sessions/records/${sessionId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              last_activity: new Date().toISOString(),
+            }),
+          });
           // Success, update the last activity ref
           lastActivityRef.current = new Date();
         } catch {
@@ -433,21 +428,18 @@ export const useUserActivity = (userId?: string, options: ActivityTrackingOption
       // Synchronous operation on page unload - can't await this
       if (currentSessionId) {
         try {
-          fetch(
-            `${import.meta.env.VITE_POCKETBASE_URL}/api/collections/user_sessions/records/${currentSessionId}`,
-            {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                session_end: new Date().toISOString(),
-                is_active: false,
-              }),
-              // Use keepalive to ensure request completes during page unload
-              keepalive: true,
-            }
-          ).catch(() => {});
+          fetch(`${getPocketbaseUrl()}api/collections/user_sessions/records/${currentSessionId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              session_end: new Date().toISOString(),
+              is_active: false,
+            }),
+            // Use keepalive to ensure request completes during page unload
+            keepalive: true,
+          }).catch(() => {});
         } catch {
           // Silent catch during page unload
         }
@@ -469,7 +461,7 @@ export const useUserActivity = (userId?: string, options: ActivityTrackingOption
           try {
             // Use fetch directly instead of endSession to avoid autocancellation
             await fetch(
-              `${import.meta.env.VITE_POCKETBASE_URL}/api/collections/user_sessions/records/${currentSessionId}`,
+              `${getPocketbaseUrl()}api/collections/user_sessions/records/${currentSessionId}`,
               {
                 method: 'PATCH',
                 headers: {
@@ -499,4 +491,3 @@ export const useUserActivity = (userId?: string, options: ActivityTrackingOption
     endSession,
   };
 };
-
