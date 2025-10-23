@@ -101,17 +101,15 @@ export const getPocketbaseUrl = (): string => {
     return `http://${pocketbaseHost}`;
   }
 
-  // Force proxy usage if specified in environment
-  if (forceProxy) {
-    logger.debug('Force proxy enabled: using API proxy for all connections');
+  // Force proxy usage if specified in environment or for sipoma.site domain
+  if (forceProxy || (isBrowser && window.location.hostname === 'www.sipoma.site')) {
+    logger.debug('Force proxy enabled for sipoma.site domain or VITE_FORCE_PROXY=true');
     return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
   }
 
-  // Priority 1: Use API proxy on Vercel deployments or HTTPS contexts
-  // This handles the mixed content issue by routing through our API proxy
-  if (vercelDeployment || (isBrowser && isSecureContext())) {
-    logger.debug('Using API proxy because we detected Vercel deployment or secure context');
-    // If we're on the client, use the full origin + path, otherwise use relative path
+  // Force proxy usage for production (Vercel deployments)
+  if (isProduction || vercelDeployment) {
+    logger.debug('Production/Vercel deployment detected: using API proxy');
     return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
   }
 
