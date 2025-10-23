@@ -14,7 +14,7 @@ declare global {
   interface Window {
     PB_CONNECTION_MONITOR?: {
       check: () => Promise<boolean>;
-      getMetrics: () => any;
+      getMetrics: () => Record<string, unknown>;
       reset: () => void;
     };
   }
@@ -41,25 +41,74 @@ export const checkConnection = async (timeout = 5000): Promise<boolean> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const result = await pb.health.check({ signal: controller.signal });
-    clearTimeout(timeoutId);
+    try {
+      await pb.health.check({ signal: controller.signal });
+      clearTimeout(timeoutId);
 
-    // Update metrics
-    connectionMetrics.successes++;
-    connectionMetrics.lastSuccessfulConnect = Date.now();
-    const responseTime = performance.now() - startTime;
-    connectionMetrics.serverResponseTimes.push(responseTime);
+      // Update metrics
+      connectionMetrics.successes++;
+      connectionMetrics.lastSuccessfulConnect = Date.now();
+      const responseTimeMs = performance.now() - startTime;
+      connectionMetrics.serverResponseTimes.push(responseTimeMs);
 
-    // Hanya simpan 10 responseTime terakhir
-    if (connectionMetrics.serverResponseTimes.length > 10) {
-      connectionMetrics.serverResponseTimes.shift();
+      // Hanya simpan 10 responseTime terakhir
+      if (connectionMetrics.serverResponseTimes.length > 10) {
+        connectionMetrics.serverResponseTimes.shift();
+      }
+
+      logger.debug('PocketBase connection check successful', {
+        responseTime: `${responseTimeMs.toFixed(2)}ms`,
+      });
+      return true;
+    } catch (healthError: any) {
+      clearTimeout(timeoutId);
+
+      // Deteksi SSL protocol error dan coba dengan protokol alternatif
+      const isSSLError =
+        healthError.message?.includes('SSL') ||
+        healthError.message?.includes('ERR_SSL_PROTOCOL_ERROR') ||
+        healthError.message?.includes('certificate');
+
+      if (isSSLError) {
+        logger.warn(
+          'SSL Protocol error terdeteksi dalam health check, mencoba protocol alternatif...'
+        );
+
+        // Trigger protocol change event
+        window.dispatchEvent(
+          new CustomEvent('pocketbase:protocol:changed', {
+            detail: { protocol: 'http' },
+          })
+        );
+
+        // Tunggu reinisialisasi
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        try {
+          // Coba lagi dengan protokol baru
+          await pb.health.check({
+            signal: AbortSignal.timeout(timeout),
+          });
+
+          // Update metrics jika berhasil
+          connectionMetrics.successes++;
+          connectionMetrics.lastSuccessfulConnect = Date.now();
+          const finalResponseTime = performance.now() - startTime;
+          connectionMetrics.serverResponseTimes.push(finalResponseTime);
+
+          logger.info('Koneksi berhasil setelah switch protokol');
+          return true;
+        } catch (retryError) {
+          logger.error('Koneksi tetap gagal setelah switch protokol:', retryError);
+          connectionMetrics.failures++;
+          return false;
+        }
+      } else {
+        connectionMetrics.failures++;
+        throw healthError;
+      }
     }
-
-    logger.debug('PocketBase connection check successful', {
-      responseTime: `${responseTime.toFixed(2)}ms`,
-    });
-    return true;
-  } catch (error) {
+  } catch (error: any) {
     connectionMetrics.failures++;
 
     // Kategorikan jenis kegagalan

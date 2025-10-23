@@ -1,11 +1,85 @@
 import PocketBase from 'pocketbase';
 import { logger } from './logger';
 
+// Variabel untuk menyimpan protokol yang berfungsi
+type Protocol = 'https' | 'http';
+let currentProtocol: Protocol = 'https'; // Default protokol
+let protocolRetries = 0;
+
 // Gunakan environment variable untuk URL PocketBase
-const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090';
+const pocketbaseUrlEnv = import.meta.env.VITE_POCKETBASE_URL;
+const pocketbaseHost = '141.11.25.69:8090'; // Host default
 const pocketbaseEmail = import.meta.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
 const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
 const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultnya true
+
+// Fungsi untuk mendapatkan URL PocketBase dengan protokol yang sesuai
+export const getPocketbaseUrl = (): string => {
+  if (pocketbaseUrlEnv) return pocketbaseUrlEnv; // Gunakan URL dari env jika ada
+  return `${currentProtocol}://${pocketbaseHost}`;
+};
+
+// Fungsi untuk mendeteksi protokol yang berfungsi
+export const detectWorkingProtocol = async (): Promise<Protocol> => {
+  // Jika protokol sudah ditentukan oleh environment, gunakan itu
+  if (pocketbaseUrlEnv) {
+    return pocketbaseUrlEnv.startsWith('https') ? 'https' : 'http';
+  }
+
+  // Pertama coba HTTPS
+  try {
+    logger.info('Mencoba koneksi HTTPS ke PocketBase...');
+    await fetch(`https://${pocketbaseHost}/api/health`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000), // Timeout lebih singkat untuk HTTPS
+    });
+    logger.info('Koneksi HTTPS berhasil');
+    return 'https';
+  } catch (error) {
+    if (
+      error.message?.includes('SSL') ||
+      error.message?.includes('certificate') ||
+      error.message?.includes('ERR_SSL_PROTOCOL_ERROR')
+    ) {
+      logger.warn('Koneksi HTTPS gagal karena masalah SSL:', error.message);
+    } else {
+      logger.warn('Koneksi HTTPS gagal:', error.message);
+    }
+
+    // Coba dengan HTTP sebagai fallback
+    try {
+      logger.info('Mencoba koneksi HTTP ke PocketBase...');
+      await fetch(`http://${pocketbaseHost}/api/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(3000),
+      });
+      logger.info('Koneksi HTTP berhasil');
+      return 'http';
+    } catch (secondError) {
+      logger.error('Koneksi HTTP juga gagal:', secondError.message);
+      // Default kembali ke HTTPS meskipun keduanya gagal
+      return 'https';
+    }
+  }
+};
+
+// Fungsi untuk mengatur kembali koneksi jika protokol perlu diganti
+export const resetConnection = async (): Promise<void> => {
+  // Hapus instance PocketBase yang ada
+  if (pbInstance) {
+    pbInstance.authStore.clear();
+    pbInstance = null;
+  }
+
+  // Deteksi protokol yang berfungsi
+  currentProtocol = await detectWorkingProtocol();
+  logger.info(`Menggunakan protokol ${currentProtocol.toUpperCase()} untuk koneksi PocketBase`);
+
+  // Reset counter
+  protocolRetries = 0;
+};
 
 // Singleton pattern untuk mencegah multiple client instances
 let pbInstance: PocketBase | null = null;
@@ -101,13 +175,62 @@ class RequestThrottler {
 
 const requestThrottler = new RequestThrottler();
 
-export const pb = (() => {
-  if (!pbInstance) {
-    // Inisialisasi PocketBase dengan konfigurasi default
-    pbInstance = new PocketBase(pocketbaseUrl);
+// Inisialisasi PocketBase dengan deteksi protokol otomatis
+const initializePocketBase = async (): Promise<PocketBase> => {
+  try {
+    // Deteksi protokol yang berfungsi jika belum pernah dicoba
+    if (protocolRetries === 0) {
+      currentProtocol = await detectWorkingProtocol();
+      logger.info(`Inisialisasi PocketBase dengan protokol ${currentProtocol.toUpperCase()}`);
+    }
+
+    // Buat instance baru
+    const instance = new PocketBase(getPocketbaseUrl());
 
     // Mengatur global fetch timeout dengan lebih panjang
+    instance.autoCancellation(false); // Matikan auto cancellation built-in
+
+    return instance;
+  } catch (error) {
+    logger.error('Gagal inisialisasi PocketBase:', error);
+    // Fallback ke protokol HTTP jika terjadi kegagalan dan protokol saat ini adalah HTTPS
+    if (currentProtocol === 'https' && protocolRetries < 2) {
+      protocolRetries++;
+      currentProtocol = 'http';
+      logger.info(`Mencoba ulang dengan protokol HTTP (percobaan ke-${protocolRetries})`);
+      return initializePocketBase();
+    }
+
+    // Jika semua gagal, kembalikan instance dengan protokol default
+    const defaultInstance = new PocketBase(getPocketbaseUrl());
+    defaultInstance.autoCancellation(false);
+    return defaultInstance;
+  }
+};
+
+export const pb = (() => {
+  if (!pbInstance) {
+    // Inisialisasi PocketBase dengan deteksi protokol
+    // Karena kita tidak bisa menggunakan async di IIFE, kita inisialisasi dengan sync
+    // dan nanti akan melakukan "reinit" jika terjadi error SSL
+    pbInstance = new PocketBase(getPocketbaseUrl());
     pbInstance.autoCancellation(false); // Matikan auto cancellation built-in
+
+    // Lakukan deteksi protokol secara asinkron dan reinit jika perlu
+    (async () => {
+      try {
+        const detectedProtocol = await detectWorkingProtocol();
+        if (detectedProtocol !== currentProtocol) {
+          currentProtocol = detectedProtocol;
+          logger.info(
+            `Mengganti protokol ke ${currentProtocol.toUpperCase()} dan melakukan reinit PocketBase`
+          );
+          pbInstance = await initializePocketBase();
+        }
+      } catch (error) {
+        logger.error('Gagal mendeteksi protokol yang optimal:', error);
+      }
+    })();
 
     // Override fetch method untuk throttling request
     const originalFetch = pbInstance.send;
@@ -136,6 +259,41 @@ export const pb = (() => {
           try {
             return await originalFetch.apply(this, args);
           } catch (error) {
+            // Detect SSL protocol errors dan coba switch protokol
+            const isSSLError =
+              error.message?.includes('SSL') ||
+              error.message?.includes('ERR_SSL_PROTOCOL_ERROR') ||
+              error.message?.includes('certificate');
+
+            if (isSSLError && currentProtocol === 'https') {
+              logger.warn('SSL Protocol error terdeteksi, mencoba switch ke HTTP');
+
+              // Switch ke HTTP dan reinit PocketBase
+              currentProtocol = 'http';
+
+              // Perbarui URL dan coba ulang
+              const newUrl = getPocketbaseUrl();
+              if (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')) {
+                args[0] = args[0].replace('https://', 'http://');
+              }
+
+              logger.info(`Mencoba ulang request dengan protokol HTTP: ${newUrl}`);
+
+              // Retry sekali dengan protokol baru
+              try {
+                return await originalFetch.apply(this, args);
+              } catch (httpError) {
+                logger.error('Request dengan HTTP juga gagal:', httpError);
+
+                // Jika gagal juga, reinisialisasi dengan protokol yang baru terdeteksi
+                logger.info('Melakukan reinisialisasi PocketBase dengan protokol yang baru...');
+                await resetConnection();
+
+                // Throw error untuk dihandle di retry berikutnya
+                throw httpError;
+              }
+            }
+
             // Detect specific network error types to handle them differently
             const isNetworkError =
               error instanceof TypeError ||
@@ -254,6 +412,20 @@ export const pb = (() => {
       }
     });
 
+    // Mendengarkan perubahan protokol untuk reinisialisasi PocketBase
+    window.addEventListener('pocketbase:protocol:changed', async (event) => {
+      const protocol = (event as CustomEvent).detail?.protocol;
+      if (protocol) {
+        logger.info(`Mendeteksi perubahan protokol ke ${protocol}, melakukan reinisialisasi...`);
+
+        // Tunggu sebentar untuk memastikan semua request selesai
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Reinisialisasi PocketBase dengan protokol baru
+        await resetConnection();
+      }
+    });
+
     // Add event listener for client-side auth state changes to sync between tabs
     window.addEventListener('storage', (event) => {
       if (event.key === 'pocketbase_auth') {
@@ -287,6 +459,17 @@ export const pb = (() => {
       // Replace fetch temporarily to intercept response
       window.fetch = async (...args) => {
         try {
+          // Ganti URL HTTPS ke HTTP jika terjadi switch protokol
+          if (
+            args[0] &&
+            typeof args[0] === 'string' &&
+            currentProtocol === 'http' &&
+            args[0].startsWith('https://')
+          ) {
+            args[0] = args[0].replace('https://', 'http://');
+            logger.debug(`URL dikonversi ke HTTP: ${args[0]}`);
+          }
+
           const response = await originalFetch(...args);
 
           // Clone the response to read it
@@ -346,6 +529,43 @@ export const pb = (() => {
             }
           }
 
+          // Handle SSL protocol errors
+          if (
+            error.message?.includes('SSL') ||
+            error.message?.includes('ERR_SSL_PROTOCOL_ERROR') ||
+            error.message?.includes('certificate')
+          ) {
+            logger.warn(`SSL Protocol error terdeteksi: ${error.message}`);
+
+            // Jika URL menggunakan HTTPS, coba dengan HTTP
+            if (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')) {
+              const httpUrl = args[0].replace('https://', 'http://');
+              logger.info(`Mencoba ulang dengan HTTP: ${httpUrl}`);
+
+              // Update protokol global
+              if (currentProtocol === 'https') {
+                currentProtocol = 'http';
+                logger.info('Protokol koneksi diganti ke HTTP untuk semua request');
+
+                // Trigger reinit
+                window.dispatchEvent(
+                  new CustomEvent('pocketbase:protocol:changed', {
+                    detail: { protocol: 'http' },
+                  })
+                );
+              }
+
+              // Try with HTTP
+              try {
+                args[0] = httpUrl;
+                return await originalFetch(...args);
+              } catch (httpError) {
+                logger.error('Retry dengan HTTP juga gagal:', httpError);
+                throw httpError;
+              }
+            }
+          }
+
           throw error;
         }
       };
@@ -369,17 +589,50 @@ export const isDevEnvironment = () => {
 export const checkPocketBaseConnection = async (): Promise<boolean> => {
   try {
     // Coba ping dengan request sederhana ke health check endpoint
-    const response = await fetch(`${pocketbaseUrl}/api/health`, {
+    const response = await fetch(`${getPocketbaseUrl()}/api/health`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
       signal: AbortSignal.timeout(5000), // Timeout 5 detik
     });
-    return response.ok;
+
+    if (response.ok) {
+      return true;
+    }
+
+    throw new Error(`Health check failed with status: ${response.status}`);
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn('PocketBase connection check failed:', error);
+    logger.warn('PocketBase connection check failed:', error.message);
+
+    // Jika masalah SSL/HTTPS, coba switch protokol
+    if (
+      error.message?.includes('SSL') ||
+      error.message?.includes('ERR_SSL_PROTOCOL_ERROR') ||
+      error.message?.includes('certificate')
+    ) {
+      logger.info('Terdeteksi masalah protokol SSL, mencoba mengganti protokol...');
+
+      try {
+        // Reset dan reinisialisasi koneksi dengan protokol yang berbeda
+        await resetConnection();
+
+        // Coba lagi dengan protokol baru
+        const retryResponse = await fetch(`${getPocketbaseUrl()}/api/health`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: AbortSignal.timeout(5000),
+        });
+
+        return retryResponse.ok;
+      } catch (retryError) {
+        logger.error('Koneksi dengan protokol alternatif juga gagal:', retryError.message);
+        return false;
+      }
+    }
+
     return false;
   }
 };
