@@ -69,8 +69,8 @@ if (isProduction && !vercelDeployment) {
   // On Vercel, we'll use our API proxy to avoid mixed content
   logger.info('Deteksi lingkungan Vercel: menggunakan API proxy');
 } else if (isHttps) {
-  // If we're on HTTPS but not Vercel, we still need the API proxy
-  logger.info('Deteksi HTTPS: menggunakan API proxy untuk menghindari mixed content');
+  // If we're on HTTPS but not Vercel, we still need the API proxy (Cloudflare)
+  logger.info('Deteksi HTTPS: menggunakan Cloudflare API proxy untuk menghindari mixed content');
 }
 
 // Gunakan environment variable untuk URL PocketBase
@@ -101,16 +101,26 @@ export const getPocketbaseUrl = (): string => {
     return `http://${pocketbaseHost}`;
   }
 
-  // Force proxy usage if specified in environment or for sipoma.site domain
+  // Force proxy usage if specified in environment or for sipoma.site domain (Cloudflare proxy)
   if (forceProxy || (isBrowser && window.location.hostname === 'www.sipoma.site')) {
-    logger.debug('Force proxy enabled for sipoma.site domain or VITE_FORCE_PROXY=true');
-    return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
+    logger.debug(
+      'Force proxy enabled for sipoma.site domain (Cloudflare proxy) or VITE_FORCE_PROXY=true'
+    );
+    return origin ? `${origin}/api` : '/api';
   }
 
   // Only use proxy if server is still HTTP and we're on HTTPS (mixed content prevention)
-  if (isProduction && isBrowser && window.location.protocol === 'https:' && pocketbaseUrlEnv && pocketbaseUrlEnv.startsWith('http://')) {
-    logger.debug('Server is HTTP but client is HTTPS: using API proxy to avoid mixed content');
-    return `${origin}/api/pb-proxy`;
+  if (
+    isProduction &&
+    isBrowser &&
+    window.location.protocol === 'https:' &&
+    pocketbaseUrlEnv &&
+    pocketbaseUrlEnv.startsWith('http://')
+  ) {
+    logger.debug(
+      'Server is HTTP but client is HTTPS: using Cloudflare API proxy to avoid mixed content'
+    );
+    return `${origin}/api`;
   }
 
   // Priority 2: Use environment variable if available
@@ -119,7 +129,7 @@ export const getPocketbaseUrl = (): string => {
     if (isProduction && isBrowser && window.location.protocol === 'https:') {
       if (pocketbaseUrlEnv.startsWith('http://')) {
         logger.debug('Converting environment URL from HTTP to HTTPS proxy to avoid mixed content');
-        return `${origin}/api/pb-proxy`;
+        return `${origin}/api`;
       }
     }
     logger.debug(`Using environment configured PocketBase URL: ${pocketbaseUrlEnv}`);

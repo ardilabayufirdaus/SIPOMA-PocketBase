@@ -1,0 +1,14 @@
+name = "sipoma-api-proxy"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+routes = [
+  { pattern = "sipoma.site/api/*", zone_name = "sipoma.site" }
+]
+
+# Development environment
+[env.dev]
+routes = [
+  { pattern = "dev.sipoma.site/api/*", zone_name = "sipoma.site" }
+]
