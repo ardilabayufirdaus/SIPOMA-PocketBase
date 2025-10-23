@@ -2,7 +2,6 @@
 // It forwards requests from https://your-vercel-app.vercel.app/api/pb-proxy/*
 // to your PocketBase server at http://141.11.25.69:8090/*
 
-// Export a simple handler function compatible with Vercel serverless functions
 export default async function handler(req, res) {
   try {
     // Extract path and query from the request URL
@@ -15,7 +14,14 @@ export default async function handler(req, res) {
 
     // Forward headers that are safe
     const headers = {};
-    const safeHeaders = ['accept', 'content-type', 'authorization', 'user-agent', 'cookie'];
+    const safeHeaders = [
+      'accept',
+      'content-type',
+      'authorization',
+      'user-agent',
+      'cookie',
+      'x-requested-with',
+    ];
 
     for (const header of safeHeaders) {
       if (req.headers[header]) {
@@ -31,26 +37,15 @@ export default async function handler(req, res) {
 
     // For methods with body content
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-      if (req.body) {
-        // If body is already parsed as JSON
+      // In Vercel, req.body is already parsed if content-type is application/json
+      if (req.body && typeof req.body === 'object') {
         options.body = JSON.stringify(req.body);
         if (!options.headers['content-type']) {
           options.headers['content-type'] = 'application/json';
         }
-      } else {
-        // Try to get the raw body as text
-        try {
-          const chunks = [];
-          for await (const chunk of req) {
-            chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-          }
-          const bodyBuffer = Buffer.concat(chunks);
-          if (bodyBuffer.length > 0) {
-            options.body = bodyBuffer;
-          }
-        } catch {
-          // Failed to read request body
-        }
+      } else if (req.body) {
+        // If body is a string or buffer
+        options.body = req.body;
       }
     }
 
@@ -58,13 +53,32 @@ export default async function handler(req, res) {
     const response = await fetch(targetUrl, options);
 
     // Set response status code
-    res.statusCode = response.status;
+    res.status(response.status);
 
-    // Forward response headers
+    // Forward response headers (skip problematic ones)
     const responseHeaders = response.headers;
+    const skipHeaders = [
+      'content-encoding',
+      'transfer-encoding',
+      'connection',
+      'keep-alive',
+      'proxy-authenticate',
+      'proxy-authorization',
+      'te',
+      'trailers',
+      'upgrade',
+    ];
+
     for (const [key, value] of responseHeaders.entries()) {
-      res.setHeader(key, value);
+      if (!skipHeaders.includes(key.toLowerCase())) {
+        res.setHeader(key, value);
+      }
     }
+
+    // Add CORS headers for production
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
 
     // Process response based on content type
     const contentType = responseHeaders.get('content-type') || '';
@@ -79,6 +93,8 @@ export default async function handler(req, res) {
       res.end(Buffer.from(buffer));
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Proxy error:', error);
     // Send a simplified error response
     res.status(502).json({
       error: 'Failed to proxy request to PocketBase',

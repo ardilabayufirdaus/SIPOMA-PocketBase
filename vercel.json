@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/pb-proxy",
-      "destination": "/api/pocketbase-proxy.js"
+      "destination": "/api/pb-proxy.js"
     },
     {
       "source": "/api/pb-proxy/(.*)",
-      "destination": "/api/pocketbase-proxy.js"
+      "destination": "/api/pb-proxy.js"
     },
     {
       "source": "/api/(.*)",

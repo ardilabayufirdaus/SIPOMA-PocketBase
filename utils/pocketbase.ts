@@ -93,6 +93,13 @@ export const getPocketbaseUrl = (): string => {
   const isBrowser = typeof window !== 'undefined';
   const origin = isBrowser ? window.location.origin : '';
 
+  // In development, always use direct HTTP to avoid mixed content issues
+  const isDevelopment = import.meta.env.DEV;
+  if (isDevelopment) {
+    logger.debug('Development environment: using direct HTTP connection to avoid mixed content');
+    return `http://${pocketbaseHost}`;
+  }
+
   // Priority 1: Use API proxy on Vercel deployments or HTTPS contexts
   // This handles the mixed content issue by routing through our API proxy
   if (vercelDeployment || (isBrowser && isSecureContext())) {
