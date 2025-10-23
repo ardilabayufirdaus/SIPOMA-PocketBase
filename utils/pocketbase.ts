@@ -106,10 +106,8 @@ export const getPocketbaseUrl = (): string => {
     logger.debug(
       'Force proxy enabled for sipoma.site domain (Cloudflare proxy) or VITE_FORCE_PROXY=true'
     );
-    return origin ? `${origin}/api` : '/api';
-  }
-
-  // Only use proxy if server is still HTTP and we're on HTTPS (mixed content prevention)
+    return origin ? `${origin}/api/pb-proxy` : '/api/pb-proxy';
+  } // Only use proxy if server is still HTTP and we're on HTTPS (mixed content prevention)
   if (
     isProduction &&
     isBrowser &&
@@ -120,7 +118,7 @@ export const getPocketbaseUrl = (): string => {
     logger.debug(
       'Server is HTTP but client is HTTPS: using Cloudflare API proxy to avoid mixed content'
     );
-    return `${origin}/api`;
+    return `${origin}/api/pb-proxy`;
   }
 
   // Priority 2: Use environment variable if available
@@ -129,7 +127,7 @@ export const getPocketbaseUrl = (): string => {
     if (isProduction && isBrowser && window.location.protocol === 'https:') {
       if (pocketbaseUrlEnv.startsWith('http://')) {
         logger.debug('Converting environment URL from HTTP to HTTPS proxy to avoid mixed content');
-        return `${origin}/api`;
+        return `${origin}/api/pb-proxy`;
       }
     }
     logger.debug(`Using environment configured PocketBase URL: ${pocketbaseUrlEnv}`);
