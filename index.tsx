@@ -20,10 +20,19 @@ performanceMonitor.init();
 // Enhance PocketBase with optimization features
 enhancePocketBase();
 
+// Start connection monitoring when app loads
+// The connection monitoring is automatically initialized in the pocketbase.ts file
+
+// Import ConnectionErrorNotification
+import ConnectionErrorNotification from './components/ConnectionErrorNotification';
+
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <RootRouter />
+      <>
+        <ConnectionErrorNotification />
+        <RootRouter />
+      </>
     </ErrorBoundary>
   </React.StrictMode>
 );

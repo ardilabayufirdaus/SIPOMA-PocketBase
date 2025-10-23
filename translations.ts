@@ -2,6 +2,22 @@ export const translations = {
   en: {
     // Header & Navigation
     appTitle: 'SIPOMA',
+
+    // Error messages and connection handling
+    errors: {
+      connectionError: 'Connection Error',
+      serverUnavailable: 'Server is currently unavailable',
+      multipleErrors: '{count} connection errors have occurred',
+      retryingConnection: 'Retrying connection...',
+    },
+
+    common: {
+      reload: 'Reload',
+      retry: 'Retry',
+      switchToHttp: 'Switch Protocol',
+      cancel: 'Cancel',
+      close: 'Close',
+    },
     appSubtitle: 'Production Management Information System',
     header_welcome: 'Welcome',
     mainDashboard: 'Main Dashboard',
