@@ -2,7 +2,7 @@ import PocketBase from 'pocketbase';
 import { logger } from './logger';
 
 // Gunakan environment variable untuk URL PocketBase
-const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090';
+const pocketbaseUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://141.11.25.69:8090';
 const pocketbaseEmail = import.meta.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
 const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
 const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultnya true
