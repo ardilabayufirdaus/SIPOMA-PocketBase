@@ -10,11 +10,25 @@ export const useMixedContentDetection = () => {
   const [hasMixedContentIssue, setHasMixedContentIssue] = useState(false);
   const [checkedStatus, setCheckedStatus] = useState(false);
   const [isHttps, setIsHttps] = useState(false);
+  const [isVercelDeployment, setIsVercelDeployment] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const protocol = window.location.protocol;
+      const hostname = window.location.hostname;
+
+      // Check if we're on a Vercel deployment
+      const isVercel = hostname.includes('vercel.app') || hostname.includes('sipoma.site');
+      setIsVercelDeployment(isVercel);
+
       setIsHttps(protocol === 'https:');
+
+      // Auto-detect mixed content issue on Vercel HTTPS deployments
+      if (isVercel && protocol === 'https:') {
+        setHasMixedContentIssue(true);
+        setCheckedStatus(true);
+        return;
+      }
 
       if (protocol !== 'https:') {
         // Not using HTTPS, so we won't have mixed content issues
@@ -83,5 +97,6 @@ export const useMixedContentDetection = () => {
     hasMixedContentIssue,
     checkedStatus,
     isHttps,
+    isVercel: isVercelDeployment,
   };
 };

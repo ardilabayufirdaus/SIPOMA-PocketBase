@@ -75,6 +75,65 @@ const ConnectionStatusIndicator: React.FC = () => {
     }
   };
 
+  // Check if we're on Vercel
+  const isVercel =
+    typeof window !== 'undefined' &&
+    (window.location.hostname.includes('vercel.app') ||
+      window.location.hostname.includes('sipoma.site'));
+
+  // Show a more prominent indicator for Vercel deployments
+  if (isVercel && isHttps) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: '10px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '12px 20px',
+          backgroundColor: '#f44336',
+          color: 'white',
+          borderRadius: '4px',
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          zIndex: 1000,
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          fontWeight: 'bold',
+        }}
+      >
+        <div
+          style={{
+            width: '12px',
+            height: '12px',
+            backgroundColor: '#ffffff',
+            borderRadius: '50%',
+          }}
+        />
+        <span>HTTPS to HTTP connection blocked</span>
+
+        <button
+          onClick={handleShowHelp}
+          style={{
+            backgroundColor: 'white',
+            color: '#f44336',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            padding: '4px 12px',
+            marginLeft: '5px',
+            fontWeight: 'bold',
+            borderRadius: '4px',
+          }}
+        >
+          Show Solution
+        </button>
+      </div>
+    );
+  }
+
+  // Standard indicator for non-Vercel environments
   return (
     <div
       style={{

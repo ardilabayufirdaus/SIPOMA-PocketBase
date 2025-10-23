@@ -2,6 +2,16 @@
 
 This document explains the solution implemented to address the mixed content issue when accessing the SIPOMA application over HTTPS while the backend server uses HTTP.
 
+## The Problem with Vercel and Mixed Content
+
+When SIPOMA is deployed to Vercel (https://sipoma-git-main-ardilabayufirdaus-projects.vercel.app/ or https://www.sipoma.site), it is served over HTTPS. However, the backend PocketBase server at http://141.11.25.69:8090 uses HTTP. This creates a "mixed content" situation where browsers block insecure HTTP content from being loaded on an HTTPS page.
+
+Specifically, you'll see these errors in the console:
+
+```
+Mixed Content: The page at 'https://sipoma-git-main-ardilabayufirdaus-projects.vercel.app/' was loaded over HTTPS, but requested an insecure resource 'http://141.11.25.69:8090/api/admins/auth-with-password'. This request has been blocked; the content must be served over HTTPS.
+```
+
 ## What is Mixed Content?
 
 Modern browsers block insecure HTTP content when a page is loaded over secure HTTPS. This is a security feature that prevents potential man-in-the-middle attacks. However, it can cause issues when an HTTPS site needs to communicate with an HTTP API backend.
@@ -44,16 +54,66 @@ Users experiencing mixed content issues have two main options:
    - Choose to allow or load unsafe scripts
    - Refresh the page
 
-2. **Access the site via HTTP directly**:
-   - Use http://www.sipoma.site instead of https://www.sipoma.site
+2. **For Local Development**:
+   - Run the application locally using `npm run dev` which will serve over HTTP
+   - Access via http://localhost:3000 or whatever port is configured
+
+**Note**: Vercel deployments only support HTTPS, so you cannot switch to HTTP with Vercel-hosted sites.
 
 ## Long-term Solutions
 
 For a more permanent solution, consider:
 
-1. Adding SSL/TLS to the PocketBase server
-2. Setting up a reverse proxy with SSL termination in front of PocketBase
-3. Creating a serverless function on Vercel that proxies requests to the backend
+1. **Adding SSL/TLS to the PocketBase server** (Recommended):
+   - Set up a proper SSL certificate for the PocketBase server
+   - Update the connection URLs to use https://141.11.25.69:8090
+   - This is the most reliable solution
+
+2. **Setting up a reverse proxy with SSL termination**:
+   - Use Nginx or similar to proxy requests with HTTPS to HTTP backend
+   - Example Nginx configuration in next section
+
+3. **Creating a serverless function on Vercel**:
+   - Create API routes on Vercel that proxy requests to your HTTP backend
+   - Example implementation below
+
+4. **Using a CORS proxy service**:
+   - As a temporary solution, you could use a CORS proxy service
+   - Not recommended for production due to security and reliability concerns
+
+## Example Implementation of Vercel API Proxy
+
+Create a file at `/api/pb-proxy.js` in your Vercel project:
+
+```javascript
+// /api/pb-proxy.js
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
+// Create proxy instance
+const apiProxy = createProxyMiddleware({
+  target: 'http://141.11.25.69:8090',
+  changeOrigin: true,
+  pathRewrite: {
+    '^/api/pb-proxy': '', // Remove the /api/pb-proxy path
+  },
+  secure: false,
+});
+
+export default function (req, res) {
+  // Don't allow proxy requests to modify our API routes
+  if (req.url.startsWith('/api/pb-proxy')) {
+    return apiProxy(req, res);
+  }
+
+  return res.status(404).send('Not found');
+}
+```
+
+Then update your PocketBase URL in your code to use relative URLs:
+
+```typescript
+const pocketbaseUrl = '/api/pb-proxy'; // This will be proxied through Vercel
+```
 
 ## Notes for Developers
 

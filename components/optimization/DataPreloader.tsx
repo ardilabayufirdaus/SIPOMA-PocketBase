@@ -116,7 +116,7 @@ const DataPreloader: React.FC<DataPreloaderProps> = ({ children }) => {
   // Render children dengan MixedContentDetector
   return (
     <>
-      {typeof window !== 'undefined' && window.location.protocol === 'https:' && (
+      {typeof window !== 'undefined' && (
         <Suspense fallback={null}>
           <MixedContentDetector />
         </Suspense>
