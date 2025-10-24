@@ -6,7 +6,7 @@ Error 404 terjadi karena collections PocketBase belum dibuat di database.
 
 ## Solusi
 
-Buat collections berikut di PocketBase Admin Panel (`http://141.11.25.69:8090/_/`):
+Buat collections berikut di PocketBase Admin Panel (`https://api.sipoma.site/_/`):
 
 ### 1. cop_parameters
 

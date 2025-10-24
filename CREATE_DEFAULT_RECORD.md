@@ -9,7 +9,7 @@ Hook `useCopParameters` error 404 karena record "qisg1822jn43kcy" tidak ada di c
 ### Langkah 1: Buka PocketBase Admin Panel
 
 ```
-http://141.11.25.69:8090/_/
+https://api.sipoma.site/_/
 ```
 
 ### Langkah 2: Navigasi ke Collection

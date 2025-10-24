@@ -6,7 +6,7 @@ const PocketBase = require('pocketbase/cjs');
  */
 async function createDefaultPermissionsCollection() {
   // Get credentials from environment variables
-  const pbUrl = process.env.VITE_POCKETBASE_URL || 'https://141.11.25.69/';
+  const pbUrl = process.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/';
   const pbEmail = process.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
   const pbPassword = process.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
 

@@ -225,7 +225,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://141.11.25.69',
+        target: 'https://api.sipoma.site',
         changeOrigin: true,
         secure: false, // karena SSL self-signed
       },

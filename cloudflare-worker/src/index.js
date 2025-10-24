@@ -3,7 +3,7 @@
  * Mengalihkan request dari HTTPS ke HTTP backend
  */
 
-const POCKETBASE_HOST = 'http://141.11.25.69:8090';
+const POCKETBASE_HOST = 'https://api.sipoma.site/';
 
 export default {
   async fetch(request, _env, _ctx) {

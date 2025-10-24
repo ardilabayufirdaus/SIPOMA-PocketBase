@@ -44,7 +44,7 @@ export const useMixedContentDetection = () => {
     const checkForMixedContent = async () => {
       try {
         // Get backend URL - always use direct HTTPS connection
-        const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://141.11.25.69';
+        const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
         const url =
           backendUrl.startsWith('http') || backendUrl.startsWith('/')
             ? backendUrl
