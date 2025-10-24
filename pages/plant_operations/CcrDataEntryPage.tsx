@@ -157,6 +157,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
+  useEffect(() => {
+    // Debug: log role user setiap render
+    // eslint-disable-next-line no-console
+    console.log('[CCR] loggedInUser?.role:', loggedInUser?.role);
+  }, [loggedInUser]);
 
   // Function to check if we're in search mode
   const isSearchActive = useMemo(() => columnSearchQuery.trim().length > 0, [columnSearchQuery]);
@@ -1778,7 +1783,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         const effectiveUserName =
           userName || loggedInUser?.full_name || currentUser?.full_name || 'Unknown User';
         // Use updateParameterData directly for individual changes
-        await updateParameterData(parameterId, selectedDate, hour, value, effectiveUserName);
+        // Pass opts.skipTrigger = true to avoid triggering a full data refresh on every cell save
+        await updateParameterData(
+          parameterId,
+          selectedDate,
+          hour,
+          value,
+          effectiveUserName,
+          undefined,
+          { skipTrigger: true }
+        );
 
         // Hapus dari pending changes setelah berhasil disimpan
         const changeKey = `${parameterId}_${hour}`;
@@ -3492,8 +3506,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
           {/* Enhanced Table Controls */}
           <div className="flex items-center gap-4">
-            {/* Export/Import Controls - Hidden for Operator role */}
-            {loggedInUser?.role !== 'Operator' && (
+            {/* Export/Import Controls - Only for allowed roles */}
+            {['Super Admin', 'Admin', 'Manager', 'Autonomous', 'Operator'].includes(
+              loggedInUser?.role
+            ) && (
               <div className="flex items-center gap-2">
                 <input
                   type="file"
@@ -3579,70 +3595,70 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 </Button>
 
-                {/* Delete All Parameters Button */}
-                <Button
-                  variant="error"
-                  size="lg"
-                  onClick={deleteAllParameters}
-                  disabled={
-                    isDeletingAll ||
-                    !selectedCategory ||
-                    !selectedUnit ||
-                    dailyParameterData.length === 0
-                  }
-                  leftIcon={
-                    isDeletingAll ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <TrashIcon className="w-5 h-5" />
-                    )
-                  }
-                  className="group relative overflow-hidden"
-                >
-                  <span className="relative z-10">
-                    {isDeletingAll ? 'Deleting...' : 'Delete All Data'}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                </Button>
-
-                {/* Delete All Names Button - Super Admin Only */}
+                {/* Delete All Parameters & Names: Super Admin Only */}
                 {isSuperAdmin(loggedInUser?.role) && (
-                  <Button
-                    variant="error"
-                    size="lg"
-                    onClick={deleteAllNames}
-                    disabled={
-                      isDeletingAllNames ||
-                      !selectedCategory ||
-                      !selectedUnit ||
-                      dailyParameterData.length === 0
-                    }
-                    leftIcon={
-                      isDeletingAllNames ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                      )
-                    }
-                    className="group relative overflow-hidden"
-                  >
-                    <span className="relative z-10">
-                      {isDeletingAllNames ? 'Deleting...' : 'Delete All Names'}
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                  </Button>
+                  <>
+                    <Button
+                      variant="error"
+                      size="lg"
+                      onClick={deleteAllParameters}
+                      disabled={
+                        isDeletingAll ||
+                        !selectedCategory ||
+                        !selectedUnit ||
+                        dailyParameterData.length === 0
+                      }
+                      leftIcon={
+                        isDeletingAll ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <TrashIcon className="w-5 h-5" />
+                        )
+                      }
+                      className="group relative overflow-hidden"
+                    >
+                      <span className="relative z-10">
+                        {isDeletingAll ? 'Deleting...' : 'Delete All Data'}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </Button>
+                    <Button
+                      variant="error"
+                      size="lg"
+                      onClick={deleteAllNames}
+                      disabled={
+                        isDeletingAllNames ||
+                        !selectedCategory ||
+                        !selectedUnit ||
+                        dailyParameterData.length === 0
+                      }
+                      leftIcon={
+                        isDeletingAllNames ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                        )
+                      }
+                      className="group relative overflow-hidden"
+                    >
+                      <span className="relative z-10">
+                        {isDeletingAllNames ? 'Deleting...' : 'Delete All Names'}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    </Button>
+                  </>
                 )}
               </div>
             )}

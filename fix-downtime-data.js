@@ -9,7 +9,7 @@ const PocketBase = require('pocketbase');
 
 async function fixCcrDowntimeData() {
   console.log('Starting CCR Downtime data fix...');
-  const pb = new PocketBase('http://141.11.25.69:8090');
+  const pb = new PocketBase('https://api.sipoma.site/');
 
   try {
     // Ambil semua data downtime

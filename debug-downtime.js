@@ -11,7 +11,7 @@ const fetch = require('node-fetch');
 async function checkDowntimeData() {
   try {
     console.log('Connecting to PocketBase...');
-    const baseUrl = 'http://141.11.25.69:8090';
+  const baseUrl = 'https://api.sipoma.site/';
     
     // Check if server is available
     console.log('Checking PocketBase availability...');

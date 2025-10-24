@@ -25,7 +25,7 @@ export default {
     headers.delete('cf-visitor');
 
     // Set host header ke PocketBase
-    headers.set('host', '141.11.25.69:8090');
+    headers.set('host', 'api.sipoma.site');
 
     // Buat request baru ke PocketBase
     const proxyRequest = new Request(targetUrl, {
