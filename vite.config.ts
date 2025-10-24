@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite';
-const isProd = process.env.NODE_ENV === 'production' || process.env.VITE_BASE === 'production';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: isProd ? '/SIPOMA-PocketBase/' : '/',
+  base: '/',
   resolve: {
     alias: {
       '@': '/src',
