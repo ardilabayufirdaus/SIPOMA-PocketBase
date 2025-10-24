@@ -182,5 +182,3 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
 };
 
 export default React.memo(CcrDowntimeDataTable);
-
-

@@ -434,5 +434,3 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 };
 
 export default FilterSection;
-
-

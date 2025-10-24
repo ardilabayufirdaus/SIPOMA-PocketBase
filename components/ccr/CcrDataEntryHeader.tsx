@@ -200,4 +200,3 @@ const CcrDataEntryHeader: React.FC<CcrDataEntryHeaderProps> = ({
 };
 
 export default CcrDataEntryHeader;
-

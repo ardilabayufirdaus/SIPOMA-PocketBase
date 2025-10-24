@@ -266,5 +266,3 @@ PasswordInput.displayName = 'PasswordInput';
 SearchInput.displayName = 'SearchInput';
 
 export default Input;
-
-

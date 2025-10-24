@@ -358,5 +358,3 @@ export {
   scaleOnHover,
   colors,
 };
-
-

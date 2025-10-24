@@ -45,4 +45,3 @@ export const sanitizeForJSON = (obj: any): any => {
 };
 
 export default sanitizeForJSON;
-

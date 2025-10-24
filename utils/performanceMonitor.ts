@@ -258,5 +258,3 @@ export const withPerformanceTracking = <P extends object>(
   WrappedComponent.displayName = `withPerformanceTracking(${componentName})`;
   return WrappedComponent;
 };
-
-

@@ -97,5 +97,3 @@ export const ProgressTrendChart: React.FC<ProgressTrendChartProps> = ({ data, t 
     </div>
   );
 };
-
-

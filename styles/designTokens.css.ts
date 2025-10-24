@@ -8,5 +8,3 @@ import { createCSSCustomProperties } from '../utils/designTokens';
 const designTokensCSS = createCSSCustomProperties();
 
 export default designTokensCSS;
-
-

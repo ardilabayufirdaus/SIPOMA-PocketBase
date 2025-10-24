@@ -145,4 +145,3 @@ export const useUserManagement = (_currentUser?: User | null) => {
     refetch: fetchUsers,
   };
 };
-

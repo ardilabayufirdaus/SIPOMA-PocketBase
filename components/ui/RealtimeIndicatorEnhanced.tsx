@@ -67,4 +67,3 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({ className = '' })
 };
 
 export default RealtimeIndicator;
-

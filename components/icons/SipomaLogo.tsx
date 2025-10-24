@@ -16,5 +16,3 @@ const SipomaLogo: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export default SipomaLogo;
-
-

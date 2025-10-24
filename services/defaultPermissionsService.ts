@@ -89,4 +89,3 @@ export const getAllDefaultPermissionsFromDB = async (): Promise<
     return {} as Record<UserRole, PermissionMatrix>;
   }
 };
-

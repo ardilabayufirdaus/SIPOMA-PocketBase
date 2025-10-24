@@ -88,4 +88,3 @@ export const useCopParameters = (plantCategory?: string, plantUnit?: string) => 
 
   return { copParameterIds, setCopParameterIds: saveCopParameters, loading };
 };
-

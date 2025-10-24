@@ -185,5 +185,3 @@ export const useUserManagementPerformance = () => {
     monitorPermissionUpdate,
   };
 };
-
-

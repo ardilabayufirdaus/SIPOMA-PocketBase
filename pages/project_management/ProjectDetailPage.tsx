@@ -1612,5 +1612,3 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 };
 
 export default ProjectDetailPage;
-
-

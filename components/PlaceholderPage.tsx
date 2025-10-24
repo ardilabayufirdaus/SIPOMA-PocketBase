@@ -16,5 +16,3 @@ const PlaceholderPage: React.FC<{ title: string; t: any }> = ({ title, t }) => (
 );
 
 export default PlaceholderPage;
-
-

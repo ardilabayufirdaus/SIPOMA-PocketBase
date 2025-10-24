@@ -176,5 +176,3 @@ const MemoizedUserInfo = memo<MemoizedUserInfoProps>(({ user, onProfileClick, on
 MemoizedUserInfo.displayName = 'MemoizedUserInfo';
 
 export { MemoizedSidebarItem, MemoizedSubmenu, MemoizedUserInfo };
-
-

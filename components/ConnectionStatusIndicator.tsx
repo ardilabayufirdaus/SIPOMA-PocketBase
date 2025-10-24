@@ -184,4 +184,3 @@ const ConnectionStatusIndicator: React.FC = () => {
 };
 
 export default ConnectionStatusIndicator;
-

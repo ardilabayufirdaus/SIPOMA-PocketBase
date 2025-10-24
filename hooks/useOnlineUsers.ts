@@ -52,5 +52,3 @@ export const useOnlineUsers = (users: User[]) => {
 
   return onlineUsersCount;
 };
-
-

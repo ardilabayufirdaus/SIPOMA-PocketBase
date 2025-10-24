@@ -289,4 +289,3 @@ export const useOptimizedNotifications = () => {
     isLoading: loading,
   };
 };
-

@@ -21,5 +21,3 @@ const EyeSlashIcon: React.FC<{
 );
 
 export default EyeSlashIcon;
-
-

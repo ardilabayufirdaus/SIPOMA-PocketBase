@@ -282,5 +282,3 @@ export const checkPerformanceBudget = () => {
 };
 
 export default performanceMonitor;
-
-

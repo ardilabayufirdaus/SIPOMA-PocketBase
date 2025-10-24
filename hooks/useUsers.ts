@@ -163,4 +163,3 @@ export const useCurrentUser = () => {
 
   return { currentUser, loading };
 };
-

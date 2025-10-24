@@ -67,5 +67,3 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
     </motion.div>
   );
 };
-
-

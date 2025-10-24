@@ -22,5 +22,3 @@ const Bars4Icon: React.FC<IconProps> = ({ className = 'w-6 h-6' }) => (
 );
 
 export default Bars4Icon;
-
-

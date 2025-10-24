@@ -67,4 +67,3 @@ export const useRolePermissions = () => {
     refresh: fetchRolePermissions,
   };
 };
-

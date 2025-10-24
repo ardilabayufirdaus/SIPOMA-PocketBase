@@ -96,5 +96,3 @@ const CcrDataFilters: React.FC<CcrDataFiltersProps> = ({
 };
 
 export default CcrDataFilters;
-
-

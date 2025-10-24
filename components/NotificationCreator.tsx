@@ -14,7 +14,11 @@ interface NotificationCreatorProps {
   onClose?: () => void;
 }
 
-const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t, isOpen: externalIsOpen, onClose }) => {
+const NotificationCreator: React.FC<NotificationCreatorProps> = ({
+  t,
+  isOpen: externalIsOpen,
+  onClose,
+}) => {
   const { announceToScreenReader } = useAccessibility();
   const { currentUser } = useCurrentUser();
   const { broadcastNotification } = useNotificationStore();
@@ -178,5 +182,3 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({ t, isOpen: ex
 };
 
 export default NotificationCreator;
-
-

@@ -124,4 +124,3 @@ async function fixCcrDowntimeData() {
 fixCcrDowntimeData()
   .then(() => console.log('Script completed'))
   .catch(console.error);
-

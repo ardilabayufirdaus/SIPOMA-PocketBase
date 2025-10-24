@@ -169,5 +169,3 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
     </div>
   );
 };
-
-

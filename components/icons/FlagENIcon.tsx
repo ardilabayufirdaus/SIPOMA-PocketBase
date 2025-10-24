@@ -19,5 +19,3 @@ const FlagENIcon: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 export default FlagENIcon;
-
-

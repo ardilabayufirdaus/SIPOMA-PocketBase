@@ -338,4 +338,3 @@ function calculateVariance(numbers: number[]): number {
   const squaredDiffs = numbers.map((num) => Math.pow(num - mean, 2));
   return squaredDiffs.reduce((sum, diff) => sum + diff, 0) / numbers.length;
 }
-

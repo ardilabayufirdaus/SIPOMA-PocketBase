@@ -67,5 +67,3 @@ const InspectionPage: React.FC<{
 };
 
 export default InspectionPage;
-
-

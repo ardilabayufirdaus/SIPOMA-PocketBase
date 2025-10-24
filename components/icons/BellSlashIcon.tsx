@@ -21,5 +21,3 @@ const BellSlashIcon: React.FC<{
 );
 
 export default BellSlashIcon;
-
-

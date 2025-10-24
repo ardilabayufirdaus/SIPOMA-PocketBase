@@ -60,5 +60,3 @@ const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 };
 
 export default ProjectManagementPage;
-
-

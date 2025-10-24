@@ -256,4 +256,3 @@ export interface CcrFooterData {
   shift3_counter: number;
   shift3_cont_counter: number;
 }
-

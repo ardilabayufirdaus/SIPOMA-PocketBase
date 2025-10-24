@@ -42,4 +42,3 @@ export const useTotalProduction = () => {
 
   return { totalProduction, loading, error };
 };
-

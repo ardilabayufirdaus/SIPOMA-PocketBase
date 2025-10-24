@@ -37,5 +37,3 @@ export interface IGroupReportRepository {
   updateReport(id: string, updates: Partial<GroupReport>): Promise<GroupReport>;
   deleteReport(id: string): Promise<void>;
 }
-
-

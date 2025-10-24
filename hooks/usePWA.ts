@@ -305,5 +305,3 @@ export const PWAUtils = {
     return 0;
   },
 };
-
-

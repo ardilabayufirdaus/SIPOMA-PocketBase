@@ -136,5 +136,3 @@ describe('Cache Metrics', () => {
     });
   });
 });
-
-

@@ -192,5 +192,3 @@ export const parseExcelFile = async (file: File): Promise<Record<string, unknown
     );
   }
 };
-
-

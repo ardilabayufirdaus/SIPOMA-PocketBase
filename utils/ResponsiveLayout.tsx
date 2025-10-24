@@ -603,5 +603,3 @@ export default {
   useResponsiveLayout,
   responsiveUtils,
 };
-
-

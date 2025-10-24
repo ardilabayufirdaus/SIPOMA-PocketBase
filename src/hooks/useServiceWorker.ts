@@ -33,7 +33,6 @@ export const useServiceWorker = () => {
           scope: '/',
         });
 
-
         // Handle updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -257,5 +256,3 @@ export const useOfflineData = () => {
     clearOfflineQueue,
   };
 };
-
-

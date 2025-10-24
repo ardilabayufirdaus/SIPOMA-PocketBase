@@ -152,5 +152,3 @@ export class ChartExportService {
 
 // Export singleton instance
 export const chartExportService = ChartExportService.getInstance();
-
-

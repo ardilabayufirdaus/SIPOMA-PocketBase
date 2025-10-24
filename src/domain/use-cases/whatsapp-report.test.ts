@@ -156,5 +156,3 @@ describe('GenerateGroupReportUseCase', () => {
     expect(result.metrics.topContributors).toEqual([]);
   });
 });
-
-

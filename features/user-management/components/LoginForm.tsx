@@ -97,4 +97,3 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess, language = 'en' }
 };
 
 export default LoginForm;
-

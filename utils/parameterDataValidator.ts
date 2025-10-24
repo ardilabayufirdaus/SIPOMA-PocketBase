@@ -119,4 +119,3 @@ export const hourlyValuesAreDifferent = (current: HourlyValues, updated: HourlyV
 
   return false;
 };
-

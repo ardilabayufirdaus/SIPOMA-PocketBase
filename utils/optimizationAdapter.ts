@@ -150,4 +150,3 @@ export async function getFullListOptimized(collection: string, options: Record<s
     return await pb.collection(collection).getFullList(options);
   }
 }
-

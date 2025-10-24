@@ -236,5 +236,3 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
 };
 
 export default RegistrationForm;
-
-

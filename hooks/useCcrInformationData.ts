@@ -129,4 +129,3 @@ export const useCcrInformationData = () => {
     isSaving: saveInformationMutation.isPending,
   };
 };
-

@@ -207,4 +207,3 @@ export const useReportSettings = () => {
 
   return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords, updateOrder };
 };
-

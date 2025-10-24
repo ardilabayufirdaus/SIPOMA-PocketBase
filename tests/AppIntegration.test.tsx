@@ -88,4 +88,3 @@ describe('App Integration with Lazy Loading', () => {
     console.error = originalError;
   });
 });
-

@@ -53,5 +53,3 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     </motion.div>
   );
 };
-
-

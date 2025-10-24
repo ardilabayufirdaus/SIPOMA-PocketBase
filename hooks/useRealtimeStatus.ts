@@ -74,4 +74,3 @@ export const useRealtimeStatus = (channelName: string): UseRealtimeStatusReturn 
     connectionErrors,
   };
 };
-

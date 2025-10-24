@@ -40,4 +40,3 @@ migrate(
     return collection;
   }
 );
-

@@ -29,5 +29,3 @@ describe('CollapsibleMenu', () => {
     expect(defaultProps.onSelect).toHaveBeenCalledWith('page1');
   });
 });
-
-

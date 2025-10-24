@@ -256,5 +256,3 @@ export function useRealTimeChart({
     startDemo,
   };
 }
-
-

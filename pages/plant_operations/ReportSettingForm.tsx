@@ -468,4 +468,3 @@ const ReportSettingForm: React.FC<FormProps> = ({
 };
 
 export default ReportSettingForm;
-

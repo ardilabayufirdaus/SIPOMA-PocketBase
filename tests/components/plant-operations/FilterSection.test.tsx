@@ -84,5 +84,3 @@ describe('FilterSection', () => {
     expect(container.firstChild).toBeNull();
   });
 });
-
-
