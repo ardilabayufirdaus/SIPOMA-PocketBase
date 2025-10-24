@@ -78,5 +78,3 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ recommendation
     </div>
   </div>
 );
-
-

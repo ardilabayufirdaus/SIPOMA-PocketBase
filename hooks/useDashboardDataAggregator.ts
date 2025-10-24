@@ -115,5 +115,3 @@ export const useDashboardDataAggregator = (filters: DashboardFilters) => {
     isLoading,
   };
 };
-
-

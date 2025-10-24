@@ -450,4 +450,3 @@ if (savedPreferences) {
 }
 
 export default useNotificationStore;
-

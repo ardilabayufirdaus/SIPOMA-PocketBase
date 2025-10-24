@@ -1536,5 +1536,3 @@ function compareValues(actual: unknown, operator: string, expected: unknown): bo
       return false;
   }
 }
-
-

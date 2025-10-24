@@ -367,4 +367,3 @@ export class PocketBaseGroupReportRepository implements IGroupReportRepository {
     await this.pb.collection('group_reports').delete(id);
   }
 }
-

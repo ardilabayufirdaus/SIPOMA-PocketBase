@@ -236,5 +236,3 @@ const ComboChart: React.FC<ComboChartProps> = ({
 };
 
 export default ComboChart;
-
-

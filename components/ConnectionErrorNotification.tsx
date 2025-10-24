@@ -110,4 +110,3 @@ const ConnectionErrorNotification: React.FC = () => {
 };
 
 export default ConnectionErrorNotification;
-

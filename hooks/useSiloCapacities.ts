@@ -184,4 +184,3 @@ export const useSiloCapacities = () => {
 
   return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords };
 };
-

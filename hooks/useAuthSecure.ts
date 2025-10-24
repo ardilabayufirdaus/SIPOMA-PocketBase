@@ -173,4 +173,3 @@ export const useAuth = () => {
 
   return { user, loading, login, logout };
 };
-

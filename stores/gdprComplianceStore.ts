@@ -1458,5 +1458,3 @@ export const useGDPRComplianceStore = create<GDPRComplianceStore>()(
     }
   )
 );
-
-

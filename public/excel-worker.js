@@ -294,4 +294,3 @@ async function processExcelExport(data) {
   const buffer = await workbook.xlsx.writeBuffer();
   return buffer;
 }
-

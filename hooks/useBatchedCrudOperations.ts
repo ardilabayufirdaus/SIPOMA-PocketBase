@@ -550,4 +550,3 @@ export function useBatchedCrudOperations<T extends Record<string, unknown>>(
     clearCache,
   };
 }
-

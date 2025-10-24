@@ -126,5 +126,3 @@ export const ResourceAllocationChart: React.FC<ResourceAllocationChartProps> = (
     </div>
   );
 };
-
-

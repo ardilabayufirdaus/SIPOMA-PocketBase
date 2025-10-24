@@ -231,5 +231,3 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
 };
 
 export default WorkInstructionForm;
-
-

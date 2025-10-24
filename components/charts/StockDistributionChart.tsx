@@ -72,5 +72,3 @@ export const StockDistributionChart: React.FC<StockDistributionChartProps> = ({ 
     </div>
   );
 };
-
-

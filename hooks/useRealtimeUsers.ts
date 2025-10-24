@@ -385,4 +385,3 @@ export const useRealtimeUsers = (options: UseRealtimeUsersOptions = {}) => {
     optimisticAddUser,
   };
 };
-

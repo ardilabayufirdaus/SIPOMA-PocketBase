@@ -859,5 +859,3 @@ export default {
   ToastNotification,
   AnimatedProgressBar,
 };
-
-

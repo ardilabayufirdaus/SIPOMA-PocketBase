@@ -151,4 +151,3 @@ export const convertFromFlat = (flatData: CcrParameterDataFlat): CcrParameterDat
 
   return result;
 };
-

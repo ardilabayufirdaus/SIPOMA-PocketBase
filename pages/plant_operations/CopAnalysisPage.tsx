@@ -1545,4 +1545,3 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 };
 
 export default CopAnalysisPage;
-

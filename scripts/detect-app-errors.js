@@ -175,4 +175,3 @@ main().catch((error) => {
   logger.error(`Error tidak terduga: ${error.message}`);
   process.exit(1);
 });
-

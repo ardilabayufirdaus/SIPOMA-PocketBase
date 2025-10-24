@@ -142,4 +142,3 @@ runManualTests();
 
 // Export fungsi untuk memudahkan penggunaan di aplikasi lain
 export { runManualTests };
-

@@ -386,4 +386,3 @@ export const getPermissionDescription = (role: UserRole): string => {
       return 'No special permissions';
   }
 };
-

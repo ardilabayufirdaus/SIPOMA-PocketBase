@@ -179,5 +179,3 @@ export const PerformanceDashboard: React.FC = () => {
     </div>
   );
 };
-
-

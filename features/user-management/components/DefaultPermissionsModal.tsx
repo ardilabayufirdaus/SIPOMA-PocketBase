@@ -270,4 +270,3 @@ const DefaultPermissionsModal: React.FC<DefaultPermissionsModalProps> = ({
 };
 
 export default DefaultPermissionsModal;
-

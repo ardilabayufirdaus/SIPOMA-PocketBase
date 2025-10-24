@@ -119,4 +119,3 @@ describe('Lazy Loading with PermissionGuard Tests', () => {
     expect(screen.getByTestId('access-denied')).toBeInTheDocument();
   });
 });
-

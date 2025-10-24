@@ -334,4 +334,3 @@ const SiloCapacityForm: React.FC<FormProps> = ({
 };
 
 export default SiloCapacityForm;
-

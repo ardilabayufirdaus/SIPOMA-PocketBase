@@ -142,4 +142,3 @@ export function DefaultErrorFallback({ name = 'component', error }: DefaultError
     </div>
   );
 }
-

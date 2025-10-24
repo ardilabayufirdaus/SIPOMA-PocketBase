@@ -62,4 +62,3 @@ export const isTonasaOperator = (_role: UserRole | undefined | null): boolean =>
 export const getTonasaPlantCategory = (_role: UserRole | undefined | null): string | null => {
   return null; // No more Tonasa-specific roles
 };
-

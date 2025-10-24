@@ -336,5 +336,3 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
 };
 
 export default MainDashboardPage;
-
-

@@ -10,4 +10,3 @@ export const optimizedDashboardRoutes: RouteObject[] = [
     element: <UnifiedPlantOpsDashboard />,
   },
 ];
-

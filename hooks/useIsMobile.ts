@@ -20,5 +20,3 @@ export const useIsMobile = (breakpoint: number = 768): boolean => {
 
   return isMobile;
 };
-
-

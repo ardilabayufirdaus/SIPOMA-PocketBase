@@ -102,4 +102,3 @@ export const usePicSettings = () => {
 
   return { records, loading, addRecord, updateRecord, deleteRecord, setAllRecords };
 };
-

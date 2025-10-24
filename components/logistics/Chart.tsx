@@ -220,5 +220,3 @@ export const Chart: React.FC<ChartProps> = ({
     </div>
   );
 };
-
-

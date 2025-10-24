@@ -139,5 +139,3 @@ export const useNotifications = (currentUser?: { id: string } | null) => {
     updateSettings,
   };
 };
-
-

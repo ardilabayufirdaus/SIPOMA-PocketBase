@@ -288,5 +288,3 @@ export const useToastNotifications = () => {
 };
 
 export default useEnhancedNotifications;
-
-

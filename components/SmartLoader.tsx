@@ -151,4 +151,3 @@ const SmartLoader: React.FC<SmartLoaderProps> = ({
 };
 
 export default SmartLoader;
-

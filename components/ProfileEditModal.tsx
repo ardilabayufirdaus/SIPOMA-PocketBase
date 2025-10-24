@@ -350,4 +350,3 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 };
 
 export default ProfileEditModal;
-

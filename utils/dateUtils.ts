@@ -188,4 +188,3 @@ export function getPastDays(days: number, format: string = 'yyyy-MM-dd'): string
 
   return dates;
 }
-

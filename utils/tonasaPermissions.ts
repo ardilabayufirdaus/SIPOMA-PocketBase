@@ -210,4 +210,3 @@ export const validateTonasaPermissions = (
 
   return hasCorrectUnits;
 };
-

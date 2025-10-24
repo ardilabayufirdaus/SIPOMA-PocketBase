@@ -54,6 +54,7 @@ git checkout origin/main -- App.tsx
    ```
 
 4. Jika masih mengalami kesulitan, cobalah memulai dengan template JSX yang sederhana:
+
    ```jsx
    return (
      <ThemeProvider theme={currentTheme}>

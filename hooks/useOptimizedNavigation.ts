@@ -155,4 +155,3 @@ export const useOptimizedSidebar = (
     isMenuExpanded: (menu: string) => expandedMenus[menu] || false,
   };
 };
-

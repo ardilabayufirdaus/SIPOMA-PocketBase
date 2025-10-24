@@ -596,4 +596,3 @@ const UserActivityPage: React.FC<UserActivityPageProps> = ({ t }) => {
 };
 
 export default UserActivityPage;
-

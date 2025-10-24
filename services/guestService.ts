@@ -49,4 +49,3 @@ export const loginAsGuest = async (): Promise<boolean> => {
     return false;
   }
 };
-

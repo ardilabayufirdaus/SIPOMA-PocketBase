@@ -120,5 +120,3 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
 };
 
 export default CcrNavigationHelp;
-
-

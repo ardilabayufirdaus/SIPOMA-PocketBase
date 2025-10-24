@@ -256,5 +256,3 @@ export const usePerformanceMonitoring = () => {
     getPerformanceRecommendations,
   };
 };
-
-

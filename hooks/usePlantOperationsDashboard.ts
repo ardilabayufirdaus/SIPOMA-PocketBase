@@ -97,5 +97,3 @@ export const usePlantOperationsDashboard = () => {
     handleMetricChange,
   };
 };
-
-

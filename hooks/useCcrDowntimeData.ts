@@ -460,4 +460,3 @@ const useCcrDowntimeData = (date?: string) => {
 };
 
 export default useCcrDowntimeData;
-

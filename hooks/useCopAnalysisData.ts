@@ -41,4 +41,3 @@ export const useCopAnalysisData = () => {
 
   return { data, loading, error };
 };
-

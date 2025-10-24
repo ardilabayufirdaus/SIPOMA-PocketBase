@@ -189,5 +189,3 @@ export const formatBudgetCompact = (amount: number): string => {
     return `Rp ${Math.round(amount)}`;
   }
 };
-
-

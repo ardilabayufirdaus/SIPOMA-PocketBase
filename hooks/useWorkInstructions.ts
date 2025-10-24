@@ -84,4 +84,3 @@ export const useWorkInstructions = () => {
 
   return { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction };
 };
-

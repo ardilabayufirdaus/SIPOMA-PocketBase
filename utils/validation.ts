@@ -139,5 +139,3 @@ export const validateForm = (
 };
 
 export default validators;
-
-
