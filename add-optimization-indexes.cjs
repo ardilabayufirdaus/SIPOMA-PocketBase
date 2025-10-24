@@ -6,7 +6,7 @@ const PocketBase = require('pocketbase/cjs');
 require('dotenv').config();
 
 // Initialize PocketBase client
-const pb = new PocketBase(process.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090');
+const pb = new PocketBase(process.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/');
 const adminEmail = process.env.POCKETBASE_ADMIN_EMAIL || 'ardila.firdaus@sig.id';
 const adminPassword = process.env.POCKETBASE_ADMIN_PASSWORD || 'makassar@270989';
 

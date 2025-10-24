@@ -4,7 +4,7 @@ const http = require('http');
 const readline = require('readline');
 
 // URL PocketBase
-const PB_URL = 'http://141.11.25.69:8090';
+const PB_URL = 'https://api.sipoma.site/';
 
 // Create interface for command-line input
 const rl = readline.createInterface({

@@ -10,7 +10,7 @@ import { logger } from './utils/logger';
 
 async function calculateDowntimeDurations() {
   logger.info('Starting CCR Downtime Duration Calculator...');
-  const pb = new PocketBase('http://141.11.25.69:8090');
+  const pb = new PocketBase('https://api.sipoma.site/');
 
   try {
     // Ambil semua data downtime yang belum memiliki duration_minutes

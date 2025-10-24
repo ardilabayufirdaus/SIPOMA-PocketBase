@@ -8,7 +8,7 @@ const PocketBase = require('pocketbase/cjs');
 const readline = require('readline');
 
 // Configuration
-const baseUrl = process.env.PB_URL || 'http://141.11.25.69:8090';
+const baseUrl = process.env.PB_URL || 'https://api.sipoma.site/';
 const adminEmail = process.env.PB_ADMIN_EMAIL || 'ardila.firdaus@sig.id';
 const adminPassword = process.env.PB_ADMIN_PASSWORD || 'makassar@270989';
 
