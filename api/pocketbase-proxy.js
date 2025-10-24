@@ -4,7 +4,7 @@
 export default async function handler(req, res) {
   try {
     // Dalam development, redirect ke backend HTTP langsung
-    const backendUrl = 'http://141.11.25.69:8090';
+    const backendUrl = 'https://api.sipoma.site/';
 
     // Buat URL lengkap untuk backend
     const url = new URL(req.url, backendUrl);

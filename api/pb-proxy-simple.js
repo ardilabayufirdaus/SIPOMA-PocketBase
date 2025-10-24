@@ -1,6 +1,6 @@
 // Simple serverless function for API proxy without Edge Runtime constraints
 // Forwards requests from https://your-vercel-app.vercel.app/api/pb-proxy-simple
-// to your PocketBase server at http://141.11.25.69:8090
+// to your PocketBase server at https://api.sipoma.site/
 
 export default async function handler(req, res) {
   try {
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const queryString = url.search || '';
 
     // Full target URL
-    const targetUrl = `http://141.11.25.69:8090${path}${queryString}`;
+    const targetUrl = `https://api.sipoma.site${path}${queryString}`;
 
     // Create fetch options
     const options = {
