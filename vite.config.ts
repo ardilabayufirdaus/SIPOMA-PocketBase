@@ -5,6 +5,7 @@ import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/SIPOMA-PocketBase/',
   resolve: {
     alias: {
       '@': '/src',
@@ -66,6 +67,8 @@ export default defineConfig({
         theme_color: '#1f2937',
         background_color: '#ffffff',
         display: 'standalone',
+        start_url: '/SIPOMA-PocketBase/', // ✅ tambahkan ini!
+        scope: '/SIPOMA-PocketBase/', // ✅ tambahkan ini!
         icons: [
           {
             src: '/pwa-192x192.png', // Use absolute path with leading slash
