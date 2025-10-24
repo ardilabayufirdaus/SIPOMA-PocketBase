@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom';
 
 // Mock environment variables
-process.env.VITE_POCKETBASE_URL = 'https://141.11.25.69/';
+process.env.VITE_POCKETBASE_URL = 'https://api.sipoma.site/';
 process.env.VITE_POCKETBASE_EMAIL = 'ardila.firdaus@sig.id';
 process.env.VITE_POCKETBASE_PASSWORD = 'makassar@270989';
 process.env.VITE_ENCRYPTION_SEED = 'test-encryption-seed';

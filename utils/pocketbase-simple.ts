@@ -54,7 +54,7 @@ export const getPocketbaseUrl = (): string => {
     return 'http://localhost:5173';
   }
   // In production, use the URL from environment or fallback to direct IP
-  return import.meta.env.VITE_POCKETBASE_URL || 'https://141.11.25.69/';
+  return import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/';
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (selalu return https)
