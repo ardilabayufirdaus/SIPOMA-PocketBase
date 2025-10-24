@@ -101,7 +101,7 @@ async function createCcrParameterIndices() {
 
 // Autentikasi admin (ganti dengan kredensial admin yang sesuai)
 try {
-  await pb.admins.authWithPassword('admin@example.com', 'password');
+  await pb.admins.authWithPassword('ardila.firdaus@sig.id', 'makassar@270989');
   console.log('Berhasil login sebagai admin.');
 
   // Buat indeks setelah autentikasi

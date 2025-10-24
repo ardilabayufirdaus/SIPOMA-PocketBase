@@ -2,9 +2,9 @@
 import '@testing-library/jest-dom';
 
 // Mock environment variables
-process.env.VITE_POCKETBASE_URL = 'http://127.0.0.1:8090';
-process.env.VITE_POCKETBASE_EMAIL = 'admin@example.com';
-process.env.VITE_POCKETBASE_PASSWORD = 'supersecretpassword';
+process.env.VITE_POCKETBASE_URL = 'https://141.11.25.69/';
+process.env.VITE_POCKETBASE_EMAIL = 'ardila.firdaus@sig.id';
+process.env.VITE_POCKETBASE_PASSWORD = 'makassar@270989';
 process.env.VITE_ENCRYPTION_SEED = 'test-encryption-seed';
 
 // Mock ResizeObserver for components that use it
@@ -54,4 +54,3 @@ global.console = {
   error: jest.fn(),
   warn: jest.fn(),
 };
-

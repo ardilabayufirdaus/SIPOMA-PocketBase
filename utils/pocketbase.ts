@@ -4,7 +4,6 @@ import { logger } from './logger';
 // Variabel untuk menyimpan protokol yang berfungsi
 type Protocol = 'https' | 'http';
 let currentProtocol: Protocol = 'http'; // Default ke HTTP untuk lingkungan produksi
-let protocolRetries = 0;
 
 /**
  * Deteksi apakah aplikasi berjalan di lingkungan Vercel
@@ -55,12 +54,7 @@ export const isSecureContext = (): boolean => {
   return false;
 };
 
-const vercelDeployment = isVercelDeployment();
-const isProduction = import.meta.env.PROD || vercelDeployment;
-
 // Gunakan environment variable untuk URL PocketBase
-const pocketbaseUrlEnv = import.meta.env.VITE_POCKETBASE_URL;
-const pocketbaseHost = '141.11.25.69:8090'; // Host default
 const pocketbaseEmail = import.meta.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
 const pocketbasePassword = import.meta.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
 const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultnya true
@@ -71,7 +65,7 @@ const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultn
  * Sekarang menggunakan URL langsung tanpa proxy karena PocketBase sudah HTTPS.
  */
 export const getPocketbaseUrl = (): string => {
-  return 'https://api.sipoma.site/';
+  return 'https://141.11.25.69/';
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (dinonaktifkan)
@@ -79,55 +73,6 @@ export const detectWorkingProtocol = async (): Promise<Protocol> => {
   // Selalu return https karena kita menggunakan HTTPS langsung
   return 'https';
 };
-if (false) {
-  // Logic untuk force HTTP dinonaktifkan
-  logger.info('Force HTTP dinonaktifkan - menggunakan HTTPS langsung'); // Jika protokol sudah ditentukan oleh environment, gunakan itu
-  if (pocketbaseUrlEnv) {
-    // Di production environment, paksa HTTP meskipun env menggunakan HTTPS
-    if (isProduction && pocketbaseUrlEnv.startsWith('https')) {
-      return 'http';
-    }
-    return pocketbaseUrlEnv.startsWith('https') ? 'https' : 'http';
-  }
-
-  // Pertama coba HTTPS
-  try {
-    logger.info('Mencoba koneksi HTTPS ke PocketBase...');
-    await fetch(`https://${pocketbaseHost}/api/health`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(3000), // Timeout lebih singkat untuk HTTPS
-    });
-    logger.info('Koneksi HTTPS berhasil');
-    return 'https';
-  } catch (error) {
-    if (
-      error.message?.includes('SSL') ||
-      error.message?.includes('certificate') ||
-      error.message?.includes('ERR_SSL_PROTOCOL_ERROR')
-    ) {
-      logger.warn('Koneksi HTTPS gagal karena masalah SSL:', error.message);
-    } else {
-      logger.warn('Koneksi HTTPS gagal:', error.message);
-    }
-
-    // Coba dengan HTTP sebagai fallback
-    try {
-      logger.info('Mencoba koneksi HTTP ke PocketBase...');
-      await fetch(`http://${pocketbaseHost}/api/health`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(3000),
-      });
-      logger.info('Koneksi HTTP berhasil');
-      return 'http';
-    } catch (secondError) {
-      logger.error('Koneksi HTTP juga gagal:', secondError.message);
-      // Default kembali ke HTTPS meskipun keduanya gagal
-      return 'https';
-    }
-  }
-}
 
 // Fungsi untuk mengatur kembali koneksi jika protokol perlu diganti
 export const resetConnection = async (): Promise<void> => {
@@ -140,9 +85,6 @@ export const resetConnection = async (): Promise<void> => {
   // Deteksi protokol yang berfungsi
   currentProtocol = await detectWorkingProtocol();
   logger.info(`Menggunakan protokol ${currentProtocol.toUpperCase()} untuk koneksi PocketBase`);
-
-  // Reset counter
-  protocolRetries = 0;
 };
 
 // Singleton pattern untuk mencegah multiple client instances
@@ -239,43 +181,10 @@ class RequestThrottler {
 
 const requestThrottler = new RequestThrottler();
 
-// Inisialisasi PocketBase dengan deteksi protokol otomatis
-const initializePocketBase = async (): Promise<PocketBase> => {
-  try {
-    // Deteksi protokol yang berfungsi jika belum pernah dicoba
-    if (protocolRetries === 0) {
-      currentProtocol = await detectWorkingProtocol();
-      logger.info(`Inisialisasi PocketBase dengan protokol ${currentProtocol.toUpperCase()}`);
-    }
-
-    // Buat instance baru
-    const instance = new PocketBase(getPocketbaseUrl());
-
-    // Mengatur global fetch timeout dengan lebih panjang
-    instance.autoCancellation(false); // Matikan auto cancellation built-in
-
-    return instance;
-  } catch (error) {
-    logger.error('Gagal inisialisasi PocketBase:', error);
-    // Fallback ke protokol HTTP jika terjadi kegagalan dan protokol saat ini adalah HTTPS
-    if (currentProtocol === 'https' && protocolRetries < 2) {
-      protocolRetries++;
-      currentProtocol = 'http';
-      logger.info(`Mencoba ulang dengan protokol HTTP (percobaan ke-${protocolRetries})`);
-      return initializePocketBase();
-    }
-
-    // Jika semua gagal, kembalikan instance dengan protokol default
-    const defaultInstance = new PocketBase(getPocketbaseUrl());
-    defaultInstance.autoCancellation(false);
-    return defaultInstance;
-  }
-};
-
 export const pb = (() => {
   if (!pbInstance) {
     // Di Vercel/production, paksa gunakan HTTP untuk mengatasi masalah mixed content
-    if (isVercelDeployment || forceHttp) {
+    if (isVercelDeployment) {
       logger.info('Mode production/Vercel terdeteksi, koneksi PocketBase dipaksa menggunakan HTTP');
       currentProtocol = 'http';
     }
@@ -334,7 +243,7 @@ export const pb = (() => {
 
             // Jika di Vercel atau forced HTTP, selalu ganti HTTPS ke HTTP
             if (
-              (isSSLError || isVercelDeployment || forceHttp) &&
+              (isSSLError || isVercelDeployment) &&
               (currentProtocol === 'https' ||
                 (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')))
             ) {
@@ -376,7 +285,7 @@ export const pb = (() => {
                 logger.error('Request dengan HTTP juga gagal:', httpError);
 
                 // Jika di Vercel dan tetap gagal, coba lagi dengan URL yang dikonfigurasi manual
-                if (isVercelDeployment || forceHttp) {
+                if (isVercelDeployment) {
                   try {
                     // Pastikan baseUrl juga menggunakan HTTP
                     if (pbInstance?.baseUrl?.startsWith('https://')) {
@@ -565,8 +474,7 @@ export const pb = (() => {
         originalOnResponse.call(this, url, options);
       }
 
-      // Force HTTP protocol for all Vercel production requests
-      if (isVercelDeployment || forceHttp) {
+      if (isVercelDeployment) {
         if (typeof url === 'string' && url.startsWith('https://')) {
           url = url.replace('https://', 'http://');
           logger.debug(`Vercel prod: URL dikonversi ke HTTP: ${url}`);
@@ -582,7 +490,7 @@ export const pb = (() => {
           // Ganti URL HTTPS ke HTTP untuk semua request di Vercel atau jika force HTTP diaktifkan
           if (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')) {
             // Untuk Vercel production atau jika force HTTP diaktifkan, selalu gunakan HTTP
-            if (isVercelDeployment || forceHttp) {
+            if (isVercelDeployment) {
               args[0] = args[0].replace('https://', 'http://');
               logger.debug(`Vercel prod: URL dikonversi ke HTTP: ${args[0]}`);
             }
@@ -659,7 +567,7 @@ export const pb = (() => {
             error.message?.includes('certificate') ||
             error.message?.includes('Failed to fetch');
 
-          if (isSSLError || isVercelDeployment || forceHttp) {
+          if (isSSLError || isVercelDeployment) {
             logger.warn(`Koneksi error terdeteksi: ${error.message}`);
 
             // Jika URL menggunakan HTTPS, coba dengan HTTP

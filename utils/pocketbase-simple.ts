@@ -42,15 +42,19 @@ export const isSecureContext = (): boolean => {
 
 /**
  * Fungsi untuk mendapatkan URL PocketBase
- * Di development menggunakan proxy, di production menggunakan HTTPS langsung
+ * Menggunakan proxy di development, direct HTTPS di production
  */
 export const getPocketbaseUrl = (): string => {
-  // In development, use the proxy to avoid CORS issues
+  // In development, use current origin so requests go through Vite proxy
   if (import.meta.env.DEV) {
-    return '/api/pb-proxy/';
+    if (typeof window !== 'undefined' && window.location) {
+      return window.location.origin;
+    }
+    // Fallback for SSR or when window is not available
+    return 'http://localhost:5173';
   }
-  // In production, use direct HTTPS
-  return 'https://api.sipoma.site/';
+  // In production, use the URL from environment or fallback to direct IP
+  return import.meta.env.VITE_POCKETBASE_URL || 'https://141.11.25.69/';
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (selalu return https)

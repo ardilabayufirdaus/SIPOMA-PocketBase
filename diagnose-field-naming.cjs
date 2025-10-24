@@ -11,8 +11,8 @@ async function main() {
   try {
     // Authenticate
     await pb.admins.authWithPassword(
-      process.env.PB_ADMIN_EMAIL || 'admin@example.com',
-      process.env.PB_ADMIN_PASSWORD || 'password'
+      process.env.PB_ADMIN_EMAIL || 'ardila.firdaus@sig.id',
+      process.env.PB_ADMIN_PASSWORD || 'makassar@270989'
     );
 
     // Get schema of ccr_silo_data collection

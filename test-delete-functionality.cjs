@@ -6,7 +6,7 @@ async function testDeleteFunctionality() {
 
   try {
     // Login sebagai admin
-    await pb.admins.authWithPassword('admin@example.com', 'password123');
+    await pb.admins.authWithPassword('ardila.firdaus@sig.id', 'makassar@270989');
 
     console.log('Connected to PocketBase');
 

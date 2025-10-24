@@ -11,8 +11,8 @@ async function main() {
   try {
     // Authenticate
     await pb.admins.authWithPassword(
-      process.env.PB_ADMIN_EMAIL || 'admin@example.com',
-      process.env.PB_ADMIN_PASSWORD || 'password'
+      process.env.PB_ADMIN_EMAIL || 'ardila.firdaus@sig.id',
+      process.env.PB_ADMIN_PASSWORD || 'makassar@270989'
     );
 
     // 1. Get the latest 5 ccr_silo_data records

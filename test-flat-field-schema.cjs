@@ -11,8 +11,8 @@ async function testFlatFieldSchema() {
   try {
     // Authenticate as admin
     await pb.admins.authWithPassword(
-      process.env.PB_ADMIN_EMAIL || 'admin@example.com',
-      process.env.PB_ADMIN_PASSWORD || 'password'
+      process.env.PB_ADMIN_EMAIL || 'ardila.firdaus@sig.id',
+      process.env.PB_ADMIN_PASSWORD || 'makassar@270989'
     );
     console.log('Authenticated as admin');
 

@@ -216,46 +216,15 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', '@tanstack/react-query', 'pocketbase'],
   },
-  // Development server proxy for API calls
+  // Development server configuration
   server: {
     host: true, // Allow external access
+    port: 5173,
     proxy: {
-      '/api/pb-proxy': {
-        target: 'https://api.sipoma.site/',
+      '/api': {
+        target: 'https://141.11.25.69',
         changeOrigin: true,
-        secure: true,
-        ws: false,
-        rewrite: (path) => path.replace(/^\/api\/pb-proxy/, ''),
-        configure: (proxy, options) => {
-          // eslint-disable-next-line no-unused-vars
-          proxy.on('error', (err, _req, _res) => {
-            // eslint-disable-next-line no-console
-            console.log('Proxy error:', err);
-          });
-          // eslint-disable-next-line no-unused-vars
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            // Ensure proper headers are forwarded
-            if (req.headers['content-type']) {
-              proxyReq.setHeader('Content-Type', req.headers['content-type']);
-            }
-            if (req.headers['authorization']) {
-              proxyReq.setHeader('Authorization', req.headers['authorization']);
-            }
-            // eslint-disable-next-line no-console
-            console.log(
-              'Proxying request:',
-              req.method,
-              req.url,
-              '->',
-              options.target + proxyReq.path
-            );
-          });
-          // eslint-disable-next-line no-unused-vars
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            // eslint-disable-next-line no-console
-            console.log('Proxy response:', proxyRes.statusCode, req.url);
-          });
-        },
+        secure: false, // karena SSL self-signed
       },
     },
   },
