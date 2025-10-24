@@ -265,7 +265,7 @@ export const pb = (() => {
               if (args[0] && typeof args[0] === 'string') {
                 // Ganti semua URL HTTPS ke HTTP
                 if (args[0].startsWith('https://')) {
-                  args[0] = args[0].replace('https://', 'http://');
+                  // args[0] = args[0].replace('https://', 'http://');
                   logger.info(`URL request diubah: ${args[0]}`);
                 }
               }
@@ -289,11 +289,12 @@ export const pb = (() => {
                   try {
                     // Pastikan baseUrl juga menggunakan HTTP
                     if (pbInstance?.baseUrl?.startsWith('https://')) {
-                      const httpBaseUrl = pbInstance.baseUrl.replace('https://', 'http://');
-                      logger.info(
-                        `Mengubah base URL PocketBase dari ${pbInstance.baseUrl} ke ${httpBaseUrl}`
-                      );
-                      pbInstance = new PocketBase(httpBaseUrl);
+                      // const httpBaseUrl = pbInstance.baseUrl.replace('https://', 'http://');
+                      logger
+                        .info
+                        // Fallback ke HTTP dihapus, hanya gunakan baseUrl HTTPS
+                        ();
+                      // pbInstance = new PocketBase(httpBaseUrl); // Fallback ke HTTP dihapus
                       pbInstance.autoCancellation(false);
                     }
 
@@ -476,7 +477,7 @@ export const pb = (() => {
 
       if (isVercelDeployment) {
         if (typeof url === 'string' && url.startsWith('https://')) {
-          url = url.replace('https://', 'http://');
+          // url = url.replace('https://', 'http://');
           logger.debug(`Vercel prod: URL dikonversi ke HTTP: ${url}`);
         }
       }
@@ -491,12 +492,12 @@ export const pb = (() => {
           if (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')) {
             // Untuk Vercel production atau jika force HTTP diaktifkan, selalu gunakan HTTP
             if (isVercelDeployment) {
-              args[0] = args[0].replace('https://', 'http://');
+              // args[0] = args[0].replace('https://', 'http://');
               logger.debug(`Vercel prod: URL dikonversi ke HTTP: ${args[0]}`);
             }
             // Untuk kasus lain, gunakan protokol yang telah ditentukan
             else if (currentProtocol === 'http') {
-              args[0] = args[0].replace('https://', 'http://');
+              // args[0] = args[0].replace('https://', 'http://');
               logger.debug(`URL dikonversi ke HTTP: ${args[0]}`);
             }
           }
@@ -572,8 +573,8 @@ export const pb = (() => {
 
             // Jika URL menggunakan HTTPS, coba dengan HTTP
             if (args[0] && typeof args[0] === 'string' && args[0].startsWith('https://')) {
-              const httpUrl = args[0].replace('https://', 'http://');
-              logger.info(`Mencoba ulang dengan HTTP: ${httpUrl}`);
+              // const httpUrl = args[0].replace('https://', 'http://');
+              // logger.info(`Mencoba ulang dengan HTTP: ${httpUrl}`); // Fallback ke HTTP dihapus
 
               // Selalu update protokol global ke HTTP untuk Vercel/Production
               currentProtocol = 'http';
@@ -588,7 +589,7 @@ export const pb = (() => {
 
               // Try with HTTP
               try {
-                args[0] = httpUrl;
+                // args[0] = httpUrl; // Fallback ke HTTP dihapus
                 return await originalFetch(...args);
               } catch (httpError) {
                 logger.error('Retry dengan HTTP juga gagal:', httpError);

@@ -118,7 +118,7 @@ const ConnectionHelp: React.FC = () => {
           </p>
         ) : (
           <a
-            href={window.location.href.replace('https://', 'http://')}
+            // href={window.location.href.replace('https://', 'http://')}
             style={{
               display: 'inline-block',
               padding: '8px 16px',

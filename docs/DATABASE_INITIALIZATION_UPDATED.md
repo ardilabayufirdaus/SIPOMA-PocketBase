@@ -12,7 +12,7 @@ Error 404 terjadi karena record "default" tidak ada di collection `cop_parameter
 
 ### 1. Buat Record Default Manual
 
-Buka PocketBase Admin Panel (`http://141.11.25.69:8090/_/`):
+Buka PocketBase Admin Panel (`https://api.sipoma.site/_/`):
 
 1. Pergi ke **Collections** → **cop_parameters**
 2. Klik **New Record**
