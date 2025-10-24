@@ -4,7 +4,7 @@
  * Untuk mendiagnosis masalah koneksi dan timeout dengan PocketBase:
  *
  * 1. Periksa apakah server PocketBase tersedia:
- *    - Pastikan URL PocketBase benar (http://141.11.25.69:8090)
+ *    - Pastikan URL PocketBase benar (https://api.sipoma.site/)
  *    - Coba akses URL tersebut di browser
  *    - Periksa koneksi jaringan Anda
  *
@@ -38,7 +38,7 @@
 // 1. Buka browser console (F12)
 // 2. Jalankan:
 /*
-fetch('http://141.11.25.69:8090/api/health')
+fetch('https://api.sipoma.site/api/health')
   .then(res => res.json())
   .then(console.log)
   .catch(console.error)
@@ -49,7 +49,7 @@ fetch('http://141.11.25.69:8090/api/health')
 async function checkConnection(retries = 3) {
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await fetch('http://141.11.25.69:8090/api/health', {
+  const res = await fetch('https://api.sipoma.site/api/health', {
         signal: AbortSignal.timeout(5000) // 5 detik timeout
       });
       const data = await res.json();

@@ -3,7 +3,7 @@ const https = require('https');
 const http = require('http');
 
 // URL PocketBase
-const PB_URL = 'http://141.11.25.69:8090';
+const PB_URL = 'https://api.sipoma.site/';
 
 // Helper untuk fetch
 function fetch(url, options = {}) {

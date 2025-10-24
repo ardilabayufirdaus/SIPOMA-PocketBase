@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 
 // Konfigurasi
 const config = {
-  pocketbaseUrl: process.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090',
+  pocketbaseUrl: process.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/',
   guestUsername: process.env.VITE_GUEST_USERNAME || 'guest',
   guestPassword: process.env.VITE_GUEST_PASSWORD || 'guest123',
 };

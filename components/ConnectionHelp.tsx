@@ -74,8 +74,8 @@ const ConnectionHelp: React.FC = () => {
         <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>Why is this happening?</h3>
         <p style={{ margin: '0', lineHeight: '1.5' }}>
           Modern browsers block &quot;mixed content&quot; (HTTP resources on HTTPS pages) by default
-          for security. The SIPOMA backend server at <strong>141.11.25.69:8090</strong> uses HTTP,
-          but Vercel hosts this site using HTTPS, causing this security conflict.
+          for security. The SIPOMA backend server at <strong>https://api.sipoma.site/</strong> uses
+          HTTPS, but Vercel hosts this site using HTTPS, causing this security conflict.
         </p>
       </div>
 

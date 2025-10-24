@@ -447,7 +447,8 @@ export const useCcrParameterDataFlat = () => {
       hour: number, // 1-24
       value: string | number | null,
       userName: string, // nama user login
-      selectedUnit?: string // parameter tambahan untuk plant_unit
+      selectedUnit?: string, // parameter tambahan untuk plant_unit
+      opts?: { skipTrigger?: boolean } // optional: skip global dataVersion trigger
     ) => {
       // Enhanced validation for date parameter
       if (
@@ -573,8 +574,10 @@ export const useCcrParameterDataFlat = () => {
           }
         }
 
-        // Trigger data update throughout the app
-        setDataVersion((prev) => prev + 1);
+        // Trigger data update throughout the app unless explicitly skipped
+        if (!opts || !opts.skipTrigger) {
+          setDataVersion((prev) => prev + 1);
+        }
 
         return true;
       } catch (error) {

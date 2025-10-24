@@ -10,7 +10,7 @@ import { logger } from './utils/logger';
 
 async function validateAndUpdateCcrDowntimeSchema() {
   logger.info('Starting CCR Downtime Schema Validation...');
-  const pb = new PocketBase('http://141.11.25.69:8090');
+  const pb = new PocketBase('https://api.sipoma.site/');
 
   try {
     // 1. Ambil informasi skema koleksi saat ini
