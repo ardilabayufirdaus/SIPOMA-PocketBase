@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { pb, ensureAuthenticated } from '../utils/pocketbase-simple';
+import { pb, ensureAuthenticated } from '../utils/pocketbase';
 
 // Define the types for our batch operations
 interface BatchOperation<T> {

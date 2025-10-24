@@ -12,6 +12,6 @@
   "buildCommand": "npm install @mui/material @emotion/react @emotion/styled && npm run build",
   "version": 2,
   "env": {
-    "VITE_POCKETBASE_URL": "https://api.sipoma.site/"
+    "VITE_POCKETBASE_URL": "https://141.11.25.69/"
   }
 }

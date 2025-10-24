@@ -43,8 +43,11 @@ class ConnectionPool {
     try {
       logger.info('Inisialisasi koneksi ke PocketBase...');
 
+      // Always use direct URL for health check to avoid proxy issues
+      const healthCheckUrl = 'https://141.11.25.69/api/health';
+
       // Coba ping server untuk memverifikasi koneksi
-      const response = await fetch(`${this.serverUrl}/api/health`, {
+      const response = await fetch(healthCheckUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +83,8 @@ class ConnectionPool {
     // Periksa koneksi setiap 30 detik
     this.healthCheckInterval = setInterval(async () => {
       try {
-        const response = await fetch(`${this.serverUrl}/api/health`, {
+        // Always use direct URL for health check to avoid proxy issues
+        const response = await fetch('https://141.11.25.69/api/health', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -145,4 +149,3 @@ export const useConnectionPreparation = () => {
     logger.error('Error saat pre-connect:', err);
   });
 };
-

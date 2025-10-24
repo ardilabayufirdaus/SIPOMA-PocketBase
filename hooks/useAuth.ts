@@ -66,7 +66,7 @@ export const useAuth = () => {
           return cachedUser;
         }
 
-        // Use PocketBase's built-in authentication - mode development dan preview harus konsisten
+        // Use PocketBase's built-in authentication - use users collection for regular user login
         const authData = await pb.collection('users').authWithPassword(identifier, password);
 
         // Get the authenticated user data
@@ -188,4 +188,3 @@ export const useAuth = () => {
 
   return { user, loading, login, logout };
 };
-

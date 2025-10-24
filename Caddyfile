@@ -1,11 +1,22 @@
-# Caddy Configuration for PocketBase HTTPS
-# Save this as /etc/caddy/Caddyfile
-
 141.11.25.69 {
     # Enable automatic HTTPS
     tls {
         protocols tls1.2 tls1.3
     }
+
+    # CORS headers for API access - use wildcard for development
+    header {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+        Access-Control-Max-Age "86400"
+    }
+
+    # Handle preflight OPTIONS requests
+    @options {
+        method OPTIONS
+    }
+    respond @options 204
 
     # Security headers
     header {
