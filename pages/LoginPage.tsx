@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { EnhancedButton } from '../components/ui/EnhancedComponents';
-import RegistrationForm from '../components/RegistrationForm';
-import { secureStorage } from '../utils/secureStorage';
 import { User, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
@@ -12,7 +10,6 @@ const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [showRegistration, setShowRegistration] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, loading, login } = useAuth();
   const navigate = useNavigate();
@@ -68,43 +65,6 @@ const LoginPage: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Modified guest login to use proper authentication
-  const handleGuestLogin = async () => {
-    setError(null);
-    setIsSubmitting(true);
-    setLoginAttempted(true);
-
-    try {
-      // Gunakan kredensial guest yang valid dari database
-      const guestUsername = import.meta.env.VITE_GUEST_USERNAME || 'guest';
-      const guestPassword = import.meta.env.VITE_GUEST_PASSWORD || 'guest123';
-
-      // Authenticate through PocketBase - harus lewat validasi normal
-      const loggedInUser = await login(guestUsername, guestPassword);
-
-      if (loggedInUser) {
-        // Dispatch auth state change event
-        window.dispatchEvent(new CustomEvent('authStateChanged'));
-
-        // Navigate immediately
-        navigate('/', { replace: true });
-      } else {
-        setError(t.login_guest_error);
-      }
-    } catch (error) {
-      console.error('Guest login error:', error);
-      setError(t.login_guest_error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleRegistrationSuccess = () => {
-    setError(null);
-    setShowRegistration(false);
-    // Optional: bisa tambahkan pesan sukses di sini
   };
 
   return (
@@ -204,46 +164,12 @@ const LoginPage: React.FC = () => {
             >
               {isSubmitting || loading ? t.login_logging_in : t.sign_in}
             </EnhancedButton>
-            <div className="mt-4">
-              <EnhancedButton
-                onClick={handleGuestLogin}
-                loading={isSubmitting || loading}
-                disabled={isSubmitting || loading}
-                fullWidth
-                size="lg"
-                variant="outline"
-                className="font-semibold text-lg shadow"
-              >
-                {isSubmitting || loading ? t.login_logging_in : t.login_guest_button}
-              </EnhancedButton>
-            </div>
           </form>
-          <div className="mt-4 text-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              {t.login_no_account}{' '}
-              <EnhancedButton
-                onClick={() => setShowRegistration(true)}
-                variant="ghost"
-                size="sm"
-                className="font-medium underline px-1"
-              >
-                {t.login_register_here}
-              </EnhancedButton>
-            </span>
-          </div>
           <div className="mt-8 text-xs text-slate-400 dark:text-slate-500 text-center animate-fadein-footer">
             &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
           </div>
         </motion.div>
       </div>
-
-      {showRegistration && (
-        <RegistrationForm
-          onClose={() => setShowRegistration(false)}
-          onSuccess={handleRegistrationSuccess}
-          t={t}
-        />
-      )}
     </>
   );
 };

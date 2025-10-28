@@ -136,6 +136,14 @@ export const translations = {
     link_plant_dashboard: 'View Plant Dashboard',
     link_project_board: 'Open Project Board',
 
+    // Main Dashboard Charts
+    performance_overview_title: 'Performance Overview',
+    performance_overview_subtitle: 'Real-time production and efficiency metrics',
+    project_status_title: 'Project Status',
+    project_status_subtitle: '{count} active projects',
+    active_projects_title: 'Active Projects',
+    total_production_title: 'Total Production',
+
     // Settings Page
     settings_page_subtitle: 'Manage your account preferences and profile details here.',
     profile_information: 'Profile Information',
@@ -176,6 +184,15 @@ export const translations = {
     inactive: 'Inactive',
     edit_user_title: 'Edit User',
     add_user_title: 'Add New User',
+
+    // User Management Statistics
+    total_users_title: 'Total Users',
+    active_users_title: 'Active Users',
+    inactive_users_title: 'Inactive Users',
+    administrators_title: 'Administrators',
+    super_admins_title: 'Super Admins',
+    recent_users_title: 'Recent Users',
+    recent_users_subtitle: 'Added in last 30 days',
 
     // User Form
     email_label: 'Email',
@@ -225,74 +242,11 @@ export const translations = {
     // User Management Sub-Menu
     user_list: 'Users List',
 
-    user_activity: 'User Activity',
     bulk_operations: 'Bulk Operations',
     user_audit: 'User Audit',
 
     // User Management Descriptions
     user_list_description: 'Manage and view all users in the system',
-
-    user_activity_description: 'Monitor user activities and online status',
-
-    // User Activity Monitoring
-    activity_monitoring: 'User Activity Monitoring',
-    activity_monitor_desc: 'Monitor and analyze user behavior and system usage',
-    activity_active_users: 'Active Users',
-    activity_total_sessions: 'Total Sessions',
-    activity_avg_duration: 'Avg Session Duration',
-    activity_total_actions: 'Total Actions',
-    activity_most_active: 'Most Active Users',
-    activity_most_modules: 'Most Used Modules',
-    activity_recent_sessions: 'Recent User Sessions',
-    activity_recent_actions: 'Recent User Actions',
-    activity_session_start: 'Session Start',
-    activity_duration: 'Duration',
-    activity_device: 'Device',
-    activity_status: 'Status',
-    activity_user: 'User',
-    activity_action: 'Action',
-    activity_module: 'Module',
-    activity_timestamp: 'Timestamp',
-    activity_success: 'Success',
-    activity_failed: 'Failed',
-    activity_active: 'Active',
-    activity_ended: 'Ended',
-    activity_overview: 'Overview',
-    activity_sessions: 'User Sessions',
-    activity_actions: 'User Actions',
-    activity_filters: 'Filters',
-    activity_export: 'Export',
-    activity_refresh: 'Refresh',
-    activity_date_range: 'Date Range',
-    activity_action_type: 'Action Type',
-    activity_success_status: 'Success Status',
-    activity_all: 'All',
-    activity_login: 'Login',
-    activity_logout: 'Logout',
-    activity_view: 'View',
-    activity_create: 'Create',
-    activity_update: 'Update',
-    activity_delete: 'Delete',
-    activity_import: 'Import',
-    activity_loading_sessions: 'Loading sessions...',
-    activity_loading_actions: 'Loading actions...',
-    activity_error_loading: 'Error Loading Activity Data',
-    activity_retry: 'Retry',
-    activity_actions_count: 'actions',
-    activity_last: 'Last',
-    activity_desktop: 'Desktop',
-    activity_mobile: 'Mobile',
-    activity_tablet: 'Tablet',
-
-    // Activity Page
-    online_users: 'Online Users',
-    no_online_users: 'No users currently online',
-
-    all_users: 'All Users',
-    all_actions: 'All Actions',
-    activity_log: 'Activity Log',
-    entries: 'entries',
-    ip_address: 'IP Address',
 
     // Roles Page
     users_with_role: 'users with this role',
@@ -348,7 +302,9 @@ export const translations = {
 
     // Plant Operations Report Page
     op_report_title: 'Daily Operational Report',
-    generate_report_button: 'Generate Report',
+    generate_report_button: 'Generate Log Sheet',
+    generate_report_subtitle: 'Logsheet Daily Report',
+    generate_simple_data_button: 'Generate Simple Data',
     download_button: 'Download',
     download_as_image: 'Download as Image (.png)',
     download_as_pdf: 'Download as PDF (.pdf)',
@@ -394,6 +350,10 @@ export const translations = {
     report_settings_title: 'Report Settings',
     report_settings_subtitle: 'Report parameter ordering and configuration',
     report_settings_description: 'Configure report parameter ordering and display settings',
+    simple_report_settings_title: 'Simple Report Settings',
+    simple_report_settings_subtitle: 'Configure parameters for simple operational reports',
+    add_simple_report_parameter_title: 'Add Simple Report Parameter',
+    edit_simple_report_parameter_title: 'Edit Simple Report Parameter',
     parameter_select_label: 'Parameter',
     report_category_label: 'Category',
     unit: 'Plant Unit',
@@ -475,6 +435,8 @@ export const translations = {
     empty_space: 'Empty Space (m)',
     content: 'Content (Ton)',
     percentage: 'Percentage (%)',
+    parameter_data: 'Parameter Data',
+    material_usage: 'Material Usage',
     downtime_data_entry_title: 'Downtime Data Entry',
     information: 'Information',
     information_label: 'Additional information in operations',
@@ -522,6 +484,59 @@ export const translations = {
     unit_help: 'Unit should be unique within its category',
     category_help: 'Category groups related production units',
     naming_help: 'Use clear, descriptive names for easy identification',
+
+    // CCR Data Entry specific keys
+    ccr_material_usage_entry_title: 'CCR Material Usage Entry',
+    loading_data: 'Loading data...',
+    select_category_unit_date_first: 'Please select category, unit, and date first',
+    select_unit_first: 'Please select Unit Name first before adding downtime.',
+    failed_to_fetch_profiles: 'Failed to fetch profiles',
+    profile_saved_successfully: 'Profile saved successfully',
+    failed_to_save_profile: 'Failed to save profile',
+    parameter_order_exported_successfully: 'Parameter order exported successfully',
+    failed_to_export_parameter_order: 'Failed to export parameter order',
+    invalid_excel_file_format: 'Invalid Excel file format',
+    warning_some_parameters_not_imported: 'Warning: Some parameters could not be imported',
+    parameter_order_imported_successfully: 'Parameter order imported successfully',
+    failed_to_process_excel_file: 'Failed to process Excel file',
+    failed_to_import_parameter_order: 'Failed to import parameter order',
+    profile_loaded: 'Profile "{name}" loaded',
+    failed_to_load_profile: 'Failed to load profile',
+    invalid_profile_selected: 'Invalid profile selected',
+    you_can_only_delete_own_profiles: 'You can only delete your own profiles',
+    profile_deleted_successfully: 'Profile "{name}" deleted successfully',
+    failed_to_delete_profile: 'Failed to delete profile',
+    network_error_delete_profile: 'Failed to delete profile: Network or server error',
+    error_fetching_parameter_data: 'Error fetching parameter data',
+    no_parameter_data_found: 'No parameter data found for the selected date and unit.',
+    no_plant_categories_found: 'No plant categories found in Master Data.',
+    no_silo_master_data_found: 'No silo master data found for category: {category}.',
+    no_parameter_master_data_found: 'No parameter master data found for unit: {unit}.',
+    parameter_not_found: 'Parameter "{name}" not found in parameter settings for unit {unit}',
+    choose_category: 'Choose Category',
+    choose_unit: 'Choose Unit',
+
+    // CCR Data Entry Modal Titles
+    parameter_position_title: 'Enter parameter position number',
+    search_columns_tooltip:
+      'Search columns by parameter name or unit. Use Ctrl+F to focus, Escape to clear.',
+    confirm_delete_downtime_title: 'Confirm Delete Downtime',
+    reorder_parameters_title: 'Reorder Parameters',
+    save_parameter_order_profile_title: 'Save Parameter Order Profile',
+    load_parameter_order_profile_title: 'Load Parameter Order Profile',
+    delete_parameter_order_profile_title: 'Delete Parameter Order Profile',
+
+    // CCR Data Entry Section Descriptions
+    ccr_silo_data_description: 'CCR silo data for capacity monitoring',
+    ccr_material_usage_description: 'CCR material usage data for consumption monitoring',
+    ccr_information_description: "Record important information related to today's CCR operations.",
+    ccr_downtime_description:
+      'Record downtime time and reasons for production efficiency analysis.',
+
+    // CCR Data Entry Page Descriptions
+    ccr_page_description: 'Manage CCR data for plant performance monitoring',
+    ccr_parameter_section_description:
+      'Ensure Plant Category and Plant Unit match the applied filters before filling parameter data.',
 
     // Autonomous Data Entry
     autonomous_downtime_follow_up: 'Downtime Follow-up',
@@ -800,6 +815,14 @@ export const translations = {
     link_plant_dashboard: 'Lihat Dasbor Pabrik',
     link_project_board: 'Buka Papan Proyek',
 
+    // Main Dashboard Charts
+    performance_overview_title: 'Ringkasan Kinerja',
+    performance_overview_subtitle: 'Metrik produksi dan efisiensi real-time',
+    project_status_title: 'Status Proyek',
+    project_status_subtitle: '{count} proyek aktif',
+    active_projects_title: 'Proyek Aktif',
+    total_production_title: 'Total Produksi',
+
     // Settings Page
     settings_page_subtitle: 'Kelola preferensi akun dan detail profil Anda di sini.',
     profile_information: 'Informasi Profil',
@@ -841,6 +864,15 @@ export const translations = {
     inactive: 'Tidak Aktif',
     edit_user_title: 'Ubah Pengguna',
     add_user_title: 'Tambah Pengguna Baru',
+
+    // User Management Statistics
+    total_users_title: 'Total Pengguna',
+    active_users_title: 'Pengguna Aktif',
+    inactive_users_title: 'Pengguna Tidak Aktif',
+    administrators_title: 'Administrator',
+    super_admins_title: 'Super Admin',
+    recent_users_title: 'Pengguna Terbaru',
+    recent_users_subtitle: 'Ditambahkan dalam 30 hari terakhir',
 
     // User Form
     email_label: 'Email',
@@ -891,75 +923,11 @@ export const translations = {
     // User Management Sub-Menu
     user_list: 'Daftar Pengguna',
 
-    user_activity: 'Aktivitas Pengguna',
     bulk_operations: 'Operasi Massal',
     user_audit: 'Audit Pengguna',
 
     // User Management Descriptions
     user_list_description: 'Kelola dan lihat semua pengguna dalam sistem',
-
-    user_activity_description: 'Pantau aktivitas pengguna dan status online',
-
-    // User Activity Monitoring
-    activity_monitoring: 'Pemantauan Aktivitas Pengguna',
-    activity_monitor_desc: 'Pantau dan analisis perilaku pengguna serta penggunaan sistem',
-    activity_active_users: 'Pengguna Aktif',
-    activity_total_sessions: 'Total Sesi',
-    activity_avg_duration: 'Durasi Sesi Rata-rata',
-    activity_total_actions: 'Total Tindakan',
-    activity_most_active: 'Pengguna Paling Aktif',
-    activity_most_modules: 'Modul Paling Digunakan',
-    activity_recent_sessions: 'Sesi Pengguna Terbaru',
-    activity_recent_actions: 'Tindakan Pengguna Terbaru',
-    activity_session_start: 'Mulai Sesi',
-    activity_duration: 'Durasi',
-    activity_device: 'Perangkat',
-    activity_status: 'Status',
-    activity_user: 'Pengguna',
-    activity_action: 'Tindakan',
-    activity_module: 'Modul',
-    activity_timestamp: 'Waktu',
-    activity_success: 'Berhasil',
-    activity_failed: 'Gagal',
-    activity_active: 'Aktif',
-    activity_ended: 'Berakhir',
-    activity_overview: 'Ikhtisar',
-    activity_sessions: 'Sesi Pengguna',
-    activity_actions: 'Tindakan Pengguna',
-    activity_filters: 'Filter',
-    activity_export: 'Ekspor',
-    activity_refresh: 'Segarkan',
-    activity_date_range: 'Rentang Tanggal',
-    activity_action_type: 'Jenis Tindakan',
-    activity_success_status: 'Status Keberhasilan',
-    activity_all: 'Semua',
-    activity_login: 'Masuk',
-    activity_logout: 'Keluar',
-    activity_view: 'Lihat',
-    activity_create: 'Buat',
-    activity_update: 'Perbarui',
-    activity_delete: 'Hapus',
-    activity_import: 'Impor',
-    activity_loading_sessions: 'Memuat sesi...',
-    activity_loading_actions: 'Memuat tindakan...',
-    activity_error_loading: 'Error Memuat Data Aktivitas',
-    activity_retry: 'Coba Lagi',
-    activity_actions_count: 'tindakan',
-    activity_last: 'Terakhir',
-    activity_desktop: 'Desktop',
-    activity_mobile: 'Mobile',
-    activity_tablet: 'Tablet',
-
-    // Activity Page
-    online_users: 'Pengguna Online',
-    no_online_users: 'Tidak ada pengguna yang sedang online',
-
-    all_users: 'Semua Pengguna',
-    all_actions: 'Semua Tindakan',
-    activity_log: 'Log Aktivitas',
-    entries: 'entri',
-    timestamp: 'Waktu',
-    ip_address: 'Alamat IP',
 
     // Roles Page
     users_with_role: 'pengguna dengan peran ini',
@@ -1015,7 +983,9 @@ export const translations = {
 
     // Plant Operations Report Page
     op_report_title: 'Laporan Operasional Harian',
-    generate_report_button: 'Buat Laporan',
+    generate_report_button: 'Buat Log Sheet',
+    generate_report_subtitle: 'Logsheet Laporan Harian',
+    generate_simple_data_button: 'Buat Data Sederhana',
     download_button: 'Unduh',
     download_as_image: 'Unduh sebagai Gambar (.png)',
     download_as_pdf: 'Unduh sebagai PDF (.pdf)',
@@ -1061,6 +1031,10 @@ export const translations = {
     report_settings_title: 'Pengaturan Laporan',
     report_settings_subtitle: 'Pengurutan parameter laporan dan konfigurasi',
     report_settings_description: 'Konfigurasi pengurutan parameter laporan dan pengaturan tampilan',
+    simple_report_settings_title: 'Pengaturan Laporan Sederhana',
+    simple_report_settings_subtitle: 'Konfigurasi parameter untuk laporan operasional sederhana',
+    add_simple_report_parameter_title: 'Tambah Parameter Laporan Sederhana',
+    edit_simple_report_parameter_title: 'Ubah Parameter Laporan Sederhana',
     parameter_select_label: 'Parameter',
     report_category_label: 'Kategori',
     unit: 'Unit Pabrik',
@@ -1142,6 +1116,8 @@ export const translations = {
     empty_space: 'Ruang Kosong (m)',
     content: 'Isi (Ton)',
     percentage: 'Persentase (%)',
+    parameter_data: 'Data Parameter',
+    material_usage: 'Penggunaan Material',
     downtime_data_entry_title: 'Entri Data Downtime',
     information: 'Informasi',
     information_label: 'Informasi tambahan dalam operasional',
@@ -1339,5 +1315,59 @@ export const translations = {
     registration_email_required: 'Email wajib diisi',
     registration_email_invalid: 'Format email tidak valid',
     registration_success: 'Permintaan Registrasi Berhasil!',
+
+    // CCR Data Entry specific keys
+    ccr_material_usage_entry_title: 'Entri Penggunaan Material CCR',
+    loading_data: 'Memuat data...',
+    select_category_unit_date_first: 'Silakan pilih kategori, unit, dan tanggal terlebih dahulu',
+    select_unit_first: 'Silakan pilih Unit Name terlebih dahulu sebelum menambah downtime.',
+    failed_to_fetch_profiles: 'Gagal mengambil profil',
+    profile_saved_successfully: 'Profil berhasil disimpan',
+    failed_to_save_profile: 'Gagal menyimpan profil',
+    parameter_order_exported_successfully: 'Urutan parameter berhasil diekspor',
+    failed_to_export_parameter_order: 'Gagal mengekspor urutan parameter',
+    invalid_excel_file_format: 'Format file Excel tidak valid',
+    warning_some_parameters_not_imported: 'Peringatan: Beberapa parameter tidak dapat diimpor',
+    parameter_order_imported_successfully: 'Urutan parameter berhasil diimpor',
+    failed_to_process_excel_file: 'Gagal memproses file Excel',
+    failed_to_import_parameter_order: 'Gagal mengimpor urutan parameter',
+    profile_loaded: 'Profil "{name}" dimuat',
+    failed_to_load_profile: 'Gagal memuat profil',
+    invalid_profile_selected: 'Profil yang dipilih tidak valid',
+    you_can_only_delete_own_profiles: 'Anda hanya dapat menghapus profil sendiri',
+    profile_deleted_successfully: 'Profil "{name}" berhasil dihapus',
+    failed_to_delete_profile: 'Gagal menghapus profil',
+    network_error_delete_profile: 'Gagal menghapus profil: Kesalahan jaringan atau server',
+    error_fetching_parameter_data: 'Kesalahan mengambil data parameter',
+    no_parameter_data_found:
+      'Tidak ada data parameter ditemukan untuk tanggal dan unit yang dipilih.',
+    no_plant_categories_found: 'Tidak ada kategori pabrik ditemukan di Master Data.',
+    no_silo_master_data_found: 'Tidak ada data master silo ditemukan untuk kategori: {category}.',
+    no_parameter_master_data_found: 'Tidak ada data master parameter ditemukan untuk unit: {unit}.',
+    parameter_not_found:
+      'Parameter "{name}" tidak ditemukan di pengaturan parameter untuk unit {unit}',
+    choose_category: 'Pilih Kategori',
+    choose_unit: 'Pilih Unit',
+
+    // CCR Data Entry Modal Titles
+    parameter_position_title: 'Masukkan nomor posisi parameter',
+    search_columns_tooltip:
+      'Cari kolom berdasarkan nama parameter atau unit. Gunakan Ctrl+F untuk fokus, Escape untuk menghapus.',
+    confirm_delete_downtime_title: 'Konfirmasi Hapus Downtime',
+    reorder_parameters_title: 'Susun Ulang Parameter',
+    save_parameter_order_profile_title: 'Simpan Profil Urutan Parameter',
+    load_parameter_order_profile_title: 'Muat Profil Urutan Parameter',
+    delete_parameter_order_profile_title: 'Hapus Profil Urutan Parameter',
+
+    // CCR Data Entry Section Descriptions
+    ccr_silo_data_description: 'Data silo CCR untuk monitoring kapasitas',
+    ccr_material_usage_description: 'Data penggunaan material CCR untuk monitoring konsumsi',
+    ccr_information_description: 'Catat informasi penting terkait operasi CCR hari ini.',
+    ccr_downtime_description: 'Catat waktu downtime dan alasan untuk analisis efisiensi produksi.',
+
+    // CCR Data Entry Page Descriptions
+    ccr_page_description: 'Kelola data CCR untuk monitoring performa pabrik',
+    ccr_parameter_section_description:
+      'Pastikan Plant Kategori dan Plant Unit sesuai dengan filter yang diterapkan sebelum mengisi data parameter.',
   },
 };

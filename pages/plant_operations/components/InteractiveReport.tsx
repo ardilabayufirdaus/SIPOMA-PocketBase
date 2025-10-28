@@ -5,6 +5,7 @@ import { OperatorTable } from './OperatorTable';
 import { SiloTable } from './SiloTable';
 import { DowntimeTable } from './DowntimeTable';
 import { InformationTable } from './InformationTable';
+import { MaterialUsageTable } from './MaterialUsageTable';
 import { CcrDowntimeData } from '../../../types';
 import { CcrInformationData } from '../../../hooks/useCcrInformationData';
 
@@ -50,6 +51,17 @@ interface InteractiveReportProps {
     shift: string;
     name: string;
   }>;
+  materialUsageData: Array<{
+    shift: string;
+    clinker?: number;
+    gypsum?: number;
+    limestone?: number;
+    trass?: number;
+    fly_ash?: number;
+    fine_trass?: number;
+    ckd?: number;
+    total_production?: number;
+  }>;
   t: Record<string, string>;
 }
 
@@ -63,6 +75,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   siloData,
   informationData,
   operatorData,
+  materialUsageData,
   t,
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
@@ -105,7 +118,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         </div>
       </motion.div>
 
-      {/* Parameter Data Table */}
+      {/* Parameter Data Table - Full Width */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -114,56 +127,50 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
         <ParameterTable groupedHeaders={groupedHeaders} rows={rows} footer={footer} t={t} />
       </motion.div>
 
-      {/* Information and Operator Data Tables */}
-      {isDailyOperationalReport ? (
-        <motion.div
-          className="grid grid-cols-2 gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-        >
-          <InformationTable informationData={informationData} t={t} />
-          <OperatorTable operatorData={operatorData} t={t} />
-        </motion.div>
-      ) : (
-        <>
-          {/* Information Table */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-          >
-            <InformationTable informationData={informationData} t={t} />
-          </motion.div>
-
-          {/* Operator Data Table */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-          >
-            <OperatorTable operatorData={operatorData} t={t} />
-          </motion.div>
-        </>
-      )}
-
-      {/* Silo Stock Table */}
+      {/* Downtime Report - Full Width */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
-      >
-        <SiloTable siloData={siloData} t={t} />
-      </motion.div>
-
-      {/* Downtime Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.4 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
       >
         <DowntimeTable downtimeData={downtimeData} t={t} />
       </motion.div>
+
+      {/* Information Table - Full Width */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.4 }}
+      >
+        <InformationTable informationData={informationData} t={t} />
+      </motion.div>
+
+      {/* 3-Column Grid Layout for Remaining Tables */}
+      {isDailyOperationalReport && (
+        <div className="grid grid-cols-[0.8fr_1.6fr_1.6fr] gap-2 mt-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <OperatorTable operatorData={operatorData} t={t} />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.4 }}
+          >
+            <MaterialUsageTable materialUsageData={materialUsageData} t={t} />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+          >
+            <SiloTable siloData={siloData} t={t} />
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };

@@ -33,16 +33,16 @@ const log = (level: LogLevel, ...args: unknown[]) => {
 
   switch (level) {
     case 'debug':
-      console.debug(prefix, ...args);
+      // console.debug(prefix, ...args); // Removed for production
       break;
     case 'info':
-      console.info(prefix, ...args);
+      // console.info(prefix, ...args); // Removed for production
       break;
     case 'warn':
-      console.warn(prefix, ...args);
+      // console.warn(prefix, ...args); // Removed for production
       break;
     case 'error':
-      console.error(prefix, ...args);
+      // console.error(prefix, ...args); // Removed for production
       break;
   }
 };

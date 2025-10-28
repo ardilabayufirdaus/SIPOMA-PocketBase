@@ -91,6 +91,14 @@ export interface ReportSetting {
   order: number;
 }
 
+export interface SimpleReportSetting {
+  id: string;
+  parameter_id: string;
+  category: string;
+  order: number;
+  is_active?: boolean;
+}
+
 export interface WhatsAppReportSetting {
   id: string;
   jenis: 'text' | 'number' | 'unit_name' | 'material' | 'feeder' | 'downtime' | 'silo' | 'summary';

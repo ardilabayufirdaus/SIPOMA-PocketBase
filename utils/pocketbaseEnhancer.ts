@@ -58,6 +58,13 @@ export function enhancePocketBase(): void {
     // Add event listener for auth errors
     const originalSubscribe = pb.realtime.subscribe;
     pb.realtime.subscribe = function (...args) {
+      // Skip realtime subscriptions in development to avoid connection errors
+      if (import.meta.env.DEV) {
+        logger.debug(`Skipping realtime subscription in development mode: ${args[0]}`);
+        // Return a no-op unsubscribe function
+        return Promise.resolve(() => {});
+      }
+
       try {
         logger.debug(`Setting up realtime subscription to ${args[0]}`);
         return originalSubscribe.apply(this, args);

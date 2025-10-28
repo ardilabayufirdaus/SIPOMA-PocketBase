@@ -7,10 +7,7 @@ import PermissionMatrixEditor from './PermissionMatrixEditor';
 import { useUserManagementPerformance } from '../../../hooks/usePerformanceMonitor';
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { getDefaultPermissionsForRole, isTonasaRole } from '../../../utils/tonasaPermissions';
-import {
-  initializeUserPermissions,
-  logPermissionChange,
-} from '../../../utils/userPermissionManager';
+import { initializeUserPermissions } from '../../../utils/userPermissionManager';
 import DatabaseMigrationPrompt from '../../../components/DatabaseMigrationPrompt';
 import { isAdminRole } from '../../../utils/roleHelpers';
 import {
@@ -290,22 +287,7 @@ const UserForm: React.FC<UserFormProps> = ({
       if (userId) {
         performanceMonitor.startOperation('permission_save');
 
-        // Get old permissions for audit trail
-        let oldPermissions;
-        if (user) {
-          try {
-            const userData = await pb.collection('users').getOne(user.id);
-            oldPermissions = userData.permissions;
-          } catch (error) {
-            // Ignore error, old permissions might not exist
-          }
-        }
-
         await saveUserPermissions(userId);
-
-        // Log permission change for audit trail
-        const action = user ? (isCustomPermissions ? 'updated' : 'reset_to_default') : 'created';
-        await logPermissionChange(userId, action, oldPermissions, userPermissions);
 
         performanceMonitor.endOperation('permission_save', true);
       }

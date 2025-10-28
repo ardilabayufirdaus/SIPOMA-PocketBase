@@ -75,7 +75,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       try {
         setNotificationPrefs(JSON.parse(savedPrefs));
       } catch (err) {
-        console.error('Failed to load notification preferences:', err);
+        // Error logging removed for production
       }
     }
   }, []);

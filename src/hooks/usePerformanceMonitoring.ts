@@ -70,7 +70,7 @@ export const usePerformanceMonitoring = () => {
     try {
       observer.observe({ entryTypes: ['largest-contentful-paint'] });
     } catch (error) {
-      console.warn('LCP observation not supported');
+      // LCP observation not supported - logging removed for production
     }
 
     // First Input Delay
@@ -87,7 +87,7 @@ export const usePerformanceMonitoring = () => {
     try {
       fidObserver.observe({ entryTypes: ['first-input'] });
     } catch (error) {
-      console.warn('FID observation not supported');
+      // FID observation not supported - logging removed for production
     }
 
     // Cumulative Layout Shift
@@ -109,7 +109,7 @@ export const usePerformanceMonitoring = () => {
     try {
       clsObserver.observe({ entryTypes: ['layout-shift'] });
     } catch (error) {
-      console.warn('CLS observation not supported');
+      // CLS observation not supported - logging removed for production
     }
 
     return () => {

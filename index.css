@@ -456,36 +456,12 @@ html.dark .ccr-table input:hover:not(:focus) {
   left: 0px;
 }
 
-.ccr-table tbody td:nth-child(2) {
-  left: 90px;
-}
-
-.ccr-table tbody td:nth-child(3) {
-  left: 230px;
-}
-
 .ccr-table thead th:nth-child(1) {
   left: 0px;
 }
 
-.ccr-table thead th:nth-child(2) {
-  left: 90px;
-}
-
-.ccr-table thead th:nth-child(3) {
-  left: 230px;
-}
-
 .ccr-table tfoot td:nth-child(1) {
   left: 0px;
-}
-
-.ccr-table tfoot td:nth-child(2) {
-  left: 90px;
-}
-
-.ccr-table tfoot td:nth-child(3) {
-  left: 230px;
 }
 
 /* Remove spinner for number inputs */

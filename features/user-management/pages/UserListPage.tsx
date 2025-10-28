@@ -194,7 +194,7 @@ const UserListPage: React.FC = () => {
       {/* Statistics Cards */}
       <div className="grid grid-cols-6 gap-6">
         <StatCard
-          title="Total Users"
+          title={t.total_users_title}
           value={isLoadingStats ? '...' : stats.total}
           icon={UserGroupIcon}
           color="primary"
@@ -202,7 +202,7 @@ const UserListPage: React.FC = () => {
         />
 
         <StatCard
-          title="Active Users"
+          title={t.active_users_title}
           value={isLoadingStats ? '...' : stats.active}
           icon={CheckIcon}
           color="success"
@@ -215,7 +215,7 @@ const UserListPage: React.FC = () => {
         />
 
         <StatCard
-          title="Inactive Users"
+          title={t.inactive_users_title}
           value={isLoadingStats ? '...' : stats.inactive}
           icon={XCircleIcon}
           color="warning"
@@ -230,7 +230,7 @@ const UserListPage: React.FC = () => {
         />
 
         <StatCard
-          title="Administrators"
+          title={t.administrators_title}
           value={isLoadingStats ? '...' : stats.admins}
           icon={ShieldCheckIcon}
           color="warning"
@@ -238,7 +238,7 @@ const UserListPage: React.FC = () => {
         />
 
         <StatCard
-          title="Super Admins"
+          title={t.super_admins_title}
           value={isLoadingStats ? '...' : stats.superAdmins}
           icon={ShieldCheckIcon}
           color="error"
@@ -246,11 +246,11 @@ const UserListPage: React.FC = () => {
         />
 
         <StatCard
-          title="Recent Users"
+          title={t.recent_users_title}
           value={isLoadingStats ? '...' : stats.recent}
           icon={UserIcon}
           color="secondary"
-          subtitle="Added in last 30 days"
+          subtitle={t.recent_users_subtitle}
           isLoading={isLoadingStats}
         >
           {!isLoadingStats && stats.recentUsers && stats.recentUsers.length > 0 && (

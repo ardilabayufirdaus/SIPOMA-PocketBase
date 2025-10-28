@@ -1,22 +1,30 @@
 import React from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
   Tooltip,
   Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+  ArcElement,
+} from 'chart.js';
+import { Line, Bar, Pie } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 export interface BreakdownData {
   title: string;
@@ -62,114 +70,124 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
   const renderChart = () => {
     if (!data.chartData || data.chartData.length === 0) return null;
 
-    const commonProps = {
-      data: data.chartData,
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
+    const labels = data.chartData.map((item) => item.name || item.label || item.x || item.key);
+    const dataKeys = Object.keys(data.chartData[0] || {}).filter(
+      (key) => key !== 'name' && key !== 'label' && key !== 'x' && key !== 'key'
+    );
+
+    const chartData = {
+      labels,
+      datasets: dataKeys.map((key, index) => ({
+        label: key,
+        data: data.chartData.map((item) => item[key]),
+        backgroundColor: CHART_COLORS[index % CHART_COLORS.length],
+        borderColor: CHART_COLORS[index % CHART_COLORS.length],
+        borderWidth: 2,
+        fill: data.chartType === 'area',
+      })),
+    };
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top' as const,
+        },
+        tooltip: {
+          backgroundColor: 'rgb(15 23 42)',
+          borderColor: 'rgb(51 65 85)',
+          borderWidth: 1,
+          cornerRadius: 8,
+          titleColor: 'white',
+          bodyColor: 'white',
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          ticks: {
+            font: {
+              size: 12,
+            },
+          },
+        },
+        y: {
+          display: true,
+          ticks: {
+            font: {
+              size: 12,
+            },
+          },
+        },
+      },
     };
 
     switch (data.chartType) {
       case 'line':
-        return (
-          <LineChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-            <XAxis dataKey="name" fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgb(15 23 42)',
-                border: '1px solid rgb(51 65 85)',
-                borderRadius: '8px',
-                color: 'white',
-              }}
-            />
-            <Legend />
-            {Object.keys(data.chartData[0] || {})
-              .filter((key) => key !== 'name')
-              .map((key, index) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                />
-              ))}
-          </LineChart>
-        );
+        return <Line data={chartData} options={commonOptions} />;
 
       case 'area':
         return (
-          <AreaChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-            <XAxis dataKey="name" fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgb(15 23 42)',
-                border: '1px solid rgb(51 65 85)',
-                borderRadius: '8px',
-                color: 'white',
-              }}
-            />
-            <Legend />
-            {Object.keys(data.chartData[0] || {})
-              .filter((key) => key !== 'name')
-              .map((key, index) => (
-                <Area
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stackId="1"
-                  stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                  fill={CHART_COLORS[index % CHART_COLORS.length]}
-                  fillOpacity={0.6}
-                />
-              ))}
-          </AreaChart>
+          <Line
+            data={{
+              ...chartData,
+              datasets: chartData.datasets.map((dataset) => ({
+                ...dataset,
+                fill: true,
+                backgroundColor: dataset.backgroundColor + '40', // Add transparency
+              })),
+            }}
+            options={commonOptions}
+          />
         );
 
       case 'bar':
-        return (
-          <BarChart {...commonProps}>
-            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-            <XAxis dataKey="name" fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgb(15 23 42)',
-                border: '1px solid rgb(51 65 85)',
-                borderRadius: '8px',
-                color: 'white',
-              }}
-            />
-            <Legend />
-            {Object.keys(data.chartData[0] || {})
-              .filter((key) => key !== 'name')
-              .map((key, index) => (
-                <Bar key={key} dataKey={key} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-              ))}
-          </BarChart>
-        );
+        return <Bar data={chartData} options={commonOptions} />;
 
       case 'pie':
         return (
-          <PieChart>
-            <Pie
-              data={data.chartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${((percent as number) * 100).toFixed(1)}%`}
-            >
-              {data.chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
+          <Pie
+            data={{
+              labels: data.chartData.map((item) => item.name || item.label),
+              datasets: [
+                {
+                  data: data.chartData.map((item) => item.value),
+                  backgroundColor: CHART_COLORS,
+                  borderColor: CHART_COLORS,
+                  borderWidth: 1,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top' as const,
+                },
+                tooltip: {
+                  backgroundColor: 'rgb(15 23 42)',
+                  borderColor: 'rgb(51 65 85)',
+                  borderWidth: 1,
+                  cornerRadius: 8,
+                  titleColor: 'white',
+                  bodyColor: 'white',
+                  callbacks: {
+                    label: (context) => {
+                      const label = context.label || '';
+                      const value = context.parsed;
+                      const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      return `${label}: ${value} (${percentage}%)`;
+                    },
+                  },
+                },
+              },
+            }}
+          />
         );
 
       default:
@@ -263,11 +281,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                     Trend Analysis
                   </h4>
                   <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        {renderChart()}
-                      </ResponsiveContainer>
-                    </div>
+                    <div className="h-64">{renderChart()}</div>
                   </div>
                 </div>
               )}

@@ -30,13 +30,13 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
       </div>
 
       <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-[8px] min-w-max">
+        <table className="w-full text-[6px] min-w-0">
           <thead>
             <tr className="bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
-              <th className="px-4 py-3 text-left font-bold text-slate-800 dark:text-slate-200 border-r border-blue-200 dark:border-blue-700 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-bold text-slate-800 dark:text-slate-200 border-r border-blue-200 dark:border-blue-700 align-middle text-[6px]">
                 {t.shift}
               </th>
-              <th className="px-4 py-3 text-left font-bold text-slate-800 dark:text-slate-200 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-bold text-slate-800 dark:text-slate-200 align-middle text-[6px]">
                 {t.name}
               </th>
             </tr>
@@ -53,10 +53,10 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
                 whileHover={{ scale: 1.005 }}
                 transition={{ type: 'spring', stiffness: 300 }}
               >
-                <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100 border-r border-blue-200 dark:border-blue-700 align-middle text-[8px]">
+                <td className="px-1 py-1 font-semibold text-slate-900 dark:text-slate-100 border-r border-blue-200 dark:border-blue-700 align-middle text-[6px]">
                   {operator.shift}
                 </td>
-                <td className="px-4 py-3 text-slate-800 dark:text-slate-200 align-middle font-medium text-[8px]">
+                <td className="px-1 py-1 text-slate-800 dark:text-slate-200 align-middle font-medium text-[6px]">
                   {operator.name}
                 </td>
               </motion.tr>

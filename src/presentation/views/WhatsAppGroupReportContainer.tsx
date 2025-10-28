@@ -30,7 +30,7 @@ export const WhatsAppGroupReportContainer: React.FC<WhatsAppGroupReportContainer
       setReports(groupReports);
     } catch (err) {
       setError('Failed to load reports');
-      console.error('Error loading reports:', err);
+      // Error logging removed for production
     }
   };
 
@@ -45,7 +45,7 @@ export const WhatsAppGroupReportContainer: React.FC<WhatsAppGroupReportContainer
       await loadReports(); // Reload reports after generation
     } catch (err) {
       setError('Failed to generate report');
-      console.error('Error generating report:', err);
+      // Error logging removed for production
     } finally {
       setIsLoading(false);
     }

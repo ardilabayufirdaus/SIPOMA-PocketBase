@@ -25,23 +25,26 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
       </div>
 
       <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-[8px] min-w-max">
+        <table className="w-full text-[6px] min-w-max">
           <thead>
             <tr className="bg-gradient-to-r from-red-100 to-pink-100 dark:from-red-900/30 dark:to-pink-900/30">
-              <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                 {t.start_time || 'Start Time'}
               </th>
-              <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                 {t.end_time || 'End Time'}
               </th>
-              <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                 {t.duration || 'Duration'}
               </th>
-              <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                 {t.pic || 'PIC'}
               </th>
-              <th className="px-2 py-3.5 text-left font-semibold text-slate-800 dark:text-slate-200 align-middle text-[8px]">
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px] min-w-[140px]">
                 {t.problem || 'Problem'}
+              </th>
+              <th className="px-1 py-1 text-left font-semibold text-slate-800 dark:text-slate-200 align-middle text-[6px] min-w-[140px]">
+                {t.action || 'Action'}
               </th>
             </tr>
           </thead>
@@ -63,21 +66,26 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
                         : 'bg-slate-50 dark:bg-slate-700'
                     } hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors`}
                   >
-                    <td className="px-2 py-3.5 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+                    <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                       {downtime.start_time}
                     </td>
-                    <td className="px-2 py-3.5 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+                    <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                       {downtime.end_time}
                     </td>
-                    <td className="px-2 py-3.5 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+                    <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                       {durationText}
                     </td>
-                    <td className="px-2 py-3.5 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[8px]">
+                    <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-600 align-middle text-[6px]">
                       {downtime.pic}
                     </td>
-                    <td className="px-2 py-3.5 text-slate-800 dark:text-slate-200 max-w-xs align-middle text-[8px]">
+                    <td className="px-1 py-1 text-slate-800 dark:text-slate-200 max-w-xs border-r border-slate-200 dark:border-slate-600 align-middle text-[6px] min-w-[140px]">
                       <div className="truncate" title={downtime.problem}>
                         {downtime.problem}
+                      </div>
+                    </td>
+                    <td className="px-1 py-1 text-slate-800 dark:text-slate-200 max-w-xs align-middle text-[6px] min-w-[140px]">
+                      <div className="truncate" title={downtime.action}>
+                        {downtime.action || '-'}
                       </div>
                     </td>
                   </tr>
@@ -86,8 +94,8 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
             ) : (
               <tr className="bg-slate-50 dark:bg-slate-700">
                 <td
-                  colSpan={5}
-                  className="px-2 py-4 text-center text-slate-600 dark:text-slate-400 italic text-[8px]"
+                  colSpan={6}
+                  className="px-1 py-2 text-center text-slate-600 dark:text-slate-400 italic text-[6px]"
                 >
                   {t.no_downtime_recorded || 'Tidak ada downtime tercatat'}
                 </td>

@@ -65,8 +65,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
   const [reportGenerated, setReportGenerated] = useState(false);
   const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
 
-  // Cache for generated reports
-  const reportCache = useMemo(() => new Map<string, string>(), []);
+  // reportCache dihapus karena tidak digunakan
 
   const { user } = useAuth();
   const { t } = useTranslation();
@@ -130,11 +129,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
   // Helper function to calculate total production from feeder counters
   const calculateTotalProductionFromFeeders = useCallback(
     (
-      unitFooterData: any[],
+      unitFooterData: unknown[],
       mode: 'daily' | 'shift1' | 'shift2' | 'shift3_today' | 'shift3_cont',
       unit: string,
       selectedPlantCategory: string,
-      nextDayFooterData?: any[]
+      nextDayFooterData?: unknown[]
     ): number => {
       const feederParameters = [
         'Counter Feeder Clinker (ton)',
@@ -160,19 +159,27 @@ const WhatsAppGroupReportPage: React.FC = () => {
             footerData = nextDayFooterData;
           }
 
-          const footer = footerData.find((f: any) => f.parameter_id === paramSetting.id);
+          const footer = footerData.find(
+            (f: unknown) => (f as { parameter_id: string }).parameter_id === paramSetting.id
+          );
           if (footer) {
             let value = 0;
+            const f = footer as Record<string, unknown>;
+            // Helper to safely get number value from unknown
+            const getNum = (obj: Record<string, unknown>, key: string) => {
+              const v = obj[key];
+              return typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : 0;
+            };
             if (mode === 'daily') {
-              value = footer.difference || footer.maximum || footer.total || 0;
+              value = getNum(f, 'difference') || getNum(f, 'maximum') || getNum(f, 'total') || 0;
             } else if (mode === 'shift1') {
-              value = footer.shift1_counter || 0;
+              value = getNum(f, 'shift1_counter') || 0;
             } else if (mode === 'shift2') {
-              value = footer.shift2_counter || 0;
+              value = getNum(f, 'shift2_counter') || 0;
             } else if (mode === 'shift3_today') {
-              value = footer.shift3_counter || 0;
+              value = getNum(f, 'shift3_counter') || 0;
             } else if (mode === 'shift3_cont') {
-              value = footer.shift3_cont_counter || 0;
+              value = getNum(f, 'shift3_cont_counter') || 0;
             }
             total += value;
           }
@@ -183,18 +190,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
     },
     [parameterSettings]
   );
-
-  // Helper function to get PIC name from CCR Parameter data
-  const getShiftPic = useCallback(async (): Promise<string> => {
-    try {
-      // For now, return current user as PIC or a placeholder
-      // TODO: Implement proper PIC detection from parameter data entry logs
-      return user?.email || 'PIC Tidak Diketahui';
-    } catch (error) {
-      console.error('Error getting shift PIC:', error);
-      return 'PIC Tidak Diketahui';
-    }
-  }, [user]);
 
   // Helper function to get operator name from CCR Parameter data
   const getOperatorName = useCallback(
@@ -210,8 +205,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
 
         // Fallback to current user
         return user?.full_name || 'Operator Tidak Diketahui';
-      } catch (error) {
-        console.error('Error getting operator name:', error);
+      } catch {
         return 'Operator Tidak Diketahui';
       }
     },
@@ -359,7 +353,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
         if (!unitData) {
-          console.warn(`No data found for unit ${unit}`);
           continue;
         }
 
@@ -486,11 +479,27 @@ const WhatsAppGroupReportPage: React.FC = () => {
               paramSetting && paramSetting.parameter.toLowerCase().includes(param.toLowerCase())
             );
           });
-          const bahanTotal = bahanData ? Number(bahanData.maximum || 0) : 0;
-          // Always display Clinker, Gypsum, Trass, and Batu Kapur, even if value is 0
-          const alwaysDisplay = ['Clinker', 'Gypsum', 'Trass', 'Batu Kapur'].includes(name);
-          if (alwaysDisplay || bahanTotal > 0) {
-            report += `├─ ${name}: ${formatIndonesianNumber(bahanTotal, 2)} ton\n`;
+          // Untuk bahan utama, tetap render walaupun 0 jika jam operasi > 0
+          const bahanUtama = ['Clinker', 'Gypsum', 'Batu Kapur', 'Trass'];
+          if (bahanUtama.includes(name)) {
+            if (runningHoursAvg > 0) {
+              const value =
+                bahanData &&
+                typeof bahanData.maximum === 'number' &&
+                Object.prototype.hasOwnProperty.call(bahanData, 'maximum')
+                  ? bahanData.maximum
+                  : 0;
+              report += `├─ ${name}: ${formatIndonesianNumber(value, 2)} ton\n`;
+            }
+          } else {
+            if (
+              bahanData &&
+              typeof bahanData.maximum === 'number' &&
+              bahanData.maximum > 0 &&
+              Object.prototype.hasOwnProperty.call(bahanData, 'maximum')
+            ) {
+              report += `├─ ${name}: ${formatIndonesianNumber(bahanData.maximum, 2)} ton\n`;
+            }
           }
         });
         report += `\n`;
@@ -591,8 +600,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += t.wag_system_signature + '\n';
 
       return report;
-    } catch (error) {
-      console.error('Error generating daily report:', error);
+    } catch {
       return t.wag_error_generating_report;
     } finally {
       setIsGenerating(false);
@@ -712,7 +720,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
         if (!unitData) {
-          console.warn(`No data found for unit ${unit}`);
           continue;
         }
 
@@ -939,8 +946,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
-    } catch (error) {
-      console.error('Error generating shift 1 report:', error);
+    } catch {
       return `*Laporan Shift 1 Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
     } finally {
       setIsGenerating(false);
@@ -1058,7 +1064,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
         if (!unitData) {
-          console.warn(`No data found for unit ${unit}`);
           continue;
         }
 
@@ -1285,8 +1290,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
-    } catch (error) {
-      console.error('Error generating shift 2 report:', error);
+    } catch {
       return `*Laporan Shift 2 Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
     } finally {
       setIsGenerating(false);
@@ -1426,7 +1430,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       for (const unit of plantUnitsFiltered) {
         const unitData = unitDataMap.get(unit);
         if (!unitData) {
-          console.warn(`No data found for unit ${unit}`);
           continue;
         }
 
@@ -1698,8 +1701,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
       report += `🔧 *SIPOMA - Production Monitoring System*\n`;
 
       return report;
-    } catch (error) {
-      console.error('Error generating shift 3 report:', error);
+    } catch {
       return `*Laporan Shift 3 Produksi*\n**\n\n Error generating report. Please try again or contact support if the problem persists.\n\n\n *SIPOMA - Production Monitoring System*\n`;
     } finally {
       setIsGenerating(false);
@@ -1726,8 +1728,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       setReportGenerated(true);
       // Reset success state after animation
       setTimeout(() => setReportGenerated(false), 2000);
-    } catch (error) {
-      console.error('Error generating report:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -1743,8 +1743,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       setReportGenerated(true);
       // Reset success state after animation
       setTimeout(() => setReportGenerated(false), 2000);
-    } catch (error) {
-      console.error('Error generating shift 1 report:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -1760,8 +1758,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       setReportGenerated(true);
       // Reset success state after animation
       setTimeout(() => setReportGenerated(false), 2000);
-    } catch (error) {
-      console.error('Error generating shift 2 report:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -1777,8 +1773,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
       setReportGenerated(true);
       // Reset success state after animation
       setTimeout(() => setReportGenerated(false), 2000);
-    } catch (error) {
-      console.error('Error generating shift 3 report:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -1790,8 +1784,8 @@ const WhatsAppGroupReportPage: React.FC = () => {
       await navigator.clipboard.writeText(generatedReport);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+    } catch {
+      // ignore
     }
   }, [generatedReport]);
 

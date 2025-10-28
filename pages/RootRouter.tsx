@@ -61,7 +61,7 @@ const RootRouter: React.FC = () => {
       setChecking(false);
       return false;
     } catch (error) {
-      console.log('Auth check error:', error);
+      // Error logging removed for production
       setIsLoggedIn(false);
       setChecking(false);
       return false;

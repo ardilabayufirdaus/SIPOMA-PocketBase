@@ -62,25 +62,8 @@ export const useCurrentUser = () => {
         return;
       }
 
-      // Penanganan pengguna tamu
-      if (dbUserRaw.role === 'Guest' || userId === 'guest-dev-user') {
-        const guestUser: User = {
-          id: dbUserRaw.id,
-          username: dbUserRaw.username,
-          email: '',
-          full_name: dbUserRaw.name || 'Guest User',
-          role: dbUserRaw.role as UserRole,
-          is_active: true,
-          avatar_url: '',
-          created_at: new Date(),
-          updated_at: new Date(),
-          permissions: {} as PermissionMatrix, // Empty permissions for Guest user
-        };
-
-        setCurrentUser(guestUser);
-        secureStorage.setItem('currentUser', guestUser);
-        return;
-      }
+      // Penanganan pengguna tamu - tetap ambil permissions dari database seperti user lainnya
+      // Guest users now follow the same permission loading logic as regular users
 
       // Ambil izin pengguna dari koleksi user_permissions dengan safeApiCall
       const userPermissions = await safeApiCall(() =>
@@ -166,7 +149,45 @@ export const useCurrentUser = () => {
     throttledRefresh();
 
     // Dengarkan perubahan status autentikasi
-    const unsubscribe = pb.authStore.onChange(throttledRefresh);
+    const unsubscribeAuth = pb.authStore.onChange(throttledRefresh);
+
+    // Dengarkan perubahan permissions secara real-time
+    let unsubscribeUsers: (() => void) | null = null;
+    let unsubscribePermissions: (() => void) | null = null;
+
+    if (pb.authStore.model?.id) {
+      const currentUserId = pb.authStore.model.id;
+
+      // Subscribe ke collection users untuk perubahan field permissions
+      pb.collection('users')
+        .subscribe('*', (data) => {
+          if (data.record && data.record.id === currentUserId) {
+            console.log('🔄 Current user permissions updated via users collection');
+            throttledRefresh();
+          }
+        })
+        .then((unsub) => {
+          unsubscribeUsers = unsub;
+        })
+        .catch((err) => {
+          console.error('❌ Failed to subscribe to users collection:', err);
+        });
+
+      // Subscribe ke collection user_permissions untuk perubahan permissions
+      pb.collection('user_permissions')
+        .subscribe('*', (data) => {
+          if (data.record && data.record.user_id === currentUserId) {
+            console.log('🔄 Current user permissions updated via user_permissions collection');
+            throttledRefresh();
+          }
+        })
+        .then((unsub) => {
+          unsubscribePermissions = unsub;
+        })
+        .catch((err) => {
+          console.error('❌ Failed to subscribe to user_permissions collection:', err);
+        });
+    }
 
     // Handler untuk event refresh user
     const handleRefreshUser = throttledRefresh;
@@ -195,8 +216,14 @@ export const useCurrentUser = () => {
 
     return () => {
       // Cleanup
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
+      if (typeof unsubscribeAuth === 'function') {
+        unsubscribeAuth();
+      }
+      if (unsubscribeUsers) {
+        unsubscribeUsers();
+      }
+      if (unsubscribePermissions) {
+        unsubscribePermissions();
       }
       window.removeEventListener('refreshUser', handleRefreshUser);
       window.removeEventListener('authStateChanged', handleRefreshUser);

@@ -33,6 +33,7 @@ import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useReportSettings } from '../../hooks/useReportSettings';
+import { useSimpleReportSettings } from '../../hooks/useSimpleReportSettings';
 import { usePicSettings } from '../../hooks/usePicSettings';
 
 // Types
@@ -42,6 +43,7 @@ import {
   ParameterDataType,
   SiloCapacity,
   ReportSetting,
+  SimpleReportSetting,
   PicSetting,
 } from '../../types';
 
@@ -54,6 +56,8 @@ type MasterDataRecord =
   | Omit<SiloCapacity, 'id'>
   | ReportSetting
   | Omit<ReportSetting, 'id'>
+  | SimpleReportSetting
+  | Omit<SimpleReportSetting, 'id'>
   | PicSetting
   | Omit<PicSetting, 'id'>;
 
@@ -69,6 +73,7 @@ type ModalType =
   | 'parameterSetting'
   | 'siloCapacity'
   | 'reportSetting'
+  | 'simpleReportSetting'
   | 'picSetting'
   | null;
 
@@ -120,6 +125,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
   } = useReportSettings();
   const [editingReportSetting, setEditingReportSetting] = useState<ReportSetting | null>(null);
 
+  // Simple Report Settings State
+  const {
+    records: simpleReportSettings,
+    addRecord: addSimpleReportSetting,
+    updateRecord: updateSimpleReportSetting,
+    deleteRecord: deleteSimpleReportSetting,
+    updateOrder: updateSimpleReportSettingsOrder,
+  } = useSimpleReportSettings();
+  const [editingSimpleReportSetting, setEditingSimpleReportSetting] =
+    useState<SimpleReportSetting | null>(null);
+
   // PIC Settings State
   const {
     records: picSettings,
@@ -163,6 +179,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
           reportSettings.find((r) => r.id === deletingRecord.id)?.parameter_id ||
           'Unknown Report Setting'
         );
+      case 'simpleReportSetting':
+        return (
+          simpleReportSettings.find((r) => r.id === deletingRecord.id)?.parameter_id ||
+          'Unknown Simple Report Setting'
+        );
       case 'picSetting':
         return picSettings.find((p) => p.id === deletingRecord.id)?.pic || 'Unknown PIC';
       default:
@@ -180,6 +201,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
   const [copUnitFilter, setCopUnitFilter] = useState('');
   const [reportCategoryFilter, setReportCategoryFilter] = useState('');
   const [reportUnitFilter, setReportUnitFilter] = useState('');
+  const [simpleReportCategoryFilter, setSimpleReportCategoryFilter] = useState('');
+  const [simpleReportUnitFilter, setSimpleReportUnitFilter] = useState('');
 
   // COP Parameters State
   const allParametersMap = useMemo(
@@ -263,6 +286,12 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       if (!reportCategoryFilter || !uniquePlantCategories.includes(reportCategoryFilter)) {
         setReportCategoryFilter(uniquePlantCategories[0]);
       }
+      if (
+        !simpleReportCategoryFilter ||
+        !uniquePlantCategories.includes(simpleReportCategoryFilter)
+      ) {
+        setSimpleReportCategoryFilter(uniquePlantCategories[0]);
+      }
     }
   }, [
     uniquePlantCategories,
@@ -270,6 +299,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     siloCategoryFilter,
     copCategoryFilter,
     reportCategoryFilter,
+    simpleReportCategoryFilter,
   ]);
 
   // Keyboard shortcuts for parameter search
@@ -326,6 +356,14 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       .sort();
   }, [plantUnits, reportCategoryFilter]);
 
+  const unitsForSimpleReportFilter = useMemo(() => {
+    if (!simpleReportCategoryFilter) return [];
+    return plantUnits
+      .filter((unit) => unit.category === simpleReportCategoryFilter)
+      .map((unit) => unit.unit)
+      .sort();
+  }, [plantUnits, simpleReportCategoryFilter]);
+
   useEffect(() => {
     if (unitsForParameterFilter.length > 0) {
       if (!parameterUnitFilter || !unitsForParameterFilter.includes(parameterUnitFilter)) {
@@ -366,8 +404,22 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     }
   }, [unitsForReportFilter, reportUnitFilter]);
 
+  useEffect(() => {
+    if (unitsForSimpleReportFilter.length > 0) {
+      if (!simpleReportUnitFilter || !unitsForSimpleReportFilter.includes(simpleReportUnitFilter)) {
+        setSimpleReportUnitFilter(unitsForSimpleReportFilter[0]);
+      }
+    } else {
+      setSimpleReportUnitFilter('');
+    }
+  }, [unitsForSimpleReportFilter, simpleReportUnitFilter]);
+
   const handleReportCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setReportCategoryFilter(e.target.value);
+  };
+
+  const handleSimpleReportCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSimpleReportCategoryFilter(e.target.value);
   };
 
   const handleParameterCategoryFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -441,6 +493,20 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     });
   }, [reportSettings, reportCategoryFilter, reportUnitFilter, allParametersMap]);
 
+  const filteredSimpleReportSettings = useMemo(() => {
+    if (!simpleReportCategoryFilter || !simpleReportUnitFilter) return [];
+    return simpleReportSettings.filter((setting) => {
+      // Get the parameter associated with this simple report setting
+      const parameter = allParametersMap.get(setting.parameter_id);
+      if (!parameter) return false;
+
+      // Filter by parameter's category and unit
+      const categoryMatch = parameter.category === simpleReportCategoryFilter;
+      const unitMatch = parameter.unit === simpleReportUnitFilter;
+      return categoryMatch && unitMatch;
+    });
+  }, [simpleReportSettings, simpleReportCategoryFilter, simpleReportUnitFilter, allParametersMap]);
+
   const {
     paginatedData: paginatedReportSettings,
     currentPage: rsCurrentPage,
@@ -448,9 +514,22 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     setCurrentPage: setRsCurrentPage,
   } = usePagination(filteredReportSettings, 10);
 
+  const {
+    paginatedData: paginatedSimpleReportSettings,
+    currentPage: srsCurrentPage,
+    totalPages: srsTotalPages,
+    setCurrentPage: setSrsCurrentPage,
+  } = usePagination(filteredSimpleReportSettings, 10);
+
   const maxReportSettingOrder = useMemo(() => {
     return reportSettings.length > 0 ? Math.max(...reportSettings.map((rs) => rs.order)) + 1 : 0;
   }, [reportSettings]);
+
+  const maxSimpleReportSettingOrder = useMemo(() => {
+    return simpleReportSettings.length > 0
+      ? Math.max(...simpleReportSettings.map((srs) => srs.order)) + 1
+      : 0;
+  }, [simpleReportSettings]);
 
   // Drag and drop handlers for Report Settings
   const handleReportSettingsDragEnd = useCallback(
@@ -467,12 +546,28 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     [filteredReportSettings, updateReportSettingsOrder]
   );
 
+  // Drag and drop handlers for Simple Report Settings
+  const handleSimpleReportSettingsDragEnd = useCallback(
+    (result: DropResult) => {
+      if (!result.destination) return;
+
+      const items = Array.from(filteredSimpleReportSettings);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+
+      // Update order in database
+      updateSimpleReportSettingsOrder(items);
+    },
+    [filteredSimpleReportSettings, updateSimpleReportSettingsOrder]
+  );
+
   // Generic Handlers
   const handleOpenAddModal = (type: ModalType) => {
     if (type === 'plantUnit') setEditingPlantUnit(null);
     if (type === 'parameterSetting') setEditingParameter(null);
     if (type === 'siloCapacity') setEditingSilo(null);
     if (type === 'reportSetting') setEditingReportSetting(null);
+    if (type === 'simpleReportSetting') setEditingSimpleReportSetting(null);
     if (type === 'picSetting') setEditingPic(null);
     setActiveModal(type);
   };
@@ -482,6 +577,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     if (type === 'parameterSetting') setEditingParameter(record as ParameterSetting);
     if (type === 'siloCapacity') setEditingSilo(record as SiloCapacity);
     if (type === 'reportSetting') setEditingReportSetting(record as ReportSetting);
+    if (type === 'simpleReportSetting')
+      setEditingSimpleReportSetting(record as SimpleReportSetting);
     if (type === 'picSetting') setEditingPic(record as PicSetting);
     setActiveModal(type);
   };
@@ -498,6 +595,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     setEditingParameter(null);
     setEditingSilo(null);
     setEditingReportSetting(null);
+    setEditingSimpleReportSetting(null);
     setEditingPic(null);
     setDeletingRecord(null);
   };
@@ -508,6 +606,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       if (deletingRecord.type === 'parameterSetting') deleteParameter(deletingRecord.id);
       if (deletingRecord.type === 'siloCapacity') deleteSilo(deletingRecord.id);
       if (deletingRecord.type === 'reportSetting') deleteReportSetting(deletingRecord.id);
+      if (deletingRecord.type === 'simpleReportSetting')
+        deleteSimpleReportSetting(deletingRecord.id);
       if (deletingRecord.type === 'picSetting') deletePicSetting(deletingRecord.id);
     }
     handleCloseModals();
@@ -536,6 +636,14 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     if (type === 'reportSetting') {
       if ('id' in record) updateReportSetting(record as ReportSetting);
       else addReportSetting(record as ReportSetting);
+    }
+    if (type === 'simpleReportSetting') {
+      if ('id' in record)
+        updateSimpleReportSetting(
+          (record as SimpleReportSetting).id,
+          record as SimpleReportSetting
+        );
+      else addSimpleReportSetting(record as Omit<SimpleReportSetting, 'id'>);
     }
     if (type === 'picSetting') {
       if ('id' in record) updatePicSetting(record as PicSetting);
@@ -1948,6 +2056,224 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
           </motion.div>
 
+          {/* Simple Report Settings Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-cyan-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {t['simple_report_settings_title']}
+                    </h3>
+                    <p className="text-sm text-slate-600">{t['simple_report_settings_subtitle']}</p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleOpenAddModal('simpleReportSetting')}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="simple-report-cat-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Plant Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="simple-report-cat-filter"
+                        value={simpleReportCategoryFilter}
+                        onChange={handleSimpleReportCategoryChange}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                      >
+                        {uniquePlantCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="simple-report-unit-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Unit:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="simple-report-unit-filter"
+                        value={simpleReportUnitFilter}
+                        onChange={(e) => setSimpleReportUnitFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        disabled={unitsForSimpleReportFilter.length === 0}
+                      >
+                        {unitsForSimpleReportFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <div className="p-6">
+              <div className="mb-4">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <GripVertical className="w-4 h-4" />
+                  <span>Drag rows to reorder simple report parameters</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <DragDropContext onDragEnd={handleSimpleReportSettingsDragEnd}>
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['order'] || 'Order'}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['parameter']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['plant_category']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['unit']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          {t['category']}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                          Active
+                        </th>
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <Droppable droppableId="simple-report-settings">
+                      {(provided) => (
+                        <tbody
+                          {...provided.droppableProps}
+                          ref={provided.innerRef}
+                          className="bg-white divide-y divide-slate-200"
+                        >
+                          {paginatedSimpleReportSettings.map((setting, index) => {
+                            const parameter = allParametersMap.get(setting.parameter_id);
+                            return (
+                              <Draggable key={setting.id} draggableId={setting.id} index={index}>
+                                {(provided, snapshot) => (
+                                  <tr
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className={`hover:bg-slate-50/50 transition-colors duration-200 ${
+                                      snapshot.isDragging ? 'bg-slate-100 shadow-lg' : ''
+                                    }`}
+                                  >
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      <div className="flex items-center gap-2">
+                                        <div
+                                          {...provided.dragHandleProps}
+                                          className="cursor-grab active:cursor-grabbing"
+                                        >
+                                          <GripVertical className="w-4 h-4 text-slate-400" />
+                                        </div>
+                                        <span className="font-medium">{setting.order}</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                      {parameter?.parameter || 'Unknown Parameter'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {parameter?.category || '-'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {parameter?.unit || '-'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {setting.category}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                      {setting.is_active ? 'Yes' : 'No'}
+                                    </td>
+                                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                      <div className="flex items-center justify-end space-x-1">
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() =>
+                                            handleOpenEditModal('simpleReportSetting', setting)
+                                          }
+                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                        >
+                                          <EditIcon className="w-4 h-4" />
+                                        </motion.button>
+                                        <motion.button
+                                          whileHover={{ scale: 1.1 }}
+                                          whileTap={{ scale: 0.9 }}
+                                          onClick={() =>
+                                            handleOpenDeleteModal(setting.id, 'simpleReportSetting')
+                                          }
+                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                        >
+                                          <TrashIcon className="w-4 h-4" />
+                                        </motion.button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </tbody>
+                      )}
+                    </Droppable>
+                  </table>
+                </DragDropContext>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={srsCurrentPage}
+                  totalPages={srsTotalPages}
+                  onPageChange={setSrsCurrentPage}
+                />
+              </div>
+            </div>
+          </motion.div>
+
           {/* Modals */}
           <Modal
             isOpen={activeModal !== null && !isDeleteModalOpen}
@@ -1969,11 +2295,15 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       ? editingReportSetting
                         ? t['edit_report_parameter_title']
                         : t['add_report_parameter_title']
-                      : activeModal === 'picSetting'
-                        ? editingPic
-                          ? t['edit_pic_title']
-                          : t['add_pic_title']
-                        : ''
+                      : activeModal === 'simpleReportSetting'
+                        ? editingSimpleReportSetting
+                          ? t['edit_simple_report_parameter_title']
+                          : t['add_simple_report_parameter_title']
+                        : activeModal === 'picSetting'
+                          ? editingPic
+                            ? t['edit_pic_title']
+                            : t['add_pic_title']
+                          : ''
             }
           >
             {activeModal === 'plantUnit' && (
@@ -2012,6 +2342,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                 selectedCategory={reportCategoryFilter}
                 selectedUnit={reportUnitFilter}
                 maxOrder={maxReportSettingOrder}
+              />
+            )}
+            {activeModal === 'simpleReportSetting' && (
+              <ReportSettingForm
+                recordToEdit={editingSimpleReportSetting}
+                onSave={(r) => handleSave('simpleReportSetting', r)}
+                onCancel={handleCloseModals}
+                t={t}
+                allParameters={parameterSettings}
+                existingParameterIds={simpleReportSettings.map((srs) => srs.parameter_id)}
+                selectedCategory={simpleReportCategoryFilter}
+                selectedUnit={simpleReportUnitFilter}
+                maxOrder={maxSimpleReportSettingOrder}
               />
             )}
             {activeModal === 'picSetting' && (

@@ -7,6 +7,7 @@ import {
   getPermissionsSummary,
   formatPermissionsDetailed,
 } from '../../../utils/permissionDisplayUtils';
+import PermissionMatrixEditor from './PermissionMatrixEditor';
 
 // Enhanced Components
 import {
@@ -28,6 +29,7 @@ import ArrowTrendingUpIcon from '../../../components/icons/ArrowTrendingUpIcon';
 import ArrowTrendingDownIcon from '../../../components/icons/ArrowTrendingDownIcon';
 import ArrowPathRoundedSquareIcon from '../../../components/icons/ArrowPathRoundedSquareIcon';
 import EyeIcon from '../../../components/icons/EyeIcon';
+import CogIcon from '../../../components/icons/CogIcon';
 
 interface User {
   id: string;
@@ -62,6 +64,8 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [selectedUserPermissions, setSelectedUserPermissions] = useState<User | null>(null);
+  const [showEditPermissionsModal, setShowEditPermissionsModal] = useState(false);
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<User | null>(null);
 
   const t = translations[language];
   const itemsPerPage = 10;
@@ -107,6 +111,52 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   const handleViewPermissions = (user: User) => {
     setSelectedUserPermissions(user);
     setShowPermissionsModal(true);
+  };
+
+  const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
+    if (selectedUserForEdit) {
+      setSelectedUserForEdit({
+        ...selectedUserForEdit,
+        permissions: newPermissions,
+      });
+    }
+  };
+
+  const handleEditPermissions = (user: User) => {
+    setSelectedUserForEdit(user);
+    setShowEditPermissionsModal(true);
+  };
+
+  const handleSavePermissions = async () => {
+    if (!selectedUserForEdit) return;
+
+    try {
+      // Import the correct save function from userPermissionManager
+      const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
+
+      // Save the permissions using the same API as other components
+      await saveUserPermissions(selectedUserForEdit.id, selectedUserForEdit.permissions, 'system');
+
+      // Close modal and reset state
+      setShowEditPermissionsModal(false);
+      setSelectedUserForEdit(null);
+
+      // Show success message
+      setError('');
+      // You could add a success state here if needed
+    } catch (err) {
+      console.error('💥 Error updating permissions:', err);
+      const errorMsg =
+        typeof err === 'object' && err !== null && 'message' in err
+          ? (err as { message?: string }).message
+          : String(err);
+      setError(errorMsg || 'Failed to update permissions');
+    }
+  };
+
+  const handleCloseEditPermissions = () => {
+    setShowEditPermissionsModal(false);
+    setSelectedUserForEdit(null);
   };
 
   const handleSort = (field: SortField) => {
@@ -569,6 +619,16 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                     <EnhancedButton
                       variant="ghost"
                       size="sm"
+                      onClick={() => handleEditPermissions(user)}
+                      icon={<CogIcon className="w-4 h-4" />}
+                      className="text-purple-600 hover:text-purple-800"
+                    >
+                      Edit Permissions
+                    </EnhancedButton>
+
+                    <EnhancedButton
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleToggleActive(user.id, user.is_active)}
                       icon={
                         user.is_active ? (
@@ -762,6 +822,19 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit Permissions Modal */}
+      {showEditPermissionsModal && selectedUserForEdit && (
+        <PermissionMatrixEditor
+          userId={selectedUserForEdit.id}
+          currentPermissions={selectedUserForEdit.permissions}
+          onPermissionsChange={handlePermissionsChange}
+          onSave={handleSavePermissions}
+          onClose={handleCloseEditPermissions}
+          isOpen={showEditPermissionsModal}
+          language={language}
+        />
       )}
     </div>
   );

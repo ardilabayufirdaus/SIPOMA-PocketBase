@@ -50,11 +50,7 @@ export const PlantOperationsPage = createLazyComponent(
     loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
     errorFallback: <DefaultErrorFallback name="Plant Operations" />,
     onError: (error: Error) => {
-      // Log to monitoring service
-      if (process.env.NODE_ENV === 'development') {
-        // eslint-disable-next-line no-console
-        console.error('Failed to load PlantOperationsPage:', error);
-      }
+      // Error logging removed for production
     },
   }
 );
@@ -89,15 +85,6 @@ export const UserListPage = createLazyComponent(
     displayName: 'UserListPage',
     loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
     errorFallback: <DefaultErrorFallback name="User List" />,
-  }
-);
-
-export const UserActivityPage = createLazyComponent(
-  () => import('../../features/user-management/pages/UserActivityPage'),
-  {
-    displayName: 'UserActivityPage',
-    loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
-    errorFallback: <DefaultErrorFallback name="User Activity" />,
   }
 );
 

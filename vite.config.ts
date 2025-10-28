@@ -228,6 +228,7 @@ export default defineConfig({
         target: 'https://api.sipoma.site',
         changeOrigin: true,
         secure: false, // karena SSL self-signed
+        ws: true, // Enable WebSocket proxying for realtime connections
       },
     },
   },

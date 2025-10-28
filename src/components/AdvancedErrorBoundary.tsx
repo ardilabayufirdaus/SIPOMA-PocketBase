@@ -67,16 +67,7 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       this.reportError(error, errorInfo, errorId);
     }
 
-    // Log error details
-    console.error('🚨 Advanced Error Boundary caught an error:', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      errorId,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-    });
+    // Error logging removed for production
   }
 
   componentWillUnmount() {
@@ -137,7 +128,7 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
         onRetry();
       }
     } else {
-      console.warn('❌ Max retry attempts reached, cannot retry further');
+      // Max retry attempts reached - logging removed for production
     }
   };
 
@@ -376,13 +367,7 @@ export const useErrorRecovery = () => {
       setErrorCount((prev) => prev + 1);
       setLastError(error);
 
-      // Log to console with additional context
-      console.error('🚨 Error Recovery Hook:', {
-        errorId,
-        error: error.message,
-        componentStack: errorInfo.componentStack,
-        recoveryAttempts: errorCount + 1,
-      });
+      // Error logging removed for production
     },
     [errorCount]
   );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FilterIcon, X, ChevronDown, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { FilterIcon, ChevronDown, RefreshCw } from 'lucide-react';
 import { EnhancedButton } from '../ui/EnhancedComponents';
 import { usePermissions } from '../../utils/permissions';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
@@ -9,16 +9,14 @@ import { PlantUnit } from '../../types';
 export interface DashboardFilters {
   plantCategory: string;
   plantUnit: string;
-  timeRange: 'daily' | 'monthly';
-  month: number;
-  year: number;
   date: string;
+  searchQuery: string;
 }
 
 interface FilterSectionProps {
   filters: DashboardFilters;
   plantUnits: PlantUnit[];
-  onFilterChange: (key: keyof DashboardFilters, value: string | number) => void;
+  onFilterChange: (key: keyof DashboardFilters, value: string) => void;
   onReset?: () => void;
   isLoading?: boolean;
 }
@@ -32,7 +30,6 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 }) => {
   const currentUser = useCurrentUser();
   const permissionChecker = usePermissions(currentUser.currentUser);
-  const [isExpanded, setIsExpanded] = useState(true);
   const [animatingField, setAnimatingField] = useState<string | null>(null);
 
   // Check if user has any access to plant operations
@@ -58,13 +55,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         unit.unit,
         'READ'
       );
-      const categoryMatch =
-        filters.plantCategory === 'all' || unit.category === filters.plantCategory;
+      const categoryMatch = !filters.plantCategory || unit.category === filters.plantCategory;
       return hasPermission && categoryMatch;
     })
     .map((unit) => unit.unit);
 
-  const handleFieldChange = (key: keyof DashboardFilters, value: string | number) => {
+  const handleFieldChange = (key: keyof DashboardFilters, value: string) => {
     setAnimatingField(key as string);
     onFilterChange(key, value);
     setTimeout(() => setAnimatingField(null), 300);
@@ -79,355 +75,161 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   };
 
   const activeFiltersCount = [
-    filters.plantCategory !== 'all',
-    filters.plantUnit !== 'all',
-    filters.timeRange !== 'daily',
-    filters.timeRange === 'daily' && filters.date !== '',
+    filters.plantCategory !== '',
+    filters.plantUnit !== '',
+    filters.date !== '',
   ].filter(Boolean).length;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.4,
-        ease: [0.25, 0.46, 0.45, 0.94],
-        scale: { duration: 0.3 },
-      }}
-      className="relative"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4"
     >
-      {/* Glass morphism background with enhanced styling */}
-      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 overflow-hidden">
-        {/* Header with gradient background */}
-        <div className="bg-gradient-to-r from-primary-500/10 via-secondary-500/10 to-success-500/10 dark:from-primary-500/20 dark:via-secondary-500/20 dark:to-success-500/20 border-b border-white/10 dark:border-slate-700/30">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <motion.div
-                  whileHover={{ rotate: 15, scale: 1.1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                  className="p-2 bg-primary-500/20 dark:bg-primary-500/30 rounded-xl"
-                >
-                  <FilterIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                </motion.div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                    Smart Filters
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Refine your data view
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {activeFiltersCount > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="px-2 py-1 bg-primary-500 text-white text-xs font-semibold rounded-full min-w-[20px] text-center"
-                  >
-                    {activeFiltersCount}
-                  </motion.div>
-                )}
-
-                <EnhancedButton
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="p-2"
-                  ariaLabel={isExpanded ? 'Collapse filters' : 'Expand filters'}
-                >
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 0 : 180 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </motion.div>
-                </EnhancedButton>
-              </div>
-            </div>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <motion.div
+            whileHover={{ rotate: 15, scale: 1.1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+            className="p-2 bg-primary-500/20 dark:bg-primary-500/30 rounded-xl"
+          >
+            <FilterIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+          </motion.div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+              Smart Filters
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Refine your data view</p>
           </div>
         </div>
 
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="overflow-hidden"
+        <div className="flex flex-wrap items-end gap-4">
+          {/* Plant Category Filter */}
+          <motion.div
+            className="flex items-center gap-3 min-w-0"
+            animate={
+              animatingField === 'plantCategory'
+                ? {
+                    scale: [1, 1.02, 1],
+                    transition: { duration: 0.3 },
+                  }
+                : {}
+            }
+          >
+            <label
+              htmlFor="plant-category"
+              className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
             >
-              <div className="p-6">
-                <div
-                  className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-${filters.timeRange === 'daily' ? '6' : '5'} gap-6`}
-                >
-                  {/* Plant Category Filter */}
-                  <motion.div
-                    className="space-y-3"
-                    animate={
-                      animatingField === 'plantCategory'
-                        ? {
-                            scale: [1, 1.02, 1],
-                            transition: { duration: 0.3 },
-                          }
-                        : {}
+              Plant Category:
+            </label>
+            <div className="relative min-w-[140px]">
+              <select
+                id="plant-category"
+                value={filters.plantCategory}
+                onChange={(e) => handleFieldChange('plantCategory', e.target.value)}
+                className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors appearance-none"
+              >
+                <option value="">Choose Category</option>
+                {allowedCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
+          </motion.div>
+
+          {/* Plant Unit Filter */}
+          <motion.div
+            className="flex items-center gap-3 min-w-0"
+            animate={
+              animatingField === 'plantUnit'
+                ? {
+                    scale: [1, 1.02, 1],
+                    transition: { duration: 0.3 },
+                  }
+                : {}
+            }
+          >
+            <label
+              htmlFor="plant-unit"
+              className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+            >
+              Unit:
+            </label>
+            <div className="relative min-w-[120px]">
+              <select
+                id="plant-unit"
+                value={filters.plantUnit}
+                onChange={(e) => handleFieldChange('plantUnit', e.target.value)}
+                disabled={allowedUnits.length === 0}
+                className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+              >
+                <option value="">Choose Unit</option>
+                {allowedUnits.map((unit) => (
+                  <option key={unit} value={unit}>
+                    {unit}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
+          </motion.div>
+
+          {/* Date Filter */}
+          <motion.div
+            className="flex items-center gap-3 min-w-0"
+            animate={
+              animatingField === 'date'
+                ? {
+                    scale: [1, 1.02, 1],
+                    transition: { duration: 0.3 },
+                  }
+                : {}
+            }
+          >
+            <label
+              htmlFor="filter-date"
+              className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+            >
+              Date:
+            </label>
+            <input
+              type="date"
+              id="filter-date"
+              value={filters.date}
+              onChange={(e) => handleFieldChange('date', e.target.value)}
+              className="min-w-[140px] px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors"
+            />
+          </motion.div>
+
+          {/* Reset Button */}
+          {onReset && activeFiltersCount > 0 && (
+            <motion.div
+              animate={
+                animatingField === 'reset'
+                  ? {
+                      scale: [1, 1.05, 1],
+                      transition: { duration: 0.3 },
                     }
-                  >
-                    <label
-                      htmlFor="plantCategory"
-                      className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      Plant Category
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="plantCategory"
-                        value={filters.plantCategory}
-                        onChange={(e) => handleFieldChange('plantCategory', e.target.value)}
-                        disabled={isLoading}
-                        className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                      >
-                        <option value="all">All Categories</option>
-                        {allowedCategories.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                  </motion.div>
-
-                  {/* Plant Unit Filter */}
-                  <motion.div
-                    className="space-y-3"
-                    animate={
-                      animatingField === 'plantUnit'
-                        ? {
-                            scale: [1, 1.02, 1],
-                            transition: { duration: 0.3 },
-                          }
-                        : {}
-                    }
-                  >
-                    <label
-                      htmlFor="plantUnit"
-                      className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      Plant Unit
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="plantUnit"
-                        value={filters.plantUnit}
-                        onChange={(e) => handleFieldChange('plantUnit', e.target.value)}
-                        disabled={isLoading}
-                        className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                      >
-                        <option value="all">All Units</option>
-                        {allowedUnits.map((unit) => (
-                          <option key={unit} value={unit}>
-                            {unit}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                  </motion.div>
-
-                  {/* Month Filter */}
-                  <motion.div
-                    className="space-y-3"
-                    animate={
-                      animatingField === 'month'
-                        ? {
-                            scale: [1, 1.02, 1],
-                            transition: { duration: 0.3 },
-                          }
-                        : {}
-                    }
-                  >
-                    <label
-                      htmlFor="month"
-                      className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      Month
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="month"
-                        value={filters.month}
-                        onChange={(e) => handleFieldChange('month', parseInt(e.target.value))}
-                        disabled={isLoading}
-                        className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                      >
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <option key={i + 1} value={i + 1}>
-                            {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                  </motion.div>
-
-                  {/* Year Filter */}
-                  <motion.div
-                    className="space-y-3"
-                    animate={
-                      animatingField === 'year'
-                        ? {
-                            scale: [1, 1.02, 1],
-                            transition: { duration: 0.3 },
-                          }
-                        : {}
-                    }
-                  >
-                    <label
-                      htmlFor="year"
-                      className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      Year
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="year"
-                        value={filters.year}
-                        onChange={(e) => handleFieldChange('year', parseInt(e.target.value))}
-                        disabled={isLoading}
-                        className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                      >
-                        {Array.from({ length: 5 }, (_, i) => {
-                          const year = new Date().getFullYear() - 2 + i;
-                          return (
-                            <option key={year} value={year}>
-                              {year}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                  </motion.div>
-
-                  {/* Time Range Filter */}
-                  <motion.div
-                    className="space-y-3"
-                    animate={
-                      animatingField === 'timeRange'
-                        ? {
-                            scale: [1, 1.02, 1],
-                            transition: { duration: 0.3 },
-                          }
-                        : {}
-                    }
-                  >
-                    <label
-                      htmlFor="timeRange"
-                      className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                    >
-                      Time Range
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="timeRange"
-                        value={filters.timeRange}
-                        onChange={(e) =>
-                          handleFieldChange('timeRange', e.target.value as 'daily' | 'monthly')
-                        }
-                        disabled={isLoading}
-                        className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed appearance-none"
-                      >
-                        <option value="daily">Daily</option>
-                        <option value="monthly">Monthly</option>
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                  </motion.div>
-
-                  {/* Date Filter - shown only when timeRange is daily */}
-                  {filters.timeRange === 'daily' && (
-                    <motion.div
-                      className="space-y-3"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <label
-                        htmlFor="date"
-                        className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                      >
-                        Date
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="date"
-                          id="date"
-                          value={filters.date}
-                          onChange={(e) => handleFieldChange('date', e.target.value)}
-                          disabled={isLoading}
-                          className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-600/50 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-300 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                <motion.div
-                  className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200/50 dark:border-slate-700/50"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <div className="flex items-center gap-2">
-                    {isLoading && (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      >
-                        <RefreshCw className="w-4 h-4 text-primary-500" />
-                      </motion.div>
-                    )}
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {activeFiltersCount > 0
-                        ? `${activeFiltersCount} filter${activeFiltersCount > 1 ? 's' : ''} active`
-                        : 'No active filters'}
-                    </span>
-                  </div>
-
-                  {onReset && activeFiltersCount > 0 && (
-                    <motion.div
-                      animate={
-                        animatingField === 'reset'
-                          ? {
-                              scale: [1, 1.05, 1],
-                              transition: { duration: 0.3 },
-                            }
-                          : {}
-                      }
-                    >
-                      <EnhancedButton
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleReset}
-                        disabled={isLoading}
-                        className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                        ariaLabel="Reset all filters"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Reset Filters
-                      </EnhancedButton>
-                    </motion.div>
-                  )}
-                </motion.div>
-              </div>
+                  : {}
+              }
+            >
+              <EnhancedButton
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                disabled={isLoading}
+                className="whitespace-nowrap"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reset
+              </EnhancedButton>
             </motion.div>
           )}
-        </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

@@ -60,11 +60,9 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   useEffect(() => {
     if (!isInitialLoad) {
       try {
-        console.log('📤 PermissionMatrixEditor calling onPermissionsChange with:', permissions);
         onPermissionsChange(permissions);
-        console.log('📤 onPermissionsChange call completed');
-      } catch (error) {
-        console.error('📤 Error calling onPermissionsChange:', error);
+      } catch {
+        // Handle error silently
       }
     }
   }, [permissions, onPermissionsChange, isInitialLoad]);
@@ -97,19 +95,15 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   };
 
   // Use React Query for caching plant units - lazy load when plant tab is active
-  const {
-    data: plantUnits = [],
-    isLoading: loadingPlantUnits,
-    error: plantUnitsError,
-  } = useQuery({
+  const { data: plantUnits = [] } = useQuery({
     queryKey: ['plant-units'],
     queryFn: async (): Promise<any[]> => {
-      const { supabase } = await import('../../../utils/pocketbaseClient');
-      const records = await supabase.collection('plant_units').getList(1, 100, {
+      const { pb } = await import('../../../utils/pocketbase');
+      const records = await pb.collection('plant_units').getFullList({
         sort: 'category,unit',
       });
 
-      return records.items || [];
+      return records || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -331,27 +325,18 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   };
 
   const handleSave = async () => {
-    console.log('PermissionMatrixEditor handleSave called');
-    console.log('onSave prop exists:', !!onSave);
-    console.log('onSave function:', onSave);
-    console.log('Current permissions state:', permissions);
-
     setSaving(true);
     try {
       if (onSave) {
-        console.log('Calling parent onSave function...');
         // Use parent save handler
         await onSave();
-        console.log('Parent onSave completed, closing modal');
         onClose();
       } else {
-        console.log('No onSave prop provided, using fallback');
         // Fallback to local save simulation
         await new Promise((resolve) => setTimeout(resolve, 1000));
         onClose();
       }
-    } catch (err) {
-      console.error('Error in handleSave:', err);
+    } catch {
       setError('Failed to save permissions');
     } finally {
       setSaving(false);

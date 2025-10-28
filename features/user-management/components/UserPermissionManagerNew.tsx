@@ -57,16 +57,47 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   // Realtime subscription for user permissions
   useEffect(() => {
-    // Set up PocketBase realtime subscription
-    pb.collection('user_permissions').subscribe('*', async (data) => {
-      console.log('Realtime permission change (new):', data);
-      // Refresh users when permissions change to get updated permission matrix
-      await fetchUsers();
-    });
+    let unsubscribePermissions: (() => void) | null = null;
+    let unsubscribeUsers: (() => void) | null = null;
+
+    // Set up PocketBase realtime subscription for user_permissions collection
+    pb.collection('user_permissions')
+      .subscribe('*', async (data) => {
+        console.log('🔄 Realtime permission change (user_permissions):', data);
+        // Refresh users when permissions change to get updated permission matrix
+        await fetchUsers();
+      })
+      .then((unsub) => {
+        unsubscribePermissions = unsub;
+        console.log('🔄 Subscribed to user_permissions collection');
+      })
+      .catch((err) => {
+        console.error('❌ Failed to subscribe to user_permissions:', err);
+      });
+
+    // Also subscribe to users collection for permission field updates
+    pb.collection('users')
+      .subscribe('*', async (data) => {
+        console.log('🔄 Realtime user change (users):', data);
+        // Check if this is a permission update
+        if (data.record && (data.record.permissions !== undefined || data.action === 'update')) {
+          console.log('🔄 Permission field update detected, refreshing users...');
+          // Refresh users when user permissions field changes
+          await fetchUsers();
+        }
+      })
+      .then((unsub) => {
+        unsubscribeUsers = unsub;
+        console.log('🔄 Subscribed to users collection');
+      })
+      .catch((err) => {
+        console.error('❌ Failed to subscribe to users:', err);
+      });
 
     return () => {
-      // Clean up subscription
-      pb.collection('user_permissions').unsubscribe();
+      // Clean up subscriptions
+      if (unsubscribePermissions) unsubscribePermissions();
+      if (unsubscribeUsers) unsubscribeUsers();
     };
   }, []);
 

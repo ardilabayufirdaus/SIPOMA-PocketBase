@@ -1,20 +1,28 @@
 import React from 'react';
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
   Tooltip,
   Legend,
-  ComposedChart,
-} from 'recharts';
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 import { EnhancedButton, useAccessibility } from '../ui/EnhancedComponents';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface AnalyticsDashboardProps {
   data: Array<{
@@ -104,38 +112,85 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           Production Overview
         </h3>
         <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="timestamp" fontSize={12} tick={{ fill: '#64748b' }} />
-              <YAxis fontSize={12} tick={{ fill: '#64748b' }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="production"
-                fill="#ef4444"
-                fillOpacity={0.1}
-                stroke="#ef4444"
-                strokeWidth={2}
-                name="Production Rate"
-              />
-              <Line
-                type="monotone"
-                dataKey="efficiency"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                name="Efficiency"
-              />
-              <Line
-                type="monotone"
-                dataKey="quality"
-                stroke="#10b981"
-                strokeWidth={2}
-                name="Quality Score"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
+          <Line
+            data={{
+              labels: data.map((item) => item.timestamp),
+              datasets: [
+                {
+                  label: 'Production Rate',
+                  data: data.map((item) => item.production),
+                  borderColor: '#ef4444',
+                  backgroundColor: '#ef444420',
+                  fill: true,
+                  tension: 0.1,
+                },
+                {
+                  label: 'Efficiency',
+                  data: data.map((item) => item.efficiency),
+                  borderColor: '#3b82f6',
+                  backgroundColor: '#3b82f620',
+                  tension: 0.1,
+                },
+                {
+                  label: 'Quality Score',
+                  data: data.map((item) => item.quality),
+                  borderColor: '#10b981',
+                  backgroundColor: '#10b98120',
+                  tension: 0.1,
+                },
+              ],
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  titleColor: '#1f2937',
+                  bodyColor: '#374151',
+                  borderColor: '#d1d5db',
+                  borderWidth: 1,
+                  cornerRadius: 8,
+                  callbacks: {
+                    label: (context) => {
+                      const value = context.parsed.y;
+                      const label = context.dataset.label;
+                      if (label === 'Production Rate') {
+                        return `${label}: ${value.toFixed(1)}%`;
+                      } else if (label === 'Efficiency') {
+                        return `${label}: ${value.toFixed(1)}%`;
+                      } else {
+                        return `${label}: ${value.toFixed(1)}%`;
+                      }
+                    },
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  display: true,
+                  ticks: {
+                    font: {
+                      size: 12,
+                    },
+                    color: '#64748b',
+                  },
+                },
+                y: {
+                  display: true,
+                  ticks: {
+                    font: {
+                      size: 12,
+                    },
+                    color: '#64748b',
+                  },
+                },
+              },
+            }}
+          />
         </div>
       </div>
 
@@ -147,20 +202,61 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             Downtime Analysis
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="timestamp" fontSize={12} tick={{ fill: '#64748b' }} />
-                <YAxis fontSize={12} tick={{ fill: '#64748b' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar
-                  dataKey="downtime"
-                  fill="#f59e0b"
-                  name="Downtime Hours"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <Bar
+              data={{
+                labels: data.map((item) => item.timestamp),
+                datasets: [
+                  {
+                    label: 'Downtime Hours',
+                    data: data.map((item) => item.downtime),
+                    backgroundColor: '#f59e0b',
+                    borderColor: '#f59e0b',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#1f2937',
+                    bodyColor: '#374151',
+                    borderColor: '#d1d5db',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                      label: (context) => `Downtime Hours: ${context.parsed.y.toFixed(1)}h`,
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    display: true,
+                    ticks: {
+                      font: {
+                        size: 12,
+                      },
+                      color: '#64748b',
+                    },
+                  },
+                  y: {
+                    display: true,
+                    ticks: {
+                      font: {
+                        size: 12,
+                      },
+                      color: '#64748b',
+                    },
+                  },
+                },
+              }}
+            />
           </div>
         </div>
 
@@ -170,22 +266,61 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             Energy Consumption
           </h3>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="timestamp" fontSize={12} tick={{ fill: '#64748b' }} />
-                <YAxis fontSize={12} tick={{ fill: '#64748b' }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="energy"
-                  stroke="#8b5cf6"
-                  fill="#8b5cf6"
-                  fillOpacity={0.3}
-                  name="Energy (kWh)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <Line
+              data={{
+                labels: data.map((item) => item.timestamp),
+                datasets: [
+                  {
+                    label: 'Energy (kWh)',
+                    data: data.map((item) => item.energy),
+                    borderColor: '#8b5cf6',
+                    backgroundColor: '#8b5cf630',
+                    fill: true,
+                    tension: 0.1,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#1f2937',
+                    bodyColor: '#374151',
+                    borderColor: '#d1d5db',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    callbacks: {
+                      label: (context) => `Energy: ${context.parsed.y.toFixed(0)} kWh`,
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    display: true,
+                    ticks: {
+                      font: {
+                        size: 12,
+                      },
+                      color: '#64748b',
+                    },
+                  },
+                  y: {
+                    display: true,
+                    ticks: {
+                      font: {
+                        size: 12,
+                      },
+                      color: '#64748b',
+                    },
+                  },
+                },
+              }}
+            />
           </div>
         </div>
       </div>

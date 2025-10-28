@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import ExcelJS, { CellValue } from 'exceljs';
 import {
@@ -34,6 +33,7 @@ import { ParameterProfile } from '../../types/Profile';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import Modal from '../../components/Modal';
 import CcrDowntimeForm from './CcrDowntimeForm';
+import MaterialUsageEntry from './components/MaterialUsageEntry';
 import CcrTableFooter from '../../components/ccr/CcrTableFooter';
 import CcrTableSkeleton from '../../components/ccr/CcrTableSkeleton';
 import CcrNavigationHelp from '../../components/ccr/CcrNavigationHelp';
@@ -45,6 +45,7 @@ import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { useCcrInformationData } from '../../hooks/useCcrInformationData';
+import { useCcrMaterialUsage } from '../../hooks/useCcrMaterialUsage';
 import { usePermissions } from '../../utils/permissions';
 import { PermissionLevel } from '../../types';
 import { isSuperAdmin } from '../../utils/roleHelpers';
@@ -159,8 +160,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const permissionChecker = usePermissions(loggedInUser);
   useEffect(() => {
     // Debug: log role user setiap render
-    // eslint-disable-next-line no-console
-    console.log('[CCR] loggedInUser?.role:', loggedInUser?.role);
   }, [loggedInUser]);
 
   // Function to check if we're in search mode
@@ -312,7 +311,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // This is an expected behavior, don't update state
         return;
       }
-      showToast('Failed to fetch profiles');
+      showToast(t.failed_to_fetch_profiles);
       setProfiles([]);
     }
   }, []);
@@ -335,14 +334,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         parameter_order: modalParameterOrder.map((p) => p.id),
       });
 
-      showToast('Profile saved successfully');
+      showToast(t.profile_saved_successfully);
       setShowSaveProfileModal(false);
       setProfileName('');
       setProfileDescription('');
       fetchProfiles();
     } catch {
-      showToast('Failed to save profile');
-      showToast('Failed to save profile');
+      showToast(t.failed_to_save_profile);
+      showToast(t.failed_to_save_profile);
     }
   }, [
     loggedInUser?.id,
@@ -494,11 +493,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         setAllDailySiloData(formattedData);
       } catch (error) {
-        showToast('Error fetching silo data');
+        showToast(t.error_fetching_parameter_data);
         // Log error hanya dalam mode development
         if (process.env.NODE_ENV === 'development') {
-          // eslint-disable-next-line no-console
-          console.error('Silo data fetch error:', error);
+          // Error logging removed for production
         }
       }
     },
@@ -718,10 +716,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         URL.revokeObjectURL(url);
       }, 0);
 
-      showToast('Parameter order exported successfully');
+      showToast(t.parameter_order_exported_successfully);
     } catch (error) {
-      showToast('Failed to export parameter order');
-      console.error('Export error:', error);
+      showToast(t.failed_to_export_parameter_order);
+      // Error logging removed for production
     }
   }, [modalParameterOrder, selectedUnit, showToast]);
 
@@ -746,7 +744,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             // Get the first worksheet
             const worksheet = workbook.getWorksheet(1);
             if (!worksheet) {
-              showToast('Invalid Excel file format');
+              showToast(t.invalid_excel_file_format);
               return;
             }
 
@@ -787,15 +785,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
             // Validate we haven't lost any parameters
             if (finalOrder.length !== modalParameterOrder.length) {
-              showToast('Warning: Some parameters could not be imported');
+              showToast(t.warning_some_parameters_not_imported);
             }
 
             // Apply the new order
             setModalParameterOrder(finalOrder);
-            showToast('Parameter order imported successfully');
+            showToast(t.parameter_order_imported_successfully);
           } catch (error) {
-            showToast('Failed to process Excel file');
-            console.error('Import processing error:', error);
+            showToast(t.failed_to_process_excel_file);
+            // Error logging removed for production
           }
         };
 
@@ -804,8 +802,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Reset file input to allow re-importing the same file
         e.target.value = '';
       } catch (error) {
-        showToast('Failed to import parameter order');
-        console.error('Import error:', error);
+        showToast(t.failed_to_import_parameter_order);
+        // Error logging removed for production
       }
     },
     [modalParameterOrder, showToast]
@@ -935,7 +933,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   });
                 }}
                 className="w-14 px-1 py-1 text-sm text-center border border-slate-300 rounded-md dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
-                title="Masukkan nomor posisi parameter"
+                title={t.parameter_position_title}
                 aria-label={`Ubah urutan parameter ${param.parameter}`}
               />
               <div className="flex items-center gap-1">
@@ -985,10 +983,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         setModalParameterOrder([...orderedParams, ...missingParams]);
         setSelectedProfile(profile);
         setShowLoadProfileModal(false);
-        showToast(`Profile "${profile.name}" loaded`);
+        showToast(t.profile_loaded.replace('{name}', profile.name));
       } catch {
-        showToast('Failed to load profile');
-        showToast('Failed to load profile');
+        showToast(t.failed_to_load_profile);
+        showToast(t.failed_to_load_profile);
       }
     },
     [filteredParameterSettings, showToast]
@@ -998,7 +996,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const deleteProfile = useCallback(
     async (profile: ParameterProfile) => {
       if (!profile?.id) {
-        showToast('Invalid profile selected');
+        showToast(t.invalid_profile_selected);
         return;
       }
 
@@ -1007,18 +1005,18 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const canDelete = isOwner || isSuperAdmin(loggedInUser?.role);
 
       if (!canDelete) {
-        showToast('You can only delete your own profiles');
+        showToast(t.you_can_only_delete_own_profiles);
         return;
       }
 
       try {
         await pb.collection('parameter_order_profiles').delete(profile.id);
 
-        showToast(`Profile "${profile.name}" deleted successfully`);
+        showToast(t.profile_deleted_successfully.replace('{name}', profile.name));
         fetchProfiles(); // Refresh the profiles list
       } catch {
-        showToast('Failed to delete profile');
-        showToast('Failed to delete profile: Network or server error');
+        showToast(t.failed_to_delete_profile);
+        showToast(t.network_error_delete_profile);
       }
     },
     [loggedInUser?.id, loggedInUser?.role, fetchProfiles, showToast]
@@ -1097,8 +1095,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // No need to update legacy records as the new flat structure is now used
       const userName = loggedInUser?.full_name || currentUser.full_name || 'Unknown User';
     } catch (error) {
-      console.error('Error fetching parameter data:', error);
-      showToast('Error fetching parameter data');
+      // Error logging removed for production
+      showToast(t.error_fetching_parameter_data);
     } finally {
       setLoading(false); // Clear loading state when done, regardless of success or failure
     }
@@ -1110,12 +1108,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     // Initial data fetch - loading state is handled inside fetchParameterData
     if (selectedDate && selectedUnit && selectedCategory) {
       fetchParameterData();
-      // Menggunakan console.log untuk debugging
-      console.log('Fetching data based on input changes', {
-        selectedDate,
-        selectedUnit,
-        selectedCategory,
-      });
+      // Debug logging removed for production
     }
     // Remove fetchParameterData from dependency array to prevent infinite loops
   }, [selectedDate, selectedUnit, selectedCategory]);
@@ -1127,7 +1120,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   useEffect(() => {
     // Hanya refresh jika dataVersion berubah dan lebih besar dari sebelumnya
     if (dataVersion > 0 && dataVersion > lastDataVersion.current) {
-      console.log('Data version changed, refreshing data');
+      // Debug logging removed for production
       lastDataVersion.current = dataVersion;
       fetchParameterData();
     }
@@ -1136,7 +1129,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Fungsi untuk refresh data secara manual
   const refreshData = useCallback(async () => {
     if (!selectedDate || !selectedUnit || !selectedCategory) {
-      showToast('Pilih kategori, unit, dan tanggal terlebih dahulu');
+      showToast(t.select_category_unit_date_first);
       return;
     }
 
@@ -1152,9 +1145,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       await fetchSiloData(true);
 
       showToast('Data berhasil di-refresh');
-      console.log('Manual refresh completed for all CCR data');
+      // Debug logging removed for production
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      // Error logging removed for production
       showToast('Gagal refresh data');
     } finally {
       setIsRefreshing(false);
@@ -1187,6 +1180,91 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Use custom hook for footer data persistence
   const { saveFooterData, getFooterDataForDate } = useCcrFooterData();
+  const { saveMaterialUsageSilent } = useCcrMaterialUsage();
+
+  // Material usage calculation mappings
+  const materialToParameterMap: Record<string, string> = {
+    clinker: 'Counter Feeder Clinker (ton)',
+    gypsum: 'Counter Feeder Gypsum (ton)',
+    limestone: 'Counter Feeder Limestone (ton)',
+    trass: 'Counter Feeder Trass (ton)',
+    fly_ash: 'Counter Feeder Flyash (ton)',
+    fine_trass: 'Counter Feeder Fine Trass (ton)',
+    ckd: 'Counter Feeder CKD (ton)',
+  };
+
+  const shiftToCounterFieldMap: Record<string, string> = {
+    shift3_cont: 'shift3_cont_counter',
+    shift1: 'shift1_counter',
+    shift2: 'shift2_counter',
+    shift3: 'shift3_counter',
+  };
+
+  const shifts = ['shift3_cont', 'shift1', 'shift2', 'shift3'];
+
+  // Function to calculate and save material usage from footer data
+  const saveMaterialUsageFromFooterData = useCallback(async () => {
+    if (!selectedDate || !selectedCategory || !selectedUnit || parameterSettings.length === 0) {
+      return;
+    }
+
+    try {
+      // Get footer data for counter feeders
+      const footerData = await getFooterDataForDate(selectedDate, selectedCategory);
+
+      // Calculate material usage from counters for each shift
+      const savePromises = shifts.map(async (shift) => {
+        const materialUsage: Record<string, unknown> = {
+          date: selectedDate,
+          plant_category: selectedCategory,
+          plant_unit: selectedUnit,
+          shift: shift as 'shift3_cont' | 'shift1' | 'shift2' | 'shift3',
+        };
+
+        let totalProduction = 0;
+
+        Object.entries(materialToParameterMap).forEach(([materialKey, paramName]) => {
+          // Find parameter setting for this material
+          const paramSetting = parameterSettings.find(
+            (s) =>
+              s.parameter === paramName &&
+              s.category === selectedCategory &&
+              s.unit === selectedUnit
+          );
+
+          if (paramSetting) {
+            // Find footer data for this parameter
+            const footer = footerData.find((f) => f.parameter_id === paramSetting.id);
+
+            if (footer) {
+              const counterField = shiftToCounterFieldMap[shift];
+              const value = (footer[counterField] as number) || 0;
+              materialUsage[materialKey] = value;
+              totalProduction += value;
+            }
+          }
+        });
+
+        materialUsage.total_production = totalProduction;
+
+        // Only save if there's actual data
+        if (totalProduction > 0) {
+          await saveMaterialUsageSilent(materialUsage);
+        }
+      });
+
+      await Promise.all(savePromises);
+    } catch {
+      // Silently handle errors for auto-save
+    }
+  }, [
+    selectedDate,
+    selectedCategory,
+    selectedUnit,
+    parameterSettings,
+    getFooterDataForDate,
+    saveMaterialUsageSilent,
+  ]);
 
   // Auto-save footer data when it changes - immediate save for data integrity
   useEffect(() => {
@@ -1241,6 +1319,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         });
 
         await Promise.all(savePromises.filter(Boolean));
+
+        // Auto-save material usage data when footer data is saved
+        if (selectedCategory && selectedUnit) {
+          await saveMaterialUsageFromFooterData();
+        }
       } catch {
         // Don't show error to user as this is background save
         // Footer data will be recalculated and saved again on next change
@@ -1261,7 +1344,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     filteredParameterSettings,
     selectedDate,
     selectedCategory,
+    selectedUnit,
     saveFooterData,
+    saveMaterialUsageFromFooterData,
   ]);
 
   // Table dimension functions for keyboard navigation
@@ -1802,7 +1887,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           return newMap;
         });
       } catch (error) {
-        console.error('Failed to save parameter data:', error);
+        // Error logging removed for production
         showToast('Error saving parameter data');
       }
     },
@@ -1938,7 +2023,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       });
 
       if (records.length === 0) {
-        alert('No parameter data found for the selected date and unit.');
+        alert(t.no_parameter_data_found);
         return;
       }
 
@@ -1968,7 +2053,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       showToast(`Successfully deleted ${deletedCount} parameter records`);
       announceToScreenReader(`Deleted ${deletedCount} parameter records`);
     } catch (error) {
-      console.error('Error deleting parameter data:', error);
+      // Error logging removed for production
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`Failed to delete parameter data: ${errorMessage}`);
       showToast('Error deleting parameter data');
@@ -2006,7 +2091,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       });
 
       if (records.length === 0) {
-        alert('No parameter data found for the selected date and unit.');
+        alert(t.no_parameter_data_found);
         return;
       }
 
@@ -2048,7 +2133,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       showToast(`Successfully cleared user names from ${updatedCount} parameter records`);
       announceToScreenReader(`Cleared user names from ${updatedCount} parameter records`);
     } catch (error) {
-      console.error('Error deleting user names:', error);
+      // Error logging removed for production
 
       // Check if it's a network error
       const isNetworkError =
@@ -2121,7 +2206,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         await Promise.all(updatePromises);
       } catch (error) {
-        console.error('Failed to save user name changes:', error);
+        // Error logging removed for production
         showToast('Error saving user name changes');
       }
     },
@@ -2137,7 +2222,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   const handleOpenAddDowntimeModal = () => {
     if (!selectedUnit) {
-      showToast('Silakan pilih Unit Name terlebih dahulu sebelum menambah downtime.');
+      showToast(t.select_unit_first);
       return;
     }
     setEditingDowntime(null);
@@ -2282,7 +2367,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         });
         setHasUnsavedInformationChanges(false);
       } catch (error) {
-        console.error('Failed to save information:', error);
+        // Error logging removed for production
         // Silently fail without showing a toast for auto-save
       }
     }, 1000), // 1 second debounce
@@ -2628,7 +2713,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       showToast('Template downloaded successfully');
     } catch (error) {
-      console.error('Error creating template:', error);
+      // Error logging removed for production
       showToast('Error creating Excel template');
       alert('An error occurred while creating the template. Please try again.');
     } finally {
@@ -2679,7 +2764,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // Import Parameter Data
       const paramWorksheet = workbook.getWorksheet('Parameter Data');
       if (paramWorksheet) {
-        console.log('🔍 DEBUG: Processing Parameter Data worksheet');
+        // Debug logging removed for production
         try {
           const paramData: Record<string, unknown>[] = [];
           let paramHeaders: string[] = [];
@@ -2691,10 +2776,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 .slice(1)
                 .map((v) => String(v || '').trim());
               paramHeaders = rawHeaders.filter((h) => h !== ''); // Remove any remaining empty headers
-              console.log(
-                '🔍 DEBUG: Parameter headers found (skipping empty first column):',
-                paramHeaders
-              );
+              // Debug logging removed for production
             } else {
               const rowData: Record<string, unknown> = {};
               // Skip the first column when reading data
@@ -2705,44 +2787,33 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               paramData.push(rowData);
             }
           });
-          console.log('🔍 DEBUG: Parameter data rows processed:', paramData.length);
+          // Debug logging removed for production
           if (paramData.length > 0) {
-            console.log('🔍 DEBUG: Validating parameter data structure...');
+            // Debug logging removed for production
             // Validate data structure and filter out invalid rows (likely summary/empty rows)
             const requiredFields = ['Date', 'Hour', 'Unit'];
             const validParamData = paramData.filter((row, index) => {
               const missingFields = requiredFields.filter((field) => !row[field]);
               if (missingFields.length > 0) {
-                console.warn(
-                  '⚠️ DEBUG: Skipping parameter row',
-                  index + 2,
-                  'missing fields:',
-                  missingFields,
-                  '- likely summary or empty row'
-                );
+                // Debug logging removed for production
                 return false; // Skip this row
               }
               return true; // Keep this row
             });
 
-            console.log(
-              '🔍 DEBUG: Validation complete, skipped rows:',
-              paramData.length - validParamData.length,
-              'valid rows:',
-              validParamData.length
-            );
+            // Debug logging removed for production
 
             if (validParamData.length === 0) {
-              console.log('⚠️ DEBUG: No valid parameter data rows found after validation');
+              // Debug logging removed for production
               errorMessages.push(
                 'Parameter Data: No valid data rows found (all rows appear to be summary or empty rows)'
               );
             } else {
-              console.log('🔍 DEBUG: Processing valid parameter data...');
+              // Debug logging removed for production
               // Process valid data
               for (const row of validParamData) {
                 const hour = Number(row.Hour);
-                console.log('🔍 DEBUG: Processing row for hour:', hour);
+                // Console statement removed for production
 
                 // Get all parameter columns (exclude Date, Hour, Unit, Shift and user columns)
                 const allColumns = Object.keys(row).filter(
@@ -2800,7 +2871,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         userName,
                       });
                     } else {
-                      console.warn('⚠️ DEBUG: Parameter setting not found for:', paramName);
+                      // Console statement removed for production
                       errorMessages.push(
                         `Parameter "${paramName}" not found in parameter settings for unit ${selectedUnit}`
                       );
@@ -2821,24 +2892,24 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             }
           }
         } catch (error) {
-          console.error('❌ DEBUG: Parameter Data import failed:', error);
+          // Console statement removed for production
           errorMessages.push(
             `Parameter Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
         }
       } else {
-        console.log('🔍 DEBUG: Parameter Data worksheet not found');
+        // Console statement removed for production
       }
 
       // Perform bulk save for all collected parameter changes
       if (allParameterChanges.length > 0) {
-        console.log('🔍 DEBUG: Starting bulk save for all parameter changes...');
+        // Console statement removed for production
         try {
           const savedCount = await bulkSaveParameterChanges(allParameterChanges);
           importCount += savedCount;
-          console.log('✅ DEBUG: Bulk save completed, total imported:', importCount);
+          // Console statement removed for production
         } catch (error) {
-          console.error('❌ DEBUG: Bulk save failed:', error);
+          // Console statement removed for production
           errorMessages.push(
             `Bulk save failed: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
@@ -2848,7 +2919,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // Import Footer Data
       const footerWorksheet = workbook.getWorksheet('Footer Data');
       if (footerWorksheet) {
-        console.log('🔍 DEBUG: Processing Footer Data worksheet');
+        // Console statement removed for production
         try {
           const footerData: Record<string, unknown>[] = [];
           let footerHeaders: string[] = [];
@@ -2874,9 +2945,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               footerData.push(rowData);
             }
           });
-          console.log('🔍 DEBUG: Footer data rows processed:', footerData.length);
+          // Console statement removed for production
           if (footerData.length > 0) {
-            console.log('🔍 DEBUG: Validating footer data structure...');
+            // Console statement removed for production
             // Validate data structure
             const requiredFields = ['Date', 'Unit'];
             const invalidRows = footerData.filter((row, index) => {
@@ -2919,19 +2990,19 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             }
           }
         } catch (error) {
-          console.error('❌ DEBUG: Footer Data import failed:', error);
+          // Console statement removed for production
           errorMessages.push(
             `Footer Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
         }
       } else {
-        console.log('🔍 DEBUG: Footer Data worksheet not found');
+        // Console statement removed for production
       }
 
       // Import Downtime Data
       const downtimeWorksheet = workbook.getWorksheet('Downtime Data');
       if (downtimeWorksheet) {
-        console.log('🔍 DEBUG: Processing Downtime Data worksheet');
+        // Console statement removed for production
         try {
           const downtimeData: Record<string, unknown>[] = [];
           let downtimeHeaders: string[] = [];
@@ -2957,9 +3028,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               downtimeData.push(rowData);
             }
           });
-          console.log('🔍 DEBUG: Downtime data rows processed:', downtimeData.length);
+          // Console statement removed for production
           if (downtimeData.length > 0) {
-            console.log('🔍 DEBUG: Validating downtime data structure...');
+            // Console statement removed for production
             // Validate data structure - make PIC optional for import
             const requiredFields = ['Date', 'Start_Time', 'End_Time', 'Unit', 'Problem'];
             const invalidRows = downtimeData.filter((row, index) => {
@@ -2995,15 +3066,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             );
 
             if (invalidRows.length === 0) {
-              console.log('🔍 DEBUG: Processing valid downtime data...');
+              // Console statement removed for production
               // Collect unique dates from import data
               const importDates = [...new Set(downtimeData.map((row) => String(row.Date)))];
-              console.log('🔍 DEBUG: Unique dates found for downtime:', importDates);
+              // Console statement removed for production
 
               // Delete existing downtime data for these dates to replace with new data
               if (importDates.length > 0) {
                 try {
-                  console.log('🔍 DEBUG: Deleting existing downtime data for dates:', importDates);
+                  // Console statement removed for production
                   // Delete existing downtime data for import dates
                   const existingRecords = await pb.collection('ccr_downtime_data').getFullList({
                     filter: importDates.map((date) => `date="${date}"`).join(' || '),
@@ -3015,16 +3086,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   );
 
                   for (const record of existingRecords) {
-                    console.log('🔍 DEBUG: Deleting downtime record:', record.id);
+                    // Console statement removed for production
                     await pb.collection('ccr_downtime_data').delete(record.id);
                   }
 
                   showToast(`Deleted existing downtime data for dates: ${importDates.join(', ')}`);
                   // Refresh downtime data to reflect changes
                   refetch();
-                  console.log('✅ DEBUG: Existing downtime data deleted successfully');
+                  // Console statement removed for production
                 } catch (error) {
-                  console.error('❌ DEBUG: Error deleting existing downtime data:', error);
+                  // Console statement removed for production
                   errorMessages.push(
                     `Error deleting existing downtime data: ${error instanceof Error ? error.message : 'Unknown error'}`
                   );
@@ -3057,7 +3128,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         : DowntimeStatus.OPEN,
                   };
 
-                  console.log('🔍 DEBUG: Adding downtime data:', downtimeObj);
+                  // Console statement removed for production
                   const result = await addDowntime(downtimeObj);
 
                   if (result.success) {
@@ -3067,13 +3138,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       importCount
                     );
                   } else {
-                    console.error('❌ DEBUG: Failed to save downtime data:', result.error);
+                    // Console statement removed for production
                     errorMessages.push(
                       `Failed to save downtime data for ${row.Date}: ${result.error}`
                     );
                   }
                 } catch (error) {
-                  console.error('❌ DEBUG: Failed to save downtime data for', row.Date, ':', error);
+                  // Console statement removed for production
                   errorMessages.push(
                     `Failed to save downtime data for ${row.Date}: ${error instanceof Error ? error.message : 'Unknown error'}`
                   );
@@ -3082,19 +3153,19 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             }
           }
         } catch (error) {
-          console.error('❌ DEBUG: Downtime Data import failed:', error);
+          // Console statement removed for production
           errorMessages.push(
             `Downtime Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
         }
       } else {
-        console.log('🔍 DEBUG: Downtime Data worksheet not found');
+        // Console statement removed for production
       }
 
       // Import Silo Data
       const siloWorksheet = workbook.getWorksheet('Silo Data');
       if (siloWorksheet) {
-        console.log('🔍 DEBUG: Processing Silo Data worksheet');
+        // Console statement removed for production
         try {
           const siloData: Record<string, unknown>[] = [];
           let siloHeaders: string[] = [];
@@ -3120,9 +3191,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               siloData.push(rowData);
             }
           });
-          console.log('🔍 DEBUG: Silo data rows processed:', siloData.length);
+          // Console statement removed for production
           if (siloData.length > 0) {
-            console.log('🔍 DEBUG: Validating silo data structure...');
+            // Console statement removed for production
             // Validate data structure
             const requiredFields = ['Date', 'Silo_ID'];
             const invalidRows = siloData.filter((row, index) => {
@@ -3150,15 +3221,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             );
 
             if (invalidRows.length === 0) {
-              console.log('🔍 DEBUG: Processing valid silo data...');
+              // Console statement removed for production
               // Collect unique dates from import data
               const importDates = [...new Set(siloData.map((row) => String(row.Date)))];
-              console.log('🔍 DEBUG: Unique dates found for silo:', importDates);
+              // Console statement removed for production
 
               // Delete existing silo data for these dates to replace with new data
               if (importDates.length > 0) {
                 try {
-                  console.log('🔍 DEBUG: Deleting existing silo data for dates:', importDates);
+                  // Console statement removed for production
                   // Delete existing silo data for import dates
                   const existingRecords = await pb.collection('ccr_silo_data').getFullList({
                     filter: importDates.map((date) => `date="${date}"`).join(' || '),
@@ -3170,7 +3241,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   );
 
                   for (const record of existingRecords) {
-                    console.log('🔍 DEBUG: Deleting silo record:', record.id);
+                    // Console statement removed for production
                     await pb.collection('ccr_silo_data').delete(record.id);
                   }
 
@@ -3178,9 +3249,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   getSiloDataForDate(selectedDate).then((data) => {
                     setAllDailySiloData(data);
                   });
-                  console.log('✅ DEBUG: Existing silo data deleted successfully');
+                  // Console statement removed for production
                 } catch (error) {
-                  console.error('❌ DEBUG: Error deleting existing silo data:', error);
+                  // Console statement removed for production
                   errorMessages.push(
                     `Error deleting existing silo data: ${error instanceof Error ? error.message : 'Unknown error'}`
                   );
@@ -3192,7 +3263,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 try {
                   const siloId = String(row.Silo_ID);
                   const date = String(row.Date);
-                  console.log('🔍 DEBUG: Processing silo row for date:', date, 'silo:', siloId);
+                  // Console statement removed for production
 
                   // Prepare shift data
                   const shift1 = {
@@ -3222,14 +3293,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     (shift) => !shift.emptySpace && !shift.content
                   );
 
-                  console.log('🔍 DEBUG: Is silo data empty?', isEmpty);
+                  // Console statement removed for production
 
                   if (!isEmpty) {
-                    console.log('🔍 DEBUG: Updating silo data for non-empty shifts...');
+                    // Console statement removed for production
                     // Update silo data for each shift if data exists
                     if (shift1.emptySpace !== undefined || shift1.content !== undefined) {
                       try {
-                        console.log('🔍 DEBUG: Updating silo shift1 data...');
+                        // Console statement removed for production
                         await updateSiloData(
                           date,
                           siloId,
@@ -3238,9 +3309,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           shift1.emptySpace
                         );
                         await updateSiloData(date, siloId, 'shift1', 'content', shift1.content);
-                        console.log('✅ DEBUG: Silo shift1 data updated successfully');
+                        // Console statement removed for production
                       } catch (error) {
-                        console.error('❌ DEBUG: Failed to update silo shift1:', error);
+                        // Console statement removed for production
                         errorMessages.push(
                           `Failed to update silo ${siloId} shift1 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
                         );
@@ -3248,7 +3319,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     }
                     if (shift2.emptySpace !== undefined || shift2.content !== undefined) {
                       try {
-                        console.log('🔍 DEBUG: Updating silo shift2 data...');
+                        // Console statement removed for production
                         await updateSiloData(
                           date,
                           siloId,
@@ -3259,9 +3330,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         await updateSiloData(date, siloId, 'shift2', 'content', shift2.content);
                         // Add small delay to prevent rate limiting
                         await new Promise((resolve) => setTimeout(resolve, 50));
-                        console.log('✅ DEBUG: Silo shift2 data updated successfully');
+                        // Console statement removed for production
                       } catch (error) {
-                        console.error('❌ DEBUG: Failed to update silo shift2:', error);
+                        // Console statement removed for production
                         errorMessages.push(
                           `Failed to update silo ${siloId} shift2 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
                         );
@@ -3269,7 +3340,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     }
                     if (shift3.emptySpace !== undefined || shift3.content !== undefined) {
                       try {
-                        console.log('🔍 DEBUG: Updating silo shift3 data...');
+                        // Console statement removed for production
                         await updateSiloData(
                           date,
                           siloId,
@@ -3280,9 +3351,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         await updateSiloData(date, siloId, 'shift3', 'content', shift3.content);
                         // Add small delay to prevent rate limiting
                         await new Promise((resolve) => setTimeout(resolve, 50));
-                        console.log('✅ DEBUG: Silo shift3 data updated successfully');
+                        // Console statement removed for production
                       } catch (error) {
-                        console.error('❌ DEBUG: Failed to update silo shift3:', error);
+                        // Console statement removed for production
                         errorMessages.push(
                           `Failed to update silo ${siloId} shift3 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
                         );
@@ -3295,7 +3366,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       importCount
                     );
                   } else {
-                    console.log('🔍 DEBUG: Skipping empty silo data row');
+                    // Console statement removed for production
                   }
                 } catch (error) {
                   console.error(
@@ -3314,39 +3385,39 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             }
           }
         } catch (error) {
-          console.error('❌ DEBUG: Silo Data import failed:', error);
+          // Console statement removed for production
           errorMessages.push(
             `Silo Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
           );
         }
       } else {
-        console.log('🔍 DEBUG: Silo Data worksheet not found');
+        // Console statement removed for production
       }
 
       // Show results
-      console.log('🔍 DEBUG: Import process completed');
-      console.log('✅ DEBUG: Final import count:', importCount);
-      console.log('⚠️ DEBUG: Total error messages:', errorMessages.length);
+      // Console statement removed for production
+      // Console statement removed for production
+      // Console statement removed for production
 
       if (importCount > 0) {
-        console.log('✅ DEBUG: Showing success message for', importCount, 'imported records');
+        // Console statement removed for production
         alert(`Successfully imported ${importCount} records to the database.`);
       }
 
       if (errorMessages.length > 0) {
-        console.log('⚠️ DEBUG: Showing error messages:', errorMessages);
+        // Console statement removed for production
         alert(`Import validation completed with errors:\n${errorMessages.join('\n')}`);
       }
 
       if (importCount === 0 && errorMessages.length === 0) {
-        console.log('⚠️ DEBUG: No records imported and no errors - possible empty file');
+        // Console statement removed for production
         alert('No data was imported. Please check your Excel file format.');
       }
     } catch (error) {
-      console.error('❌ DEBUG: Critical error during Excel import:', error);
+      // Console statement removed for production
       alert('Error processing Excel file. Please check the file format and try again.');
     } finally {
-      console.log('🔍 DEBUG: Import process finished, resetting state');
+      // Console statement removed for production
       setIsImporting(false);
       // Reset file input
       if (e.target) {
@@ -3371,9 +3442,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
               {t.op_ccr_data_entry}
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Kelola data CCR untuk monitoring performa pabrik
-            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t.ccr_page_description}</p>
           </div>
 
           {/* Error Alert */}
@@ -3420,7 +3489,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
                 >
-                  <option value="">Pilih Kategori</option>
+                  <option value="">{t.choose_category}</option>
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
@@ -3445,7 +3514,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   disabled={unitsForCategory.length === 0}
                   className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
                 >
-                  <option value="">Pilih Unit</option>
+                  <option value="">{t.choose_unit}</option>
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
                       {unit}
@@ -3498,8 +3567,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {t.ccr_parameter_data_entry_title}
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Pastikan Plant Kategori dan Plant Unit sesuai dengan filter yang diterapkan sebelum
-                mengisi data parameter.
+                {t.ccr_parameter_section_description}
               </p>
             </div>
           </div>
@@ -3539,7 +3607,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <span className="relative z-10">
                     {isImporting ? 'Importing...' : t.import_excel || 'Import Excel'}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
                 </Button>
 
                 {/* Download Template Button */}
@@ -3565,7 +3633,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <span className="relative z-10">
                     {isDownloadingTemplate ? 'Downloading...' : 'Download Template'}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
                 </Button>
 
                 {/* Export Excel Button */}
@@ -3592,7 +3660,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <span className="relative z-10">
                     {isExporting ? 'Exporting...' : t.export_excel || 'Export Excel'}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
                 </Button>
 
                 {/* Delete All Parameters & Names: Super Admin Only */}
@@ -3620,7 +3688,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="relative z-10">
                         {isDeletingAll ? 'Deleting...' : 'Delete All Data'}
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
                     </Button>
                     <Button
                       variant="error"
@@ -3656,7 +3724,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span className="relative z-10">
                         {isDeletingAllNames ? 'Deleting...' : 'Delete All Names'}
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
                     </Button>
                   </>
                 )}
@@ -3768,10 +3836,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={columnSearchQuery}
                 onChange={(e) => setColumnSearchQuery(e.target.value)}
                 placeholder={t.ccr_search_placeholder}
-                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400 transition-all duration-200"
+                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400 transition-all duration-150"
                 style={{ width: '320px' }}
                 autoComplete="off"
-                title="Search columns by parameter name or unit. Use Ctrl+F to focus, Escape to clear."
+                title={t.search_columns_tooltip}
               />
               {columnSearchQuery && (
                 <EnhancedButton
@@ -3825,11 +3893,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="ccr-table-wrapper" ref={tableWrapperRef}>
               <table className="ccr-table" role="grid">
                 <colgroup>
-                  <col style={{ width: '90px' }} />
-                  <col style={{ width: '140px' }} />
-                  <col style={{ width: '200px' }} />
+                  <col style={{ width: '60px' }} />
+                  <col style={{ width: '70px' }} />
+                  <col style={{ width: '120px' }} />
                   {filteredParameterSettings.map((_, index) => (
-                    <col key={index} style={{ width: '100px' }} />
+                    <col key={index} style={{ width: '80px' }} />
                   ))}
                 </colgroup>
                 <thead
@@ -3839,7 +3907,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <tr className="border-b border-orange-300/30" role="row">
                     <th
                       className="px-2 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 sticky left-0 bg-white/95 backdrop-blur-sm z-30 sticky-col-header shadow-lg"
-                      style={{ width: '90px' }}
+                      style={{ width: '60px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -3847,7 +3915,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                     <th
                       className="px-2 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 bg-white/95 backdrop-blur-sm"
-                      style={{ width: '140px' }}
+                      style={{ width: '70px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -3855,7 +3923,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                     <th
                       className="px-3 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 bg-white/95 backdrop-blur-sm"
-                      style={{ width: '200px' }}
+                      style={{ width: '120px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -3867,13 +3935,59 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         className={`px-2 py-3 text-xs font-bold border-r border-orange-300/30 text-center bg-white/95 backdrop-blur-sm text-slate-900 ${
                           shouldHighlightColumn(param) ? 'filtered-column' : ''
                         }`}
-                        style={{ width: '100px', minWidth: '100px' }}
+                        style={{ width: '80px', minWidth: '80px' }}
                         role="columnheader"
                         scope="col"
                       >
                         <div className="text-center">
                           <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-slate-700 drop-shadow-sm">
                             {param.parameter}
+                          </div>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                  <tr className="border-b border-orange-200/50 bg-slate-50/80" role="row">
+                    <th
+                      className="px-2 py-1 text-center text-xs font-semibold text-slate-700 border-r border-orange-300/30 sticky left-0 bg-slate-50/95 backdrop-blur-sm z-30"
+                      style={{ width: '60px' }}
+                      role="columnheader"
+                      scope="col"
+                    >
+                      {/* Empty for Hour */}
+                    </th>
+                    <th
+                      className="px-2 py-1 text-center text-xs font-semibold text-slate-700 border-r border-orange-300/30 bg-slate-50/95 backdrop-blur-sm"
+                      style={{ width: '70px' }}
+                      role="columnheader"
+                      scope="col"
+                    >
+                      {/* Empty for Shift */}
+                    </th>
+                    <th
+                      className="px-3 py-1 text-center text-xs font-semibold text-slate-700 border-r border-orange-300/30 bg-slate-50/95 backdrop-blur-sm"
+                      style={{ width: '120px' }}
+                      role="columnheader"
+                      scope="col"
+                    >
+                      {/* Empty for Name */}
+                    </th>
+                    {filteredParameterSettings.map((param) => (
+                      <th
+                        key={`minmax-${param.id}`}
+                        className={`px-2 py-1 text-xs border-r border-orange-300/30 text-center bg-slate-50/95 backdrop-blur-sm text-slate-600 ${
+                          shouldHighlightColumn(param) ? 'filtered-column' : ''
+                        }`}
+                        style={{ width: '80px', minWidth: '80px' }}
+                        role="columnheader"
+                        scope="col"
+                      >
+                        <div className="text-center space-y-1">
+                          <div className="text-[6px] leading-tight text-red-600 font-medium">
+                            {param.min_value !== undefined ? `Min: ${param.min_value}` : '-'}
+                          </div>
+                          <div className="text-[6px] leading-tight text-blue-600 font-medium">
+                            {param.max_value !== undefined ? `Max: ${param.max_value}` : '-'}
                           </div>
                         </div>
                       </th>
@@ -3892,12 +4006,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           hour % 2 === 0
                             ? 'bg-white/40 dark:bg-slate-800/40'
                             : 'bg-slate-50/30 dark:bg-slate-700/30'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-300`}
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-150`}
                         role="row"
                       >
                         <td
                           className="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200/50 dark:border-slate-700/50 sticky left-0 bg-white/90 dark:bg-slate-800/90 group-hover:bg-orange-50/80 dark:group-hover:bg-orange-900/30 z-30 sticky-col backdrop-blur-sm"
-                          style={{ width: '90px' }}
+                          style={{ width: '60px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center justify-center h-8">
@@ -3908,7 +4022,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </td>
                         <td
                           className="px-3 py-3 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400 border-r border-slate-200/50 dark:border-slate-700/50"
-                          style={{ width: '140px' }}
+                          style={{ width: '70px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
@@ -3919,7 +4033,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </td>
                         <td
                           className="px-3 py-3 whitespace-nowrap text-xs text-slate-800 dark:text-slate-200 border-r border-slate-200/50 dark:border-slate-700/50"
-                          style={{ width: '200px' }}
+                          style={{ width: '120px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
@@ -3970,7 +4084,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     value={userName || ''}
                                     onChange={(e) => handleUserNameChange(hour, e.target.value)}
                                     onBlur={(e) => saveUserNameChange(hour, e.target.value)}
-                                    className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200"
+                                    className="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-150"
                                     placeholder="Enter user name"
                                     title={`Edit user name for hour ${hour}`}
                                   />
@@ -4011,18 +4125,41 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             value = String(hourValue);
                           }
 
-                          const isCurrentlySaving = false; // Removed loading indicator for immediate saving
                           const isProductTypeParameter = param.parameter
                             .toLowerCase()
                             .includes('tipe produk');
 
+                          // Determine cell background color based on parameter value vs min/max
+                          let cellBgClass = 'bg-white';
+                          if (
+                            param.data_type === ParameterDataType.NUMBER &&
+                            value &&
+                            !isProductTypeParameter
+                          ) {
+                            const numValue = parseFloat(value.replace(/,/g, ''));
+                            if (!isNaN(numValue)) {
+                              if (param.min_value !== undefined && numValue < param.min_value) {
+                                cellBgClass = 'bg-red-100';
+                              } else if (
+                                param.max_value !== undefined &&
+                                numValue > param.max_value
+                              ) {
+                                cellBgClass = 'bg-yellow-100';
+                              } else {
+                                cellBgClass = 'bg-green-50';
+                              }
+                            }
+                          }
+
+                          const isCurrentlySaving = false; // Removed loading indicator for immediate saving
+
                           return (
                             <td
                               key={param.id}
-                              className={`p-1 border-r bg-white relative ${
+                              className={`p-1 border-r ${cellBgClass} relative ${
                                 shouldHighlightColumn(param) ? 'filtered-column' : ''
                               }`}
-                              style={{ width: '160px', minWidth: '160px' }}
+                              style={{ width: '80px', minWidth: '80px' }}
                               role="gridcell"
                             >
                               <div className="relative">
@@ -4045,7 +4182,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                     }
                                     disabled={false}
-                                    className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
+                                    className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 ${cellBgClass} hover:bg-slate-50 text-slate-800 transition-all duration-150 ${
                                       isCurrentlySaving
                                         ? 'opacity-50 cursor-not-allowed bg-slate-100'
                                         : ''
@@ -4112,7 +4249,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                     }
                                     disabled={false} // Removed loading state for immediate saving
-                                    className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 ${
+                                    className={`w-full text-center text-sm px-2 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 ${cellBgClass} hover:bg-slate-50 text-slate-800 transition-all duration-150 ${
                                       isCurrentlySaving
                                         ? 'opacity-50 cursor-not-allowed bg-slate-100'
                                         : ''
@@ -4156,7 +4293,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       >
                         {!selectedCategory || !selectedUnit
                           ? 'Please select a plant category and unit.'
-                          : `No parameter master data found for the unit: ${selectedUnit}.`}
+                          : t.no_parameter_master_data_found.replace('{unit}', selectedUnit)}
                       </td>
                     </tr>
                   )}
@@ -4181,242 +4318,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         )}
       </div>
 
-      {/* Bottom Section: Silo Data, Downtime Data, and Information */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Silo Data Entry */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                CCR Silo Data Entry
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Data silo CCR untuk monitoring kapasitas
-              </p>
-            </div>
-          </div>
-          <div className="overflow-x-auto rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
-            <table
-              className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700"
-              aria-label="Silo Data Table"
-            >
-              <thead className="bg-gradient-ocean text-white shadow-lg">
-                <tr>
-                  <th
-                    rowSpan={2}
-                    className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 align-middle"
-                  >
-                    {t.silo_name}
-                  </th>
-                  <th
-                    colSpan={3}
-                    className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
-                  >
-                    {t.shift_1}
-                  </th>
-                  <th
-                    colSpan={3}
-                    className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
-                  >
-                    {t.shift_2}
-                  </th>
-                  <th
-                    colSpan={3}
-                    className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-300/30 dark:border-slate-600/30"
-                  >
-                    {t.shift_3}
-                  </th>
-                </tr>
-                <tr>
-                  {[...Array(3)].flatMap((_, i) => [
-                    <th
-                      key={`es-${i}`}
-                      className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
-                    >
-                      {t.empty_space}
-                    </th>,
-                    <th
-                      key={`c-${i}`}
-                      className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
-                    >
-                      {t.content}
-                    </th>,
-                    <th
-                      key={`p-${i}`}
-                      className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
-                        i < 2 ? 'border-r border-slate-300/30 dark:border-slate-600/30' : ''
-                      }`}
-                    >
-                      {t.percentage}
-                    </th>,
-                  ])}
-                </tr>
-              </thead>
-              <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm divide-y divide-slate-200/50 dark:divide-slate-700/50">
-                {loading ? (
-                  <tr>
-                    <td colSpan={10} className="text-center py-16">
-                      <div className="flex items-center justify-center">
-                        <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="ml-3 text-slate-600 dark:text-slate-400 font-medium">
-                          Loading silo data...
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  dailySiloData.map((siloData, siloIndex) => {
-                    const masterSilo = siloMasterMap.get(siloData.silo_id);
-                    if (!masterSilo) return null;
-
-                    const shifts: ('shift1' | 'shift2' | 'shift3')[] = [
-                      'shift1',
-                      'shift2',
-                      'shift3',
-                    ];
-
-                    return (
-                      <tr key={siloData.id} className="hover:bg-slate-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white z-10">
-                          {masterSilo.silo_name}
-                        </td>
-                        {shifts.map((shift, i) => {
-                          const content = siloData[shift]?.content;
-                          const capacity = masterSilo.capacity;
-                          const percentage =
-                            capacity > 0 && typeof content === 'number'
-                              ? (content / capacity) * 100
-                              : 0;
-
-                          return (
-                            <React.Fragment key={shift}>
-                              <td
-                                className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                  siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
-                                } transition-colors duration-200`}
-                              >
-                                <input
-                                  ref={(el) => {
-                                    const refKey = getInputRef('silo', siloIndex, i * 2);
-                                    setInputRef(refKey, el);
-                                  }}
-                                  type="text"
-                                  defaultValue={formatInputValue(siloData[shift]?.emptySpace, 1)}
-                                  onChange={(e) => {
-                                    const parsed = parseInputValue(e.target.value);
-                                    handleSiloDataChange(
-                                      siloData.silo_id,
-                                      shift,
-                                      'emptySpace',
-                                      parsed !== null ? parsed.toString() : ''
-                                    );
-                                  }}
-                                  onBlur={() => {
-                                    handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
-                                  }}
-                                  onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
-                                  className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
-                                  aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
-                                  title={`Isi ruang kosong untuk ${
-                                    masterSilo.silo_name
-                                  } shift ${i + 1}`}
-                                  placeholder="0,0"
-                                />
-                              </td>
-                              <td
-                                className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                  siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
-                                } transition-colors duration-200`}
-                              >
-                                <input
-                                  ref={(el) => {
-                                    const refKey = getInputRef('silo', siloIndex, i * 2 + 1);
-                                    setInputRef(refKey, el);
-                                  }}
-                                  type="text"
-                                  defaultValue={formatInputValue(content, 1)}
-                                  onChange={(e) => {
-                                    const parsed = parseInputValue(e.target.value);
-                                    handleSiloDataChange(
-                                      siloData.silo_id,
-                                      shift,
-                                      'content',
-                                      parsed !== null ? parsed.toString() : ''
-                                    );
-                                  }}
-                                  onBlur={() => {
-                                    handleSiloDataBlur(siloData.silo_id, shift, 'content');
-                                  }}
-                                  onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)}
-                                  className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-200 hover:border-slate-400"
-                                  aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
-                                  title={`Isi konten untuk ${
-                                    masterSilo.silo_name
-                                  } shift ${i + 1} (Max: ${masterSilo.capacity})`}
-                                  placeholder="0,0"
-                                />
-                              </td>
-                              <td
-                                className={`px-2 py-2 whitespace-nowrap text-sm text-center text-slate-600 align-middle ${
-                                  i < 2 ? 'border-r' : ''
-                                }`}
-                              >
-                                <div className="relative w-full h-6 bg-slate-200 rounded-full overflow-hidden">
-                                  <div
-                                    className="absolute top-0 left-0 h-full bg-red-500 transition-all duration-300"
-                                    style={{
-                                      width: `${Math.min(100, percentage)}%`,
-                                    }}
-                                  ></div>
-                                  <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white mix-blend-difference">
-                                    {formatNumber(percentage)}%
-                                  </span>
-                                </div>
-                              </td>
-                            </React.Fragment>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })
-                )}
-                {dailySiloData.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={10}
-                      className="text-center py-6 text-slate-500 dark:text-slate-400"
-                    >
-                      {!selectedCategory
-                        ? 'No plant categories found in Master Data.'
-                        : `No silo master data found for the category: ${selectedCategory}.`}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Downtime Data Entry */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
-          <div className="flex justify-between items-center">
+      {/* Bottom Section: Silo Data, Material Usage, Information, and Downtime Data */}
+      <div className="space-y-6">
+        {/* First Row: CCR Silo Data Entry and CCR Material Usage Entry */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Silo Data Entry */}
+          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -4427,208 +4336,484 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                   />
                 </svg>
               </div>
               <div>
                 <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                  CCR Downtime Data Entry
+                  CCR Silo Data Entry
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  Catat waktu downtime dan alasan untuk analisis efisiensi produksi.
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {t.ccr_silo_data_description}
                 </p>
               </div>
             </div>
-            <EnhancedButton
-              variant="primary"
-              size="lg"
-              onClick={handleOpenAddDowntimeModal}
-              disabled={!permissionChecker.hasPermission('plant_operations', 'WRITE')}
-              aria-label={t.add_downtime_button || 'Add new downtime'}
-              className="group relative overflow-hidden flex items-center gap-2"
-            >
-              <PlusIcon className="w-5 h-5" />
-              <span className="relative z-10">{t.add_downtime_button}</span>
-              <div className="absolute inset-0 bg-gradient-ocean opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-            </EnhancedButton>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">
-                <tr>
-                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
-                    {t.start_time}
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
-                    {t.end_time}
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
-                    {t.unit}
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
-                    {t.pic}
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
-                    {t.problem}
-                  </th>
-                  <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
-                    {t.action}
-                  </th>
-                  <th className="relative px-4 py-3 border-b border-orange-400/30">
-                    <span className="sr-only">{t.actions}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
-                {loading ? (
+            <div className="overflow-x-auto rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
+              <table
+                className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700"
+                aria-label="Silo Data Table"
+              >
+                <thead className="bg-gradient-ocean text-white shadow-lg">
                   <tr>
-                    <td
-                      colSpan={7}
-                      className="text-center py-12 text-slate-500 dark:text-slate-400"
+                    <th
+                      rowSpan={2}
+                      className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 align-middle"
                     >
-                      <div className="flex items-center justify-center space-x-2">
-                        <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm font-medium">Loading data...</span>
-                      </div>
-                    </td>
+                      {t.silo_name}
+                    </th>
+                    <th
+                      colSpan={3}
+                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
+                    >
+                      {t.shift_1}
+                    </th>
+                    <th
+                      colSpan={3}
+                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
+                    >
+                      {t.shift_2}
+                    </th>
+                    <th
+                      colSpan={3}
+                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-300/30 dark:border-slate-600/30"
+                    >
+                      {t.shift_3}
+                    </th>
                   </tr>
-                ) : dailyDowntimeData.length > 0 ? (
-                  dailyDowntimeData.map((downtime, idx) => (
-                    <tr
-                      key={downtime.id}
-                      className={`border-b border-slate-200/50 dark:border-slate-700/50 group ${
-                        idx % 2 === 0
-                          ? 'bg-white/40 dark:bg-slate-800/40'
-                          : 'bg-slate-50/30 dark:bg-slate-700/30'
-                      } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-300`}
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
-                        {downtime.start_time}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
-                        {downtime.end_time}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
-                        <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-medium text-xs">
-                          {downtime.unit}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
-                        {downtime.pic}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
-                        {downtime.problem}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
-                        {downtime.action || '-'}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          <EnhancedButton
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleOpenEditDowntimeModal(downtime)}
-                            aria-label={`Edit downtime for ${downtime.unit}`}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            <EditIcon />
-                          </EnhancedButton>
-                          <EnhancedButton
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleOpenDeleteModal(downtime)}
-                            aria-label={`Delete downtime for ${downtime.unit}`}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          >
-                            <TrashIcon />
-                          </EnhancedButton>
+                  <tr>
+                    {[...Array(3)].flatMap((_, i) => [
+                      <th
+                        key={`es-${i}`}
+                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
+                      >
+                        {t.empty_space}
+                      </th>,
+                      <th
+                        key={`c-${i}`}
+                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
+                      >
+                        {t.content}
+                      </th>,
+                      <th
+                        key={`p-${i}`}
+                        className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
+                          i < 2 ? 'border-r border-slate-300/30 dark:border-slate-600/30' : ''
+                        }`}
+                      >
+                        {t.percentage}
+                      </th>,
+                    ])}
+                  </tr>
+                </thead>
+                <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm divide-y divide-slate-200/50 dark:divide-slate-700/50">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={10} className="text-center py-16">
+                        <div className="flex items-center justify-center">
+                          <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="ml-3 text-slate-600 dark:text-slate-400 font-medium">
+                            Loading silo data...
+                          </span>
                         </div>
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="text-center py-12 text-slate-500 dark:text-slate-400"
-                    >
-                      <div className="flex items-center justify-center space-x-3">
-                        <svg
-                          className="w-8 h-8 text-slate-400 dark:text-slate-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">{t.no_downtime_recorded}</span>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    dailySiloData.map((siloData, siloIndex) => {
+                      const masterSilo = siloMasterMap.get(siloData.silo_id);
+                      if (!masterSilo) return null;
+
+                      const shifts: ('shift1' | 'shift2' | 'shift3')[] = [
+                        'shift1',
+                        'shift2',
+                        'shift3',
+                      ];
+
+                      return (
+                        <tr key={siloData.id} className="hover:bg-slate-50">
+                          <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900 border-r sticky left-0 bg-white z-10">
+                            {masterSilo.silo_name}
+                          </td>
+                          {shifts.map((shift, i) => {
+                            const content = siloData[shift]?.content;
+                            const capacity = masterSilo.capacity;
+                            const percentage =
+                              capacity > 0 && typeof content === 'number'
+                                ? (content / capacity) * 100
+                                : 0;
+
+                            return (
+                              <React.Fragment key={shift}>
+                                <td
+                                  className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
+                                    siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
+                                  } transition-colors duration-150`}
+                                >
+                                  <input
+                                    ref={(el) => {
+                                      const refKey = getInputRef('silo', siloIndex, i * 2);
+                                      setInputRef(refKey, el);
+                                    }}
+                                    type="text"
+                                    defaultValue={formatInputValue(siloData[shift]?.emptySpace, 1)}
+                                    onChange={(e) => {
+                                      const parsed = parseInputValue(e.target.value);
+                                      handleSiloDataChange(
+                                        siloData.silo_id,
+                                        shift,
+                                        'emptySpace',
+                                        parsed !== null ? parsed.toString() : ''
+                                      );
+                                    }}
+                                    onBlur={() => {
+                                      handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
+                                    }}
+                                    onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
+                                    className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-150 hover:border-slate-400"
+                                    aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
+                                    title={`Isi ruang kosong untuk ${
+                                      masterSilo.silo_name
+                                    } shift ${i + 1}`}
+                                    placeholder="0,0"
+                                  />
+                                </td>
+                                <td
+                                  className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
+                                    siloIndex % 2 === 0 ? 'bg-slate-50' : 'bg-white'
+                                  } transition-colors duration-150`}
+                                >
+                                  <input
+                                    ref={(el) => {
+                                      const refKey = getInputRef('silo', siloIndex, i * 2 + 1);
+                                      setInputRef(refKey, el);
+                                    }}
+                                    type="text"
+                                    defaultValue={formatInputValue(content, 1)}
+                                    onChange={(e) => {
+                                      const parsed = parseInputValue(e.target.value);
+                                      handleSiloDataChange(
+                                        siloData.silo_id,
+                                        shift,
+                                        'content',
+                                        parsed !== null ? parsed.toString() : ''
+                                      );
+                                    }}
+                                    onBlur={() => {
+                                      handleSiloDataBlur(siloData.silo_id, shift, 'content');
+                                    }}
+                                    onKeyDown={(e) =>
+                                      handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
+                                    }
+                                    className="w-full text-center px-2 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all duration-150 hover:border-slate-400"
+                                    aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
+                                    title={`Isi konten untuk ${
+                                      masterSilo.silo_name
+                                    } shift ${i + 1} (Max: ${masterSilo.capacity})`}
+                                    placeholder="0,0"
+                                  />
+                                </td>
+                                <td
+                                  className={`px-2 py-2 whitespace-nowrap text-sm text-center text-slate-600 align-middle ${
+                                    i < 2 ? 'border-r' : ''
+                                  }`}
+                                >
+                                  <div className="relative w-full h-6 bg-slate-200 rounded-full overflow-hidden">
+                                    <div
+                                      className="absolute top-0 left-0 h-full bg-red-500 transition-all duration-150"
+                                      style={{
+                                        width: `${Math.min(100, percentage)}%`,
+                                      }}
+                                    ></div>
+                                    <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white mix-blend-difference">
+                                      {formatNumber(percentage)}%
+                                    </span>
+                                  </div>
+                                </td>
+                              </React.Fragment>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })
+                  )}
+                  {dailySiloData.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={10}
+                        className="text-center py-6 text-slate-500 dark:text-slate-400"
+                      >
+                        {!selectedCategory
+                          ? t.no_plant_categories_found
+                          : t.no_silo_master_data_found.replace('{category}', selectedCategory)}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* CCR Material Usage Entry */}
+          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                  {t.ccr_material_usage_entry_title}
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {t.ccr_material_usage_description}
+                </p>
+              </div>
+            </div>
+            <MaterialUsageEntry
+              selectedDate={selectedDate}
+              selectedUnit={selectedUnit}
+              selectedCategory={selectedCategory}
+              disabled={!selectedCategory || !selectedUnit}
+            />
           </div>
         </div>
 
-        {/* Information */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
+        {/* Second Row: Information and CCR Downtime Data Entry */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Information */}
+          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                  Information
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                  {t.ccr_information_description}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                Information
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                Catat informasi penting terkait operasi CCR hari ini.
-              </p>
+            <div className="space-y-3">
+              <label
+                htmlFor="keterangan"
+                className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+              >
+                {t.information_label}
+              </label>
+              <div className="relative">
+                <textarea
+                  id="keterangan"
+                  rows={8}
+                  value={informationText}
+                  onChange={(e) => handleInformationChange(e.target.value)}
+                  disabled={!selectedCategory || !selectedUnit}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical transition-all duration-150 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder={t.information_placeholder}
+                />
+              </div>
+              {isSavingInformation && (
+                <div className="flex justify-end">
+                  <div className="px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 flex items-center space-x-2">
+                    <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Otomatis menyimpan perubahan...</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          <div className="space-y-3">
-            <label
-              htmlFor="keterangan"
-              className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-            >
-              {t.information_label}
-            </label>
-            <div className="relative">
-              <textarea
-                id="keterangan"
-                rows={8}
-                value={informationText}
-                onChange={(e) => handleInformationChange(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical transition-all duration-200 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm"
-                placeholder={t.information_placeholder}
-              />
-            </div>
-            {isSavingInformation && (
-              <div className="flex justify-end">
-                <div className="px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 flex items-center space-x-2">
-                  <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span>Otomatis menyimpan perubahan...</span>
+
+          {/* Downtime Data Entry */}
+          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                    CCR Downtime Data Entry
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                    {t.ccr_downtime_description}
+                  </p>
                 </div>
               </div>
-            )}
+              <EnhancedButton
+                variant="primary"
+                size="lg"
+                onClick={handleOpenAddDowntimeModal}
+                disabled={
+                  !permissionChecker.hasPermission('plant_operations', 'WRITE') ||
+                  !selectedCategory ||
+                  !selectedUnit
+                }
+                aria-label={t.add_downtime_button || 'Add new downtime'}
+                className="group relative overflow-hidden flex items-center gap-2"
+              >
+                <PlusIcon className="w-5 h-5" />
+                <span className="relative z-10">{t.add_downtime_button}</span>
+                <div className="absolute inset-0 bg-gradient-ocean opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+              </EnhancedButton>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                      {t.start_time}
+                    </th>
+                    <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                      {t.end_time}
+                    </th>
+                    <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                      {t.unit}
+                    </th>
+                    <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                      {t.pic}
+                    </th>
+                    <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                      {t.problem}
+                    </th>
+                    <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
+                      {t.action}
+                    </th>
+                    <th className="relative px-4 py-3 border-b border-orange-400/30">
+                      <span className="sr-only">{t.actions}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                  {loading ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="text-center py-12 text-slate-500 dark:text-slate-400"
+                      >
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm font-medium">{t.loading_data}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : dailyDowntimeData.length > 0 ? (
+                    dailyDowntimeData.map((downtime, idx) => (
+                      <tr
+                        key={downtime.id}
+                        className={`border-b border-slate-200/50 dark:border-slate-700/50 group ${
+                          idx % 2 === 0
+                            ? 'bg-white/40 dark:bg-slate-800/40'
+                            : 'bg-slate-50/30 dark:bg-slate-700/30'
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-150`}
+                      >
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
+                          {downtime.start_time}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
+                          {downtime.end_time}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
+                          <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-medium text-xs">
+                            {downtime.unit}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {downtime.pic}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                          {downtime.problem}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                          {downtime.action || '-'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <EnhancedButton
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleOpenEditDowntimeModal(downtime)}
+                              aria-label={`Edit downtime for ${downtime.unit}`}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            >
+                              <EditIcon />
+                            </EnhancedButton>
+                            <EnhancedButton
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleOpenDeleteModal(downtime)}
+                              aria-label={`Delete downtime for ${downtime.unit}`}
+                              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            >
+                              <TrashIcon />
+                            </EnhancedButton>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="text-center py-12 text-slate-500 dark:text-slate-400"
+                      >
+                        <div className="flex items-center justify-center space-x-3">
+                          <svg
+                            className="w-8 h-8 text-slate-400 dark:text-slate-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span className="text-sm font-medium">{t.no_downtime_recorded}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -4652,23 +4837,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={handleCloseDeleteModal}
-        title="Konfirmasi Hapus Downtime"
+        title={t.confirm_delete_downtime_title}
       >
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="p-6"
-          >
-            <div className="flex items-start space-x-4">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.1, type: 'spring', stiffness: 500 }}
-                className="flex-shrink-0"
-              >
+        <div className="p-6">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
                 <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
                   <svg
                     className="w-6 h-6 text-red-600 dark:text-red-400"
@@ -4685,31 +4859,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     />
                   </svg>
                 </div>
-              </motion.div>
+              </div>
               <div className="flex-1">
-                <motion.h3
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2"
-                >
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
                   Hapus Data Downtime
-                </motion.h3>
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="text-sm text-slate-600 dark:text-slate-400 mb-4"
-                >
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Tindakan ini tidak dapat dibatalkan. Data downtime berikut akan dihapus permanen:
-                </motion.p>
+                </p>
                 {deletingRecord && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-2"
-                  >
+                  <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-2">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                         Unit:
@@ -4751,26 +4910,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </span>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
                 )}
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="text-sm text-red-600 dark:text-red-400 mt-4 font-medium"
-                >
+                <p className="text-sm text-red-600 dark:text-red-400 mt-4 font-medium">
                   ⚠️ Pastikan data ini benar-benar perlu dihapus sebelum melanjutkan.
-                </motion.p>
+                </p>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-slate-50 dark:bg-slate-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-700"
-        >
+          </div>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-700">
           <EnhancedButton
             variant="error"
             onClick={handleDeleteConfirm}
@@ -4807,14 +4956,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </svg>
             Batal
           </EnhancedButton>
-        </motion.div>
+        </div>
       </Modal>
 
       {/* Parameter Reorder Modal */}
       <Modal
         isOpen={showReorderModal}
         onClose={() => setShowReorderModal(false)}
-        title="Reorder Parameters"
+        title={t.reorder_parameters_title}
       >
         <div className="space-y-4 parameter-reorder-modal">
           <div className="space-y-2">
@@ -5059,7 +5208,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       <Modal
         isOpen={showSaveProfileModal}
         onClose={() => setShowSaveProfileModal(false)}
-        title="Save Parameter Order Profile"
+        title={t.save_parameter_order_profile_title}
       >
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -5122,7 +5271,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       <Modal
         isOpen={showLoadProfileModal}
         onClose={() => setShowLoadProfileModal(false)}
-        title="Load Parameter Order Profile"
+        title={t.load_parameter_order_profile_title}
       >
         <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -5202,7 +5351,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           setShowDeleteProfileModal(false);
           setProfileToDelete(null);
         }}
-        title="Delete Parameter Order Profile"
+        title={t.delete_parameter_order_profile_title}
       >
         <div className="p-6">
           <p className="text-sm text-slate-600 dark:text-slate-400">

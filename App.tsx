@@ -1,5 +1,8 @@
-import { useNavigate } from 'react-router-dom';
 import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+// ...existing code...
+
+// ...existing code...
 // Using SimpleErrorBoundary instead
 import SimpleErrorBoundary from './components/SimpleErrorBoundary';
 import Modal from './components/Modal';
@@ -10,7 +13,6 @@ import Toast from './components/Toast';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
-import { useUserActivity } from './hooks/useUserActivity';
 import { usePlantData } from './hooks/usePlantData';
 
 import { useIsMobile } from './hooks/useIsMobile';
@@ -32,7 +34,6 @@ import {
   InspectionPage,
   SettingsPage,
   UserListPage,
-  UserActivityPage,
   WhatsAppReportsPage,
   ConnectionTesterPage,
 } from './src/config/lazyComponents';
@@ -70,17 +71,7 @@ const App: React.FC = () => {
 
   const { loading: plantUnitsLoading } = usePlantUnits();
   const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
-  const {
-    users,
-    createUser,
-    updateUser,
-    deleteUser: deleteUserStore,
-    isLoading: usersLoading,
-    error,
-  } = useUserStore();
-
-  // Update current user activity
-  useUserActivity(currentUser?.id);
+  const { updateUser, isLoading: usersLoading } = useUserStore();
 
   const { loading: plantDataLoading } = usePlantData();
 
@@ -92,9 +83,9 @@ const App: React.FC = () => {
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [showPasswordDisplay, setShowPasswordDisplay] = useState(false);
-  const [generatedPassword, setGeneratedPassword] = useState('');
-  const [newUsername, setNewUsername] = useState('');
-  const [newUserFullName, setNewUserFullName] = useState('');
+  const [generatedPassword] = useState('');
+  const [newUsername] = useState('');
+  const [newUserFullName] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'info' | 'warning'>('success');
@@ -155,10 +146,7 @@ const App: React.FC = () => {
     setIsUserModalOpen(true);
   }, []);
 
-  const handleOpenEditUserModal = useCallback((user: User) => {
-    setEditingUser(user);
-    setIsUserModalOpen(true);
-  }, []);
+  // handleOpenEditUserModal dihapus karena tidak digunakan
 
   const handleCloseUserModal = useCallback(() => {
     setIsUserModalOpen(false);
@@ -299,7 +287,7 @@ const App: React.FC = () => {
                       fallback={null}
                     >
                       {currentPage === 'dashboard' && (
-                        <MainDashboardPage language={language} onNavigate={handleNavigate} />
+                        <MainDashboardPage language={language} onNavigate={handleNavigate} t={t} />
                       )}
                     </PermissionGuard>
 
@@ -321,12 +309,7 @@ const App: React.FC = () => {
 
                     {/* User Management - Only for Super Admin */}
                     {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
-                      <>
-                        {activeSubPages.users === 'user_list' && <UserListPage />}
-                        {activeSubPages.users === 'user_activity' && (
-                          <UserActivityPage users={users} t={t} />
-                        )}
-                      </>
+                      <>{activeSubPages.users === 'user_list' && <UserListPage />}</>
                     )}
 
                     {/* Settings - Accessible to all users */}

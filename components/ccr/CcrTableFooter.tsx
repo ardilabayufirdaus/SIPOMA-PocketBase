@@ -164,11 +164,11 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
           style={{ marginBottom: 0 }}
         >
           <colgroup>
-            <col style={{ width: '90px' }} />
-            <col style={{ width: '140px' }} />
-            <col style={{ width: '200px' }} />
+            <col style={{ width: '60px' }} />
+            <col style={{ width: '70px' }} />
+            <col style={{ width: '120px' }} />
             {filteredParameterSettings.map((_, index) => (
-              <col key={index} style={{ width: '100px' }} />
+              <col key={index} style={{ width: '80px' }} />
             ))}
           </colgroup>
           <tbody role="rowgroup">
@@ -198,7 +198,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
                     <td
                       key={param.id}
                       className={`px-4 py-3 text-center font-bold border-r border-white/30 transition-all duration-200 backdrop-blur-sm ${getCellStyling(rowIndex)}`}
-                      style={{ width: '160px', minWidth: '160px' }}
+                      style={{ width: '80px', minWidth: '80px' }}
                       role="gridcell"
                     >
                       {value !== undefined ? formatStatValue(value) : '-'}

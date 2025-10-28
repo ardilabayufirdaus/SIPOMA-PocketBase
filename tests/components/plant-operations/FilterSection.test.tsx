@@ -22,20 +22,21 @@ const mockUsePermissions = usePermissions as jest.MockedFunction<typeof usePermi
 describe('FilterSection', () => {
   const defaultProps = {
     filters: {
-      plantCategory: 'all',
-      plantUnit: 'all',
-      timeRange: '24h',
-      month: 1,
-      year: 2024,
+      plantCategory: '',
+      plantUnit: '',
+      date: '2024-01-01',
+      searchQuery: '',
     },
     plantUnits: [{ id: '1', unit: 'Cement Mill 1', category: 'Cement Mill', description: '' }],
     onFilterChange: jest.fn(),
+    searchPlaceholder: 'Search data...',
+    searchResultsCount: 0,
   };
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('renders filters when user has plant operations access', () => {
+  it('renders filters when user has plant operations access', async () => {
     mockUseCurrentUser.mockReturnValue({
       currentUser: {
         id: '1',
@@ -58,8 +59,10 @@ describe('FilterSection', () => {
 
     render(<FilterSection {...defaultProps} />);
     expect(screen.getByText('Smart Filters')).toBeInTheDocument();
-    expect(screen.getByLabelText('Plant Category')).toBeInTheDocument();
-    expect(screen.getByLabelText('Plant Unit')).toBeInTheDocument();
+
+    // Check for the select elements by their default option text
+    expect(screen.getByDisplayValue('Choose Category')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Choose Unit')).toBeInTheDocument();
   });
 
   it('does not render filters when user has no plant operations access', () => {

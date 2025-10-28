@@ -19,20 +19,19 @@ interface RunningHoursData {
   total_running_hours: number;
 }
 
-// Helper function to generate filter based on date range
+// Helper function to generate filter based on date
 const generateDateFilter = (filters: DashboardFilters, parameterIds: string[]): string => {
   // Base filter for parameter IDs
   let filter = `parameter_id ?~ "${parameterIds.join('|')}"`;
 
-  // Apply date filter to reduce data transfer
-  if (filters.timeRange === 'daily') {
+  // Apply date filter if specified
+  if (filters.date) {
     filter += ` && date = "${filters.date}"`;
-  } else if (filters.timeRange === 'monthly') {
-    const startDate = new Date(filters.year, filters.month - 1, 1);
-    const endDate = new Date(filters.year, filters.month, 0);
-    const startDateStr = startDate.toISOString().split('T')[0];
-    const endDateStr = endDate.toISOString().split('T')[0];
-    filter += ` && date >= "${startDateStr}" && date <= "${endDateStr}"`;
+  }
+
+  // Apply plant unit filter if specified
+  if (filters.plantUnit) {
+    filter += ` && plant_unit = "${filters.plantUnit}"`;
   }
 
   return filter;
@@ -45,13 +44,12 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
   const [downtimeData, setDowntimeData] = useState<CcrDowntimeData[]>([]);
   const [runningHoursData, setRunningHoursData] = useState<RunningHoursData[]>([]);
   const [loadingRunningHours, setLoadingRunningHours] = useState(false);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>({
     plantCategory: '',
     plantUnit: '',
-    timeRange: 'daily',
-    month: new Date().getMonth() + 1,
-    year: new Date().getFullYear(),
     date: new Date().toISOString().split('T')[0],
+    searchQuery: '',
   });
 
   // Load downtime data on mount
@@ -80,6 +78,15 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
   useEffect(() => {
     const loadRunningHoursData = async () => {
       setLoadingRunningHours(true);
+      setHasTimedOut(false);
+
+      // Set a global timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        setLoadingRunningHours(false);
+        setRunningHoursData([]);
+        setHasTimedOut(true);
+      }, 30000); // 30 seconds timeout
+
       try {
         // Get parameter IDs
         const parameterIds = runningHoursParameters.map((p) => p.id);
@@ -97,8 +104,9 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         const batchSize = 100; // Reduced batch size for stability
         let page = 1;
         let hasMoreData = true;
+        const maxPages = 50; // Prevent infinite loops
 
-        while (hasMoreData) {
+        while (hasMoreData && page <= maxPages) {
           try {
             const result = await supabase.collection('ccr_footer_data').getList(page, batchSize, {
               filter: filter,
@@ -195,6 +203,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
 
         setRunningHoursData([]);
       } finally {
+        clearTimeout(timeoutId);
         setLoadingRunningHours(false);
       }
     };
@@ -232,20 +241,9 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     runningHoursData.forEach((record) => {
       const key = `${record.plant_unit}`;
       if (groupedData[key]) {
-        if (filters.timeRange === 'daily') {
-          // For daily, use running hours for selected date
-          if (record.date === filters.date) {
-            groupedData[key].runningHours = record.total_running_hours;
-          }
-        } else {
-          // For monthly, accumulate running hours for the selected month
-          const recordDate = new Date(record.date);
-          if (
-            recordDate.getMonth() + 1 === filters.month &&
-            recordDate.getFullYear() === filters.year
-          ) {
-            groupedData[key].runningHours += record.total_running_hours;
-          }
+        // Use running hours for selected date if specified
+        if (!filters.date || record.date === filters.date) {
+          groupedData[key].runningHours = record.total_running_hours;
         }
       }
     });
@@ -259,20 +257,9 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         const endTime = new Date(`1970-01-01T${record.end_time}:00`);
         const downtimeHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
 
-        if (filters.timeRange === 'daily') {
-          // For daily, check if downtime is for selected date
-          if (record.date === filters.date) {
-            groupedData[key].downtimeHours += downtimeHours;
-          }
-        } else {
-          // For monthly, accumulate downtime for the selected month
-          const recordDate = new Date(record.date);
-          if (
-            recordDate.getMonth() + 1 === filters.month &&
-            recordDate.getFullYear() === filters.year
-          ) {
-            groupedData[key].downtimeHours += downtimeHours;
-          }
+        // Use downtime for selected date if specified
+        if (!filters.date || record.date === filters.date) {
+          groupedData[key].downtimeHours += downtimeHours;
         }
       }
     });
@@ -312,11 +299,7 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     const avgAvailability =
       filteredData.length > 0
         ? filteredData.reduce((sum, item) => {
-            const totalHours =
-              filters.timeRange === 'daily'
-                ? 24
-                : new Date(filters.year, filters.month + 1, 0).getDate() * 24;
-            if (totalHours === 0) return sum;
+            const totalHours = 24; // Daily data - 24 hours
             const availability = ((item.runningHours - item.downtimeHours) / totalHours) * 100;
             return sum + availability;
           }, 0) / filteredData.length
@@ -381,10 +364,8 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
     setFilters({
       plantCategory: '',
       plantUnit: '',
-      timeRange: 'daily',
-      month: new Date().getMonth() + 1,
-      year: new Date().getFullYear(),
       date: new Date().toISOString().split('T')[0],
+      searchQuery: '',
     });
   }, []);
 
@@ -396,6 +377,13 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
           <div className="h-32 bg-gray-200 rounded mb-6"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
         </div>
+        {hasTimedOut && (
+          <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded">
+            <p className="text-yellow-800">
+              Loading is taking longer than expected. Some data may not be available.
+            </p>
+          </div>
+        )}
       </div>
     );
   }
@@ -417,17 +405,6 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Monitor plant availability and performance metrics
           </p>
-          <div className="mt-2">
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                filters.timeRange === 'daily'
-                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                  : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-              }`}
-            >
-              {filters.timeRange === 'daily' ? 'Data Harian' : 'Data Bulanan'}
-            </span>
-          </div>
         </div>
       </motion.div>
 
@@ -446,10 +423,9 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         ccrDataLength={filteredData.length}
         siloCapacitiesLength={0} // Placeholder
         availabilityData={filteredData}
-        timeRange={filters.timeRange}
-        month={filters.month}
-        year={filters.year}
-        date={filters.date}
+        timeRange="daily"
+        month={new Date().getMonth() + 1}
+        year={new Date().getFullYear()}
       />
     </div>
   );

@@ -50,7 +50,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
         return module;
       })
       .catch((error) => {
-        console.error(`[LazyLoading] Failed to load component ${displayName}:`, error);
+        // Failed to load component - logging removed for production
         if (onError) onError(error);
 
         // Return fallback component as default export

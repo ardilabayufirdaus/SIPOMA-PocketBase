@@ -46,6 +46,7 @@ import { H2, Body, UIText } from '../components/ui/Typography';
 interface MainDashboardPageProps {
   language: 'en' | 'id';
   onNavigate: (page: Page, subPage?: string) => void;
+  t: Record<string, string>;
 }
 
 // Enhanced Performance Chart Widget
@@ -63,7 +64,7 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
   return (
     <ChartContainer
       title="Performance Overview"
-      subtitle="Real-time production and efficiency metrics"
+      subtitle="Monitor key performance indicators"
       actions={
         <div className="flex items-center space-x-2">
           <div className="flex bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
@@ -108,7 +109,10 @@ const PerformanceOverview: React.FC<{ data: any[] }> = ({ data }) => {
 };
 
 // Project Progress Widget
-const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
+const ProjectInsights: React.FC<{ projects: any[]; t: Record<string, string> }> = ({
+  projects,
+  t,
+}) => {
   const statusCounts = {
     on_track: projects.filter((p) => p.status === 'on_track').length,
     at_risk: projects.filter((p) => p.status === 'at_risk').length,
@@ -123,8 +127,8 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
 
   return (
     <ChartContainer
-      title="Project Status"
-      subtitle={`${projects.length} active projects`}
+      title={t.project_status_title}
+      subtitle={t.project_status_subtitle.replace('{count}', projects.length.toString())}
       actions={
         <EnhancedButton
           variant="ghost"
@@ -184,7 +188,7 @@ const ProjectInsights: React.FC<{ projects: any[] }> = ({ projects }) => {
 };
 
 // Main Dashboard Component
-const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavigate }) => {
+const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavigate, t }) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isAutoRefresh, setIsAutoRefresh] = useState(true);
 
@@ -269,7 +273,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
         {/* Key Metrics */}
         <div className="grid grid-cols-3 gap-3">
           <MetricCard
-            title="Active Projects"
+            title={t.active_projects_title}
             value={activeProjects}
             icon={<FolderIcon className="w-6 h-6" />}
             variant="default"
@@ -282,7 +286,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
           />
 
           <MetricCard
-            title="Total Production"
+            title={t.total_production_title}
             value={totalProduction ? formatNumber(totalProduction) : 'Loading...'}
             unit="tons"
             icon={<BarChart3Icon className="w-6 h-6" />}
@@ -304,7 +308,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ language, onNavig
 
         {/* Secondary Widgets */}
         <div className="grid grid-cols-1 gap-3">
-          <ProjectInsights projects={transformedProjects} />
+          <ProjectInsights projects={transformedProjects} t={t} />
         </div>
 
         {/* Status Bar */}

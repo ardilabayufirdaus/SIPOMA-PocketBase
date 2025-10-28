@@ -1,18 +1,29 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
-  ComposedChart,
-  Area,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  Brush,
-  Cell,
-} from 'recharts';
+  ArcElement,
+} from 'chart.js';
+import { Line, Bar, Chart } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 export interface ChartDataPoint {
   [key: string]: string | number | Date;
@@ -75,6 +86,7 @@ interface InteractiveChartProps {
 
 const InteractiveChart: React.FC<InteractiveChartProps> = ({
   data,
+  type,
   title,
   subtitle,
   height = 400,
@@ -207,81 +219,115 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
 
   // Render chart based on type
   const renderChart = () => {
-    const commonProps = {
-      data,
-      margin: { top: 20, right: 30, left: 20, bottom: 5 },
+    const labels = data.map((item) => String(item[xAxisKey]));
+    const chartData = {
+      labels,
+      datasets: series.map((serie, index) => ({
+        label: serie.name,
+        data: data.map((item) => Number(item[serie.key]) || 0),
+        backgroundColor: serie.color || colors[index % colors.length],
+        borderColor: serie.color || colors[index % colors.length],
+        borderWidth: 2,
+        type: serie.type === 'area' ? ('line' as const) : (serie.type as 'line' | 'bar'),
+        fill: serie.type === 'area',
+        yAxisID: serie.yAxis === 'right' ? 'y1' : 'y',
+      })),
     };
 
-    return (
-      <ComposedChart {...commonProps}>
-        {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />}
-        <XAxis dataKey={xAxisKey} stroke="#64748b" fontSize={12} />
-        <YAxis yAxisId="left" stroke="#64748b" fontSize={12} tickFormatter={formatNumber} />
-        {series.some((s) => s.yAxis === 'right') && (
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            stroke="#64748b"
-            fontSize={12}
-            tickFormatter={formatNumber}
-          />
-        )}
-        <Tooltip content={<CustomTooltip />} />
-        {showLegend && <Legend />}
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index' as const,
+        intersect: false,
+      },
+      plugins: {
+        legend: {
+          display: showLegend,
+        },
+        tooltip: {
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          titleColor: '#1f2937',
+          bodyColor: '#374151',
+          borderColor: '#d1d5db',
+          borderWidth: 1,
+          cornerRadius: 8,
+          callbacks: {
+            title: (context: any[]) => `${xAxisKey}: ${context[0]?.label || ''}`,
+            label: (context: any) => {
+              const value = context.parsed?.y;
+              return `${context.dataset?.label || ''}: ${typeof value === 'number' ? formatNumber(value) : value}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          grid: {
+            display: showGrid,
+          },
+          ticks: {
+            font: {
+              size: 12,
+            },
+          },
+        },
+        y: {
+          type: 'linear' as const,
+          display: true,
+          position: 'left' as const,
+          grid: {
+            display: showGrid,
+          },
+          ticks: {
+            font: {
+              size: 12,
+            },
+            callback: (value: number | string) => formatNumber(Number(value)),
+          },
+        },
+        ...(series.some((s) => s.yAxis === 'right') && {
+          y1: {
+            type: 'linear' as const,
+            display: true,
+            position: 'right' as const,
+            grid: {
+              drawOnChartArea: false,
+            },
+            ticks: {
+              font: {
+                size: 12,
+              },
+              callback: (value: number | string) => formatNumber(Number(value)),
+            },
+          },
+        }),
+      },
+      onClick: (event: any, elements: any[]) => {
+        if (elements.length > 0 && onDataPointClick) {
+          const dataIndex = elements[0].index;
+          const datasetIndex = elements[0].datasetIndex;
+          const dataPoint = data[dataIndex];
+          const seriesKey = series[datasetIndex]?.key;
+          onDataPointClick(dataPoint, seriesKey);
+        }
+      },
+    };
 
-        {series.map((serie, index) => {
-          const color = colors[index % colors.length];
-          const yAxisId = serie.yAxis || 'left';
+    // For simplicity, use Line chart for line/area and Bar for bar
+    // In a full implementation, you'd use Chart.js mixed charts
+    const hasMixedTypes =
+      series.some((s) => s.type === 'bar') && series.some((s) => s.type !== 'bar');
 
-          switch (serie.type) {
-            case 'area':
-              return (
-                <Area
-                  key={serie.key}
-                  type="monotone"
-                  dataKey={serie.key}
-                  name={serie.name}
-                  stroke={serie.color || color}
-                  fill={serie.color || color}
-                  fillOpacity={0.3}
-                  yAxisId={yAxisId}
-                />
-              );
-            case 'line':
-              return (
-                <Line
-                  key={serie.key}
-                  type="monotone"
-                  dataKey={serie.key}
-                  name={serie.name}
-                  stroke={serie.color || color}
-                  strokeWidth={2}
-                  dot={{ fill: serie.color || color, strokeWidth: 2, r: 4 }}
-                  yAxisId={yAxisId}
-                />
-              );
-            case 'bar':
-              return (
-                <Bar
-                  key={serie.key}
-                  dataKey={serie.key}
-                  name={serie.name}
-                  fill={serie.color || color}
-                  yAxisId={yAxisId}
-                >
-                  {data.map((entry, idx) => (
-                    <Cell key={`cell-${idx}`} fill={serie.color || colors[idx % colors.length]} />
-                  ))}
-                </Bar>
-              );
-            default:
-              return null;
-          }
-        })}
-
-        {showBrush && <Brush dataKey={xAxisKey} height={30} stroke={colors[0]} />}
-      </ComposedChart>
-    );
+    if (hasMixedTypes) {
+      // Use Chart component for mixed types
+      return <Chart type="bar" data={chartData as any} options={options} />;
+    } else if (type === 'bar' || series.some((s) => s.type === 'bar')) {
+      return <Bar data={chartData as any} options={options} />;
+    } else {
+      return <Line data={chartData as any} options={options} />;
+    }
   };
 
   return (
@@ -337,11 +383,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
       </div>
 
       {/* Chart */}
-      <div style={{ height }}>
-        <ResponsiveContainer width="100%" height="100%">
-          {renderChart()}
-        </ResponsiveContainer>
-      </div>
+      <div style={{ height }}>{renderChart()}</div>
 
       {/* Current level indicator */}
       {drillDown?.enabled && (

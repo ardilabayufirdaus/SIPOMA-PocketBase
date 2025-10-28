@@ -182,9 +182,10 @@ export class PermissionChecker {
 
 /**
  * Hook to get permission checker for current user
+ * Memoized to prevent unnecessary re-creation of PermissionChecker instances
  */
 export const usePermissions = (user: User | null) => {
-  return new PermissionChecker(user);
+  return React.useMemo(() => new PermissionChecker(user), [user]);
 };
 
 /**

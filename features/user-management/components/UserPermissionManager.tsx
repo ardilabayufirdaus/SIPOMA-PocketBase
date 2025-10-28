@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, PermissionMatrix, PermissionLevel, UserRole } from '../../../types';
+import { User, PermissionMatrix, UserRole } from '../../../types';
 import { pb } from '../../../utils/pocketbase';
-import { supabase } from '../../../utils/pocketbaseClient';
 import PermissionMatrixEditor from './PermissionMatrixEditor';
 import { getDefaultPermissionsForRole } from '../../../utils/tonasaPermissions';
 
@@ -30,7 +29,6 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isPermissionEditorOpen, setIsPermissionEditorOpen] = useState(false);
   const [pendingPermissions, setPendingPermissions] = useState<PermissionMatrix | null>(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -42,169 +40,73 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   // Realtime subscription for user permissions
   useEffect(() => {
-    // Set up PocketBase realtime subscription
-    pb.collection('user_permissions').subscribe('*', async (data) => {
-      console.log('Realtime permission change:', data);
-      // Refresh users when permissions change to get updated permission matrix
-      await fetchUsers();
-    });
+    let unsubscribePermissions: (() => void) | null = null;
+    let unsubscribeUsers: (() => void) | null = null;
+
+    // Set up PocketBase realtime subscription for user_permissions collection
+    pb.collection('user_permissions')
+      .subscribe('*', async () => {
+        // Refresh users when permissions change to get updated permission matrix
+        await fetchUsers();
+      })
+      .then((unsub) => {
+        unsubscribePermissions = unsub;
+      });
+
+    // Also subscribe to users collection for permission field updates
+    pb.collection('users')
+      .subscribe('*', async () => {
+        // Refresh users when user data changes
+        await fetchUsers();
+      })
+      .then((unsub) => {
+        unsubscribeUsers = unsub;
+      });
 
     return () => {
-      // Clean up subscription
-      pb.collection('user_permissions').unsubscribe();
+      // Clean up subscriptions
+      if (unsubscribePermissions) unsubscribePermissions();
+      if (unsubscribeUsers) unsubscribeUsers();
     };
   }, []);
 
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching users from Supabase...');
+      console.log('🔄 fetchUsers called');
 
-      const { data, error } = await supabase
-        .from('users')
-        .select(
-          `
-          id,
-          username,
-          full_name,
-          role,
-          is_active,
-          created_at,
-          updated_at,
-          user_permissions (
-            permissions (
-              module_name,
-              permission_level,
-              plant_units
-            )
-          )
-        `
-        )
-        .order('created_at', { ascending: false });
+      // Get users from PocketBase
+      const usersResult = await pb.collection('users').getFullList({
+        sort: '-created',
+        fields: 'id,username,name,role,is_active,created,updated,avatar,last_active,permissions',
+      });
 
-      if (error) {
-        console.error('Supabase query error:', error);
-        throw error;
-      }
-
-      console.log('Raw data from Supabase:', data);
-
-      interface DbUser {
-        id: string;
-        username: string;
-        email?: string;
-        full_name: string | null;
-        role: string;
-        is_active: boolean;
-        last_active?: string;
-        created_at: string;
-        updated_at: string;
-        user_permissions: UserPermissionData[];
-      }
+      console.log('🔄 Raw users from PocketBase:', usersResult.length);
 
       // Transform data to match User interface
-      const transformedUsers: User[] = (data as unknown as DbUser[]).map((user: DbUser) => {
-        const permissionMatrix = buildPermissionMatrix(user.user_permissions || []);
-        console.log(`User ${user.username} permissions:`, user.user_permissions);
-        console.log(`Built permission matrix:`, permissionMatrix);
-
+      const transformedUsers: User[] = usersResult.map((user: Record<string, any>) => {
+        console.log(`🔄 User ${user.username} permissions:`, user.permissions);
         return {
           id: user.id,
           username: user.username,
-          email: user.email,
-          full_name: user.full_name || undefined,
+          email: user.username, // PocketBase uses username as email equivalent
+          full_name: user.name || undefined,
           role: user.role as UserRole,
           is_active: user.is_active,
           last_active: user.last_active ? new Date(user.last_active) : undefined,
-          created_at: new Date(user.created_at),
-          updated_at: new Date(user.updated_at),
-          permissions: permissionMatrix,
+          created_at: new Date(user.created),
+          updated_at: new Date(user.updated),
+          permissions: user.permissions || {},
         };
       });
 
-      console.log('Transformed users:', transformedUsers);
+      console.log('🔄 Setting users state:', transformedUsers.length);
       setUsers(transformedUsers);
-    } catch (err: unknown) {
-      console.error('Error fetching users:', err);
+    } catch {
+      // Handle error silently
     } finally {
       setIsLoading(false);
     }
-  };
-
-  interface UserPermissionData {
-    permissions: {
-      module_name: string;
-      permission_level: string;
-      plant_units?: unknown[];
-    };
-  }
-
-  interface PlantUnitData {
-    category: string;
-    unit: string;
-    level: string;
-  }
-
-  const buildPermissionMatrix = (userPermissions: UserPermissionData[]): PermissionMatrix => {
-    console.log('Building permission matrix from:', userPermissions);
-
-    const matrix: PermissionMatrix = {
-      dashboard: 'NONE',
-      plant_operations: {},
-      inspection: 'NONE',
-      project_management: 'NONE',
-    };
-
-    userPermissions.forEach((up: UserPermissionData) => {
-      const perm = up.permissions;
-      console.log('Processing user permission:', up);
-      console.log('Permission data:', perm);
-
-      if (perm) {
-        switch (perm.module_name) {
-          case 'dashboard':
-            matrix.dashboard = perm.permission_level as PermissionLevel;
-            console.log(`Set dashboard to ${perm.permission_level}`);
-            break;
-          case 'plant_operations':
-            // Handle plant operations permissions
-            console.log('Processing plant operations permissions');
-            if (perm.plant_units && Array.isArray(perm.plant_units)) {
-              console.log('Plant units:', perm.plant_units);
-              perm.plant_units.forEach((unit: unknown) => {
-                console.log('Processing unit:', unit);
-                const unitData = unit as PlantUnitData;
-                if (!matrix.plant_operations[unitData.category]) {
-                  matrix.plant_operations[unitData.category] = {};
-                }
-                matrix.plant_operations[unitData.category][unitData.unit] =
-                  perm.permission_level as PermissionLevel;
-                console.log(
-                  `Set ${unitData.category}.${unitData.unit} to ${perm.permission_level}`
-                );
-              });
-            } else {
-              console.log('No plant_units found or not an array');
-            }
-            break;
-          case 'inspection':
-            matrix.inspection = perm.permission_level as PermissionLevel;
-            console.log(`Set inspection to ${perm.permission_level}`);
-            break;
-          case 'project_management':
-            matrix.project_management = perm.permission_level as PermissionLevel;
-            console.log(`Set project_management to ${perm.permission_level}`);
-            break;
-          default:
-            console.log(`Unknown module: ${perm.module_name}`);
-        }
-      } else {
-        console.log('No permissions data in user permission:', up);
-      }
-    });
-
-    console.log('Final permission matrix:', matrix);
-    return matrix;
   };
 
   const filterUsers = () => {
@@ -235,46 +137,34 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
   const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
     try {
-      console.log('🔄 handlePermissionsChange called with:', newPermissions);
       // Just update pending permissions for preview, don't save yet
       setPendingPermissions(newPermissions);
-      console.log('🔄 pendingPermissions updated to:', newPermissions);
-    } catch (error) {
-      console.error('🔄 Error in handlePermissionsChange:', error);
+    } catch {
+      // Handle error silently
     }
   };
 
   const handleSavePermissions = async () => {
-    console.log('🔥 UserPermissionManager handleSavePermissions called!');
-    console.log('Selected user:', selectedUser);
-    console.log('Pending permissions:', pendingPermissions);
-
     if (!selectedUser || !pendingPermissions) {
-      console.error('❌ No selected user or pending permissions');
+      // Handle error silently
       return;
     }
 
-    console.log('✅ Saving permissions for user:', selectedUser.id);
-    console.log('✅ Pending permissions:', pendingPermissions);
-
     try {
+      console.log('💾 handleSavePermissions called');
       // Import the correct save function from userPermissionManager
       const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
 
       // Save the pending permissions using the same API as other components
       await saveUserPermissions(selectedUser.id, pendingPermissions, 'system');
-
-      // Update local state to reflect saved custom permissions
-      setHasUnsavedChanges(false);
+      console.log('💾 Permissions saved successfully, calling fetchUsers');
 
       // Refresh users to get updated permissions
-      console.log('Refreshing users data...');
       await fetchUsers();
-
-      console.log('✅ Permissions saved successfully');
+      console.log('💾 fetchUsers completed');
     } catch (error) {
-      console.error('❌ Error saving permissions:', error);
-      throw error; // Re-throw so PermissionMatrixEditor can handle the error
+      // Re-throw so PermissionMatrixEditor can handle the error
+      throw error;
     }
   };
 
@@ -284,8 +174,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
     try {
       const defaultPerms = await getDefaultPermissionsForRole(selectedUser.role as UserRole);
       setPendingPermissions(defaultPerms);
-    } catch (error) {
-      console.error('Error resetting to default permissions:', error);
+    } catch {
+      // Handle error silently
     }
   };
 

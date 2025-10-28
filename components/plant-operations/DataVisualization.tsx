@@ -2,15 +2,18 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3Icon, DatabaseIcon, AlertTriangleIcon } from 'lucide-react';
 import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
   Tooltip,
-  Cell,
-} from 'recharts';
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface RiskDataEntry {
   id: string;
@@ -170,68 +173,92 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
 
         {chartData.length > 0 ? (
           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="unit"
-                  tick={{ fontSize: 9 }}
-                  angle={0}
-                  textAnchor="middle"
-                  height={60}
-                />
-                <YAxis
-                  domain={timeRange === 'daily' ? [0, 100] : [0, 'dataMax + 50']}
-                  tick={{ fontSize: 9 }}
-                  label={{
-                    value: timeRange === 'daily' ? 'Availability (%)' : 'Running Hours (jam)',
-                    angle: -90,
-                    position: 'insideLeft',
-                  }}
-                />
-                <Tooltip
-                  formatter={(value: number, name: string) => {
-                    if (timeRange === 'daily') {
-                      if (name === 'availability') {
-                        return [`${value.toFixed(1)}%`, 'Availability'];
+            <Bar
+              data={{
+                labels: chartData.map((item) => item.unit),
+                datasets: [
+                  {
+                    label: timeRange === 'daily' ? 'Availability (%)' : 'Running Hours (jam)',
+                    data: chartData.map((item) =>
+                      timeRange === 'daily' ? item.availability : item.runningHours
+                    ),
+                    backgroundColor: chartData.map((item) => {
+                      if (timeRange === 'daily') {
+                        return item.availability >= 95
+                          ? '#10b981'
+                          : item.availability >= 90
+                            ? '#f59e0b'
+                            : '#ef4444';
+                      } else {
+                        return item.runningHours >= item.totalHours * 0.95
+                          ? '#10b981'
+                          : item.runningHours >= item.totalHours * 0.9
+                            ? '#f59e0b'
+                            : '#ef4444';
                       }
-                    } else {
-                      if (name === 'runningHours') {
-                        return [`${value.toFixed(1)}h`, 'Running Hours'];
+                    }),
+                    borderColor: chartData.map((item) => {
+                      if (timeRange === 'daily') {
+                        return item.availability >= 95
+                          ? '#10b981'
+                          : item.availability >= 90
+                            ? '#f59e0b'
+                            : '#ef4444';
+                      } else {
+                        return item.runningHours >= item.totalHours * 0.95
+                          ? '#10b981'
+                          : item.runningHours >= item.totalHours * 0.9
+                            ? '#f59e0b'
+                            : '#ef4444';
                       }
-                    }
-                    return [
-                      `${value}h`,
-                      name === 'runningHours' ? 'Running Hours' : 'Downtime Hours',
-                    ];
-                  }}
-                  labelFormatter={(label) => `Unit: ${label}`}
-                />
-                <Bar
-                  dataKey={timeRange === 'daily' ? 'availability' : 'runningHours'}
-                  fill="#10b981"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        timeRange === 'daily'
-                          ? entry.availability >= 95
-                            ? '#10b981'
-                            : entry.availability >= 90
-                              ? '#f59e0b'
-                              : '#ef4444'
-                          : entry.runningHours >= entry.totalHours * 0.95
-                            ? '#10b981'
-                            : entry.runningHours >= entry.totalHours * 0.9
-                              ? '#f59e0b'
-                              : '#ef4444'
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+                    }),
+                    borderWidth: 1,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: (context) => {
+                        const value = context.parsed.y;
+                        if (timeRange === 'daily') {
+                          return `Availability: ${value.toFixed(1)}%`;
+                        } else {
+                          return `Running Hours: ${value.toFixed(1)}h`;
+                        }
+                      },
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    display: true,
+                    title: {
+                      display: false,
+                    },
+                    ticks: {
+                      maxRotation: 0,
+                      minRotation: 0,
+                    },
+                  },
+                  y: {
+                    display: true,
+                    title: {
+                      display: true,
+                      text: timeRange === 'daily' ? 'Availability (%)' : 'Running Hours (jam)',
+                    },
+                    beginAtZero: true,
+                    max: timeRange === 'daily' ? 100 : undefined,
+                  },
+                },
+              }}
+            />
           </div>
         ) : (
           <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg">

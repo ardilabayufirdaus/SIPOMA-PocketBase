@@ -63,11 +63,11 @@ export const useServiceWorker = () => {
           state: registration.active ? 'activated' : 'installing',
         }));
       } catch (error) {
-        console.error('❌ Service Worker registration failed:', error);
+        // Service Worker registration failed - logging removed for production
         setStatus((prev) => ({ ...prev, state: 'error' }));
       }
     } else {
-      console.warn('⚠️ Service Worker not supported');
+      // Service Worker not supported - logging removed for production
     }
   }, []);
 
@@ -77,7 +77,7 @@ export const useServiceWorker = () => {
       try {
         await status.registration.update();
       } catch (error) {
-        console.error('❌ Service Worker update failed:', error);
+        // Service Worker update failed - logging removed for production
       }
     }
   }, [status.registration]);
@@ -133,7 +133,7 @@ export const useServiceWorker = () => {
         case 'SYNC_COMPLETED':
           break;
         case 'ERROR':
-          console.error('❌ Service Worker error:', data);
+          // Service Worker error - logging removed for production
           break;
         default:
       }
@@ -200,7 +200,7 @@ export const useCacheStatus = () => {
         lastUpdated: new Date(),
       });
     } catch (error) {
-      console.error('❌ Failed to get cache status:', error);
+      // Failed to get cache status - logging removed for production
     }
   }, []);
 
@@ -244,7 +244,7 @@ export const useOfflineData = () => {
       try {
         setOfflineQueue(JSON.parse(saved));
       } catch (error) {
-        console.error('❌ Failed to load offline queue:', error);
+        // Failed to load offline queue - logging removed for production
       }
     }
   }, []);

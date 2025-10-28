@@ -368,6 +368,37 @@ export const useRealtimeUsers = (options: UseRealtimeUsersOptions = {}) => {
     [itemsPerPage]
   );
 
+  // Listen for permission changes
+  useEffect(() => {
+    const handlePermissionChange = (event: CustomEvent) => {
+      const { userId, permissions } = event.detail;
+      console.log(
+        '🔄 Permission change event received for user:',
+        userId,
+        'permissions:',
+        permissions
+      );
+      // Update the user in the local state
+      optimisticUpdateUser(userId, { permissions });
+      console.log('🔄 Updated user permissions in local state');
+    };
+
+    if (typeof window !== 'undefined') {
+      console.log('🔄 Adding permission change event listener');
+      window.addEventListener('user-permissions-changed', handlePermissionChange as EventListener);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        console.log('🔄 Removing permission change event listener');
+        window.removeEventListener(
+          'user-permissions-changed',
+          handlePermissionChange as EventListener
+        );
+      }
+    };
+  }, [optimisticUpdateUser]);
+
   // Deduplicate users to prevent React key warnings
   const deduplicatedUsers = useMemo(() => {
     return users.filter((user, index, self) => index === self.findIndex((u) => u.id === user.id));
