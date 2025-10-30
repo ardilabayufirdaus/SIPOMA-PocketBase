@@ -112,17 +112,25 @@ export const useNotifications = (currentUser?: { id: string } | null) => {
       }
       return true;
     })
-    .map((notification) => ({
-      id: notification.id,
-      message: notification.message,
-      severity: notification.severity,
-      created_at: notification.createdAt.toISOString(),
-      category: notification.category as ExtendedAlert['category'],
-      actionUrl: notification.actionUrl,
-      dismissed: !!notification.dismissedAt,
-      snoozedUntil: notification.snoozedUntil,
-      read_at: notification.readAt?.toISOString(),
-    }));
+    .map((notification) => {
+      const isValidDate = (date: Date | undefined | null): boolean => {
+        return date instanceof Date && !isNaN(date.getTime());
+      };
+
+      return {
+        id: notification.id,
+        message: notification.message,
+        severity: notification.severity,
+        created_at: isValidDate(notification.createdAt)
+          ? notification.createdAt.toISOString()
+          : new Date().toISOString(),
+        category: notification.category as ExtendedAlert['category'],
+        actionUrl: notification.actionUrl,
+        dismissed: !!notification.dismissedAt,
+        snoozedUntil: notification.snoozedUntil,
+        read_at: isValidDate(notification.readAt) ? notification.readAt.toISOString() : undefined,
+      };
+    });
 
   const unreadCount = filteredNotifications.filter((n) => !n.read_at).length;
 
