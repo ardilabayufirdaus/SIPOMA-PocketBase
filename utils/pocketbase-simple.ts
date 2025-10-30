@@ -45,16 +45,9 @@ export const isSecureContext = (): boolean => {
  * Menggunakan proxy di development, direct HTTPS di production
  */
 export const getPocketbaseUrl = (): string => {
-  // In development, use current origin so requests go through Vite proxy
-  if (import.meta.env.DEV) {
-    if (typeof window !== 'undefined' && window.location) {
-      return window.location.origin;
-    }
-    // Fallback for SSR or when window is not available
-    return 'http://localhost:5173';
-  }
-  // In production, use the URL from environment or fallback to direct IP
-  return import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site/';
+  // Use environment variable if available, otherwise fallback
+  const url = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
+  return url.replace(/\/$/, ''); // Remove trailing slash
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (selalu return https)

@@ -63,11 +63,13 @@ export const useCcrFooterData = () => {
         pb.collection('ccr_footer_data').getFullList({
           filter: `date="${footerData.date}" && parameter_id="${footerData.parameter_id}" && plant_unit="${footerData.plant_unit || 'CCR'}"`,
         }),
-      { retries: 2, retryDelay: 2000 }
-    ); // More conservative retry settings with throttling
+      { retries: 3, retryDelay: 3000, handleNetworkChange: true }
+    ); // Increased retries and delay for better connection handling
 
     if (!existingRecords) {
-      throw new Error('Unable to check existing records - connection issue');
+      // Instead of throwing error, return null to indicate connection issue
+      // This allows the UI to continue functioning without breaking
+      return null;
     }
 
     if (existingRecords.length > 0) {
@@ -75,20 +77,23 @@ export const useCcrFooterData = () => {
       const existingId = existingRecords[0].id;
       const updatedRecord = await safeApiCall(
         () => pb.collection('ccr_footer_data').update(existingId, data),
-        { retries: 2, retryDelay: 2000 }
-      ); // More conservative retry settings with throttling
+        { retries: 3, retryDelay: 3000, handleNetworkChange: true }
+      ); // Increased retries and delay for better connection handling
       if (!updatedRecord) {
-        throw new Error('Unable to update record - connection issue');
+        // Return null instead of throwing error
+        return null;
       }
       return { ...data, id: existingId };
     } else {
       // Create new record
       const record = await safeApiCall(() => pb.collection('ccr_footer_data').create(data), {
-        retries: 2,
-        retryDelay: 2000,
-      }); // More conservative retry settings with throttling
+        retries: 3,
+        retryDelay: 3000,
+        handleNetworkChange: true,
+      }); // Increased retries and delay for better connection handling
       if (!record) {
-        throw new Error('Unable to create record - connection issue');
+        // Return null instead of throwing error
+        return null;
       }
       return record;
     }

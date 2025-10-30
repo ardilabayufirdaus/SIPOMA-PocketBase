@@ -2316,19 +2316,83 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const handleExport = async () => {
     if (isExporting) return;
 
-    if (!selectedCategory || !selectedUnit || filteredParameterSettings.length === 0) {
-      alert('Please select a plant category and unit with available parameters before exporting.');
+    if (
+      !selectedCategory ||
+      !selectedUnit ||
+      !selectedDate ||
+      filteredParameterSettings.length === 0
+    ) {
+      alert(
+        'Please select a plant category, unit, and date with available parameters before exporting.'
+      );
       return;
     }
 
     setIsExporting(true);
     try {
+      // Refresh data before export to ensure we have the latest data
+      console.log('Starting export process...');
+      await refreshData();
+      await refetch();
+      console.log('Data refreshed successfully');
+
       const workbook = new ExcelJS.Workbook();
 
-      // Get parameter data for the selected date
-      await getParameterDataForDate(selectedDate);
-      const footerData = await getFooterDataForDate(selectedDate, selectedUnit);
-      const downtimeData = getDowntimeForDate(selectedDate);
+      // Get downtime data directly from database
+      console.log('Fetching downtime data...');
+      const downtimeData = await pb
+        .collection('ccr_downtime_data')
+        .getFullList({
+          filter: `date="${selectedDate}" && unit="${selectedUnit}"`,
+          sort: 'start_time',
+        })
+        .catch((error) => {
+          console.error('Error fetching downtime data:', error);
+          return [];
+        });
+      console.log(`Fetched ${downtimeData.length} downtime records`);
+
+      // Get footer data directly from database
+      console.log('Fetching footer data...');
+      const footerData = await pb
+        .collection('ccr_footer_data')
+        .getFullList({
+          filter: `date="${selectedDate}"`,
+          sort: 'created',
+        })
+        .catch((error) => {
+          console.error('Error fetching footer data:', error);
+          return [];
+        });
+      console.log(`Fetched ${footerData.length} footer records`);
+
+      // Get silo data directly from database
+      console.log('Fetching silo data...');
+      const siloData = await pb
+        .collection('ccr_silo_data')
+        .getFullList({
+          filter: `date="${selectedDate}"`,
+          sort: 'silo_id',
+          expand: 'silo_id',
+        })
+        .catch((error) => {
+          console.error('Error fetching silo data:', error);
+          return [];
+        });
+      console.log(`Fetched ${siloData.length} silo records`);
+
+      // Get silo capacities for name lookup (fallback)
+      console.log('Fetching silo capacities for name lookup...');
+      const siloCapacities = await pb
+        .collection('silo_capacities')
+        .getFullList({
+          sort: 'silo_name',
+        })
+        .catch((error) => {
+          console.error('Error fetching silo capacities:', error);
+          return [];
+        });
+      console.log(`Fetched ${siloCapacities.length} silo capacity records`);
 
       // Export Parameter Data
       if (filteredParameterSettings.length > 0) {
@@ -2439,58 +2503,132 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         }
       }
 
+      // Get all parameter settings for footer data lookup
+      const allParameterSettings = await pb
+        .collection('parameter_settings')
+        .getFullList({
+          sort: 'parameter',
+        })
+        .catch((error) => {
+          console.error('Error fetching all parameter settings:', error);
+          return [];
+        });
+
       // Export Footer Data
       if (footerData && footerData.length > 0) {
-        const footerExportData = footerData.map((row) => ({
-          Date: row.date,
-          Unit: row.unit,
-          Target_Production: row.target_production || '',
-          Next_Shift_PIC: row.next_shift_pic || '',
-          Handover_Notes: row.handover_notes || '',
-        }));
-
         const worksheetFooter = workbook.addWorksheet('Footer Data');
-        worksheetFooter.addRows(footerExportData);
+
+        // Add headers
+        const footerHeaders = [
+          'Date',
+          'Parameter_Name',
+          'Plant_Unit',
+          'Total',
+          'Average',
+          'Minimum',
+          'Maximum',
+          'Shift1_Total',
+          'Shift2_Total',
+          'Shift3_Total',
+        ];
+        worksheetFooter.addRow(footerHeaders);
+
+        // Transform footer data to export format and add rows
+        const footerExportData = footerData.map((row) => {
+          // Find parameter name from all parameter settings
+          const parameter = allParameterSettings.find((p) => p.id === row.parameter_id);
+          const parameterName = parameter ? parameter.parameter : row.parameter_id;
+
+          return [
+            row.date,
+            parameterName,
+            row.plant_unit || '',
+            row.total || '',
+            row.average || '',
+            row.minimum || '',
+            row.maximum || '',
+            row.shift1_total || '',
+            row.shift2_total || '',
+            row.shift3_total || '',
+          ];
+        });
+
+        // Add data rows
+        footerExportData.forEach((row) => worksheetFooter.addRow(row));
       }
 
       // Export Downtime Data
+      console.log('Creating downtime data worksheet...');
       if (downtimeData && downtimeData.length > 0) {
-        const filteredDowntime = downtimeData.filter((d) => d.date === selectedDate);
-        if (filteredDowntime.length > 0) {
-          const downtimeExportData = filteredDowntime.map((row) => ({
-            Date: row.date,
-            Start_Time: row.start_time,
-            End_Time: row.end_time,
-            Unit: row.unit,
-            PIC: row.pic,
-            Problem: row.problem,
-          }));
+        const worksheetDowntime = workbook.addWorksheet('Downtime Data');
 
-          const worksheetDowntime = workbook.addWorksheet('Downtime Data');
-          worksheetDowntime.addRows(downtimeExportData);
-        }
+        // Add headers
+        const downtimeHeaders = ['Date', 'Start_Time', 'End_Time', 'Unit', 'PIC', 'Problem'];
+        worksheetDowntime.addRow(downtimeHeaders);
+
+        // Transform downtime data to export format and add rows
+        const downtimeExportData = downtimeData.map((row) => [
+          row.date,
+          row.start_time,
+          row.end_time,
+          row.unit,
+          row.pic,
+          row.problem,
+        ]);
+
+        // Add data rows
+        downtimeExportData.forEach((row) => worksheetDowntime.addRow(row));
       }
 
       // Export Silo Data
-      if (dailySiloData && dailySiloData.length > 0) {
-        const siloExportData = dailySiloData.map((row) => ({
-          Date: row.date,
-          Silo_ID: row.silo_id,
-          Shift1_EmptySpace: row.shift1?.emptySpace ?? '',
-          Shift1_Content: row.shift1?.content ?? '',
-          Shift2_EmptySpace: row.shift2?.emptySpace ?? '',
-          Shift2_Content: row.shift2?.content ?? '',
-          Shift3_EmptySpace: row.shift3?.emptySpace ?? '',
-          Shift3_Content: row.shift3?.content ?? '',
-        }));
-
+      if (siloData && siloData.length > 0) {
         const worksheetSilo = workbook.addWorksheet('Silo Data');
-        worksheetSilo.addRows(siloExportData);
+
+        // Add headers
+        const siloHeaders = [
+          'Date',
+          'Silo_Name',
+          'Shift1_EmptySpace',
+          'Shift1_Content',
+          'Shift2_EmptySpace',
+          'Shift2_Content',
+          'Shift3_EmptySpace',
+          'Shift3_Content',
+        ];
+        worksheetSilo.addRow(siloHeaders);
+
+        // Transform silo data to export format and add rows
+        const siloExportData = siloData.map((row) => {
+          // Get silo name from expanded relation or fallback to lookup
+          const siloName =
+            row.expand?.silo_id?.silo_name ||
+            siloCapacities.find((s) => s.id === row.silo_id)?.silo_name ||
+            row.silo_id;
+
+          return [
+            row.date,
+            siloName,
+            row.shift1_empty_space ?? '',
+            row.shift1_content ?? '',
+            row.shift2_empty_space ?? '',
+            row.shift2_content ?? '',
+            row.shift3_empty_space ?? '',
+            row.shift3_content ?? '',
+          ];
+        });
+
+        // Add data rows
+        siloExportData.forEach((row) => worksheetSilo.addRow(row));
       }
 
-      // Generate filename with timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `CCR_Data_${selectedUnit}_${timestamp}.xlsx`;
+      // Export Information Data
+      const worksheetInfo = workbook.addWorksheet('Information');
+      worksheetInfo.addRow(['Date', 'Unit', 'Information']);
+      worksheetInfo.addRow([selectedDate, selectedUnit, informationText || '']);
+
+      // Generate filename with category, unit, and date
+      const safeSelectedDate = selectedDate || new Date().toISOString().split('T')[0];
+      const filename = `CCR_Data_${selectedCategory}_${selectedUnit}_${safeSelectedDate}.xlsx`;
 
       // Write file
       const buffer = await workbook.xlsx.writeBuffer();
@@ -2503,9 +2641,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       a.download = filename;
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch {
-      showToast('Error exporting CCR parameter data');
-      alert('An error occurred while exporting data. Please try again.');
+    } catch (error) {
+      console.error('Export error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      showToast(`Error exporting CCR parameter data: ${errorMessage}`);
+      alert(`An error occurred while exporting data: ${errorMessage}. Please try again.`);
     } finally {
       setIsExporting(false);
     }
