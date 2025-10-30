@@ -3,8 +3,6 @@ import { ChevronDown } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import ExcelJS, { CellValue } from 'exceljs';
 import {
-  ArrowUpIcon,
-  ArrowDownIcon,
   DocumentArrowUpIcon,
   DocumentArrowDownIcon,
   MagnifyingGlassIcon,
@@ -47,7 +45,6 @@ import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { useCcrInformationData } from '../../hooks/useCcrInformationData';
 import { useCcrMaterialUsage } from '../../hooks/useCcrMaterialUsage';
 import { usePermissions } from '../../utils/permissions';
-import { PermissionLevel } from '../../types';
 import { isSuperAdmin } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
@@ -57,47 +54,10 @@ import { useUserParameterOrder } from '../../hooks/useUserParameterOrder';
 import { formatDateToISO8601, formatToWITA } from '../../utils/dateUtils';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 
 // Import UI Components
 import { Button } from '../../components/ui';
-
-// Enhanced Debounce utility function with cancel capability
-const useDebounce = (value: any, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [value, delay]);
-
-  const cancel = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }, []);
-
-  return { debouncedValue, cancel };
-};
 
 const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -117,7 +77,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [showReorderModal, setShowReorderModal] = useState(false);
   const [modalParameterOrder, setModalParameterOrder] = useState<ParameterSetting[]>([]);
   const [modalSearchQuery, setModalSearchQuery] = useState('');
-  const [originalParameterOrder, setOriginalParameterOrder] = useState<ParameterSetting[]>([]);
+  const [, setOriginalParameterOrder] = useState<ParameterSetting[]>([]);
 
   // Profile state
   const [profiles, setProfiles] = useState<ParameterProfile[]>([]);
@@ -127,10 +87,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [profileToDelete, setProfileToDelete] = useState<ParameterProfile | null>(null);
   const [profileName, setProfileName] = useState('');
   const [profileDescription, setProfileDescription] = useState('');
-  const [selectedProfile, setSelectedProfile] = useState<ParameterProfile | null>(null);
+  const [, setSelectedProfile] = useState<ParameterProfile | null>(null);
 
   // New state for undo stack
-  const [undoStack, setUndoStack] = useState<
+  const [, setUndoStack] = useState<
     Array<{
       parameterId: string;
       hour: number;
@@ -139,7 +99,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   >([]);
 
   // New state for toast notifications
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [, setToastMessage] = useState<string | null>(null);
 
   // Function to show toast message for 3 seconds
   const showToast = (message: string) => {
@@ -151,9 +111,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
 
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
@@ -167,7 +124,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Function to check if a parameter column should be highlighted
   const shouldHighlightColumn = useCallback(
-    (param: any) => {
+    (param: ParameterSetting) => {
       if (!isSearchActive) return false;
       const searchTerm = columnSearchQuery.toLowerCase().trim();
       return (
@@ -204,7 +161,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, [columnSearchQuery, clearColumnSearch]);
 
   // Enhanced keyboard navigation state
-  const [focusedCell, setFocusedCell] = useState<{
+  const [, setFocusedCell] = useState<{
     table: 'silo' | 'parameter';
     row: number;
     col: number;
@@ -212,7 +169,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Improved inputRefs management with cleanup
   const inputRefs = useRef<Map<string, HTMLInputElement | HTMLSelectElement>>(new Map());
-  const debouncedUpdates = useRef<Map<string, { value: string; timer: NodeJS.Timeout }>>(new Map());
 
   // Ref for main table wrapper to sync scroll with footer
   const tableWrapperRef = useRef<HTMLDivElement>(null);
@@ -248,17 +204,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedUnit, setSelectedUnit] = useState('');
 
   // Use PocketBase hook for parameter order management
-  const {
-    parameterOrder: pbParameterOrder,
-    setParameterOrder: setPbParameterOrder,
-    loading: parameterOrderLoading,
-    error: parameterOrderError,
-  } = useUserParameterOrder({
-    module: 'plant_operations',
-    parameterType: 'ccr_parameters',
-    category: selectedCategory,
-    unit: selectedUnit,
-  });
+  const { parameterOrder: pbParameterOrder, setParameterOrder: setPbParameterOrder } =
+    useUserParameterOrder({
+      module: 'plant_operations',
+      parameterType: 'ccr_parameters',
+      category: selectedCategory,
+      unit: selectedUnit,
+    });
 
   // Save parameter order using PocketBase hook
   const saveParameterOrder = useCallback(
@@ -274,10 +226,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       }
     },
     [loggedInUser?.id, selectedCategory, selectedUnit, setPbParameterOrder]
-  );
-  const unitToCategoryMap = useMemo(
-    () => new Map(plantUnits.map((pu) => [pu.unit, pu.category])),
-    [plantUnits]
   );
 
   // Hapus auto-select: biarkan user memilih kategori secara manual
@@ -380,12 +328,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Silo Data Hooks and Filtering
   const { records: siloMasterData } = useSiloCapacities();
-  const {
-    getDataForDate: getSiloDataForDate,
-    updateSiloData,
-    createSiloData,
-    deleteSiloData,
-  } = useCcrSiloData();
+  const { getDataForDate: getSiloDataForDate, updateSiloData, deleteSiloData } = useCcrSiloData();
   const [allDailySiloData, setAllDailySiloData] = useState<CcrSiloData[]>([]);
   // State untuk menyimpan perubahan silo yang belum tersimpan
   const [unsavedSiloChanges, setUnsavedSiloChanges] = useState<
@@ -410,14 +353,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         let rawData;
         if (forceRefresh) {
           // Format date for database query
-          const formattedDate = formatDateToISO8601(selectedDate);
+          // const formattedDate = formatDateToISO8601(selectedDate);
 
           // Fetch data directly from database
-          const records = await pb.collection('ccr_silo_data').getFullList({
-            filter: `date="${formattedDate}"`,
-            sort: 'created',
-            expand: 'silo_id',
-          });
+          // const _records = await pb.collection('ccr_silo_data').getFullList({
+          //   filter: `date="${formattedDate}"`,
+          //   sort: 'created',
+          //   expand: 'silo_id',
+          // });
 
           // Use the getSiloDataForDate to process the records to maintain consistent data structure
           rawData = await getSiloDataForDate(selectedDate, selectedUnit);
@@ -492,7 +435,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         }
 
         setAllDailySiloData(formattedData);
-      } catch (error) {
+      } catch {
         showToast(t.error_fetching_parameter_data);
         // Log error hanya dalam mode development
         if (process.env.NODE_ENV === 'development') {
@@ -717,7 +660,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       }, 0);
 
       showToast(t.parameter_order_exported_successfully);
-    } catch (error) {
+    } catch {
       showToast(t.failed_to_export_parameter_order);
       // Error logging removed for production
     }
@@ -791,7 +734,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             // Apply the new order
             setModalParameterOrder(finalOrder);
             showToast(t.parameter_order_imported_successfully);
-          } catch (error) {
+          } catch {
             showToast(t.failed_to_process_excel_file);
             // Error logging removed for production
           }
@@ -801,7 +744,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         // Reset file input to allow re-importing the same file
         e.target.value = '';
-      } catch (error) {
+      } catch {
         showToast(t.failed_to_import_parameter_order);
         // Error logging removed for production
       }
@@ -1074,7 +1017,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     updateParameterData,
     dataVersion, // Version untuk memicu refresh
     triggerRefresh, // Fungsi untuk refresh manual
-    isManualRefreshing, // Status refresh
     lastRefreshTime, // Waktu refresh terakhir
   } = useCcrParameterDataFlat();
 
@@ -1093,8 +1035,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       setDailyParameterData(data);
 
       // No need to update legacy records as the new flat structure is now used
-      const userName = loggedInUser?.full_name || currentUser.full_name || 'Unknown User';
-    } catch (error) {
+      // const _userName = loggedInUser?.full_name || currentUser.full_name || 'Unknown User';
+    } catch {
       // Error logging removed for production
       showToast(t.error_fetching_parameter_data);
     } finally {
@@ -1146,7 +1088,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       showToast('Data berhasil di-refresh');
       // Debug logging removed for production
-    } catch (error) {
+    } catch {
       // Error logging removed for production
       showToast('Gagal refresh data');
     } finally {
@@ -1444,7 +1386,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     isSaving: isSavingInformation,
   } = useCcrInformationData();
   const [informationText, setInformationText] = useState('');
-  const [hasUnsavedInformationChanges, setHasUnsavedInformationChanges] = useState(false);
 
   // Effect untuk memuat data informasi saat tanggal atau unit berubah
   useEffect(() => {
@@ -1454,10 +1395,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const info = getInformationForDate(selectedDate, selectedUnit);
       if (info) {
         setInformationText(info.information || '');
-        setHasUnsavedInformationChanges(false);
       } else {
         setInformationText('');
-        setHasUnsavedInformationChanges(false);
       }
     };
 
@@ -1590,7 +1529,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         // Refetch data to update the UI with force refresh to ensure freshest data
         await fetchSiloData(true);
-      } catch (error) {
+      } catch {
         // Error handling quietly
       }
     },
@@ -1693,7 +1632,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       try {
         // Konversi parameter ke format yang sesuai dengan skema flat fields
-        const shiftNum = shift.replace('shift', '');
+        // const _shiftNum = shift.replace('shift', '');
         const formattedField = field === 'emptySpace' ? 'empty_space' : 'content';
 
         // Gunakan fungsi deleteSiloData dari hook untuk menghapus data
@@ -1731,7 +1670,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         });
         // Refetch data untuk memastikan konsistensi dengan force refresh
         await fetchSiloData(true);
-      } catch (error) {
+      } catch {
         // Error handling quietly
       } finally {
         siloUpdateInProgress.current.delete(key);
@@ -1777,7 +1716,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         delete newChanges[key];
         return newChanges;
       });
-    } catch (error) {
+    } catch {
       // Error handling quietly
     } finally {
       siloUpdateInProgress.current.delete(key);
@@ -1797,15 +1736,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     if (selectedDate && selectedUnit) {
       const existingInfo = getInformationForDate(selectedDate, selectedUnit);
       setInformationText(existingInfo?.information || '');
-      setHasUnsavedInformationChanges(false);
     }
   }, [selectedDate, selectedUnit, getInformationForDate]);
 
   // Wrapper function for parameter data changes with optimistic updates and immediate saving
   // Track pending changes yang belum disimpan ke database
-  const [pendingChanges, setPendingChanges] = useState<
-    Map<string, { parameterId: string; hour: number; value: string }>
-  >(new Map());
 
   // Fungsi untuk menangani perubahan nilai parameter (hanya update UI tanpa save ke database)
   const handleParameterDataChange = useCallback(
@@ -1848,12 +1783,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         newArr[idx] = updatedParam;
 
         // Simpan perubahan ke pending changes
-        const changeKey = `${parameterId}_${hour}`;
-        setPendingChanges((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(changeKey, { parameterId, hour, value });
-          return newMap;
-        });
+        // const changeKey = `${parameterId}_${hour}`;
+        // setPendingChanges((prev) => {
+        //   const newMap = new Map(prev);
+        //   newMap.set(changeKey, { parameterId, hour, value });
+        //   return newMap;
+        // });
 
         return newArr;
       });
@@ -1880,18 +1815,18 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         );
 
         // Hapus dari pending changes setelah berhasil disimpan
-        const changeKey = `${parameterId}_${hour}`;
-        setPendingChanges((prev) => {
-          const newMap = new Map(prev);
-          newMap.delete(changeKey);
-          return newMap;
-        });
-      } catch (error) {
+        // const changeKey = `${parameterId}_${hour}`;
+        // setPendingChanges((prev) => {
+        //   const newMap = new Map(prev);
+        //   newMap.delete(changeKey);
+        //   return newMap;
+        // });
+      } catch {
         // Error logging removed for production
         showToast('Error saving parameter data');
       }
     },
-    [updateParameterData, loggedInUser, currentUser, selectedDate, setPendingChanges, showToast]
+    [updateParameterData, loggedInUser, currentUser, selectedDate, showToast]
   );
 
   // Bulk save function for efficient import
@@ -2048,7 +1983,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       // Clear local state
       setDailyParameterData([]);
-      setPendingChanges(new Map());
+      // setPendingChanges(new Map());
 
       showToast(`Successfully deleted ${deletedCount} parameter records`);
       announceToScreenReader(`Deleted ${deletedCount} parameter records`);
@@ -2060,14 +1995,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     } finally {
       setIsDeletingAll(false);
     }
-  }, [
-    selectedDate,
-    selectedUnit,
-    setDailyParameterData,
-    setPendingChanges,
-    showToast,
-    announceToScreenReader,
-  ]);
+  }, [selectedDate, selectedUnit, setDailyParameterData, showToast, announceToScreenReader]);
 
   // Fungsi untuk menghapus semua nama user (khusus Super Admin)
   const deleteAllNames = useCallback(async () => {
@@ -2104,7 +2032,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         await Promise.all(
           batch.map(async (record) => {
             // Clear all hour{X}_user fields and name field
-            const updateData: any = {};
+            const updateData: Record<string, string | number | null | undefined> = {};
             for (let hour = 1; hour <= 24; hour++) {
               const userKey = `hour${hour}_user`;
               if (record[userKey] !== undefined) {
@@ -2205,7 +2133,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         });
 
         await Promise.all(updatePromises);
-      } catch (error) {
+      } catch {
         // Error logging removed for production
         showToast('Error saving user name changes');
       }
@@ -2338,10 +2266,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, [isDeleteModalOpen]);
 
   // Simple debounce function that returns a new debounced version of the passed function
-  function createDebounce(func: Function, wait: number) {
+  function createDebounce(func: (...args: unknown[]) => void, wait: number) {
     let timeout: NodeJS.Timeout | null = null;
 
-    return function executedFunction(...args: any[]) {
+    return function executedFunction(...args: unknown[]) {
       const later = () => {
         timeout = null;
         func(...args);
@@ -2365,8 +2293,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           plantUnit: selectedUnit,
           information: value,
         });
-        setHasUnsavedInformationChanges(false);
-      } catch (error) {
+        // setHasUnsavedInformationChanges(false);
+      } catch {
         // Error logging removed for production
         // Silently fail without showing a toast for auto-save
       }
@@ -2378,7 +2306,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const handleInformationChange = useCallback(
     (value: string) => {
       setInformationText(value);
-      setHasUnsavedInformationChanges(true);
+      // setHasUnsavedInformationChanges(true);
       saveInformationWithDebounce(value);
     },
     [saveInformationWithDebounce]
@@ -2453,7 +2381,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             // Get value and user for current hour
             const hourValue = hourlyValues[hour.toString()];
             let paramValue = '';
-            let userName = '';
+            // let userName = '';
 
             if (
               typeof hourValue === 'object' &&
@@ -2462,7 +2390,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               'user_name' in hourValue
             ) {
               paramValue = String(hourValue.value);
-              userName = hourValue.user_name;
+              // userName = hourValue.user_name;
             } else if (typeof hourValue === 'string' || typeof hourValue === 'number') {
               paramValue = String(hourValue);
             }
@@ -2712,7 +2640,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       window.URL.revokeObjectURL(url);
 
       showToast('Template downloaded successfully');
-    } catch (error) {
+    } catch {
       // Error logging removed for production
       showToast('Error creating Excel template');
       alert('An error occurred while creating the template. Please try again.');
@@ -2792,7 +2720,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             // Debug logging removed for production
             // Validate data structure and filter out invalid rows (likely summary/empty rows)
             const requiredFields = ['Date', 'Hour', 'Unit'];
-            const validParamData = paramData.filter((row, index) => {
+            const validParamData = paramData.filter((row, _index) => {
               const missingFields = requiredFields.filter((field) => !row[field]);
               if (missingFields.length > 0) {
                 // Debug logging removed for production
@@ -2891,10 +2819,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Console statement removed for production
           errorMessages.push(
-            `Parameter Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            `Parameter Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
           );
         }
       } else {
@@ -2908,10 +2836,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           const savedCount = await bulkSaveParameterChanges(allParameterChanges);
           importCount += savedCount;
           // Console statement removed for production
-        } catch (error) {
+        } catch {
           // Console statement removed for production
           errorMessages.push(
-            `Bulk save failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            `Bulk save failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
           );
         }
       }
@@ -2989,10 +2917,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               );
             }
           }
-        } catch (error) {
+        } catch {
           // Console statement removed for production
           errorMessages.push(
-            `Footer Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            `Footer Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
           );
         }
       } else {
@@ -3094,10 +3022,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   // Refresh downtime data to reflect changes
                   refetch();
                   // Console statement removed for production
-                } catch (error) {
+                } catch {
                   // Console statement removed for production
                   errorMessages.push(
-                    `Error deleting existing downtime data: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    `Error deleting existing downtime data: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                   );
                 }
               }
@@ -3143,19 +3071,19 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       `Failed to save downtime data for ${row.Date}: ${result.error}`
                     );
                   }
-                } catch (error) {
+                } catch {
                   // Console statement removed for production
                   errorMessages.push(
-                    `Failed to save downtime data for ${row.Date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    `Failed to save downtime data for ${row.Date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                   );
                 }
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Console statement removed for production
           errorMessages.push(
-            `Downtime Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            `Downtime Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
           );
         }
       } else {
@@ -3250,10 +3178,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     setAllDailySiloData(data);
                   });
                   // Console statement removed for production
-                } catch (error) {
+                } catch {
                   // Console statement removed for production
                   errorMessages.push(
-                    `Error deleting existing silo data: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    `Error deleting existing silo data: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                   );
                 }
               }
@@ -3310,10 +3238,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         );
                         await updateSiloData(date, siloId, 'shift1', 'content', shift1.content);
                         // Console statement removed for production
-                      } catch (error) {
+                      } catch {
                         // Console statement removed for production
                         errorMessages.push(
-                          `Failed to update silo ${siloId} shift1 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                          `Failed to update silo ${siloId} shift1 for ${date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                         );
                       }
                     }
@@ -3331,10 +3259,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         // Add small delay to prevent rate limiting
                         await new Promise((resolve) => setTimeout(resolve, 50));
                         // Console statement removed for production
-                      } catch (error) {
+                      } catch {
                         // Console statement removed for production
                         errorMessages.push(
-                          `Failed to update silo ${siloId} shift2 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                          `Failed to update silo ${siloId} shift2 for ${date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                         );
                       }
                     }
@@ -3352,10 +3280,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         // Add small delay to prevent rate limiting
                         await new Promise((resolve) => setTimeout(resolve, 50));
                         // Console statement removed for production
-                      } catch (error) {
+                      } catch {
                         // Console statement removed for production
                         errorMessages.push(
-                          `Failed to update silo ${siloId} shift3 for ${date}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                          `Failed to update silo ${siloId} shift3 for ${date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                         );
                       }
                     }
@@ -3368,7 +3296,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   } else {
                     // Console statement removed for production
                   }
-                } catch (error) {
+                } catch {
                   console.error(
                     '❌ DEBUG: Failed to save silo data for',
                     row.Date,
@@ -3378,16 +3306,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     error
                   );
                   errorMessages.push(
-                    `Failed to save silo data for ${row.Date} silo ${row.Silo_ID}: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    `Failed to save silo data for ${row.Date} silo ${row.Silo_ID}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
                   );
                 }
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Console statement removed for production
           errorMessages.push(
-            `Silo Data import failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            `Silo Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
           );
         }
       } else {
@@ -3413,7 +3341,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Console statement removed for production
         alert('No data was imported. Please check your Excel file format.');
       }
-    } catch (error) {
+    } catch {
       // Console statement removed for production
       alert('Error processing Excel file. Please check the file format and try again.');
     } finally {
@@ -3586,82 +3514,84 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   accept=".xlsx, .xls"
                   className="hidden"
                 />
-                {/* Import Excel Button */}
-                <Button
-                  variant="warning"
-                  size="lg"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={
-                    isImporting || !selectedCategory || !selectedUnit
-                    // !permissionChecker.hasPermission('plant_operations', 'WRITE')
-                  }
-                  leftIcon={
-                    isImporting ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <DocumentArrowUpIcon className="w-5 h-5" />
-                    )
-                  }
-                  className="group relative overflow-hidden"
-                >
-                  <span className="relative z-10">
-                    {isImporting ? 'Importing...' : t.import_excel || 'Import Excel'}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
-                </Button>
+                {/* Import Excel Button - Requires WRITE permission */}
+                {permissionChecker.hasPermission('plant_operations', 'WRITE') && (
+                  <Button
+                    variant="warning"
+                    size="lg"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isImporting || !selectedCategory || !selectedUnit}
+                    leftIcon={
+                      isImporting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <DocumentArrowUpIcon className="w-5 h-5" />
+                      )
+                    }
+                    className="group relative overflow-hidden"
+                  >
+                    <span className="relative z-10">
+                      {isImporting ? 'Importing...' : t.import_excel || 'Import Excel'}
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
+                  </Button>
+                )}
 
-                {/* Download Template Button */}
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handleDownloadTemplate}
-                  disabled={
-                    isDownloadingTemplate ||
-                    !selectedCategory ||
-                    !selectedUnit ||
-                    filteredParameterSettings.length === 0
-                  }
-                  leftIcon={
-                    isDownloadingTemplate ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <DocumentArrowDownIcon className="w-5 h-5" />
-                    )
-                  }
-                  className="group relative overflow-hidden"
-                >
-                  <span className="relative z-10">
-                    {isDownloadingTemplate ? 'Downloading...' : 'Download Template'}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
-                </Button>
+                {/* Download Template Button - Requires READ permission */}
+                {permissionChecker.hasPermission('plant_operations', 'READ') && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleDownloadTemplate}
+                    disabled={
+                      isDownloadingTemplate ||
+                      !selectedCategory ||
+                      !selectedUnit ||
+                      filteredParameterSettings.length === 0
+                    }
+                    leftIcon={
+                      isDownloadingTemplate ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <DocumentArrowDownIcon className="w-5 h-5" />
+                      )
+                    }
+                    className="group relative overflow-hidden"
+                  >
+                    <span className="relative z-10">
+                      {isDownloadingTemplate ? 'Downloading...' : 'Download Template'}
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
+                  </Button>
+                )}
 
-                {/* Export Excel Button */}
-                <Button
-                  variant="success"
-                  size="lg"
-                  onClick={handleExport}
-                  disabled={
-                    isExporting ||
-                    !selectedCategory ||
-                    !selectedUnit ||
-                    filteredParameterSettings.length === 0
-                    // !permissionChecker.hasPermission('plant_operations', 'READ')
-                  }
-                  leftIcon={
-                    isExporting ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <DocumentArrowDownIcon className="w-5 h-5" />
-                    )
-                  }
-                  className="group relative overflow-hidden"
-                >
-                  <span className="relative z-10">
-                    {isExporting ? 'Exporting...' : t.export_excel || 'Export Excel'}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
-                </Button>
+                {/* Export Excel Button - Requires READ permission */}
+                {permissionChecker.hasPermission('plant_operations', 'READ') && (
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={handleExport}
+                    disabled={
+                      isExporting ||
+                      !selectedCategory ||
+                      !selectedUnit ||
+                      filteredParameterSettings.length === 0
+                    }
+                    leftIcon={
+                      isExporting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <DocumentArrowDownIcon className="w-5 h-5" />
+                      )
+                    }
+                    className="group relative overflow-hidden"
+                  >
+                    <span className="relative z-10">
+                      {isExporting ? 'Exporting...' : t.export_excel || 'Export Excel'}
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-500 opacity-0 group-hover:opacity-20 transition-opacity duration-150"></div>
+                  </Button>
+                )}
 
                 {/* Delete All Parameters & Names: Super Admin Only */}
                 {isSuperAdmin(loggedInUser?.role) && (

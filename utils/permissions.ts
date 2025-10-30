@@ -199,7 +199,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
   },
   Operator: {
     dashboard: 'READ',
-    plant_operations: 'READ',
+    plant_operations: 'WRITE', // Updated to WRITE to allow import/export operations
     inspection: 'NONE',
     project_management: 'NONE',
   },
@@ -243,7 +243,7 @@ export const withPermission = <P extends object>(
   feature: keyof PermissionMatrix,
   requiredLevel: string = 'READ'
 ) => {
-  return (props: P & { user?: User | null }) => {
+  const Component = (props: P & { user?: User | null }) => {
     const { user, ...restProps } = props;
     const permissionChecker = usePermissions(user);
 
@@ -265,6 +265,10 @@ export const withPermission = <P extends object>(
 
     return React.createElement(WrappedComponent, restProps as P);
   };
+
+  Component.displayName = `withPermission(${WrappedComponent.displayName || WrappedComponent.name})`;
+
+  return Component;
 };
 
 /**
@@ -329,7 +333,7 @@ function safeRender(children: React.ReactNode): React.ReactElement {
         // Ini untuk mengecek apakah objek bisa dikonversi ke string tanpa error
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _ = '' + children;
-      } catch (_stringifyError) {
+      } catch {
         // Jika gagal stringify, ini menunjukkan objek problematik
         // yang menyebabkan error "Cannot convert object to primitive value"
         return React.createElement(
@@ -380,7 +384,7 @@ function safeRender(children: React.ReactNode): React.ReactElement {
       { className: 'p-2 text-red-600 bg-red-50 rounded', 'data-testid': 'invalid-component' },
       'Invalid component'
     );
-  } catch (_renderError) {
+  } catch {
     // Tangkap segala error yang muncul dalam proses rendering
     return React.createElement(
       'div',

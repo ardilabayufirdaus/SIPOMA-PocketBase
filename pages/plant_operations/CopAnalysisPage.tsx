@@ -442,40 +442,9 @@ const ChartContainer: React.FC<{
 
   // Prepare Chart.js data
   const chartDataFormatted = {
-    labels: chartData.map((item) => `Tanggal ${item.day}`),
+    labels: chartData.map((item) => item.day.toString().padStart(2, '0')),
     datasets: [
-      // Target range area (background)
-      ...(min !== undefined && max !== undefined
-        ? [
-            {
-              label: `Target: ${formatCopNumber(min)} - ${formatCopNumber(max)}`,
-              data: chartData.map(() => max),
-              backgroundColor: 'rgba(254, 243, 199, 0.3)',
-              borderColor: 'rgba(254, 243, 199, 0.3)',
-              fill: true,
-              type: 'line' as const,
-              pointRadius: 0,
-              borderWidth: 0,
-            },
-          ]
-        : []),
-      // Min line
-      ...(min !== undefined
-        ? [
-            {
-              label: `Min (${formatCopNumber(min)})`,
-              data: chartData.map(() => min),
-              borderColor: '#10b981',
-              backgroundColor: '#10b981',
-              borderWidth: 2,
-              borderDash: [8, 4],
-              fill: false,
-              pointRadius: 0,
-              type: 'line' as const,
-            },
-          ]
-        : []),
-      // Max line
+      // Max line (drawn first, no fill)
       ...(max !== undefined
         ? [
             {
@@ -483,11 +452,29 @@ const ChartContainer: React.FC<{
               data: chartData.map(() => max),
               borderColor: '#ef4444',
               backgroundColor: '#ef4444',
-              borderWidth: 2,
+              borderWidth: 3,
               borderDash: [8, 4],
               fill: false,
               pointRadius: 0,
               type: 'line' as const,
+              order: 2,
+            },
+          ]
+        : []),
+      // Min line with fill to max
+      ...(min !== undefined
+        ? [
+            {
+              label: `Min (${formatCopNumber(min)})`,
+              data: chartData.map(() => min),
+              borderColor: '#10b981',
+              backgroundColor: max !== undefined ? 'rgba(34, 197, 94, 0.1)' : '#10b981',
+              borderWidth: 3,
+              borderDash: [8, 4],
+              fill: max !== undefined ? 0 : false, // Fill to the first dataset (max line)
+              pointRadius: 0,
+              type: 'line' as const,
+              order: 1,
             },
           ]
         : []),
@@ -497,17 +484,31 @@ const ChartContainer: React.FC<{
         data: chartData.map((item) => item.value),
         borderColor: '#3b82f6',
         backgroundColor: '#3b82f6',
-        borderWidth: 3,
+        borderWidth: 4,
         fill: false,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 5,
+        pointHoverRadius: 7,
         pointBackgroundColor: '#3b82f6',
         pointBorderColor: '#ffffff',
         pointBorderWidth: 2,
         spanGaps: false,
+        order: 0,
       },
     ],
   };
+
+  // Calculate y-axis range based on min, max, and actual data
+  const allValues = chartData
+    .map((item) => item.value)
+    .filter((val) => val !== null && val !== undefined);
+  const yMin = min !== undefined ? Math.min(min, ...allValues) : Math.min(...allValues);
+  const yMax = max !== undefined ? Math.max(max, ...allValues) : Math.max(...allValues);
+
+  // Add padding (10% of range)
+  const range = yMax - yMin;
+  const padding = range * 0.1;
+  const yAxisMin = yMin - padding;
+  const yAxisMax = yMax + padding;
 
   const options: ChartOptions<'line'> = {
     responsive: true,
@@ -516,10 +517,27 @@ const ChartContainer: React.FC<{
       legend: {
         display: true,
         position: 'top' as const,
+        labels: {
+          font: {
+            size: 10, // ✅ Legend labels: text-xs 10px
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
+        },
       },
       tooltip: {
         mode: 'index',
         intersect: false,
+        titleFont: {
+          size: 10, // ✅ Tooltip title & body: text-xs 10px
+          family: 'Inter, system-ui, sans-serif',
+          weight: 'normal',
+        },
+        bodyFont: {
+          size: 10,
+          family: 'Inter, system-ui, sans-serif',
+          weight: 'normal',
+        },
         callbacks: {
           label: (context) => {
             if (context.datasetIndex === chartDataFormatted.datasets.length - 1) {
@@ -538,6 +556,18 @@ const ChartContainer: React.FC<{
         title: {
           display: true,
           text: 'Tanggal',
+          font: {
+            size: 10, // ✅ X-axis title & ticks: text-xs 10px
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
+        },
+        ticks: {
+          font: {
+            size: 10,
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
         },
       },
       y: {
@@ -545,7 +575,22 @@ const ChartContainer: React.FC<{
         title: {
           display: true,
           text: parameter.unit,
+          font: {
+            size: 10, // ✅ Y-axis title & ticks: text-xs 10px
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
         },
+        ticks: {
+          font: {
+            size: 10,
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
+        },
+        min: yAxisMin,
+        max: yAxisMax,
+        beginAtZero: false, // Don't force start at zero for better data visibility
       },
     },
     elements: {
@@ -1782,7 +1827,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               Ringkasan statistik parameter COP bulan ini
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
             {statisticalSummary.map((stat) => (
               <div
                 key={stat.parameterId}
@@ -1883,7 +1928,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               Deteksi nilai abnormal menggunakan metode 3-sigma rule
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
             {anomalyDetection.map((anomaly) => (
               <div
                 key={anomaly.parameterId}
@@ -2046,7 +2091,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               Metrik kualitas data dan performa proses secara keseluruhan
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
@@ -2177,7 +2222,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
+            >
               {periodComparison.map((comparison) => (
                 <div
                   key={comparison.parameterId}
@@ -2260,7 +2308,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               Prediksi tren parameter dan peringatan dini untuk 7 hari ke depan
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
             {predictiveInsights.map((insight) => (
               <div
                 key={insight.parameterId}
@@ -2493,6 +2541,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         {!isLoading && !error && (
           <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
+                Tabel Analisis COP
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                Data persentase pencapaian parameter COP per hari dalam sebulan.
+              </p>
+            </div>
             <div
               className="overflow-x-auto scroll-smooth"
               role="region"

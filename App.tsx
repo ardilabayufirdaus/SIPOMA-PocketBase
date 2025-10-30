@@ -40,6 +40,7 @@ import {
 
 import { logSystemStatus } from './utils/systemStatus';
 import { startBackgroundHealthCheck } from './utils/connectionMonitor';
+import { registerBackgroundSync } from './utils/syncManager';
 
 // Import ThemeProvider for dark mode support
 import { ThemeProvider } from './components/ThemeProvider';
@@ -111,6 +112,22 @@ const App: React.FC = () => {
       // Clean up connection monitor on unmount
       stopConnectionMonitor();
     };
+  }, []);
+
+  // Register service worker and background sync for offline support
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((_registration) => {
+          console.log('Service Worker registered successfully');
+          // Register background sync
+          registerBackgroundSync();
+        })
+        .catch((error) => {
+          console.error('Service Worker registration failed:', error);
+        });
+    }
   }, []);
 
   // Preload critical routes after user authentication

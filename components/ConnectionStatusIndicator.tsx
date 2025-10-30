@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMixedContentDetection } from '../hooks/useMixedContentDetection';
 import { checkConnection } from '../utils/connectionMonitor';
+import { useOfflineStatus } from '../hooks/useOfflineStatus';
 
 /**
  * ConnectionStatusIndicator - A small indicator showing backend connection status
@@ -9,13 +10,19 @@ import { checkConnection } from '../utils/connectionMonitor';
  */
 const ConnectionStatusIndicator: React.FC = () => {
   const [connectionStatus, setConnectionStatus] = useState<
-    'connected' | 'disconnected' | 'checking'
+    'connected' | 'disconnected' | 'checking' | 'offline'
   >('checking');
   const { hasMixedContentIssue, isHttps } = useMixedContentDetection();
+  const { isOnline } = useOfflineStatus();
   const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     const checkBackendConnection = async () => {
+      if (!isOnline) {
+        setConnectionStatus('offline');
+        return;
+      }
+
       setConnectionStatus('checking');
       const isConnected = await checkConnection(5000);
       setConnectionStatus(isConnected ? 'connected' : 'disconnected');
@@ -27,7 +34,7 @@ const ConnectionStatusIndicator: React.FC = () => {
     const intervalId = setInterval(checkBackendConnection, 30000); // Check every 30 seconds
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [isOnline]);
 
   // If there's a mixed content issue and we're showing help, render nothing
   // because the ConnectionHelp component will already be showing
@@ -41,6 +48,8 @@ const ConnectionStatusIndicator: React.FC = () => {
         return '#4caf50'; // Green
       case 'disconnected':
         return '#f44336'; // Red
+      case 'offline':
+        return '#ff5722'; // Deep Orange
       case 'checking':
         return '#ff9800'; // Orange
       default:
@@ -57,7 +66,9 @@ const ConnectionStatusIndicator: React.FC = () => {
       case 'connected':
         return 'Connected';
       case 'disconnected':
-        return 'Disconnected';
+        return 'Server Offline';
+      case 'offline':
+        return 'Network Offline';
       case 'checking':
         return 'Checking...';
       default:

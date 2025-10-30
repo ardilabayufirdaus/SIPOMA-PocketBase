@@ -4,6 +4,9 @@ import { useParameterSettings } from './useParameterSettings';
 import { pb } from '../utils/pocketbase-simple';
 import { safeApiCall } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';
+import { useOfflineStatus } from './useOfflineStatus';
+import { getData as getIndexedDBData, storeData, STORES } from '../utils/indexedDB';
+import { syncPendingOperations } from '../utils/syncManager';
 
 // Define a common type for hour values to ensure consistency
 export type HourValueType = string | number | null;
@@ -171,6 +174,7 @@ export interface CcrParameterDataWithName extends CcrParameterData {
 
 export const useCcrParameterDataFlat = () => {
   const { records: parameters, loading: paramsLoading } = useParameterSettings();
+  const { isOnline, wasOffline, resetWasOffline } = useOfflineStatus();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [dataVersion, setDataVersion] = useState<number>(0);
@@ -208,6 +212,22 @@ export const useCcrParameterDataFlat = () => {
       setIsManualRefreshing(false);
     }
   }, []);
+
+  // Auto-sync when coming back online
+  useEffect(() => {
+    if (isOnline && wasOffline) {
+      logger.info('Back online, syncing pending operations');
+      syncPendingOperations()
+        .then(() => {
+          resetWasOffline();
+          // Trigger refresh to get latest data
+          triggerRefresh();
+        })
+        .catch((err) => {
+          logger.error('Auto-sync failed:', err);
+        });
+    }
+  }, [isOnline, wasOffline, resetWasOffline, triggerRefresh]);
 
   // Process a PocketBase record into flat format
   const processRecord = useCallback((record: PocketBaseParameterRecord): CcrParameterDataFlat => {
@@ -291,43 +311,86 @@ export const useCcrParameterDataFlat = () => {
           return [];
         }
 
-        // Build query with optional plant_unit filter
-        // Don't need to convert date to datetime format
-        let filter = `date="${isoDate}"`;
-        if (plantUnit && plantUnit !== 'all') {
-          filter += ` && plant_unit="${plantUnit}"`;
-        }
-
-        // Always fetch fresh data directly from PocketBase
-        const result = await pb.collection('ccr_parameter_data').getFullList({
-          filter: filter,
-          sort: '-created',
-        });
-
         // Filter parameters based on plant unit if specified
         let filteredParameters = parameters;
         if (plantUnit && plantUnit !== 'all') {
           filteredParameters = parameters.filter((param) => param.unit === plantUnit);
         }
 
-        // Map PocketBase response to flat data structure
-        const pocketbaseData = result as unknown as PocketBaseParameterRecord[];
-        const dailyRecords = new Map(pocketbaseData.map((d) => [d.parameter_id as string, d]));
+        // Try to get data from IndexedDB first (offline support)
+        let localData: CcrParameterDataFlat[] = [];
+        try {
+          const cachedData = await getIndexedDBData(STORES.CCR_PARAMETERS);
+          localData = cachedData.filter((item: any) => item.date === isoDate);
+        } catch (err) {
+          logger.warn('Failed to load cached data:', err);
+        }
 
-        return filteredParameters.map((param) => {
-          const record = dailyRecords.get(param.id);
+        // If online, fetch fresh data and cache it
+        if (isOnline) {
+          try {
+            // Build query with optional plant_unit filter
+            let filter = `date="${isoDate}"`;
+            if (plantUnit && plantUnit !== 'all') {
+              filter += ` && plant_unit="${plantUnit}"`;
+            }
 
-          if (record) {
-            return processRecord(record);
+            const result = await pb.collection('ccr_parameter_data').getFullList({
+              filter: filter,
+              sort: '-created',
+            });
+
+            // Map PocketBase response to flat data structure
+            const pocketbaseData = result as unknown as PocketBaseParameterRecord[];
+            const freshData = filteredParameters.map((param) => {
+              const record = pocketbaseData.find((d) => d.parameter_id === param.id);
+
+              if (record) {
+                return processRecord(record);
+              }
+
+              // Return empty record structure for parameters without data
+              return {
+                id: `${param.id}-${date}`,
+                parameter_id: param.id,
+                date: date,
+              } as CcrParameterDataFlat;
+            });
+
+            // Cache the fresh data
+            await storeData(STORES.CCR_PARAMETERS, freshData);
+
+            return freshData;
+          } catch (serverError) {
+            logger.warn('Server fetch failed, using cached data:', serverError);
+            // Fall back to cached data if server fails
           }
+        }
 
-          // Return empty record structure for parameters without data
-          return {
-            id: `${param.id}-${date}`,
-            parameter_id: param.id,
-            date: date,
-          } as CcrParameterDataFlat;
-        });
+        // If offline or server failed, use cached data
+        if (localData.length > 0) {
+          return filteredParameters.map((param) => {
+            const cachedRecord = localData.find((d) => d.parameter_id === param.id);
+            return (
+              cachedRecord ||
+              ({
+                id: `${param.id}-${date}`,
+                parameter_id: param.id,
+                date: date,
+              } as CcrParameterDataFlat)
+            );
+          });
+        }
+
+        // No data available
+        return filteredParameters.map(
+          (param) =>
+            ({
+              id: `${param.id}-${date}`,
+              parameter_id: param.id,
+              date: date,
+            }) as CcrParameterDataFlat
+        );
       } catch (error) {
         // Handle autocancelled requests gracefully (common in React StrictMode)
         if (error instanceof Error && error.message.includes('autocancelled')) {
@@ -339,7 +402,7 @@ export const useCcrParameterDataFlat = () => {
         setLoading(false);
       }
     },
-    [parameters, paramsLoading, processRecord, setLoading, setError]
+    [parameters, paramsLoading, processRecord, setLoading, setError, isOnline]
   );
 
   const getDataForDatePaginated = useCallback(
