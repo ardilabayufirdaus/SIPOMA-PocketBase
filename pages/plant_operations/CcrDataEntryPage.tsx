@@ -2298,7 +2298,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Error logging removed for production
         // Silently fail without showing a toast for auto-save
       }
-    }, 1000), // 1 second debounce
+    }, 3000), // 3 second debounce
     [selectedDate, selectedUnit, saveInformation, isSavingInformation]
   );
 
