@@ -11,12 +11,12 @@ export default {
     './stores/**/*.{js,ts,jsx,tsx}',
     './features/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: 'class',
+  darkMode: false,
   theme: {
     extend: {
       fontFamily: {
         sans: [
-          'Inter',
+          'Roboto Condensed',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',

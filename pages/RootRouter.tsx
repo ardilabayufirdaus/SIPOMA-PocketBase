@@ -95,7 +95,7 @@ const RootRouter: React.FC = () => {
 
   if (checking || isLoggedIn === null) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-100 dark:bg-slate-900">
+      <div className="h-screen w-screen flex items-center justify-center bg-slate-100">
         <div className="rounded-full h-8 w-8 border-2 border-red-600 border-t-transparent animate-spin"></div>
       </div>
     );

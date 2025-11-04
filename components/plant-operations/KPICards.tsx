@@ -28,11 +28,11 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6 animate-pulse"
+            className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 animate-pulse"
           >
-            <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
-            <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/2 mb-4"></div>
-            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
+            <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+            <div className="h-8 bg-slate-200 rounded w-1/2 mb-4"></div>
+            <div className="h-3 bg-slate-200 rounded w-1/4"></div>
           </div>
         ))}
       </div>
@@ -47,15 +47,13 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6"
+          className="bg-white rounded-lg shadow-sm border border-slate-200 p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">{kpi.icon}</div>
+            <div className="p-2 bg-blue-50 rounded-lg">{kpi.icon}</div>
             <div
               className={`flex items-center gap-1 text-sm ${
-                kpi.trend.isPositive
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
+                kpi.trend.isPositive ? 'text-green-600' : 'text-red-600'
               }`}
             >
               {kpi.trend.isPositive ? (
@@ -68,15 +66,13 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">{kpi.title}</h3>
+            <h3 className="text-sm font-medium text-slate-600">{kpi.title}</h3>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {kpi.value}
-              </span>
-              <span className="text-sm text-slate-500 dark:text-slate-400">{kpi.unit}</span>
+              <span className="text-2xl font-bold text-slate-900">{kpi.value}</span>
+              <span className="text-sm text-slate-500">{kpi.unit}</span>
             </div>
             {kpi.target && (
-              <div className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="text-xs text-slate-500">
                 Target: {kpi.target} {kpi.unit}
               </div>
             )}

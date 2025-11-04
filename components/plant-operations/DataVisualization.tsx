@@ -80,37 +80,31 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
       className="grid grid-cols-1 lg:grid-cols-2 gap-6"
     >
       {/* Risk Data Summary */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <AlertTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="p-2 bg-red-50 rounded-lg">
+            <AlertTriangleIcon className="w-5 h-5 text-red-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Risk Management
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Active risk monitoring and mitigation
-            </p>
+            <h3 className="text-lg font-semibold text-slate-900">Risk Management</h3>
+            <p className="text-sm text-slate-600">Active risk monitoring and mitigation</p>
           </div>
         </div>
 
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">Total Risks</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
-              {riskData.length}
-            </span>
+            <span className="text-sm text-slate-600">Total Risks</span>
+            <span className="font-semibold text-slate-900">{riskData.length}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">In Progress</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+            <span className="text-sm text-slate-600">In Progress</span>
+            <span className="font-semibold text-slate-900">
               {riskData.filter((r) => r.status === 'in_progress').length}
             </span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">Identified</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
+            <span className="text-sm text-slate-600">Identified</span>
+            <span className="font-semibold text-slate-900">
               {riskData.filter((r) => r.status === 'identified').length}
             </span>
           </div>
@@ -118,52 +112,42 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
       </div>
 
       {/* Data Overview */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <DatabaseIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <DatabaseIcon className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Data Overview
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Current data status across modules
-            </p>
+            <h3 className="text-lg font-semibold text-slate-900">Data Overview</h3>
+            <p className="text-sm text-slate-600">Current data status across modules</p>
           </div>
         </div>
 
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">CCR Entries</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
-              {ccrDataLength}
-            </span>
+            <span className="text-sm text-slate-600">CCR Entries</span>
+            <span className="font-semibold text-slate-900">{ccrDataLength}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">Silo Capacities</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">
-              {siloCapacitiesLength}
-            </span>
+            <span className="text-sm text-slate-600">Silo Capacities</span>
+            <span className="font-semibold text-slate-900">{siloCapacitiesLength}</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-slate-600 dark:text-slate-400">Work Instructions</span>
-            <span className="font-semibold text-slate-900 dark:text-slate-100">0</span>
+            <span className="text-sm text-slate-600">Work Instructions</span>
+            <span className="font-semibold text-slate-900">0</span>
           </div>
         </div>
       </div>
 
       {/* Availability Chart */}
-      <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+      <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <BarChart3Icon className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <div className="p-2 bg-green-50 rounded-lg">
+            <BarChart3Icon className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Plant Availability Chart
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <h3 className="text-lg font-semibold text-slate-900">Plant Availability Chart</h3>
+            <p className="text-sm text-slate-600">
               {timeRange === 'daily'
                 ? `Daily availability by unit (${date || 'today'})`
                 : `Monthly running hours by unit (${new Date(year || new Date().getFullYear(), (month || new Date().getMonth() + 1) - 1).toLocaleString('default', { month: 'long', year: 'numeric' })})`}
@@ -261,8 +245,8 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
             />
           </div>
         ) : (
-          <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg">
-            <div className="text-center text-slate-500 dark:text-slate-400">
+          <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-lg">
+            <div className="text-center text-slate-500">
               <BarChart3Icon className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>No availability data available</p>
             </div>

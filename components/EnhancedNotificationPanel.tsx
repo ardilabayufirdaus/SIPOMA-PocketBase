@@ -113,13 +113,13 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
   const getSeverityColor = (severity: AlertSeverity) => {
     switch (severity) {
       case AlertSeverity.CRITICAL:
-        return 'border-l-red-500 bg-red-50 dark:bg-red-900/10';
+        return 'border-l-red-500 bg-red-50';
       case AlertSeverity.WARNING:
-        return 'border-l-amber-500 bg-amber-50 dark:bg-amber-900/10';
+        return 'border-l-amber-500 bg-amber-50';
       case AlertSeverity.INFO:
-        return 'border-l-blue-500 bg-blue-50 dark:bg-blue-900/10';
+        return 'border-l-blue-500 bg-blue-50';
       default:
-        return 'border-l-slate-500 bg-slate-50 dark:bg-slate-900/10';
+        return 'border-l-slate-500 bg-slate-50';
     }
   };
 
@@ -127,7 +127,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
     return (
       <button
         onClick={onToggle}
-        className="relative p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+        className="relative p-2 text-slate-600 hover:text-slate-900 transition-colors"
         aria-label={`Notifications ${unreadCount > 0 ? `(${unreadCount} unread)` : ''}`}
       >
         {preferences.enableRealtime ? (
@@ -150,14 +150,14 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
       <div className="lg:hidden fixed inset-0 bg-black bg-opacity-50" onClick={onToggle} />
 
       {/* Panel */}
-      <div className="bg-white dark:bg-slate-900 lg:rounded-lg lg:shadow-xl border-l lg:border border-slate-200 dark:border-slate-700 h-full lg:h-auto lg:max-h-[80vh] flex flex-col">
+      <div className="bg-white lg:rounded-lg lg:shadow-xl border-l lg:border border-slate-200 h-full lg:h-auto lg:max-h-[80vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200">
           <div className="flex items-center space-x-2">
-            <BellIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100">Notifications</h3>
+            <BellIcon className="w-5 h-5 text-slate-600" />
+            <h3 className="font-semibold text-slate-900">Notifications</h3>
             {unreadCount > 0 && (
-              <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs px-2 py-1 rounded-full">
+              <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -166,7 +166,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              className="p-1 text-slate-500 hover:text-slate-700 transition-colors"
               aria-label="Notification settings"
             >
               <CogIcon className="w-4 h-4" />
@@ -174,7 +174,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
 
             <button
               onClick={onToggle}
-              className="p-1 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+              className="p-1 text-slate-500 hover:text-slate-700 transition-colors"
               aria-label="Close notifications"
             >
               <XMarkIcon className="w-4 h-4" />
@@ -184,10 +184,8 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
 
         {/* Settings Panel */}
         {showSettings && (
-          <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-            <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-3">
-              Notification Settings
-            </h4>
+          <div className="p-4 border-b border-slate-200 bg-slate-50">
+            <h4 className="font-medium text-slate-900 mb-3">Notification Settings</h4>
 
             <div className="space-y-3">
               <label className="flex items-center">
@@ -195,11 +193,9 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                   type="checkbox"
                   checked={preferences.browser}
                   onChange={(e) => onUpdatePreferences({ browser: e.target.checked })}
-                  className="rounded border-slate-300 dark:border-slate-600"
+                  className="rounded border-slate-300"
                 />
-                <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
-                  Browser notifications
-                </span>
+                <span className="ml-2 text-sm text-slate-700">Browser notifications</span>
               </label>
 
               <label className="flex items-center">
@@ -207,11 +203,9 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                   type="checkbox"
                   checked={preferences.sound}
                   onChange={(e) => onUpdatePreferences({ sound: e.target.checked })}
-                  className="rounded border-slate-300 dark:border-slate-600"
+                  className="rounded border-slate-300"
                 />
-                <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
-                  Sound alerts
-                </span>
+                <span className="ml-2 text-sm text-slate-700">Sound alerts</span>
               </label>
 
               <label className="flex items-center">
@@ -219,16 +213,14 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                   type="checkbox"
                   checked={preferences.showCriticalOnly}
                   onChange={(e) => onUpdatePreferences({ showCriticalOnly: e.target.checked })}
-                  className="rounded border-slate-300 dark:border-slate-600"
+                  className="rounded border-slate-300"
                 />
-                <span className="ml-2 text-sm text-slate-700 dark:text-slate-300">
-                  Critical only
-                </span>
+                <span className="ml-2 text-sm text-slate-700">Critical only</span>
               </label>
 
               {preferences.sound && (
                 <div>
-                  <label className="block text-sm text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-sm text-slate-700 mb-1">
                     Sound Volume: {Math.round(preferences.soundVolume * 100)}%
                   </label>
                   <input
@@ -249,7 +241,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
         )}
 
         {/* Filter Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-700">
+        <div className="flex border-b border-slate-200">
           {[
             { key: 'all', label: 'All', count: filteredNotifications.length },
             { key: 'unread', label: 'Unread', count: unreadCount },
@@ -266,8 +258,8 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
               onClick={() => setFilter(tab.key as typeof filter)}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                 filter === tab.key
-                  ? 'text-red-600 dark:text-red-400 border-b-2 border-red-600 dark:border-red-400'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                  ? 'text-red-600 border-b-2 border-red-600'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               {tab.label} {tab.count > 0 && `(${tab.count})`}
@@ -277,10 +269,10 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
 
         {/* Actions */}
         {filteredNotifications.length > 0 && (
-          <div className="p-3 border-b border-slate-200 dark:border-slate-700">
+          <div className="p-3 border-b border-slate-200">
             <button
               onClick={onMarkAllAsRead}
-              className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+              className="text-sm text-red-600 hover:text-red-700 transition-colors"
             >
               <CheckIcon className="w-4 h-4 inline mr-1" />
               Mark all as read
@@ -292,11 +284,11 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
         <div className="flex-1 overflow-y-auto">
           {filteredNotifications.length === 0 ? (
             <div className="p-8 text-center">
-              <BellSlashIcon className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400">No notifications</p>
+              <BellSlashIcon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-500">No notifications</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-200 dark:divide-slate-700">
+            <div className="divide-y divide-slate-200">
               {filteredNotifications.map((notification) => (
                 <div
                   key={notification.id}
@@ -309,17 +301,15 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                       <div className="flex items-center space-x-2 mb-1">
                         {getSeverityIcon(notification.severity)}
                         {getCategoryIcon(notification.category)}
-                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                        <h4 className="text-sm font-medium text-slate-900 truncate">
                           {notification.title}
                         </h4>
                       </div>
 
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                        {notification.message}
-                      </p>
+                      <p className="text-sm text-slate-600 mb-2">{notification.message}</p>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                        <span className="text-xs text-slate-500">
                           {formatTimeSince(notification.createdAt)}
                         </span>
 
@@ -327,7 +317,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                           {notification.actionUrl && (
                             <button
                               onClick={() => onAction?.(notification)}
-                              className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                              className="text-xs text-red-600 hover:text-red-700 transition-colors"
                             >
                               {notification.actionLabel || 'View'}
                             </button>
@@ -339,14 +329,14 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                                 activeSnoozeId === notification.id ? null : notification.id
                               )
                             }
-                            className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                            className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
                           >
                             <ClockIcon className="w-3 h-3" />
                           </button>
 
                           <button
                             onClick={() => onDismiss(notification.id)}
-                            className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                            className="text-xs text-slate-600 hover:text-slate-900 transition-colors"
                           >
                             <XMarkIcon className="w-3 h-3" />
                           </button>
@@ -362,7 +352,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                         <button
                           key={minutes}
                           onClick={() => handleSnooze(notification.id, minutes)}
-                          className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                          className="text-xs px-2 py-1 bg-slate-100 text-slate-700 rounded hover:bg-slate-200 transition-colors"
                         >
                           {minutes < 60
                             ? `${minutes}m`

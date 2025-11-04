@@ -60,11 +60,11 @@ const LoadingSpinner: React.FC = () => (
 // Helper function for status classes
 const getStatusClasses = (status: string, t: any) => {
   if (status === t.proj_status_completed) {
-    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+    return 'bg-green-100 text-green-800';
   } else if (status === t.proj_status_delayed) {
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+    return 'bg-red-100 text-red-800';
   } else {
-    return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+    return 'bg-blue-100 text-blue-800';
   }
 };
 
@@ -79,7 +79,7 @@ const GanttChart: React.FC<{
 
   if (tasks.length === 0 || duration <= 0) {
     return (
-      <div className="h-96 flex items-center justify-center text-slate-500 dark:text-slate-400">
+      <div className="h-96 flex items-center justify-center text-slate-500">
         {t.status_not_started}
       </div>
     );
@@ -159,7 +159,7 @@ const GanttChart: React.FC<{
                 x="5"
                 y={y + ganttDimensions.taskHeight / 2}
                 dy=".35em"
-                className="text-xs fill-current text-slate-600 dark:text-slate-400 truncate"
+                className="text-xs fill-current text-slate-600 truncate"
                 style={{ maxWidth: `${ganttDimensions.leftPadding - 10}px` }}
               >
                 {task.activity}
@@ -240,19 +240,17 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md flex items-center transition-all duration-300 ${
+        className={`bg-white p-4 rounded-lg shadow-md flex items-center transition-all duration-300 ${
           isInteractive ? 'cursor-pointer hover:shadow-lg hover:scale-105' : ''
         }`}
         onClick={handleClick}
       >
-        <div className="p-3 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-4">
-          {icon}
-        </div>
+        <div className="p-3 rounded-full bg-red-50 text-red-600 mr-4">{icon}</div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+            <p className="text-sm font-medium text-slate-500">{title}</p>
             {isInteractive && (
-              <div className="text-slate-400 dark:text-slate-500">
+              <div className="text-slate-400">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -264,15 +262,9 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
               </div>
             )}
           </div>
-          <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
+          <p className="text-xl font-semibold text-slate-900">{value}</p>
           {subText && (
-            <p
-              className={`text-xs font-medium ${
-                subTextColor || 'text-slate-500 dark:text-slate-400'
-              }`}
-            >
-              {subText}
-            </p>
+            <p className={`text-xs font-medium ${subTextColor || 'text-slate-500'}`}>{subText}</p>
           )}
         </div>
       </div>
@@ -912,15 +904,15 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header with Better Mobile Support */}
-        <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="bg-white border-b border-slate-200 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
                 <h1
-                  className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 truncate"
+                  className="text-xl sm:text-2xl font-bold text-slate-900 truncate"
                   role="heading"
                   aria-level={1}
                 >
@@ -938,10 +930,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   {performanceMetrics.projectStatus}
                 </span>
               </div>
-              <p
-                className="text-sm text-slate-600 dark:text-slate-400"
-                aria-describedby="project-meta"
-              >
+              <p className="text-sm text-slate-600" aria-describedby="project-meta">
                 {t.project_overview} G�� {projectOverview.totalTasks} tasks G��{' '}
                 {projectOverview.duration} days
               </p>
@@ -979,8 +968,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           ) : (
             <>
               {/* Modern Project Overview Header */}
-              <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 dark:from-blue-800 dark:via-blue-900 dark:to-blue-900 rounded-2xl shadow-2xl mb-8">
-                <div className="absolute inset-0 bg-black/10 dark:bg-black/20"></div>
+              <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl shadow-2xl mb-8">
+                <div className="absolute inset-0 bg-black/10"></div>
                 <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
 
@@ -1079,16 +1068,16 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               </div>
 
               {/* Modern Performance Metrics Section */}
-              <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 mb-8 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 mb-8 border border-slate-200/50">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-gradient-fire rounded-lg">
                     <Bars4Icon className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    <h2 className="text-xl font-bold text-slate-900">
                       {t.performance_summary_title || 'Performance Metrics'}
                     </h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <p className="text-sm text-slate-600">
                       Key performance indicators and project status
                     </p>
                   </div>
@@ -1096,9 +1085,9 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 
                 {/* Performance Metrics Grid - Ultra Compact */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200">
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-200">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                         {t.deviation_from_plan || 'Deviation'}
                       </p>
                       {performanceMetrics.deviation > 0 ? (
@@ -1110,16 +1099,16 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                     <p
                       className={`text-xl font-bold ${
                         performanceMetrics.deviation > 5
-                          ? 'text-green-600 dark:text-green-400'
+                          ? 'text-green-600'
                           : performanceMetrics.deviation < -5
-                            ? 'text-red-600 dark:text-red-400'
-                            : 'text-slate-900 dark:text-slate-100'
+                            ? 'text-red-600'
+                            : 'text-slate-900'
                       }`}
                     >
                       {performanceMetrics.deviation > 0 ? '+' : ''}
                       {performanceMetrics.deviation.toFixed(1)}%
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {performanceMetrics.deviation > 5
                         ? t.ahead_of_schedule || 'Ahead of schedule'
                         : performanceMetrics.deviation < -5
@@ -1128,34 +1117,34 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                     </p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200">
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-200">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                         {t.predicted_completion || 'Predicted Completion'}
                       </p>
                       <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
                     </div>
-                    <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                    <p className="text-lg font-bold text-slate-900">
                       {performanceMetrics.predictedCompletion
                         ? formatDate(performanceMetrics.predictedCompletion)
                         : t.not_available || 'Not available'}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       {t.estimated_completion_date || 'Estimated completion date'}
                     </p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200/50 dark:border-slate-700/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                      <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                         {t.tasks_completed || 'Tasks Completed'}
                       </p>
                       <CheckBadgeIcon className="w-4 h-4 text-green-600" />
                     </div>
-                    <p className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="text-xl font-bold text-slate-900">
                       {activeProjectTasks?.filter((t) => t.percent_complete === 100).length || 0}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                       dari {projectOverview.totalTasks} total tasks
                     </p>
                   </div>
@@ -1163,28 +1152,28 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               </div>
 
               {/* Modern Chart Section */}
-              <div className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 border border-slate-200/50">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg">
                       <ChartPieIcon className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                      <h2 className="text-xl font-bold text-slate-900">
                         {t.project_progress_chart || 'Project Progress'}
                       </h2>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="text-sm text-slate-600">
                         Visual representation of project timeline and progress
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2 bg-white dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
+                  <div className="flex gap-2 bg-white rounded-xl p-1 border border-slate-200">
                     <button
                       onClick={() => setChartView('s-curve')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         chartView === 's-curve'
                           ? 'bg-red-600 text-white shadow-sm'
-                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       S-Curve
@@ -1194,7 +1183,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         chartView === 'gantt'
                           ? 'bg-red-600 text-white shadow-sm'
-                          : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       Gantt
@@ -1202,7 +1191,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200/50 dark:border-slate-700/50">
+                <div className="bg-white rounded-xl p-6 border border-slate-200/50">
                   <Suspense
                     fallback={
                       <div className="h-80 sm:h-96 flex items-center justify-center">
@@ -1300,7 +1289,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                             }}
                           />
                         ) : (
-                          <div className="h-full flex items-center justify-center text-slate-500 dark:text-slate-400">
+                          <div className="h-full flex items-center justify-center text-slate-500">
                             <div className="text-center">
                               <ChartPieIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
                               <p className="text-sm">
@@ -1335,11 +1324,9 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               </div>
 
               {/* Tasks Table */}
-              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
+              <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-                    {t.project_tasks}
-                  </h2>
+                  <h2 className="text-xl font-semibold text-slate-900">{t.project_tasks}</h2>
                   <div className="flex gap-2">
                     <EnhancedButton
                       onClick={handleImportClick}
@@ -1370,39 +1357,39 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 
                 {activeProjectTasks && activeProjectTasks.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-                      <thead className="bg-slate-50 dark:bg-slate-700">
+                    <table className="min-w-full divide-y divide-slate-200">
+                      <thead className="bg-slate-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                             {t.task_activity}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                             {t.task_planned_start}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                             {t.task_planned_end}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                             {t.task_percent_complete}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                             {t.actions}
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                      <tbody className="bg-white divide-y divide-slate-200">
                         {activeProjectTasks.map((task) => (
                           <tr key={task.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                               {task.activity}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                               {formatDate(task.planned_start)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                               {formatDate(task.planned_end)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                               {task.percent_complete}%
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -1412,13 +1399,13 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                                     setEditingTask(task);
                                     setFormModalOpen(true);
                                   }}
-                                  className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                  className="text-blue-600 hover:text-blue-900"
                                 >
                                   <EditIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleOpenDeleteModal(task.id)}
-                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                  className="text-red-600 hover:text-red-900"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </button>
@@ -1432,10 +1419,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 ) : (
                   <div className="text-center py-12">
                     <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-slate-400" />
-                    <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-slate-100">
-                      {t.no_tasks_found}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <h3 className="mt-2 text-sm font-medium text-slate-900">{t.no_tasks_found}</h3>
+                    <p className="mt-1 text-sm text-slate-500">
                       {t.get_started_by_creating_a_task}
                     </p>
                     <div className="mt-6">
@@ -1491,9 +1476,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   title={t.confirm_delete}
                 >
                   <div className="p-6">
-                    <p className="text-slate-700 dark:text-slate-300 mb-4">
-                      {t.confirm_delete_task_message}
-                    </p>
+                    <p className="text-slate-700 mb-4">{t.confirm_delete_task_message}</p>
                     <div className="flex justify-end gap-3">
                       <EnhancedButton
                         onClick={() => setDeleteModalOpen(false)}
@@ -1525,7 +1508,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   title={t.confirm_import}
                 >
                   <div className="p-6">
-                    <p className="text-slate-700 dark:text-slate-300 mb-4">
+                    <p className="text-slate-700 mb-4">
                       {t.confirm_import_message.replace(
                         '{count}',
                         pendingImportTasks.length.toString()
@@ -1556,7 +1539,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   <div className="p-6">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           {t.project_title}
                         </label>
                         <input
@@ -1568,11 +1551,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                               title: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-slate-100"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           {t.project_budget}
                         </label>
                         <input
@@ -1584,7 +1567,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                               budget: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-slate-100"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
                         />
                       </div>
                     </div>

@@ -85,6 +85,13 @@ const INDEXES_TO_CREATE = [
     type: 'index',
     options: { column: 'parameter_id', unique: false },
   },
+  // COP Analysis specific indexes for optimal performance
+  {
+    collection: 'ccr_footer_data',
+    name: 'idx_cop_analysis_date_param_unit',
+    type: 'index',
+    options: { columns: ['date', 'parameter_id', 'plant_unit'], unique: false },
+  },
 
   // Information Data indexes
   {

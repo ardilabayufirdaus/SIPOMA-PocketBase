@@ -7,6 +7,7 @@ import { logger } from '../utils/logger';
 import { useOfflineStatus } from './useOfflineStatus';
 import { getData as getIndexedDBData, storeData, STORES } from '../utils/indexedDB';
 import { syncPendingOperations } from '../utils/syncManager';
+import { offlineDB } from '../utils/offlineDatabase';
 
 // Define a common type for hour values to ensure consistency
 export type HourValueType = string | number | null;
@@ -335,7 +336,7 @@ export const useCcrParameterDataFlat = () => {
               filter += ` && plant_unit="${plantUnit}"`;
             }
 
-            const result = await pb.collection('ccr_parameter_data').getFullList({
+            const result = await offlineDB.getFullList('ccr_parameter_data', {
               filter: filter,
               sort: '-created',
             });

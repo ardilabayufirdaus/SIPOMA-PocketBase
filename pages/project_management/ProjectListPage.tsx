@@ -144,16 +144,16 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md">
         <LoadingSpinner />
       </div>
     );
   }
 
   const statusColorMap: { [key: string]: string } = {
-    on_track: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-    delayed: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-    completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+    on_track: 'bg-green-100 text-green-800',
+    delayed: 'bg-red-100 text-red-800',
+    completed: 'bg-blue-100 text-blue-800',
   };
 
   const tableHeaders = [
@@ -170,11 +170,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 
   return (
     <>
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-            {t.proj_list}
-          </h2>
+          <h2 className="text-xl font-semibold text-slate-800">{t.proj_list}</h2>
           <EnhancedButton
             variant="primary"
             size="sm"
@@ -186,65 +184,59 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
           </EnhancedButton>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-700">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
               <tr>
                 {tableHeaders.map((header, index) => (
                   <th
                     key={index}
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
                   >
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+            <tbody className="bg-white divide-y divide-slate-200">
               {paginatedProjects.map((p, index) => (
-                <tr
-                  key={p.id}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                <tr key={p.id} className="hover:bg-slate-50 transition-colors duration-150">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {(currentPage - 1) * 10 + index + 1}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                     {p.title}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
                     {formatBudgetCompact(p.budget || 0)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span
                       className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        statusColorMap[p.statusKey] ||
-                        'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+                        statusColorMap[p.statusKey] || 'bg-slate-100 text-slate-800'
                       }`}
                     >
                       {p.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     <div className="flex items-center gap-2">
-                      <div className="w-24 bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
+                      <div className="w-24 bg-slate-200 rounded-full h-2.5">
                         <div
                           className="bg-red-600 h-2.5 rounded-full"
                           style={{ width: `${p.progress}%` }}
                         ></div>
                       </div>
-                      <span className="font-medium text-slate-700 dark:text-slate-300">
-                        {p.progress.toFixed(0)}%
-                      </span>
+                      <span className="font-medium text-slate-700">{p.progress.toFixed(0)}%</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {p.startDate}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {p.endDate}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 text-center">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 text-center">
                     {p.totalTasks}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -308,7 +300,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
         title={t.confirm_delete || 'Confirm Delete'}
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-slate-600">
             {t.confirm_delete_project_message ||
               'Are you sure you want to delete this project? This action cannot be undone and will also delete all associated tasks.'}
           </p>

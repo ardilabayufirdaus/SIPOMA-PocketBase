@@ -74,14 +74,14 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+      <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
         <div className="space-y-6">
           {/* Basic Information Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label
                 htmlFor="date"
-                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent"
+                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
               >
                 {t.date}
               </label>
@@ -93,7 +93,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   value={formData.date}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium"
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
@@ -102,7 +102,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="unit"
-                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent"
+                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
               >
                 {t.unit}
               </label>
@@ -113,10 +113,10 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   value={formData.unit}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
                 >
                   {plantUnits.map((unit) => (
-                    <option key={unit} value={unit} className="bg-white dark:bg-slate-800">
+                    <option key={unit} value={unit} className="bg-white">
                       {unit}
                     </option>
                   ))}
@@ -124,7 +124,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                   <svg
-                    className="w-4 h-4 text-slate-600 dark:text-slate-400"
+                    className="w-4 h-4 text-slate-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -146,7 +146,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="potential_disruption"
-                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent"
+                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
               >
                 {t.potential_disruption}
               </label>
@@ -158,7 +158,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   rows={3}
                   required
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium resize-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={
                     t.potential_disruption_placeholder || 'Describe the potential disruption...'
                   }
@@ -170,7 +170,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="preventive_action"
-                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent"
+                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
               >
                 {t.preventive_action}
               </label>
@@ -182,7 +182,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   rows={3}
                   required
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium resize-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={t.preventive_action_placeholder || 'Describe preventive actions...'}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
@@ -192,7 +192,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="mitigation_plan"
-                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent"
+                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
               >
                 {t.risk_mitigation_plan}
               </label>
@@ -204,7 +204,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   rows={3}
                   required
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium resize-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={t.mitigation_plan_placeholder || 'Describe mitigation plan...'}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
@@ -214,7 +214,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
             <div className="space-y-2">
               <label
                 htmlFor="status"
-                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent"
+                className="block text-sm font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent"
               >
                 {t.status}
               </label>
@@ -225,10 +225,10 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   value={formData.status}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
                 >
                   {Object.values(RiskStatus).map((s) => (
-                    <option key={s} value={s} className="bg-white dark:bg-slate-800">
+                    <option key={s} value={s} className="bg-white">
                       {s}
                     </option>
                   ))}
@@ -236,7 +236,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                   <svg
-                    className="w-4 h-4 text-slate-600 dark:text-slate-400"
+                    className="w-4 h-4 text-slate-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -256,14 +256,14 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="backdrop-blur-sm bg-white/20 dark:bg-slate-800/20 border border-white/30 dark:border-slate-600/30 rounded-xl px-6 py-4 mt-4 shadow-lg">
+      <div className="backdrop-blur-sm bg-white/20 border border-white/30 rounded-xl px-6 py-4 mt-4 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
           <EnhancedButton
             variant="secondary"
             size="md"
             type="button"
             onClick={onCancel}
-            className="backdrop-blur-sm bg-white/50 dark:bg-slate-800/50 hover:bg-white/70 dark:hover:bg-slate-800/70 border border-slate-200/50 dark:border-slate-600/50 rounded-xl px-6 py-2 font-medium transition-all duration-300"
+            className="backdrop-blur-sm bg-white/50 hover:bg-white/70 border border-slate-200/50 rounded-xl px-6 py-2 font-medium transition-all duration-300"
             aria-label={t.cancel_button || 'Cancel risk form'}
           >
             {t.cancel_button}

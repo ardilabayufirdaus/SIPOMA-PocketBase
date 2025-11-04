@@ -92,11 +92,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
   if (success) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
           <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-8 h-8 text-green-600 dark:text-green-400"
+                className="w-8 h-8 text-green-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -109,10 +109,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-              {t.registration_success}
-            </h3>
-            <p className="text-slate-600 dark:text-slate-400">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">{t.registration_success}</h3>
+            <p className="text-slate-600">
               Permintaan registrasi Anda telah dikirim. Admin akan memproses permintaan Anda dalam
               1-2 hari kerja.
             </p>
@@ -124,11 +122,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-            Permintaan Registrasi
-          </h2>
+          <h2 className="text-xl font-semibold text-slate-900">Permintaan Registrasi</h2>
           <EnhancedButton
             onClick={() => {
               onClose();
@@ -151,32 +147,28 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Nama Lengkap
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Masukkan nama lengkap"
               aria-describedby="name-error"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Masukkan alamat email"
               aria-describedby="email-error"
             />
@@ -191,13 +183,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
               onChange={(e) => setRecaptchaToken(e.target.checked ? 'verified' : null)}
               className="w-4 h-4 text-red-600 bg-slate-100 border-slate-300 rounded focus:ring-red-500"
             />
-            <label htmlFor="recaptcha" className="text-sm text-slate-700 dark:text-slate-300">
+            <label htmlFor="recaptcha" className="text-sm text-slate-700">
               Saya bukan robot
             </label>
           </div>
 
           {error && (
-            <div className="text-red-600 dark:text-red-400 text-sm text-center" role="alert">
+            <div className="text-red-600 text-sm text-center" role="alert">
               {error}
             </div>
           )}
@@ -227,7 +219,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
           </div>
         </form>
 
-        <div className="mt-4 text-xs text-slate-500 dark:text-slate-400 text-center">
+        <div className="mt-4 text-xs text-slate-500 text-center">
           Setelah mengirim permintaan, admin akan memverifikasi dan membuat akun untuk Anda.
         </div>
       </div>

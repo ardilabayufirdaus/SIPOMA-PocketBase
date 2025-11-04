@@ -22,9 +22,8 @@ export const getButtonClasses = (
   const variantClasses = {
     primary: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     secondary:
-      'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 focus:ring-red-500 dark:bg-slate-800 dark:text-slate-100 dark:border-slate-700 dark:hover:bg-slate-700',
-    ghost:
-      'text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-red-500 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800',
+      'bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 focus:ring-red-500',
+    ghost: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-red-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   };
 
@@ -48,12 +47,12 @@ export const getCardClasses = (
   variant: 'default' | 'elevated' | 'outlined' = 'default',
   padding: 'sm' | 'md' | 'lg' = 'md'
 ): string => {
-  const baseClasses = 'bg-white dark:bg-slate-800 rounded-lg border shadow-sm';
+  const baseClasses = 'bg-white rounded-lg border shadow-sm';
 
   const variantClasses = {
-    default: 'border-slate-200 dark:border-slate-700',
-    elevated: 'border-slate-200 dark:border-slate-700 shadow-md',
-    outlined: 'border-slate-300 dark:border-slate-600',
+    default: 'border-slate-200',
+    elevated: 'border-slate-200 shadow-md',
+    outlined: 'border-slate-300',
   };
 
   const paddingClasses = {
@@ -71,7 +70,7 @@ export const getInputClasses = (
   state: 'default' | 'error' | 'success' = 'default'
 ): string => {
   const baseClasses =
-    'block w-full border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent dark:bg-slate-700 dark:text-slate-100';
+    'block w-full border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-transparent';
 
   const sizeClasses = {
     sm: 'px-3 py-2 text-sm',
@@ -80,7 +79,7 @@ export const getInputClasses = (
   };
 
   const stateClasses = {
-    default: 'border-slate-300 focus:ring-red-500 focus:border-red-500 dark:border-slate-600',
+    default: 'border-slate-300 focus:ring-red-500 focus:border-red-500',
     error: 'border-red-300 focus:ring-red-500 focus:border-red-500',
     success: 'border-green-300 focus:ring-green-500 focus:border-green-500',
   };
@@ -107,9 +106,7 @@ export const getNavLinkClasses = (
 
   return cn(
     baseClasses,
-    isActive
-      ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
-      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800'
+    isActive ? 'bg-red-100 text-red-700' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
   );
 };
 

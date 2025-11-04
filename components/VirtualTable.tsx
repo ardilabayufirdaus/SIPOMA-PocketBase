@@ -49,14 +49,14 @@ function VirtualTable<T>({
   return (
     <div
       ref={containerRef}
-      className={`overflow-auto border border-gray-300 dark:border-slate-600 rounded-md ${className}`}
+      className={`overflow-auto border border-gray-300 rounded-md ${className}`}
       style={{ height: containerHeight }}
       onScroll={handleScroll}
     >
       <div style={{ height: totalHeight, position: 'relative' }}>
         {/* Sticky Header */}
         {renderHeader && (
-          <div className="sticky top-0 z-10 bg-white dark:bg-slate-800 border-b border-gray-300 dark:border-slate-600">
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-300">
             {renderHeader()}
           </div>
         )}
@@ -139,7 +139,7 @@ export const OptimizedTableRow = React.memo(
 
     return (
       <tr
-        className={`border-t hover:bg-gray-50 dark:hover:bg-slate-700 ${className}`}
+        className={`border-t hover:bg-gray-50 ${className}`}
         onClick={handleClick}
         style={{ cursor: onRowClick ? 'pointer' : 'default' }}
       >
@@ -163,12 +163,12 @@ interface OptimizedTableHeaderProps {
 export const OptimizedTableHeader = React.memo(
   ({ fields, renderHeader, className = '' }: OptimizedTableHeaderProps) => {
     return (
-      <thead className={`bg-gray-50 dark:bg-slate-800 ${className}`}>
+      <thead className={`bg-gray-50 ${className}`}>
         <tr>
           {fields.map((field) => (
             <th
               key={field}
-              className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               {renderHeader ? renderHeader(field) : field}
             </th>
@@ -220,7 +220,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
 
   return (
     <div className="flex items-center justify-between mt-4">
-      <div className="text-sm text-gray-600 dark:text-slate-400">
+      <div className="text-sm text-gray-600">
         Page {currentPage} of {totalPages}
       </div>
 
@@ -228,7 +228,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1 text-sm border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
         </button>
@@ -241,7 +241,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
               className={`px-3 py-1 text-sm border rounded-md ${
                 currentPage === page
                   ? 'bg-blue-600 text-white border-blue-600'
-                  : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                  : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
               }`}
             >
               {page}
@@ -251,7 +251,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1 text-sm border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next
         </button>

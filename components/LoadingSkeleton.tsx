@@ -17,7 +17,7 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   lines = 1,
 }) => {
   const baseClasses =
-    'animate-pulse bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700 bg-[length:200%_100%]';
+    'animate-pulse bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 bg-[length:200%_100%]';
 
   const getVariantClasses = () => {
     switch (variant) {
@@ -78,10 +78,10 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 
 // Page Loading Component
 export const PageLoading: React.FC<{ message?: string }> = ({ message = 'Loading...' }) => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-      <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">{message}</p>
+      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <p className="mt-4 text-lg text-gray-600">{message}</p>
     </div>
   </div>
 );
@@ -89,25 +89,25 @@ export const PageLoading: React.FC<{ message?: string }> = ({ message = 'Loading
 // Table Skeleton Components
 export const UserTableSkeleton: React.FC = () => (
   <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-    <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-      <thead className="bg-gray-50 dark:bg-gray-800">
+    <table className="min-w-full divide-y divide-gray-300">
+      <thead className="bg-gray-50">
         <tr>
           {['User', 'Role', 'Department', 'Status', 'Last Active', 'Actions'].map((header, i) => (
             <th
               key={i}
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               {header}
             </th>
           ))}
         </tr>
       </thead>
-      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+      <tbody className="bg-white divide-y divide-gray-200">
         {Array.from({ length: 8 }).map((_, i) => (
-          <tr key={i} className="border-b border-gray-200 dark:border-gray-700">
+          <tr key={i} className="border-b border-gray-200">
             {Array.from({ length: 6 }).map((_, j) => (
               <td key={j} className="px-6 py-4">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-full" />
+                <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
               </td>
             ))}
           </tr>
@@ -119,15 +119,15 @@ export const UserTableSkeleton: React.FC = () => (
 
 // Card Skeleton Component
 export const CardSkeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`bg-white dark:bg-gray-800 shadow rounded-lg p-6 ${className}`}>
+  <div className={`bg-white shadow rounded-lg p-6 ${className}`}>
     <div className="mb-4">
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-3/4 mb-2" />
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-1/2" />
+      <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4 mb-2" />
+      <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2" />
     </div>
     <div className="space-y-3">
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-full" />
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-full" />
-      <div className="h-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded w-3/4" />
+      <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+      <div className="h-4 bg-gray-200 animate-pulse rounded w-full" />
+      <div className="h-4 bg-gray-200 animate-pulse rounded w-3/4" />
     </div>
   </div>
 );
@@ -152,7 +152,7 @@ export const LoadingSpinner: React.FC<{
 
 // Skeleton Presets for Common Components
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`p-6 rounded-lg border bg-white dark:bg-gray-800 ${className}`}>
+  <div className={`p-6 rounded-lg border bg-white ${className}`}>
     <LoadingSkeleton variant="text" height="24px" className="mb-4" />
     <LoadingSkeleton variant="rectangular" height="120px" className="mb-4" />
     <div className="flex space-x-2">
@@ -170,16 +170,16 @@ export const SkeletonTable: React.FC<{ rows?: number; columns?: number; classNam
   <div
     className={`overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg ${className}`}
   >
-    <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3">
+    <div className="bg-gray-50 px-4 py-3">
       <div className="grid grid-cols-4 gap-4">
         {Array.from({ length: columns }).map((_, i) => (
           <LoadingSkeleton key={i} variant="text" height="16px" />
         ))}
       </div>
     </div>
-    <div className="bg-white dark:bg-gray-800">
+    <div className="bg-white">
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div key={rowIndex} className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
+        <div key={rowIndex} className="px-4 py-4 border-t border-gray-200">
           <div className="grid grid-cols-4 gap-4">
             {Array.from({ length: columns }).map((_, colIndex) => (
               <LoadingSkeleton key={colIndex} variant="text" height="14px" />
@@ -210,7 +210,7 @@ export const SkeletonForm: React.FC<{ fields?: number; className?: string }> = (
 );
 
 export const SkeletonChart: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`p-6 bg-white dark:bg-gray-800 rounded-lg border ${className}`}>
+  <div className={`p-6 bg-white rounded-lg border ${className}`}>
     <LoadingSkeleton variant="text" height="24px" width="200px" className="mb-4" />
     <LoadingSkeleton variant="rectangular" height="300px" />
   </div>
@@ -222,10 +222,7 @@ export const SkeletonList: React.FC<{ items?: number; className?: string }> = ({
 }) => (
   <div className={`space-y-3 ${className}`}>
     {Array.from({ length: items }).map((_, i) => (
-      <div
-        key={i}
-        className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-800 rounded-lg border"
-      >
+      <div key={i} className="flex items-center space-x-3 p-3 bg-white rounded-lg border">
         <LoadingSkeleton variant="circular" width="40px" height="40px" />
         <div className="flex-1 space-y-2">
           <LoadingSkeleton variant="text" height="16px" width="60%" />

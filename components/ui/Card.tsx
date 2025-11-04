@@ -39,7 +39,7 @@ export const Card: React.FC<CardProps> = ({
   // Base classes
   const baseClasses = cn(
     'relative rounded-xl transition-all duration-300 transform',
-    'border border-gray-200/50 dark:border-gray-700/50',
+    'border border-gray-200/50',
     onClick && 'cursor-pointer hover:scale-105 active:scale-95'
   );
 
@@ -53,33 +53,27 @@ export const Card: React.FC<CardProps> = ({
 
   // Variant styles
   const variantStyles = {
-    default: cn('bg-white dark:bg-gray-800 shadow-sm', 'hover:shadow-md'),
-    elevated: cn('bg-white dark:bg-gray-800 shadow-lift', 'hover:shadow-lift-lg'),
-    outlined: cn(
-      'bg-transparent border-2 border-primary-200 dark:border-primary-700',
-      'hover:border-primary-300 dark:hover:border-primary-600'
-    ),
-    filled: cn(
-      'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900',
-      'shadow-inner'
-    ),
+    default: cn('bg-white shadow-sm', 'hover:shadow-md'),
+    elevated: cn('bg-white shadow-lift', 'hover:shadow-lift-lg'),
+    outlined: cn('bg-transparent border-2 border-primary-200', 'hover:border-primary-300'),
+    filled: cn('bg-gradient-to-br from-gray-50 to-gray-100', 'shadow-inner'),
     gradient: cn(`bg-gradient-${gradientDirection} text-white shadow-lg`, 'hover:shadow-xl'),
     glass: cn(
-      'bg-white/20 dark:bg-gray-800/20 backdrop-blur-md',
-      'border border-white/30 dark:border-gray-700/30',
-      'shadow-glass hover:bg-white/30 dark:hover:bg-gray-800/30'
+      'bg-white/20 backdrop-blur-md',
+      'border border-white/30',
+      'shadow-glass hover:bg-white/30'
     ),
     neon: cn(
       'bg-gray-900 border-2 border-primary-500',
       'shadow-glow-fire hover:shadow-neon',
       'text-white'
     ),
-    floating: cn('bg-white dark:bg-gray-800 shadow-lift-lg', 'hover:shadow-lift'),
+    floating: cn('bg-white shadow-lift-lg', 'hover:shadow-lift'),
     interactive: cn(
-      'bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900',
+      'bg-gradient-to-br from-white to-gray-50',
       'border-2 border-transparent bg-clip-padding',
       'hover:from-primary-50 hover:to-secondary-50',
-      'dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20',
+      '',
       'shadow-md hover:shadow-lift'
     ),
   };
@@ -122,9 +116,8 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   return (
     <div
       className={cn(
-        'pb-4 border-b border-gray-200/50 dark:border-gray-700/50',
-        gradient &&
-          'bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/10 dark:to-secondary-900/10 -m-6 mb-4 p-6 rounded-t-xl',
+        'pb-4 border-b border-gray-200/50',
+        gradient && 'bg-gradient-to-r from-primary-50 to-secondary-50 -m-6 mb-4 p-6 rounded-t-xl',
         className
       )}
     >
@@ -156,9 +149,8 @@ export const CardFooter: React.FC<CardFooterProps> = ({
   return (
     <div
       className={cn(
-        'pt-4 border-t border-gray-200/50 dark:border-gray-700/50',
-        gradient &&
-          'bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 -m-6 mt-4 p-6 rounded-b-xl',
+        'pt-4 border-t border-gray-200/50',
+        gradient && 'bg-gradient-to-r from-gray-50 to-gray-100 -m-6 mt-4 p-6 rounded-b-xl',
         className
       )}
     >

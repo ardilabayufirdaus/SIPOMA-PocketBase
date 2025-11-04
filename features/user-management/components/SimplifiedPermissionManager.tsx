@@ -5,7 +5,6 @@ import { EnhancedButton, EnhancedModal } from '../../../components/ui/EnhancedCo
 
 // Icons
 import ShieldCheckIcon from '../../../components/icons/ShieldCheckIcon';
-import UserIcon from '../../../components/icons/UserIcon';
 import CogIcon from '../../../components/icons/CogIcon';
 import ChartBarIcon from '../../../components/icons/ChartBarIcon';
 import ClipboardDocumentListIcon from '../../../components/icons/ClipboardDocumentListIcon';
@@ -130,15 +129,15 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
     >
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl border border-primary-200 dark:border-primary-800">
+        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-200">
           <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
             <ShieldCheckIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900">
               {language === 'id' ? 'Konfigurasi Permission' : 'Permission Configuration'}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               {user?.username
                 ? `${language === 'id' ? 'Untuk user:' : 'For user:'} ${user.username}`
                 : language === 'id'
@@ -150,7 +149,7 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
 
         {/* Role Presets */}
         <div className="space-y-3">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+          <h4 className="text-sm font-medium text-gray-900">
             {language === 'id' ? 'Preset Role' : 'Role Presets'}
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -170,7 +169,7 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
 
         {/* Permission Modules */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+          <h4 className="text-sm font-medium text-gray-900">
             {language === 'id' ? 'Permission per Modul' : 'Module Permissions'}
           </h4>
 
@@ -181,7 +180,7 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
               return (
                 <div
                   key={module.key}
-                  className="group relative overflow-hidden bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-lg"
+                  className="group relative overflow-hidden bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-primary-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -192,10 +191,10 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
                           {module.icon}
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-1">
                             {module.label}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                          <p className="text-sm text-gray-600 leading-relaxed">
                             {module.description}
                           </p>
                         </div>
@@ -209,8 +208,8 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
                             onClick={() => handlePermissionChange(module.key, level)}
                             className={`relative px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 transform hover:scale-105 ${
                               currentLevel === level
-                                ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-lg`
-                                : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`
+                                ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-lg`
+                                : `border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50`
                             }`}
                           >
                             <div className="flex items-center gap-2">
@@ -232,19 +231,19 @@ const SimplifiedPermissionManager: React.FC<SimplifiedPermissionManagerProps> = 
 
         {/* Error/Success Messages */}
         {error && (
-          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
         {successMessage && (
-          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
+          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-600">{successMessage}</p>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
           <EnhancedButton variant="outline" onClick={onClose} disabled={saving}>
             {language === 'id' ? 'Batal' : 'Cancel'}
           </EnhancedButton>

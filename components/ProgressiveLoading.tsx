@@ -62,11 +62,11 @@ export const ProgressiveLoading: React.FC<ProgressiveLoadingProps> = ({
  */
 export const ContentSkeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse space-y-4 ${className}`}>
-    <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded-md w-1/3"></div>
+    <div className="h-8 bg-slate-200 rounded-md w-1/3"></div>
     <div className="space-y-2">
-      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-full"></div>
-      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
-      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-4/6"></div>
+      <div className="h-4 bg-slate-200 rounded w-full"></div>
+      <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+      <div className="h-4 bg-slate-200 rounded w-4/6"></div>
     </div>
   </div>
 );
@@ -76,25 +76,22 @@ export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({
   cols = 4,
 }) => (
   <div className="animate-pulse">
-    <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-slate-50 dark:bg-slate-800 px-6 py-3 border-b border-slate-200 dark:border-slate-700">
+      <div className="bg-slate-50 px-6 py-3 border-b border-slate-200">
         <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
           {Array.from({ length: cols }).map((_, i) => (
-            <div key={i} className="h-4 bg-slate-200 dark:bg-slate-600 rounded"></div>
+            <div key={i} className="h-4 bg-slate-200 rounded"></div>
           ))}
         </div>
       </div>
 
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
-        <div
-          key={rowIndex}
-          className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 last:border-b-0"
-        >
+        <div key={rowIndex} className="px-6 py-4 border-b border-slate-200 last:border-b-0">
           <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
             {Array.from({ length: cols }).map((_, colIndex) => (
-              <div key={colIndex} className="h-4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+              <div key={colIndex} className="h-4 bg-slate-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -105,30 +102,28 @@ export const TableSkeleton: React.FC<{ rows?: number; cols?: number }> = ({
 
 export const ChartSkeleton: React.FC<{ height?: string }> = ({ height = 'h-64' }) => (
   <div
-    className={`animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg ${height} flex items-center justify-center`}
+    className={`animate-pulse bg-slate-100 rounded-lg ${height} flex items-center justify-center`}
   >
     <div className="text-center space-y-2">
-      <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto"></div>
-      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-24 mx-auto"></div>
+      <div className="w-12 h-12 bg-slate-200 rounded-full mx-auto"></div>
+      <div className="h-4 bg-slate-200 rounded w-24 mx-auto"></div>
     </div>
   </div>
 );
 
 export const CardSkeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div
-    className={`animate-pulse bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-6 ${className}`}
-  >
+  <div className={`animate-pulse bg-white border border-slate-200 rounded-lg p-6 ${className}`}>
     <div className="space-y-4">
       <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+        <div className="w-10 h-10 bg-slate-200 rounded-full"></div>
         <div className="space-y-2 flex-1">
-          <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+          <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+          <div className="h-3 bg-slate-200 rounded w-1/2"></div>
         </div>
       </div>
       <div className="space-y-2">
-        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full"></div>
-        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-4/5"></div>
+        <div className="h-3 bg-slate-200 rounded w-full"></div>
+        <div className="h-3 bg-slate-200 rounded w-4/5"></div>
       </div>
     </div>
   </div>
@@ -138,8 +133,8 @@ export const DashboardSkeleton: React.FC = () => (
   <div className="space-y-6">
     {/* Header */}
     <div className="animate-pulse">
-      <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/4 mb-2"></div>
-      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+      <div className="h-8 bg-slate-200 rounded w-1/4 mb-2"></div>
+      <div className="h-4 bg-slate-200 rounded w-1/2"></div>
     </div>
 
     {/* Cards Grid */}

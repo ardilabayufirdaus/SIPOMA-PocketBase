@@ -205,63 +205,51 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
         ></div>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-slate-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
           {/* Header */}
-          <div className="bg-white dark:bg-slate-900 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+          <div className="bg-white px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {data.title}
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">{data.title}</h3>
                 {data.description && (
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                    {data.description}
-                  </p>
+                  <p className="mt-1 text-sm text-gray-600">{data.description}</p>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <XMarkIcon className="w-5 h-5 text-gray-500" />
               </button>
             </div>
           </div>
 
           {/* Content */}
-          <div className="bg-white dark:bg-slate-900 px-6 py-4 max-h-96 overflow-y-auto">
+          <div className="bg-white px-6 py-4 max-h-96 overflow-y-auto">
             <div className="space-y-6">
               {/* Metrics Grid */}
               {data.metrics && data.metrics.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                    Key Metrics
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Key Metrics</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.metrics.map((metric, index) => (
-                      <div key={index} className="bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                          {metric.label}
-                        </div>
+                      <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-xs font-medium text-gray-600">{metric.label}</div>
                         <div className="flex items-baseline space-x-1 mt-1">
-                          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                          <div className="text-lg font-semibold text-gray-900">
                             {typeof metric.value === 'string' || typeof metric.value === 'number'
                               ? String(metric.value)
                               : '[Invalid Value]'}
                           </div>
                           {metric.unit && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {metric.unit}
-                            </div>
+                            <div className="text-xs text-gray-500">{metric.unit}</div>
                           )}
                         </div>
                         {metric.trend && (
                           <div className="flex items-center mt-1">
                             <span
                               className={`text-xs font-medium ${
-                                metric.trend.isPositive
-                                  ? 'text-green-600 dark:text-green-400'
-                                  : 'text-red-600 dark:text-red-400'
+                                metric.trend.isPositive ? 'text-green-600' : 'text-red-600'
                               }`}
                             >
                               metric.trend.value
@@ -277,10 +265,8 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
               {/* Chart */}
               {data.chartData && data.chartData.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                    Trend Analysis
-                  </h4>
-                  <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Trend Analysis</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="h-64">{renderChart()}</div>
                   </div>
                 </div>
@@ -289,20 +275,16 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
               {/* Details List */}
               {data.details && data.details.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                    Detailed Information
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Detailed Information</h4>
                   <div className="space-y-2">
                     {data.details.map((detail, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-slate-800 rounded-lg"
+                        className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
                       >
-                        <span className="text-sm text-gray-600 dark:text-gray-300">
-                          {detail.label}
-                        </span>
+                        <span className="text-sm text-gray-600">{detail.label}</span>
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          <span className="text-sm font-medium text-gray-900">
                             {typeof detail.value === 'string' || typeof detail.value === 'number'
                               ? String(detail.value)
                               : '[Invalid Value]'}
@@ -331,7 +313,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
 
           {/* Actions */}
           {data.actions && data.actions.length > 0 && (
-            <div className="bg-gray-50 dark:bg-slate-800 px-6 py-4 flex flex-wrap gap-3">
+            <div className="bg-gray-50 px-6 py-4 flex flex-wrap gap-3">
               {data.actions.map((action, index) => (
                 <button
                   key={index}
@@ -341,7 +323,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                       ? 'bg-red-600 hover:bg-red-700 text-white'
                       : action.variant === 'danger'
                         ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-900 dark:text-white'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
                   }`}
                 >
                   {action.label}

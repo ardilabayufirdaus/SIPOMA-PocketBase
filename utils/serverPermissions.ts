@@ -272,14 +272,14 @@ export const withPermission = <P extends object>(
           React.createElement(
             'h1',
             {
-              className: 'text-2xl font-bold text-gray-700 dark:text-gray-200',
+              className: 'text-2xl font-bold text-gray-700',
             },
             '403 - Access Denied'
           ),
           React.createElement(
             'p',
             {
-              className: 'mt-2 text-gray-600 dark:text-gray-300',
+              className: 'mt-2 text-gray-600',
             },
             'You do not have permission to access this resource'
           )

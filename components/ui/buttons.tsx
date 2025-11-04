@@ -117,61 +117,61 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
       'hover:from-primary-700 hover:to-primary-800 hover:shadow-lg hover:-translate-y-0.5',
       'focus:ring-primary-500/50 focus:shadow-primary-500/25',
       'shadow-primary-600/25',
-      'dark:from-primary-700 dark:to-primary-800 dark:hover:from-primary-800 dark:hover:to-primary-900'
+      ''
     ),
     secondary: cn(
       'bg-gradient-to-r from-secondary-600 to-secondary-700 text-white',
       'hover:from-secondary-700 hover:to-secondary-800 hover:shadow-lg hover:-translate-y-0.5',
       'focus:ring-secondary-500/50 focus:shadow-secondary-500/25',
       'shadow-secondary-600/25',
-      'dark:from-secondary-700 dark:to-secondary-800 dark:hover:from-secondary-800 dark:hover:to-secondary-900'
+      ''
     ),
     success: cn(
       'bg-gradient-to-r from-success-600 to-success-700 text-white',
       'hover:from-success-700 hover:to-success-800 hover:shadow-lg hover:-translate-y-0.5',
       'focus:ring-success-500/50 focus:shadow-success-500/25',
       'shadow-success-600/25',
-      'dark:from-success-700 dark:to-success-800 dark:hover:from-success-800 dark:hover:to-success-900'
+      ''
     ),
     warning: cn(
       'bg-gradient-to-r from-warning-500 to-warning-600 text-neutral-900',
       'hover:from-warning-600 hover:to-warning-700 hover:shadow-lg hover:-translate-y-0.5',
       'focus:ring-warning-500/50 focus:shadow-warning-500/25',
       'shadow-warning-500/25',
-      'dark:from-warning-600 dark:to-warning-700 dark:hover:from-warning-700 dark:hover:to-warning-800'
+      ''
     ),
     error: cn(
       'bg-gradient-to-r from-error-600 to-error-700 text-white',
       'hover:from-error-700 hover:to-error-800 hover:shadow-lg hover:-translate-y-0.5',
       'focus:ring-error-500/50 focus:shadow-error-500/25',
       'shadow-error-600/25',
-      'dark:from-error-700 dark:to-error-800 dark:hover:from-error-800 dark:hover:to-error-900'
+      ''
     ),
     gradient: cn(
       'bg-gradient-to-r from-primary-500 via-secondary-500 to-success-500 text-white',
       'hover:from-primary-600 hover:via-secondary-600 hover:to-success-600 hover:shadow-xl hover:-translate-y-1',
       'focus:ring-primary-500/50 focus:shadow-primary-500/25',
       'shadow-lg',
-      'dark:from-primary-600 dark:via-secondary-600 dark:to-success-600'
+      ''
     ),
     glass: cn(
       'bg-white/10 backdrop-blur-md border border-white/20 text-white',
       'hover:bg-white/20 hover:border-white/30 hover:shadow-xl hover:-translate-y-0.5',
       'focus:ring-white/50 focus:shadow-white/25',
       'shadow-lg',
-      'dark:bg-black/10 dark:border-white/10 dark:text-white dark:hover:bg-black/20'
+      ''
     ),
     ghost: cn(
       'bg-transparent text-neutral-700 border border-neutral-300',
       'hover:bg-neutral-50 hover:border-neutral-400 hover:shadow-md hover:-translate-y-0.5',
       'focus:ring-neutral-500/50 focus:shadow-neutral-500/25',
-      'dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-800 dark:hover:border-neutral-500'
+      ''
     ),
     outline: cn(
       'bg-transparent border-2 border-primary-600 text-primary-700',
       'hover:bg-primary-50 hover:border-primary-700 hover:shadow-md hover:-translate-y-0.5',
       'focus:ring-primary-500/50 focus:shadow-primary-500/25',
-      'dark:border-primary-400 dark:text-primary-300 dark:hover:bg-primary-900/20'
+      ''
     ),
   };
 

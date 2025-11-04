@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -70,7 +69,7 @@ export const NavigationItem = forwardRef<HTMLButtonElement, IconButtonProps>(
 
     return (
       <>
-        <motion.button
+        <button
           ref={ref}
           onClick={onClick}
           onKeyDown={handleKeyDown}
@@ -85,40 +84,31 @@ export const NavigationItem = forwardRef<HTMLButtonElement, IconButtonProps>(
           aria-expanded={hasDropdown ? isExpanded : undefined}
           aria-haspopup={hasDropdown ? 'menu' : undefined}
           tabIndex={0}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
         >
-          <motion.div
+          <div
             className={`transition-transform duration-200 ${
               isActive ? 'scale-110' : 'group-hover:scale-105'
             }`}
-            animate={{ scale: isActive ? 1.1 : 1 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             {icon}
-          </motion.div>
-        </motion.button>
+          </div>
+        </button>
 
-        <AnimatePresence>
-          {showTooltip && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="fixed z-50 px-2 py-1 bg-slate-800 dark:bg-slate-700 text-white text-xs rounded shadow-lg pointer-events-none whitespace-nowrap"
-              style={{
-                top: `${getTooltipPosition().top}px`,
-                left: `${getTooltipPosition().left}px`,
-                transform:
-                  tooltipPosition === 'right' || tooltipPosition === 'left'
-                    ? 'translateY(-50%)'
-                    : 'translateX(-50%) translateY(-100%)',
-              }}
-            >
-              {label}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {showTooltip && (
+          <div
+            className="fixed z-50 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg pointer-events-none whitespace-nowrap"
+            style={{
+              top: `${getTooltipPosition().top}px`,
+              left: `${getTooltipPosition().left}px`,
+              transform:
+                tooltipPosition === 'right' || tooltipPosition === 'left'
+                  ? 'translateY(-50%)'
+                  : 'translateX(-50%) translateY(-100%)',
+            }}
+          >
+            {label}
+          </div>
+        )}
       </>
     );
   }
@@ -187,12 +177,9 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
   }, [onClose, items, focusedIndex, onSelect]);
 
   return (
-    <motion.div
+    <div
       ref={dropdownRef}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      className="fixed z-50 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl py-2 min-w-52 max-w-64 backdrop-blur-sm"
+      className="fixed z-50 bg-white border border-gray-200 rounded-xl shadow-xl py-2 min-w-52 max-w-64 backdrop-blur-sm"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -201,32 +188,26 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
       aria-label="Navigation submenu"
     >
       {items.map((item, _index) => (
-        <motion.button
+        <button
           key={item.key}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: _index * 0.05 }}
           onClick={() => {
             onSelect(item);
             onClose();
           }}
-          className={`w-full px-4 py-3 text-left hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 flex items-center space-x-4 transition-all duration-200 group ${
-            _index === focusedIndex ? 'bg-red-50 dark:bg-red-500/10' : ''
+          className={`w-full px-4 py-3 text-left hover:bg-red-50 hover:text-red-600 flex items-center space-x-4 transition-all duration-200 group ${
+            _index === focusedIndex ? 'bg-red-50' : ''
           }`}
           role="menuitem"
           tabIndex={_index === focusedIndex ? 0 : -1}
         >
-          <motion.div
-            className="flex-shrink-0 w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors duration-200"
-            whileHover={{ rotate: 5 }}
-          >
+          <div className="flex-shrink-0 w-5 h-5 text-slate-500 group-hover:text-red-500 transition-colors duration-200">
             {item.icon}
-          </motion.div>
-          <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 font-medium truncate transition-colors duration-200">
+          </div>
+          <span className="text-sm text-slate-700 group-hover:text-slate-900 font-medium truncate transition-colors duration-200">
             {item.label}
           </span>
-        </motion.button>
+        </button>
       ))}
-    </motion.div>
+    </div>
   );
 };

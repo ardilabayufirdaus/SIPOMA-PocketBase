@@ -1836,14 +1836,14 @@ const WhatsAppGroupReportPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <div className="max-w-6xl mx-auto py-8 px-6">
+    <div className="min-h-screen bg-slate-50">
+      <div className="w-full mx-auto py-8 px-6">
         {/* Header */}
         <Card variant="gradient" gradientDirection="ocean" padding="lg" className="mb-8 text-white">
           <div className="flex items-center space-x-6">
             <div className="bg-white/20 backdrop-blur-sm p-4 rounded-xl">
               <svg
-                className="w-10 h-10 text-blue-600 dark:text-blue-400"
+                className="w-10 h-10 text-blue-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1857,10 +1857,8 @@ const WhatsAppGroupReportPage: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">
-                WhatsApp Group Report
-              </h1>
-              <p className="text-lg text-slate-600 dark:text-slate-400 mt-2">
+              <h1 className="text-4xl font-bold text-slate-900">WhatsApp Group Report</h1>
+              <p className="text-lg text-slate-600 mt-2">
                 Generate daily production reports for plant operations
               </p>
             </div>
@@ -1868,20 +1866,16 @@ const WhatsAppGroupReportPage: React.FC = () => {
         </Card>
 
         {/* Controls Section */}
-        <Card
-          variant="glass"
-          padding="lg"
-          className="mb-8 backdrop-blur-xl bg-white/90 dark:bg-gray-800/90"
-        >
+        <Card variant="glass" padding="lg" className="mb-8 backdrop-blur-xl bg-white/90">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             {/* Date Selection */}
             <div className="space-y-3">
               <label
                 htmlFor="date-select"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center"
+                className="block text-sm font-semibold text-slate-700 flex items-center"
               >
                 <svg
-                  className="w-5 h-5 mr-3 text-blue-500 dark:text-blue-400"
+                  className="w-5 h-5 mr-3 text-blue-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -1900,7 +1894,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm hover:shadow-md"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900 shadow-sm hover:shadow-md"
               />
             </div>{' '}
             {/* Plant Category Selection */}
@@ -2254,15 +2248,13 @@ const WhatsAppGroupReportPage: React.FC = () => {
           <Card
             variant="floating"
             padding="lg"
-            className={`transition-all duration-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 ${
+            className={`transition-all duration-500 bg-gradient-to-br from-green-50 to-emerald-50 ${
               reportGenerated ? 'ring-2 ring-emerald-400 ring-opacity-50 shadow-glow-emerald' : ''
             }`}
           >
             <div
-              className={`bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700 -m-8 mb-8 px-8 py-6 transition-all duration-300 ${
-                reportGenerated
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600'
-                  : ''
+              className={`bg-gradient-to-r from-green-600 to-emerald-600 -m-8 mb-8 px-8 py-6 transition-all duration-300 ${
+                reportGenerated ? 'bg-gradient-to-r from-green-500 to-emerald-500' : ''
               }`}
             >
               <div className="flex items-center justify-between">
@@ -2323,8 +2315,8 @@ const WhatsAppGroupReportPage: React.FC = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-6 border border-slate-200 dark:border-slate-700">
-                <div className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-mono">
+              <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                <div className="text-sm text-slate-800 leading-relaxed font-mono">
                   {renderFormattedReport(generatedReport)}
                 </div>
               </div>
@@ -2371,7 +2363,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
         )}
 
         {/* Footer */}
-        <div className="text-center text-slate-500 dark:text-slate-400 text-sm mt-8">
+        <div className="text-center text-slate-500 text-sm mt-8">
           <p>SIPOMA - Production Monitoring System</p>
         </div>
       </div>

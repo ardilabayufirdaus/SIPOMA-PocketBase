@@ -8,40 +8,29 @@ import { designSystem } from './designSystem';
 // Typography color tokens untuk konsistensi
 export const typographyColors = {
   // Primary text colors (high contrast)
-  primary: {
-    light: 'text-slate-900', // #0f172a - 21:1 contrast on white
-    dark: 'text-slate-100', // #f1f5f9 - 19.2:1 contrast on dark
-  },
+  primary: 'text-slate-900', // #0f172a - 21:1 contrast on white
 
   // Secondary text colors (medium contrast)
-  secondary: {
-    light: 'text-slate-600', // #475569 - 8.6:1 contrast on white
-    dark: 'text-slate-400', // #94a3b8 - 8.9:1 contrast on dark
-  },
+  secondary: 'text-slate-600', // #475569 - 8.6:1 contrast on white
 
   // Tertiary text colors (low contrast, use sparingly)
   tertiary: {
     light: 'text-slate-500', // #64748b - 6.1:1 contrast on white
-    dark: 'text-slate-500', // #64748b - 6.8:1 contrast on dark
   },
 
   // Accent colors (for highlights, links, etc.)
   accent: {
     primary: {
       light: 'text-red-600', // #dc2626 - 5.2:1 contrast on white
-      dark: 'text-red-400', // #f87171 - 4.6:1 contrast on dark
     },
     success: {
       light: 'text-green-700', // #15803d - 5.9:1 contrast on white
-      dark: 'text-green-400', // #4ade80 - 5.1:1 contrast on dark
     },
     warning: {
       light: 'text-amber-700', // #b45309 - 4.7:1 contrast on white
-      dark: 'text-amber-400', // #fbbf24 - 4.3:1 contrast on dark
     },
     error: {
       light: 'text-red-700', // #b91c1c - 5.9:1 contrast on white
-      dark: 'text-red-400', // #f87171 - 4.6:1 contrast on dark
     },
   },
 
@@ -50,22 +39,18 @@ export const typographyColors = {
     link: {
       default: {
         light: 'text-red-600 hover:text-red-700',
-        dark: 'text-red-400 hover:text-red-300',
       },
       visited: {
         light: 'text-red-800',
-        dark: 'text-red-500',
       },
     },
     button: {
       primary: 'text-white',
       secondary: {
         light: 'text-slate-900',
-        dark: 'text-slate-100',
       },
       ghost: {
         light: 'text-slate-700 hover:text-slate-900',
-        dark: 'text-slate-300 hover:text-slate-100',
       },
     },
   },
@@ -74,19 +59,15 @@ export const typographyColors = {
   status: {
     success: {
       light: 'text-green-800',
-      dark: 'text-green-300',
     },
     warning: {
       light: 'text-amber-800',
-      dark: 'text-amber-300',
     },
     error: {
       light: 'text-red-800',
-      dark: 'text-red-300',
     },
     info: {
       light: 'text-blue-800',
-      dark: 'text-blue-300',
     },
   },
 
@@ -121,7 +102,7 @@ export const typographyScale = {
   // UI text - optimized untuk interface elements
   ui: {
     label: 'text-sm font-medium leading-5', // 1.25 line-height untuk labels
-    caption: 'text-xs text-slate-500 dark:text-slate-400 leading-4', // 1rem line-height
+    caption: 'text-xs text-slate-500 leading-4', // 1rem line-height
     overline: 'text-xs uppercase tracking-wider font-semibold leading-4', // 1rem line-height
   },
 
@@ -141,7 +122,7 @@ export const typographyScale = {
     },
     ui: {
       label: 'text-xs sm:text-sm lg:text-base font-medium leading-5',
-      caption: 'text-xs sm:text-sm leading-4 text-slate-500 dark:text-slate-400',
+      caption: 'text-xs sm:text-sm leading-4 text-slate-500',
       overline: 'text-xs sm:text-sm uppercase tracking-wider font-semibold leading-4',
     },
   },
@@ -176,7 +157,7 @@ export const getTextColor = (
   }
 
   // Fallback
-  return theme === 'light' ? 'text-slate-900' : 'text-slate-100';
+  return 'text-slate-900';
 };
 
 export const getHeadingClasses = (
@@ -186,7 +167,7 @@ export const getHeadingClasses = (
 ): string => {
   const scale = `h${level}` as keyof typeof typographyScale;
   const baseClasses = (typographyScale as any)[scale];
-  const colorClasses = getTextColor(color, undefined, theme);
+  const colorClasses = getTextColor(color, undefined);
 
   return `${baseClasses} ${colorClasses}`;
 };
@@ -197,7 +178,7 @@ export const getBodyClasses = (
   theme: 'light' | 'dark' = 'light'
 ): string => {
   const baseClasses = typographyScale.body[size];
-  const colorClasses = getTextColor(color, undefined, theme);
+  const colorClasses = getTextColor(color, undefined);
 
   return `${baseClasses} ${colorClasses}`;
 };
@@ -206,14 +187,14 @@ export const getLinkClasses = (
   state: 'default' | 'visited' = 'default',
   theme: 'light' | 'dark' = 'light'
 ): string => {
-  return getTextColor('interactive', `link.${state}`, theme);
+  return getTextColor('interactive', `link.${state}`);
 };
 
 export const getStatusClasses = (
   status: 'success' | 'warning' | 'error' | 'info',
   theme: 'light' | 'dark' = 'light'
 ): string => {
-  return getTextColor('status', status, theme);
+  return getTextColor('status', status);
 };
 
 export const getDataClasses = (
@@ -221,7 +202,7 @@ export const getDataClasses = (
   theme: 'light' | 'dark' = 'light'
 ): string => {
   const baseClasses = typographyScale.data[type];
-  const colorClasses = getTextColor('primary', undefined, theme);
+  const colorClasses = getTextColor('primary', undefined);
 
   return `${baseClasses} ${colorClasses}`;
 };

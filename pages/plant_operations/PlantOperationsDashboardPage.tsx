@@ -395,14 +395,12 @@ const PlantOperationsDashboardPage: React.FC<PlantOperationsDashboardPageProps> 
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-3 mb-6"
       >
-        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-          <BarChart3Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <BarChart3Icon className="w-6 h-6 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Plant Operations Dashboard
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-gray-900">Plant Operations Dashboard</h1>
+          <p className="text-sm text-gray-600">
             Monitor plant availability and performance metrics
           </p>
         </div>

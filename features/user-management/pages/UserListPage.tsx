@@ -98,12 +98,12 @@ const UserListPage: React.FC = () => {
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
           <div className="min-h-[36px] flex items-center">
             {isLoading ? (
-              <div className="animate-pulse h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded mt-1"></div>
+              <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1"></div>
             ) : (
-              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+              <p className="text-3xl font-bold text-gray-900 mt-1">
                 {typeof value === 'number' ? formatIndonesianNumber(value) : value}
               </p>
             )}
@@ -111,9 +111,9 @@ const UserListPage: React.FC = () => {
           {subtitle && (
             <div className="min-h-[16px]">
               {isLoading ? (
-                <div className="animate-pulse h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mt-1"></div>
+                <div className="animate-pulse h-4 w-24 bg-gray-200 rounded mt-1"></div>
               ) : (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+                <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
               )}
             </div>
           )}
@@ -124,12 +124,12 @@ const UserListPage: React.FC = () => {
         <div
           className={`p-3 rounded-full ${
             color === 'primary'
-              ? 'bg-blue-100 dark:bg-blue-900/20'
+              ? 'bg-blue-100'
               : color === 'success'
-                ? 'bg-green-100 dark:bg-green-900/20'
+                ? 'bg-green-100'
                 : color === 'warning'
-                  ? 'bg-yellow-100 dark:bg-yellow-900/20'
-                  : 'bg-red-100 dark:bg-red-900/20'
+                  ? 'bg-yellow-100'
+                  : 'bg-red-100'
           }`}
         >
           <Icon
@@ -153,10 +153,10 @@ const UserListPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-gray-900">
             {t.userManagement || 'User Management'}
           </h1>
-          <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-lg text-gray-600">
             {t.user_list_description || 'Manage and view all users in the system'}
           </p>
         </div>
@@ -259,7 +259,7 @@ const UserListPage: React.FC = () => {
                 {stats.recentUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800"
+                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white"
                     title={user.username}
                   >
                     {user.avatar ? (
@@ -269,7 +269,7 @@ const UserListPage: React.FC = () => {
                         className="h-full w-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">
+                      <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-700 rounded-full">
                         {user.username.charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -282,7 +282,7 @@ const UserListPage: React.FC = () => {
       </div>
 
       {/* User Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <UserTable key={refreshKey} onEditUser={handleEditUser} onAddUser={handleAddUser} />
       </div>
 

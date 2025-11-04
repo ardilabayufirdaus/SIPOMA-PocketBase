@@ -56,10 +56,10 @@ const PermissionManagerDemo: React.FC = () => {
               <ShieldCheckIcon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-bold text-gray-900">
                 Simplified Permission Manager Demo
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600">
                 Demo of the new simplified permission management system
               </p>
             </div>
@@ -67,30 +67,26 @@ const PermissionManagerDemo: React.FC = () => {
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">Dashboard</div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-gray-900">Dashboard</div>
                 <div className="text-lg font-bold text-primary-600">
                   {getPermissionDisplay(currentPermissions.dashboard)}
                 </div>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  Plant Operations
-                </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-gray-900">Plant Operations</div>
                 <div className="text-lg font-bold text-primary-600">
                   {getPermissionDisplay(currentPermissions.plant_operations)}
                 </div>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">Inspection</div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-gray-900">Inspection</div>
                 <div className="text-lg font-bold text-primary-600">
                   {getPermissionDisplay(currentPermissions.inspection)}
                 </div>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  Project Management
-                </div>
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-gray-900">Project Management</div>
                 <div className="text-lg font-bold text-primary-600">
                   {getPermissionDisplay(currentPermissions.project_management)}
                 </div>

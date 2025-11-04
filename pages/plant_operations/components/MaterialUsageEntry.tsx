@@ -35,20 +35,45 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   selectedCategory,
   disabled: _disabled = false,
 }) => {
-  const { saveMaterialUsageSilent, getDataForUnitAndDate, loading, error } = useCcrMaterialUsage();
+  const { saveMaterialUsageSilent, loading, error } = useCcrMaterialUsage();
   const { getFooterDataForDate } = useCcrFooterData();
   const { records: parameterSettings } = useParameterSettings();
 
   const [materialData, setMaterialData] = useState<Record<string, MaterialUsageData>>({});
   const materialUpdateInProgress = useRef(new Set<string>());
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Cleanup effect
   useEffect(() => {
     return () => {
-      // Clear any pending updates
+      // Clear any pending updates and auto-save timeouts
       materialUpdateInProgress.current.clear();
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
     };
   }, []);
+
+  // Auto-save function with debouncing
+  const autoSaveMaterialUsage = useCallback(
+    async (data: Record<string, MaterialUsageData>) => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+
+      autoSaveTimeoutRef.current = setTimeout(async () => {
+        try {
+          const savePromises = Object.values(data).map((materialData) =>
+            saveMaterialUsageSilent(materialData)
+          );
+          await Promise.all(savePromises);
+        } catch {
+          // Silent error handling for auto-save
+        }
+      }, 2000); // Debounce for 2 seconds
+    },
+    [saveMaterialUsageSilent]
+  );
 
   // Mapping from material key to counter feeder parameter name
   const materialToParameterMap: Record<string, string> = {
@@ -115,22 +140,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
       }
 
       try {
-        // First, try to load existing material usage data from database
-        const existingData = await getDataForUnitAndDate(selectedDate, selectedUnit);
-
-        if (existingData && existingData.length > 0) {
-          // Convert existing data to the expected format
-          const dataMap: Record<string, MaterialUsageData> = {};
-          existingData.forEach((item) => {
-            if (item.shift) {
-              dataMap[item.shift] = item;
-            }
-          });
-          setMaterialData(dataMap);
-          return;
-        }
-
-        // If no existing data, calculate from footer data (only if parameter settings are available)
+        // Always calculate from footer data for real-time display
+        // Only use parameter settings if available
         if (parameterSettings.length === 0) {
           setMaterialData({});
           return;
@@ -139,20 +150,24 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
         // Get footer data for counter feeders - use category as plant_unit since footer data is stored by category
         const footerData = await getFooterDataForDate(selectedDate, selectedCategory);
 
-        // Calculate material usage from counters for each shift
+        // If footer data is empty, show empty form
+        if (!footerData || footerData.length === 0) {
+          setMaterialData({});
+          return;
+        }
+
+        // Calculate material usage from counters for each shift (real-time)
         const dataMap: Record<string, MaterialUsageData> = {};
 
-        // Auto-save all calculated data
-        const savePromises = shifts.map(async (shift) => {
+        shifts.forEach((shift) => {
           const materialUsage = calculateMaterialUsageFromCounters(footerData, shift.key);
           dataMap[shift.key] = materialUsage;
-          await saveMaterialUsageSilent(materialUsage);
         });
 
-        // Wait for all saves to complete
-        await Promise.all(savePromises);
-
         setMaterialData(dataMap);
+
+        // Auto-save the calculated data
+        autoSaveMaterialUsage(dataMap);
       } catch {
         // Error loading material usage data
         setMaterialData({});
@@ -166,9 +181,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     selectedCategory,
     parameterSettings,
     getFooterDataForDate,
-    getDataForUnitAndDate,
     calculateMaterialUsageFromCounters,
-    saveMaterialUsageSilent,
+    autoSaveMaterialUsage,
   ]);
 
   const shifts = [
@@ -203,22 +217,11 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     }
   }, []);
 
-  const formatInputValue = (value: number | string | null | undefined): string => {
-    if (value === null || value === undefined || value === '') {
-      return '';
-    }
-    const numValue = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(numValue) || numValue === 0) return '';
-    return formatNumberWithPrecision(numValue, 1);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
         <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-3 text-slate-600 dark:text-slate-400 font-medium">
-          Loading material usage data...
-        </span>
+        <span className="ml-3 text-slate-600 font-medium">Loading material usage data...</span>
       </div>
     );
   }
@@ -226,17 +229,38 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   if (error) {
     return (
       <div className="text-center py-8">
-        <div className="text-red-600 dark:text-red-400 mb-2">Error loading material usage data</div>
-        <div className="text-sm text-slate-500 dark:text-slate-400">{error.message}</div>
+        <div className="text-red-600 mb-2">Error loading material usage data</div>
+        <div className="text-sm text-slate-500">{error.message}</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      {/* Real-time Info */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-green-700">
+              <strong>Real-time Auto-Save:</strong> Material usage dihitung dari counter feeder data
+              dan otomatis tersimpan setiap 2 detik ketika ada perubahan.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Material Usage Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
-        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-slate-200/50 shadow-inner">
+        <table className="min-w-full divide-y divide-slate-200 border border-slate-200">
           <thead className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
             {/* Header Row 1 */}
             <tr>
@@ -273,7 +297,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm divide-y divide-slate-200/50 dark:divide-slate-700/50">
+          <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-slate-200/50">
             {shifts.map((shift, shiftIndex) => {
               const shiftData = materialData[shift.key];
               const rowTotal = materialFields.reduce((sum, field) => {
@@ -285,7 +309,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                   key={shift.key}
                   className={shiftIndex % 2 === 0 ? 'bg-slate-50/30' : 'bg-white/30'}
                 >
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100 border-r">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900 border-r">
                     {shift.label}
                   </td>
                   {materialFields.map((field, fieldIndex) => {
@@ -303,16 +327,16 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                             setInputRef(refKey, el);
                           }}
                           type="text"
-                          value={formatInputValue(value)}
+                          value={value === 0 ? '' : formatNumberWithPrecision(value, 1)}
                           disabled={true}
                           readOnly
-                          className="w-full px-2 py-1 text-sm text-center bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded focus:outline-none focus:ring-0 cursor-not-allowed"
-                          placeholder="Auto-calculated"
+                          className="w-full px-2 py-1 text-sm text-center bg-slate-100 border border-slate-300 rounded focus:outline-none focus:ring-0 cursor-not-allowed"
+                          placeholder="Real-time calculated"
                         />
                       </td>
                     );
                   })}
-                  <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 text-center">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 text-center">
                     {formatNumber(rowTotal)}
                   </td>
                 </tr>
@@ -320,8 +344,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             })}
 
             {/* Footer Row - Totals */}
-            <tr className="bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 border-t-2 border-purple-300 dark:border-purple-600">
-              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 border-r">
+            <tr className="bg-gradient-to-r from-purple-100 to-indigo-100 border-t-2 border-purple-300">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 border-r">
                 Total
               </td>
               {materialFields.map((field, fieldIndex) => {
@@ -333,13 +357,13 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                 return (
                   <td
                     key={field.key}
-                    className={`px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 text-center border-r ${fieldIndex < materialFields.length - 1 ? 'border-r' : ''}`}
+                    className={`px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 text-center border-r ${fieldIndex < materialFields.length - 1 ? 'border-r' : ''}`}
                   >
                     {formatNumber(columnTotal)}
                   </td>
                 );
               })}
-              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-slate-100 text-center">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 text-center">
                 {formatNumber(
                   materialFields.reduce((totalSum, field) => {
                     return (

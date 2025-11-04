@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
-import { Page, Language } from '../App';
+import { Page } from '../App';
 import { useIsMobile } from '../hooks/useIsMobile';
 import HomeIcon from './icons/HomeIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
@@ -10,14 +10,11 @@ import ChartBarIcon from './icons/ChartBarIcon';
 import EditIcon from './icons/EditIcon';
 import { isAdminRole, isSuperAdmin } from '../utils/roleHelpers';
 import PresentationChartLineIcon from './icons/PresentationChartLineIcon';
-import ArrowTrendingUpIcon from './icons/ArrowTrendingUpIcon';
 import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
 import BuildingLibraryIcon from './icons/BuildingLibraryIcon';
 import ArchiveBoxIcon from './icons/ArchiveBoxIcon';
-import TruckIcon from './icons/TruckIcon';
 import ChartPieIcon from './icons/ChartPieIcon';
 import Bars4Icon from './icons/Bars4Icon';
-import CogIcon from './icons/CogIcon';
 import BellIcon from './icons/BellIcon';
 import ClockIcon from './icons/ClockIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
@@ -28,16 +25,13 @@ import { usePermissions } from '../utils/permissions';
 import { User } from '../types';
 
 // Import modular components
-import { NavigationItem, FloatingDropdown, FloatingDropdownItem } from './NavigationItem';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { NavigationItem, FloatingDropdown } from './NavigationItem';
 import { SidebarHeader } from './SidebarHeader';
 
 interface SidebarProps {
   currentPage: Page;
   onNavigate: (page: Page, subPage?: string) => void;
   t: Record<string, string>;
-  currentLanguage: Language;
-  onLanguageChange: (lang: Language) => void;
   isOpen: boolean;
   onClose?: () => void;
   currentUser?: User | null;
@@ -47,8 +41,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   currentPage,
   onNavigate,
   t,
-  currentLanguage,
-  onLanguageChange,
   isOpen,
   onClose,
   currentUser,
@@ -88,10 +80,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         {
           key: 'op_monitoring',
           icon: <PresentationChartLineIcon className={iconClass} />,
-        },
-        {
-          key: 'op_forecast',
-          icon: <ArrowTrendingUpIcon className={iconClass} />,
         },
         {
           key: 'op_cop_analysis',
@@ -249,7 +237,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
   const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
-  const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseEnter = useCallback(() => {
     // Tooltip will be handled by individual buttons
@@ -374,17 +361,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             />
           )}
 
-          {/* Settings - Accessible to all users except Guest */}
-          {currentUser?.role !== 'Guest' && (
-            <NavigationItem
-              ref={settingsButtonRef}
-              icon={<CogIcon className={iconClass} />}
-              label={t.header_settings}
-              isActive={currentPage === 'settings'}
-              onClick={() => handleNavigate('settings')}
-            />
-          )}
-
           {/* User Management - Only for Super Admin */}
           {currentUser?.role === 'Super Admin' && (
             <NavigationItem
@@ -395,16 +371,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => handleDropdownToggle('users', usersButtonRef)}
               hasDropdown={true}
               isExpanded={activeDropdown === 'users'}
-            />
-          )}
-
-          {/* Connection Tester - Only for Super Admin */}
-          {currentUser?.role === 'Super Admin' && (
-            <NavigationItem
-              icon={<CogIcon className={iconClass} />}
-              label="Connection Tester"
-              isActive={currentPage === 'connection-test'}
-              onClick={() => handleNavigate('connection-test')}
             />
           )}
 
@@ -420,12 +386,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
         </nav>
 
-        {/* Language Switcher & Footer */}
+        {/* Footer */}
         <div className="px-3 py-4 border-t border-slate-700 bg-slate-800/50">
-          {/* Language Switcher - Compact Design */}
-          <LanguageSwitcher currentLanguage={currentLanguage} onLanguageChange={onLanguageChange} />
-
-          {/* Footer */}
           <div className="text-center">
             <p className="text-xs text-slate-400">© 2025 SIPOMA</p>
           </div>

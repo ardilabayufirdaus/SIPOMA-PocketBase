@@ -344,7 +344,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       <EnhancedCard className="p-8">
         <div className="flex flex-col items-center justify-center space-y-4">
           <EnhancedSpinner size="lg" />
-          <p className="text-gray-600 dark:text-gray-400">Loading users...</p>
+          <p className="text-gray-600">Loading users...</p>
         </div>
       </EnhancedCard>
     );
@@ -352,14 +352,12 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
   if (error) {
     return (
-      <EnhancedCard className="p-8 border-red-200 dark:border-red-800">
+      <EnhancedCard className="p-8 border-red-200">
         <div className="flex flex-col items-center justify-center space-y-4">
           <XCircleIcon className="w-12 h-12 text-red-500" />
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">
-              Error Loading Users
-            </h3>
-            <p className="text-red-600 dark:text-red-400 mt-2">{error}</p>
+            <h3 className="text-lg font-semibold text-red-800">Error Loading Users</h3>
+            <p className="text-red-600 mt-2">{error}</p>
           </div>
           <EnhancedButton
             variant="outline"
@@ -378,10 +376,8 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       {/* Header with Search and Add Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t.user_list || 'Users'}
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h2 className="text-2xl font-bold text-gray-900">{t.user_list || 'Users'}</h2>
+          <p className="text-gray-600">
             {totalUsers} {totalUsers === 1 ? 'user' : 'users'} total
           </p>
         </div>
@@ -398,7 +394,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
           >
             <option value="all">All Roles</option>
             <option value="Super Admin">Super Admin</option>
@@ -423,11 +419,11 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
       {/* Bulk Actions */}
       {showBulkActions && (
-        <EnhancedCard className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <EnhancedCard className="bg-blue-50 border-blue-200">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <CheckIcon className="w-5 h-5 text-blue-600" />
-              <span className="font-medium text-blue-800 dark:text-blue-200">
+              <span className="font-medium text-blue-800">
                 {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
               </span>
             </div>
@@ -478,8 +474,8 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       {/* Table */}
       <EnhancedCard className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <input
@@ -493,7 +489,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('username')}
                 >
                   <div className="flex items-center">
@@ -503,7 +499,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('full_name')}
                 >
                   <div className="flex items-center">
@@ -513,7 +509,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('role')}
                 >
                   <div className="flex items-center">
@@ -523,7 +519,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('is_active')}
                 >
                   <div className="flex items-center">
@@ -532,19 +528,19 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   </div>
                 </th>
 
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {t.permissions || 'Permissions'}
                 </th>
 
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   {t.actions || 'Actions'}
                 </th>
               </tr>
             </thead>
 
-            <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-white divide-y divide-gray-200">
               {displayedUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr key={user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
@@ -564,23 +560,19 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                             alt={user.username}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-                            <UserIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                            <UserIcon className="h-5 w-5 text-gray-600" />
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.username}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          ID: {user.id.slice(0, 8)}...
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                        <div className="text-sm text-gray-500">ID: {user.id.slice(0, 8)}...</div>
                       </div>
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.full_name || '-'}
                   </td>
 
@@ -594,9 +586,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                     </EnhancedBadge>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-xs">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs">
                     <div
-                      className="truncate cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 p-1 rounded"
+                      className="truncate cursor-pointer hover:bg-gray-100 p-1 rounded"
                       title={getPermissionsSummary(user.permissions)}
                       onClick={() => handleViewPermissions(user)}
                     >
@@ -666,10 +658,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
         {displayedUsers.length === 0 && (
           <div className="text-center py-12">
             <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
               {debouncedSearchTerm || roleFilter !== 'all' ? 'No users found' : 'No users'}
             </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-gray-500">
               {debouncedSearchTerm || roleFilter !== 'all'
                 ? 'Try adjusting your search or filter settings.'
                 : 'Get started by adding a new user.'}
@@ -690,7 +682,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
             <div className="flex-1 flex justify-between sm:hidden">
               <EnhancedButton
                 variant="outline"
@@ -712,7 +704,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-gray-700">
                   Showing{' '}
                   <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
                   <span className="font-medium">
@@ -770,10 +762,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       {/* Permissions Modal */}
       {showPermissionsModal && selectedUserPermissions && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 className="text-lg font-medium text-gray-900">
                   {t.permissions || 'Permissions'} - {selectedUserPermissions.username}
                 </h3>
                 <button
@@ -788,21 +780,17 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {formatPermissionsDetailed(selectedUserPermissions.permissions).map(
                     (perm, index) => (
-                      <div key={index} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {perm.module}
-                        </div>
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
-                          {perm.access}
-                        </div>
+                      <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                        <div className="text-sm font-medium text-gray-900">{perm.module}</div>
+                        <div className="text-sm text-gray-600">{perm.access}</div>
                         <div className="mt-1">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               perm.level === 'ADMIN'
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                ? 'bg-red-100 text-red-800'
                                 : perm.level === 'WRITE'
-                                  ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                                  : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                  ? 'bg-orange-100 text-orange-800'
+                                  : 'bg-blue-100 text-blue-800'
                             }`}
                           >
                             {perm.level}

@@ -93,9 +93,9 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
             {user ? t.edit_user_title || 'Edit User' : t.add_user_title || 'Add New User'}
           </h3>
 
@@ -106,10 +106,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
             aria-labelledby="user-form-title"
           >
             <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 {t.username || 'Username'}
               </label>
               <input
@@ -122,7 +119,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
                 autoComplete="username"
                 aria-describedby={error ? 'username-error' : undefined}
                 aria-invalid={error ? 'true' : 'false'}
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:text-white"
+                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
                 style={{
                   borderColor: error ? 'var(--color-error)' : 'var(--color-neutral-300)',
                   borderRadius: 'var(--radius-md)',
@@ -142,7 +139,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700">
                 {t.password || 'Password'}
               </label>
               <input
@@ -152,33 +149,42 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
                 onChange={handleChange}
                 required={!user}
                 autoComplete="new-password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
                 {t.full_name_label || 'Full Name'}
               </label>
               <input
+                id="full_name"
                 type="text"
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
                 autoComplete="name"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                aria-describedby="fullname-help"
+                aria-required="false"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
+              <p id="fullname-help" className="mt-1 text-sm text-gray-500">
+                Enter the user's full display name (optional)
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
                 {t.role_label || 'Role'}
               </label>
               <select
+                id="role"
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                aria-describedby="role-help"
+                aria-required="true"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="Guest">Guest</option>
                 <option value="Autonomous">Autonomous</option>
@@ -188,19 +194,27 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
                 <option value="Admin">Admin</option>
                 <option value="Super Admin">Super Admin</option>
               </select>
+              <p id="role-help" className="mt-1 text-sm text-gray-500">
+                Select the user&apos;s role and permissions level
+              </p>
             </div>
 
             <div className="flex items-center">
               <input
+                id="is_active"
                 type="checkbox"
                 name="is_active"
                 checked={formData.is_active}
                 onChange={handleChange}
+                aria-describedby="active-help"
                 className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
-              <label className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                {t.user_is_active_label || 'User is Active'}
+              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+                Active
               </label>
+              <p id="active-help" className="sr-only">
+                Toggle to activate or deactivate the user account
+              </p>
             </div>
 
             {error && <div className="text-red-600 text-sm">{error}</div>}
@@ -209,7 +223,7 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-600 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-500"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 {t.cancel_button || 'Cancel'}
               </button>

@@ -63,8 +63,8 @@ export const Chart: React.FC<ChartProps> = ({
     Object.keys(performanceData.chartData).length === 0
   ) {
     return (
-      <div className="h-80 w-full relative overflow-hidden flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg">
-        <div className="text-center text-slate-500 dark:text-slate-400">
+      <div className="h-80 w-full relative overflow-hidden flex items-center justify-center bg-slate-50 rounded-lg">
+        <div className="text-center text-slate-500">
           <div className="text-lg font-medium mb-2">No Data Available</div>
           <div className="text-sm">No stock data found for the selected filters</div>
         </div>
@@ -209,7 +209,7 @@ export const Chart: React.FC<ChartProps> = ({
 
   return (
     <div
-      className="h-80 w-full relative overflow-hidden bg-white dark:bg-slate-800 rounded-lg p-4"
+      className="h-80 w-full relative overflow-hidden bg-white rounded-lg p-4"
       ref={chartRef}
       onMouseMove={handleChartHover}
       onMouseLeave={handleMouseLeaveChart}

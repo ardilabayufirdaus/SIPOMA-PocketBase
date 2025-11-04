@@ -1,18 +1,33 @@
 // IndexedDB utilities for offline data storage
-// Handles CCR data persistence when offline
+// Handles all PocketBase collections persistence when offline
 
 const DB_NAME = 'SipomaOfflineDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Increased version for new stores
 
 // Store names for different data types
 export const STORES = {
+  // CCR Data
   CCR_PARAMETERS: 'ccr_parameters',
   CCR_SILO_DATA: 'ccr_silo_data',
   CCR_DOWNTIME: 'ccr_downtime',
   CCR_MATERIAL_USAGE: 'ccr_material_usage',
   CCR_FOOTER_DATA: 'ccr_footer_data',
   CCR_INFORMATION: 'ccr_information',
+
+  // User Management
+  USERS: 'users',
+  PROFILES: 'profiles',
+  PERMISSIONS: 'permissions',
+
+  // Plant Operations
+  PLANT_UNITS: 'plant_units',
+  PARAMETER_SETTINGS: 'parameter_settings',
+  SILO_CAPACITIES: 'silo_capacities',
+
+  // System
   SYNC_QUEUE: 'sync_queue',
+  AUDIT_LOGS: 'audit_logs',
+  SETTINGS: 'settings',
 } as const;
 
 // Initialize IndexedDB
@@ -25,6 +40,7 @@ export const initDB = (): Promise<IDBDatabase> => {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
+      const oldVersion = event.oldVersion;
 
       // Create object stores if they don't exist
       Object.values(STORES).forEach((storeName) => {
@@ -32,6 +48,25 @@ export const initDB = (): Promise<IDBDatabase> => {
           db.createObjectStore(storeName, { keyPath: 'id' });
         }
       });
+
+      // Handle migrations for version upgrades
+      if (oldVersion < 2) {
+        // Add new stores for version 2
+        const newStores = [
+          STORES.USERS,
+          STORES.PROFILES,
+          STORES.PERMISSIONS,
+          STORES.PLANT_UNITS,
+          STORES.AUDIT_LOGS,
+          STORES.SETTINGS,
+        ];
+
+        newStores.forEach((storeName) => {
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName, { keyPath: 'id' });
+          }
+        });
+      }
     };
   });
 };

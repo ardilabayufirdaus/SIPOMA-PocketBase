@@ -58,9 +58,9 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <div className="bg-white shadow overflow-hidden sm:rounded-md">
       <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">
           {t.user_list || 'Users List'}
         </h3>
         <button
@@ -72,44 +72,40 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t.username || 'Username'}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t.full_name_label || 'Full Name'}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t.role_label || 'Role'}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t.status || 'Status'}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t.actions || 'Actions'}
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user) => (
               <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {user.username}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {user.full_name || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                  {user.role}
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.role}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.is_active
-                        ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200'
-                        : 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200'
+                      user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}
                   >
                     {user.is_active ? t.active || 'Active' : t.inactive || 'Inactive'}
@@ -118,7 +114,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   <button
                     onClick={() => onEditUser(user)}
-                    className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    className="text-indigo-600 hover:text-indigo-900"
                   >
                     {t.edit || 'Edit'}
                   </button>
@@ -126,15 +122,15 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                     onClick={() => handleToggleActive(user.id, user.is_active)}
                     className={`${
                       user.is_active
-                        ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                        : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
+                        ? 'text-red-600 hover:text-red-900'
+                        : 'text-green-600 hover:text-green-900'
                     }`}
                   >
                     {user.is_active ? 'Deactivate' : 'Activate'}
                   </button>
                   <button
                     onClick={() => handleDeleteUser(user.id)}
-                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    className="text-red-600 hover:text-red-900"
                   >
                     {t.delete || 'Delete'}
                   </button>
@@ -145,9 +141,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
         </table>
       </div>
 
-      {users.length === 0 && (
-        <div className="text-center py-8 text-gray-500 dark:text-gray-400">No users found</div>
-      )}
+      {users.length === 0 && <div className="text-center py-8 text-gray-500">No users found</div>}
     </div>
   );
 };

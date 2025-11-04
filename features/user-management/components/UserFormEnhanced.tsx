@@ -666,18 +666,16 @@ const UserForm: React.FC<UserFormProps> = ({
         <div className="space-y-6">
           {/* Bulk Generation Section */}
           <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">
-                Bulk User Creation
-              </h3>
-              <p className="text-sm text-blue-700 dark:text-blue-300">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-lg font-medium text-blue-900 mb-2">Bulk User Creation</h3>
+              <p className="text-sm text-blue-700">
                 Enter usernames separated by commas, all users will use the same password and role.
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Usernames (comma-separated)
                 </label>
                 <textarea
@@ -686,7 +684,7 @@ const UserForm: React.FC<UserFormProps> = ({
                     setBulkConfig((prev) => ({ ...prev, usernames: e.target.value }))
                   }
                   placeholder="kadir, safruddin.haeruddin, muhammad.nur6218, antonius.sukma, bahrun..."
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white min-h-[100px] resize-y"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[100px] resize-y"
                   rows={4}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -695,28 +693,26 @@ const UserForm: React.FC<UserFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Password (Same for all users)
                 </label>
                 <input
                   type="password"
                   value={bulkConfig.password}
                   onChange={(e) => setBulkConfig((prev) => ({ ...prev, password: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="password123"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Role
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
                 <select
                   value={bulkConfig.role}
                   onChange={(e) =>
                     setBulkConfig((prev) => ({ ...prev, role: e.target.value as UserRole }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select Role</option>
                   <option value="Super Admin">Super Admin</option>
@@ -751,14 +747,14 @@ const UserForm: React.FC<UserFormProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Preview ({bulkUsers.length} users)</h3>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-600">
                   Success: {bulkProgress.successes} | Failed: {bulkProgress.failures}
                 </div>
               </div>
 
               <div className="max-h-60 overflow-y-auto border rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Username
@@ -774,7 +770,7 @@ const UserForm: React.FC<UserFormProps> = ({
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {bulkUsers.map((user, index) => (
                       <tr key={index}>
                         <td className="px-4 py-3 text-sm">{user.username}</td>
@@ -840,7 +836,7 @@ const UserForm: React.FC<UserFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Username Field */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700">
               {t.username || 'Username'} *
             </label>
             <EnhancedInput
@@ -853,7 +849,7 @@ const UserForm: React.FC<UserFormProps> = ({
               autoComplete="username"
             />
             {validationErrors.username && (
-              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+              <p className="text-sm text-red-600 flex items-center gap-1">
                 <ExclamationTriangleIcon className="w-4 h-4" />
                 {validationErrors.username}
               </p>
@@ -863,7 +859,7 @@ const UserForm: React.FC<UserFormProps> = ({
           {/* Password Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700">
                 {t.password || 'Password'} {user ? '(leave blank to keep current)' : '*'}
               </label>
               <EnhancedInput
@@ -877,7 +873,7 @@ const UserForm: React.FC<UserFormProps> = ({
               />
               {formData.password && (
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${
                         passwordStrength.color === 'error'
@@ -909,7 +905,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 </div>
               )}
               {validationErrors.password && (
-                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                <p className="text-sm text-red-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="w-4 h-4" />
                   {validationErrors.password}
                 </p>
@@ -917,7 +913,7 @@ const UserForm: React.FC<UserFormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700">
                 {t.confirm_password || 'Confirm Password'}{' '}
                 {user ? '(leave blank to keep current)' : '*'}
               </label>
@@ -931,7 +927,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 autoComplete="new-password"
               />
               {validationErrors.confirmPassword && (
-                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                <p className="text-sm text-red-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="w-4 h-4" />
                   {validationErrors.confirmPassword}
                 </p>
@@ -941,7 +937,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
           {/* Full Name Field */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700">
               {t.full_name_label || 'Full Name'}
             </label>
             <EnhancedInput
@@ -954,7 +950,7 @@ const UserForm: React.FC<UserFormProps> = ({
               autoComplete="name"
             />
             {validationErrors.full_name && (
-              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+              <p className="text-sm text-red-600 flex items-center gap-1">
                 <ExclamationTriangleIcon className="w-4 h-4" />
                 {validationErrors.full_name}
               </p>
@@ -963,7 +959,7 @@ const UserForm: React.FC<UserFormProps> = ({
 
           {/* Role Selection */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label className="block text-sm font-medium text-gray-700">
               {t.role_label || 'Role'} *
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -982,8 +978,8 @@ const UserForm: React.FC<UserFormProps> = ({
                   onClick={() => handleChange('role', role.value)}
                   className={`p-3 border rounded-lg text-center transition-all ${
                     formData.role === role.value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
                   <ShieldCheckIcon className="w-5 h-5 mx-auto mb-1" />
@@ -994,7 +990,7 @@ const UserForm: React.FC<UserFormProps> = ({
           </div>
 
           {/* Active Status */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
               <div
                 className={`w-3 h-3 rounded-full ${
@@ -1002,10 +998,10 @@ const UserForm: React.FC<UserFormProps> = ({
                 }`}
               />
               <div>
-                <div className="font-medium text-gray-900 dark:text-white">
+                <div className="font-medium text-gray-900">
                   {t.user_is_active_label || 'User Status'}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-600">
                   {formData.is_active
                     ? 'User is active and can log in'
                     : 'User is inactive and cannot log in'}
@@ -1032,10 +1028,8 @@ const UserForm: React.FC<UserFormProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                  User Permissions
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <h4 className="text-sm font-medium text-gray-900">User Permissions</h4>
+                <p className="text-sm text-gray-600">
                   Configure detailed access permissions for this user
                 </p>
               </div>
@@ -1052,7 +1046,7 @@ const UserForm: React.FC<UserFormProps> = ({
               ) : null}
             </div>
             {!user?.id && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              <p className="text-xs text-amber-600 mt-1">
                 Save the user first to configure permissions
               </p>
             )}
@@ -1063,14 +1057,14 @@ const UserForm: React.FC<UserFormProps> = ({
                 if (key === 'plant_operations') {
                   const plantOpsCount = Object.keys(value as any).length;
                   return (
-                    <div key={key} className="text-xs text-gray-600 dark:text-gray-400">
+                    <div key={key} className="text-xs text-gray-600">
                       <span className="font-medium">Plant Operations:</span>{' '}
                       {plantOpsCount > 0 ? `${plantOpsCount} categories` : 'None'}
                     </div>
                   );
                 }
                 return (
-                  <div key={key} className="text-xs text-gray-600 dark:text-gray-400">
+                  <div key={key} className="text-xs text-gray-600">
                     <span className="font-medium">{key.replace('_', ' ')}:</span>{' '}
                     {value === 'NONE' ? 'None' : value.toLowerCase()}
                   </div>
@@ -1081,16 +1075,16 @@ const UserForm: React.FC<UserFormProps> = ({
 
           {/* Error Message */}
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2">
                 <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
-                <span className="text-red-800 dark:text-red-200 font-medium">{error}</span>
+                <span className="text-red-800 font-medium">{error}</span>
               </div>
             </div>
           )}
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <EnhancedButton variant="outline" onClick={onClose} disabled={isLoading}>
               {t.cancel_button || 'Cancel'}
             </EnhancedButton>

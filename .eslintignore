@@ -1,0 +1,42 @@
+# Build output
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Reference/Demo files
+ccr-data-entry-dragdrop-reference.tsx
+
+# Script files
+*.cjs
+*.mjs
+
+# Test files (untuk sementara)
+test*.js
+test-*.js
+test-*.cjs
+test_*.cjs
+
+# Migration files
+add-*.cjs
+create-*.cjs
+check-*.cjs
+cleanup-*.cjs
+analyze-*.cjs
+calculate-*.js
+populate-*.cjs
+recreate-*.cjs
+sync-*.cjs
+update-*.cjs
+verify-*.cjs
+
+# PocketBase
+pocketbase/
+pb_data/
+
+# Temporary/script files
+scripts/
+migrations/
+*.config.js
+*.config.cjs

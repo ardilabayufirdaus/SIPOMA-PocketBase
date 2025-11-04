@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Language } from '../App';
 import FlagENIcon from './icons/FlagENIcon';
 import FlagIDIcon from './icons/FlagIDIcon';
@@ -15,11 +14,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   onLanguageChange,
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center space-y-3 mb-4"
-    >
+    <div className="flex flex-col items-center space-y-3 mb-4">
       <EnhancedButton
         variant={currentLanguage === 'en' ? 'primary' : 'ghost'}
         size="sm"
@@ -28,9 +23,9 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         disabled={currentLanguage === 'en'}
         className="p-1 w-10 h-10"
         icon={
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <div>
             <FlagENIcon className="w-6 h-auto rounded-md" />
-          </motion.div>
+          </div>
         }
       >
         <span className="sr-only">English</span>
@@ -43,13 +38,13 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
         disabled={currentLanguage === 'id'}
         className="p-1 w-10 h-10"
         icon={
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          <div>
             <FlagIDIcon className="w-6 h-auto rounded-md" />
-          </motion.div>
+          </div>
         }
       >
         <span className="sr-only">Indonesian</span>
       </EnhancedButton>
-    </motion.div>
+    </div>
   );
 };

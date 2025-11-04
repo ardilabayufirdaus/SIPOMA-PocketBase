@@ -200,16 +200,14 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
       if (!active || !payload || !payload.length) return null;
 
       return (
-        <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
-          <p className="font-medium text-slate-900 dark:text-slate-100">{`${xAxisKey}: ${label}`}</p>
+        <div className="bg-white p-3 border border-slate-200 rounded-lg shadow-lg">
+          <p className="font-medium text-slate-900">{`${xAxisKey}: ${label}`}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {`${entry.name}: ${typeof entry.value === 'number' ? formatNumber(entry.value) : entry.value}`}
             </p>
           ))}
-          {drillDown?.enabled && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Click to drill down</p>
-          )}
+          {drillDown?.enabled && <p className="text-xs text-slate-500 mt-2">Click to drill down</p>}
         </div>
       );
     };
@@ -331,16 +329,12 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
+    <div className="bg-white rounded-lg border border-slate-200 p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          {title && (
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-          )}
-          {subtitle && (
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{subtitle}</p>
-          )}
+          {title && <h3 className="text-lg font-semibold text-slate-900">{title}</h3>}
+          {subtitle && <p className="text-sm text-slate-600 mt-1">{subtitle}</p>}
         </div>
 
         <div className="flex items-center space-x-2">
@@ -348,7 +342,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
           {drillDown?.enabled && currentLevel > 0 && (
             <button
               onClick={handleDrillUp}
-              className="px-3 py-1 text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="px-3 py-1 text-sm bg-slate-100 text-slate-700 rounded-md hover:bg-slate-200 transition-colors"
             >
               ← Back
             </button>
@@ -358,7 +352,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
           {realTime?.enabled && (
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-slate-600 dark:text-slate-400">Live</span>
+              <span className="text-xs text-slate-600">Live</span>
             </div>
           )}
 
@@ -367,7 +361,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
             <div className="relative">
               <select
                 onChange={(e) => e.target.value && handleExport(e.target.value)}
-                className="text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-md px-3 py-1 border-0"
+                className="text-sm bg-slate-100 text-slate-700 rounded-md px-3 py-1 border-0"
                 disabled={isExporting}
               >
                 <option value="">Export...</option>
@@ -387,7 +381,7 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
 
       {/* Current level indicator */}
       {drillDown?.enabled && (
-        <div className="mt-4 text-sm text-slate-600 dark:text-slate-400">
+        <div className="mt-4 text-sm text-slate-600">
           Level: {drillDown.levels[currentLevel]?.title || 'Overview'}
           {selectedData && (
             <span className="ml-2">

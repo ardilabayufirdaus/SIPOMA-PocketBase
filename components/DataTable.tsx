@@ -45,17 +45,17 @@ export default function DataTable({
   const totalPages = Math.ceil(rows.length / rowsPerPage);
 
   return (
-    <div className="w-full overflow-hidden bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+    <div className="w-full overflow-hidden bg-white rounded-lg shadow-sm border border-slate-200">
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           {/* Table Header */}
-          <thead className="bg-slate-50 dark:bg-slate-700">
+          <thead className="bg-slate-50">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.field}
-                  className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-600"
+                  className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200"
                   style={{
                     width: column.width || 'auto',
                     minWidth: column.width ? `${column.width}px` : 'auto',
@@ -68,17 +68,17 @@ export default function DataTable({
           </thead>
 
           {/* Table Body */}
-          <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+          <tbody className="bg-white divide-y divide-slate-200">
             {displayedRows.length > 0 ? (
               displayedRows.map((row, rowIndex) => (
                 <tr
                   key={String(row.id || rowIndex)}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  className="hover:bg-slate-50 transition-colors"
                 >
                   {columns.map((column) => (
                     <td
                       key={`${String(row.id || rowIndex)}-${column.field}`}
-                      className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100 border-b border-slate-200 dark:border-slate-700"
+                      className="px-4 py-3 text-sm text-slate-900 border-b border-slate-200"
                     >
                       {column.renderCell
                         ? column.renderCell(row[column.field])
@@ -91,7 +91,7 @@ export default function DataTable({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-sm text-slate-500 dark:text-slate-400"
+                  className="px-4 py-8 text-center text-sm text-slate-500"
                 >
                   No data available
                 </td>
@@ -103,14 +103,14 @@ export default function DataTable({
 
       {/* Pagination */}
       {!disablePagination && rows.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+        <div className="bg-white px-4 py-3 border-t border-slate-200 flex items-center justify-between">
           {/* Rows per page selector */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-slate-700 dark:text-slate-300">Rows per page:</span>
+            <span className="text-sm text-slate-700">Rows per page:</span>
             <select
               value={rowsPerPage}
               onChange={handleChangeRowsPerPage}
-              className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm"
+              className="px-2 py-1 border border-slate-300 rounded-md bg-white text-slate-900 text-sm"
             >
               {rowsPerPageOptions.map((option) => (
                 <option key={option} value={option}>
@@ -122,7 +122,7 @@ export default function DataTable({
 
           {/* Page info and navigation */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-slate-700 dark:text-slate-300">
+            <span className="text-sm text-slate-700">
               {rows.length > 0
                 ? `${page * rowsPerPage + 1}-${Math.min((page + 1) * rowsPerPage, rows.length)} of ${rows.length}`
                 : '0 of 0'}
@@ -132,7 +132,7 @@ export default function DataTable({
               <button
                 onClick={() => handleChangePage(page - 1)}
                 disabled={page === 0}
-                className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="px-2 py-1 text-sm border border-slate-300 rounded-md bg-white text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
               >
                 Previous
               </button>
@@ -140,7 +140,7 @@ export default function DataTable({
               <button
                 onClick={() => handleChangePage(page + 1)}
                 disabled={page >= totalPages - 1}
-                className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="px-2 py-1 text-sm border border-slate-300 rounded-md bg-white text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
               >
                 Next
               </button>

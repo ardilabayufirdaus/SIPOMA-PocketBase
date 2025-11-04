@@ -362,7 +362,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       </div>
 
       {/* Filters */}
-      <EnhancedCard className="p-6 bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750">
+      <EnhancedCard className="p-6 bg-gradient-to-r from-white to-gray-50">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -381,7 +381,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">All Roles</option>
                 <option value="Super Admin">Super Admin</option>
@@ -417,23 +417,21 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 
         {/* Advanced Filters */}
         {showFilters && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-4 pt-4 border-t border-gray-200">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Status
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
                   <option value="all">All Status</option>
                   <option value="active">Active Only</option>
                   <option value="inactive">Inactive Only</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Permission Level
                 </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
                   <option value="all">All Levels</option>
                   <option value="admin">Admin Access</option>
                   <option value="write">Write Access</option>
@@ -442,10 +440,8 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Last Active
-                </label>
-                <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Last Active</label>
+                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white">
                   <option value="all">Any Time</option>
                   <option value="today">Today</option>
                   <option value="week">This Week</option>
@@ -461,7 +457,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       {(error || successMessage) && (
         <div className="mb-6">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
                   <svg
@@ -479,13 +475,10 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-200">Error</p>
-                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                  <p className="text-sm font-medium text-red-800">Error</p>
+                  <p className="text-sm text-red-700">{error}</p>
                 </div>
-                <button
-                  onClick={() => setError('')}
-                  className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-200"
-                >
+                <button onClick={() => setError('')} className="text-red-500 hover:text-red-700">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -500,7 +493,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
           )}
 
           {successMessage && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-4">
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                   <svg
@@ -518,12 +511,12 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-green-800 dark:text-green-200">Success</p>
-                  <p className="text-sm text-green-700 dark:text-green-300">{successMessage}</p>
+                  <p className="text-sm font-medium text-green-800">Success</p>
+                  <p className="text-sm text-green-700">{successMessage}</p>
                 </div>
                 <button
                   onClick={() => setSuccessMessage('')}
-                  className="text-green-500 hover:text-green-700 dark:text-green-400 dark:hover:text-green-200"
+                  className="text-green-500 hover:text-green-700"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -545,18 +538,16 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         {isLoading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">Loading users...</p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
-              Please wait while we fetch the latest data
-            </p>
+            <p className="text-lg text-gray-600 mb-2">Loading users...</p>
+            <p className="text-sm text-gray-500">Please wait while we fetch the latest data</p>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <UserIcon className="w-8 h-8 text-gray-400" />
             </div>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">No users found</p>
-            <p className="text-sm text-gray-500 dark:text-gray-500">
+            <p className="text-lg text-gray-600 mb-2">No users found</p>
+            <p className="text-sm text-gray-500">
               {searchTerm || roleFilter !== 'all'
                 ? 'Try adjusting your search or filter criteria'
                 : 'No users have been added yet'}
@@ -565,30 +556,30 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-750">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     User
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Permissions
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUsers.map((user, index) => (
                   <tr
                     key={user.id}
-                    className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 dark:hover:from-primary-900/10 dark:hover:to-primary-800/10 transition-all duration-200 group"
+                    className="hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 transition-all duration-200 group"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -597,12 +588,10 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                           {user.username.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                          <div className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                             {user.username}
                           </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400">
-                            {user.full_name || 'No name'}
-                          </div>
+                          <div className="text-sm text-gray-600">{user.full_name || 'No name'}</div>
                         </div>
                       </div>
                     </td>
@@ -616,7 +605,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="max-w-xs">
-                        <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                        <div className="text-sm text-gray-600 truncate">
                           {getPermissionSummary(user.permissions)}
                         </div>
                         <div className="flex gap-1 mt-1">
@@ -658,7 +647,7 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditPermissions(user)}
-                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 border-blue-200 hover:border-blue-300"
+                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 border-blue-200 hover:border-blue-300"
                       >
                         <div className="flex items-center gap-2">
                           <ShieldCheckIcon className="w-4 h-4" />

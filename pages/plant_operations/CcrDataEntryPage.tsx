@@ -72,6 +72,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [isDeletingAllNames, setIsDeletingAllNames] = useState(false);
   const [columnSearchQuery, setColumnSearchQuery] = useState('');
   const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const [materialUsageRefreshTrigger, setMaterialUsageRefreshTrigger] = useState(0);
 
   // Parameter reorder state
   const [showReorderModal, setShowReorderModal] = useState(false);
@@ -820,8 +821,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             ref={provided.innerRef}
             {...provided.draggableProps}
             data-parameter-index={index}
-            className={`flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg ${
-              snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400 dark:ring-blue-600' : ''
+            className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg ${
+              snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''
             }`}
           >
             <div className="flex items-center gap-3">
@@ -840,15 +841,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {index + 1}.
-                </span>
+                <span className="text-sm font-medium text-slate-700">{index + 1}.</span>
               </div>
               <div>
-                <div className="font-semibold text-slate-800 dark:text-slate-200">
-                  {param.parameter}
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">{param.unit}</div>
+                <div className="font-semibold text-slate-800">{param.parameter}</div>
+                <div className="text-xs text-slate-500">{param.unit}</div>
               </div>
             </div>
 
@@ -875,7 +872,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     return newOrder;
                   });
                 }}
-                className="w-14 px-1 py-1 text-sm text-center border border-slate-300 rounded-md dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200"
+                className="w-14 px-1 py-1 text-sm text-center border border-slate-300 rounded-md"
                 title={t.parameter_position_title}
                 aria-label={`Ubah urutan parameter ${param.parameter}`}
               />
@@ -1067,42 +1064,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       fetchParameterData();
     }
   }, [dataVersion]);
-
-  // Fungsi untuk refresh data secara manual
-  const refreshData = useCallback(async () => {
-    if (!selectedDate || !selectedUnit || !selectedCategory) {
-      showToast(t.select_category_unit_date_first);
-      return;
-    }
-
-    setIsRefreshing(true);
-    try {
-      // Trigger manual refresh pada data parameter
-      await triggerRefresh();
-
-      // Refresh parameter data dari server
-      await fetchParameterData();
-
-      // Refresh silo data
-      await fetchSiloData(true);
-
-      showToast('Data berhasil di-refresh');
-      // Debug logging removed for production
-    } catch {
-      // Error logging removed for production
-      showToast('Gagal refresh data');
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [
-    selectedDate,
-    selectedUnit,
-    selectedCategory,
-    fetchParameterData,
-    fetchSiloData,
-    showToast,
-    triggerRefresh,
-  ]);
 
   const parameterDataMap = useMemo(
     () => new Map(dailyParameterData.map((p) => [p.parameter_id, p])),
@@ -1337,16 +1298,21 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   });
 
   // Downtime Data Hooks and State
-  const { getDowntimeForDate, addDowntime, updateDowntime, deleteDowntime, refetch } =
-    useCcrDowntimeData(selectedDate);
+  const {
+    getDowntimeForDate,
+    addDowntime,
+    updateDowntime,
+    deleteDowntime,
+    refetch: downtimeRefetch,
+  } = useCcrDowntimeData(selectedDate);
   // FIXED: Menghapus filter yang terlalu ketat pada downtime data dan menyediakan
   // fallback untuk data dengan unit yang tidak ada di unitToCategoryMap
   const dailyDowntimeData = useMemo(() => {
     const allDowntimeForDate = getDowntimeForDate(selectedDate);
 
-    // Filter downtime data berdasarkan selectedUnit yang dipilih di CCR Data Entry
+    // Jika tidak ada unit yang dipilih, jangan tampilkan data apa pun
     if (!selectedUnit) {
-      return allDowntimeForDate.sort((a, b) => a.start_time.localeCompare(b.start_time));
+      return [];
     }
 
     return allDowntimeForDate
@@ -1384,6 +1350,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     getInformationForDate,
     saveInformation,
     isSaving: isSavingInformation,
+    refetch: informationRefetch,
   } = useCcrInformationData();
   const [informationText, setInformationText] = useState('');
 
@@ -1402,6 +1369,53 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
     loadInformation();
   }, [selectedDate, selectedUnit, getInformationForDate]);
+
+  // Fungsi untuk refresh data secara manual
+  const refreshData = useCallback(async () => {
+    if (!selectedDate || !selectedUnit || !selectedCategory) {
+      showToast(t.select_category_unit_date_first);
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      // Trigger manual refresh pada data parameter
+      await triggerRefresh();
+
+      // Refresh parameter data dari server
+      await fetchParameterData();
+
+      // Refresh silo data
+      await fetchSiloData(true);
+
+      // Refresh CCR Material Usage data - trigger re-mount component
+      setMaterialUsageRefreshTrigger((prev) => prev + 1);
+
+      // Refresh Information data
+      await informationRefetch();
+
+      // Refresh Downtime data
+      await downtimeRefetch();
+
+      showToast('Data berhasil di-refresh');
+      // Debug logging removed for production
+    } catch {
+      // Error logging removed for production
+      showToast('Gagal refresh data');
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [
+    selectedDate,
+    selectedUnit,
+    selectedCategory,
+    fetchParameterData,
+    fetchSiloData,
+    showToast,
+    triggerRefresh,
+    informationRefetch,
+    downtimeRefetch,
+  ]);
 
   const formatStatValue = (value: number | undefined, _precision = 1) => {
     if (value === undefined || value === null) return '-';
@@ -2201,16 +2215,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       // Force refresh data dengan multiple attempts untuk memastikan data muncul
       // Attempt 1: Refresh segera
-      refetch();
+      downtimeRefetch();
 
       // Attempt 2: Refresh setelah 500ms
       setTimeout(() => {
-        refetch();
+        downtimeRefetch();
       }, 500);
 
       // Attempt 3: Refresh setelah 1.5 detik
       setTimeout(() => {
-        refetch();
+        downtimeRefetch();
       }, 1500);
     } catch {
       alert('Failed to save downtime data. Please try again.');
@@ -2333,7 +2347,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // Refresh data before export to ensure we have the latest data
       console.log('Starting export process...');
       await refreshData();
-      await refetch();
+      await downtimeRefetch();
       console.log('Data refreshed successfully');
 
       const workbook = new ExcelJS.Workbook();
@@ -3160,7 +3174,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                   showToast(`Deleted existing downtime data for dates: ${importDates.join(', ')}`);
                   // Refresh downtime data to reflect changes
-                  refetch();
+                  downtimeRefetch();
                   // Console statement removed for production
                 } catch {
                   // Console statement removed for production
@@ -3504,18 +3518,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   return (
     <div className="space-y-4">
       {/* Enhanced Header with Error Display */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
           <div className="flex-1">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-              {t.op_ccr_data_entry}
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">{t.ccr_page_description}</p>
+            <h2 className="text-xl font-bold text-slate-800 mb-2">{t.op_ccr_data_entry}</h2>
+            <p className="text-sm text-slate-600">{t.ccr_page_description}</p>
           </div>
 
           {/* Error Alert */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 max-w-md">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
               <div className="flex items-start">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -3527,12 +3539,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </svg>
                 </div>
                 <div className="ml-3 flex-1">
-                  <p className="text-sm font-medium text-red-800 dark:text-red-200">{error}</p>
+                  <p className="text-sm font-medium text-red-800">{error}</p>
                   <EnhancedButton
                     variant="ghost"
                     size="xs"
                     onClick={() => setError(null)}
-                    className="mt-2 text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300 underline font-medium"
+                    className="mt-2 text-red-600 hover:text-red-500 underline font-medium"
                     aria-label="Tutup pesan error"
                   >
                     Tutup
@@ -3546,7 +3558,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
                 htmlFor="ccr-category"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 {t.plant_category_label}:
               </label>
@@ -3555,7 +3567,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="ccr-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
                 >
                   <option value="">{t.choose_category}</option>
                   {plantCategories.map((cat) => (
@@ -3570,7 +3582,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
                 htmlFor="ccr-unit"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 {t.unit_label}:
               </label>
@@ -3580,7 +3592,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
                 >
                   <option value="">{t.choose_unit}</option>
                   {unitsForCategory.map((unit) => (
@@ -3595,7 +3607,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
                 htmlFor="ccr-date"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 {t.select_date}:
               </label>
@@ -3604,7 +3616,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="ccr-date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
+                className="flex-1 min-w-0 px-3 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors"
               />
             </div>
           </div>
@@ -3612,7 +3624,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       </div>
 
       {/* Enhanced Parameter Data Table */}
-      <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+      <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
@@ -3631,12 +3643,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </svg>
             </div>
             <div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 {t.ccr_parameter_data_entry_title}
               </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                {t.ccr_parameter_section_description}
-              </p>
+              <p className="text-sm text-slate-600 mt-1">{t.ccr_parameter_section_description}</p>
             </div>
           </div>
 
@@ -3896,9 +3906,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* Column Search Filter */}
         <div className="flex items-center justify-between gap-3 pb-4 border-b">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {t.ccr_search_columns}:
-            </span>
+            <span className="text-sm font-medium text-slate-700">{t.ccr_search_columns}:</span>
             <div className="relative ccr-column-search">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 ccr-column-search-icon" />
               <input
@@ -3906,7 +3914,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={columnSearchQuery}
                 onChange={(e) => setColumnSearchQuery(e.target.value)}
                 placeholder={t.ccr_search_placeholder}
-                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:placeholder-slate-400 transition-all duration-150"
+                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
                 style={{ width: '320px' }}
                 autoComplete="off"
                 title={t.search_columns_tooltip}
@@ -3922,7 +3930,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   <XMarkIcon className="w-4 h-4" />
                 </EnhancedButton>
               )}
-              <div className="absolute right-2 top-full mt-1 text-xs text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute right-2 top-full mt-1 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
                 Ctrl+F to focus
               </div>
             </div>
@@ -3937,16 +3945,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </div>
             )}
             {isSearchActive && filteredParameterSettings.length === 0 && (
-              <div className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                {t.ccr_no_columns_match}
-              </div>
+              <div className="text-sm text-amber-600 font-medium">{t.ccr_no_columns_match}</div>
             )}
             {isSearchActive && (
               <EnhancedButton
                 variant="ghost"
                 size="xs"
                 onClick={clearColumnSearch}
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors font-medium"
+                className="text-blue-600 hover:text-blue-800 transition-colors font-medium"
                 aria-label="Clear column search filter"
               >
                 Clear Filter
@@ -3958,13 +3964,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {loading ? (
           <CcrTableSkeleton />
         ) : (
-          <div className="ccr-table-container" role="grid" aria-label="Parameter Data Entry Table">
+          <div
+            className="ccr-table-container overflow-x-auto overflow-y-auto max-h-[600px]"
+            role="grid"
+            aria-label="Parameter Data Entry Table"
+          >
             {/* Scrollable Table Content */}
-            <div className="ccr-table-wrapper" ref={tableWrapperRef}>
+            <div className="ccr-table-wrapper min-w-[800px]" ref={tableWrapperRef}>
               <table className="ccr-table" role="grid">
                 <colgroup>
                   <col style={{ width: '60px' }} />
-                  <col style={{ width: '70px' }} />
+                  <col style={{ width: '80px' }} />
                   <col style={{ width: '120px' }} />
                   {filteredParameterSettings.map((_, index) => (
                     <col key={index} style={{ width: '80px' }} />
@@ -3985,7 +3995,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                     <th
                       className="px-2 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 bg-white/95 backdrop-blur-sm"
-                      style={{ width: '70px' }}
+                      style={{ width: '80px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -3993,7 +4003,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                     <th
                       className="px-3 py-3 text-center text-xs font-bold text-slate-900 uppercase tracking-wider border-r border-orange-300/30 bg-white/95 backdrop-blur-sm"
-                      style={{ width: '120px' }}
+                      style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -4028,7 +4038,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                     <th
                       className="px-2 py-1 text-center text-xs font-semibold text-slate-700 border-r border-orange-300/30 bg-slate-50/95 backdrop-blur-sm"
-                      style={{ width: '70px' }}
+                      style={{ width: '80px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -4036,7 +4046,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                     <th
                       className="px-3 py-1 text-center text-xs font-semibold text-slate-700 border-r border-orange-300/30 bg-slate-50/95 backdrop-blur-sm"
-                      style={{ width: '120px' }}
+                      style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
                     >
@@ -4064,46 +4074,41 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     ))}
                   </tr>
                 </thead>
-                <tbody
-                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm"
-                  role="rowgroup"
-                >
+                <tbody className="bg-white/80 backdrop-blur-sm" role="rowgroup">
                   {filteredParameterSettings.length > 0 ? (
                     Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
                       <tr
                         key={hour}
-                        className={`border-b border-slate-200/50 dark:border-slate-700/50 group ${
-                          hour % 2 === 0
-                            ? 'bg-white/40 dark:bg-slate-800/40'
-                            : 'bg-slate-50/30 dark:bg-slate-700/30'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-150`}
+                        className={`border-b border-slate-200/50 group ${
+                          hour % 2 === 0 ? 'bg-white/40' : 'bg-slate-50/30'
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-150`}
                         role="row"
                       >
                         <td
-                          className="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200/50 dark:border-slate-700/50 sticky left-0 bg-white/90 dark:bg-slate-800/90 group-hover:bg-orange-50/80 dark:group-hover:bg-orange-900/30 z-30 sticky-col backdrop-blur-sm"
+                          className="px-3 py-3 whitespace-nowrap text-sm font-medium text-slate-900 border-r border-slate-200/50 sticky left-0 bg-white/90 group-hover:bg-orange-50/80 z-30 sticky-col backdrop-blur-sm"
                           style={{ width: '60px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center justify-center h-8">
-                            <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                            <span className="font-mono font-semibold text-slate-800">
                               {String(hour).padStart(2, '0')}:00
                             </span>
                           </div>
                         </td>
                         <td
-                          className="px-3 py-3 whitespace-nowrap text-xs text-slate-600 dark:text-slate-400 border-r border-slate-200/50 dark:border-slate-700/50"
-                          style={{ width: '70px' }}
+                          className="px-3 py-3 whitespace-nowrap text-xs text-slate-600 border-r border-slate-200/50"
+                          style={{ width: '80px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
-                            <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-medium text-xs">
+                            <span className="px-2 py-1 rounded-md bg-blue-100 text-blue-800 font-medium text-xs">
                               {getShiftForHour(hour)}
                             </span>
                           </div>
                         </td>
                         <td
-                          className="px-3 py-3 whitespace-nowrap text-xs text-slate-800 dark:text-slate-200 border-r border-slate-200/50 dark:border-slate-700/50"
-                          style={{ width: '120px' }}
+                          className="px-3 py-3 whitespace-nowrap text-xs text-slate-800 border-r border-slate-200/50"
+                          style={{ width: '140px' }}
                           role="gridcell"
                         >
                           <div className="flex items-center h-8">
@@ -4164,18 +4169,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 if (userName) {
                                   return (
                                     <span
-                                      className="truncate font-medium text-slate-700 dark:text-slate-300"
+                                      className="truncate font-medium text-slate-700"
                                       title={userName}
                                     >
                                       {userName}
                                     </span>
                                   );
                                 } else {
-                                  return (
-                                    <span className="text-slate-400 dark:text-slate-500 italic">
-                                      -
-                                    </span>
-                                  );
+                                  return <span className="text-slate-400 italic">-</span>;
                                 }
                               }
                             })()}
@@ -4393,7 +4394,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* First Row: CCR Silo Data Entry and CCR Material Usage Entry */}
         <div className="grid grid-cols-2 gap-6">
           {/* Silo Data Entry */}
-          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
                 <svg
@@ -4411,42 +4412,40 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                   CCR Silo Data Entry
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {t.ccr_silo_data_description}
-                </p>
+                <p className="text-sm text-slate-600">{t.ccr_silo_data_description}</p>
               </div>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
+            <div className="overflow-x-auto rounded-xl border border-slate-200/50 shadow-inner">
               <table
-                className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700"
+                className="min-w-full divide-y divide-slate-200 border border-slate-200"
                 aria-label="Silo Data Table"
               >
                 <thead className="bg-gradient-ocean text-white shadow-lg">
                   <tr>
                     <th
                       rowSpan={2}
-                      className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 align-middle"
+                      className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 align-middle"
                     >
                       {t.silo_name}
                     </th>
                     <th
                       colSpan={3}
-                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
+                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 border-b border-slate-300/30"
                     >
                       {t.shift_1}
                     </th>
                     <th
                       colSpan={3}
-                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30 border-b border-slate-300/30 dark:border-slate-600/30"
+                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 border-b border-slate-300/30"
                     >
                       {t.shift_2}
                     </th>
                     <th
                       colSpan={3}
-                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-300/30 dark:border-slate-600/30"
+                      className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-300/30"
                     >
                       {t.shift_3}
                     </th>
@@ -4455,20 +4454,20 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     {[...Array(3)].flatMap((_, i) => [
                       <th
                         key={`es-${i}`}
-                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
+                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30"
                       >
                         {t.empty_space}
                       </th>,
                       <th
                         key={`c-${i}`}
-                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30 dark:border-slate-600/30"
+                        className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-300/30"
                       >
                         {t.content}
                       </th>,
                       <th
                         key={`p-${i}`}
                         className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
-                          i < 2 ? 'border-r border-slate-300/30 dark:border-slate-600/30' : ''
+                          i < 2 ? 'border-r border-slate-300/30' : ''
                         }`}
                       >
                         {t.percentage}
@@ -4476,13 +4475,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     ])}
                   </tr>
                 </thead>
-                <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm divide-y divide-slate-200/50 dark:divide-slate-700/50">
+                <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-slate-200/50">
                   {loading ? (
                     <tr>
                       <td colSpan={10} className="text-center py-16">
                         <div className="flex items-center justify-center">
                           <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                          <span className="ml-3 text-slate-600 dark:text-slate-400 font-medium">
+                          <span className="ml-3 text-slate-600 font-medium">
                             Loading silo data...
                           </span>
                         </div>
@@ -4608,10 +4607,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   )}
                   {dailySiloData.length === 0 && (
                     <tr>
-                      <td
-                        colSpan={10}
-                        className="text-center py-6 text-slate-500 dark:text-slate-400"
-                      >
+                      <td colSpan={10} className="text-center py-6 text-slate-500">
                         {!selectedCategory
                           ? t.no_plant_categories_found
                           : t.no_silo_master_data_found.replace('{category}', selectedCategory)}
@@ -4624,7 +4620,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
 
           {/* CCR Material Usage Entry */}
-          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
                 <svg
@@ -4642,15 +4638,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                   {t.ccr_material_usage_entry_title}
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {t.ccr_material_usage_description}
-                </p>
+                <p className="text-sm text-slate-600">{t.ccr_material_usage_description}</p>
               </div>
             </div>
             <MaterialUsageEntry
+              key={materialUsageRefreshTrigger}
               selectedDate={selectedDate}
               selectedUnit={selectedUnit}
               selectedCategory={selectedCategory}
@@ -4662,7 +4657,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* Second Row: Information and CCR Downtime Data Entry */}
         <div className="grid grid-cols-2 gap-6">
           {/* Information */}
-          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
                 <svg
@@ -4680,19 +4675,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                   Information
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                  {t.ccr_information_description}
-                </p>
+                <p className="text-sm text-slate-600 mt-1">{t.ccr_information_description}</p>
               </div>
             </div>
             <div className="space-y-3">
-              <label
-                htmlFor="keterangan"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="keterangan" className="block text-sm font-semibold text-slate-700">
                 {t.information_label}
               </label>
               <div className="relative">
@@ -4702,13 +4692,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={informationText}
                   onChange={(e) => handleInformationChange(e.target.value)}
                   disabled={!selectedCategory || !selectedUnit}
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-slate-200 resize-vertical transition-all duration-150 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder={t.information_placeholder}
                 />
               </div>
               {isSavingInformation && (
                 <div className="flex justify-end">
-                  <div className="px-4 py-2 text-sm text-emerald-700 dark:text-emerald-300 flex items-center space-x-2">
+                  <div className="px-4 py-2 text-sm text-emerald-700 flex items-center space-x-2">
                     <div className="w-3 h-3 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                     <span>Otomatis menyimpan perubahan...</span>
                   </div>
@@ -4718,7 +4708,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
 
           {/* Downtime Data Entry */}
-          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
@@ -4737,12 +4727,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                     CCR Downtime Data Entry
                   </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                    {t.ccr_downtime_description}
-                  </p>
+                  <p className="text-sm text-slate-600 mt-1">{t.ccr_downtime_description}</p>
                 </div>
               </div>
               <EnhancedButton
@@ -4789,13 +4777,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                <tbody className="bg-white/80 backdrop-blur-sm">
                   {loading ? (
                     <tr>
-                      <td
-                        colSpan={7}
-                        className="text-center py-12 text-slate-500 dark:text-slate-400"
-                      >
+                      <td colSpan={7} className="text-center py-12 text-slate-500">
                         <div className="flex items-center justify-center space-x-2">
                           <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                           <span className="text-sm font-medium">{t.loading_data}</span>
@@ -4806,30 +4791,28 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     dailyDowntimeData.map((downtime, idx) => (
                       <tr
                         key={downtime.id}
-                        className={`border-b border-slate-200/50 dark:border-slate-700/50 group ${
-                          idx % 2 === 0
-                            ? 'bg-white/40 dark:bg-slate-800/40'
-                            : 'bg-slate-50/30 dark:bg-slate-700/30'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-150`}
+                        className={`border-b border-slate-200/50 group ${
+                          idx % 2 === 0 ? 'bg-white/40' : 'bg-slate-50/30'
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-150`}
                       >
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800">
                           {downtime.start_time}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800">
                           {downtime.end_time}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
-                          <span className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-medium text-xs">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700">
+                          <span className="px-2 py-1 rounded-md bg-blue-100 text-blue-800 font-medium text-xs">
                             {downtime.unit}
                           </span>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-700">
                           {downtime.pic}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                        <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
                           {downtime.problem}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                        <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
                           {downtime.action || '-'}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -4858,13 +4841,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan={7}
-                        className="text-center py-12 text-slate-500 dark:text-slate-400"
-                      >
+                      <td colSpan={7} className="text-center py-12 text-slate-500">
                         <div className="flex items-center justify-center space-x-3">
                           <svg
-                            className="w-8 h-8 text-slate-400 dark:text-slate-500"
+                            className="w-8 h-8 text-slate-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -4912,10 +4892,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <div className="p-6">
           <div className="flex items-start space-x-4">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-red-600 dark:text-red-400"
+                    className="w-6 h-6 text-red-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -4931,27 +4911,21 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
-                  Hapus Data Downtime
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">Hapus Data Downtime</h3>
+                <p className="text-sm text-slate-600 mb-4">
                   Tindakan ini tidak dapat dibatalkan. Data downtime berikut akan dihapus permanen:
                 </p>
                 {deletingRecord && (
-                  <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-4 space-y-2">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Unit:
-                      </span>
-                      <span className="text-sm text-slate-900 dark:text-slate-100 font-semibold">
+                      <span className="text-sm font-medium text-slate-700">Unit:</span>
+                      <span className="text-sm text-slate-900 font-semibold">
                         {deletingRecord.unit}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Tanggal:
-                      </span>
-                      <span className="text-sm text-slate-900 dark:text-slate-100 font-semibold">
+                      <span className="text-sm font-medium text-slate-700">Tanggal:</span>
+                      <span className="text-sm text-slate-900 font-semibold">
                         {new Date(deletingRecord.date).toLocaleDateString('id-ID', {
                           weekday: 'long',
                           year: 'numeric',
@@ -4962,34 +4936,30 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </div>
                     {deletingRecord.problem && (
                       <div className="flex items-start space-x-2">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Problem:
-                        </span>
-                        <span className="text-sm text-slate-900 dark:text-slate-100 font-semibold">
+                        <span className="text-sm font-medium text-slate-700">Problem:</span>
+                        <span className="text-sm text-slate-900 font-semibold">
                           {deletingRecord.problem}
                         </span>
                       </div>
                     )}
                     {deletingRecord.start_time && deletingRecord.end_time && (
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Durasi:
-                        </span>
-                        <span className="text-sm text-slate-900 dark:text-slate-100 font-semibold">
+                        <span className="text-sm font-medium text-slate-700">Durasi:</span>
+                        <span className="text-sm text-slate-900 font-semibold">
                           {deletingRecord.start_time} - {deletingRecord.end_time}
                         </span>
                       </div>
                     )}
                   </div>
                 )}
-                <p className="text-sm text-red-600 dark:text-red-400 mt-4 font-medium">
+                <p className="text-sm text-red-600 mt-4 font-medium">
                   ⚠️ Pastikan data ini benar-benar perlu dihapus sebelum melanjutkan.
                 </p>
               </div>
             </div>
           </div>
         </div>
-        <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200 dark:border-slate-700">
+        <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200">
           <EnhancedButton
             variant="error"
             onClick={handleDeleteConfirm}
@@ -5037,57 +5007,47 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       >
         <div className="space-y-4 parameter-reorder-modal">
           <div className="space-y-2">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-slate-600">
               Ada beberapa cara untuk menyusun ulang parameter:
             </p>
-            <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-md space-y-2">
+            <div className="bg-slate-100 p-2 rounded-md space-y-2">
               <div>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  1. Drag and Drop:
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 pl-3">
+                <p className="text-xs font-medium text-slate-700 mb-1">1. Drag and Drop:</p>
+                <p className="text-xs text-slate-600 pl-3">
                   Tarik parameter ke posisi yang diinginkan
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  2. Input Nomor:
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 pl-3">
+                <p className="text-xs font-medium text-slate-700 mb-1">2. Input Nomor:</p>
+                <p className="text-xs text-slate-600 pl-3">
                   Masukkan nomor posisi yang diinginkan pada kotak input
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  3. Tombol ↑/↓:
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 pl-3">
+                <p className="text-xs font-medium text-slate-700 mb-1">3. Tombol ↑/↓:</p>
+                <p className="text-xs text-slate-600 pl-3">
                   Gunakan tombol panah untuk penyesuaian satu per satu
                 </p>
               </div>
 
               <div>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  4. Pintasan Keyboard:
-                </p>
-                <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1 pl-4 list-disc">
+                <p className="text-xs font-medium text-slate-700 mb-1">4. Pintasan Keyboard:</p>
+                <ul className="text-xs text-slate-600 space-y-1 pl-4 list-disc">
                   <li>Alt + ↑ : Pindahkan parameter ke atas</li>
                   <li>Alt + ↓ : Pindahkan parameter ke bawah</li>
                 </ul>
               </div>
 
               <div>
-                <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  5. Pencarian:
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 pl-3">
+                <p className="text-xs font-medium text-slate-700 mb-1">5. Pencarian:</p>
+                <p className="text-xs text-slate-600 pl-3">
                   Gunakan fitur pencarian untuk menemukan parameter dengan cepat
                 </p>
               </div>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 italic">
+            <p className="text-xs text-slate-500 italic">
               Urutan parameter akan disimpan secara otomatis saat menekan tombol &quot;Done&quot;.
             </p>
           </div>
@@ -5100,7 +5060,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               type="text"
               value={modalSearchQuery}
               onChange={(e) => setModalSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="Cari parameter..."
               aria-label="Cari parameter"
             />
@@ -5138,7 +5098,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       );
                     })
                   ) : (
-                    <div className="p-4 text-center text-sm text-slate-500 bg-slate-50 dark:bg-slate-700 dark:text-slate-400 rounded-md">
+                    <div className="p-4 text-center text-sm text-slate-500 bg-slate-50 rounded-md">
                       {modalSearchQuery
                         ? 'Tidak ada parameter yang cocok dengan pencarian'
                         : 'Tidak ada parameter yang tersedia'}
@@ -5196,22 +5156,22 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     />
                   </svg>
                 </button>
-                <div className="absolute z-10 w-72 bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity left-0 bottom-full mb-2 text-xs">
-                  <h3 className="font-semibold mb-1 text-slate-900 dark:text-white">
+                <div className="absolute z-10 w-72 bg-white p-3 rounded-lg shadow-lg border border-slate-200 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity left-0 bottom-full mb-2 text-xs">
+                  <h3 className="font-semibold mb-1 text-slate-900">
                     Penggunaan Excel untuk Urutan Parameter
                   </h3>
-                  <ul className="list-disc pl-4 text-slate-600 dark:text-slate-300 space-y-1">
+                  <ul className="list-disc pl-4 text-slate-600 space-y-1">
                     <li>Export: Mengunduh urutan parameter saat ini ke Excel</li>
                     <li>Import: Menerapkan urutan dari file Excel yang telah diedit</li>
                     <li>Di Excel: Edit kolom &ldquo;Order&rdquo; untuk mengubah urutan</li>
                     <li>Jangan mengubah kolom ID di file Excel</li>
                   </ul>
-                  <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                  <div className="mt-2 pt-2 border-t border-slate-200">
                     <a
                       href="/docs/PARAMETER_ORDER_EXCEL_GUIDE.md"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-600 dark:text-blue-400 flex items-center"
+                      className="text-blue-500 hover:text-blue-600 flex items-center"
                     >
                       <span>Baca panduan lengkap</span>
                       <svg
@@ -5281,13 +5241,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         title={t.save_parameter_order_profile_title}
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-slate-600">
             Save the current parameter order as a profile that can be loaded later.
           </p>
 
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Profile Name *
               </label>
               <input
@@ -5295,12 +5255,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={profileName}
                 onChange={(e) => setProfileName(e.target.value)}
                 placeholder="Enter profile name"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 autoFocus
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Description (optional)
               </label>
               <textarea
@@ -5308,7 +5268,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 onChange={(e) => setProfileDescription(e.target.value)}
                 placeholder="Enter profile description"
                 rows={3}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -5344,27 +5304,21 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         title={t.load_parameter_order_profile_title}
       >
         <div className="space-y-4">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Select a profile to load the parameter order.
-          </p>
+          <p className="text-sm text-slate-600">Select a profile to load the parameter order.</p>
 
           <div className="max-h-96 overflow-y-auto space-y-2">
             {profiles.length === 0 ? (
-              <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
-                No profiles available
-              </p>
+              <p className="text-sm text-slate-500 text-center py-4">No profiles available</p>
             ) : (
               profiles.map((profile) => (
                 <div
                   key={profile.id}
-                  className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors"
                   onClick={() => loadProfile(profile)}
                 >
                   <div>
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
-                      {profile.name}
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                    <div className="font-semibold text-slate-800">{profile.name}</div>
+                    <div className="text-xs text-slate-500">
                       Created by {profile.user_id === loggedInUser?.id ? 'You' : 'Another user'} •{' '}
                       {new Date(profile.created_at).toLocaleDateString()}
                     </div>
@@ -5391,7 +5345,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           setShowDeleteProfileModal(true);
                         }}
                         aria-label={`Delete profile ${profile.name}`}
-                        className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        className="text-red-600 hover:text-red-700"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </EnhancedButton>
@@ -5424,7 +5378,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         title={t.delete_parameter_order_profile_title}
       >
         <div className="p-6">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-slate-600">
             Are you sure you want to delete the profile &quot;{profileToDelete?.name}&quot;? This
             action cannot be undone.
           </p>

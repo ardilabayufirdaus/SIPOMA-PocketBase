@@ -301,10 +301,10 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         })) // FIX: Use snake_case property `silo_id`
         .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
 
-      // Get material usage data for the selected date and category (not unit, since material usage is stored by category)
+      // Get material usage data for the selected date, category, and unit
       const materialUsageDataForDate = await getMaterialUsageForDate(
         selectedDate,
-        undefined,
+        selectedUnit,
         selectedCategory
       );
       const filteredMaterialUsageData = materialUsageDataForDate.map((data) => ({
@@ -503,10 +503,10 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         })) // FIX: Use snake_case property `silo_id`
         .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
 
-      // Get material usage data for the selected date and category (not unit, since material usage is stored by category)
+      // Get material usage data for the selected date, category, and unit
       const materialUsageDataForDate = await getMaterialUsageForDate(
         selectedDate,
-        undefined,
+        selectedUnit,
         selectedCategory
       );
       const filteredMaterialUsageData = materialUsageDataForDate.map((data) => ({
@@ -737,13 +737,11 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   return (
     <div className="space-y-6">
       {/* Compact Header Section */}
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+      <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           {/* Title - More compact */}
           <div className="flex-shrink-0">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-              {t.op_report}
-            </h2>
+            <h2 className="text-lg font-semibold text-slate-800">{t.op_report}</h2>
           </div>
 
           {/* Filters and Controls - Compact horizontal layout */}
@@ -753,7 +751,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
                 <label
                   htmlFor="report-category"
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                  className="text-sm font-medium text-slate-700 whitespace-nowrap"
                 >
                   {t.plant_category_label}:
                 </label>
@@ -762,7 +760,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     id="report-category"
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full pl-3 pr-8 py-1.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm appearance-none"
+                    className="w-full pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm appearance-none"
                   >
                     {plantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -777,7 +775,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
                 <label
                   htmlFor="report-unit"
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                  className="text-sm font-medium text-slate-700 whitespace-nowrap"
                 >
                   {t.unit_label}:
                 </label>
@@ -787,7 +785,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     value={selectedUnit}
                     onChange={(e) => setSelectedUnit(e.target.value)}
                     disabled={unitsForCategory.length === 0}
-                    className="w-full pl-3 pr-8 py-1.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm disabled:bg-slate-100 dark:disabled:bg-slate-600 appearance-none"
+                    className="w-full pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm disabled:bg-slate-100 appearance-none"
                   >
                     {unitsForCategory.map((unit) => (
                       <option key={unit} value={unit}>
@@ -802,7 +800,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
                 <label
                   htmlFor="report-date"
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap"
+                  className="text-sm font-medium text-slate-700 whitespace-nowrap"
                 >
                   {t.select_date}:
                 </label>
@@ -811,7 +809,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="report-date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="min-w-0 flex-1 sm:w-36 px-3 py-1.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm"
+                  className="min-w-0 flex-1 sm:w-36 px-3 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm"
                 />
               </div>
             </div>
@@ -858,15 +856,15 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md min-h-[60vh] flex items-center justify-center">
+      <div className="bg-white p-6 rounded-lg shadow-md min-h-[60vh] flex items-center justify-center">
         {reportConfig.length === 0 && (
-          <div className="text-center text-slate-500 dark:text-slate-400">
+          <div className="text-center text-slate-500">
             <h3 className="text-lg font-semibold">{t.no_report_parameters}</h3>
             <p>Please configure parameters in Plant Operations - Master Data.</p>
           </div>
         )}
         {isLoading && (
-          <div className="text-center text-slate-500 dark:text-slate-400">
+          <div className="text-center text-slate-500">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
             <p className="mt-4">{t.generating_report_message}</p>
           </div>
@@ -889,7 +887,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
         {!isLoading && !reportData && reportConfig.length > 0 && (
-          <div className="text-center text-slate-400 dark:text-slate-500">
+          <div className="text-center text-slate-400">
             <p>
               Select filters and click &quot;Generate Report&quot; to view the daily operational
               report.

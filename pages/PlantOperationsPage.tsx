@@ -9,6 +9,7 @@ import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibrar
 import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
 import PlantOperationsDashboardPage from './plant_operations/PlantOperationsDashboardPage';
 import UnifiedPlantOpsDashboard from './plant_operations/UnifiedPlantOpsDashboard';
+import MonitoringPage from './plant_operations/MonitoringPage';
 
 interface PlantData {
   loading: boolean;
@@ -40,6 +41,8 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t
       return <CopAnalysisPage t={t} />;
     case 'op_work_instruction_library':
       return <WorkInstructionLibraryPage t={t} />;
+    case 'op_monitoring':
+      return <MonitoringPage t={t} />;
     default: {
       const pageTitle = t[activePage as keyof typeof t] || activePage;
       return <PlaceholderPage title={pageTitle} t={t} />;

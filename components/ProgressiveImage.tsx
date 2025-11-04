@@ -82,7 +82,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
   if (hasError) {
     return (
       <div
-        className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400 ${className}`}
+        className={`flex items-center justify-center bg-gray-100 text-gray-400 ${className}`}
         style={{ width, height }}
         role="img"
         aria-label={`Failed to load image: ${alt}`}
@@ -123,7 +123,7 @@ export const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
 
       {/* Loading skeleton */}
       {!isLoaded && !blurDataURL && !placeholder && (
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-700 dark:via-gray-600 dark:to-gray-700 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-pulse" />
       )}
 
       {/* Main image */}

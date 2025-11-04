@@ -40,7 +40,7 @@ export interface DashboardLayout {
   settings: {
     autoRefresh: boolean;
     refreshInterval: number;
-    theme: 'light' | 'dark' | 'auto';
+    theme: 'light';
   };
 }
 

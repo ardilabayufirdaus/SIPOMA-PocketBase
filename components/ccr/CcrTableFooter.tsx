@@ -52,7 +52,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: t.average_shift_3_cont,
       data: parameterShiftAverageData.shift3Cont,
-      className: 'bg-slate-50 dark:bg-slate-700',
+      className: 'bg-slate-50',
     },
     {
       label: t.total_shift_1,
@@ -62,7 +62,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: t.average_shift_1,
       data: parameterShiftAverageData.shift1,
-      className: 'bg-slate-50 dark:bg-slate-700',
+      className: 'bg-slate-50',
     },
     {
       label: t.total_shift_2,
@@ -72,7 +72,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: t.average_shift_2,
       data: parameterShiftAverageData.shift2,
-      className: 'bg-slate-50 dark:bg-slate-700',
+      className: 'bg-slate-50',
     },
     {
       label: t.total_shift_3,
@@ -82,27 +82,27 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     {
       label: t.average_shift_3,
       data: parameterShiftAverageData.shift3,
-      className: 'bg-slate-50 dark:bg-slate-700',
+      className: 'bg-slate-50',
     },
     {
       label: 'Counter Shift 3 (Cont.)',
       data: parameterShiftCounterData.shift3Cont,
-      className: 'border-t-2 border-blue-300 bg-blue-50 dark:bg-blue-900',
+      className: 'border-t-2 border-blue-300 bg-blue-50',
     },
     {
       label: 'Counter Shift 1',
       data: parameterShiftCounterData.shift1,
-      className: 'border-t border-blue-200 bg-blue-50 dark:bg-blue-900',
+      className: 'border-t border-blue-200 bg-blue-50',
     },
     {
       label: 'Counter Shift 2',
       data: parameterShiftCounterData.shift2,
-      className: 'border-t border-blue-200 bg-blue-50 dark:bg-blue-900',
+      className: 'border-t border-blue-200 bg-blue-50',
     },
     {
       label: 'Counter Shift 3',
       data: parameterShiftCounterData.shift3,
-      className: 'border-t border-blue-200 bg-blue-50 dark:bg-blue-900',
+      className: 'border-t border-blue-200 bg-blue-50',
     },
     {
       label: t.total,
@@ -133,16 +133,16 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
     const blueBackgroundRows = [8, 9, 10, 11]; // counter rows with bg-blue-50
 
     if (lightBackgroundRows.includes(rowIndex)) {
-      return 'text-slate-800 bg-slate-50/95 dark:text-slate-100 dark:bg-slate-700/95 hover:bg-slate-100/95 dark:hover:bg-slate-600/95';
+      return 'text-slate-800 bg-slate-50/95 hover:bg-slate-100/95';
     } else if (blueBackgroundRows.includes(rowIndex)) {
-      return 'text-blue-900 bg-blue-50/95 dark:text-blue-100 dark:bg-blue-900/95 hover:bg-blue-100/95 dark:hover:bg-blue-800/95';
+      return 'text-blue-900 bg-blue-50/95 hover:bg-blue-100/95';
     } else {
-      return 'text-slate-800 dark:text-slate-100 bg-white/90 dark:bg-slate-800/90 hover:bg-white/95 dark:hover:bg-slate-700/95';
+      return 'text-slate-800 bg-white/90 hover:bg-white/95';
     }
   };
 
   return (
-    <div className="ccr-table-footer-container bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-xl shadow-2xl border border-emerald-300/30 dark:border-emerald-700/30 p-4 mt-4">
+    <div className="ccr-table-footer-container bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-xl shadow-2xl border border-emerald-300/30 p-4 mt-4">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-lg bg-slate-900/80 backdrop-blur-sm flex items-center justify-center border border-white/20">
           <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

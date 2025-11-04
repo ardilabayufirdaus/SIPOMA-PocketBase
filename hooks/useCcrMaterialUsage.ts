@@ -139,33 +139,40 @@ export const useCcrMaterialUsage = () => {
   /**
    * Get material usage data for specific unit and date
    */
-  const getDataForUnitAndDate = useCallback(async (date: string, plant_unit: string) => {
-    if (!date || !plant_unit) {
-      return [];
-    }
+  const getDataForUnitAndDate = useCallback(
+    async (date: string, plant_unit: string, plant_category?: string) => {
+      if (!date || !plant_unit) {
+        return [];
+      }
 
-    setLoading(true);
-    setError(null);
+      setLoading(true);
+      setError(null);
 
-    try {
-      const formattedDate = formatDateToISO8601(date);
-      const filter = `date="${formattedDate}" && plant_unit="${plant_unit}"`;
+      try {
+        const formattedDate = formatDateToISO8601(date);
+        let filter = `date="${formattedDate}" && plant_unit="${plant_unit}"`;
 
-      const items = await pb.collection('ccr_material_usage').getFullList({
-        filter,
-        sort: 'created',
-      });
+        if (plant_category) {
+          filter += ` && plant_category="${plant_category}"`;
+        }
 
-      return items as MaterialUsageData[];
-    } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error('Failed to fetch material usage data for unit')
-      );
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        const items = await pb.collection('ccr_material_usage').getFullList({
+          filter,
+          sort: 'created',
+        });
+
+        return items as MaterialUsageData[];
+      } catch (err) {
+        setError(
+          err instanceof Error ? err : new Error('Failed to fetch material usage data for unit')
+        );
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   /**
    * Create new material usage record
@@ -351,13 +358,13 @@ export const useCcrMaterialUsage = () => {
    * Used for auto-save operations to avoid UI loading indicators
    */
   const saveMaterialUsageSilent = useCallback(async (data: Partial<CcrMaterialUsageSchema>) => {
-    if (!data.date || !data.plant_unit || !data.shift) {
-      throw new Error('Date, plant_unit, and shift are required');
+    if (!data.date || !data.plant_unit || !data.shift || !data.plant_category) {
+      throw new Error('Date, plant_unit, plant_category, and shift are required');
     }
 
     try {
       const formattedDate = formatDateToISO8601(data.date);
-      const filter = `date="${formattedDate}" && plant_unit="${data.plant_unit}" && shift="${data.shift}"`;
+      const filter = `date="${formattedDate}" && plant_unit="${data.plant_unit}" && plant_category="${data.plant_category}" && shift="${data.shift}"`;
 
       // Check if record exists
       const existingRecords = await pb.collection('ccr_material_usage').getFullList({

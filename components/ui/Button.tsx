@@ -80,7 +80,7 @@ const Button: React.FC<ButtonProps> = ({
       'focus:ring-red-500'
     ),
     glass: cn(
-      'bg-white/10 backdrop-blur-md border border-white/20 text-gray-800 dark:text-white',
+      'bg-white/10 backdrop-blur-md border border-white/20 text-gray-800',
       'hover:bg-white/20 shadow-glass',
       'focus:ring-white/50'
     ),
@@ -89,11 +89,7 @@ const Button: React.FC<ButtonProps> = ({
       'hover:bg-primary-500 hover:text-white',
       'focus:ring-primary-500'
     ),
-    ghost: cn(
-      'text-gray-700 dark:text-gray-300 bg-transparent',
-      'hover:bg-gray-100 dark:hover:bg-gray-800',
-      'focus:ring-gray-500'
-    ),
+    ghost: cn('text-gray-700 bg-transparent', 'hover:bg-gray-100', 'focus:ring-gray-500'),
   };
 
   // Combine all classes

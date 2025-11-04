@@ -33,11 +33,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900">
               {t.notifications_title || 'Notifications'}
             </h3>
             {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-400 rounded-full">
+              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-100 text-red-800 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -66,14 +66,14 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                 key={notification.id}
                 className={`p-3 rounded-lg border transition-colors ${
                   !notification.read_at
-                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    ? 'bg-blue-50 border-blue-200'
+                    : 'bg-gray-50 border-gray-200'
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <span className="text-xs font-medium text-gray-500 uppercase">
                         {notification.category || 'system'}
                       </span>
                       <span
@@ -86,10 +86,10 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                         }`}
                       />
                     </div>
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                    <h4 className="text-sm font-medium text-gray-900 mb-1">
                       {notification.message}
                     </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 mt-1">
                       {new Date(notification.created_at).toLocaleString()}
                     </p>
                   </div>
@@ -120,8 +120,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
             ))
           ) : (
             <div className="text-center py-8">
-              <EyeSlashIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <EyeSlashIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">
                 {t.no_new_notifications || 'No new notifications'}
               </p>
             </div>

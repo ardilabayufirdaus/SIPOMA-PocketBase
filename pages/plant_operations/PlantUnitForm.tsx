@@ -196,12 +196,12 @@ const PlantUnitForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t 
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-3"
+            className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3"
             role="alert"
             aria-live="polite"
           >
-            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-            <span className="text-green-800 dark:text-green-200 font-medium">
+            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+            <span className="text-green-800 font-medium">
               {t.save_success || 'Plant unit saved successfully!'}
             </span>
           </motion.div>
@@ -232,7 +232,7 @@ const PlantUnitForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t 
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+              className="mt-2 flex items-center gap-2 text-sm text-red-600"
               id="unit-error"
               role="alert"
             >
@@ -267,7 +267,7 @@ const PlantUnitForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t 
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+              className="mt-2 flex items-center gap-2 text-sm text-red-600"
               id="category-error"
               role="alert"
             >
@@ -280,15 +280,15 @@ const PlantUnitForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t 
         {/* Helper Text */}
         <motion.div
           variants={fieldVariants}
-          className="text-sm text-gray-600 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800"
+          className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200"
         >
           <div className="flex items-start gap-2">
-            <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <Building2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">
+              <p className="font-medium text-blue-800 mb-1">
                 {t.form_help_title || 'Plant Unit Guidelines'}
               </p>
-              <ul className="space-y-1 text-blue-700 dark:text-blue-300">
+              <ul className="space-y-1 text-blue-700">
                 <li>• {t.unit_help || 'Unit should be unique within its category'}</li>
                 <li>• {t.category_help || 'Category groups related production units'}</li>
                 <li>• {t.naming_help || 'Use clear, descriptive names for easy identification'}</li>
@@ -301,7 +301,7 @@ const PlantUnitForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t 
       {/* Form Actions */}
       <motion.div
         variants={fieldVariants}
-        className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-gray-200 dark:border-gray-700"
+        className="bg-gray-50 px-6 py-4 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-gray-200"
       >
         <EnhancedButton
           type="submit"

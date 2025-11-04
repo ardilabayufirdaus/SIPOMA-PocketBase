@@ -149,11 +149,9 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200">
-          {t.op_work_instruction_library}
-        </h2>
+        <h2 className="text-xl font-semibold text-slate-800">{t.op_work_instruction_library}</h2>
         <button
           onClick={handleOpenAddModal}
           className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200"
@@ -176,7 +174,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
               placeholder={t.search_placeholder || 'Search by title, description, code...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              className="w-full pl-4 pr-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900"
             />
           </div>
         </div>
@@ -188,7 +186,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
             id="activity-filter"
             value={filterActivity}
             onChange={(e) => setFilterActivity(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900"
           >
             <option value="">{t.all_activities || 'All Activities'}</option>
             {Array.from(new Set(instructions.map((i) => i.activity)))
@@ -211,7 +209,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
               setFilterPlantCategory(e.target.value);
               setFilterPlantUnit(''); // Reset unit filter when category changes
             }}
-            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900"
           >
             <option value="">All Plant Categories</option>
             {Array.from(new Set(plantUnits.map((unit) => unit.category)))
@@ -232,7 +230,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
             value={filterPlantUnit}
             onChange={(e) => setFilterPlantUnit(e.target.value)}
             disabled={!filterPlantCategory}
-            className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value="">All Plant Units</option>
             {plantUnits
@@ -250,16 +248,14 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
         {loading ? (
           <div className="flex justify-center items-center py-10">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-            <span className="ml-2 text-slate-600 dark:text-slate-400">
-              Loading work instructions...
-            </span>
+            <span className="ml-2 text-slate-600">Loading work instructions...</span>
           </div>
         ) : error ? (
           <div className="text-center py-10">
-            <div className="text-red-600 dark:text-red-400 mb-2">
+            <div className="text-red-600 mb-2">
               <ExclamationTriangleIcon className="w-8 h-8 mx-auto" />
             </div>
-            <p className="text-slate-600 dark:text-slate-400">{error}</p>
+            <p className="text-slate-600">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
@@ -273,18 +269,18 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
             role="table"
             aria-label="Work Instructions Library"
           >
-            <thead className="bg-slate-50 dark:bg-slate-700">
+            <thead className="bg-slate-50">
               <tr>
                 {tableHeaders.map((header) => (
                   <th
                     key={header}
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
                   >
                     {header !== 'actions' && header !== 'link' ? (
                       <button
                         onClick={() => handleSort(header)}
-                        className="flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
+                        className="flex items-center gap-1 hover:text-slate-800 transition-colors"
                         aria-sort={
                           sortColumn === header
                             ? sortDirection === 'asc'
@@ -308,7 +304,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                 ))}
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-slate-800">
+            <tbody className="bg-white">
               {groupedInstructions.map(([activity, instructionList], groupIndex) => (
                 <React.Fragment key={activity}>
                   <motion.tr
@@ -316,13 +312,8 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: groupIndex * 0.1 }}
                   >
-                    <td
-                      colSpan={tableHeaders.length}
-                      className="px-6 py-3 bg-slate-100 dark:bg-slate-700"
-                    >
-                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                        {activity}
-                      </h3>
+                    <td colSpan={tableHeaders.length} className="px-6 py-3 bg-slate-100">
+                      <h3 className="text-sm font-bold text-slate-800">{activity}</h3>
                     </td>
                   </motion.tr>
                   {instructionList.map((instruction, index) => (
@@ -331,22 +322,22 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: groupIndex * 0.1 + index * 0.05 }}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-150 border-b border-slate-200 dark:border-slate-600"
+                      className="hover:bg-slate-50 transition-colors duration-150 border-b border-slate-200"
                     >
                       {/* FIX: Use snake_case properties */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400 font-mono">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
                         {instruction.doc_code}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
                         {instruction.doc_title}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         {instruction.plant_category}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                         {instruction.plant_unit}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+                      <td className="px-6 py-4 text-sm text-slate-500 max-w-sm">
                         {instruction.description}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -404,10 +395,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
               ))}
               {groupedInstructions.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={tableHeaders.length}
-                    className="text-center py-10 text-slate-500 dark:text-slate-400"
-                  >
+                  <td colSpan={tableHeaders.length} className="text-center py-10 text-slate-500">
                     No work instructions found.
                   </td>
                 </tr>
@@ -436,11 +424,9 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
         title={t.delete_confirmation_title}
       >
         <div className="p-6">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {t.delete_confirmation_message}
-          </p>
+          <p className="text-sm text-slate-600">{t.delete_confirmation_message}</p>
         </div>
-        <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+        <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
           <button
             onClick={handleDeleteConfirm}
             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
@@ -449,7 +435,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
           </button>
           <button
             onClick={handleCloseModals}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-800 text-base font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
             {t.cancel_button}
           </button>

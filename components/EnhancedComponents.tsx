@@ -103,7 +103,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   return (
     <div className={`relative ${className}`} ref={imgRef}>
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
           {placeholder || (
             <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
           )}
@@ -305,13 +305,11 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
 
   const variantClasses = {
     primary:
-      'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm hover:shadow-md dark:bg-blue-500 dark:hover:bg-blue-600',
+      'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 shadow-sm hover:shadow-md',
     secondary:
-      'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 focus:ring-gray-500 shadow-sm hover:shadow-md dark:bg-gray-500 dark:hover:bg-gray-600 dark:text-gray-900 dark:border-gray-400',
-    ghost:
-      'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500 dark:hover:bg-gray-800 dark:text-gray-300',
-    danger:
-      'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm hover:shadow-md dark:bg-red-500 dark:hover:bg-red-600',
+      'bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 focus:ring-gray-500 shadow-sm hover:shadow-md',
+    ghost: 'bg-transparent hover:bg-gray-100 text-gray-700 focus:ring-gray-500',
+    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm hover:shadow-md',
   };
 
   const sizeClasses = {
@@ -365,7 +363,7 @@ export const EnhancedCard: React.FC<EnhancedCardProps> = ({
   };
 
   const classes = [
-    'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700',
+    'bg-white rounded-lg border border-gray-200',
     paddingClasses[padding],
     shadowClasses[shadow],
     hover ? 'hover:shadow-lg transition-shadow duration-200' : '',
@@ -431,7 +429,7 @@ export const EnhancedInput: React.FC<EnhancedInputProps> = ({
   return (
     <div className="space-y-1">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-gray-700">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>

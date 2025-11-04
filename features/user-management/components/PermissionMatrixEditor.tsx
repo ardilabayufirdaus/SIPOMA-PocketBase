@@ -269,11 +269,9 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         'NONE';
 
       return (
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-600 p-2 hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-200">
+        <div className="bg-gray-50 rounded-md border border-gray-200 p-2 hover:border-blue-300 transition-colors duration-200">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
-              {unit.unit}
-            </span>
+            <span className="text-xs font-medium text-gray-900 truncate">{unit.unit}</span>
             <EnhancedBadge
               variant={getPermissionLevelColor(currentLevel) as any}
               className="text-xs px-1.5 py-0.5"
@@ -290,8 +288,8 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                 onClick={() => onPermissionChange(category, unit.unit, level)}
                 className={`relative p-1 text-xs font-medium rounded border transition-all duration-150 transform hover:scale-105 ${
                   currentLevel === level
-                    ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-sm`
-                    : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600`
+                    ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm`
+                    : `border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50`
                 }`}
                 title={`${unit.unit} - ${level}`}
               >
@@ -355,13 +353,13 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
     >
       <div className="space-y-6">
         {/* Tab Navigation */}
-        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        <div className="flex bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('general')}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
               activeTab === 'general'
-                ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             General Permissions
@@ -370,8 +368,8 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
             onClick={() => setActiveTab('plant')}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
               activeTab === 'plant'
-                ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white text-primary-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Plant Operations
@@ -379,15 +377,13 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         </div>
 
         {/* Custom Header */}
-        <div className="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-xl border border-primary-200 dark:border-primary-800">
+        <div className="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl border border-primary-200">
           <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
             <ShieldCheckIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Permission Configuration
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <h3 className="text-lg font-semibold text-gray-900">Permission Configuration</h3>
+            <p className="text-sm text-gray-600">
               Configure access levels for different modules and features
             </p>
           </div>
@@ -400,7 +396,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
               {permissionFeatures.map((feature) => (
                 <div
                   key={feature.key}
-                  className="group relative overflow-hidden bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:shadow-lg"
+                  className="group relative overflow-hidden bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-primary-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -411,10 +407,10 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                           {feature.icon}
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-1">
                             {feature.label}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                          <p className="text-sm text-gray-600 leading-relaxed">
                             {feature.description}
                           </p>
                         </div>
@@ -436,8 +432,8 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                               }
                               className={`relative px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 transform hover:scale-105 ${
                                 isSelected
-                                  ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 shadow-lg`
-                                  : `border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700`
+                                  ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-lg`
+                                  : `border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50`
                               }`}
                             >
                               <div className="flex items-center gap-2">
@@ -463,10 +459,10 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         {activeTab === 'plant' && (
           <div className="space-y-4">
             <div className="text-center">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+              <h3 className="text-lg font-bold text-gray-900 mb-1">
                 Plant Operations Access Control
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600">
                 Configure granular permissions for each plant unit
               </p>
             </div>
@@ -477,7 +473,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                 return (
                   <div
                     key={category}
-                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                    className="bg-white rounded-lg border border-gray-200 overflow-hidden"
                   >
                     <button
                       onClick={() => toggleCategoryCollapse(category)}
@@ -556,25 +552,25 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border border-red-200 dark:border-red-800 rounded-lg animate-pulse">
+          <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg animate-pulse">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <ExclamationTriangleIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />
               </div>
-              <span className="text-red-800 dark:text-red-200 font-medium">{error}</span>
+              <span className="text-red-800 font-medium">{error}</span>
             </div>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex justify-between items-center pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex justify-between items-center pt-6 border-t border-gray-200">
           {/* Reset to Default Button */}
           {onResetToDefault && (
             <EnhancedButton
               variant="outline"
               onClick={onResetToDefault}
               disabled={saving}
-              className="px-4 py-2 text-orange-600 border-orange-300 hover:bg-orange-50 dark:text-orange-400 dark:border-orange-600 dark:hover:bg-orange-900/20"
+              className="px-4 py-2 text-orange-600 border-orange-300 hover:bg-orange-50"
             >
               <div className="flex items-center gap-2">
                 <CogIcon className="w-4 h-4" />

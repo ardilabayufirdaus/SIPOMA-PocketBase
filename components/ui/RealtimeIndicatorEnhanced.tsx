@@ -44,23 +44,15 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({ className = '' })
             isConnected ? `bg-green-500 ${showPulse ? 'animate-pulse' : ''}` : 'bg-red-500'
           }`}
         />
-        <span
-          className={`font-medium ${
-            isConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-          }`}
-        >
+        <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
           {isConnected ? 'Realtime' : 'Offline'}
         </span>
         {subscriptionCount > 0 && (
-          <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
-            ({subscriptionCount})
-          </span>
+          <span className="text-xs text-slate-500 ml-1">({subscriptionCount})</span>
         )}
       </div>
       {lastUpdate && (
-        <span className="text-slate-500 dark:text-slate-400">
-          Last: {lastUpdate.toLocaleTimeString()}
-        </span>
+        <span className="text-slate-500">Last: {lastUpdate.toLocaleTimeString()}</span>
       )}
     </div>
   );

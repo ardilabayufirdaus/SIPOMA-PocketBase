@@ -11,16 +11,37 @@ const STATIC_CACHE_URLS = [
   // Add other static assets as needed
 ];
 
-// API endpoints to cache
+// API endpoints to cache - expanded for all PocketBase collections
 const API_ENDPOINTS = [
+  // CCR Data
   '/api/collections/ccr_parameter_data',
   '/api/collections/ccr_silo_data',
   '/api/collections/ccr_downtime',
   '/api/collections/ccr_material_usage',
   '/api/collections/ccr_footer_data',
   '/api/collections/ccr_information',
+
+  // User Management
+  '/api/collections/users',
+  '/api/collections/profiles',
+  '/api/collections/permissions',
+
+  // Plant Operations
+  '/api/collections/plant_units',
   '/api/collections/parameter_settings',
   '/api/collections/silo_capacities',
+
+  // System
+  '/api/collections/audit_logs',
+  '/api/collections/settings',
+
+  // Authentication
+  '/api/admins/auth-with-password',
+  '/api/collections/users/auth-with-password',
+  '/api/collections/users/refresh',
+
+  // File uploads
+  '/api/files',
 ];
 
 self.addEventListener('install', (event) => {
@@ -52,36 +73,44 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle API requests with network-first strategy
+  // Handle API requests with stale-while-revalidate strategy
   if (API_ENDPOINTS.some((endpoint) => url.pathname.includes(endpoint))) {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(API_CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(request).then((cachedResponse) => {
+      caches.open(API_CACHE_NAME).then(async (cache) => {
+        // Try to get cached response
+        const cachedResponse = await cache.match(request);
+
+        // Always try to fetch fresh data in background
+        const fetchPromise = fetch(request)
+          .then((networkResponse) => {
+            // Cache successful responses
+            if (networkResponse.status === 200) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          })
+          .catch((error) => {
+            console.error('Network fetch failed:', error);
+            // Return cached response if available, otherwise return offline response
             if (cachedResponse) {
               return cachedResponse;
             }
-            // Return offline response
             return new Response(
-              JSON.stringify({ error: 'Offline', message: 'Data cached locally' }),
+              JSON.stringify({
+                error: 'Offline',
+                message: 'Data cached locally',
+                cached: true,
+              }),
               {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
               }
             );
           });
-        })
+
+        // Return cached response immediately if available, otherwise wait for network
+        return cachedResponse || fetchPromise;
+      })
     );
     return;
   }

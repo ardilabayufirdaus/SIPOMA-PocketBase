@@ -179,18 +179,18 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-6">
+      <div className="w-full mx-auto space-y-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 dark:from-slate-200 dark:via-blue-400 dark:to-cyan-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
             Autonomous Data Entry System
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
+          <p className="text-slate-600 text-lg">
             Monitor and manage autonomous operations data with real-time tracking
           </p>
         </div>
         {/* Main Filter Bar */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
               <svg
@@ -207,7 +207,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
               {t.filters}
             </h3>
           </div>
@@ -216,7 +216,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="group">
               <label
                 htmlFor="auto-filter-category"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors"
+                className="block text-sm font-semibold text-slate-700 mb-2 group-focus-within:text-blue-600 transition-colors"
               >
                 {t.plant_category_label}
               </label>
@@ -225,7 +225,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -255,7 +255,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="group">
               <label
                 htmlFor="auto-filter-month"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors"
+                className="block text-sm font-semibold text-slate-700 mb-2 group-focus-within:text-blue-600 transition-colors"
               >
                 {t.filter_by_month}
               </label>
@@ -264,7 +264,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -294,7 +294,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             <div className="group">
               <label
                 htmlFor="auto-filter-year"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors"
+                className="block text-sm font-semibold text-slate-700 mb-2 group-focus-within:text-blue-600 transition-colors"
               >
                 {t.filter_by_year}
               </label>
@@ -303,7 +303,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 dark:hover:bg-slate-800/70 text-slate-800 dark:text-slate-200 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -332,7 +332,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </div>
         </div>
         {/* Downtime Follow-up Section */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
@@ -350,41 +350,41 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 {t.autonomous_downtime_follow_up}
               </h2>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-white/20 dark:border-slate-700/20">
-            <table className="min-w-full divide-y divide-white/20 dark:divide-slate-700/20">
-              <thead className="bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm">
+          <div className="overflow-x-auto rounded-xl border border-white/20">
+            <table className="min-w-full divide-y divide-white/20">
+              <thead className="bg-white/30 backdrop-blur-sm">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.start_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.end_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.duration}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.problem}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.corrective_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -392,38 +392,35 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white/20 dark:bg-slate-800/20 backdrop-blur-sm divide-y divide-white/10 dark:divide-slate-700/10">
+              <tbody className="bg-white/20 backdrop-blur-sm divide-y divide-white/10">
                 {downtimeDataForMonth.length > 0 ? (
                   downtimeDataForMonth.map((d) => {
                     const { hours, minutes } = calculateDuration(d.start_time, d.end_time);
                     const duration = formatDuration(hours, minutes);
                     return (
-                      <tr
-                        key={d.id}
-                        className="hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200"
-                      >
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 font-medium">
+                      <tr key={d.id} className="hover:bg-white/40 transition-colors duration-200">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
                           {formatDate(d.date)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 font-mono">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-mono">
                           {d.start_time}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 font-mono">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-mono">
                           {d.end_time}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-800 dark:text-slate-200">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
                           {duration}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700">
                           {d.unit}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-xs truncate">
+                        <td className="px-4 py-4 text-sm text-slate-700 max-w-xs truncate">
                           {d.problem}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-xs truncate">
+                        <td className="px-4 py-4 text-sm text-slate-700 max-w-xs truncate">
                           {d.action || '-'}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-xs truncate">
+                        <td className="px-4 py-4 text-sm text-slate-700 max-w-xs truncate">
                           {d.corrective_action || '-'}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
@@ -443,7 +440,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             size="xs"
                             onClick={() => handleOpenEditDowntime(d)}
                             aria-label={`Edit downtime record for ${d.unit}`}
-                            className="hover:bg-white/50 dark:hover:bg-slate-800/50"
+                            className="hover:bg-white/50"
                           >
                             <EditIcon />
                           </EnhancedButton>
@@ -453,10 +450,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   })
                 ) : (
                   <tr>
-                    <td
-                      colSpan={10}
-                      className="text-center py-8 text-slate-500 dark:text-slate-400"
-                    >
+                    <td colSpan={10} className="text-center py-8 text-slate-500">
                       {t.no_downtime_for_month}
                     </td>
                   </tr>
@@ -466,7 +460,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </div>
         </div>{' '}
         {/* Risk Management Section */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
@@ -484,7 +478,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 {t.autonomous_risk_management}
               </h2>
             </div>
@@ -500,26 +494,26 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             </EnhancedButton>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-white/20 dark:border-slate-700/20">
-            <table className="min-w-full divide-y divide-white/20 dark:divide-slate-700/20">
-              <thead className="bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm">
+          <div className="overflow-x-auto rounded-xl border border-white/20">
+            <table className="min-w-full divide-y divide-white/20">
+              <thead className="bg-white/30 backdrop-blur-sm">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.potential_disruption}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.preventive_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.mitigation_plan}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -527,25 +521,22 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white/20 dark:bg-slate-800/20 backdrop-blur-sm divide-y divide-white/10 dark:divide-slate-700/10">
+              <tbody className="bg-white/20 backdrop-blur-sm divide-y divide-white/10">
                 {filteredRiskRecords.map((risk) => (
-                  <tr
-                    key={risk.id}
-                    className="hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors duration-200"
-                  >
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 dark:text-slate-300 font-medium">
+                  <tr key={risk.id} className="hover:bg-white/40 transition-colors duration-200">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
                       {formatDate(risk.date)}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-800 dark:text-slate-200">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
                       {risk.unit}
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
                       {risk.potential_disruption}
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
                       {risk.preventive_action}
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-700 dark:text-slate-300 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
                       {risk.mitigation_plan}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm">
@@ -568,7 +559,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           size="xs"
                           onClick={() => handleOpenEditRisk(risk)}
                           aria-label={`Edit risk for ${risk.unit}`}
-                          className="hover:bg-white/50 dark:hover:bg-slate-800/50"
+                          className="hover:bg-white/50"
                         >
                           <EditIcon />
                         </EnhancedButton>
@@ -577,7 +568,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           size="xs"
                           onClick={() => handleOpenDeleteRisk(risk.id)}
                           aria-label={`Delete risk for ${risk.unit}`}
-                          className="hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400"
+                          className="hover:bg-red-100 text-red-600"
                         >
                           <TrashIcon />
                         </EnhancedButton>
@@ -587,7 +578,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 ))}
                 {filteredRiskRecords.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <td colSpan={7} className="text-center py-8 text-slate-500">
                       {t.no_risks_found}
                     </td>
                   </tr>
@@ -628,11 +619,9 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           title={t.delete_confirmation_title}
         >
           <div className="p-6">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {t.delete_confirmation_message}
-            </p>
+            <p className="text-sm text-slate-600">{t.delete_confirmation_message}</p>
           </div>
-          <div className="bg-slate-50 dark:bg-slate-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+          <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
             <EnhancedButton
               variant="warning"
               size="sm"

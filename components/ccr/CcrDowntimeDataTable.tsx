@@ -27,9 +27,9 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
   parseTimeValue,
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow space-y-3">
+    <div className="bg-white p-3 rounded-xl shadow space-y-3">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-        <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1 truncate">
+        <h3 className="text-base font-bold text-slate-800 mb-1 truncate">
           {t.ccr_downtime_data_entry_title}
         </h3>
         <button
@@ -72,7 +72,7 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
             <tbody className="bg-white divide-y divide-slate-200">
               {downtimeData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-slate-500 dark:text-slate-400">
+                  <td colSpan={6} className="text-center py-10 text-slate-500">
                     {t.no_downtime_data}
                   </td>
                 </tr>
@@ -158,12 +158,10 @@ const CcrDowntimeDataTable: React.FC<CcrDowntimeDataTableProps> = ({
 
       {/* Summary */}
       {downtimeData.length > 0 && (
-        <div className="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg">
+        <div className="bg-slate-50 p-4 rounded-lg">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              {t.total_downtime}:
-            </span>
-            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+            <span className="text-sm font-semibold text-slate-700">{t.total_downtime}:</span>
+            <span className="text-sm font-bold text-slate-900">
               {downtimeData
                 .reduce((total, downtime) => {
                   const startTime = new Date(downtime.start_time);

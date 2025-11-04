@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 // ...existing code...
 
 // ...existing code...
@@ -11,6 +10,7 @@ import UserForm from './features/user-management/components/UserForm';
 import PasswordDisplay from './components/PasswordDisplay';
 import Toast from './components/Toast';
 import LoadingSkeleton from './components/LoadingSkeleton';
+import LogoutProgress from './components/LogoutProgress';
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
 import { usePlantData } from './hooks/usePlantData';
@@ -18,8 +18,10 @@ import { usePlantData } from './hooks/usePlantData';
 import { useIsMobile } from './hooks/useIsMobile';
 import { User } from './types';
 import { usePlantUnits } from './hooks/usePlantUnits';
+import { logger } from './utils/logger';
 import { useTranslation } from './hooks/useTranslation';
 import ConnectionStatusIndicator from './components/ConnectionStatusIndicator';
+import OfflineIndicator from './components/OfflineIndicator';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -35,14 +37,13 @@ import {
   SettingsPage,
   UserListPage,
   WhatsAppReportsPage,
-  ConnectionTesterPage,
 } from './src/config/lazyComponents';
 
 import { logSystemStatus } from './utils/systemStatus';
-import { startBackgroundHealthCheck } from './utils/connectionMonitor';
+import { startBackgroundHealthCheck, monitorWebSocketConnection } from './utils/connectionMonitor';
 import { registerBackgroundSync } from './utils/syncManager';
 
-// Import ThemeProvider for dark mode support
+// Import ThemeProvider
 import { ThemeProvider } from './components/ThemeProvider';
 
 // Preload critical routes dengan higher priority - using relative paths
@@ -57,13 +58,11 @@ export type Page =
   | 'inspection'
   | 'projects'
   | 'settings'
-  | 'whatsapp-reports'
-  | 'connection-test';
+  | 'whatsapp-reports';
 export type Language = 'en' | 'id';
-export type Theme = 'light' | 'dark';
+export type Theme = 'light';
 
 const App: React.FC = () => {
-  const navigate = useNavigate();
   const { language, setLanguage, t } = useTranslation();
   const isMobile = useIsMobile();
 
@@ -88,6 +87,11 @@ const App: React.FC = () => {
   const [newUsername] = useState('');
   const [newUserFullName] = useState('');
   const [showToast, setShowToast] = useState(false);
+  // Logout progress states
+  const [isLogoutInProgress, setIsLogoutInProgress] = useState(false);
+  const [logoutStage, setLogoutStage] = useState<
+    'starting' | 'clearing' | 'completing' | 'completed'
+  >('starting');
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error' | 'info' | 'warning'>('success');
 
@@ -105,8 +109,11 @@ const App: React.FC = () => {
       logSystemStatus();
     }
 
-    // Start connection monitoring
-    const stopConnectionMonitor = startBackgroundHealthCheck(120000); // Check every 2 minutes
+    // Start connection monitoring with adaptive intervals
+    const stopConnectionMonitor = startBackgroundHealthCheck(90000); // Start with 1.5 minutes
+
+    // Start WebSocket monitoring for real-time connectivity
+    monitorWebSocketConnection();
 
     return () => {
       // Clean up connection monitor on unmount
@@ -120,12 +127,11 @@ const App: React.FC = () => {
       navigator.serviceWorker
         .register('/sw.js')
         .then((_registration) => {
-          console.log('Service Worker registered successfully');
           // Register background sync
           registerBackgroundSync();
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+          logger.error('Service Worker registration failed:', error);
         });
     }
   }, []);
@@ -190,9 +196,34 @@ const App: React.FC = () => {
 
   const handleSignOutClick = () => setIsSignOutModalOpen(true);
   const handleSignOutCancel = () => setIsSignOutModalOpen(false);
-  const handleSignOutConfirm = () => {
-    logout();
-    navigate('/login');
+  const handleSignOutConfirm = async () => {
+    // Close modal dan mulai logout progress
+    setIsSignOutModalOpen(false);
+    setIsLogoutInProgress(true);
+    setLogoutStage('starting');
+
+    try {
+      // Stage 1: Starting logout
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      setLogoutStage('clearing');
+
+      // Stage 2: Clear SIPOMA domain data (optimized timing)
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setLogoutStage('completing');
+
+      // Stage 3: Complete logout
+      await logout();
+      setLogoutStage('completed');
+
+      // Stage 4: Navigate (handled by logout function)
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    } catch (error) {
+      // Fallback jika terjadi error
+      logger.error('Logout error:', error);
+      await logout();
+    } finally {
+      setIsLogoutInProgress(false);
+    }
   };
 
   const getPageTitle = () => {
@@ -222,14 +253,12 @@ const App: React.FC = () => {
     (currentUserLoading && !localStorage.getItem('currentUser'))
   ) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-white dark:bg-slate-900">
+      <div className="h-screen w-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="modern-spinner mx-auto mb-6"></div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300">
-              Memuat SIPOMA
-            </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Mohon tunggu sebentar...</p>
+            <h2 className="text-xl font-semibold text-slate-700">Memuat SIPOMA</h2>
+            <p className="text-sm text-slate-500">Mohon tunggu sebentar...</p>
           </div>
         </div>
       </div>
@@ -246,13 +275,11 @@ const App: React.FC = () => {
         }
       >
         <div>
-          <div className="min-h-screen bg-white dark:bg-slate-900 font-sans compact">
+          <div className="min-h-screen bg-white font-sans compact">
             <Sidebar
               currentPage={currentPage}
               onNavigate={handleNavigate}
               t={t}
-              currentLanguage={language}
-              onLanguageChange={setLanguage}
               isOpen={isSidebarOpen}
               onClose={handleCloseSidebar}
               currentUser={currentUser}
@@ -272,8 +299,10 @@ const App: React.FC = () => {
                 onSignOut={handleSignOutClick}
                 currentUser={currentUser}
                 onToggleSidebar={handleToggleSidebar}
+                currentLanguage={language}
+                onLanguageChange={setLanguage}
               />
-              <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 dark:text-slate-300 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:to-slate-800/30">
+              <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30">
                 <div className="max-w-none w-full">
                   <LazyContainer
                     fallback={
@@ -355,9 +384,6 @@ const App: React.FC = () => {
                         <WhatsAppReportsPage />
                       </React.Suspense>
                     )}
-
-                    {/* Connection Test Page - For debugging connectivity issues */}
-                    {currentPage === 'connection-test' && <ConnectionTesterPage />}
 
                     {/* Plant Operations - Check permission */}
                     <PermissionGuard
@@ -461,9 +487,9 @@ const App: React.FC = () => {
           >
             <div className="p-8">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-red-600 dark:text-red-400"
+                    className="w-6 h-6 text-red-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -477,17 +503,35 @@ const App: React.FC = () => {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-                    Konfirmasi Keluar
-                  </h4>
-                  <p className="text-slate-600 dark:text-slate-400">{t.confirm_sign_out_message}</p>
+                  <h4 className="text-lg font-semibold text-slate-800">Konfirmasi Keluar</h4>
+                  <p className="text-slate-600">{t.confirm_sign_out_message}</p>
+
+                  {/* Info tentang data yang akan dihapus */}
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <svg
+                        className="w-4 h-4 text-blue-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-sm font-medium text-blue-800">
+                        Akan menghapus cookies & site data untuk localhost dan sipoma.site
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="bg-gradient-to-r from-slate-50/50 to-white/50 dark:from-slate-800/50 dark:to-slate-700/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10 dark:border-slate-700/50">
+            <div className="bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10">
               <button
                 onClick={handleSignOutCancel}
-                className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02] dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-600/50 dark:hover:bg-slate-700/80"
+                className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02]"
               >
                 {t.cancel_button}
               </button>
@@ -501,8 +545,12 @@ const App: React.FC = () => {
           </Modal>
         </div>
 
+        {/* Logout Progress Modal */}
+        <LogoutProgress isVisible={isLogoutInProgress} stage={logoutStage} />
+
         {/* Connection status indicator in the bottom-right corner */}
         <ConnectionStatusIndicator />
+        <OfflineIndicator />
       </SimpleErrorBoundary>
     </ThemeProvider>
   );

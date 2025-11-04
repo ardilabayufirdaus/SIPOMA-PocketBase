@@ -275,7 +275,7 @@ export const ResponsiveSidebar: React.FC<ResponsiveSidebarProps> = ({
   };
 
   const sidebarClasses = [
-    'fixed top-0 h-full bg-white dark:bg-neutral-900 shadow-xl transition-transform duration-300 ease-in-out z-50',
+    'fixed top-0 h-full bg-white shadow-xl transition-transform duration-300 ease-in-out z-50',
     position === 'left' ? 'left-0' : 'right-0',
     isOpen ? 'translate-x-0' : position === 'left' ? '-translate-x-full' : 'translate-x-full',
   ].join(' ');
@@ -326,7 +326,7 @@ export const ResponsiveHeader: React.FC<ResponsiveHeaderProps> = ({
   };
 
   const headerClasses = [
-    'w-full bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 transition-all duration-200',
+    'w-full bg-white border-b border-neutral-200 transition-all duration-200',
     sticky ? 'sticky top-0 z-40' : '',
   ].join(' ');
 
@@ -501,9 +501,7 @@ export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
       />
 
       {/* Modal */}
-      <div
-        className={`relative bg-white dark:bg-neutral-900 rounded-lg shadow-xl ${getSizeClass()} ${className}`}
-      >
+      <div className={`relative bg-white rounded-lg shadow-xl ${getSizeClass()} ${className}`}>
         {children}
       </div>
     </div>

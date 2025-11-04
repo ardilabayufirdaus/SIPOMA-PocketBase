@@ -58,13 +58,11 @@ export const translations = {
     header_help_support: 'Help & Support',
     theme_toggle: 'Theme',
     theme_light: 'Light',
-    theme_dark: 'Dark',
     header_sign_out: 'Sign Out',
 
     // Tooltips
     tooltip_toggle_menu: 'Toggle navigation menu',
     tooltip_add_user: 'Create a new user account',
-    tooltip_switch_dark: 'Switch to dark mode',
     tooltip_switch_light: 'Switch to light mode',
     tooltip_notifications: 'View notifications',
     tooltip_notifications_unread: '{count} unread notifications',
@@ -127,6 +125,534 @@ export const translations = {
     dashboard_welcome_title: 'Welcome to SIPOMA',
     dashboard_welcome_subtitle:
       "Your control center for cement manufacturing management. Here's a quick overview of the system.",
+    quote_of_the_day: 'Quote of the Day',
+    // Daily Quotes
+    daily_quotes: [
+      { content: 'The only way to do great work is to love what you do.', author: 'Steve Jobs' },
+      {
+        content: 'Innovation distinguishes between a leader and a follower.',
+        author: 'Steve Jobs',
+      },
+      { content: 'The best way to predict the future is to create it.', author: 'Peter Drucker' },
+      { content: 'Quality is not an act, it is a habit.', author: 'Aristotle' },
+      {
+        content: 'The only limit to our realization of tomorrow will be our doubts of today.',
+        author: 'Franklin D. Roosevelt',
+      },
+      { content: 'Excellence is not a skill. It is an attitude.', author: 'Ralph Marston' },
+      {
+        content:
+          'Success is not final, failure is not fatal: It is the courage to continue that counts.',
+        author: 'Winston Churchill',
+      },
+      {
+        content: 'The future belongs to those who believe in the beauty of their dreams.',
+        author: 'Eleanor Roosevelt',
+      },
+      { content: "Believe you can and you're halfway there.", author: 'Theodore Roosevelt' },
+      {
+        content: 'The way to get started is to quit talking and begin doing.',
+        author: 'Walt Disney',
+      },
+      {
+        content: "Your time is limited, so don't waste it living someone else's life.",
+        author: 'Steve Jobs',
+      },
+      { content: 'The future depends on what you do today.', author: 'Mahatma Gandhi' },
+      { content: "You miss 100% of the shots you don't take.", author: 'Wayne Gretzky' },
+      { content: 'The best revenge is massive success.', author: 'Frank Sinatra' },
+      {
+        content: 'The only impossible journey is the one you never begin.',
+        author: 'Tony Robbins',
+      },
+      { content: "Don't watch the clock; do what it does. Keep going.", author: 'Sam Levenson' },
+      { content: 'The secret of getting ahead is getting started.', author: 'Mark Twain' },
+      {
+        content: 'Keep your face always toward the sunshine—and shadows will fall behind you.',
+        author: 'Walt Whitman',
+      },
+      {
+        content: "The harder you work for something, the greater you'll feel when you achieve it.",
+        author: 'Anonymous',
+      },
+      { content: 'Dream bigger. Do bigger.', author: 'Anonymous' },
+      { content: "Don't stop when you're tired. Stop when you're done.", author: 'Anonymous' },
+      { content: 'Wake up with determination. Go to bed with satisfaction.', author: 'Anonymous' },
+      {
+        content: 'Do something today that your future self will thank you for.',
+        author: 'Anonymous',
+      },
+      { content: 'Little things make big days.', author: 'Anonymous' },
+      { content: "It's going to be hard, but hard does not mean impossible.", author: 'Anonymous' },
+      { content: "Don't wait for opportunity. Create it.", author: 'Anonymous' },
+      {
+        content:
+          "Sometimes we're tested not to show our weaknesses, but to discover our strengths.",
+        author: 'Anonymous',
+      },
+      {
+        content:
+          'The key to success is to focus our conscious mind on things we desire, not things we fear.',
+        author: 'Brian Tracy',
+      },
+      {
+        content: 'Success is not the key to happiness. Happiness is the key to success.',
+        author: 'Albert Schweitzer',
+      },
+      {
+        content: 'The only place where success comes before work is in the dictionary.',
+        author: 'Vidal Sassoon',
+      },
+      {
+        content: 'Your most unhappy customers are your greatest source of learning.',
+        author: 'Bill Gates',
+      },
+      {
+        content: 'The best way to predict your future is to create it.',
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'The difference between ordinary and extraordinary is that little extra.',
+        author: 'Jimmy Johnson',
+      },
+      {
+        content: 'The way to develop self-confidence is to do the thing you fear.',
+        author: 'William Jennings Bryan',
+      },
+      {
+        content: 'The successful warrior is the average man, with laser-like focus.',
+        author: 'Bruce Lee',
+      },
+      { content: 'The only way to do great work is to love what you do.', author: 'Steve Jobs' },
+      {
+        content: 'Innovation distinguishes between a leader and a follower.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Stay hungry, stay foolish.', author: 'Steve Jobs' },
+      {
+        content:
+          'Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'The people who are crazy enough to think they can change the world are the ones who do.',
+        author: 'Steve Jobs',
+      },
+      {
+        content: 'Design is not just what it looks like and feels like. Design is how it works.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Quality is more important than quantity. One home run is much better than two doubles.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          "I'm convinced that about half of what separates successful entrepreneurs from the non-successful ones is pure perseverance.",
+        author: 'Steve Jobs',
+      },
+      { content: 'Have the courage to follow your heart and intuition.', author: 'Steve Jobs' },
+      {
+        content: "Sometimes life hits you in the head with a brick. Don't lose faith.",
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          "You can't connect the dots looking forward; you can only connect them looking backwards.",
+        author: 'Steve Jobs',
+      },
+      { content: 'Creativity is just connecting things.', author: 'Steve Jobs' },
+      { content: 'Simple can be harder than complex.', author: 'Steve Jobs' },
+      { content: "Things don't have to change the world to be important.", author: 'Steve Jobs' },
+      { content: 'I want to put a ding in the universe.', author: 'Steve Jobs' },
+      {
+        content: 'The most powerful person in the world is the storyteller.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Technology alone is not enough.', author: 'Steve Jobs' },
+      { content: 'The journey is the reward.', author: 'Chinese Proverb' },
+      { content: 'A journey of a thousand miles begins with a single step.', author: 'Lao Tzu' },
+      {
+        content: 'The best time to plant a tree was 20 years ago. The second best time is now.',
+        author: 'Chinese Proverb',
+      },
+      {
+        content:
+          'Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment.',
+        author: 'Buddha',
+      },
+      { content: 'Peace comes from within. Do not seek it without.', author: 'Buddha' },
+      { content: 'All that we are is the result of what we have thought.', author: 'Buddha' },
+      { content: 'The mind is everything. What you think you become.', author: 'Buddha' },
+      {
+        content:
+          'Happiness will never come to those who fail to appreciate what they already have.',
+        author: 'Anonymous',
+      },
+      {
+        content:
+          'The greatest glory in living lies not in never falling, but in rising every time we fall.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content: 'The way to get started is to quit talking and begin doing.',
+        author: 'Walt Disney',
+      },
+      {
+        content: "Your time is limited, so don't waste it living someone else's life.",
+        author: 'Steve Jobs',
+      },
+      {
+        content: 'If life were predictable it would cease to be life, and be without flavor.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: "If you look at what you have in life, you'll always have more.",
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          "If you set your goals ridiculously high and it's a failure, you will fail above everyone else's success.",
+        author: 'James Cameron',
+      },
+      {
+        content: "Life is what happens to you while you're busy making other plans.",
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Spread love everywhere you go. Let no one ever come to you without leaving happier.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'When you reach the end of your rope, tie a knot in it and hang on.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Always remember that you are absolutely unique. Just like everyone else.',
+        author: 'Margaret Mead',
+      },
+      {
+        content: "Don't judge each day by the harvest you reap but by the seeds that you plant.",
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'The future belongs to those who believe in the beauty of their dreams.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: 'Tell me and I forget. Teach me and I remember. Involve me and I learn.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'The best and most beautiful things in the world cannot be seen or even touched - they must be felt with the heart.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'It is during our darkest moments that we must focus to see the light.',
+        author: 'Aristotle',
+      },
+      { content: 'Whoever is happy will make others happy too.', author: 'Anne Frank' },
+      {
+        content:
+          'Do not go where the path may lead, go instead where there is no path and leave a trail.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content: 'You will face many defeats in life, but never let yourself be defeated.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'The greatest glory in living lies not in never falling, but in rising every time we fall.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          "In the end, it's not the years in your life that count. It's the life in your years.",
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Never let the fear of striking out keep you from playing the game.',
+        author: 'Babe Ruth',
+      },
+      { content: 'Life is either a daring adventure or nothing at all.', author: 'Helen Keller' },
+      {
+        content:
+          "Many of life's failures are people who did not realize how close they were to success when they gave up.",
+        author: 'Thomas A. Edison',
+      },
+      {
+        content: 'The way to get started is to quit talking and begin doing.',
+        author: 'Walt Disney',
+      },
+      {
+        content: "Your time is limited, so don't waste it living someone else's life.",
+        author: 'Steve Jobs',
+      },
+      {
+        content: 'If life were predictable it would cease to be life, and be without flavor.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: "If you look at what you have in life, you'll always have more.",
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          "If you set your goals ridiculously high and it's a failure, you will fail above everyone else's success.",
+        author: 'James Cameron',
+      },
+      {
+        content: "Life is what happens to you while you're busy making other plans.",
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Spread love everywhere you go. Let no one ever come to you without leaving happier.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'When you reach the end of your rope, tie a knot in it and hang on.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Always remember that you are absolutely unique. Just like everyone else.',
+        author: 'Margaret Mead',
+      },
+      {
+        content: "Don't judge each day by the harvest you reap but by the seeds that you plant.",
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'The future belongs to those who believe in the beauty of their dreams.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: 'Tell me and I forget. Teach me and I remember. Involve me and I learn.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'The best and most beautiful things in the world cannot be seen or even touched - they must be felt with the heart.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'It is during our darkest moments that we must focus to see the light.',
+        author: 'Aristotle',
+      },
+      { content: 'Whoever is happy will make others happy too.', author: 'Anne Frank' },
+      {
+        content:
+          'Do not go where the path may lead, go instead where there is no path and leave a trail.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content: 'You will face many defeats in life, but never let yourself be defeated.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'The greatest glory in living lies not in never falling, but in rising every time we fall.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          "In the end, it's not the years in your life that count. It's the life in your years.",
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Never let the fear of striking out keep you from playing the game.',
+        author: 'Babe Ruth',
+      },
+      { content: 'Life is either a daring adventure or nothing at all.', author: 'Helen Keller' },
+      {
+        content:
+          "Many of life's failures are people who did not realize how close they were to success when they gave up.",
+        author: 'Thomas A. Edison',
+      },
+      {
+        content: 'The way to get started is to quit talking and begin doing.',
+        author: 'Walt Disney',
+      },
+      {
+        content: "Your time is limited, so don't waste it living someone else's life.",
+        author: 'Steve Jobs',
+      },
+      {
+        content: 'If life were predictable it would cease to be life, and be without flavor.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: "If you look at what you have in life, you'll always have more.",
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          "If you set your goals ridiculously high and it's a failure, you will fail above everyone else's success.",
+        author: 'James Cameron',
+      },
+      {
+        content: "Life is what happens to you while you're busy making other plans.",
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Spread love everywhere you go. Let no one ever come to you without leaving happier.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'When you reach the end of your rope, tie a knot in it and hang on.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Always remember that you are absolutely unique. Just like everyone else.',
+        author: 'Margaret Mead',
+      },
+      {
+        content: "Don't judge each day by the harvest you reap but by the seeds that you plant.",
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'The future belongs to those who believe in the beauty of their dreams.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: 'Tell me and I forget. Teach me and I remember. Involve me and I learn.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'The best and most beautiful things in the world cannot be seen or even touched - they must be felt with the heart.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'It is during our darkest moments that we must focus to see the light.',
+        author: 'Aristotle',
+      },
+      { content: 'Whoever is happy will make others happy too.', author: 'Anne Frank' },
+      {
+        content:
+          'Do not go where the path may lead, go instead where there is no path and leave a trail.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content: 'You will face many defeats in life, but never let yourself be defeated.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'The greatest glory in living lies not in never falling, but in rising every time we fall.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          "In the end, it's not the years in your life that count. It's the life in your years.",
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Never let the fear of striking out keep you from playing the game.',
+        author: 'Babe Ruth',
+      },
+      { content: 'Life is either a daring adventure or nothing at all.', author: 'Helen Keller' },
+      {
+        content:
+          "Many of life's failures are people who did not realize how close they were to success when they gave up.",
+        author: 'Thomas A. Edison',
+      },
+      {
+        content: 'The way to get started is to quit talking and begin doing.',
+        author: 'Walt Disney',
+      },
+      {
+        content: "Your time is limited, so don't waste it living someone else's life.",
+        author: 'Steve Jobs',
+      },
+      {
+        content: 'If life were predictable it would cease to be life, and be without flavor.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: "If you look at what you have in life, you'll always have more.",
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          "If you set your goals ridiculously high and it's a failure, you will fail above everyone else's success.",
+        author: 'James Cameron',
+      },
+      {
+        content: "Life is what happens to you while you're busy making other plans.",
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Spread love everywhere you go. Let no one ever come to you without leaving happier.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'When you reach the end of your rope, tie a knot in it and hang on.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Always remember that you are absolutely unique. Just like everyone else.',
+        author: 'Margaret Mead',
+      },
+      {
+        content: "Don't judge each day by the harvest you reap but by the seeds that you plant.",
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'The future belongs to those who believe in the beauty of their dreams.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: 'Tell me and I forget. Teach me and I remember. Involve me and I learn.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'The best and most beautiful things in the world cannot be seen or even touched - they must be felt with the heart.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'It is during our darkest moments that we must focus to see the light.',
+        author: 'Aristotle',
+      },
+      { content: 'Whoever is happy will make others happy too.', author: 'Anne Frank' },
+      {
+        content:
+          'Do not go where the path may lead, go instead where there is no path and leave a trail.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content: 'You will face many defeats in life, but never let yourself be defeated.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'The greatest glory in living lies not in never falling, but in rising every time we fall.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          "In the end, it's not the years in your life that count. It's the life in your years.",
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Never let the fear of striking out keep you from playing the game.',
+        author: 'Babe Ruth',
+      },
+      { content: 'Life is either a daring adventure or nothing at all.', author: 'Helen Keller' },
+      {
+        content:
+          "Many of life's failures are people who did not realize how close they were to success when they gave up.",
+        author: 'Thomas A. Edison',
+      },
+    ],
     dashboard_quick_stats_title: 'Quick Stats',
     stat_active_users: 'Active Users',
     stat_online_users: 'Online Users',
@@ -737,13 +1263,11 @@ export const translations = {
     header_help_support: 'Bantuan & Dukungan',
     theme_toggle: 'Tema',
     theme_light: 'Terang',
-    theme_dark: 'Gelap',
     header_sign_out: 'Keluar',
 
     // Tooltips
     tooltip_toggle_menu: 'Buka/tutup menu navigasi',
     tooltip_add_user: 'Buat akun pengguna baru',
-    tooltip_switch_dark: 'Ubah ke mode gelap',
     tooltip_switch_light: 'Ubah ke mode terang',
     tooltip_notifications: 'Lihat notifikasi',
     tooltip_notifications_unread: '{count} notifikasi belum dibaca',
@@ -806,6 +1330,506 @@ export const translations = {
     dashboard_welcome_title: 'Selamat Datang di SIPOMA',
     dashboard_welcome_subtitle:
       'Pusat kendali Anda untuk manajemen manufaktur semen. Berikut adalah ringkasan singkat sistem.',
+    quote_of_the_day: 'Quote Hari Ini',
+    // Daily Quotes
+    daily_quotes: [
+      {
+        content:
+          'Satu-satunya cara untuk melakukan pekerjaan hebat adalah mencintai apa yang Anda lakukan.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Inovasi membedakan antara pemimpin dan pengikut.', author: 'Steve Jobs' },
+      {
+        content: 'Cara terbaik untuk memprediksi masa depan adalah dengan menciptakannya.',
+        author: 'Peter Drucker',
+      },
+      { content: 'Kualitas bukanlah sebuah tindakan, itu adalah kebiasaan.', author: 'Aristotle' },
+      {
+        content: 'Satu-satunya batas untuk mewujudkan hari esok adalah keraguan kita hari ini.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Keunggulan bukanlah sebuah keterampilan. Itu adalah sikap.',
+        author: 'Ralph Marston',
+      },
+      {
+        content:
+          'Kesuksesan bukanlah akhir, kegagalan bukanlah fatal: Yang penting adalah keberanian untuk melanjutkan.',
+        author: 'Winston Churchill',
+      },
+      {
+        content: 'Masa depan milik mereka yang percaya pada keindahan impian mereka.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content: 'Percayalah bahwa Anda bisa dan Anda sudah setengah jalan.',
+        author: 'Theodore Roosevelt',
+      },
+      {
+        content: 'Cara untuk memulai adalah berhenti bicara dan mulai bertindak.',
+        author: 'Walt Disney',
+      },
+      {
+        content: 'Waktu Anda terbatas, jadi jangan sia-siakan dengan menjalani hidup orang lain.',
+        author: 'Steve Jobs',
+      },
+      {
+        content: 'Masa depan tergantung pada apa yang Anda lakukan hari ini.',
+        author: 'Mahatma Gandhi',
+      },
+      { content: 'Anda melewatkan 100% tembakan yang tidak Anda ambil.', author: 'Wayne Gretzky' },
+      { content: 'Balas dendam terbaik adalah kesuksesan besar.', author: 'Frank Sinatra' },
+      {
+        content: 'Perjalanan yang mustahil adalah perjalanan yang tidak pernah Anda mulai.',
+        author: 'Tony Robbins',
+      },
+      {
+        content: 'Jangan menonton jam; lakukan apa yang dilakukannya. Teruslah berjalan.',
+        author: 'Sam Levenson',
+      },
+      { content: 'Rahasia maju adalah memulai.', author: 'Mark Twain' },
+      {
+        content:
+          'Selalu arahkan wajah Anda ke arah sinar matahari—dan bayangan akan jatuh di belakang Anda.',
+        author: 'Walt Whitman',
+      },
+      {
+        content:
+          'Semakin keras Anda bekerja untuk sesuatu, semakin besar perasaan Anda saat mencapainya.',
+        author: 'Anonim',
+      },
+      { content: 'Impikan yang lebih besar. Lakukan yang lebih besar.', author: 'Anonim' },
+      { content: 'Jangan berhenti saat Anda lelah. Berhenti saat Anda selesai.', author: 'Anonim' },
+      { content: 'Bangun dengan tekad. Tidur dengan kepuasan.', author: 'Anonim' },
+      {
+        content: 'Lakukan sesuatu hari ini yang akan disyukuri diri Anda di masa depan.',
+        author: 'Anonim',
+      },
+      { content: 'Hal-hal kecil membuat hari-hari besar.', author: 'Anonim' },
+      { content: 'Ini akan sulit, tapi sulit tidak berarti mustahil.', author: 'Anonim' },
+      { content: 'Jangan tunggu kesempatan. Ciptakan itu.', author: 'Anonim' },
+      {
+        content:
+          'Kadang kita diuji bukan untuk menunjukkan kelemahan kita, tapi untuk menemukan kekuatan kita.',
+        author: 'Anonim',
+      },
+      {
+        content:
+          'Kunci kesuksesan adalah fokuskan pikiran sadar Anda pada hal-hal yang Anda inginkan, bukan hal-hal yang Anda takuti.',
+        author: 'Brian Tracy',
+      },
+      {
+        content: 'Kesuksesan bukanlah kunci kebahagiaan. Kebahagiaan adalah kunci kesuksesan.',
+        author: 'Albert Schweitzer',
+      },
+      {
+        content: 'Satu-satunya tempat di mana kesuksesan datang sebelum kerja adalah di kamus.',
+        author: 'Vidal Sassoon',
+      },
+      {
+        content:
+          'Pelanggan Anda yang paling tidak bahagia adalah sumber pembelajaran terbesar Anda.',
+        author: 'Bill Gates',
+      },
+      {
+        content: 'Cara terbaik untuk memprediksi masa depan Anda adalah menciptakannya.',
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Perbedaan antara biasa dan luar biasa adalah sedikit ekstra itu.',
+        author: 'Jimmy Johnson',
+      },
+      {
+        content: 'Cara mengembangkan kepercayaan diri adalah melakukan hal yang Anda takuti.',
+        author: 'William Jennings Bryan',
+      },
+      {
+        content: 'Prajurit yang sukses adalah orang biasa, dengan fokus seperti laser.',
+        author: 'Bruce Lee',
+      },
+      {
+        content:
+          'Satu-satunya cara untuk melakukan pekerjaan hebat adalah mencintai apa yang Anda lakukan.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Inovasi membedakan antara pemimpin dan pengikut.', author: 'Steve Jobs' },
+      { content: 'Tetaplah lapar, tetaplah bodoh.', author: 'Steve Jobs' },
+      {
+        content:
+          'Pekerjaan Anda akan mengisi sebagian besar hidup Anda, dan satu-satunya cara untuk benar-benar puas adalah melakukan apa yang Anda percaya sebagai pekerjaan hebat.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Orang-orang yang cukup gila untuk berpikir mereka bisa mengubah dunia adalah orang-orang yang melakukannya.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Desain bukan hanya seperti apa rupanya dan rasanya. Desain adalah bagaimana cara kerjanya.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Kualitas lebih penting daripada kuantitas. Satu home run jauh lebih baik daripada dua double.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Saya yakin bahwa sekitar setengah dari apa yang memisahkan pengusaha sukses dari yang tidak sukses adalah ketekunan murni.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Miliki keberanian untuk mengikuti hati dan intuisi Anda.', author: 'Steve Jobs' },
+      {
+        content: 'Kadang hidup memukul kepala Anda dengan batu bata. Jangan kehilangan iman.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Anda tidak bisa menghubungkan titik-titik ke depan; Anda hanya bisa menghubungkannya ke belakang.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Kreativitas hanyalah menghubungkan hal-hal.', author: 'Steve Jobs' },
+      { content: 'Sederhana bisa lebih sulit daripada kompleks.', author: 'Steve Jobs' },
+      {
+        content: 'Hal-hal tidak harus mengubah dunia untuk menjadi penting.',
+        author: 'Steve Jobs',
+      },
+      { content: 'Saya ingin membuat dent di alam semesta.', author: 'Steve Jobs' },
+      { content: 'Orang paling kuat di dunia adalah pencerita.', author: 'Steve Jobs' },
+      { content: 'Teknologi saja tidak cukup.', author: 'Steve Jobs' },
+      { content: 'Perjalanan adalah imbalannya.', author: 'Peribahasa Cina' },
+      { content: 'Perjalanan seribu mil dimulai dengan langkah tunggal.', author: 'Lao Tzu' },
+      {
+        content:
+          'Waktu terbaik untuk menanam pohon adalah 20 tahun yang lalu. Waktu terbaik kedua adalah sekarang.',
+        author: 'Peribahasa Cina',
+      },
+      {
+        content:
+          'Jangan tinggal di masa lalu, jangan bermimpi tentang masa depan, konsentrasikan pikiran pada saat ini.',
+        author: 'Buddha',
+      },
+      { content: 'Kedamaian datang dari dalam. Jangan cari di luar.', author: 'Buddha' },
+      {
+        content: 'Semua yang kita adalah adalah hasil dari apa yang telah kita pikirkan.',
+        author: 'Buddha',
+      },
+      {
+        content: 'Pikiran adalah segalanya. Apa yang Anda pikirkan Anda menjadi.',
+        author: 'Buddha',
+      },
+      {
+        content:
+          'Kebahagiaan tidak akan pernah datang kepada mereka yang gagal menghargai apa yang sudah mereka miliki.',
+        author: 'Anonim',
+      },
+      {
+        content:
+          'Kemuliaan terbesar dalam hidup terletak bukan pada tidak pernah jatuh, tapi bangun setiap kali kita jatuh.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content: 'Cara untuk memulai adalah berhenti bicara dan mulai bertindak.',
+        author: 'Walt Disney',
+      },
+      {
+        content: 'Waktu Anda terbatas, jadi jangan sia-siakan dengan menjalani hidup orang lain.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Jika hidup dapat diprediksi maka itu akan berhenti menjadi hidup, dan tanpa rasa.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content:
+          'Jika Anda melihat apa yang Anda miliki dalam hidup, Anda akan selalu memiliki lebih.',
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          'Jika Anda menetapkan tujuan Anda sangat tinggi dan itu gagal, Anda akan gagal di atas kesuksesan orang lain.',
+        author: 'James Cameron',
+      },
+      {
+        content: 'Hidup adalah apa yang terjadi pada Anda saat Anda sibuk membuat rencana lain.',
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Sebarkan cinta ke mana pun Anda pergi. Jangan biarkan siapa pun datang kepada Anda tanpa pergi lebih bahagia.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'Ketika Anda mencapai ujung tali Anda, ikat simpul di dalamnya dan bertahanlah.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Selalu ingat bahwa Anda benar-benar unik. Sama seperti orang lain.',
+        author: 'Margaret Mead',
+      },
+      {
+        content:
+          'Jangan nilai setiap hari dengan panen yang Anda tuai tapi dengan biji yang Anda tanam.',
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'Masa depan milik mereka yang percaya pada keindahan impian mereka.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content:
+          'Katakan padaku dan aku lupa. Ajari aku dan aku ingat. Libatkan aku dan aku belajar.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'Hal-hal terbaik dan paling indah di dunia tidak dapat dilihat atau bahkan disentuh - mereka harus dirasakan dengan hati.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'Selama momen tergelap kita, kita harus fokus untuk melihat cahaya.',
+        author: 'Aristotle',
+      },
+      {
+        content: 'Siapa pun yang bahagia akan membuat orang lain bahagia juga.',
+        author: 'Anne Frank',
+      },
+      {
+        content:
+          'Jangan pergi ke mana jalan mungkin membawa, pergilah ke tempat tidak ada jalan dan tinggalkan jejak.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content:
+          'Anda akan menghadapi banyak kekalahan dalam hidup, tapi jangan pernah biarkan diri Anda dikalahkan.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'Kemuliaan terbesar dalam hidup terletak bukan pada tidak pernah jatuh, tapi bangun setiap kali kita jatuh.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          'Pada akhirnya, bukan tahun-tahun dalam hidup Anda yang berhitung. Itu adalah hidup dalam tahun-tahun Anda.',
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Jangan pernah biarkan ketakutan strike out membuat Anda tidak bermain game.',
+        author: 'Babe Ruth',
+      },
+      {
+        content: 'Hidup adalah petualangan yang berani atau tidak sama sekali.',
+        author: 'Helen Keller',
+      },
+      {
+        content:
+          'Banyak kegagalan hidup adalah orang-orang yang tidak menyadari betapa dekatnya mereka dengan kesuksesan saat mereka menyerah.',
+        author: 'Thomas A. Edison',
+      },
+      {
+        content: 'Cara untuk memulai adalah berhenti bicara dan mulai bertindak.',
+        author: 'Walt Disney',
+      },
+      {
+        content: 'Waktu Anda terbatas, jadi jangan sia-siakan dengan menjalani hidup orang lain.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Jika hidup dapat diprediksi maka itu akan berhenti menjadi hidup, dan tanpa rasa.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content:
+          'Jika Anda melihat apa yang Anda miliki dalam hidup, Anda akan selalu memiliki lebih.',
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          'Jika Anda menetapkan tujuan Anda sangat tinggi dan itu gagal, Anda akan gagal di atas kesuksesan orang lain.',
+        author: 'James Cameron',
+      },
+      {
+        content: 'Hidup adalah apa yang terjadi pada Anda saat Anda sibuk membuat rencana lain.',
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Sebarkan cinta ke mana pun Anda pergi. Jangan biarkan siapa pun datang kepada Anda tanpa pergi lebih bahagia.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'Ketika Anda mencapai ujung tali Anda, ikat simpul di dalamnya dan bertahanlah.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Selalu ingat bahwa Anda benar-benar unik. Sama seperti orang lain.',
+        author: 'Margaret Mead',
+      },
+      {
+        content:
+          'Jangan nilai setiap hari dengan panen yang Anda tuai tapi dengan biji yang Anda tanam.',
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'Masa depan milik mereka yang percaya pada keindahan impian mereka.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content:
+          'Katakan padaku dan aku lupa. Ajari aku dan aku ingat. Libatkan aku dan aku belajar.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'Hal-hal terbaik dan paling indah di dunia tidak dapat dilihat atau bahkan disentuh - mereka harus dirasakan dengan hati.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'Selama momen tergelap kita, kita harus fokus untuk melihat cahaya.',
+        author: 'Aristotle',
+      },
+      {
+        content: 'Siapa pun yang bahagia akan membuat orang lain bahagia juga.',
+        author: 'Anne Frank',
+      },
+      {
+        content:
+          'Jangan pergi ke mana jalan mungkin membawa, pergilah ke tempat tidak ada jalan dan tinggalkan jejak.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content:
+          'Anda akan menghadapi banyak kekalahan dalam hidup, tapi jangan pernah biarkan diri Anda dikalahkan.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'Kemuliaan terbesar dalam hidup terletak bukan pada tidak pernah jatuh, tapi bangun setiap kali kita jatuh.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          'Pada akhirnya, bukan tahun-tahun dalam hidup Anda yang berhitung. Itu adalah hidup dalam tahun-tahun Anda.',
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Jangan pernah biarkan ketakutan strike out membuat Anda tidak bermain game.',
+        author: 'Babe Ruth',
+      },
+      {
+        content: 'Hidup adalah petualangan yang berani atau tidak sama sekali.',
+        author: 'Helen Keller',
+      },
+      {
+        content:
+          'Banyak kegagalan hidup adalah orang-orang yang tidak menyadari betapa dekatnya mereka dengan kesuksesan saat mereka menyerah.',
+        author: 'Thomas A. Edison',
+      },
+      {
+        content: 'Cara untuk memulai adalah berhenti bicara dan mulai bertindak.',
+        author: 'Walt Disney',
+      },
+      {
+        content: 'Waktu Anda terbatas, jadi jangan sia-siakan dengan menjalani hidup orang lain.',
+        author: 'Steve Jobs',
+      },
+      {
+        content:
+          'Jika hidup dapat diprediksi maka itu akan berhenti menjadi hidup, dan tanpa rasa.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content:
+          'Jika Anda melihat apa yang Anda miliki dalam hidup, Anda akan selalu memiliki lebih.',
+        author: 'Oprah Winfrey',
+      },
+      {
+        content:
+          'Jika Anda menetapkan tujuan Anda sangat tinggi dan itu gagal, Anda akan gagal di atas kesuksesan orang lain.',
+        author: 'James Cameron',
+      },
+      {
+        content: 'Hidup adalah apa yang terjadi pada Anda saat Anda sibuk membuat rencana lain.',
+        author: 'John Lennon',
+      },
+      {
+        content:
+          'Sebarkan cinta ke mana pun Anda pergi. Jangan biarkan siapa pun datang kepada Anda tanpa pergi lebih bahagia.',
+        author: 'Mother Teresa',
+      },
+      {
+        content: 'Ketika Anda mencapai ujung tali Anda, ikat simpul di dalamnya dan bertahanlah.',
+        author: 'Franklin D. Roosevelt',
+      },
+      {
+        content: 'Selalu ingat bahwa Anda benar-benar unik. Sama seperti orang lain.',
+        author: 'Margaret Mead',
+      },
+      {
+        content:
+          'Jangan nilai setiap hari dengan panen yang Anda tuai tapi dengan biji yang Anda tanam.',
+        author: 'Robert Louis Stevenson',
+      },
+      {
+        content: 'Masa depan milik mereka yang percaya pada keindahan impian mereka.',
+        author: 'Eleanor Roosevelt',
+      },
+      {
+        content:
+          'Katakan padamu dan aku lupa. Ajari aku dan aku ingat. Libatkan aku dan aku belajar.',
+        author: 'Benjamin Franklin',
+      },
+      {
+        content:
+          'Hal-hal terbaik dan paling indah di dunia tidak dapat dilihat atau bahkan disentuh - mereka harus dirasakan dengan hati.',
+        author: 'Helen Keller',
+      },
+      {
+        content: 'Selama momen tergelap kita, kita harus fokus untuk melihat cahaya.',
+        author: 'Aristotle',
+      },
+      {
+        content: 'Siapa pun yang bahagia akan membuat orang lain bahagia juga.',
+        author: 'Anne Frank',
+      },
+      {
+        content:
+          'Jangan pergi ke mana jalan mungkin membawa, pergilah ke tempat tidak ada jalan dan tinggalkan jejak.',
+        author: 'Ralph Waldo Emerson',
+      },
+      {
+        content:
+          'Anda akan menghadapi banyak kekalahan dalam hidup, tapi jangan pernah biarkan diri Anda dikalahkan.',
+        author: 'Maya Angelou',
+      },
+      {
+        content:
+          'Kemuliaan terbesar dalam hidup terletak bukan pada tidak pernah jatuh, tapi bangun setiap kali kita jatuh.',
+        author: 'Nelson Mandela',
+      },
+      {
+        content:
+          'Pada akhirnya, bukan tahun-tahun dalam hidup Anda yang berhitung. Itu adalah hidup dalam tahun-tahun Anda.',
+        author: 'Abraham Lincoln',
+      },
+      {
+        content: 'Jangan pernah biarkan ketakutan strike out membuat Anda tidak bermain game.',
+        author: 'Babe Ruth',
+      },
+      {
+        content: 'Hidup adalah petualangan yang berani atau tidak sama sekali.',
+        author: 'Helen Keller',
+      },
+      {
+        content:
+          'Banyak kegagalan hidup adalah orang-orang yang tidak menyadari betapa dekatnya mereka dengan kesuksesan saat mereka menyerah.',
+        author: 'Thomas A. Edison',
+      },
+    ],
     dashboard_quick_stats_title: 'Statistik Cepat',
     stat_active_users: 'Pengguna Aktif',
     stat_online_users: 'Pengguna Online',

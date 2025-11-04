@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { translations } from '../translations';
+import { createLegacyTranslations } from '../utils/translationUtils';
 
 export type Language = 'en' | 'id';
 
 interface TranslationContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: Record<string, string>; // For backward compatibility
+  t: Record<string, string>; // Keep legacy format for backward compatibility
 }
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
@@ -31,7 +32,9 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({
     localStorage.setItem('sipoma-language', lang);
   };
 
-  const t = translations[language] as Record<string, string>;
+  const t = createLegacyTranslations(
+    translations[language] as Record<string, string | { content: string; author: string }[]>
+  );
 
   useEffect(() => {
     // Update document language attribute

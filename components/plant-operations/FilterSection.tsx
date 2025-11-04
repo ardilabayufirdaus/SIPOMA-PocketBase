@@ -85,22 +85,20 @@ const FilterSection: React.FC<FilterSectionProps> = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-4"
+      className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4"
     >
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <motion.div
             whileHover={{ rotate: 15, scale: 1.1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-            className="p-2 bg-primary-500/20 dark:bg-primary-500/30 rounded-xl"
+            className="p-2 bg-primary-500/20 rounded-xl"
           >
-            <FilterIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <FilterIcon className="w-5 h-5 text-primary-600" />
           </motion.div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              Smart Filters
-            </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Refine your data view</p>
+            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Smart Filters</h3>
+            <p className="text-sm text-slate-600">Refine your data view</p>
           </div>
         </div>
 
@@ -119,7 +117,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
           >
             <label
               htmlFor="plant-category"
-              className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+              className="text-sm font-semibold text-slate-700 whitespace-nowrap"
             >
               Plant Category:
             </label>
@@ -128,7 +126,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                 id="plant-category"
                 value={filters.plantCategory}
                 onChange={(e) => handleFieldChange('plantCategory', e.target.value)}
-                className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors appearance-none"
+                className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors appearance-none"
               >
                 <option value="">Choose Category</option>
                 {allowedCategories.map((category) => (
@@ -155,7 +153,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
           >
             <label
               htmlFor="plant-unit"
-              className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+              className="text-sm font-semibold text-slate-700 whitespace-nowrap"
             >
               Unit:
             </label>
@@ -165,7 +163,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                 value={filters.plantUnit}
                 onChange={(e) => handleFieldChange('plantUnit', e.target.value)}
                 disabled={allowedUnits.length === 0}
-                className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
               >
                 <option value="">Choose Unit</option>
                 {allowedUnits.map((unit) => (
@@ -192,7 +190,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
           >
             <label
               htmlFor="filter-date"
-              className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap"
+              className="text-sm font-semibold text-slate-700 whitespace-nowrap"
             >
               Date:
             </label>
@@ -201,7 +199,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               id="filter-date"
               value={filters.date}
               onChange={(e) => handleFieldChange('date', e.target.value)}
-              className="min-w-[140px] px-3 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors"
+              className="min-w-[140px] px-3 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors"
             />
           </motion.div>
 

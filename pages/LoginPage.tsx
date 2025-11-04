@@ -69,19 +69,19 @@ const LoginPage: React.FC = () => {
 
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-slate-100 to-slate-300 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-slate-100 to-slate-300">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl flex flex-col items-center glass-card"
+          className="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl flex flex-col items-center glass-card"
         >
           <div className="mb-6 flex flex-col items-center">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, duration: 0.5, type: 'spring', stiffness: 200 }}
-              className="p-2 rounded-2xl bg-white/95 dark:bg-slate-800/95 shadow-lg border border-white/30 dark:border-slate-700/50 mb-2"
+              className="p-2 rounded-2xl bg-white/95 shadow-lg border border-white/30 mb-2"
             >
               <img src="/sipoma-logo.png" alt="SIPOMA Logo" className="h-14 w-14 object-contain" />
             </motion.div>
@@ -89,7 +89,7 @@ const LoginPage: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-4xl font-extrabold text-red-600 dark:text-red-400 tracking-wide mb-1"
+              className="text-4xl font-extrabold text-red-600 tracking-wide mb-1"
             >
               SIPOMA
             </motion.h1>
@@ -97,21 +97,18 @@ const LoginPage: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.5 }}
-              className="text-base text-slate-500 dark:text-slate-300"
+              className="text-base text-slate-500"
             >
               {t.login_subtitle}
             </motion.span>
           </div>
           <form onSubmit={handleLogin} className="w-full">
             <div className="mb-4 relative">
-              <label
-                htmlFor="identifier"
-                className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
-              >
+              <label htmlFor="identifier" className="block mb-2 text-sm font-medium text-slate-700">
                 {t.login_username_label}
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="text"
                   id="identifier"
@@ -119,19 +116,16 @@ const LoginPage: React.FC = () => {
                   onChange={(e) => setIdentifier(e.target.value)}
                   required
                   autoComplete="username"
-                  className="w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400 dark:hover:border-slate-500"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400"
                 />
               </div>
             </div>
             <div className="mb-6 relative">
-              <label
-                htmlFor="password"
-                className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-200"
-              >
+              <label htmlFor="password" className="block mb-2 text-sm font-medium text-slate-700">
                 {t.login_password_label}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 dark:text-slate-500" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
                   type="password"
                   id="password"
@@ -139,7 +133,7 @@ const LoginPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
-                  className="w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400 dark:hover:border-slate-500"
+                  className="w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400"
                 />
               </div>
             </div>
@@ -148,7 +142,7 @@ const LoginPage: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="mb-4 text-red-600 dark:text-red-400 text-sm text-center"
+                className="mb-4 text-red-600 text-sm text-center"
                 role="alert"
               >
                 {error}
@@ -165,7 +159,7 @@ const LoginPage: React.FC = () => {
               {isSubmitting || loading ? t.login_logging_in : t.sign_in}
             </EnhancedButton>
           </form>
-          <div className="mt-8 text-xs text-slate-400 dark:text-slate-500 text-center animate-fadein-footer">
+          <div className="mt-8 text-xs text-slate-400 text-center animate-fadein-footer">
             &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
           </div>
         </motion.div>

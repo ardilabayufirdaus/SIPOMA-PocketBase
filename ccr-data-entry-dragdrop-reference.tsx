@@ -1,13 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import ExcelJS, { CellValue } from 'exceljs';
 
 // ...existing imports here...
 
 // Component Definition
-const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
+const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t: _t }) => {
   // ...existing state and other variables here...
 
   // Parameter reorder state
@@ -30,7 +27,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   // Parameter reorder handlers - optimized for performance with debouncing
   const reorderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const moveParameterUp = useCallback((index: number) => {
     if (reorderTimeoutRef.current) return; // Prevent rapid clicks
 
@@ -62,15 +59,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       reorderTimeoutRef.current = null;
     }, 150);
   }, []);
-  
+
   // Handler for drag-and-drop reordering
   const handleParameterDragEnd = useCallback((result: DropResult) => {
     // If dropped outside of droppable area or no destination
     if (!result.destination) return;
-    
+
     // If position didn't change
     if (result.source.index === result.destination.index) return;
-    
+
     setModalParameterOrder((prev) => {
       const newOrder = Array.from(prev);
       const [movedItem] = newOrder.splice(result.source.index, 1);
@@ -82,38 +79,38 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   useEffect(() => {
     if (showReorderModal) {
       setModalParameterOrder([...filteredParameterSettings]);
-      
+
       // Add keyboard shortcut for quick reordering
       const handleKeyDown = (e: KeyboardEvent) => {
         // Find the currently focused element
         const focusedElement = document.activeElement;
-        
+
         // Check if we're in the reorder modal context
         if (!focusedElement || !focusedElement.closest('.parameter-reorder-modal')) return;
-        
+
         // Prevent keyboard shortcuts if we're in an input field
         if (focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA') return;
-        
+
         // Get data attribute from closest draggable element
         const draggableElement = focusedElement.closest('[data-parameter-index]');
         if (!draggableElement) return;
-        
+
         const index = parseInt(draggableElement.getAttribute('data-parameter-index') || '-1');
         if (index < 0) return;
-        
+
         // Alt+ArrowUp - Move up
         if (e.altKey && e.key === 'ArrowUp') {
           e.preventDefault();
           moveParameterUp(index);
         }
-        
+
         // Alt+ArrowDown - Move down
         if (e.altKey && e.key === 'ArrowDown') {
           e.preventDefault();
           moveParameterDown(index);
         }
       };
-      
+
       window.addEventListener('keydown', handleKeyDown);
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
@@ -130,8 +127,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             ref={provided.innerRef}
             {...provided.draggableProps}
             data-parameter-index={index}
-            className={`flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg ${
-              snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400 dark:ring-blue-600' : ''
+            className={`flex items-center justify-between p-3 bg-slate-50 rounded-lg ${
+              snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''
             }`}
           >
             <div className="flex items-center gap-3">
@@ -139,26 +136,22 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {...provided.dragHandleProps}
                 className="flex items-center gap-1 cursor-grab active:cursor-grabbing"
               >
-                <svg 
-                  className="w-4 h-4 text-slate-400" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className="w-4 h-4 text-slate-400"
+                  viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path 
-                    d="M8 6H6V8H8V6Z M8 11H6V13H8V11Z M8 16H6V18H8V16Z M18 6H16V8H18V6Z M18 11H16V13H18V11Z M18 16H16V18H18V16Z M13 6H11V8H13V6Z M13 11H11V13H13V11Z M13 16H11V18H13V16Z" 
+                  <path
+                    d="M8 6H6V8H8V6Z M8 11H6V13H8V11Z M8 16H6V18H8V16Z M18 6H16V8H18V6Z M18 11H16V13H18V11Z M18 16H16V18H18V16Z M13 6H11V8H13V6Z M13 11H11V13H13V11Z M13 16H11V18H13V16Z"
                     fill="currentColor"
                   />
                 </svg>
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {index + 1}.
-                </span>
+                <span className="text-sm font-medium text-slate-700">{index + 1}.</span>
               </div>
               <div>
-                <div className="font-semibold text-slate-800 dark:text-slate-200">
-                  {param.parameter}
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">{param.unit}</div>
+                <div className="font-semibold text-slate-800">{param.parameter}</div>
+                <div className="text-xs text-slate-500">{param.unit}</div>
               </div>
             </div>
 
@@ -192,8 +185,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // ...other code and components...
 
   return (
-    // ...other JSX...
-  
+    <>
       {/* Parameter Reorder Modal */}
       <Modal
         isOpen={showReorderModal}
@@ -202,15 +194,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       >
         <div className="space-y-4 parameter-reorder-modal">
           <div className="space-y-2">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Drag parameters untuk menyusun ulang dengan cepat atau gunakan tombol ↑/↓ untuk penyesuaian halus.
-              Urutan akan disimpan secara otomatis.
+            <p className="text-sm text-slate-600">
+              Drag parameters untuk menyusun ulang dengan cepat atau gunakan tombol ↑/↓ untuk
+              penyesuaian halus. Urutan akan disimpan secara otomatis.
             </p>
-            <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded-md">
-              <p className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Pintasan Keyboard:
-              </p>
-              <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1 pl-4 list-disc">
+            <div className="bg-slate-100 p-2 rounded-md">
+              <p className="text-xs font-medium text-slate-700 mb-1">Pintasan Keyboard:</p>
+              <ul className="text-xs text-slate-600 space-y-1 pl-4 list-disc">
                 <li>Alt + ↑ : Pindahkan parameter ke atas</li>
                 <li>Alt + ↓ : Pindahkan parameter ke bawah</li>
               </ul>
@@ -220,9 +210,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <DragDropContext onDragEnd={handleParameterDragEnd}>
             <Droppable droppableId="parameter-reorder-list">
               {(provided) => (
-                <div 
+                <div
                   ref={provided.innerRef}
-                  {...provided.droppableProps} 
+                  {...provided.droppableProps}
                   className="max-h-96 overflow-y-auto space-y-2"
                 >
                   {modalParameterOrder.map((param, index) => (
@@ -277,8 +267,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         </div>
       </Modal>
-    
-    // ...other JSX...
+    </>
   );
 };
 

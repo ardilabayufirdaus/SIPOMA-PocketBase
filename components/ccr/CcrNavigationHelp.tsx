@@ -10,50 +10,44 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
-            🎯 CCR Table Navigation Guide
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-800">🎯 CCR Table Navigation Guide</h3>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+            className="text-slate-400 hover:text-slate-600"
             aria-label="Close help"
           >
             ✕
           </button>
         </div>
 
-        <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
+        <div className="space-y-4 text-sm text-slate-600">
           <div>
-            <strong className="text-slate-800 dark:text-slate-200">Keyboard Navigation:</strong>
+            <strong className="text-slate-800">Keyboard Navigation:</strong>
             <ul className="mt-2 space-y-1 ml-4">
               <li>
-                • <kbd className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">Tab</kbd> - Move
-                to next cell
+                • <kbd className="bg-slate-100 px-2 py-1 rounded">Tab</kbd> - Move to next cell
               </li>
               <li>
-                •{' '}
-                <kbd className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">Shift + Tab</kbd>{' '}
-                - Move to previous cell
+                • <kbd className="bg-slate-100 px-2 py-1 rounded">Shift + Tab</kbd> - Move to
+                previous cell
               </li>
               <li>
-                • <kbd className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">↑↓←→</kbd> -
-                Navigate in all directions
+                • <kbd className="bg-slate-100 px-2 py-1 rounded">↑↓←→</kbd> - Navigate in all
+                directions
               </li>
               <li>
-                • <kbd className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">Esc</kbd> - Exit
-                navigation mode
+                • <kbd className="bg-slate-100 px-2 py-1 rounded">Esc</kbd> - Exit navigation mode
               </li>
               <li>
-                • <kbd className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">Enter</kbd> -
-                Edit current cell
+                • <kbd className="bg-slate-100 px-2 py-1 rounded">Enter</kbd> - Edit current cell
               </li>
             </ul>
           </div>
 
           <div>
-            <strong className="text-slate-800 dark:text-slate-200">Search & Filtering:</strong>
+            <strong className="text-slate-800">Search & Filtering:</strong>
             <ul className="mt-2 space-y-1 ml-4">
               <li>• Use search bar to filter parameters by name or unit</li>
               <li>• Real-time results update as you type</li>
@@ -63,7 +57,7 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
           </div>
 
           <div>
-            <strong className="text-slate-800 dark:text-slate-200">Data Entry Tips:</strong>
+            <strong className="text-slate-800">Data Entry Tips:</strong>
             <ul className="mt-2 space-y-1 ml-4">
               <li>• Use decimal format (e.g., 12.50)</li>
               <li>• Values are auto-saved on change</li>
@@ -74,7 +68,7 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
           </div>
 
           <div>
-            <strong className="text-slate-800 dark:text-slate-200">Error Handling:</strong>
+            <strong className="text-slate-800">Error Handling:</strong>
             <ul className="mt-2 space-y-1 ml-4">
               <li>• Network errors show retry options</li>
               <li>• Invalid data triggers validation messages</li>
@@ -84,19 +78,18 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
           </div>
 
           <div>
-            <strong className="text-slate-800 dark:text-slate-200">Table Features:</strong>
+            <strong className="text-slate-800">Table Features:</strong>
             <ul className="mt-2 space-y-1 ml-4">
               <li>• Sticky headers for easy reference</li>
               <li>• Fixed footer always visible</li>
               <li>• Horizontal & vertical scrolling</li>
               <li>• Auto-calculation of statistics</li>
               <li>• Responsive design for mobile devices</li>
-              <li>• Dark mode support</li>
             </ul>
           </div>
 
           <div>
-            <strong className="text-slate-800 dark:text-slate-200">Accessibility:</strong>
+            <strong className="text-slate-800">Accessibility:</strong>
             <ul className="mt-2 space-y-1 ml-4">
               <li>• Screen reader compatible</li>
               <li>• High contrast mode support</li>

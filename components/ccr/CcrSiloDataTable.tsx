@@ -46,8 +46,8 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
     selectedCategory,
   }) => {
     return (
-      <div className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow space-y-3">
-        <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1 truncate">
+      <div className="bg-white p-3 rounded-xl shadow space-y-3">
+        <h3 className="text-base font-bold text-slate-800 mb-1 truncate">
           {t.ccr_data_entry_title}
         </h3>
         <div className="overflow-x-auto">
@@ -228,7 +228,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
               )}
               {dailySiloData.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="text-center py-10 text-slate-500 dark:text-slate-400">
+                  <td colSpan={10} className="text-center py-10 text-slate-500">
                     {!selectedCategory
                       ? 'No plant categories found in Master Data.'
                       : `No silo master data found for the category: ${selectedCategory}.`}

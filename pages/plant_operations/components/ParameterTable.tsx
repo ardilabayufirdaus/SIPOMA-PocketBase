@@ -31,14 +31,14 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
 
   return (
     <motion.div
-      className="bg-gradient-to-br from-white to-orange-50/30 dark:from-slate-800 dark:to-orange-900/10 rounded-xl shadow-xl overflow-hidden border border-orange-200/50 dark:border-orange-800/50 mt-6"
+      className="bg-gradient-to-br from-white to-orange-50/30 rounded-xl shadow-xl overflow-hidden border border-orange-200/50 mt-6"
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
       whileHover={{ scale: 1.01 }}
     >
-      <div className="p-2 border-b border-orange-200/50 dark:border-orange-700/50 bg-gradient-to-r from-orange-500/10 to-red-500/10">
-        <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+      <div className="p-2 border-b border-orange-200/50 bg-gradient-to-r from-orange-500/10 to-red-500/10">
+        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1">
           <div className="w-1 h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></div>
           {t.parameter_data}
         </h3>
@@ -48,16 +48,16 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
         <table className="w-full text-[6px] table-fixed">
           <thead>
             {/* Grouped Headers */}
-            <tr className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30">
+            <tr className="bg-gradient-to-r from-orange-100 to-red-100">
               <th
                 rowSpan={2}
-                className="px-1 py-1 text-left font-bold text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 w-8 align-middle text-[6px] transform -rotate-90"
+                className="px-1 py-1 text-left font-bold text-slate-800 border-r border-orange-200 sticky left-0 bg-inherit z-10 w-8 align-middle text-[6px] transform -rotate-90"
               >
                 {t.hour}
               </th>
               <th
                 rowSpan={2}
-                className="px-1 py-1 text-left font-bold text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 w-10 align-middle text-[6px]"
+                className="px-1 py-1 text-left font-bold text-slate-800 border-r border-orange-200 w-10 align-middle text-[6px]"
               >
                 {t.shift}
               </th>
@@ -65,18 +65,18 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                 <th
                   key={group.category}
                   colSpan={group.parameters.length}
-                  className="px-1 py-1 text-center font-bold text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 last:border-r-0 align-middle text-[6px]"
+                  className="px-1 py-1 text-center font-bold text-slate-800 border-r border-orange-200 last:border-r-0 align-middle text-[6px]"
                 >
                   {group.category}
                 </th>
               ))}
             </tr>
             {/* Parameter Headers */}
-            <tr className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20">
+            <tr className="bg-gradient-to-r from-orange-50 to-red-50">
               {allParams.map((param) => (
                 <th
                   key={param.id}
-                  className="px-1 py-1 text-center font-semibold text-slate-700 dark:text-slate-300 border-r border-orange-200 dark:border-orange-700 last:border-r-0 w-10 align-middle text-[6px]"
+                  className="px-1 py-1 text-center font-semibold text-slate-700 border-r border-orange-200 last:border-r-0 w-10 align-middle text-[6px]"
                 >
                   <div className="text-[6px] leading-tight break-words">{param.parameter}</div>
                 </th>
@@ -89,17 +89,15 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
               <motion.tr
                 key={row.hour}
                 className={`${
-                  rowIndex % 2 === 0
-                    ? 'bg-white/80 dark:bg-slate-800/80'
-                    : 'bg-orange-50/50 dark:bg-orange-900/10'
-                } hover:bg-gradient-to-r hover:from-orange-100/70 hover:to-red-100/70 dark:hover:from-orange-900/20 dark:hover:to-red-900/20 transition-all duration-200`}
+                  rowIndex % 2 === 0 ? 'bg-white/80' : 'bg-orange-50/50'
+                } hover:bg-gradient-to-r hover:from-orange-100/70 hover:to-red-100/70 transition-all duration-200`}
                 whileHover={{ scale: 1.005 }}
                 transition={{ type: 'spring', stiffness: 300 }}
               >
-                <td className="px-3 py-3 text-center font-semibold text-slate-900 dark:text-slate-100 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 align-middle text-[8px]">
+                <td className="px-3 py-3 text-center font-semibold text-slate-900 border-r border-orange-200 sticky left-0 bg-inherit z-10 align-middle text-[8px]">
                   {row.hour}
                 </td>
-                <td className="px-1 py-1 text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 align-middle text-[6px] font-medium">
+                <td className="px-1 py-1 text-slate-800 border-r border-orange-200 align-middle text-[6px] font-medium">
                   {row.shift}
                 </td>
                 {allParams.map((param) => {
@@ -112,7 +110,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                   return (
                     <td
                       key={param.id}
-                      className="px-1 py-1 text-center text-slate-700 dark:text-slate-300 border-r border-orange-200 dark:border-orange-700 last:border-r-0 align-middle font-medium text-[6px]"
+                      className="px-1 py-1 text-center text-slate-700 border-r border-orange-200 last:border-r-0 align-middle font-medium text-[6px]"
                     >
                       {displayValue}
                     </td>
@@ -127,7 +125,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
               .map(([statName, statValues]) => (
                 <tr
                   key={statName}
-                  className="bg-gradient-to-r from-orange-200/50 to-red-200/50 dark:from-orange-900/40 dark:to-red-900/40 font-semibold"
+                  className="bg-gradient-to-r from-orange-200/50 to-red-200/50 font-semibold"
                 >
                   {statName === t.average ||
                   statName === t.min ||
@@ -136,17 +134,17 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                     <>
                       <td
                         colSpan={2}
-                        className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 align-middle font-bold text-[6px]"
+                        className="px-1 py-1 text-center text-slate-800 border-r border-orange-200 sticky left-0 bg-inherit z-10 align-middle font-bold text-[6px]"
                       >
                         {statName}
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 sticky left-0 bg-inherit z-10 align-middle font-bold text-[6px]">
+                      <td className="px-1 py-1 text-center text-slate-800 border-r border-orange-200 sticky left-0 bg-inherit z-10 align-middle font-bold text-[6px]">
                         {statName}
                       </td>
-                      <td className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 align-middle text-[6px] font-bold">
+                      <td className="px-1 py-1 text-center text-slate-800 border-r border-orange-200 align-middle text-[6px] font-bold">
                         -
                       </td>
                     </>
@@ -156,7 +154,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                     return (
                       <td
                         key={param.id}
-                        className="px-1 py-1 text-center text-slate-800 dark:text-slate-200 border-r border-orange-200 dark:border-orange-700 last:border-r-0 align-middle font-bold text-[6px]"
+                        className="px-1 py-1 text-center text-slate-800 border-r border-orange-200 last:border-r-0 align-middle font-bold text-[6px]"
                       >
                         {value}
                       </td>

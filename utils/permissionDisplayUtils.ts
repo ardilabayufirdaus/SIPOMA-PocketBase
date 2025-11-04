@@ -65,15 +65,15 @@ export const getPermissionsSummary = (permissions: PermissionMatrix): string => 
 export const getPermissionLevelColor = (level: PermissionLevel): string => {
   switch (level) {
     case 'ADMIN':
-      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      return 'bg-red-100 text-red-800';
     case 'WRITE':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      return 'bg-orange-100 text-orange-800';
     case 'READ':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      return 'bg-blue-100 text-blue-800';
     case 'NONE':
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      return 'bg-gray-100 text-gray-800';
     default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      return 'bg-gray-100 text-gray-800';
   }
 };
 

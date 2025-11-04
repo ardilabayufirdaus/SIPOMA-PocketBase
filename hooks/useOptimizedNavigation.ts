@@ -142,7 +142,7 @@ export const useOptimizedSidebar = (
   // Memoized sidebar classes
   const sidebarClasses = useMemo(() => {
     const baseClasses =
-      'bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out flex flex-col h-full';
+      'bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col h-full';
     const widthClasses = isCollapsed ? 'w-16' : 'w-64';
 
     return `${baseClasses} ${widthClasses}`;

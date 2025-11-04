@@ -375,7 +375,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({
   };
 
   const classes = [
-    'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700',
+    'bg-white rounded-lg border border-gray-200',
     paddingClasses[padding],
     shadowClasses[shadow],
     'transition-all duration-300 ease-out',
@@ -455,7 +455,7 @@ export const AnimatedInput: React.FC<AnimatedInputProps> = ({
       {label && (
         <label
           className={`block text-sm font-medium transition-colors duration-200 ${
-            isFocused ? 'text-red-600 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'
+            isFocused ? 'text-red-600' : 'text-slate-600'
           }`}
         >
           {label}

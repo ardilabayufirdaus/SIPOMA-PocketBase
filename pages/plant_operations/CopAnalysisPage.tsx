@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useCopParameters } from '../../hooks/useCopParameters';
-import { useParameterSettings } from '../../hooks/useParameterSettings';
-import { useCcrFooterData } from '../../hooks/useCcrFooterData';
-import { ParameterSetting } from '../../types';
+import { ParameterSetting, CcrFooterData } from '../../types';
 import { formatDate, formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
+import { useParameterSettings } from '../../hooks/useParameterSettings';
+import { useCopParameters } from '../../hooks/useCopParameters';
+import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { pb } from '../../utils/pocketbase-simple';
+import { indexedDBCache } from '../../utils/cache/indexedDB';
 import Modal from '../../components/Modal';
 import { Card } from '../../components/ui/Card';
 import {
@@ -53,6 +54,43 @@ const formatCopNumber = (num: number | null | undefined): string => {
   return formatNumberIndonesian(num, 1);
 };
 
+// Interfaces for moisture data
+interface MoistureDataItem {
+  hour: number;
+  gypsum: number | null;
+  trass: number | null;
+  limestone: number | null;
+  total: number | null;
+}
+
+interface ParameterDataRecord {
+  parameter_id: string;
+  hour1?: number | null;
+  hour2?: number | null;
+  hour3?: number | null;
+  hour4?: number | null;
+  hour5?: number | null;
+  hour6?: number | null;
+  hour7?: number | null;
+  hour8?: number | null;
+  hour9?: number | null;
+  hour10?: number | null;
+  hour11?: number | null;
+  hour12?: number | null;
+  hour13?: number | null;
+  hour14?: number | null;
+  hour15?: number | null;
+  hour16?: number | null;
+  hour17?: number | null;
+  hour18?: number | null;
+  hour19?: number | null;
+  hour20?: number | null;
+  hour21?: number | null;
+  hour22?: number | null;
+  hour23?: number | null;
+  hour24?: number | null;
+}
+
 // Helper function to get min/max values based on cement type
 const getMinMaxForCementType = (
   parameter: ParameterSetting,
@@ -81,50 +119,47 @@ const getPerformanceStatus = (percentage: number) => {
   if (percentage <= 15)
     return {
       status: 'Excellent',
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bg: 'bg-emerald-100 dark:bg-emerald-900/20',
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-100',
     };
   if (percentage <= 30)
     return {
       status: 'Good',
-      color: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-100 dark:bg-blue-900/20',
+      color: 'text-blue-600',
+      bg: 'bg-blue-100',
     };
   if (percentage <= 45)
     return {
       status: 'Fair',
-      color: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-100 dark:bg-amber-900/20',
+      color: 'text-amber-600',
+      bg: 'bg-amber-100',
     };
   return {
     status: 'Needs Improvement',
-    color: 'text-red-600 dark:text-red-400',
-    bg: 'bg-red-100 dark:bg-red-900/20',
+    color: 'text-red-600',
+    bg: 'bg-red-100',
   };
 };
 
 const getPercentageColor = (
   percentage: number | null
-): { bg: string; text: string; darkBg: string; status: string } => {
+): { bg: string; text: string; status: string; darkBg?: string } => {
   if (percentage === null)
     return {
       bg: 'bg-slate-50',
       text: 'text-slate-500',
-      darkBg: 'bg-slate-700',
       status: 'N/A',
     };
   if (percentage < 0)
     return {
       bg: 'bg-red-100',
       text: 'text-red-800',
-      darkBg: 'bg-red-500',
       status: 'Low',
     };
   if (percentage > 100)
     return {
       bg: 'bg-amber-100',
       text: 'text-amber-800',
-      darkBg: 'bg-amber-500',
       status: 'High',
     };
   return {
@@ -730,6 +765,194 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedUnit, setSelectedUnit] = useState('');
   const [selectedCementType, setSelectedCementType] = useState('');
   const [selectedOperator, setSelectedOperator] = useState('');
+
+  // Moisture data for footer - fetch for entire month
+  const [monthlyMoistureData, setMonthlyMoistureData] = useState<Map<string, number>>(new Map());
+
+  // Feed data for capacity calculation - fetch for entire month
+  const [monthlyFeedData, setMonthlyFeedData] = useState<Map<string, number>>(new Map());
+
+  // Fetch moisture data for the entire month
+  useEffect(() => {
+    const fetchMonthlyMoistureData = async () => {
+      if (!selectedUnit) return;
+
+      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+      const moistureMap = new Map<string, number>();
+
+      // Fetch moisture data for each day of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        try {
+          // Use the same logic as MoistureContentTable footer to calculate daily average
+          const { data: dayMoistureData } = await new Promise<{ data: MoistureDataItem[] }>(
+            (resolve) => {
+              // Create a temporary hook-like call
+              const fetchData = async () => {
+                const paramSettings = await pb.collection('parameter_settings').getFullList({
+                  filter: `unit="${selectedUnit}"`,
+                });
+
+                const paramMap = new Map<string, string>();
+                paramSettings.forEach((setting) => {
+                  const paramSetting = setting as unknown as ParameterSetting;
+                  paramMap.set(paramSetting.parameter, paramSetting.id);
+                });
+
+                const h2oGypsumId = paramMap.get('H2O Gypsum (%)');
+                const setGypsumId = paramMap.get('Set. Feeder Gypsum (%)');
+                const h2oTrassId = paramMap.get('H2O Trass (%)');
+                const setTrassId = paramMap.get('Set. Feeder Trass (%)');
+                const h2oLimestoneId = paramMap.get('H2O Limestone (%)');
+                const setLimestoneId = paramMap.get('Set. Feeder Limestone (%)');
+
+                const parameterIds = [
+                  h2oGypsumId,
+                  setGypsumId,
+                  h2oTrassId,
+                  setTrassId,
+                  h2oLimestoneId,
+                  setLimestoneId,
+                ].filter(Boolean);
+
+                if (parameterIds.length === 0) {
+                  resolve({ data: [] });
+                  return;
+                }
+
+                const filterConditions = parameterIds
+                  .map((id) => `parameter_id="${id}"`)
+                  .join(' || ');
+                const paramData = await pb.collection('ccr_parameter_data').getFullList({
+                  filter: `date="${dateString}" && (${filterConditions})`,
+                });
+
+                const dataMap = new Map<string, ParameterDataRecord>();
+                paramData.forEach((record) => {
+                  const paramRecord = record as unknown as ParameterDataRecord;
+                  dataMap.set(paramRecord.parameter_id, paramRecord);
+                });
+
+                // Calculate moisture content for each hour (same as useMoistureData)
+                const moistureData: MoistureDataItem[] = [];
+                for (let hour = 1; hour <= 24; hour++) {
+                  const hourKey = `hour${hour}` as keyof ParameterDataRecord;
+                  const h2oGypsum = h2oGypsumId
+                    ? (dataMap.get(h2oGypsumId)?.[hourKey] as number | null)
+                    : null;
+                  const setGypsum = setGypsumId
+                    ? (dataMap.get(setGypsumId)?.[hourKey] as number | null)
+                    : null;
+                  const h2oTrass = h2oTrassId
+                    ? (dataMap.get(h2oTrassId)?.[hourKey] as number | null)
+                    : null;
+                  const setTrass = setTrassId
+                    ? (dataMap.get(setTrassId)?.[hourKey] as number | null)
+                    : null;
+                  const h2oLimestone = h2oLimestoneId
+                    ? (dataMap.get(h2oLimestoneId)?.[hourKey] as number | null)
+                    : null;
+                  const setLimestone = setLimestoneId
+                    ? (dataMap.get(setLimestoneId)?.[hourKey] as number | null)
+                    : null;
+
+                  const gypsum = h2oGypsum && setGypsum ? (setGypsum * h2oGypsum) / 100 : null;
+                  const trass = h2oTrass && setTrass ? (setTrass * h2oTrass) / 100 : null;
+                  const limestone =
+                    h2oLimestone && setLimestone ? (setLimestone * h2oLimestone) / 100 : null;
+
+                  const values = [gypsum, trass, limestone].filter(
+                    (val) => val !== null && !isNaN(val)
+                  );
+                  const total =
+                    values.length > 0 ? values.reduce((sum, val) => sum + val, 0) : null;
+
+                  moistureData.push({ hour, gypsum, trass, limestone, total });
+                }
+
+                resolve({ data: moistureData });
+              };
+              fetchData();
+            }
+          );
+
+          // Calculate daily average (same as MoistureContentTable footer)
+          const validValues = dayMoistureData
+            .map((d: MoistureDataItem) => d.total)
+            .filter((v: number | null) => v !== null && v !== undefined && !isNaN(v));
+
+          const dailyAverage =
+            validValues.length > 0
+              ? validValues.reduce((sum: number, val: number) => sum + val, 0) / validValues.length
+              : null;
+
+          if (dailyAverage !== null) {
+            moistureMap.set(dateString, dailyAverage);
+          }
+        } catch {
+          // Error fetching moisture data for this day - continue with other days
+        }
+      }
+
+      setMonthlyMoistureData(moistureMap);
+    };
+
+    fetchMonthlyMoistureData();
+  }, [filterYear, filterMonth, selectedUnit]);
+
+  // Fetch feed data for the entire month for capacity calculation
+  useEffect(() => {
+    const fetchMonthlyFeedData = async () => {
+      if (!selectedCategory || !selectedUnit) return;
+
+      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+      const feedMap = new Map<string, number>();
+
+      // Fetch feed data for each day of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        try {
+          // Get Counter Feeder parameters for this unit
+          const counterFeederParams = await pb.collection('parameter_settings').getFullList({
+            filter: `category="${selectedCategory}" && unit="${selectedUnit}" && parameter~"Counter Feeder"`,
+          });
+
+          if (counterFeederParams.length === 0) continue;
+
+          // Get footer data for all Counter Feeder parameters for this date
+          const parameterIds = counterFeederParams.map((p) => p.id);
+          const filterConditions = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
+
+          const footerData = await pb.collection('ccr_footer_data').getFullList({
+            filter: `date="${dateString}" && (${filterConditions})`,
+          });
+
+          // Calculate total feed for the day (sum of all counter feeder values)
+          let totalFeed = 0;
+          footerData.forEach((record) => {
+            // Sum all shift counters
+            const shift1 = record.shift1_counter || 0;
+            const shift2 = record.shift2_counter || 0;
+            const shift3 = record.shift3_counter || 0;
+            const shift3Cont = record.shift3_cont_counter || 0;
+            totalFeed += shift1 + shift2 + shift3 + shift3Cont;
+          });
+
+          if (totalFeed > 0) {
+            feedMap.set(dateString, totalFeed);
+          }
+        } catch {
+          // Error fetching feed data for this day - continue with other days
+        }
+      }
+
+      setMonthlyFeedData(feedMap);
+    };
+
+    fetchMonthlyFeedData();
+  }, [filterYear, filterMonth, selectedCategory, selectedUnit]);
   const [selectedParameterStats, setSelectedParameterStats] = useState<{
     parameter: string;
     avg: number | null;
@@ -894,9 +1117,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       .sort((a, b) => a.full_name.localeCompare(b.full_name));
   }, [users]);
 
-  // ...existing code...
-
-  // ...existing code...
   const { getFooterDataForDate } = useCcrFooterData();
   const [analysisData, setAnalysisData] = useState<AnalysisDataRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -922,6 +1142,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           return;
         }
 
+        // Check cache first
+        // Temporarily disabled due to authentication issues
+        // const cachedAnalysis = await getCachedAnalysis(
+        //   selectedCategory,
+        //   selectedUnit,
+        //   filterYear,
+        //   filterMonth,
+        //   selectedCementType
+        // );
+
+        // if (cachedAnalysis) {
+        //   setAnalysisData(cachedAnalysis);
+        //   setIsLoading(false);
+        //   return;
+        // }
+
+        // Cache miss - perform full calculation
         const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
         const dates = Array.from({ length: daysInMonth }, (_, i) => {
           const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
@@ -930,9 +1167,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         const dailyAverages = new Map<string, Map<string, number>>();
 
-        // Get footer data for all dates in the month
-        const footerDataPromises = dates.map((dateString) => getFooterDataForDate(dateString));
-        const allFooterDataForMonth = await Promise.all(footerDataPromises);
+        // Get footer data for all dates in the month with caching
+        const footerDataPromises = dates.map(async (dateString) => {
+          const cacheKey = `footer-data-${dateString}-${selectedCategory}-${selectedUnit}`;
+          let footerData = (await indexedDBCache.get(cacheKey)) as CcrFooterData[] | null;
+
+          if (!footerData) {
+            // Fetch from API if not in cache
+            footerData = (await getFooterDataForDate(dateString)) as unknown as CcrFooterData[];
+            // Cache the data with TTL (24 hours)
+            await indexedDBCache.set(cacheKey, footerData, 24 * 60 * 60 * 1000);
+          }
+
+          return footerData;
+        });
+
+        const allFooterDataForMonth: CcrFooterData[][] = await Promise.all(footerDataPromises);
 
         allFooterDataForMonth.flat().forEach((footerData) => {
           // Use footer average data instead of calculating from hourly values
@@ -948,82 +1198,101 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           }
         });
 
-        const data = filteredCopParameters
-          .map((parameter) => {
-            try {
-              // Validate parameter has required fields
-              if (!parameter || !parameter.id || !parameter.parameter) {
-                return null;
-              }
+        // Process data asynchronously to avoid blocking UI
+        const data = await new Promise<AnalysisDataRow[]>((resolve) => {
+          setTimeout(() => {
+            const result = filteredCopParameters
+              .map((parameter) => {
+                try {
+                  // Validate parameter has required fields
+                  if (!parameter || !parameter.id || !parameter.parameter) {
+                    return null;
+                  }
 
-              const dailyValues = dates.map((dateString) => {
-                const avg = dailyAverages.get(parameter.id)?.get(dateString);
+                  const dailyValues = dates.map((dateString) => {
+                    const avg = dailyAverages.get(parameter.id)?.get(dateString);
 
-                // Validate average value
-                if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
-                  return { value: null, raw: undefined };
+                    // Validate average value
+                    if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                      return { value: null, raw: undefined };
+                    }
+
+                    // Use helper function for consistent min/max calculation
+                    const { min: min_value, max: max_value } = getMinMaxForCementType(
+                      parameter,
+                      selectedCementType
+                    );
+
+                    // Validate min/max values
+                    if (min_value === undefined || max_value === undefined) {
+                      return { value: null, raw: avg };
+                    }
+
+                    if (max_value <= min_value) {
+                      return { value: null, raw: avg };
+                    }
+
+                    if (avg === undefined) {
+                      return { value: null, raw: avg };
+                    }
+
+                    const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+
+                    // Validate percentage calculation
+                    if (isNaN(percentage) || !isFinite(percentage)) {
+                      return { value: null, raw: avg };
+                    }
+
+                    return { value: percentage, raw: avg };
+                  });
+
+                  const validDailyPercentages = dailyValues
+                    .map((d) => d.value)
+                    .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+                  const monthlyAverage =
+                    validDailyPercentages.length > 0
+                      ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                        validDailyPercentages.length
+                      : null;
+
+                  const validDailyRaw = dailyValues
+                    .map((d) => d.raw)
+                    .filter(
+                      (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
+                    );
+                  const monthlyAverageRaw =
+                    validDailyRaw.length > 0
+                      ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
+                      : null;
+
+                  return {
+                    parameter,
+                    dailyValues,
+                    monthlyAverage,
+                    monthlyAverageRaw,
+                  };
+                } catch {
+                  return null;
                 }
+              })
+              .filter((p): p is NonNullable<typeof p> => p !== null);
 
-                // Use helper function for consistent min/max calculation
-                const { min: min_value, max: max_value } = getMinMaxForCementType(
-                  parameter,
-                  selectedCementType
-                );
-
-                // Validate min/max values
-                if (min_value === undefined || max_value === undefined) {
-                  return { value: null, raw: avg };
-                }
-
-                if (max_value <= min_value) {
-                  return { value: null, raw: avg };
-                }
-
-                if (avg === undefined) {
-                  return { value: null, raw: avg };
-                }
-
-                const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
-
-                // Validate percentage calculation
-                if (isNaN(percentage) || !isFinite(percentage)) {
-                  return { value: null, raw: avg };
-                }
-
-                return { value: percentage, raw: avg };
-              });
-
-              const validDailyPercentages = dailyValues
-                .map((d) => d.value)
-                .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
-              const monthlyAverage =
-                validDailyPercentages.length > 0
-                  ? validDailyPercentages.reduce((a, b) => a + b, 0) / validDailyPercentages.length
-                  : null;
-
-              const validDailyRaw = dailyValues
-                .map((d) => d.raw)
-                .filter(
-                  (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
-                );
-              const monthlyAverageRaw =
-                validDailyRaw.length > 0
-                  ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
-                  : null;
-
-              return {
-                parameter,
-                dailyValues,
-                monthlyAverage,
-                monthlyAverageRaw,
-              };
-            } catch {
-              return null;
-            }
-          })
-          .filter((p): p is NonNullable<typeof p> => p !== null);
+            resolve(result);
+          }, 0); // Use setTimeout to move to next tick, preventing UI blocking
+        });
 
         setAnalysisData(data);
+
+        // Save to cache for future use
+        // Temporarily disabled due to authentication issues
+        // await saveAnalysisToCache(
+        //   selectedCategory,
+        //   selectedUnit,
+        //   filterYear,
+        //   filterMonth,
+        //   selectedCementType,
+        //   data
+        // );
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         setError(
@@ -1045,6 +1314,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     selectedCategory,
     selectedUnit,
     selectedCementType,
+    // getCachedAnalysis,
+    // saveAnalysisToCache,
   ]);
   const dailyQaf = useMemo(() => {
     if (!analysisData || analysisData.length === 0) {
@@ -1616,14 +1887,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       <Card
         variant="interactive"
         padding="lg"
-        className="bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20"
+        className="bg-gradient-to-br from-primary-50 to-secondary-50"
       >
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-3">
-              {t.op_cop_analysis}
-            </h1>
-            <p className="text-base text-gray-700 dark:text-gray-300">
+            <h1 className="text-3xl font-bold text-primary-600 mb-3">{t.op_cop_analysis}</h1>
+            <p className="text-base text-gray-700">
               Kelola data COP untuk monitoring performa pabrik
             </p>
           </div>
@@ -1631,7 +1900,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-category"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 Plant Category:
               </label>
@@ -1640,7 +1909,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full pl-4 pr-8 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
+                  className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -1654,7 +1923,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-unit"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 Unit:
               </label>
@@ -1663,7 +1932,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-unit"
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
                   disabled={unitsForCategory.length === 0}
                 >
                   {unitsForCategory.map((unit) => (
@@ -1678,7 +1947,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-4 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-cement-type"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 Cement Type:
               </label>
@@ -1687,7 +1956,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-cement-type"
                   value={selectedCementType}
                   onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full pl-4 pr-8 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
+                  className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
                 >
                   <option value="">Pilih Cement Type</option>
                   <option value="OPC">OPC</option>
@@ -1699,7 +1968,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-month"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 Month:
               </label>
@@ -1708,7 +1977,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -1722,7 +1991,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <label
                 htmlFor="cop-filter-year"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 Year:
               </label>
@@ -1731,7 +2000,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -1747,14 +2016,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       </Card>
 
       {/* Analysis Features Tabs */}
-      <Card variant="elevated" padding="md" className="bg-white dark:bg-slate-800">
+      <Card variant="elevated" padding="md" className="bg-white">
         <div className="flex flex-wrap gap-2 mb-4">
           <button
             onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               showStatisticalSummary
                 ? 'bg-blue-500 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             📊 Statistical Summary
@@ -1764,7 +2033,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               showPeriodComparison
                 ? 'bg-green-500 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             📈 Period Comparison
@@ -1774,7 +2043,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               showCorrelationMatrix
                 ? 'bg-purple-500 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             🔗 Correlation Matrix
@@ -1784,7 +2053,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               showAnomalyDetection
                 ? 'bg-red-500 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             ⚠️ Anomaly Detection
@@ -1794,7 +2063,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               showPredictiveInsights
                 ? 'bg-orange-500 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             🔮 Predictive Insights
@@ -1804,7 +2073,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               showQualityMetrics
                 ? 'bg-indigo-500 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             🏆 Quality Metrics
@@ -1817,13 +2086,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="md"
-          className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
+          className="bg-gradient-to-br from-blue-50 to-indigo-50"
         >
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-blue-800 dark:text-blue-200">
-              📊 Statistical Summary
-            </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <h2 className="text-xl font-semibold text-blue-800">📊 Statistical Summary</h2>
+            <p className="text-xs text-slate-600 mt-1">
               Ringkasan statistik parameter COP bulan ini
             </p>
           </div>
@@ -1831,39 +2098,39 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {statisticalSummary.map((stat) => (
               <div
                 key={stat.parameterId}
-                className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow"
+                className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
               >
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 truncate leading-tight">
+                <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                   {stat.parameter}
                 </h3>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Mean:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                    <span className="text-slate-500">Mean:</span>
+                    <span className="font-mono text-slate-800 font-medium">
                       {stat.mean !== null ? formatCopNumber(stat.mean) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Median:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                    <span className="text-slate-500">Median:</span>
+                    <span className="font-mono text-slate-800 font-medium">
                       {stat.median !== null ? formatCopNumber(stat.median) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Std:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                    <span className="text-slate-500">Std:</span>
+                    <span className="font-mono text-slate-800 font-medium">
                       {stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Range:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 font-medium text-xs">
+                    <span className="text-slate-500">Range:</span>
+                    <span className="font-mono text-slate-800 font-medium text-xs">
                       {stat.min !== null ? formatCopNumber(stat.min) : '-'}-
                       {stat.max !== null ? formatCopNumber(stat.max) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Complete:</span>
+                    <span className="text-slate-500">Complete:</span>
                     <span
                       className={`font-mono font-medium ${
                         stat.completeness >= 80
@@ -1877,7 +2144,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Trend:</span>
+                    <span className="text-slate-500">Trend:</span>
                     <span
                       className={`font-medium text-xs ${
                         stat.trend === 'increasing'
@@ -1897,10 +2164,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </span>
                   </div>
                   {stat.targetMin !== undefined && stat.targetMax !== undefined && (
-                    <div className="pt-1 mt-1 border-t border-slate-200 dark:border-slate-600">
+                    <div className="pt-1 mt-1 border-t border-slate-200">
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-500 dark:text-slate-400 text-xs">Target:</span>
-                        <span className="font-mono text-blue-600 dark:text-blue-400 text-xs font-medium">
+                        <span className="text-slate-500 text-xs">Target:</span>
+                        <span className="font-mono text-blue-600 text-xs font-medium">
                           {formatCopNumber(stat.targetMin)}-{formatCopNumber(stat.targetMax)}
                         </span>
                       </div>
@@ -1915,16 +2182,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       {/* Anomaly Detection Panel */}
       {showAnomalyDetection && anomalyDetection.length > 0 && (
-        <Card
-          variant="floating"
-          padding="md"
-          className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20"
-        >
+        <Card variant="floating" padding="md" className="bg-gradient-to-br from-red-50 to-pink-50">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-red-800 dark:text-red-200">
-              ⚠️ Anomaly Detection
-            </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
+            <p className="text-xs text-slate-600 mt-1">
               Deteksi nilai abnormal menggunakan metode 3-sigma rule
             </p>
           </div>
@@ -1932,14 +2193,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {anomalyDetection.map((anomaly) => (
               <div
                 key={anomaly.parameterId}
-                className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow"
+                className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
               >
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 truncate leading-tight">
+                <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                   {anomaly.parameter}
                 </h3>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Outliers:</span>
+                    <span className="text-slate-500">Outliers:</span>
                     <span
                       className={`font-mono font-bold ${
                         anomaly.severity === 'high'
@@ -1953,29 +2214,27 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Severity:</span>
+                    <span className="text-slate-500">Severity:</span>
                     <span
                       className={`font-medium px-1.5 py-0.5 rounded text-xs ${
                         anomaly.severity === 'high'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          ? 'bg-red-100 text-red-800'
                           : anomaly.severity === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
                       }`}
                     >
                       {anomaly.severity.toUpperCase()}
                     </span>
                   </div>
                   {anomaly.outliers.length > 0 && (
-                    <div className="pt-1 mt-1 border-t border-slate-200 dark:border-slate-600">
-                      <span className="text-slate-500 dark:text-slate-400 text-xs">
-                        Outlier Values:
-                      </span>
+                    <div className="pt-1 mt-1 border-t border-slate-200">
+                      <span className="text-slate-500 text-xs">Outlier Values:</span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {anomaly.outliers.slice(0, 3).map((value, idx) => (
                           <span
                             key={idx}
-                            className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-1.5 py-0.5 rounded text-xs font-mono"
+                            className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
                           >
                             {formatCopNumber(value)}
                           </span>
@@ -2000,43 +2259,41 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="md"
-          className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20"
+          className="bg-gradient-to-br from-purple-50 to-violet-50"
         >
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-purple-800 dark:text-purple-200">
+            <h2 className="text-xl font-semibold text-purple-800">
               🔗 Parameter Correlation Matrix
             </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Analisis korelasi antar parameter untuk mengidentifikasi hubungan dan dependensi
             </p>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-              <thead className="bg-slate-50 dark:bg-slate-700">
+            <table className="min-w-full bg-white border border-slate-200 rounded-lg">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-800">
                     Parameter Pair
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
                     Correlation
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
                     Strength
                   </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
                     Direction
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {correlationMatrix.map((corr, idx) => (
-                  <tr key={idx} className="border-t border-slate-200 dark:border-slate-600">
-                    <td className="px-3 py-2 text-xs text-slate-800 dark:text-slate-200">
+                  <tr key={idx} className="border-t border-slate-200">
+                    <td className="px-3 py-2 text-xs text-slate-800">
                       <div className="flex flex-col">
                         <span className="font-medium text-xs">{corr.param1}</span>
-                        <span className="text-slate-500 dark:text-slate-400 text-xs">
-                          vs {corr.param2}
-                        </span>
+                        <span className="text-slate-500 text-xs">vs {corr.param2}</span>
                       </div>
                     </td>
                     <td className="px-3 py-2 text-center text-xs font-mono">
@@ -2046,12 +2303,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                           corr.strength === 'strong'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            ? 'bg-red-100 text-red-800'
                             : corr.strength === 'moderate'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              ? 'bg-yellow-100 text-yellow-800'
                               : corr.strength === 'weak'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                                : 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-slate-100 text-slate-800'
                         }`}
                       >
                         {corr.strength.toUpperCase()}
@@ -2081,77 +2338,69 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="lg"
-          className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20"
+          className="bg-gradient-to-br from-indigo-50 to-blue-50"
         >
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-indigo-800 dark:text-indigo-200">
-              🏆 Quality Metrics Dashboard
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            <h2 className="text-2xl font-semibold text-indigo-800">🏆 Quality Metrics Dashboard</h2>
+            <p className="text-sm text-slate-600 mt-2">
               Metrik kualitas data dan performa proses secara keseluruhan
             </p>
           </div>
           <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="bg-white p-6 rounded-lg border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <div className="p-2 bg-blue-100 rounded-lg">
                   <span className="text-2xl">📊</span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Stability Score</span>
+                <span className="text-sm text-slate-500">Stability Score</span>
               </div>
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
                 {qualityMetrics.overallStability.toFixed(1)}%
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-600">
                 Average parameter stability across all metrics
               </p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="bg-white p-6 rounded-lg border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                <div className="p-2 bg-green-100 rounded-lg">
                   <span className="text-2xl">✅</span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Data Completeness
-                </span>
+                <span className="text-sm text-slate-500">Data Completeness</span>
               </div>
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
+              <div className="text-3xl font-bold text-green-600 mb-2">
                 {qualityMetrics.averageCompleteness.toFixed(1)}%
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-600">
                 Average data completeness across all parameters
               </p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="bg-white p-6 rounded-lg border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                <div className="p-2 bg-purple-100 rounded-lg">
                   <span className="text-2xl">🔢</span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Parameters</span>
+                <span className="text-sm text-slate-500">Parameters</span>
               </div>
-              <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+              <div className="text-3xl font-bold text-purple-600 mb-2">
                 {qualityMetrics.parameterCount}
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Total parameters being monitored
-              </p>
+              <p className="text-sm text-slate-600">Total parameters being monitored</p>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700">
+            <div className="bg-white p-6 rounded-lg border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                <div className="p-2 bg-orange-100 rounded-lg">
                   <span className="text-2xl">📈</span>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">Data Points</span>
+                <span className="text-sm text-slate-500">Data Points</span>
               </div>
-              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              <div className="text-3xl font-bold text-orange-600 mb-2">
                 {qualityMetrics.validDataPoints}/{qualityMetrics.totalDataPoints}
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Valid data points out of total expected
-              </p>
+              <p className="text-sm text-slate-600">Valid data points out of total expected</p>
             </div>
           </div>
         </Card>
@@ -2162,17 +2411,15 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="md"
-          className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20"
+          className="bg-gradient-to-br from-green-50 to-emerald-50"
         >
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-semibold text-green-800 dark:text-green-200">
-                📈 Period Comparison
-              </h2>
+              <h2 className="text-xl font-semibold text-green-800">📈 Period Comparison</h2>
               <div className="flex items-center gap-2">
                 <label
                   htmlFor="comparison-year-select"
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                  className="text-sm font-medium text-slate-700"
                 >
                   Compare with:
                 </label>
@@ -2183,7 +2430,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     onChange={(e) =>
                       setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
                     }
-                    className="pl-3 pr-8 py-1.5 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium transition-colors appearance-none"
+                    className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium transition-colors appearance-none"
                   >
                     {availableYearsWithData.map((y) => (
                       <option key={y} value={y}>
@@ -2195,7 +2442,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
               </div>
             </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-slate-600">
               Perbandingan performa dengan periode sebelumnya ({comparisonPeriod.year})
             </p>
           </div>
@@ -2204,22 +2451,18 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Memuat data perbandingan...
-                </p>
+                <p className="text-sm text-slate-600">Memuat data perbandingan...</p>
               </div>
             </div>
           ) : periodComparison.length === 0 ? (
             <div className="text-center py-8">
-              <div className="text-slate-400 dark:text-slate-500 mb-2">
+              <div className="text-slate-400 mb-2">
                 <span className="text-2xl">📊</span>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-600">
                 Tidak ada data perbandingan tersedia untuk tahun {comparisonPeriod.year}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                Pilih tahun lain yang memiliki data COP
-              </p>
+              <p className="text-xs text-slate-500 mt-1">Pilih tahun lain yang memiliki data COP</p>
             </div>
           ) : (
             <div
@@ -2229,30 +2472,30 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {periodComparison.map((comparison) => (
                 <div
                   key={comparison.parameterId}
-                  className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow"
+                  className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
                 >
-                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 truncate leading-tight">
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                     {comparison.parameter}
                   </h3>
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 dark:text-slate-400">Current:</span>
-                      <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                      <span className="text-slate-500">Current:</span>
+                      <span className="font-mono text-slate-800 font-medium">
                         {comparison.current.mean !== null
                           ? formatCopNumber(comparison.current.mean)
                           : '-'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 dark:text-slate-400">Previous:</span>
-                      <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                      <span className="text-slate-500">Previous:</span>
+                      <span className="font-mono text-slate-800 font-medium">
                         {comparison.previous.mean !== null
                           ? formatCopNumber(comparison.previous.mean)
                           : '-'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200 dark:border-slate-600">
-                      <span className="text-slate-500 dark:text-slate-400">Change:</span>
+                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
+                      <span className="text-slate-500">Change:</span>
                       <span
                         className={`font-bold text-xs ${
                           comparison.delta !== null && comparison.delta > 0
@@ -2268,14 +2511,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 dark:text-slate-400">Trend:</span>
+                      <span className="text-slate-500">Trend:</span>
                       <span
                         className={`font-medium text-xs px-1 py-0.5 rounded ${
                           comparison.trend === 'increased'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            ? 'bg-green-100 text-green-800'
                             : comparison.trend === 'decreased'
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                              : 'bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-200'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-slate-100 text-slate-800'
                         }`}
                       >
                         {comparison.trend === 'increased'
@@ -2298,13 +2541,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="md"
-          className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20"
+          className="bg-gradient-to-br from-orange-50 to-amber-50"
         >
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-orange-800 dark:text-orange-200">
-              🔮 Predictive Insights
-            </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <h2 className="text-xl font-semibold text-orange-800">🔮 Predictive Insights</h2>
+            <p className="text-xs text-slate-600 mt-1">
               Prediksi tren parameter dan peringatan dini untuk 7 hari ke depan
             </p>
           </div>
@@ -2312,48 +2553,48 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             {predictiveInsights.map((insight) => (
               <div
                 key={insight.parameterId}
-                className="bg-white dark:bg-slate-800 p-3 rounded-md border border-slate-200 dark:border-slate-700 hover:shadow-sm transition-shadow"
+                className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
               >
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2 truncate leading-tight">
+                <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                   {insight.parameter}
                 </h3>
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Current:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                    <span className="text-slate-500">Current:</span>
+                    <span className="font-mono text-slate-800 font-medium">
                       {insight.currentValue !== null ? formatCopNumber(insight.currentValue) : '-'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">7-Day:</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">
+                    <span className="text-slate-500">7-Day:</span>
+                    <span className="font-mono text-slate-800 font-medium">
                       {insight.forecast !== null ? formatCopNumber(insight.forecast) : '-'}
                     </span>
                   </div>
                   {insight.targetMin !== undefined && insight.targetMax !== undefined && (
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500 dark:text-slate-400">Target:</span>
-                      <span className="font-mono text-blue-600 dark:text-blue-400 text-xs font-medium">
+                      <span className="text-slate-500">Target:</span>
+                      <span className="font-mono text-blue-600 text-xs font-medium">
                         {formatCopNumber(insight.targetMin)}-{formatCopNumber(insight.targetMax)}
                       </span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200 dark:border-slate-600">
-                    <span className="text-slate-500 dark:text-slate-400">Risk:</span>
+                  <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
+                    <span className="text-slate-500">Risk:</span>
                     <span
                       className={`font-medium px-1.5 py-0.5 rounded text-xs ${
                         insight.risk === 'high'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          ? 'bg-red-100 text-red-800'
                           : insight.risk === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
                       }`}
                     >
                       {insight.risk.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-500 dark:text-slate-400">Trend:</span>
+                    <span className="text-slate-500">Trend:</span>
                     <span
                       className={`font-medium text-xs ${
                         insight.trend === 'increasing'
@@ -2379,35 +2620,28 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </Card>
       )}
 
-      <Card
-        variant="glass"
-        padding="lg"
-        className="backdrop-blur-xl bg-white/80 dark:bg-gray-800/80"
-      >
+      <Card variant="glass" padding="lg" className="backdrop-blur-xl bg-white/80">
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-16 space-y-6">
             <div className="flex items-center space-x-3">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-              <span className="text-lg font-medium text-slate-600 dark:text-slate-300">
+              <span className="text-lg font-medium text-slate-600">
                 Loading COP analysis data...
               </span>
             </div>
             {/* Loading skeleton */}
             <div className="w-full max-w-2xl">
               <div className="animate-pulse">
-                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-3"></div>
+                <div className="h-3 bg-slate-200 rounded w-1/3 mb-3"></div>
                 <div className="space-y-2">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex space-x-2">
-                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/5"></div>
-                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/5"></div>
-                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/6"></div>
+                      <div className="h-3 bg-slate-200 rounded w-1/5"></div>
+                      <div className="h-3 bg-slate-200 rounded w-1/3"></div>
+                      <div className="h-3 bg-slate-200 rounded w-1/5"></div>
+                      <div className="h-3 bg-slate-200 rounded w-1/6"></div>
                       {Array.from({ length: 10 }).map((_, j) => (
-                        <div
-                          key={j}
-                          className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-8"
-                        ></div>
+                        <div key={j} className="h-3 bg-slate-200 rounded w-8"></div>
                       ))}
                     </div>
                   ))}
@@ -2436,7 +2670,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">{error}</p>
+              <p className="text-sm text-slate-600 mb-4">{error}</p>
               <button
                 onClick={() => {
                   setError(null);
@@ -2542,10 +2776,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {!isLoading && !error && (
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-slate-800 dark:text-slate-200">
-                Tabel Analisis COP
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+              <h2 className="text-2xl font-semibold text-slate-800">Tabel Analisis COP</h2>
+              <p className="text-sm text-slate-600 mt-2">
                 Data persentase pencapaian parameter COP per hari dalam sebulan.
               </p>
             </div>
@@ -2564,29 +2796,29 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 role="table"
                 aria-label="COP Analysis Table"
               >
-                <thead className="bg-slate-100 dark:bg-slate-700">
+                <thead className="bg-slate-100">
                   <tr>
-                    <th className="sticky left-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-8">
+                    <th className="sticky left-0 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-8">
                       No.
                     </th>
-                    <th className="sticky left-8 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 min-w-[140px]">
+                    <th className="sticky left-8 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 min-w-[140px]">
                       {t.parameter}
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-16">
                       {t.min}
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-16">
                       {t.max}
                     </th>
                     {daysHeader.map((day) => (
                       <th
                         key={day}
-                        className="px-1 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-600 w-10"
+                        className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-10"
                       >
                         {day}
                       </th>
                     ))}
-                    <th className="sticky right-0 bg-slate-100 dark:bg-slate-700 z-30 px-2 py-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider border-b border-l-2 border-slate-300 dark:border-slate-600 w-16">
+                    <th className="sticky right-0 bg-slate-100 z-30 px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-l-2 border-slate-300 w-16">
                       Avg.
                     </th>
                   </tr>
@@ -2594,7 +2826,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <Droppable droppableId="cop-analysis-table">
                   {(provided) => (
                     <tbody
-                      className="bg-white dark:bg-slate-800"
+                      className="bg-white"
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                     >
@@ -2609,23 +2841,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`group hover:bg-slate-50 dark:hover:bg-slate-700/50 ${
-                                snapshot.isDragging
-                                  ? 'shadow-lg bg-blue-50 dark:bg-blue-900/20'
-                                  : ''
+                              className={`group hover:bg-slate-50 ${
+                                snapshot.isDragging ? 'shadow-lg bg-blue-50' : ''
                               }`}
                               style={{
                                 ...provided.draggableProps.style,
                               }}
                             >
-                              <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 dark:text-slate-400 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 w-8">
+                              <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 w-8">
                                 {rowIndex + 1}
                               </td>
-                              <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 dark:text-slate-200 border-b border-r border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:bg-slate-50 dark:group-hover:bg-slate-700 min-w-[140px]">
+                              <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 min-w-[140px]">
                                 {row.parameter.parameter}
                               </td>
                               {/* Use helper function for consistent min/max display */}
-                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 border-b border-r border-slate-200 w-16">
                                 {(() => {
                                   const { min } = getMinMaxForCementType(
                                     row.parameter,
@@ -2634,7 +2864,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   return formatCopNumber(min);
                                 })()}
                               </td>
-                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 w-16">
+                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 border-b border-r border-slate-200 w-16">
                                 {(() => {
                                   const { max } = getMinMaxForCementType(
                                     row.parameter,
@@ -2648,14 +2878,14 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 return (
                                   <td
                                     key={dayIndex}
-                                    className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 dark:border-slate-600 transition-colors duration-150 ${colors.bg}`}
+                                    className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 transition-colors duration-150 ${colors.bg}`}
                                   >
                                     <div className="relative group/cell h-full w-full flex items-center justify-center">
                                       <span className={`font-medium text-xs ${colors.text}`}>
                                         {formatCopNumber(day.raw)}
                                       </span>
                                       {day.raw !== undefined && (
-                                        <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
+                                        <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                                           <div className="flex items-center justify-between gap-2">
                                             <span className="font-bold text-xs">
                                               {formatDate(
@@ -2665,7 +2895,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                               )}
                                             </span>
                                             <span
-                                              className={`px-1 py-0.5 rounded text-white text-[10px] uppercase ${colors.darkBg}`}
+                                              className={`px-1 py-0.5 rounded text-white text-[10px] uppercase ${colors.bg}`}
                                             >
                                               {colors.status}
                                             </span>
@@ -2708,7 +2938,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 const avgColors = getPercentageColor(row.monthlyAverage);
                                 return (
                                   <td
-                                    className={`sticky right-0 z-20 px-2 py-1.5 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 dark:border-slate-600 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 dark:group-hover:bg-slate-700 w-16`}
+                                    className={`sticky right-0 z-20 px-2 py-1.5 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 w-16`}
                                   >
                                     <span className={`${avgColors.text} text-xs`}>
                                       {formatCopNumber(row.monthlyAverageRaw)}
@@ -2725,7 +2955,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <tr>
                           <td
                             colSpan={daysHeader.length + 5}
-                            className="text-center py-10 text-slate-500 dark:text-slate-400"
+                            className="text-center py-10 text-slate-500"
                           >
                             {!selectedCategory || !selectedUnit
                               ? 'Please select both Category and Unit to view COP analysis data.'
@@ -2738,11 +2968,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </tbody>
                   )}
                 </Droppable>
-                <tfoot className="font-semibold bg-slate-50 dark:bg-slate-700/50">
-                  <tr className="border-t-2 border-slate-300 dark:border-slate-600">
+                <tfoot className="font-semibold bg-slate-50">
+                  <tr className="border-t-2 border-slate-300">
                     <td
                       colSpan={4}
-                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700"
+                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
                     >
                       {t.qaf_daily}
                     </td>
@@ -2751,7 +2981,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       return (
                         <td
                           key={index}
-                          className={`px-1 py-2 text-center border-b border-r border-slate-200 dark:border-slate-600 ${colors.bg} ${colors.text}`}
+                          className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg} ${colors.text}`}
                         >
                           <div className="relative group/cell h-full w-full flex items-center justify-center">
                             <span className="text-xs font-bold">
@@ -2760,7 +2990,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 : '-'}
                             </span>
                             {qaf.total > 0 && (
-                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
+                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                                 {t.qaf_tooltip
                                   ?.replace('{inRange}', qaf.inRange.toString())
                                   .replace('{total}', qaf.total.toString())}
@@ -2775,7 +3005,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       const colors = getQafColor(qaf.value);
                       return (
                         <td
-                          className={`sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 dark:border-slate-600 ${colors.bg} ${colors.text} font-bold text-sm`}
+                          className={`sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 ${colors.bg} ${colors.text} font-bold text-sm`}
                         >
                           <div className="relative group/cell h-full w-full flex items-center justify-center">
                             <span>
@@ -2784,7 +3014,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 : '-'}
                             </span>
                             {qaf.total > 0 && (
-                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
+                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
                                 {t.qaf_tooltip
                                   ?.replace('{inRange}', qaf.inRange.toString())
                                   .replace('{total}', qaf.total.toString())}
@@ -2794,6 +3024,124 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </td>
                       );
                     })()}
+                  </tr>
+                  {/* Moisture Content Row */}
+                  <tr className="border-t border-slate-300">
+                    <td
+                      colSpan={4}
+                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
+                    >
+                      % Moisture Content
+                    </td>
+                    {Array.from(
+                      { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                      (_, i) => {
+                        // Get daily average moisture content from monthly data
+                        const day = i + 1;
+                        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const dailyAverage = monthlyMoistureData.get(dateString);
+
+                        return (
+                          <td
+                            key={`moisture-${day}`}
+                            className="px-1 py-2 text-center border-b border-r border-slate-200 bg-blue-50"
+                          >
+                            <span className="text-xs font-medium text-blue-700">
+                              {dailyAverage !== undefined && !isNaN(dailyAverage)
+                                ? `${formatCopNumber(dailyAverage)}%`
+                                : '-'}
+                            </span>
+                          </td>
+                        );
+                      }
+                    )}
+                    {/* Monthly average for moisture content */}
+                    <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-blue-100 font-bold text-sm">
+                      <span className="text-blue-800">
+                        {(() => {
+                          // Calculate monthly average from daily moisture data
+                          const validValues = Array.from(monthlyMoistureData.values()).filter(
+                            (v) => v !== null && v !== undefined && !isNaN(v)
+                          );
+
+                          if (validValues.length === 0) return '-';
+
+                          const average =
+                            validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
+                          return `${formatCopNumber(average)}%`;
+                        })()}
+                      </span>
+                    </td>
+                  </tr>
+                  {/* Capacity Row */}
+                  <tr className="border-t border-slate-300">
+                    <td
+                      colSpan={4}
+                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
+                    >
+                      Capacity (ton)
+                    </td>
+                    {Array.from(
+                      { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                      (_, i) => {
+                        // Get daily feed and moisture data for capacity calculation
+                        const day = i + 1;
+                        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const dailyFeed = monthlyFeedData.get(dateString);
+                        const dailyMoisture = monthlyMoistureData.get(dateString);
+
+                        // Calculate capacity: Feed - (Moisture Content × Feed / 100)
+                        const capacity =
+                          dailyFeed && dailyMoisture !== undefined
+                            ? dailyFeed - (dailyMoisture * dailyFeed) / 100
+                            : null;
+
+                        return (
+                          <td
+                            key={`capacity-${day}`}
+                            className="px-1 py-2 text-center border-b border-r border-slate-200 bg-green-50"
+                          >
+                            <span className="text-xs font-medium text-green-700">
+                              {capacity !== null && !isNaN(capacity)
+                                ? `${formatCopNumber(capacity)}`
+                                : '-'}
+                            </span>
+                          </td>
+                        );
+                      }
+                    )}
+                    {/* Monthly average for capacity */}
+                    <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-green-100 font-bold text-sm">
+                      <span className="text-green-800">
+                        {(() => {
+                          // Calculate monthly average capacity
+                          const validCapacities: number[] = [];
+                          Array.from(
+                            { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                            (_, i) => {
+                              const day = i + 1;
+                              const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                              const dailyFeed = monthlyFeedData.get(dateString);
+                              const dailyMoisture = monthlyMoistureData.get(dateString);
+
+                              if (dailyFeed && dailyMoisture !== undefined) {
+                                const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
+                                if (!isNaN(capacity)) {
+                                  validCapacities.push(capacity);
+                                }
+                              }
+                            }
+                          );
+
+                          if (validCapacities.length === 0) return '-';
+
+                          const average =
+                            validCapacities.reduce((sum, val) => sum + val, 0) /
+                            validCapacities.length;
+                          return `${formatCopNumber(average)}`;
+                        })()}
+                      </span>
+                    </td>
                   </tr>
                 </tfoot>
               </table>
@@ -2807,13 +3155,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="lg"
-          className="mt-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20"
+          className="mt-6 bg-gradient-to-br from-blue-50 to-indigo-50"
         >
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-blue-800 dark:text-blue-200">
-              Trend Parameter COP
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            <h2 className="text-2xl font-semibold text-blue-800">Trend Parameter COP</h2>
+            <p className="text-sm text-slate-600 mt-2">
               Diagram garis menunjukkan tren nilai parameter sepanjang bulan untuk setiap parameter
               COP.
             </p>
@@ -2836,12 +3182,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 return (
                   <div
                     key={paramData.parameter.id}
-                    className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700"
+                    className="bg-white p-4 rounded-lg border border-slate-200"
                   >
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">
                       {paramData.parameter.parameter}
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    <p className="text-xs text-slate-500 mb-4">
                       Target: {formatCopNumber(min)} - {formatCopNumber(max)}{' '}
                       {paramData.parameter.unit}
                     </p>
@@ -2855,12 +3201,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               return (
                 <div
                   key={paramData.parameter.id}
-                  className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700"
+                  className="bg-white p-4 rounded-lg border border-slate-200"
                 >
-                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">
                     {paramData.parameter.parameter}
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                  <p className="text-xs text-slate-500 mb-4">
                     Target: {formatCopNumber(min)} - {formatCopNumber(max)}{' '}
                     {paramData.parameter.unit}
                   </p>
@@ -2882,16 +3228,16 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <Card
           variant="floating"
           padding="lg"
-          className="mt-6 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20"
+          className="mt-6 bg-gradient-to-br from-emerald-50 to-teal-50"
         >
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-            <h2 className="text-2xl font-semibold text-emerald-800 dark:text-emerald-200">
+            <h2 className="text-2xl font-semibold text-emerald-800">
               Kategori Pencapaian COP Operator
             </h2>
             <div className="flex items-center gap-4 w-full md:w-auto">
               <label
                 htmlFor="operator-filter"
-                className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap min-w-fit"
+                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
               >
                 Operator:
               </label>
@@ -2899,7 +3245,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 id="operator-filter"
                 value={selectedOperator}
                 onChange={(e) => setSelectedOperator(e.target.value)}
-                className="flex-1 min-w-0 px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
+                className="flex-1 min-w-0 px-4 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
               >
                 <option value="">Semua Operator</option>
                 {relevantOperators.map((operator) => (
@@ -2910,13 +3256,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </select>
             </div>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-sm text-slate-600 mb-4">
             Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
             target (di luar range 0-100%).
           </p>
           {selectedOperator && (
-            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-sm text-amber-800">
                 <strong>Catatan:</strong> Filter operator belum dapat diterapkan karena data
                 operator belum tersedia di sistem. Diagram menampilkan semua parameter untuk
                 kategori dan unit yang dipilih.
@@ -2926,18 +3272,16 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <div style={{ width: '100%', height: '320px' }}>
             <OperatorAchievementChart data={operatorAchievementData} />
           </div>
-          <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
+          <div className="mt-3 text-xs text-slate-600">
             <p>Total parameter yang tidak mencapai target: {operatorAchievementData.length}</p>
           </div>
 
           {/* Statistik Ringkasan Performa */}
           {operatorAchievementData.length > 0 && (
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
-                  Rata-rata Kegagalan
-                </h4>
-                <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+              <div className="bg-white p-4 rounded-lg border border-slate-200">
+                <h4 className="text-sm font-semibold text-slate-800 mb-2">Rata-rata Kegagalan</h4>
+                <p className="text-2xl font-bold text-red-600">
                   {operatorAchievementData.length > 0
                     ? (
                         operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
@@ -2946,27 +3290,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     : 0}
                   %
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Rata-rata persentase kegagalan parameter
                 </p>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
-                  Parameter Terburuk
-                </h4>
-                <p className="text-lg font-bold text-slate-800 dark:text-slate-200 truncate">
+              <div className="bg-white p-4 rounded-lg border border-slate-200">
+                <h4 className="text-sm font-semibold text-slate-800 mb-2">Parameter Terburuk</h4>
+                <p className="text-lg font-bold text-slate-800 truncate">
                   {operatorAchievementData[0]?.parameter || '-'}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   {operatorAchievementData[0]?.percentage || 0}% kegagalan
                 </p>
               </div>
 
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
-                  Status Performa
-                </h4>
+              <div className="bg-white p-4 rounded-lg border border-slate-200">
+                <h4 className="text-sm font-semibold text-slate-800 mb-2">Status Performa</h4>
                 {(() => {
                   const avgFailure =
                     operatorAchievementData.length > 0
@@ -2979,7 +3319,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <p className={`text-lg font-bold ${performance.color}`}>
                         {performance.status}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                         Berdasarkan rata-rata {avgFailure.toFixed(1)}% kegagalan
                       </p>
                     </>
@@ -2989,13 +3329,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           )}
           {selectedParameterStats && (
-            <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-300 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-200 max-h-80 overflow-y-auto">
+            <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white rounded-lg shadow-xl border border-slate-300 text-sm text-slate-800 max-h-80 overflow-y-auto">
               <div className="flex justify-between items-center mb-2">
                 <h4 className="font-semibold text-sm truncate pr-2">
                   {selectedParameterStats.parameter}
                 </h4>
                 <button
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1"
+                  className="text-slate-400 hover:text-slate-600 p-1"
                   onClick={() => setSelectedParameterStats(null)}
                   aria-label="Close stats"
                 >
@@ -3109,7 +3449,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   );
                 })}
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-400 mt-4">
+              <div className="text-xs text-slate-600 mt-4">
                 Klik pada hari untuk melihat breakdown jam-jam. Hari berwarna merah menunjukkan
                 parameter di luar range (0-100%).
               </div>
@@ -3153,7 +3493,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </div>
             ))}
           </div>
-          <div className="text-sm text-slate-600 dark:text-slate-400 mt-6 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+          <div className="text-sm text-slate-600 mt-6 p-4 bg-slate-50 rounded-lg">
             💡 Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
           </div>
         </div>

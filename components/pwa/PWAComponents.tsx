@@ -3,14 +3,12 @@ import { useServiceWorker, usePWAStatus } from '../../hooks/usePWA';
 
 interface PWAInstallBannerProps {
   className?: string;
-  theme?: 'light' | 'dark';
   position?: 'top' | 'bottom' | 'fixed';
   showOnMobile?: boolean;
 }
 
 const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
   className = '',
-  theme = 'light',
   position = 'top',
   showOnMobile = true,
 }) => {
@@ -35,8 +33,8 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
   }
 
   const baseClasses = `
-    ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'}
-    border ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}
+    bg-white text-slate-900
+    border border-slate-200
     shadow-lg rounded-lg p-4 m-4
     ${position === 'fixed' ? 'fixed z-50' : 'relative'}
     ${position === 'top' ? 'top-4 left-4 right-4' : ''}
@@ -60,9 +58,9 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <svg
-                className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                className="w-6 h-6 text-blue-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -78,7 +76,7 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-medium">Install SIPOMA App</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Add to your home screen for quick access and offline usage
             </p>
           </div>
@@ -93,7 +91,7 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
           </button>
           <button
             onClick={handleDismiss}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -112,13 +110,9 @@ const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({
 
 interface PWAUpdateNotificationProps {
   className?: string;
-  theme?: 'light' | 'dark';
 }
 
-const PWAUpdateNotification: React.FC<PWAUpdateNotificationProps> = ({
-  className = '',
-  theme = 'light',
-}) => {
+const PWAUpdateNotification: React.FC<PWAUpdateNotificationProps> = ({ className = '' }) => {
   const [dismissed, setDismissed] = useState(false);
   const { updateAvailable, updateSW } = useServiceWorker();
 
@@ -127,8 +121,8 @@ const PWAUpdateNotification: React.FC<PWAUpdateNotificationProps> = ({
   }
 
   const baseClasses = `
-    ${theme === 'dark' ? 'bg-slate-800 text-white' : 'bg-white text-slate-900'}
-    border ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}
+    bg-white text-slate-900
+    border border-slate-200
     shadow-lg rounded-lg p-4 m-4
   `;
 
@@ -145,9 +139,9 @@ const PWAUpdateNotification: React.FC<PWAUpdateNotificationProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-green-600 dark:text-green-400"
+                className="w-5 h-5 text-green-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -163,9 +157,7 @@ const PWAUpdateNotification: React.FC<PWAUpdateNotificationProps> = ({
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-medium">Update Available</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-              A new version of SIPOMA is available
-            </p>
+            <p className="text-xs text-slate-600 mt-1">A new version of SIPOMA is available</p>
           </div>
         </div>
 
@@ -178,7 +170,7 @@ const PWAUpdateNotification: React.FC<PWAUpdateNotificationProps> = ({
           </button>
           <button
             onClick={handleDismiss}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

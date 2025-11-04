@@ -4,17 +4,97 @@ import { pb } from '../utils/pocketbase-simple';
 import { secureStorage } from '../utils/secureStorage';
 import { safeApiCall, isNetworkConnected } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';
+import { clearBrowserData } from '../utils/browserCacheUtils';
 
 export const useCurrentUser = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fungsi untuk memproses dan update user data
+  const updateUserData = useCallback(
+    async (dbUserRaw: Record<string, unknown>, existingUser?: User) => {
+      const userRaw = dbUserRaw as {
+        id: string;
+        username: string;
+        email?: string;
+        name?: string;
+        role: string;
+        is_active?: boolean;
+        avatar?: string;
+        created?: string;
+        created_at?: string;
+        updated?: string;
+        updated_at?: string;
+        last_active?: string;
+      };
+      // Penanganan pengguna tamu - tetap ambil permissions dari database seperti user lainnya
+      // Guest users now follow the same permission loading logic as regular users
+
+      // Ambil izin pengguna dari koleksi user_permissions dengan safeApiCall
+      const userPermissions = await safeApiCall(() =>
+        pb.collection('user_permissions').getList(1, 100, {
+          filter: `user_id = "${dbUserRaw.id}"`,
+          expand: 'permissions',
+        })
+      );
+
+      // Jika gagal mendapatkan permissions, gunakan permissions dari data tersimpan
+      let permissionsData = {};
+      if (userPermissions) {
+        // Bangun matriks izin menggunakan data langsung dari user_permissions
+        const { buildPermissionMatrix } = await import('../utils/permissionUtils');
+        permissionsData = buildPermissionMatrix(userPermissions.items);
+      } else if (existingUser && existingUser.permissions) {
+        permissionsData = existingUser.permissions;
+      }
+
+      // Buat objek user lengkap
+      const dbUser: User = {
+        id: userRaw.id,
+        username: userRaw.username,
+        email: userRaw.email || '',
+        full_name: userRaw.name || '', // PocketBase menggunakan field 'name' bukan 'full_name'
+        role: userRaw.role as UserRole,
+        is_active: userRaw.is_active !== false, // Default ke true jika tidak diatur
+        permissions: permissionsData as PermissionMatrix, // Type assertion for permissions data
+        avatar_url: userRaw.avatar ? pb.files.getUrl(userRaw, userRaw.avatar) : undefined,
+        created_at: new Date(userRaw.created || userRaw.created_at),
+        updated_at: new Date(userRaw.updated || userRaw.updated_at),
+        last_active: userRaw.last_active ? new Date(userRaw.last_active) : undefined,
+      };
+
+      // Periksa status aktif
+      if (!dbUser.is_active) {
+        // Pengguna tidak aktif, hapus sesi
+        pb.authStore.clear();
+        secureStorage.removeItem('currentUser');
+        setCurrentUser(null);
+        return;
+      }
+
+      // Simpan dan perbarui data pengguna
+      secureStorage.setItem('currentUser', dbUser);
+      setCurrentUser(dbUser);
+    },
+    []
+  );
+
   // Fungsi untuk mengambil data pengguna saat ini
   const fetchCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+
+      // Validasi versi aplikasi untuk memastikan kompatibilitas data tersimpan
+      const currentVersion = import.meta.env.VITE_APP_VERSION || '1.0.0';
+      const storedVersion = secureStorage.getItem<string>('data_version');
+
+      if (!storedVersion || storedVersion !== currentVersion) {
+        // Data versi berbeda, clear cache lama
+        secureStorage.removeItem('currentUser');
+        secureStorage.setItem('data_version', currentVersion);
+      }
 
       // Verifikasi token autentikasi
       if (!pb.authStore.isValid) {
@@ -35,32 +115,50 @@ export const useCurrentUser = () => {
         return;
       }
 
-      // Periksa koneksi jaringan terlebih dahulu
-      if (!isNetworkConnected()) {
-        // Gunakan data tersimpan jika offline
-        const storedUser = secureStorage.getItem<User>('currentUser');
-        if (storedUser && storedUser.id === userId) {
-          setCurrentUser(storedUser);
+      // PRIORITAS: Gunakan data tersimpan jika tersedia dan valid
+      // Ini mencegah error 404 jika user sudah berhasil login
+      const storedUser = secureStorage.getItem<User>('currentUser');
+      if (storedUser && storedUser.id === userId) {
+        // Data tersimpan valid, gunakan ini terlebih dahulu
+        setCurrentUser(storedUser);
+
+        // Jika offline, langsung return
+        if (!isNetworkConnected()) {
           return;
         }
+
+        // Jika online, coba update data dari server di background (tidak blocking)
+        try {
+          const dbUserRaw = await safeApiCall(() => pb.collection('users').getOne(userId), {
+            retries: 1,
+            retryDelay: 500,
+          });
+
+          if (dbUserRaw) {
+            // Update data jika berhasil fetch dari server
+            await updateUserData(dbUserRaw, storedUser);
+          }
+          // Jika gagal, tetap gunakan data tersimpan (sudah di-set di atas)
+        } catch {
+          // Silent fail - gunakan data tersimpan
+          logger.debug('Failed to refresh user data from server, using cached data');
+        }
+        return;
       }
 
-      // Ambil data user langsung dari PocketBase dengan safeApiCall dan retry
-      const dbUserRaw = await safeApiCall(
-        () => pb.collection('users').getOne(userId),
-        { retries: 2, retryDelay: 1000 } // Coba hingga 2 kali dengan delay 1 detik
-      );
+      // Fallback: Jika tidak ada data tersimpan, fetch dari server
+      const dbUserRaw = await safeApiCall(() => pb.collection('users').getOne(userId), {
+        retries: 2,
+        retryDelay: 1000,
+      });
 
-      // Jika tidak bisa mendapatkan data dari server, gunakan data tersimpan
       if (!dbUserRaw) {
-        const storedUser = secureStorage.getItem<User>('currentUser');
-        if (storedUser && storedUser.id === userId) {
-          setCurrentUser(storedUser);
-          return;
-        }
         setCurrentUser(null);
         return;
       }
+
+      // Process user data normally
+      await updateUserData(dbUserRaw);
 
       // Penanganan pengguna tamu - tetap ambil permissions dari database seperti user lainnya
       // Guest users now follow the same permission loading logic as regular users
@@ -114,7 +212,17 @@ export const useCurrentUser = () => {
       secureStorage.setItem('currentUser', dbUser);
       setCurrentUser(dbUser);
     } catch (err) {
-      // Penanganan kesalahan
+      // Check if user not found (404) - clear auth store
+      if (err && typeof err === 'object' && 'status' in err && err.status === 404) {
+        logger.warn('User not found in database, clearing auth store');
+        pb.authStore.clear();
+        secureStorage.removeItem('currentUser');
+        setCurrentUser(null);
+        setError('User account not found');
+        return;
+      }
+
+      // Penanganan kesalahan lainnya
       setError(err instanceof Error ? err.message : 'Unknown error');
       setCurrentUser(null);
     } finally {
@@ -162,7 +270,7 @@ export const useCurrentUser = () => {
       pb.collection('users')
         .subscribe('*', (data) => {
           if (data.record && data.record.id === currentUserId) {
-            console.log('🔄 Current user permissions updated via users collection');
+            logger.info('🔄 Current user permissions updated via users collection');
             throttledRefresh();
           }
         })
@@ -170,14 +278,14 @@ export const useCurrentUser = () => {
           unsubscribeUsers = unsub;
         })
         .catch((err) => {
-          console.error('❌ Failed to subscribe to users collection:', err);
+          logger.error('❌ Failed to subscribe to users collection:', err);
         });
 
       // Subscribe ke collection user_permissions untuk perubahan permissions
       pb.collection('user_permissions')
         .subscribe('*', (data) => {
           if (data.record && data.record.user_id === currentUserId) {
-            console.log('🔄 Current user permissions updated via user_permissions collection');
+            logger.info('🔄 Current user permissions updated via user_permissions collection');
             throttledRefresh();
           }
         })
@@ -185,7 +293,7 @@ export const useCurrentUser = () => {
           unsubscribePermissions = unsub;
         })
         .catch((err) => {
-          console.error('❌ Failed to subscribe to user_permissions collection:', err);
+          logger.error('❌ Failed to subscribe to user_permissions collection:', err);
         });
     }
 
@@ -232,16 +340,33 @@ export const useCurrentUser = () => {
     };
   }, [fetchCurrentUser]);
 
-  // Function untuk logout
-  const logout = useCallback(() => {
-    pb.authStore.clear();
-    secureStorage.removeItem('currentUser');
-    setCurrentUser(null);
-    setError(null);
-    setLoading(false);
+  // Function untuk logout - clear SIPOMA domain data (SIMPLIFIED)
+  const logout = useCallback(async () => {
+    try {
+      // Clear PocketBase auth
+      pb.authStore.clear();
+      secureStorage.removeItem('currentUser');
+      setCurrentUser(null);
+      setError(null);
+      setLoading(false);
 
-    // Dispatch custom event to notify other components
-    window.dispatchEvent(new CustomEvent('authStateChanged'));
+      // Clear SIPOMA domain data (localhost & sipoma.site)
+      await clearBrowserData();
+
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('authStateChanged'));
+    } catch (error) {
+      logger.error('Error during logout:', error);
+      // Fallback - tetap lakukan logout walaupun clear cache gagal
+      pb.authStore.clear();
+      secureStorage.removeItem('currentUser');
+      setCurrentUser(null);
+      setError(null);
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('authStateChanged'));
+      // Navigate anyway
+      window.location.href = '/login';
+    }
   }, []);
 
   return { currentUser, loading, error, logout };

@@ -270,8 +270,6 @@ function getMaxAge(url) {
 
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
-  console.log('🔄 Background sync triggered:', event.tag);
-
   if (event.tag === 'background-sync') {
     event.waitUntil(doBackgroundSync());
   }
@@ -279,7 +277,6 @@ self.addEventListener('sync', (event) => {
 
 async function doBackgroundSync() {
   // Implement background sync logic here
-  console.log('📡 Performing background sync...');
 
   // Example: Retry failed API calls
   const failedRequests = await getFailedRequests();

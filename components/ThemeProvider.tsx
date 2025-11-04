@@ -5,7 +5,6 @@ type Theme = 'system';
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -29,8 +28,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 }) => {
   const [theme, setTheme] = useState<Theme>('system');
 
-  const [isDark, setIsDark] = useState(false);
-
   useEffect(() => {
     const root = window.document.documentElement;
 
@@ -38,7 +35,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       root.classList.remove('light', 'dark');
       // Always use light theme for consistency
       root.classList.add('light');
-      setIsDark(false);
     };
 
     updateTheme();
@@ -52,7 +48,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   const value: ThemeContextType = {
     theme,
     setTheme: handleSetTheme,
-    isDark,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

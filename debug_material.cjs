@@ -1,5 +1,6 @@
-const path = require('path');
-const { pb } = require(path.join(__dirname, 'utils', 'pocketbase-simple'));
+const {
+  pb,
+} = require('d:/Repository Github/sipoma-ver-2/sipoma-versi-2/utils/pocketbase-simple.ts');
 
 async function debugMaterialData() {
   try {

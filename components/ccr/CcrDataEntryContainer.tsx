@@ -191,13 +191,13 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
   const loading = parameterLoading || downtimeLoading;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 dark:from-slate-200 dark:via-blue-400 dark:to-cyan-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
             CCR Data Entry System
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
+          <p className="text-slate-600 text-lg">
             Manage and monitor CCR parameter data with real-time updates
           </p>
         </div>
@@ -222,7 +222,7 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
         {/* Data Tables Section */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {/* Parameter Data Table */}
-          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
                 <svg
@@ -239,20 +239,18 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 Parameter Data
               </h3>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="ml-3 text-slate-600 dark:text-slate-400">
-                  Loading parameter data...
-                </span>
+                <span className="ml-3 text-slate-600">Loading parameter data...</span>
               </div>
             ) : (
-              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
-                <p className="text-slate-600 dark:text-slate-400 text-center py-8">
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <p className="text-slate-600 text-center py-8">
                   Parameter data table will be rendered here with full functionality.
                 </p>
               </div>
@@ -260,7 +258,7 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
           </div>
 
           {/* Silo Data Table */}
-          <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+          <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <svg
@@ -277,20 +275,18 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                 Silo Data
               </h3>
             </div>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="ml-3 text-slate-600 dark:text-slate-400">
-                  Loading silo data...
-                </span>
+                <span className="ml-3 text-slate-600">Loading silo data...</span>
               </div>
             ) : (
-              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
-                <p className="text-slate-600 dark:text-slate-400 text-center py-8">
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <p className="text-slate-600 text-center py-8">
                   Silo data table will be rendered here with full functionality.
                 </p>
               </div>
@@ -299,7 +295,7 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
         </div>
 
         {/* Footer Data Section */}
-        <div className="backdrop-blur-md bg-white/10 dark:bg-slate-800/10 border border-white/20 dark:border-slate-700/20 rounded-2xl p-6 shadow-2xl">
+        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
               <svg
@@ -316,40 +312,34 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
               Footer Data, Downtime & Keterangan
             </h3>
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="ml-3 text-slate-600 dark:text-slate-400">
-                Loading footer data...
-              </span>
+              <span className="ml-3 text-slate-600">Loading footer data...</span>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
-                <p className="text-slate-600 dark:text-slate-400 text-center py-4">
-                  Footer data table
-                </p>
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <p className="text-slate-600 text-center py-4">Footer data table</p>
               </div>
-              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
-                <p className="text-slate-600 dark:text-slate-400 text-center py-4">
-                  Downtime data table
-                </p>
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                <p className="text-slate-600 text-center py-4">Downtime data table</p>
               </div>
-              <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-slate-700/20">
+              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <label
                   htmlFor="keterangan"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                  className="block text-sm font-medium text-slate-700 mb-2"
                 >
                   Keterangan
                 </label>
                 <textarea
                   id="keterangan"
                   rows={4}
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-slate-700 dark:text-slate-200"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Masukkan keterangan manual..."
                 />
               </div>

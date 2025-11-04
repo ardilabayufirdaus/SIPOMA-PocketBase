@@ -9,16 +9,14 @@ import { designSystem } from '../../utils/designSystem';
 interface TypographyProps {
   children: React.ReactNode;
   className?: string;
-  theme?: 'light' | 'dark';
 }
 
 export type { TypographyProps };
 
 // Heading Components
-export const H1: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
+export const H1: React.FC<TypographyProps> = ({ children, className = '' }) => {
   const baseClasses = 'font-bold leading-tight';
-  const color =
-    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+  const color = designSystem.colors.neutral[900];
 
   return (
     <h1
@@ -35,10 +33,9 @@ export const H1: React.FC<TypographyProps> = ({ children, className = '', theme 
   );
 };
 
-export const H2: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
+export const H2: React.FC<TypographyProps> = ({ children, className = '' }) => {
   const baseClasses = 'font-bold leading-tight';
-  const color =
-    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+  const color = designSystem.colors.neutral[900];
 
   return (
     <h2
@@ -55,10 +52,9 @@ export const H2: React.FC<TypographyProps> = ({ children, className = '', theme 
   );
 };
 
-export const H3: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
+export const H3: React.FC<TypographyProps> = ({ children, className = '' }) => {
   const baseClasses = 'font-semibold leading-tight';
-  const color =
-    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+  const color = designSystem.colors.neutral[900];
 
   return (
     <h3
@@ -75,10 +71,9 @@ export const H3: React.FC<TypographyProps> = ({ children, className = '', theme 
   );
 };
 
-export const H4: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
+export const H4: React.FC<TypographyProps> = ({ children, className = '' }) => {
   const baseClasses = 'font-semibold leading-tight';
-  const color =
-    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+  const color = designSystem.colors.neutral[900];
 
   return (
     <h4
@@ -95,10 +90,9 @@ export const H4: React.FC<TypographyProps> = ({ children, className = '', theme 
   );
 };
 
-export const H5: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
+export const H5: React.FC<TypographyProps> = ({ children, className = '' }) => {
   const baseClasses = 'font-semibold leading-tight';
-  const color =
-    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+  const color = designSystem.colors.neutral[900];
 
   return (
     <h5
@@ -115,10 +109,9 @@ export const H5: React.FC<TypographyProps> = ({ children, className = '', theme 
   );
 };
 
-export const H6: React.FC<TypographyProps> = ({ children, className = '', theme = 'light' }) => {
+export const H6: React.FC<TypographyProps> = ({ children, className = '' }) => {
   const baseClasses = 'font-semibold leading-tight uppercase tracking-wider';
-  const color =
-    theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900];
+  const color = designSystem.colors.neutral[900];
 
   return (
     <h6
@@ -139,6 +132,7 @@ export const H6: React.FC<TypographyProps> = ({ children, className = '', theme 
 interface BodyProps extends TypographyProps {
   size?: 'large' | 'base' | 'small' | 'xs';
   color?: 'primary' | 'secondary' | 'tertiary';
+  theme?: 'light' | 'dark';
 }
 
 export const Body: React.FC<BodyProps> = ({
@@ -156,11 +150,9 @@ export const Body: React.FC<BodyProps> = ({
   };
 
   const colorMap = {
-    primary: theme === 'dark' ? designSystem.colors.neutral[100] : designSystem.colors.neutral[900],
-    secondary:
-      theme === 'dark' ? designSystem.colors.neutral[300] : designSystem.colors.neutral[600],
-    tertiary:
-      theme === 'dark' ? designSystem.colors.neutral[400] : designSystem.colors.neutral[500],
+    primary: designSystem.colors.neutral[900],
+    secondary: designSystem.colors.neutral[600],
+    tertiary: designSystem.colors.neutral[500],
   };
 
   return (
@@ -181,6 +173,7 @@ interface LinkProps extends TypographyProps {
   href?: string;
   onClick?: () => void;
   state?: 'default' | 'visited';
+  theme?: 'light' | 'dark';
 }
 
 export const Link: React.FC<LinkProps> = ({
@@ -192,8 +185,8 @@ export const Link: React.FC<LinkProps> = ({
   theme = 'light',
 }) => {
   const colorMap = {
-    default: theme === 'dark' ? designSystem.colors.primary[400] : designSystem.colors.primary[600],
-    visited: theme === 'dark' ? designSystem.colors.primary[500] : designSystem.colors.primary[800],
+    default: designSystem.colors.primary[600],
+    visited: designSystem.colors.primary[800],
   };
 
   const Component = href ? 'a' : 'button';
@@ -215,6 +208,7 @@ export const Link: React.FC<LinkProps> = ({
 // Status Text Component
 interface StatusTextProps extends TypographyProps {
   status: 'success' | 'warning' | 'error' | 'info';
+  theme?: 'light' | 'dark';
 }
 
 export const StatusText: React.FC<StatusTextProps> = ({
@@ -224,10 +218,10 @@ export const StatusText: React.FC<StatusTextProps> = ({
   theme = 'light',
 }) => {
   const colorMap = {
-    success: theme === 'dark' ? designSystem.colors.success[300] : designSystem.colors.success[800],
-    warning: theme === 'dark' ? designSystem.colors.warning[300] : designSystem.colors.warning[800],
-    error: theme === 'dark' ? designSystem.colors.error[300] : designSystem.colors.error[800],
-    info: theme === 'dark' ? designSystem.colors.info[300] : designSystem.colors.info[800],
+    success: designSystem.colors.success[800],
+    warning: designSystem.colors.warning[800],
+    error: designSystem.colors.error[800],
+    info: designSystem.colors.info[800],
   };
 
   return (
@@ -245,6 +239,7 @@ export const StatusText: React.FC<StatusTextProps> = ({
 // UI Text Components
 interface UITextProps extends TypographyProps {
   variant?: 'label' | 'caption' | 'overline';
+  theme?: 'light' | 'dark';
 }
 
 export const UIText: React.FC<UITextProps> = ({
@@ -257,17 +252,17 @@ export const UIText: React.FC<UITextProps> = ({
     label: {
       fontSize: designSystem.typography.fontSize.sm,
       fontWeight: designSystem.typography.fontWeight.medium,
-      color: theme === 'dark' ? designSystem.colors.neutral[300] : designSystem.colors.neutral[600],
+      color: designSystem.colors.neutral[600],
     },
     caption: {
       fontSize: designSystem.typography.fontSize.xs,
       fontWeight: designSystem.typography.fontWeight.normal,
-      color: theme === 'dark' ? designSystem.colors.neutral[400] : designSystem.colors.neutral[500],
+      color: designSystem.colors.neutral[500],
     },
     overline: {
       fontSize: designSystem.typography.fontSize.xs,
       fontWeight: designSystem.typography.fontWeight.semibold,
-      color: theme === 'dark' ? designSystem.colors.neutral[300] : designSystem.colors.neutral[600],
+      color: designSystem.colors.neutral[600],
     },
   };
 
@@ -290,6 +285,7 @@ export const UIText: React.FC<UITextProps> = ({
 // Accent Text Component
 interface AccentTextProps extends TypographyProps {
   variant?: 'primary' | 'success' | 'warning' | 'error';
+  theme?: 'light' | 'dark';
 }
 
 export const AccentText: React.FC<AccentTextProps> = ({
@@ -299,10 +295,10 @@ export const AccentText: React.FC<AccentTextProps> = ({
   theme = 'light',
 }) => {
   const colorMap = {
-    primary: theme === 'dark' ? designSystem.colors.primary[400] : designSystem.colors.primary[600],
-    success: theme === 'dark' ? designSystem.colors.success[400] : designSystem.colors.success[700],
-    warning: theme === 'dark' ? designSystem.colors.warning[400] : designSystem.colors.warning[700],
-    error: theme === 'dark' ? designSystem.colors.error[400] : designSystem.colors.error[700],
+    primary: designSystem.colors.primary[600],
+    success: designSystem.colors.success[700],
+    warning: designSystem.colors.warning[700],
+    error: designSystem.colors.error[700],
   };
 
   return (

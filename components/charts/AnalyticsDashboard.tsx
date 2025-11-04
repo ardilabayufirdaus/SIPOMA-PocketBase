@@ -60,8 +60,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
-          <p className="font-medium text-slate-800 dark:text-slate-200 mb-2">{label}</p>
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+          <p className="font-medium text-slate-800 mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}:{' '}
@@ -85,9 +85,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     <div className="space-y-6">
       {/* Time Range Selector */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">
-          Production Analytics
-        </h2>
+        <h2 className="text-xl font-bold text-slate-800">Production Analytics</h2>
         <div className="flex gap-2">
           {(['1h', '24h', '7d', '30d'] as const).map((range) => (
             <EnhancedButton
@@ -108,9 +106,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
       {/* Main Production Chart */}
       <div className="glass-card p-4 rounded-xl">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
-          Production Overview
-        </h3>
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Production Overview</h3>
         <div className="h-80">
           <Line
             data={{
@@ -198,9 +194,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Downtime Analysis */}
         <div className="glass-card p-4 rounded-xl">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
-            Downtime Analysis
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Downtime Analysis</h3>
           <div className="h-64">
             <Bar
               data={{
@@ -262,9 +256,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
         {/* Energy Consumption */}
         <div className="glass-card p-4 rounded-xl">
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
-            Energy Consumption
-          </h3>
+          <h3 className="text-lg font-semibold text-slate-800 mb-4">Energy Consumption</h3>
           <div className="h-64">
             <Line
               data={{
@@ -340,30 +332,28 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             return (
               <>
                 <div className="glass-card p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400 mb-1">
+                  <div className="text-2xl font-bold text-red-600 mb-1">
                     {avgProduction.toFixed(1)}%
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">Avg Production</div>
+                  <div className="text-sm text-slate-600">Avg Production</div>
                 </div>
                 <div className="glass-card p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">
                     {avgEfficiency.toFixed(1)}%
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">Avg Efficiency</div>
+                  <div className="text-sm text-slate-600">Avg Efficiency</div>
                 </div>
                 <div className="glass-card p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                  <div className="text-2xl font-bold text-yellow-600 mb-1">
                     {totalDowntime.toFixed(1)}h
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">Total Downtime</div>
+                  <div className="text-sm text-slate-600">Total Downtime</div>
                 </div>
                 <div className="glass-card p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+                  <div className="text-2xl font-bold text-purple-600 mb-1">
                     {totalEnergy.toFixed(0)}
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
-                    Total Energy (kWh)
-                  </div>
+                  <div className="text-sm text-slate-600">Total Energy (kWh)</div>
                 </div>
               </>
             );

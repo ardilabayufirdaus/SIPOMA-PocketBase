@@ -255,23 +255,20 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   };
 
   return (
-    <div className="p-6 bg-white dark:bg-slate-900 rounded-xl shadow-md">
+    <div className="p-6 bg-white rounded-xl shadow-md">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Time Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               Time Period
             </h4>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label
-                htmlFor="start_time"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="start_time" className="block text-sm font-medium text-slate-700">
                 {t.start_time}
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -284,10 +281,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 ${
+                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 ${
                     isFieldInvalid('start_time')
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                 />
                 {isFieldInvalid('start_time') && (
@@ -299,10 +296,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="end_time"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="end_time" className="block text-sm font-medium text-slate-700">
                 {t.end_time}
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -315,10 +309,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
-                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 ${
+                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 ${
                     isFieldInvalid('end_time')
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                 />
                 {isFieldInvalid('end_time') && (
@@ -335,17 +329,14 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               Assignment
             </h4>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label
-                htmlFor="unit"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
                 {t.unit}
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -356,16 +347,13 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   id="unit"
                   value={formData.unit}
                   readOnly
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm text-slate-900 dark:text-slate-100 cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-xl shadow-sm text-slate-900 cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="pic"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="pic" className="block text-sm font-medium text-slate-700">
                 {t.pic}
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -376,10 +364,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   value={formData.pic}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 appearance-none ${
+                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none ${
                     isFieldInvalid('pic')
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                   disabled={picSettings.length === 0}
                 >
@@ -423,17 +411,14 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               Details
             </h4>
           </div>
 
           <div className="space-y-5">
             <div className="space-y-2">
-              <label
-                htmlFor="problem"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="problem" className="block text-sm font-medium text-slate-700">
                 {t.problem}
                 <span className="text-red-500 ml-1">*</span>
               </label>
@@ -447,10 +432,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   rows={4}
                   required
                   placeholder="Describe the problem that occurred..."
-                  className={`w-full px-4 py-3 bg-white dark:bg-slate-800 border rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 resize-none ${
+                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 resize-none ${
                     isFieldInvalid('problem')
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 dark:border-slate-600 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                 />
                 {isFieldInvalid('problem') && (
@@ -462,10 +447,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="action"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
+              <label htmlFor="action" className="block text-sm font-medium text-slate-700">
                 {t.action}
               </label>
               <textarea
@@ -475,14 +457,14 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                 onChange={handleChange}
                 rows={4}
                 placeholder="Describe the actions taken to resolve the issue..."
-                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
               />
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex flex-row justify-end space-x-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex flex-row justify-end space-x-3 pt-6 border-t border-slate-200">
           <EnhancedButton
             type="button"
             variant="secondary"

@@ -40,13 +40,13 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   const getTrendColor = () => {
     switch (trend) {
       case 'good':
-        return 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400';
+        return 'bg-green-50 text-green-600';
       case 'warning':
-        return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+        return 'bg-yellow-50 text-yellow-600';
       case 'critical':
-        return 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+        return 'bg-red-50 text-red-600';
       default:
-        return 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400';
+        return 'bg-slate-50 text-slate-600';
     }
   };
 
@@ -68,10 +68,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white dark:bg-slate-900 p-3 rounded-lg shadow-md flex items-start gap-2 transition hover:shadow-lg focus-within:ring-2 focus-within:ring-red-400 dark:focus-within:ring-red-300 ${getTrendBorder()} ${
-          isInteractive
-            ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transform hover:scale-[1.02]'
-            : ''
+        className={`bg-white p-3 rounded-lg shadow-md flex items-start gap-2 transition hover:shadow-lg focus-within:ring-2 focus-within:ring-red-400 ${getTrendBorder()} ${
+          isInteractive ? 'cursor-pointer hover:bg-gray-50 transform hover:scale-[1.02]' : ''
         }`}
         tabIndex={isInteractive ? 0 : -1}
         aria-label={title + (unit ? ` (${unit})` : '')}
@@ -88,10 +86,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <p
-              className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate"
-              title={title}
-            >
+            <p className="text-xs font-medium text-slate-500 truncate" title={title}>
               {title}
             </p>
             <div className="flex items-center space-x-1">
@@ -99,10 +94,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                 <span
                   className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     trend === 'good'
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                      ? 'bg-green-100 text-green-800'
                       : trend === 'warning'
-                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
-                        : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
                   }`}
                   title={
                     trend === 'good'
@@ -116,7 +111,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                 </span>
               )}
               {isInteractive && (
-                <div className="text-slate-400 dark:text-slate-500">
+                <div className="text-slate-400">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -131,7 +126,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           </div>
           <div className="flex items-baseline space-x-1 mt-0.5">
             <p
-              className="text-lg font-semibold text-slate-900 dark:text-slate-100"
+              className="text-lg font-semibold text-slate-900"
               aria-label={
                 typeof value === 'string' || typeof value === 'number'
                   ? String(value)
@@ -142,9 +137,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                 ? String(value)
                 : '[Invalid Value]'}
             </p>
-            {unit && (
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{unit}</p>
-            )}
+            {unit && <p className="text-xs font-medium text-slate-500">{unit}</p>}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { formatIndonesianNumber } from '../../utils/formatUtils';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   TrendingUpIcon,
   TrendingDownIcon,
@@ -98,15 +99,15 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const getVariantClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30';
+        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200';
       case 'success':
-        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-200 dark:from-green-950/30 dark:to-green-900/30 dark:border-green-800/30';
+        return 'bg-gradient-to-br from-green-50 to-green-100 border-green-200';
       case 'warning':
-        return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 dark:from-amber-950/30 dark:to-amber-900/30 dark:border-amber-800/30';
+        return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200';
       case 'danger':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200 dark:from-red-950/30 dark:to-red-900/30 dark:border-red-800/30';
+        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200';
       default:
-        return 'bg-gradient-to-br from-slate-50 to-white border-slate-200 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700';
+        return 'bg-gradient-to-br from-slate-50 to-white border-slate-200';
     }
   };
 
@@ -136,7 +137,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
       onClick={onClick}
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20 dark:from-transparent dark:via-white/5 dark:to-white/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20" />
 
       <div className="relative p-6">
         {/* Header */}
@@ -148,7 +149,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               size="sm"
               onClick={onClick}
               ariaLabel="More options"
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              className="text-slate-400 hover:text-slate-600"
               icon={<MoreHorizontalIcon className="w-5 h-5" />}
             >
               <span className="sr-only">More options</span>
@@ -158,23 +159,17 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
         {/* Content */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
-            {title}
-          </h3>
+          <h3 className="text-sm font-medium text-slate-600 uppercase tracking-wide">{title}</h3>
 
           <div className="flex items-baseline space-x-2">
             {isLoading ? (
-              <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+              <div className="h-8 w-24 bg-slate-200 rounded animate-pulse" />
             ) : (
               <>
-                <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                <span className="text-3xl font-bold text-slate-900">
                   {typeof value === 'number' ? formatIndonesianNumber(value) : value}
                 </span>
-                {unit && (
-                  <span className="text-lg font-medium text-slate-500 dark:text-slate-400">
-                    {unit}
-                  </span>
-                )}
+                {unit && <span className="text-lg font-medium text-slate-500">{unit}</span>}
               </>
             )}
           </div>
@@ -185,19 +180,17 @@ const MetricCard: React.FC<MetricCardProps> = ({
               <div
                 className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
                   trend.direction === 'up'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    ? 'bg-green-100 text-green-700'
                     : trend.direction === 'down'
-                      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-slate-100 text-slate-700'
                 }`}
               >
                 {trend.direction === 'up' && <TrendingUpIcon className="w-3 h-3" />}
                 {trend.direction === 'down' && <TrendingDownIcon className="w-3 h-3" />}
                 <span>{trend.value}%</span>
               </div>
-              {trend.period && (
-                <span className="text-xs text-slate-500 dark:text-slate-400">{trend.period}</span>
-              )}
+              {trend.period && <span className="text-xs text-slate-500">{trend.period}</span>}
             </div>
           )}
         </div>
@@ -227,19 +220,17 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
   return (
     <div
       className={`
-        bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700
+        bg-white rounded-2xl border border-slate-200
         shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden
         ${className}
       `}
     >
       {/* Header */}
-      <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+      <div className="p-6 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-            {subtitle && (
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
-            )}
+            <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+            {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
           </div>
           {actions && <div className="flex items-center space-x-2">{actions}</div>}
         </div>
@@ -247,11 +238,7 @@ const ChartContainer: React.FC<ChartContainerProps> = ({
 
       {/* Content */}
       <div className="p-6">
-        {isLoading ? (
-          <div className="h-64 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse" />
-        ) : (
-          children
-        )}
+        {isLoading ? <div className="h-64 bg-slate-100 rounded-lg animate-pulse" /> : children}
       </div>
     </div>
   );
@@ -281,17 +268,13 @@ const QuickAction: React.FC<QuickActionProps> = ({
       className={`w-full p-4 text-left group transition-all duration-300 ${
         variant === 'primary'
           ? 'bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg hover:shadow-xl'
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-600'
+          : 'bg-white border-slate-200 hover:border-red-300'
       }`}
       icon={
         <div
           className={`
           p-2 rounded-lg flex-shrink-0 transition-colors
-          ${
-            variant === 'primary'
-              ? 'bg-white/20'
-              : 'bg-slate-100 dark:bg-slate-700 group-hover:bg-red-100 dark:group-hover:bg-red-900/30'
-          }`}
+          ${variant === 'primary' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-red-100'}`}
         >
           {icon}
         </div>
@@ -301,14 +284,14 @@ const QuickAction: React.FC<QuickActionProps> = ({
         <h4
           className={`
           font-medium text-sm mb-1
-          ${variant === 'primary' ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}
+          ${variant === 'primary' ? 'text-white' : 'text-slate-900'}`}
         >
           {title}
         </h4>
         <p
           className={`
           text-xs leading-relaxed
-          ${variant === 'primary' ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}
+          ${variant === 'primary' ? 'text-white/80' : 'text-slate-500'}`}
         >
           {description}
         </p>
@@ -319,7 +302,9 @@ const QuickAction: React.FC<QuickActionProps> = ({
 
 // Main Dashboard Header
 const DashboardHeader: React.FC = () => {
-  const currentTime = new Date().toLocaleString('id-ID', {
+  const { t, language } = useTranslation();
+
+  const currentTime = new Date().toLocaleString(language === 'id' ? 'id-ID' : 'en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -339,7 +324,7 @@ const DashboardHeader: React.FC = () => {
         {/* Top Row */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Selamat Datang di SIPOMA</h1>
+            <h1 className="text-2xl font-bold mb-1">{t.dashboard_welcome_title}</h1>
             <p className="text-white/80 text-sm">{currentTime}</p>
           </div>
         </div>

@@ -55,37 +55,33 @@ export default function UnifiedPlantOpsDashboard() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+        <h1 className="text-2xl font-bold text-slate-800">
           Plant Operations Dashboard (Optimized)
         </h1>
       </div>
 
       {/* Controls */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
+      <div className="bg-white rounded-lg p-4 shadow-sm">
         <div className="flex flex-wrap gap-4 items-end">
           {/* Date selector */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Date
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900"
               disabled={isLoading}
             />
           </div>
 
           {/* Plant unit selector */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Plant Unit
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Plant Unit</label>
             <select
               value={selectedUnit}
               onChange={(e) => setSelectedUnit(e.target.value)}
-              className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              className="px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900"
               disabled={isLoading}
             >
               <option value="all">All Units</option>
@@ -109,17 +105,15 @@ export default function UnifiedPlantOpsDashboard() {
       </div>
 
       {/* Optimization controls */}
-      <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
+      <div className="bg-white rounded-lg p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-800 mb-3">
           Performance Optimization Controls
         </h2>
         <div className="flex flex-wrap gap-3">
           <button
             onClick={() => toggleQueryCaching(!isCachingEnabled)}
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isCachingEnabled
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+              isCachingEnabled ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'
             }`}
           >
             Query Cache: {isCachingEnabled ? 'ON' : 'OFF'}
@@ -128,9 +122,7 @@ export default function UnifiedPlantOpsDashboard() {
           <button
             onClick={() => toggleBatching(!isBatchingEnabled)}
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              isBatchingEnabled
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+              isBatchingEnabled ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'
             }`}
           >
             Batch Loading: {isBatchingEnabled ? 'ON' : 'OFF'}
@@ -138,7 +130,7 @@ export default function UnifiedPlantOpsDashboard() {
 
           <button
             onClick={() => clearQueryCache()}
-            className="px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 dark:bg-orange-900 dark:text-orange-200 rounded-full text-sm font-medium transition-colors"
+            className="px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-full text-sm font-medium transition-colors"
           >
             Clear Cache
           </button>
@@ -154,45 +146,35 @@ export default function UnifiedPlantOpsDashboard() {
 
       {/* Data summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">Parameter Data</h3>
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {parameterData.length}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Records loaded</p>
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h3 className="text-sm font-medium text-slate-600">Parameter Data</h3>
+          <p className="text-2xl font-bold text-slate-900">{parameterData.length}</p>
+          <p className="text-xs text-slate-500">Records loaded</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">Silo Data</h3>
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{siloData.length}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Records loaded</p>
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h3 className="text-sm font-medium text-slate-600">Silo Data</h3>
+          <p className="text-2xl font-bold text-slate-900">{siloData.length}</p>
+          <p className="text-xs text-slate-500">Records loaded</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">Downtime Data</h3>
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {downtimeData.length}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Records loaded</p>
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h3 className="text-sm font-medium text-slate-600">Downtime Data</h3>
+          <p className="text-2xl font-bold text-slate-900">{downtimeData.length}</p>
+          <p className="text-xs text-slate-500">Records loaded</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Information Data
-          </h3>
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {informationData.length}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Records loaded</p>
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h3 className="text-sm font-medium text-slate-600">Information Data</h3>
+          <p className="text-2xl font-bold text-slate-900">{informationData.length}</p>
+          <p className="text-xs text-slate-500">Records loaded</p>
         </div>
       </div>
 
       {/* Parameter Data Table */}
       {parameterData.length > 0 && !isLoading && (
-        <div className="bg-white dark:bg-slate-800 rounded-lg p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
-            Parameter Data
-          </h2>
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Parameter Data</h2>
           <DataTable
             rows={parameterData.slice(0, 10)}
             columns={[
@@ -207,7 +189,7 @@ export default function UnifiedPlantOpsDashboard() {
             disablePagination={true}
           />
           {parameterData.length > 10 && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            <p className="text-sm text-slate-500 mt-2">
               Showing 10 of {parameterData.length} records
             </p>
           )}
@@ -215,22 +197,18 @@ export default function UnifiedPlantOpsDashboard() {
       )}
 
       {/* Performance metrics */}
-      <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
-          Performance Metrics
-        </h2>
+      <div className="bg-slate-50 rounded-lg p-4">
+        <h2 className="text-lg font-semibold text-slate-800 mb-3">Performance Metrics</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <span className="font-medium text-slate-700 dark:text-slate-300">
-              Data Optimization Status:
-            </span>
+            <span className="font-medium text-slate-700">Data Optimization Status:</span>
             <span
               className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                 isCachingEnabled && isBatchingEnabled
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  ? 'bg-green-100 text-green-800'
                   : isCachingEnabled || isBatchingEnabled
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-red-100 text-red-800'
               }`}
             >
               {isCachingEnabled && isBatchingEnabled
@@ -241,13 +219,13 @@ export default function UnifiedPlantOpsDashboard() {
             </span>
           </div>
           <div>
-            <span className="font-medium text-slate-700 dark:text-slate-300">Query Caching:</span>
+            <span className="font-medium text-slate-700">Query Caching:</span>
             <span className={`ml-2 ${isCachingEnabled ? 'text-green-600' : 'text-red-600'}`}>
               {isCachingEnabled ? 'Enabled' : 'Disabled'}
             </span>
           </div>
           <div>
-            <span className="font-medium text-slate-700 dark:text-slate-300">Batch Loading:</span>
+            <span className="font-medium text-slate-700">Batch Loading:</span>
             <span className={`ml-2 ${isBatchingEnabled ? 'text-green-600' : 'text-red-600'}`}>
               {isBatchingEnabled ? 'Enabled' : 'Disabled'}
             </span>

@@ -91,7 +91,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
     >
       {/* Report Header */}
       <motion.div
-        className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl shadow-lg p-6 border border-orange-200/50 dark:border-orange-800/50"
+        className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl shadow-lg p-6 border border-orange-200/50"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.4 }}
@@ -102,12 +102,12 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
           </div>
           <div className="text-center flex-1">
             <h1
-              className={`${isDailyOperationalReport ? 'text-xl' : 'text-2xl'} font-bold text-orange-600 dark:text-orange-400 mb-2`}
+              className={`${isDailyOperationalReport ? 'text-xl' : 'text-2xl'} font-bold text-orange-600 mb-2`}
             >
               {title}
             </h1>
             <p
-              className={`${isDailyOperationalReport ? 'text-xs' : 'text-sm'} text-slate-600 dark:text-slate-400 font-medium`}
+              className={`${isDailyOperationalReport ? 'text-xs' : 'text-sm'} text-slate-600 font-medium`}
             >
               {date}
             </p>
