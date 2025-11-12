@@ -57,7 +57,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   const t = translations[language];
 
   // Notify parent when permissions change (but not during initial load)
-  useEffect(() => {
+  const handlePermissionsChange = useCallback(() => {
     if (!isInitialLoad) {
       try {
         onPermissionsChange(permissions);
@@ -67,16 +67,23 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
     }
   }, [permissions, onPermissionsChange, isInitialLoad]);
 
+  useEffect(() => {
+    handlePermissionsChange();
+  }, [handlePermissionsChange]);
+
   // Reset initial load flag when modal opens
   useEffect(() => {
     if (isOpen) {
       setIsInitialLoad(true);
-      // Create deep copy to avoid reference sharing
-      setPermissions(JSON.parse(JSON.stringify(currentPermissions)));
+      // Only update permissions if they are different to avoid unnecessary re-renders
+      const newPermissions = JSON.parse(JSON.stringify(currentPermissions));
+      if (JSON.stringify(permissions) !== JSON.stringify(newPermissions)) {
+        setPermissions(newPermissions);
+      }
       // Use setTimeout to ensure state is set before resetting flag
       setTimeout(() => setIsInitialLoad(false), 0);
     }
-  }, [isOpen, currentPermissions]);
+  }, [isOpen, currentPermissions, permissions]);
 
   // Helper function to get color for permission level
   const getPermissionLevelColor = (level: PermissionLevel) => {

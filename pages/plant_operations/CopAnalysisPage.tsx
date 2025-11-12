@@ -25,6 +25,7 @@ import {
   ChartOptions,
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
+import ExcelJS from 'exceljs';
 
 // Register Chart.js components
 ChartJS.register(
@@ -992,7 +993,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   });
 
   // Analysis features state
-  const [showStatisticalSummary, setShowStatisticalSummary] = useState(true);
+  const [showStatisticalSummary, setShowStatisticalSummary] = useState(false);
   const [showPeriodComparison, setShowPeriodComparison] = useState(false);
   const [comparisonPeriod, setComparisonPeriod] = useState({
     month: new Date().getMonth(),
@@ -1880,6 +1881,280 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     // Update parameterOrder
     const newOrder = items.map((item) => item.parameter.id);
     setParameterOrder(newOrder);
+  };
+
+  // Export to Excel function
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('COP Analysis');
+
+    // Set column widths
+    worksheet.columns = [
+      { width: 5 }, // No
+      { width: 25 }, // Parameter
+      { width: 8 }, // Min
+      { width: 8 }, // Max
+      ...daysHeader.map(() => ({ width: 8 })), // Days
+      { width: 10 }, // Avg
+    ];
+
+    // Header row
+    const headerRow = worksheet.addRow(['No.', 'Parameter', 'Min', 'Max', ...daysHeader, 'Avg.']);
+
+    // Style header
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, size: 10 };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD3D3D3' },
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    // Data rows
+    analysisData.forEach((row, rowIndex) => {
+      const dataRow = [
+        rowIndex + 1,
+        row.parameter.parameter,
+        formatCopNumber(getMinMaxForCementType(row.parameter, selectedCementType).min),
+        formatCopNumber(getMinMaxForCementType(row.parameter, selectedCementType).max),
+        ...row.dailyValues.map((day) => formatCopNumber(day.raw)),
+        formatCopNumber(row.monthlyAverageRaw),
+      ];
+
+      const excelRow = worksheet.addRow(dataRow);
+
+      // Style data cells
+      excelRow.eachCell((cell, colNumber) => {
+        cell.font = { size: 9 };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+
+        if (colNumber === 1) {
+          // No column - left align
+          cell.alignment = { horizontal: 'left', vertical: 'middle' };
+        } else if (colNumber === 2) {
+          // Parameter column - left align
+          cell.alignment = { horizontal: 'left', vertical: 'middle' };
+        } else {
+          // Other columns - center align
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        }
+
+        // Color coding for daily values
+        if (colNumber >= 5 && colNumber <= 4 + daysHeader.length) {
+          const dayIndex = colNumber - 5;
+          const dayData = row.dailyValues[dayIndex];
+          if (dayData && dayData.value !== null) {
+            const colors = getPercentageColor(dayData.value);
+            let bgColor = 'FFFFFFFF'; // default white
+
+            if (colors.bg.includes('bg-red-')) bgColor = 'FFFFE5E5';
+            else if (colors.bg.includes('bg-yellow-')) bgColor = 'FFFFF3CD';
+            else if (colors.bg.includes('bg-green-')) bgColor = 'FFD1ECF1';
+
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: bgColor },
+            };
+          }
+        }
+
+        // Monthly average column
+        if (colNumber === 4 + daysHeader.length + 1) {
+          const colors = getPercentageColor(row.monthlyAverage);
+          let bgColor = 'FFFFFFFF'; // default white
+
+          if (colors.bg.includes('bg-red-')) bgColor = 'FFFFE5E5';
+          else if (colors.bg.includes('bg-yellow-')) bgColor = 'FFFFF3CD';
+          else if (colors.bg.includes('bg-green-')) bgColor = 'FFD1ECF1';
+
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: bgColor },
+          };
+          cell.font = { bold: true, size: 9 };
+        }
+      });
+    });
+
+    // Footer rows - QAF Daily
+    const qafRow = worksheet.addRow([
+      '',
+      '',
+      '',
+      'QAF Daily',
+      ...dailyQaf.daily.map((qaf) =>
+        qaf.value !== null && !isNaN(qaf.value) ? `${formatCopNumber(qaf.value)}%` : '-'
+      ),
+      dailyQaf.monthly.value !== null && !isNaN(dailyQaf.monthly.value)
+        ? `${formatCopNumber(dailyQaf.monthly.value)}%`
+        : '-',
+    ]);
+
+    qafRow.eachCell((cell, colNumber) => {
+      cell.font = { bold: true, size: 9 };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      if (colNumber >= 5 && colNumber <= 4 + daysHeader.length) {
+        const qaf = dailyQaf.daily[colNumber - 5];
+        const colors = getQafColor(qaf.value);
+        let bgColor = 'FFFFFFFF';
+
+        if (colors.bg.includes('bg-red-')) bgColor = 'FFFFE5E5';
+        else if (colors.bg.includes('bg-yellow-')) bgColor = 'FFFFF3CD';
+        else if (colors.bg.includes('bg-green-')) bgColor = 'FFD1ECF1';
+
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: bgColor },
+        };
+      }
+
+      if (colNumber === 4 + daysHeader.length + 1) {
+        const colors = getQafColor(dailyQaf.monthly.value);
+        let bgColor = 'FFFFFFFF';
+
+        if (colors.bg.includes('bg-red-')) bgColor = 'FFFFE5E5';
+        else if (colors.bg.includes('bg-yellow-')) bgColor = 'FFFFF3CD';
+        else if (colors.bg.includes('bg-green-')) bgColor = 'FFD1ECF1';
+
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: bgColor },
+        };
+      }
+    });
+
+    // Moisture Content row
+    const moistureRow = worksheet.addRow([
+      '',
+      '',
+      '',
+      '% Moisture Content',
+      ...Array.from({ length: new Date(filterYear, filterMonth + 1, 0).getDate() }, (_, i) => {
+        const day = i + 1;
+        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dailyAverage = monthlyMoistureData.get(dateString);
+        return dailyAverage !== undefined && !isNaN(dailyAverage)
+          ? `${formatCopNumber(dailyAverage)}%`
+          : '-';
+      }),
+      (() => {
+        const validValues = Array.from(monthlyMoistureData.values()).filter(
+          (v) => v !== null && v !== undefined && !isNaN(v)
+        );
+        if (validValues.length === 0) return '-';
+        const average = validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
+        return `${formatCopNumber(average)}%`;
+      })(),
+    ]);
+
+    moistureRow.eachCell((cell) => {
+      cell.font = { size: 9 };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6F3FF' },
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    // Capacity row
+    const capacityRow = worksheet.addRow([
+      '',
+      '',
+      '',
+      'Capacity (ton)',
+      ...Array.from({ length: new Date(filterYear, filterMonth + 1, 0).getDate() }, (_, i) => {
+        const day = i + 1;
+        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dailyFeed = monthlyFeedData.get(dateString);
+        const dailyMoisture = monthlyMoistureData.get(dateString);
+        const capacity =
+          dailyFeed && dailyMoisture !== undefined
+            ? dailyFeed - (dailyMoisture * dailyFeed) / 100
+            : null;
+        return capacity !== null && !isNaN(capacity) ? formatCopNumber(capacity) : '-';
+      }),
+      (() => {
+        const validCapacities: number[] = [];
+        Array.from({ length: new Date(filterYear, filterMonth + 1, 0).getDate() }, (_, i) => {
+          const day = i + 1;
+          const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const dailyFeed = monthlyFeedData.get(dateString);
+          const dailyMoisture = monthlyMoistureData.get(dateString);
+          if (dailyFeed && dailyMoisture !== undefined) {
+            const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
+            if (!isNaN(capacity)) validCapacities.push(capacity);
+          }
+        });
+        if (validCapacities.length === 0) return '-';
+        const average = validCapacities.reduce((sum, val) => sum + val, 0) / validCapacities.length;
+        return formatCopNumber(average);
+      })(),
+    ]);
+
+    capacityRow.eachCell((cell) => {
+      cell.font = { size: 9 };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE6F7E6' },
+      };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+
+    // Generate filename
+    const monthName = new Date(filterYear, filterMonth).toLocaleString('id-ID', { month: 'long' });
+    const filename = `COP_Analysis_${selectedCategory}_${selectedUnit}_${monthName}_${filterYear}.xlsx`;
+
+    // Save file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -2801,7 +3076,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <th className="sticky left-0 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-8">
                       No.
                     </th>
-                    <th className="sticky left-8 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 min-w-[140px]">
+                    <th className="sticky left-8 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 min-w-[80px]">
                       {t.parameter}
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-16">
@@ -2851,7 +3126,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 w-8">
                                 {rowIndex + 1}
                               </td>
-                              <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 min-w-[140px]">
+                              <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 min-w-[80px]">
                                 {row.parameter.parameter}
                               </td>
                               {/* Use helper function for consistent min/max display */}
@@ -3145,6 +3420,24 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </tr>
                 </tfoot>
               </table>
+            </div>
+            {/* Export Button */}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={exportToExcel}
+                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                disabled={analysisData.length === 0}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Export to Excel
+              </button>
             </div>
           </DragDropContext>
         )}

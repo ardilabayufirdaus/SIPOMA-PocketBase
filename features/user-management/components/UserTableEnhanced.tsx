@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { pb } from '../../../utils/pocketbase-simple';
 import { translations } from '../../../translations';
 import { UserRole, PermissionMatrix } from '../../../types';
@@ -113,14 +113,17 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
     setShowPermissionsModal(true);
   };
 
-  const handlePermissionsChange = (newPermissions: PermissionMatrix) => {
-    if (selectedUserForEdit) {
-      setSelectedUserForEdit({
-        ...selectedUserForEdit,
-        permissions: newPermissions,
-      });
-    }
-  };
+  const handlePermissionsChange = useCallback(
+    (newPermissions: PermissionMatrix) => {
+      if (selectedUserForEdit) {
+        setSelectedUserForEdit({
+          ...selectedUserForEdit,
+          permissions: newPermissions,
+        });
+      }
+    },
+    [selectedUserForEdit]
+  );
 
   const handleEditPermissions = (user: User) => {
     setSelectedUserForEdit(user);
