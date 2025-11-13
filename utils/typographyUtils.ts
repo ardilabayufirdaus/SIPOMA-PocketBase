@@ -3,8 +3,6 @@
  * Mengikuti WCAG contrast ratio guidelines
  */
 
-import { designSystem } from './designSystem';
-
 // Typography color tokens untuk konsistensi
 export const typographyColors = {
   // Primary text colors (high contrast)
@@ -31,6 +29,28 @@ export const typographyColors = {
     },
     error: {
       light: 'text-red-700', // #b91c1c - 5.9:1 contrast on white
+    },
+    // Enhanced colorful accents (professional)
+    purple: {
+      light: 'text-purple-700', // #7c3aed - 5.9:1 contrast
+    },
+    teal: {
+      light: 'text-teal-700', // #0f766e - 5.9:1 contrast
+    },
+    orange: {
+      light: 'text-orange-700', // #c2410c - 4.7:1 contrast
+    },
+    pink: {
+      light: 'text-pink-700', // #be185d - 5.9:1 contrast
+    },
+    emerald: {
+      light: 'text-emerald-700', // #047857 - 5.9:1 contrast
+    },
+    indigo: {
+      light: 'text-indigo-700', // #4338ca - 5.9:1 contrast
+    },
+    cyan: {
+      light: 'text-cyan-700', // #0e7490 - 5.9:1 contrast
     },
   },
 
@@ -71,7 +91,7 @@ export const typographyColors = {
     },
   },
 
-  // White text variations for dark backgrounds
+  // White text variations for high contrast backgrounds
   white: {
     pure: 'text-white',
     high: 'text-white', // 21:1 contrast
@@ -137,8 +157,7 @@ export const typographyScale = {
 // Utility functions untuk mendapatkan class yang tepat
 export const getTextColor = (
   variant: keyof typeof typographyColors,
-  subVariant?: string,
-  theme: 'light' | 'dark' = 'light'
+  subVariant?: string
 ): string => {
   const colorGroup = typographyColors[variant];
 
@@ -147,12 +166,12 @@ export const getTextColor = (
   }
 
   if (subVariant && typeof colorGroup === 'object') {
-    const subGroup = (colorGroup as any)[subVariant];
+    const subGroup = (colorGroup as Record<string, unknown>)[subVariant];
     if (typeof subGroup === 'string') {
       return subGroup;
     }
-    if (subGroup && typeof subGroup === 'object' && subGroup[theme]) {
-      return subGroup[theme];
+    if (subGroup && typeof subGroup === 'object' && subGroup['light']) {
+      return subGroup['light'];
     }
   }
 
@@ -162,11 +181,10 @@ export const getTextColor = (
 
 export const getHeadingClasses = (
   level: 1 | 2 | 3 | 4 | 5 | 6,
-  color: 'primary' | 'secondary' = 'primary',
-  theme: 'light' | 'dark' = 'light'
+  color: 'primary' | 'secondary' = 'primary'
 ): string => {
   const scale = `h${level}` as keyof typeof typographyScale;
-  const baseClasses = (typographyScale as any)[scale];
+  const baseClasses = (typographyScale as Record<string, unknown>)[scale];
   const colorClasses = getTextColor(color, undefined);
 
   return `${baseClasses} ${colorClasses}`;
@@ -174,8 +192,7 @@ export const getHeadingClasses = (
 
 export const getBodyClasses = (
   size: 'large' | 'base' | 'small' | 'xs' = 'base',
-  color: 'primary' | 'secondary' | 'tertiary' = 'primary',
-  theme: 'light' | 'dark' = 'light'
+  color: 'primary' | 'secondary' | 'tertiary' = 'primary'
 ): string => {
   const baseClasses = typographyScale.body[size];
   const colorClasses = getTextColor(color, undefined);
@@ -183,34 +200,22 @@ export const getBodyClasses = (
   return `${baseClasses} ${colorClasses}`;
 };
 
-export const getLinkClasses = (
-  state: 'default' | 'visited' = 'default',
-  theme: 'light' | 'dark' = 'light'
-): string => {
+export const getLinkClasses = (state: 'default' | 'visited' = 'default'): string => {
   return getTextColor('interactive', `link.${state}`);
 };
 
-export const getStatusClasses = (
-  status: 'success' | 'warning' | 'error' | 'info',
-  theme: 'light' | 'dark' = 'light'
-): string => {
+export const getStatusClasses = (status: 'success' | 'warning' | 'error' | 'info'): string => {
   return getTextColor('status', status);
 };
 
-export const getDataClasses = (
-  type: 'table' | 'code' = 'table',
-  theme: 'light' | 'dark' = 'light'
-): string => {
+export const getDataClasses = (type: 'table' | 'code' = 'table'): string => {
   const baseClasses = typographyScale.data[type];
   const colorClasses = getTextColor('primary', undefined);
 
   return `${baseClasses} ${colorClasses}`;
 };
 
-export const getUILabelClasses = (
-  type: 'label' | 'caption' | 'overline' = 'label',
-  theme: 'light' | 'dark' = 'light'
-): string => {
+export const getUILabelClasses = (type: 'label' | 'caption' | 'overline' = 'label'): string => {
   const baseClasses = typographyScale.ui[type];
   // UI elements sudah include color classes, tapi kita bisa override jika perlu
   return baseClasses;

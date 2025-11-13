@@ -42,7 +42,7 @@ const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate
         </div>
         <span className="sr-only">Open settings</span>
       </div>
-      <span className="text-xs text-gray-600 font-medium">{t.profile || 'Profile'}</span>
+      <span className="text-xs text-slate-300 font-medium">{t.profile || 'Profile'}</span>
     </div>
   );
 };

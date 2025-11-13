@@ -78,7 +78,7 @@ export const NavigationItem = forwardRef<HTMLButtonElement, IconButtonProps>(
           className={`w-12 h-12 flex items-center justify-center rounded-lg transition-all duration-200 group relative ${
             isActive
               ? 'bg-red-500 text-white shadow-lg'
-              : 'text-slate-400 hover:text-red-400 hover:bg-red-500/10'
+              : 'text-slate-300 hover:text-red-400 hover:bg-red-500/10'
           }`}
           aria-label={label}
           aria-expanded={hasDropdown ? isExpanded : undefined}

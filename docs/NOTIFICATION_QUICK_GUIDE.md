@@ -11,7 +11,6 @@ Fitur notifikasi di header SIPOMA telah dikembangkan dengan berbagai peningkatan
 - 🔊 **Sound Alerts** - Suara peringatan yang dapat di-toggle
 - ⚙️ **Smart Settings** - Pengaturan yang dapat dikustomisasi
 - 📱 **Responsive Design** - Optimal untuk mobile dan desktop
-- 🌙 **Dark Mode Support** - Full support tema gelap
 
 ## 🚀 Cara Menggunakan
 

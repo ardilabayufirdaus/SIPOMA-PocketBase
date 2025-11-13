@@ -11,7 +11,7 @@ Comprehensive development roadmap for SIPOMA (Plant Operations Management System
 - Architecture Analysis & Bottleneck Identification
 - Complex Issue Debugging & Resolution
 - Code Refactoring (SOLID/DRY Principles)
-- UI/UX Modernization (WCAG Compliance, Dark Mode, Micro-interactions)
+- UI/UX Modernization (WCAG Compliance, Micro-interactions)
 - Frontend Performance Optimization (Lazy Loading, Code Splitting, Bundle Optimization)
 
 ## Phase 1: Foundation Enhancement (✅ Completed)

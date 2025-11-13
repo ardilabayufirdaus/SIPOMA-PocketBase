@@ -65,26 +65,17 @@ const Header: React.FC<HeaderProps> = React.memo(
         <SkipLinks />
 
         <header
-          className="sticky top-0 z-50 relative overflow-hidden"
+          className="sticky top-0 z-50 relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white"
           role="banner"
           style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: `1px solid rgba(148, 163, 184, 0.2)`,
+            borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
             boxShadow: getShadow('md'),
           }}
         >
-          {/* Subtle gradient overlay for depth */}
-          <div
-            className="absolute inset-0 opacity-30"
-            style={{
-              background:
-                'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)',
-            }}
-          />
+          {/* Remove gradient overlay - now using solid dark gradient */}
 
           <div className="relative z-10 px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-18">
+            <div className="flex items-center justify-between h-20">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 {/* Mobile Hamburger Menu */}
                 {isMobile && onToggleSidebar && (
@@ -95,7 +86,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       onClick={onToggleSidebar}
                       ariaLabel="Toggle navigation menu"
                       className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-white/10 transition-colors border-0 min-h-[44px] min-w-[44px]"
-                      icon={<Bars3Icon className="w-5 h-5" />}
+                      icon={<Bars3Icon className="w-5 h-5 text-white" />}
                     >
                       <span className="sr-only">Toggle navigation menu</span>
                     </EnhancedButton>
@@ -104,10 +95,8 @@ const Header: React.FC<HeaderProps> = React.memo(
 
                 {/* Title Section */}
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg sm:text-xl font-bold truncate bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                    {pageTitle}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-gray-600 truncate hidden sm:block">
+                  <h1 className="text-lg sm:text-xl font-bold truncate text-white">{pageTitle}</h1>
+                  <p className="text-xs sm:text-sm text-slate-300 truncate hidden sm:block">
                     {t.header_welcome}, {currentUser?.full_name || 'Admin'}
                   </p>
                 </div>
@@ -143,9 +132,9 @@ const Header: React.FC<HeaderProps> = React.memo(
                   >
                     <div className="relative w-10 h-10 flex items-center justify-center">
                       {settings.browser ? (
-                        <BellIcon className="w-6 h-6 text-slate-600" />
+                        <BellIcon className="w-6 h-6 text-white" />
                       ) : (
-                        <BellSlashIcon className="w-6 h-6 text-slate-400" />
+                        <BellSlashIcon className="w-6 h-6 text-slate-300" />
                       )}
                       {unreadCount > 0 && (
                         <span
@@ -157,7 +146,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       )}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600 font-medium">Notif</span>
+                  <span className="text-xs text-slate-300 font-medium">Notif</span>
                 </div>
                 {/* Sign Out Button */}
                 <div className="flex flex-col items-center gap-1">
@@ -174,7 +163,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       </div>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600 font-medium">
+                  <span className="text-xs text-slate-300 font-medium">
                     {t.sign_out || 'Logout'}
                   </span>
                 </div>
@@ -193,7 +182,7 @@ const Header: React.FC<HeaderProps> = React.memo(
                       )}
                     </div>
                   </div>
-                  <span className="text-xs text-gray-600 font-medium">Language</span>
+                  <span className="text-xs text-slate-300 font-medium">Language</span>
                 </div>
                 {/* User Profile Dropdown */}
                 <UserMenuButton currentUser={currentUser} onNavigate={onNavigate} t={t} />

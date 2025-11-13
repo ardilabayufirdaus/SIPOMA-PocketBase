@@ -136,7 +136,6 @@ const textColor = getTextColor('accent', 'primary', 'dark');
 
 - `text-gray-*` → `text-slate-*`
 - `text-blue-600` → `text-red-600` (for primary actions)
-- `text-blue-400` → `text-red-400` (for primary actions in dark mode)
 
 ## 🛠️ Development Tools
 

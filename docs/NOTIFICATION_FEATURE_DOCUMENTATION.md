@@ -155,7 +155,6 @@ interface ExtendedAlert extends Alert {
 - **Category Badges:** Label kategori yang dapat disesuaikan
 - **Emoji Icons:** Emoji untuk severity indication
 - **Responsive Design:** Optimal untuk mobile dan desktop
-- **Dark Mode Support:** Full support untuk tema gelap
 
 ## Penggunaan
 

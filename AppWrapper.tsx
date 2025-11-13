@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import DataPreloader from './components/optimization/DataPreloader';
 import { connectionPool } from './utils/optimization/connectionPool';
-import { ThemeProvider } from './components/ThemeProvider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MixedContentDetector from './components/MixedContentDetector';
@@ -71,25 +70,23 @@ const AppWrapper: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <BrowserRouter>
-          <DataPreloader>
-            <App />
-            {/* MixedContentDetector is included in DataPreloader */}
-          </DataPreloader>
-        </BrowserRouter>
-        <ToastContainer
-          position="bottom-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </ThemeProvider>
+      <BrowserRouter>
+        <DataPreloader>
+          <App />
+          {/* MixedContentDetector is included in DataPreloader */}
+        </DataPreloader>
+      </BrowserRouter>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );

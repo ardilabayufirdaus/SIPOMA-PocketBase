@@ -61,10 +61,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       plantOperationPages: [
         { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
         {
-          key: 'op_optimized_dashboard',
-          icon: <PresentationChartLineIcon className={iconClass} />,
-        },
-        {
           key: 'op_report',
           icon: <ClipboardDocumentListIcon className={iconClass} />,
         },
@@ -163,7 +159,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             .filter((page) => {
               // For Guest users, only allow specific pages
               if (currentUser?.role === 'Guest') {
-                const allowedGuestPages = ['op_dashboard', 'op_report', 'op_wag_report'];
+                const allowedGuestPages = [
+                  'op_dashboard',
+                  'op_report',
+                  'op_wag_report',
+                  'op_monitoring',
+                  'op_cop_analysis',
+                ];
                 return allowedGuestPages.includes(page.key);
               }
 

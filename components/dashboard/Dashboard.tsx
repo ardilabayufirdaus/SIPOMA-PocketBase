@@ -1,34 +1,19 @@
-import React, { useEffect, useMemo } from 'react';
+import React from 'react';
 import { formatIndonesianNumber } from '../../utils/formatUtils';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 import {
   TrendingUpIcon,
   TrendingDownIcon,
-  PlayIcon,
-  PauseIcon,
-  RefreshCcwIcon,
   CalendarIcon,
-  AlertTriangleIcon,
-  CheckCircleIcon,
   BarChart3Icon,
-  PieChartIcon,
   ActivityIcon,
   UsersIcon,
-  FolderIcon,
-  SettingsIcon,
-  FilterIcon,
   MoreHorizontalIcon,
 } from 'lucide-react';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  EnhancedCard,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../ui/EnhancedComponents';
+import { EnhancedButton } from '../ui/EnhancedComponents';
 
 // Component Color Palette
 const colors = {
@@ -92,10 +77,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
   className = '',
 }) => {
   // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
+  // const { announceToScreenReader } = useAccessibility();
+  // const isHighContrast = useHighContrast();
+  // const prefersReducedMotion = useReducedMotion();
+  // const colorScheme = useColorScheme();
   const getVariantClasses = () => {
     switch (variant) {
       case 'primary':
@@ -303,6 +288,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
 // Main Dashboard Header
 const DashboardHeader: React.FC = () => {
   const { t, language } = useTranslation();
+  const { currentUser } = useCurrentUser();
 
   const currentTime = new Date().toLocaleString(language === 'id' ? 'id-ID' : 'en-US', {
     weekday: 'long',
@@ -313,20 +299,109 @@ const DashboardHeader: React.FC = () => {
     minute: '2-digit',
   });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return language === 'id' ? 'Selamat Pagi' : 'Good Morning';
+    if (hour < 15) return language === 'id' ? 'Selamat Siang' : 'Good Afternoon';
+    if (hour < 18) return language === 'id' ? 'Selamat Sore' : 'Good Evening';
+    return language === 'id' ? 'Selamat Malam' : 'Good Night';
+  };
+
+  const getTimeOfDayIcon = () => {
+    const hour = new Date().getHours();
+    if (hour < 6 || hour >= 22) return '🌙';
+    if (hour < 12) return '☀️';
+    if (hour < 18) return '🌤️';
+    return '🌆';
+  };
+
   return (
-    <div className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl p-6 text-white relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-white/10" />
-      <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-      <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-black/10 rounded-full blur-xl" />
+    <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl">
+      {/* Enhanced Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-white/10" />
+      <div className="absolute -top-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-pulse" />
+      <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-black/10 rounded-full blur-2xl" />
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-white/5 to-transparent rounded-full blur-3xl" />
+
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          className="absolute top-4 left-4 w-2 h-2 bg-white/30 rounded-full animate-bounce"
+          style={{ animationDelay: '0s' }}
+        />
+        <div
+          className="absolute top-8 right-8 w-1 h-1 bg-white/40 rounded-full animate-bounce"
+          style={{ animationDelay: '1s' }}
+        />
+        <div
+          className="absolute bottom-6 left-1/4 w-1.5 h-1.5 bg-white/25 rounded-full animate-bounce"
+          style={{ animationDelay: '2s' }}
+        />
+      </div>
 
       <div className="relative">
         {/* Top Row */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold mb-1">{t.dashboard_welcome_title}</h1>
-            <p className="text-white/80 text-sm">{currentTime}</p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
+          <div className="flex-1">
+            <div className="flex items-center space-x-3 mb-2">
+              <span className="text-3xl animate-pulse" role="img" aria-label="greeting icon">
+                {getTimeOfDayIcon()}
+              </span>
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
+                {getGreeting()}, {currentUser?.full_name || currentUser?.username || 'User'}!
+              </h1>
+            </div>
+            <p className="text-white/90 text-lg font-medium">{t.dashboard_welcome_title}</p>
+            <p className="text-white/70 text-sm mt-1 flex items-center">
+              <CalendarIcon className="w-4 h-4 mr-2" />
+              {currentTime}
+            </p>
           </div>
+
+          {/* Quick Stats */}
+          <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-400/20 rounded-xl flex items-center justify-center">
+                  <ActivityIcon className="w-5 h-5 text-green-300" />
+                </div>
+                <div>
+                  <p className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                    {language === 'id' ? 'Status Sistem' : 'System Status'}
+                  </p>
+                  <p className="text-white font-bold text-lg">
+                    {language === 'id' ? 'Aktif' : 'Active'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-400/20 rounded-xl flex items-center justify-center">
+                  <UsersIcon className="w-5 h-5 text-blue-300" />
+                </div>
+                <div>
+                  <p className="text-white/80 text-xs font-medium uppercase tracking-wide">
+                    {language === 'id' ? 'Pengguna Online' : 'Online Users'}
+                  </p>
+                  <p className="text-white font-bold text-lg">12</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center space-x-2 text-white/80">
+          <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+            <BarChart3Icon className="w-4 h-4" />
+          </div>
+          <span className="text-sm font-medium">Dashboard</span>
+          <span className="text-white/60">/</span>
+          <span className="text-white text-sm font-medium">
+            {language === 'id' ? 'Ringkasan Utama' : 'Main Overview'}
+          </span>
         </div>
       </div>
     </div>
