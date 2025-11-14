@@ -778,6 +778,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     const fetchMonthlyMoistureData = async () => {
       if (!selectedUnit) return;
 
+      const cacheKey = `monthly-moisture-${selectedUnit}-${filterYear}-${filterMonth}`;
+      const cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+
+      try {
+        // Try to get from cache first
+        const cachedData = (await indexedDBCache.get(cacheKey)) as Map<string, number> | null;
+        if (cachedData) {
+          setMonthlyMoistureData(cachedData);
+          return;
+        }
+      } catch (error) {
+        console.warn('Error reading moisture cache:', error);
+      }
+
+      // Cache miss - compute data
       const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
       const moistureMap = new Map<string, number>();
 
@@ -896,6 +911,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         }
       }
 
+      // Cache the computed data
+      try {
+        await indexedDBCache.set(cacheKey, moistureMap, cacheExpiry);
+      } catch (error) {
+        console.warn('Error caching moisture data:', error);
+      }
+
       setMonthlyMoistureData(moistureMap);
     };
 
@@ -907,6 +929,21 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     const fetchMonthlyFeedData = async () => {
       if (!selectedCategory || !selectedUnit) return;
 
+      const cacheKey = `monthly-feed-${selectedCategory}-${selectedUnit}-${filterYear}-${filterMonth}`;
+      const cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+
+      try {
+        // Try to get from cache first
+        const cachedData = (await indexedDBCache.get(cacheKey)) as Map<string, number> | null;
+        if (cachedData) {
+          setMonthlyFeedData(cachedData);
+          return;
+        }
+      } catch (error) {
+        console.warn('Error reading feed cache:', error);
+      }
+
+      // Cache miss - compute data
       const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
       const feedMap = new Map<string, number>();
 
@@ -947,6 +984,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         } catch {
           // Error fetching feed data for this day - continue with other days
         }
+      }
+
+      // Cache the computed data
+      try {
+        await indexedDBCache.set(cacheKey, feedMap, cacheExpiry);
+      } catch (error) {
+        console.warn('Error caching feed data:', error);
       }
 
       setMonthlyFeedData(feedMap);
