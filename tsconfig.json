@@ -16,6 +16,7 @@
       "@/*": ["./*"]
     },
     "allowImportingTsExtensions": true,
+    "baseUrl": ".",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,

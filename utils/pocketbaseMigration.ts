@@ -24,7 +24,7 @@ export const migrateTonasaRoles = async (): Promise<void> => {
     // Create roles if they don't exist
     for (const role of roles) {
       try {
-        const exists = await pb.collection('roles').getFirstListItem(`name="${role}"`);
+        const exists = await pb.collection('roles').getFirstListItem(`name = "${role}"`);
         if (!exists) {
           await pb.collection('roles').create({
             name: role,
@@ -52,7 +52,7 @@ export const migrateTonasaRoles = async (): Promise<void> => {
 export const validateRoleExists = async (testRole: string): Promise<boolean> => {
   try {
     // Check if role exists in PocketBase
-    const roleExists = await pb.collection('users').getFirstListItem(`role="${testRole}"`);
+    const roleExists = await pb.collection('users').getFirstListItem(`role = "${testRole}"`);
     return !!roleExists;
   } catch {
     return false;

@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { ParameterSetting, CcrFooterData } from '../../types';
@@ -6,6 +8,7 @@ import { usePlantUnits } from '../../hooks/usePlantUnits';
 import { useUsers } from '../../hooks/useUsers';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCopParameters } from '../../hooks/useCopParameters';
+import { useCopFooterParameters } from '../../hooks/useCopFooterParameters';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
 import { pb } from '../../utils/pocketbase-simple';
 import { indexedDBCache } from '../../utils/cache/indexedDB';
@@ -1010,6 +1013,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   const { copParameterIds } = useCopParameters(selectedCategory, selectedUnit);
 
+  // Hook untuk COP Footer Parameters
+  const { copFooterParameterIds } = useCopFooterParameters(selectedCategory, selectedUnit);
+
   // State untuk urutan parameter per user
   const [parameterOrder, setParameterOrder] = useState<string[]>([]);
 
@@ -1163,9 +1169,258 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, [users]);
 
   const { getFooterDataForDate } = useCcrFooterData();
+
+  // State variables for analysis data
   const [analysisData, setAnalysisData] = useState<AnalysisDataRow[]>([]);
+  const [footerData, setFooterData] = useState<AnalysisDataRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const refreshData = async () => {
+    // Reset previous state
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Validate required data
+      if (!selectedCategory || !selectedUnit) {
+        setAnalysisData([]);
+        setFooterData([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Get footer parameters from allParameters based on copFooterParameterIds
+      const footerParameters = allParameters.filter((param) =>
+        copFooterParameterIds.includes(param.id)
+      );
+
+      // Clear cache for fresh data
+      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+      const dates = Array.from({ length: daysInMonth }, (_, i) => {
+        const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
+        return date.toISOString().split('T')[0];
+      });
+
+      // Clear existing cache for this month
+      const clearCachePromises = dates.map(async (dateString) => {
+        const cacheKey = `footer-data-${dateString}-${selectedCategory}-${selectedUnit}`;
+        await indexedDBCache.delete(cacheKey);
+      });
+      await Promise.all(clearCachePromises);
+
+      const dailyAverages = new Map<string, Map<string, number>>();
+
+      // Get footer data for all dates in the month with caching
+      const footerDataPromises = dates.map(async (dateString) => {
+        const cacheKey = `footer-data-${dateString}-${selectedCategory}-${selectedUnit}`;
+        let footerData = (await indexedDBCache.get(cacheKey)) as CcrFooterData[] | null;
+
+        if (!footerData) {
+          // Fetch from API if not in cache
+          footerData = (await getFooterDataForDate(dateString)) as unknown as CcrFooterData[];
+          // Cache the data with TTL (24 hours)
+          await indexedDBCache.set(cacheKey, footerData, 24 * 60 * 60 * 1000);
+        }
+
+        return footerData;
+      });
+
+      const allFooterDataForMonth: CcrFooterData[][] = await Promise.all(footerDataPromises);
+
+      allFooterDataForMonth.flat().forEach((footerData) => {
+        // Use footer average data instead of calculating from hourly values
+        if (
+          footerData.average !== null &&
+          footerData.average !== undefined &&
+          !isNaN(footerData.average)
+        ) {
+          if (!dailyAverages.has(footerData.parameter_id)) {
+            dailyAverages.set(footerData.parameter_id, new Map());
+          }
+          dailyAverages.get(footerData.parameter_id)!.set(footerData.date, footerData.average);
+        }
+      });
+
+      // Process main parameters data
+      const mainData = await new Promise<AnalysisDataRow[]>((resolve) => {
+        setTimeout(() => {
+          const result = filteredCopParameters
+            .map((parameter) => {
+              try {
+                // Validate parameter has required fields
+                if (!parameter || !parameter.id || !parameter.parameter) {
+                  return null;
+                }
+
+                const dailyValues = dates.map((dateString) => {
+                  const avg = dailyAverages.get(parameter.id)?.get(dateString);
+
+                  // Validate average value
+                  if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                    return { value: null, raw: undefined };
+                  }
+
+                  // Use helper function for consistent min/max calculation
+                  const { min: min_value, max: max_value } = getMinMaxForCementType(
+                    parameter,
+                    selectedCementType
+                  );
+
+                  // Validate min/max values
+                  if (min_value === undefined || max_value === undefined) {
+                    return { value: null, raw: avg };
+                  }
+
+                  if (max_value <= min_value) {
+                    return { value: null, raw: avg };
+                  }
+
+                  if (avg === undefined) {
+                    return { value: null, raw: avg };
+                  }
+
+                  const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+
+                  // Validate percentage calculation
+                  if (isNaN(percentage) || !isFinite(percentage)) {
+                    return { value: null, raw: avg };
+                  }
+
+                  return { value: percentage, raw: avg };
+                });
+
+                const validDailyPercentages = dailyValues
+                  .map((d) => d.value)
+                  .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+                const monthlyAverage =
+                  validDailyPercentages.length > 0
+                    ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                      validDailyPercentages.length
+                    : null;
+
+                const validDailyRaw = dailyValues
+                  .map((d) => d.raw)
+                  .filter(
+                    (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
+                  );
+                const monthlyAverageRaw =
+                  validDailyRaw.length > 0
+                    ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
+                    : null;
+
+                return {
+                  parameter,
+                  dailyValues,
+                  monthlyAverage,
+                  monthlyAverageRaw,
+                };
+              } catch {
+                return null;
+              }
+            })
+            .filter((p): p is NonNullable<typeof p> => p !== null);
+
+          resolve(result);
+        }, 0);
+      });
+
+      // Process footer parameters data independently
+      const footerResult = await new Promise<AnalysisDataRow[]>((resolve) => {
+        setTimeout(() => {
+          const result = footerParameters
+            .map((parameter) => {
+              try {
+                // Validate parameter has required fields
+                if (!parameter || !parameter.id || !parameter.parameter) {
+                  return null;
+                }
+
+                const dailyValues = dates.map((dateString) => {
+                  const avg = dailyAverages.get(parameter.id)?.get(dateString);
+
+                  // Validate average value
+                  if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                    return { value: null, raw: undefined };
+                  }
+
+                  // Use helper function for consistent min/max calculation
+                  const { min: min_value, max: max_value } = getMinMaxForCementType(
+                    parameter,
+                    selectedCementType
+                  );
+
+                  // Validate min/max values
+                  if (min_value === undefined || max_value === undefined) {
+                    return { value: null, raw: avg };
+                  }
+
+                  if (max_value <= min_value) {
+                    return { value: null, raw: avg };
+                  }
+
+                  if (avg === undefined) {
+                    return { value: null, raw: avg };
+                  }
+
+                  const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+
+                  // Validate percentage calculation
+                  if (isNaN(percentage) || !isFinite(percentage)) {
+                    return { value: null, raw: avg };
+                  }
+
+                  return { value: percentage, raw: avg };
+                });
+
+                const validDailyPercentages = dailyValues
+                  .map((d) => d.value)
+                  .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+                const monthlyAverage =
+                  validDailyPercentages.length > 0
+                    ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                      validDailyPercentages.length
+                    : null;
+
+                const validDailyRaw = dailyValues
+                  .map((d) => d.raw)
+                  .filter(
+                    (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
+                  );
+                const monthlyAverageRaw =
+                  validDailyRaw.length > 0
+                    ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
+                    : null;
+
+                return {
+                  parameter,
+                  dailyValues,
+                  monthlyAverage,
+                  monthlyAverageRaw,
+                };
+              } catch {
+                return null;
+              }
+            })
+            .filter((p): p is NonNullable<typeof p> => p !== null);
+
+          resolve(result);
+        }, 0);
+      });
+
+      setAnalysisData(mainData);
+      setFooterData(footerResult);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setError(
+        `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
+      );
+      setAnalysisData([]);
+      setFooterData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDataAndAnalyze = async () => {
@@ -1177,15 +1432,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Validate required data
         if (!selectedCategory || !selectedUnit) {
           setAnalysisData([]);
+          setFooterData([]);
           setIsLoading(false);
           return;
         }
 
         if (filteredCopParameters.length === 0) {
           setAnalysisData([]);
+          setFooterData([]);
           setIsLoading(false);
           return;
         }
+
+        // Get footer parameters from allParameters based on copFooterParameterIds
+        const footerParameters = allParameters.filter((param) =>
+          copFooterParameterIds.includes(param.id)
+        );
 
         // Check cache first
         // Temporarily disabled due to authentication issues
@@ -1328,6 +1590,91 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         setAnalysisData(data);
 
+        // Process footer parameters data independently
+        const footerResult = await new Promise<AnalysisDataRow[]>((resolve) => {
+          setTimeout(() => {
+            const result = footerParameters
+              .map((parameter) => {
+                try {
+                  // Validate parameter has required fields
+                  if (!parameter || !parameter.id || !parameter.parameter) {
+                    return null;
+                  }
+
+                  const dailyValues = dates.map((dateString) => {
+                    const avg = dailyAverages.get(parameter.id)?.get(dateString);
+
+                    // Validate average value
+                    if (avg !== undefined && (isNaN(avg) || !isFinite(avg))) {
+                      return { value: null, raw: undefined };
+                    }
+
+                    // Use helper function for consistent min/max calculation
+                    const { min: min_value, max: max_value } = getMinMaxForCementType(
+                      parameter,
+                      selectedCementType
+                    );
+
+                    // Validate min/max values
+                    if (min_value === undefined || max_value === undefined) {
+                      return { value: null, raw: avg };
+                    }
+
+                    if (max_value <= min_value) {
+                      return { value: null, raw: avg };
+                    }
+
+                    if (avg === undefined) {
+                      return { value: null, raw: avg };
+                    }
+
+                    const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
+
+                    // Validate percentage calculation
+                    if (isNaN(percentage) || !isFinite(percentage)) {
+                      return { value: null, raw: avg };
+                    }
+
+                    return { value: percentage, raw: avg };
+                  });
+
+                  const validDailyPercentages = dailyValues
+                    .map((d) => d.value)
+                    .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+                  const monthlyAverage =
+                    validDailyPercentages.length > 0
+                      ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                        validDailyPercentages.length
+                      : null;
+
+                  const validDailyRaw = dailyValues
+                    .map((d) => d.raw)
+                    .filter(
+                      (v): v is number => v !== undefined && v !== null && !isNaN(v) && isFinite(v)
+                    );
+                  const monthlyAverageRaw =
+                    validDailyRaw.length > 0
+                      ? validDailyRaw.reduce((a, b) => a + b, 0) / validDailyRaw.length
+                      : null;
+
+                  return {
+                    parameter,
+                    dailyValues,
+                    monthlyAverage,
+                    monthlyAverageRaw,
+                  };
+                } catch {
+                  return null;
+                }
+              })
+              .filter((p): p is NonNullable<typeof p> => p !== null);
+
+            resolve(result);
+          }, 0);
+        });
+
+        setFooterData(footerResult);
+
         // Save to cache for future use
         // Temporarily disabled due to authentication issues
         // await saveAnalysisToCache(
@@ -1344,6 +1691,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
         );
         setAnalysisData([]);
+        setFooterData([]);
       } finally {
         setIsLoading(false);
       }
@@ -1367,7 +1715,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       return { daily: [], monthly: { value: null, inRange: 0, total: 0 } };
     }
 
-    const daysInMonth = analysisData[0]?.dailyValues.length || 0;
+    // Use all parameters from analysisData for QAF calculation
+    const mainParameters = analysisData;
+
+    const daysInMonth = mainParameters[0]?.dailyValues.length || 0;
     if (daysInMonth === 0) {
       return { daily: [], monthly: { value: null, inRange: 0, total: 0 } };
     }
@@ -1384,7 +1735,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       let paramsInRange = 0;
       let totalParamsWithValue = 0;
 
-      analysisData.forEach((paramRow) => {
+      mainParameters.forEach((paramRow) => {
         const dayValue = paramRow.dailyValues[i]?.value;
         if (dayValue !== null && dayValue !== undefined && !isNaN(dayValue)) {
           totalParamsWithValue++;
@@ -2339,7 +2690,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <div className="flex flex-wrap gap-2 mb-4">
           <button
             onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               showStatisticalSummary
                 ? 'bg-blue-500 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -2349,7 +2700,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </button>
           <button
             onClick={() => setShowPeriodComparison(!showPeriodComparison)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               showPeriodComparison
                 ? 'bg-green-500 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -2359,7 +2710,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </button>
           <button
             onClick={() => setShowCorrelationMatrix(!showCorrelationMatrix)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               showCorrelationMatrix
                 ? 'bg-purple-500 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -2369,7 +2720,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </button>
           <button
             onClick={() => setShowAnomalyDetection(!showAnomalyDetection)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               showAnomalyDetection
                 ? 'bg-red-500 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -2379,7 +2730,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </button>
           <button
             onClick={() => setShowPredictiveInsights(!showPredictiveInsights)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               showPredictiveInsights
                 ? 'bg-orange-500 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -2389,7 +2740,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </button>
           <button
             onClick={() => setShowQualityMetrics(!showQualityMetrics)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
               showQualityMetrics
                 ? 'bg-indigo-500 text-white shadow-md'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -3084,7 +3435,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   };
                   retryFetch();
                 }}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                className="px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[44px]"
               >
                 Try Again
               </button>
@@ -3095,10 +3446,34 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {!isLoading && !error && (
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-slate-800">Tabel Analisis COP</h2>
-              <p className="text-sm text-slate-600 mt-2">
-                Data persentase pencapaian parameter COP per hari dalam sebulan.
-              </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-semibold text-slate-800">Tabel Analisis COP</h2>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Data persentase pencapaian parameter COP per hari dalam sebulan.
+                  </p>
+                </div>
+                <button
+                  onClick={refreshData}
+                  disabled={isLoading}
+                  className="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px]"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  {isLoading ? 'Refreshing...' : 'Refresh Data'}
+                </button>
+              </div>
             </div>
             <div
               className="overflow-x-auto scroll-smooth"
@@ -3462,6 +3837,35 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       </span>
                     </td>
                   </tr>
+                  {/* COP Footer Parameters */}
+                  {footerData.map((row, index) => (
+                    <tr key={`footer-${row.parameter.id}`} className="border-t border-slate-300">
+                      <td
+                        colSpan={4}
+                        className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
+                      >
+                        {row.parameter.parameter}
+                      </td>
+                      {row.dailyValues.map((day, dayIndex) => {
+                        const colors = getPercentageColor(day.value);
+                        return (
+                          <td
+                            key={dayIndex}
+                            className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg}`}
+                          >
+                            <span className={`text-xs font-medium ${colors.text}`}>
+                              {formatCopNumber(day.raw)}
+                            </span>
+                          </td>
+                        );
+                      })}
+                      <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-slate-100 font-bold text-sm">
+                        <span className="text-slate-800">
+                          {formatCopNumber(row.monthlyAverageRaw)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tfoot>
               </table>
             </div>
@@ -3469,7 +3873,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="mt-4 flex justify-end">
               <button
                 onClick={exportToExcel}
-                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[44px]"
                 disabled={analysisData.length === 0}
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

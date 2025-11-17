@@ -18,7 +18,7 @@ export async function updateParameterDataFixed(
       // First try to find an existing record
       const existing = await pb
         .collection('ccr_parameter_data')
-        .getFirstListItem(`date="${normalizedDate}" && parameter_id="${parameter_id}"`);
+        .getFirstListItem(`date = "${normalizedDate}" && parameter_id = "${parameter_id}"`);
 
       // Record exists, update it
       if (existing) {

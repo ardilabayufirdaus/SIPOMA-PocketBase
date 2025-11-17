@@ -26,7 +26,7 @@ export const InformationTable: React.FC<InformationTableProps> = ({ informationD
         </h3>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {hasData ? (
           <div className="prose prose-sm max-w-none">
             <p className="text-[6px] text-slate-700 whitespace-pre-wrap leading-relaxed">

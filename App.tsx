@@ -298,7 +298,7 @@ const App: React.FC = () => {
               currentLanguage={language}
               onLanguageChange={setLanguage}
             />
-            <main className="flex-grow px-3 sm:px-4 py-3 overflow-y-auto text-slate-700 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30">
+            <main className="flex-grow px-4 sm:px-6 lg:px-8 py-6 overflow-y-auto text-slate-700 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30">
               <div className="max-w-none w-full">
                 <LazyContainer
                   fallback={

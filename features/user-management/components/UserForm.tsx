@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { SHA256 } from 'crypto-js';
 import { useUserStore } from '../../../stores/userStore';
 import { translations } from '../../../translations';
 import { UserRole } from '../../../types';
-import { getColor, getSpacing, getBorderRadius, getShadow } from '../../../utils/designTokens';
+import { User } from '../../../src/shared/types';
 
 interface UserFormProps {
-  user?: any; // For editing
+  user?: User; // For editing
   onClose: () => void;
   onSuccess: () => void;
   language?: 'en' | 'id';
@@ -75,9 +74,8 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
 
       onSuccess();
       onClose();
-    } catch (err: any) {
-      console.error('User save error:', err);
-      setError(err.message || 'Failed to save user');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save user');
     } finally {
       setIsLoading(false);
     }
@@ -223,14 +221,14 @@ const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language 
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-h-[44px]"
               >
                 {t.cancel_button || 'Cancel'}
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 min-h-[44px]"
               >
                 {isLoading ? t.loading || 'Saving...' : t.save_button || 'Save'}
               </button>

@@ -2,7 +2,7 @@
 const PocketBase = require('pocketbase/cjs');
 
 // Konfigurasi untuk koneksi
-const SERVER_URL = process.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090';
+const SERVER_URL = process.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
 const EMAIL = process.env.VITE_POCKETBASE_EMAIL || 'ardila.firdaus@sig.id';
 const PASSWORD = process.env.VITE_POCKETBASE_PASSWORD || 'makassar@270989';
 

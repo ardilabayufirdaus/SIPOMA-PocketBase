@@ -28,7 +28,7 @@ export const validateParameterDataFlat = async (
     // Check if record exists - using just date without time part
     const existing = await pb
       .collection('ccr_parameter_data')
-      .getFirstListItem(`date="${normalizedDate}" && parameter_id="${parameter_id}"`, {
+      .getFirstListItem(`date = "${normalizedDate}" && parameter_id = "${parameter_id}"`, {
         requestKey: `validate_param_flat_${parameter_id}_${normalizedDate}`,
         $cancelKey: `validate_param_flat_${parameter_id}_${normalizedDate}`,
       });
@@ -103,7 +103,6 @@ export const validateParameterDataFlat = async (
     if (typeof window !== 'undefined') {
       // Only log in development
       // Safe check for development environment in Vite
-      // @ts-ignore - This is a Vite-specific feature that TypeScript doesn't understand
       if (import.meta.env?.DEV) {
         // eslint-disable-next-line no-console
         console.warn('[Dev] Error validating parameter data (flat):', pbError.message);

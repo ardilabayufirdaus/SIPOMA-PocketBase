@@ -61,7 +61,7 @@ Aplikasi otomatis mendeteksi environment Vercel dan menggunakan API proxy server
 
 ### ✅ Development Environment:
 
-- Proxy Vite berfungsi: `http://localhost:5173/api/pb-proxy/*` → `http://141.11.25.69:8090/*`
+- Proxy Vite berfungsi: `http://localhost:5173/api/pb-proxy/*` → `https://api.sipoma.site/*`
 - Semua request PocketBase berhasil di-proxy
 - Tidak ada error 404 atau mixed content
 

@@ -29,7 +29,7 @@ export const validateParameterDataFlat = async (
     // Check if record exists using just the date field
     const existing = await pb
       .collection('ccr_parameter_data')
-      .getFirstListItem(`date="${cleanDate}" && parameter_id="${parameter_id}"`, {
+      .getFirstListItem(`date = "${cleanDate}" && parameter_id = "${parameter_id}"`, {
         requestKey: `validate_param_flat_${parameter_id}_${cleanDate}`,
         $cancelKey: `validate_param_flat_${parameter_id}_${cleanDate}`,
       });

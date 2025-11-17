@@ -2,7 +2,7 @@
 
 ## Mengakses Admin Panel
 
-1. Buka browser: `https://141.11.25.69/_/` (atau `http://141.11.25.69:8090/_/`)
+1. Buka browser: `https://api.sipoma.site/_/`
 2. Login dengan akun admin yang sudah dibuat
 
 ## Konfigurasi CORS (Cross-Origin Resource Sharing)
@@ -21,7 +21,7 @@
 ### Atau melalui API:
 
 ```bash
-curl -X PATCH https://141.11.25.69/api/settings \
+curl -X PATCH https://api.sipoma.site/api/settings \
   -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -44,8 +44,8 @@ curl -X PATCH https://141.11.25.69/api/settings \
 ### Melalui Admin Panel:
 
 1. **Settings** → **General**
-2. Set **Site URL**: `https://141.11.25.69`
-3. Set **Meta Site URL**: `https://141.11.25.69`
+2. Set **Site URL**: `https://api.sipoma.site`
+3. Set **Meta Site URL**: `https://api.sipoma.site`
 
 ## Konfigurasi Email (Opsional)
 

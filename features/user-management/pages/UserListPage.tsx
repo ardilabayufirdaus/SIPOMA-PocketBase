@@ -9,11 +9,7 @@ import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { isSuperAdmin } from '../../../utils/roleHelpers';
 
 // Enhanced Components
-import {
-  EnhancedCard,
-  EnhancedBadge,
-  EnhancedButton,
-} from '../../../components/ui/EnhancedComponents';
+import { EnhancedCard, EnhancedButton } from '../../../components/ui/EnhancedComponents';
 
 // Icons
 import UserIcon from '../../../components/icons/UserIcon';
@@ -84,6 +80,7 @@ const UserListPage: React.FC = () => {
     subtitle,
     isLoading = false,
     children,
+    className = '',
   }: {
     title: string;
     value: number | string;
@@ -92,9 +89,10 @@ const UserListPage: React.FC = () => {
     subtitle?: string;
     isLoading?: boolean;
     children?: React.ReactNode;
+    className?: string;
   }) => (
     <EnhancedCard
-      className={`p-6 hover:shadow-lg transition-shadow duration-200 ${isLoading ? 'opacity-75' : ''}`}
+      className={`p-6 hover:shadow-lg transition-all duration-200 ${isLoading ? 'opacity-75' : ''} ${className}`}
     >
       <div className="flex items-center justify-between">
         <div>
@@ -149,56 +147,68 @@ const UserListPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {t.userManagement || 'User Management'}
-          </h1>
-          <p className="mt-2 text-lg text-gray-600">
-            {t.user_list_description || 'Manage and view all users in the system'}
-          </p>
-        </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+              {t.userManagement || 'User Management'}
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl">
+              {t.user_list_description ||
+                'Manage and view all users in the system. Control access, permissions, and user status efficiently.'}
+            </p>
+          </div>
 
-        <div className="flex items-center gap-3">
-          <EnhancedBadge variant="secondary" className="px-3 py-1">
-            Last updated: {new Date().toLocaleDateString()}
-          </EnhancedBadge>
-          {isSuperAdmin(currentUser?.role) && (
-            <>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="text-sm text-gray-500">Last updated</div>
+              <div className="font-semibold text-gray-900">
+                {new Date().toLocaleDateString('id-ID', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </div>
+            </div>
+            {isSuperAdmin(currentUser?.role) && (
               <EnhancedButton
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDefaultPermissions(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
               >
-                <CogIcon className="w-4 h-4" />
+                <CogIcon className="w-5 h-5" />
                 Default Permissions
               </EnhancedButton>
-            </>
-          )}
-          <EnhancedButton
-            variant="secondary"
-            size="sm"
-            onClick={refreshStats}
-            disabled={isLoadingStats}
-            className="flex items-center gap-2"
-          >
-            <ArrowPathRoundedSquareIcon className="w-4 h-4" />
-            Refresh Stats
-          </EnhancedButton>
+            )}
+            <EnhancedButton
+              variant="secondary"
+              size="sm"
+              onClick={refreshStats}
+              disabled={isLoadingStats}
+              className="flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <ArrowPathRoundedSquareIcon
+                className={`w-5 h-5 ${isLoadingStats ? 'animate-spin' : ''}`}
+              />
+              Refresh Stats
+            </EnhancedButton>
+          </div>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
         <StatCard
           title={t.total_users_title}
           value={isLoadingStats ? '...' : stats.total}
           icon={UserGroupIcon}
           color="primary"
           isLoading={isLoadingStats}
+          className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
         />
 
         <StatCard
@@ -212,6 +222,7 @@ const UserListPage: React.FC = () => {
               : `${stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% of total`
           }
           isLoading={isLoadingStats}
+          className="bg-gradient-to-br from-green-50 to-green-100 border-green-200"
         />
 
         <StatCard
@@ -227,6 +238,7 @@ const UserListPage: React.FC = () => {
                 }% of total`
           }
           isLoading={isLoadingStats}
+          className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200"
         />
 
         <StatCard
@@ -235,6 +247,7 @@ const UserListPage: React.FC = () => {
           icon={ShieldCheckIcon}
           color="warning"
           isLoading={isLoadingStats}
+          className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200"
         />
 
         <StatCard
@@ -243,6 +256,7 @@ const UserListPage: React.FC = () => {
           icon={ShieldCheckIcon}
           color="error"
           isLoading={isLoadingStats}
+          className="bg-gradient-to-br from-red-50 to-red-100 border-red-200"
         />
 
         <StatCard
@@ -252,14 +266,15 @@ const UserListPage: React.FC = () => {
           color="secondary"
           subtitle={t.recent_users_subtitle}
           isLoading={isLoadingStats}
+          className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
         >
           {!isLoadingStats && stats.recentUsers && stats.recentUsers.length > 0 && (
             <div className="mt-4">
               <div className="flex -space-x-2 overflow-hidden">
-                {stats.recentUsers.map((user) => (
+                {stats.recentUsers.slice(0, 5).map((user) => (
                   <div
                     key={user.id}
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white"
+                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white shadow-sm"
                     title={user.username}
                   >
                     {user.avatar ? (
@@ -269,12 +284,17 @@ const UserListPage: React.FC = () => {
                         className="h-full w-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-700 rounded-full">
+                      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 text-white text-xs font-semibold rounded-full">
                         {user.username.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
                 ))}
+                {stats.recentUsers.length > 5 && (
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                    +{stats.recentUsers.length - 5}
+                  </div>
+                )}
               </div>
             </div>
           )}

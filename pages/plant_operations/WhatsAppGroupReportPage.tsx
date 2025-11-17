@@ -2299,7 +2299,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
                 </div>
                 <button
                   onClick={handleCopyToClipboard}
-                  className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2"
+                  className="bg-white/20 hover:bg-white/30 text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg transition-all duration-200 flex items-center space-x-2 min-h-[44px]"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

@@ -2,7 +2,7 @@ const PocketBase = require('pocketbase/cjs');
 
 async function testConnection() {
   try {
-    const pb = new PocketBase('http://141.11.25.69:8090');
+    const pb = new PocketBase('https://api.sipoma.site');
     console.log('Connecting...');
 
     await pb.admins.authWithPassword('ardila.firdaus@sig.id', 'makassar@270989');

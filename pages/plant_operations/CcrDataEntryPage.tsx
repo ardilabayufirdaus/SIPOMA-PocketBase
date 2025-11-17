@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -3567,7 +3569,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="ccr-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm sm:text-base font-medium transition-colors appearance-none"
                 >
                   <option value="">{t.choose_category}</option>
                   {plantCategories.map((cat) => (
@@ -3592,7 +3594,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm sm:text-base font-medium transition-colors appearance-none"
                 >
                   <option value="">{t.choose_unit}</option>
                   {unitsForCategory.map((unit) => (

@@ -1,7 +1,7 @@
 const PocketBase = require('pocketbase/cjs');
 
 // PocketBase URL
-const pocketbaseUrl = 'http://141.11.25.69:8090';
+const pocketbaseUrl = 'https://api.sipoma.site';
 const pb = new PocketBase(pocketbaseUrl);
 
 // Authenticate as admin (you need to set these env vars or replace with actual values)

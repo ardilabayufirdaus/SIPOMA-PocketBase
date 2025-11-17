@@ -154,7 +154,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
         <h2 className="text-xl font-semibold text-slate-800">{t.op_work_instruction_library}</h2>
         <button
           onClick={handleOpenAddModal}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200"
+          className="inline-flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 min-h-[44px]"
         >
           <PlusIcon className="w-5 h-5" />
           {t.add_data_button}
@@ -258,7 +258,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
             <p className="text-slate-600">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="mt-4 px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 min-h-[44px]"
             >
               Retry
             </button>
@@ -429,13 +429,13 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
         <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
           <button
             onClick={handleDeleteConfirm}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
           >
             {t.confirm_delete_button}
           </button>
           <button
             onClick={handleCloseModals}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
           >
             {t.cancel_button}
           </button>

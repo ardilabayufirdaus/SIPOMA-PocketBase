@@ -49,7 +49,7 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 sm:p-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-slate-600">Loading moisture data...</p>
@@ -60,7 +60,7 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-red-200 p-4 sm:p-6">
         <div className="text-center py-12">
           <p className="text-red-600">Error loading moisture data: {error}</p>
         </div>

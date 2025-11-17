@@ -1,7 +1,7 @@
 const PocketBase = require('pocketbase/cjs');
 
 // Test with regular user authentication (not admin)
-const pb = new PocketBase('http://141.11.25.69:8090');
+const pb = new PocketBase('https://api.sipoma.site');
 
 async function testUserAuth() {
   try {

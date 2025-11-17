@@ -44,20 +44,20 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
         </h3>
       </div>
 
-      <div className="max-w-full overflow-hidden">
-        <table className="w-full text-[6px] table-fixed">
+      <div className="max-w-full overflow-x-auto">
+        <table className="w-full text-[6px] sm:text-[8px] md:text-[10px] lg:text-[11px] xl:text-[12px] table-fixed min-w-[800px]">
           <thead>
             {/* Grouped Headers */}
             <tr className="bg-gradient-to-r from-orange-100 to-red-100">
               <th
                 rowSpan={2}
-                className="px-1 py-1 text-left font-bold text-slate-800 border-r border-orange-200 sticky left-0 bg-inherit z-10 w-8 align-middle text-[6px] transform -rotate-90"
+                className="px-1 py-1 text-left font-bold text-slate-800 border-r border-orange-200 sticky left-0 bg-inherit z-10 w-8 align-middle text-[6px] sm:text-[8px] md:text-[10px] lg:text-[11px] xl:text-[12px] transform -rotate-90"
               >
                 {t.hour}
               </th>
               <th
                 rowSpan={2}
-                className="px-1 py-1 text-left font-bold text-slate-800 border-r border-orange-200 w-10 align-middle text-[6px]"
+                className="px-1 py-1 text-left font-bold text-slate-800 border-r border-orange-200 w-10 align-middle text-[6px] sm:text-[8px] md:text-[10px] lg:text-[11px] xl:text-[12px]"
               >
                 {t.shift}
               </th>
@@ -65,7 +65,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
                 <th
                   key={group.category}
                   colSpan={group.parameters.length}
-                  className="px-1 py-1 text-center font-bold text-slate-800 border-r border-orange-200 last:border-r-0 align-middle text-[6px]"
+                  className="px-1 py-1 text-center font-bold text-slate-800 border-r border-orange-200 last:border-r-0 align-middle text-[6px] sm:text-[8px] md:text-[10px] lg:text-[11px] xl:text-[12px]"
                 >
                   {group.category}
                 </th>
@@ -76,7 +76,7 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
               {allParams.map((param) => (
                 <th
                   key={param.id}
-                  className="px-1 py-1 text-center font-semibold text-slate-700 border-r border-orange-200 last:border-r-0 w-10 align-middle text-[6px]"
+                  className="px-1 py-1 text-center font-semibold text-slate-700 border-r border-orange-200 last:border-r-0 w-10 align-middle text-[6px] sm:text-[8px] md:text-[10px] lg:text-[11px] xl:text-[12px]"
                 >
                   <div className="text-[6px] leading-tight break-words">{param.parameter}</div>
                 </th>

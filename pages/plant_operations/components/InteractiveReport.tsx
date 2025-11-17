@@ -91,7 +91,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
     >
       {/* Report Header */}
       <motion.div
-        className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl shadow-lg p-6 border border-orange-200/50"
+        className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl shadow-lg p-4 sm:p-6 border border-orange-200/50"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.4 }}
@@ -147,7 +147,7 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
 
       {/* 3-Column Grid Layout for Remaining Tables */}
       {isDailyOperationalReport && (
-        <div className="grid grid-cols-[0.8fr_1.6fr_1.6fr] gap-2 mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-[0.8fr_1.6fr_1.6fr] gap-2 mt-2">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

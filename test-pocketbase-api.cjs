@@ -7,7 +7,7 @@ async function testPocketBaseApi() {
     // 1. Test parameter_order_profiles collection
     console.log('\n1. Testing parameter_order_profiles collection with direct API...');
     const profilesResponse = await fetch(
-      'http://141.11.25.69:8090/api/collections/parameter_order_profiles/records?sort=-created&filter=' +
+      'https://api.sipoma.site/api/collections/parameter_order_profiles/records?sort=-created&filter=' +
         encodeURIComponent('module="plant_operations" && parameter_type="ccr_parameters"')
     );
 
@@ -26,7 +26,7 @@ async function testPocketBaseApi() {
     // 2. Test user_parameter_orders collection
     console.log('\n2. Testing user_parameter_orders collection with direct API...');
     const ordersResponse = await fetch(
-      'http://141.11.25.69:8090/api/collections/user_parameter_orders/records'
+      'https://api.sipoma.site/api/collections/user_parameter_orders/records'
     );
 
     const ordersData = await ordersResponse.json();
@@ -43,7 +43,7 @@ async function testPocketBaseApi() {
 
     // 3. Try to get PocketBase server info
     console.log('\n3. Checking PocketBase server status...');
-    const healthResponse = await fetch('http://141.11.25.69:8090/api/health');
+    const healthResponse = await fetch('https://api.sipoma.site/api/health');
 
     if (healthResponse.status === 200) {
       const healthData = await healthResponse.json();

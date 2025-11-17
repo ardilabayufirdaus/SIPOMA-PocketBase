@@ -97,7 +97,7 @@ export default function UnifiedPlantOpsDashboard() {
           <button
             onClick={loadAllData}
             disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
+            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors min-h-[44px]"
           >
             {isLoading ? 'Loading...' : 'Refresh Data'}
           </button>

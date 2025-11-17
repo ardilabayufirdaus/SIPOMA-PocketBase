@@ -9,11 +9,13 @@ import {
   FileText,
   Search,
   Filter,
+  RefreshCw,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportMultipleSheets, importMultipleSheets } from '../../utils/excelUtils';
 import { useCopParameters } from '../../hooks/useCopParameters';
+import { useCopFooterParameters } from '../../hooks/useCopFooterParameters';
 import Modal from '../../components/Modal';
 import { SearchInput } from '../../components/ui/Input';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
@@ -203,6 +205,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
   const [reportUnitFilter, setReportUnitFilter] = useState('');
   const [simpleReportCategoryFilter, setSimpleReportCategoryFilter] = useState('');
   const [simpleReportUnitFilter, setSimpleReportUnitFilter] = useState('');
+  const [copFooterCategoryFilter, setCopFooterCategoryFilter] = useState('');
+  const [copFooterUnitFilter, setCopFooterUnitFilter] = useState('');
 
   // COP Parameters State
   const allParametersMap = useMemo(
@@ -237,6 +241,36 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     setCurrentPage: setCopCurrentPage,
   } = usePagination(copParameters as ParameterSetting[], 10);
 
+  // COP Footer Parameters State
+  const {
+    copFooterParameterIds,
+    setCopFooterParameterIds,
+    loading: copFooterParametersLoading,
+    refetch: refetchCopFooterParameters,
+  } = useCopFooterParameters(copFooterCategoryFilter, copFooterUnitFilter);
+  const [isCopFooterModalOpen, setIsCopFooterModalOpen] = useState(false);
+  const [tempCopFooterSelection, setTempCopFooterSelection] = useState<string[]>([]);
+
+  const copFooterParameters = useMemo(() => {
+    // Filter COP Footer Parameters by selected category and unit
+    if (!copFooterCategoryFilter || !copFooterUnitFilter) return [];
+    return copFooterParameterIds
+      .map((id) => allParametersMap.get(id))
+      .filter((p): p is ParameterSetting => {
+        if (!p) return false;
+        const categoryMatch = p.category === copFooterCategoryFilter;
+        const unitMatch = p.unit === copFooterUnitFilter;
+        return categoryMatch && unitMatch;
+      });
+  }, [copFooterParameterIds, allParametersMap, copFooterCategoryFilter, copFooterUnitFilter]);
+
+  const {
+    paginatedData: paginatedCopFooterParams,
+    currentPage: copFooterCurrentPage,
+    totalPages: copFooterTotalPages,
+    setCurrentPage: setCopFooterCurrentPage,
+  } = usePagination(copFooterParameters as ParameterSetting[], 10);
+
   // Handlers for COP Parameters
   const handleOpenCopModal = () => {
     setTempCopSelection([...copParameterIds]);
@@ -254,6 +288,25 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
   };
   const handleRemoveCopParameter = (paramId: string) => {
     setCopParameterIds(copParameterIds.filter((id) => id !== paramId));
+  };
+
+  // Handlers for COP Footer Parameters
+  const handleOpenCopFooterModal = () => {
+    setTempCopFooterSelection([...copFooterParameterIds]);
+    setIsCopFooterModalOpen(true);
+  };
+  const handleCloseCopFooterModal = () => setIsCopFooterModalOpen(false);
+  const handleCopFooterSelectionChange = (paramId: string) => {
+    setTempCopFooterSelection((prev) =>
+      prev.includes(paramId) ? prev.filter((id) => id !== paramId) : [...prev, paramId]
+    );
+  };
+  const handleSaveCopFooterSelection = () => {
+    setCopFooterParameterIds(tempCopFooterSelection.sort());
+    handleCloseCopFooterModal();
+  };
+  const handleRemoveCopFooterParameter = (paramId: string) => {
+    setCopFooterParameterIds(copFooterParameterIds.filter((id) => id !== paramId));
   };
 
   // Parameter Search Handlers
@@ -292,6 +345,9 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       ) {
         setSimpleReportCategoryFilter(uniquePlantCategories[0]);
       }
+      if (!copFooterCategoryFilter || !uniquePlantCategories.includes(copFooterCategoryFilter)) {
+        setCopFooterCategoryFilter(uniquePlantCategories[0]);
+      }
     }
   }, [
     uniquePlantCategories,
@@ -300,6 +356,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
     copCategoryFilter,
     reportCategoryFilter,
     simpleReportCategoryFilter,
+    copFooterCategoryFilter,
   ]);
 
   // Keyboard shortcuts for parameter search
@@ -348,6 +405,14 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       .sort();
   }, [plantUnits, copCategoryFilter]);
 
+  const unitsForCopFooterFilter = useMemo(() => {
+    if (!copFooterCategoryFilter) return [];
+    return plantUnits
+      .filter((unit) => unit.category === copFooterCategoryFilter)
+      .map((unit) => unit.unit)
+      .sort();
+  }, [plantUnits, copFooterCategoryFilter]);
+
   const unitsForReportFilter = useMemo(() => {
     if (!reportCategoryFilter) return [];
     return plantUnits
@@ -393,6 +458,16 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
       setCopUnitFilter('');
     }
   }, [unitsForCopFilter, copUnitFilter]);
+
+  useEffect(() => {
+    if (unitsForCopFooterFilter.length > 0) {
+      if (!copFooterUnitFilter || !unitsForCopFooterFilter.includes(copFooterUnitFilter)) {
+        setCopFooterUnitFilter(unitsForCopFooterFilter[0]);
+      }
+    } else {
+      setCopFooterUnitFilter('');
+    }
+  }, [unitsForCopFooterFilter, copFooterUnitFilter]);
 
   useEffect(() => {
     if (unitsForReportFilter.length > 0) {
@@ -1844,6 +1919,188 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
           </motion.div>
 
+          {/* COP Parameters Footer Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+          >
+            <div className="p-6 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900">COP Parameters Footer</h3>
+                    <p className="text-sm text-slate-600">
+                      Manage COP footer parameters configuration
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleOpenCopFooterModal}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                >
+                  <PlusIcon className="w-4 h-4" />
+                  {t['add_data_button']}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => refetchCopFooterParameters()}
+                  disabled={copFooterParametersLoading}
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${copFooterParametersLoading ? 'animate-spin' : ''}`}
+                  />
+                  Refresh
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Filters Section */}
+            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex items-center gap-3">
+                  <Filter className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="cop-footer-cat-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Plant Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cop-footer-cat-filter"
+                        value={copFooterCategoryFilter}
+                        onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                      >
+                        {uniquePlantCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label
+                      htmlFor="cop-footer-unit-filter"
+                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                    >
+                      Unit:
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cop-footer-unit-filter"
+                        value={copFooterUnitFilter}
+                        onChange={(e) => setCopFooterUnitFilter(e.target.value)}
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        disabled={unitsForCopFooterFilter.length === 0}
+                      >
+                        {unitsForCopFooterFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Section */}
+            <div className="p-6">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Parameter
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Plant Unit
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="relative px-4 py-3 w-20">
+                        <span className="sr-only">{t['actions']}</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-200">
+                    {copFooterParametersLoading ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <LoadingSpinner size="sm" />
+                            <span className="text-slate-500">Loading COP footer parameters...</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : paginatedCopFooterParams.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                          No COP footer parameters selected for the current filters
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedCopFooterParams.map((param, _index) => (
+                        <tr
+                          key={param.id}
+                          className="hover:bg-slate-50/50 transition-colors duration-200"
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                            {param.parameter}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {param.unit}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {param.category}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-1">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleRemoveCopFooterParameter(param.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                              >
+                                <TrashIcon className="w-4 h-4" />
+                              </motion.button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4">
+                <Pagination
+                  currentPage={copFooterCurrentPage}
+                  totalPages={copFooterTotalPages}
+                  onPageChange={setCopFooterCurrentPage}
+                />
+              </div>
+            </div>
+          </motion.div>
+
           {/* Report Settings Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -2714,6 +2971,264 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
                   >
                     <BarChart3 className="h-4 w-4 mr-2" />
+                    Save Selection
+                  </EnhancedButton>
+                </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </Modal>
+
+        {/* COP Footer Selection Modal */}
+        <Modal isOpen={isCopFooterModalOpen} onClose={handleCloseCopFooterModal} title="">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-lg overflow-hidden"
+          >
+            {/* Header with title */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4"
+            >
+              <div className="flex items-center space-x-3">
+                <FileText className="h-6 w-6 text-white" />
+                <h2 className="text-xl font-semibold text-white">COP Parameters Footer</h2>
+              </div>
+              <p className="text-purple-100 text-sm mt-1">
+                Footer parameters configuration for COP analysis
+              </p>
+            </motion.div>
+
+            <div className="p-6">
+              {/* Description */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6"
+              >
+                <div className="flex items-start space-x-3">
+                  <Filter className="h-5 w-5 text-purple-600 mt-0.5" />
+                  <div>
+                    <h3 className="text-sm font-medium text-purple-800 mb-1">
+                      Footer Parameter Selection
+                    </h3>
+                    <p className="text-sm text-purple-700">
+                      Select the parameters to be included in the COP footer calculations. Only
+                      numerical parameters are shown.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Filters */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.3 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
+                >
+                  <label
+                    htmlFor="modal-cop-footer-filter-category"
+                    className="block text-sm font-medium text-slate-700 mb-2"
+                  >
+                    Plant Category
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <motion.select
+                    whileFocus={{ scale: 1.02 }}
+                    id="modal-cop-footer-filter-category"
+                    value={copFooterCategoryFilter}
+                    onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 sm:text-sm"
+                  >
+                    <option value="">Select category...</option>
+                    {uniquePlantCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </motion.select>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5, duration: 0.3 }}
+                >
+                  <label
+                    htmlFor="modal-cop-footer-filter-unit"
+                    className="block text-sm font-medium text-slate-700 mb-2"
+                  >
+                    Unit
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <motion.select
+                    whileFocus={{ scale: 1.02 }}
+                    id="modal-cop-footer-filter-unit"
+                    value={copFooterUnitFilter}
+                    onChange={(e) => setCopFooterUnitFilter(e.target.value)}
+                    disabled={unitsForCopFooterFilter.length === 0}
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all duration-200 sm:text-sm"
+                  >
+                    {unitsForCopFooterFilter.length === 0 ? (
+                      <option value="">No units available</option>
+                    ) : (
+                      <>
+                        <option value="">Select unit...</option>
+                        {unitsForCopFooterFilter.map((unit) => (
+                          <option key={unit} value={unit}>
+                            {unit}
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </motion.select>
+                </motion.div>
+              </motion.div>
+
+              {/* Parameters List */}
+              <AnimatePresence mode="wait">
+                {copFooterCategoryFilter && copFooterUnitFilter && (
+                  <motion.div
+                    key={`${copFooterCategoryFilter}-${copFooterUnitFilter}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: 0.6, duration: 0.3 }}
+                    className="border border-slate-200 rounded-lg overflow-hidden"
+                  >
+                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                      <h3 className="text-sm font-medium text-slate-700">
+                        Available Parameters (
+                        {
+                          parameterSettings
+                            .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                            .filter((p) => {
+                              if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
+                              const categoryMatch = p.category === copFooterCategoryFilter;
+                              const unitMatch = p.unit === copFooterUnitFilter;
+                              return categoryMatch && unitMatch;
+                            }).length
+                        }
+                        )
+                      </h3>
+                    </div>
+
+                    <div className="max-h-96 overflow-y-auto">
+                      <div className="divide-y divide-slate-200">
+                        {parameterSettings
+                          .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                          .filter((p) => {
+                            if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
+                            const categoryMatch = p.category === copFooterCategoryFilter;
+                            const unitMatch = p.unit === copFooterUnitFilter;
+                            return categoryMatch && unitMatch;
+                          })
+                          .map((param) => {
+                            const isSelected = tempCopFooterSelection.includes(param.id);
+                            return (
+                              <motion.label
+                                key={param.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.7 + Math.random() * 0.3, duration: 0.3 }}
+                                className={`flex items-center justify-between p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
+                                  isSelected ? 'bg-purple-50 border-l-4 border-purple-500' : ''
+                                }`}
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleCopFooterSelectionChange(param.id)}
+                                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-slate-300 rounded"
+                                  />
+                                  <div>
+                                    <div className="text-sm font-medium text-slate-900">
+                                      {param.parameter}
+                                    </div>
+                                    <div className="text-xs text-slate-500">
+                                      {param.unit} • {param.category}
+                                    </div>
+                                  </div>
+                                </div>
+                                {isSelected && (
+                                  <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="text-purple-600"
+                                  >
+                                    ✓
+                                  </motion.div>
+                                )}
+                              </motion.label>
+                            );
+                          })}
+                      </div>
+
+                      {parameterSettings
+                        .filter((p) => p.data_type === ParameterDataType.NUMBER)
+                        .filter((p) => {
+                          if (!copFooterCategoryFilter || !copFooterUnitFilter) return false;
+                          const categoryMatch = p.category === copFooterCategoryFilter;
+                          const unitMatch = p.unit === copFooterUnitFilter;
+                          return categoryMatch && unitMatch;
+                        }).length === 0 && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-center py-8 text-slate-500"
+                        >
+                          <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                          <p className="text-sm">
+                            No numerical parameters found for the selected category and unit.
+                          </p>
+                          <p className="text-xs mt-1">
+                            Please configure parameters in Master Data first.
+                          </p>
+                        </motion.div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.3 }}
+              className="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 px-6 pb-6"
+            >
+              <div className="flex space-x-3">
+                <EnhancedButton
+                  type="button"
+                  variant="secondary"
+                  onClick={handleCloseCopFooterModal}
+                  className="px-6 py-2"
+                >
+                  {t['cancel_button']}
+                </EnhancedButton>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <EnhancedButton
+                    type="button"
+                    variant="primary"
+                    onClick={handleSaveCopFooterSelection}
+                    disabled={!copFooterCategoryFilter || !copFooterUnitFilter}
+                    className="px-6 py-2 bg-purple-600 hover:bg-purple-700"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
                     Save Selection
                   </EnhancedButton>
                 </motion.div>

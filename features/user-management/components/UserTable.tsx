@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useUserStore } from '../../../stores/userStore';
 import { useUserRealtime } from '../hooks/useUserRealtime';
 import { translations } from '../../../translations';
-import { UserRole, User } from '../../../types';
+import { User } from '../../../types';
 
 interface UserTableProps {
   onEditUser: (user: User) => void;
@@ -29,16 +29,16 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
     try {
       await deleteUser(userId);
-    } catch (err: any) {
-      console.error('Error deleting user:', err);
+    } catch (err: unknown) {
+      // Error deleting user
     }
   };
 
   const handleToggleActive = async (userId: string, isActive: boolean) => {
     try {
       await updateUser(userId, { is_active: !isActive });
-    } catch (err: any) {
-      console.error('Error updating user status:', err);
+    } catch (err: unknown) {
+      // Error updating user status
     }
   };
 
@@ -65,7 +65,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
         </h3>
         <button
           onClick={onAddUser}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-h-[44px]"
         >
           {t.add_user_button || 'Add User'}
         </button>

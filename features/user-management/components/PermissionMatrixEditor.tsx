@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PermissionMatrix, PlantOperationsPermissions, PermissionLevel } from '../../../types';
-import { pb } from '../../../utils/pocketbase';
-import { translations } from '../../../translations';
 
 // Enhanced Components
 import {
-  EnhancedCard,
   EnhancedButton,
   EnhancedBadge,
   EnhancedModal,
@@ -36,14 +33,14 @@ interface PermissionMatrixEditorProps {
 }
 
 const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
-  userId,
+  userId: _userId,
   currentPermissions,
   onPermissionsChange,
   onSave,
   onClose,
   onResetToDefault,
   isOpen,
-  language = 'en',
+  language: _language = 'en',
 }) => {
   const [permissions, setPermissions] = useState<PermissionMatrix>(() =>
     JSON.parse(JSON.stringify(currentPermissions))
@@ -53,8 +50,6 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  const t = translations[language];
 
   // Notify parent when permissions change (but not during initial load)
   const handlePermissionsChange = useCallback(() => {
@@ -131,16 +126,6 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
       return acc;
     }, {});
   }, [plantUnits]);
-
-  const permissionOptions = useMemo(
-    () =>
-      permissionLevels.map((level) => ({
-        value: level,
-        label: level,
-        color: getPermissionLevelColor(level),
-      })),
-    []
-  );
 
   const handlePermissionChange = useCallback(
     (feature: keyof PermissionMatrix, level: PermissionLevel) => {
@@ -363,7 +348,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
         <div className="flex bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('general')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+            className={`flex-1 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
               activeTab === 'general'
                 ? 'bg-white text-primary-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
@@ -373,7 +358,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('plant')}
-            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+            className={`flex-1 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium rounded-md transition-all duration-200 min-h-[44px] ${
               activeTab === 'plant'
                 ? 'bg-white text-primary-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
@@ -437,7 +422,7 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
                               onClick={() =>
                                 handlePermissionChange(feature.key as keyof PermissionMatrix, level)
                               }
-                              className={`relative px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all duration-200 transform hover:scale-105 ${
+                              className={`relative px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium rounded-lg border-2 transition-all duration-200 transform hover:scale-105 min-h-[44px] ${
                                 isSelected
                                   ? `border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-lg`
                                   : `border-gray-300 hover:border-gray-400 text-gray-700 hover:bg-gray-50`

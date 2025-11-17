@@ -1,6 +1,6 @@
 const PocketBase = require('pocketbase/cjs');
 
-const SERVER_URL = 'http://141.11.25.69:8090';
+const SERVER_URL = 'https://api.sipoma.site';
 const EMAIL = 'ardila.firdaus@sig.id';
 const PASSWORD = 'makassar@270989';
 

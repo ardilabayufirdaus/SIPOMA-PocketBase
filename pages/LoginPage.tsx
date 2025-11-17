@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { EnhancedButton } from '../components/ui/EnhancedComponents';
 import { User, Lock } from 'lucide-react';
+import EyeIcon from '../components/icons/EyeIcon';
+import EyeSlashIcon from '../components/icons/EyeSlashIcon';
 import { motion } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
 
 const LoginPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, loading, login } = useAuth();
@@ -24,8 +27,8 @@ const LoginPage: React.FC = () => {
     }
   }, [user, loading, navigate, loginAttempted]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError(null);
     setIsSubmitting(true);
     setLoginAttempted(true); // Tandai bahwa login telah dicoba
@@ -60,7 +63,6 @@ const LoginPage: React.FC = () => {
         setError('Invalid username or password');
       }
     } catch (error) {
-      console.error('Login error:', error);
       setError('An error occurred during login. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -127,14 +129,32 @@ const LoginPage: React.FC = () => {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleLogin();
+                    }
+                  }}
                   required
                   autoComplete="current-password"
-                  className="w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400"
+                  className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 hover:text-slate-600 cursor-pointer bg-transparent border-none p-0"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
               </div>
             </div>
             {error && (

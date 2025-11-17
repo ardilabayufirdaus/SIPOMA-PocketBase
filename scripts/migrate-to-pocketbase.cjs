@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
-const pocketbaseUrl = process.env.POCKETBASE_URL || 'http://141.11.25.69:8090';
+const pocketbaseUrl = process.env.POCKETBASE_URL || 'https://api.sipoma.site';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const pb = new PocketBase(pocketbaseUrl);

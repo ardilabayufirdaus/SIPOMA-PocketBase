@@ -124,10 +124,12 @@ const MetricCard: React.FC<MetricCardProps> = ({
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/10 to-white/20" />
 
-      <div className="relative p-6">
+      <div className="relative p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}>{icon}</div>
+        <div className="flex items-start justify-between mb-3 sm:mb-4">
+          <div className={`p-2 sm:p-3 rounded-xl ${getIconBgColor()} text-white shadow-lg`}>
+            {icon}
+          </div>
           {onClick && (
             <EnhancedButton
               variant="ghost"
@@ -135,7 +137,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
               onClick={onClick}
               ariaLabel="More options"
               className="text-slate-400 hover:text-slate-600"
-              icon={<MoreHorizontalIcon className="w-5 h-5" />}
+              icon={<MoreHorizontalIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
             >
               <span className="sr-only">More options</span>
             </EnhancedButton>
@@ -144,17 +146,21 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
         {/* Content */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-slate-600 uppercase tracking-wide">{title}</h3>
+          <h3 className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">
+            {title}
+          </h3>
 
-          <div className="flex items-baseline space-x-2">
+          <div className="flex items-baseline space-x-1 sm:space-x-2">
             {isLoading ? (
-              <div className="h-8 w-24 bg-slate-200 rounded animate-pulse" />
+              <div className="h-6 sm:h-8 w-20 sm:w-24 bg-slate-200 rounded animate-pulse" />
             ) : (
               <>
-                <span className="text-3xl font-bold text-slate-900">
+                <span className="text-2xl sm:text-3xl font-bold text-slate-900">
                   {typeof value === 'number' ? formatIndonesianNumber(value) : value}
                 </span>
-                {unit && <span className="text-lg font-medium text-slate-500">{unit}</span>}
+                {unit && (
+                  <span className="text-base sm:text-lg font-medium text-slate-500">{unit}</span>
+                )}
               </>
             )}
           </div>

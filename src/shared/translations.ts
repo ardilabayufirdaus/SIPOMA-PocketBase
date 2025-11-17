@@ -676,6 +676,9 @@ export const translations = {
     back_to_dashboard: 'Back to Dashboard',
 
     // COP Analysis
+    cop_analysis_notes_title: 'Notes',
+    cop_analysis_note_qaf_daily:
+      'QAF Daily Percentage of COP Parameter, if COP Parameter is also in Footer then QAF Daily will ignore that parameter.',
     qaf_daily: 'QAF Daily',
     qaf_tooltip: '{inRange} of {total} parameters in range',
 
@@ -1279,6 +1282,9 @@ export const translations = {
     back_to_dashboard: 'Kembali ke Dashboard',
 
     // COP Analysis
+    cop_analysis_notes_title: 'Catatan',
+    cop_analysis_note_qaf_daily:
+      'Persentase QAF Daily dari COP Parameter; jika COP Parameter juga ada di Footer maka QAF Daily akan mengabaikan parameter tersebut.',
     qaf_daily: 'QAF Harian',
     qaf_tooltip: '{inRange} dari {total} parameter dalam rentang',
 

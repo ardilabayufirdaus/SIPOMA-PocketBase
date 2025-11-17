@@ -23,7 +23,7 @@ const testUser = {
     plant_operations: {},
     inspection: 'READ',
     project_management: 'READ',
-  }
+  },
 };
 
 // Fungsi untuk membuat objek problematik
@@ -34,106 +34,108 @@ const createProblematicObject = () => {
     },
     valueOf() {
       throw new Error('Cannot convert object to primitive value');
-    }
+    },
   };
 };
 
 // Buat component bermasalah dengan lazy loading
 const ProblematicComponent = createSafeLazy(
-  () => Promise.resolve({
-    default: () => {
-      const problemObject = createProblematicObject();
-      return <div data-problem={problemObject}>Problematic Component</div>;
-    }
-  }),
+  () =>
+    Promise.resolve({
+      default: () => {
+        const problemObject = createProblematicObject();
+        return 'Problematic Component';
+      },
+    }),
   'ProblematicComponent',
-  <div>Loading...</div>,
-  <div className="error">Error loading component</div>
+  'Loading...',
+  'Error loading component'
 );
 
 // Buat component normal dengan lazy loading
 const NormalComponent = createSafeLazy(
-  () => Promise.resolve({
-    default: () => <div>Normal Component</div>
-  }),
+  () =>
+    Promise.resolve({
+      default: () => 'Normal Component',
+    }),
   'NormalComponent',
-  <div>Loading...</div>,
-  <div className="error">Error loading component</div>
+  'Loading...',
+  'Error loading component'
 );
 
 // Tes manual
-function runManualTests() {
-  console.log('Running manual tests for SafeLazy and PermissionGuard...');
+// function runManualTests() {
+//   console.log('Running manual tests for SafeLazy and PermissionGuard...');
 
-  // Test 1: SafeLazy dengan component normal
-  try {
-    console.log('Test 1: Rendering normal component with SafeLazy');
-    const { container: container1 } = render(
-      <SafeLazy>
-        <NormalComponent />
-      </SafeLazy>
-    );
-    console.log('Test 1 result:', container1.innerHTML);
-  } catch (error) {
-    console.error('Test 1 failed:', error);
-  }
+//   // Test 1: SafeLazy dengan component normal
+//   try {
+//     console.log('Test 1: Rendering normal component with SafeLazy');
+//     const { container: container1 } = render(
+//       <SafeLazy>
+//         <NormalComponent />
+//       </SafeLazy>
+//     );
+//     console.log('Test 1 result:', container1.innerHTML);
+//   } catch (error) {
+//     console.error('Test 1 failed:', error);
+//   }
 
-  // Test 2: SafeLazy dengan component problematik
-  try {
-    console.log('Test 2: Rendering problematic component with SafeLazy');
-    const { container: container2 } = render(
-      <SafeLazy errorFallback={<div>Custom error fallback</div>}>
-        <ProblematicComponent />
-      </SafeLazy>
-    );
-    console.log('Test 2 result:', container2.innerHTML);
-  } catch (error) {
-    console.error('Test 2 failed:', error);
-  }
+//   // Test 2: SafeLazy dengan component problematik
+//   try {
+//     console.log('Test 2: Rendering problematic component with SafeLazy');
+//     const { container: container2 } = render(
+//       <SafeLazy errorFallback={<div>Custom error fallback</div>}>
+//         <ProblematicComponent />
+//       </SafeLazy>
+//     );
+//     console.log('Test 2 result:', container2.innerHTML);
+//   } catch (error) {
+//     console.error('Test 2 failed:', error);
+//   }
 
-  // Test 3: PermissionGuard dengan SafeLazy
-  try {
-    console.log('Test 3: Rendering component with PermissionGuard + SafeLazy');
-    const { container: container3 } = render(
-      <PermissionGuard
-        user={testUser}
-        feature="dashboard"
-        requiredLevel="READ"
-        fallback={<div>No permission</div>}
-      >
-        <SafeLazy>
-          <NormalComponent />
-        </SafeLazy>
-      </PermissionGuard>
-    );
-    console.log('Test 3 result:', container3.innerHTML);
-  } catch (error) {
-    console.error('Test 3 failed:', error);
-  }
+//   // Test 3: PermissionGuard dengan SafeLazy
+//   try {
+//     console.log('Test 3: Rendering component with PermissionGuard + SafeLazy');
+//     const { container: container3 } = render(
+//       <PermissionGuard
+//         user={testUser}
+//         feature="dashboard"
+//         requiredLevel="READ"
+//         fallback={<div>No permission</div>}
+//       >
+//         <SafeLazy>
+//           <NormalComponent />
+//         </SafeLazy>
+//       </PermissionGuard>
+//     );
+//     console.log('Test 3 result:', container3.innerHTML);
+//   } catch (error) {
+//     console.error('Test 3 failed:', error);
+//   }
 
-  // Test 4: PermissionGuard dengan component problematik
-  try {
-    console.log('Test 4: Rendering problematic component with PermissionGuard');
-    const { container: container4 } = render(
-      <PermissionGuard
-        user={testUser}
-        feature="dashboard"
-        requiredLevel="READ"
-        fallback={<div>No permission</div>}
-      >
-        <SafeLazy>
-          <ProblematicComponent />
-        </SafeLazy>
-      </PermissionGuard>
-    );
-    console.log('Test 4 result:', container4.innerHTML);
-  } catch (error) {
-    console.error('Test 4 failed:', error);
-  }
-}
+//   // Test 4: PermissionGuard dengan component problematik
+//   try {
+//     console.log('Test 4: Rendering problematic component with PermissionGuard');
+//     const { container: container4 } = render(
+//       <PermissionGuard
+//         user={testUser}
+//         feature="dashboard"
+//         requiredLevel="READ"
+//         fallback={<div>No permission</div>}
+//       >
+//         <SafeLazy>
+//           <ProblematicComponent />
+//         </SafeLazy>
+//       </PermissionGuard>
+//     );
+//     console.log('Test 4 result:', container4.innerHTML);
+//   } catch (error) {
+//     console.error('Test 4 failed:', error);
+//   }
+// }
 
-// Eksekusi tes manual
-runManualTests();
+// // Eksekusi tes manual
+// runManualTests();
 
-// Export fungsi untuk memudahkan penggunaan di aplikasi lain
-export { runManualTests };
+// // Export fungsi untuk memudahkan penggunaan di aplikasi lain
+// export { runManualTests };

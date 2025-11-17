@@ -1,5 +1,5 @@
 const PocketBase = require('pocketbase/cjs');
-const pb = new PocketBase('http://141.11.25.69:8090');
+const pb = new PocketBase('https://api.sipoma.site');
 
 // Simple logger function
 const logger = {
@@ -578,7 +578,7 @@ const ccrInformationData = [
 async function insertCcrInformationData() {
   try {
     // Create a separate PocketBase instance for bulk operations (bypassing throttling)
-    const pb = new PocketBase('http://141.11.25.69:8090');
+    const pb = new PocketBase('https://api.sipoma.site');
 
     // Authenticate as admin
     await pb.admins.authWithPassword('ardila.firdaus@sig.id', 'makassar@270989');

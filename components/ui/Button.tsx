@@ -45,11 +45,11 @@ const Button: React.FC<ButtonProps> = ({
 
   // Size variants
   const sizeVariants = {
-    xs: 'px-2.5 py-1.5 text-xs',
-    sm: 'px-3 py-2 text-sm',
-    base: 'px-4 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-base',
-    xl: 'px-8 py-4 text-lg',
+    xs: 'px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs min-h-[36px]',
+    sm: 'px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm min-h-[40px]',
+    base: 'px-3 py-2 sm:px-4 sm:py-2.5 text-sm min-h-[44px]',
+    lg: 'px-4 py-2.5 sm:px-6 sm:py-3 text-base min-h-[48px]',
+    xl: 'px-6 py-3 sm:px-8 sm:py-4 text-lg min-h-[52px]',
   };
 
   // Variant styles with gradients and modern effects

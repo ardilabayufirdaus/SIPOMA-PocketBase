@@ -2,7 +2,7 @@
 const PocketBase = require('pocketbase/cjs');
 
 // Read environment variables manually for the script
-const SERVER_URL = process.env.VITE_POCKETBASE_URL || 'http://141.11.25.69:8090';
+const SERVER_URL = process.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
 const EMAIL = process.env.VITE_GUEST_USERNAME || 'ardila.firdaus@sig.id';
 const PASSWORD = process.env.VITE_GUEST_PASSWORD || 'makassar@270989';
 

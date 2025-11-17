@@ -39,7 +39,6 @@ const mockPlantParameters: PlantParameters = {
 
 // Test function
 function testStockPrediction() {
-
   try {
     // Test 1: Basic prediction calculation
     const result = calculateStockPrediction(
@@ -78,14 +77,8 @@ function testStockPrediction() {
 
     // Test 4: Critical stock detection
     const criticalStockFound = result.criticalStockDate !== null;
-    console.log(`Critical stock detection: ${criticalStockFound ? '✅ Working' : '❌ Not triggered'}`);
-
-    if (criticalStockFound) {
-      const criticalDate = new Date(result.criticalStockDate!);
-      const today = new Date();
-      const daysUntilCritical = Math.ceil(
-        (criticalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-      );
+    console.log(
+      `Critical stock detection: ${criticalStockFound ? '✅ Working' : '❌ Not triggered'}`
     );
 
     if (criticalStockFound) {
@@ -127,12 +120,9 @@ function testStockPrediction() {
     ];
 
     const convertedParameters = convertMasterDataToPlantParameters(mockMasterData, 'Area A');
-      `✅ Converted plant parameters: Current=${convertedParameters.currentStock}, Safety=${convertedParameters.safetyStock}`
-    );
 
     // Test 6: Planned deliveries generation
     const generatedDeliveries = generatePlannedDeliveries(new Date(), 30, 100, 7);
-
 
     return {
       success: true,
@@ -150,7 +140,6 @@ function testStockPrediction() {
 
 // Advanced test scenarios
 function testEdgeCases() {
-
   try {
     // Test dengan data kosong
     const emptyResult = calculateStockPrediction([], [], mockPlantParameters, 30, 7);
@@ -167,15 +156,9 @@ function testEdgeCases() {
       30,
       7
     );
-      `✅ Handled zero consumption: Critical date = ${zeroResult.criticalStockDate || 'None'}`
-    );
-
     // Test dengan stok sangat rendah
     const lowStockParams = { ...mockPlantParameters, currentStock: 20 };
     const lowStockResult = calculateStockPrediction(mockHistoricalStock, [], lowStockParams, 30, 7);
-      `✅ Handled low stock: Critical in ${lowStockResult.criticalStockDate ? 'soon' : 'never'}`
-    );
-
   } catch (error) {
     console.error('❌ Edge case test failed:', error);
   }
@@ -183,7 +166,6 @@ function testEdgeCases() {
 
 // Fungsi untuk menampilkan sample data
 function displaySamplePrediction() {
-
   const result = calculateStockPrediction(
     mockHistoricalStock,
     mockPlannedDeliveries,
@@ -192,15 +174,14 @@ function displaySamplePrediction() {
     3 // 3 days history
   );
 
-
   result.prognosisData.forEach((data) => {
     const type = data.isActual ? 'Actual' : 'Predicted';
-      `${data.date}\t${data.stockLevel}\t${data.consumption}\t\t${data.arrivals}\t\t${type}`
-    );
   });
 
   if (result.criticalStockDate) {
+    // Critical stock detected
   } else {
+    // No critical stock
   }
 }
 
@@ -221,7 +202,6 @@ export function debugPredictionStep(
   plantParams: PlantParameters,
   projectionDays: number = 30
 ) {
-
   // Tampilkan input data
 
   // Jalankan prediksi dengan logging
@@ -256,5 +236,3 @@ export function debugPredictionStep(
 
   return result;
 }
-
-

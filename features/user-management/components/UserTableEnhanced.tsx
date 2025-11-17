@@ -148,7 +148,6 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       setError('');
       // You could add a success state here if needed
     } catch (err) {
-      console.error('💥 Error updating permissions:', err);
       const errorMsg =
         typeof err === 'object' && err !== null && 'message' in err
           ? (err as { message?: string }).message
@@ -189,7 +188,6 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       // Real-time subscription will handle the actual update
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete user';
-      console.error('Error deleting user:', errorMessage);
       setError(errorMessage);
       // Note: The real-time subscription will correct the UI if the delete failed
     }
@@ -210,7 +208,6 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       // Real-time subscription will handle the actual update
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update user status';
-      console.error('Error updating user status:', errorMessage);
       setError(errorMessage);
       // Note: The real-time subscription will correct the UI if the update failed
     }
@@ -243,7 +240,6 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       // Real-time subscription will handle the actual updates
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update users';
-      console.error('Error bulk updating users:', errorMessage);
       setError(errorMessage);
       // Note: The real-time subscription will correct the UI if the update failed
     }
@@ -289,7 +285,6 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       // Real-time subscription will handle the actual updates
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete users';
-      console.error('Error bulk deleting users:', errorMessage);
       setError(`Bulk delete failed: ${errorMessage}. Some users may have been partially deleted.`);
       // Note: The real-time subscription will correct the UI if the delete failed
     }
@@ -377,27 +372,46 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   return (
     <div className="space-y-6">
       {/* Header with Search and Add Button */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">{t.user_list || 'Users'}</h2>
-          <p className="text-gray-600">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+            {t.user_list || 'Users'}
+          </h2>
+          <p className="text-sm text-gray-600">
             {totalUsers} {totalUsers === 1 ? 'user' : 'users'} total
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <EnhancedInput
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Search users..."
-            className="w-full sm:w-64"
-            size="sm"
-          />
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
+            <EnhancedInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="Search by username or name..."
+              className="w-full sm:w-64 pl-10"
+              size="sm"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg
+                className="h-4 w-4 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </div>
 
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[140px]"
+            className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px] shadow-sm"
           >
             <option value="all">All Roles</option>
             <option value="Super Admin">Super Admin</option>
@@ -414,6 +428,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             onClick={onAddUser}
             icon={<PlusIcon className="w-4 h-4" />}
             size="sm"
+            className="shadow-sm hover:shadow-md transition-shadow"
           >
             {t.add_user_button || 'Add User'}
           </EnhancedButton>
@@ -422,13 +437,18 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
       {/* Bulk Actions */}
       {showBulkActions && (
-        <EnhancedCard className="bg-blue-50 border-blue-200">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2">
-              <CheckIcon className="w-5 h-5 text-blue-600" />
-              <span className="font-medium text-blue-800">
-                {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
-              </span>
+        <EnhancedCard className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <CheckIcon className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <span className="font-semibold text-blue-800">
+                  {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
+                </span>
+                <p className="text-sm text-blue-600">Choose an action to apply to selected users</p>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -437,6 +457,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 size="sm"
                 onClick={() => handleBulkToggleActive(true)}
                 icon={<CheckIcon className="w-4 h-4" />}
+                className="border-green-300 text-green-700 hover:bg-green-50"
               >
                 Activate
               </EnhancedButton>
@@ -446,6 +467,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 size="sm"
                 onClick={() => handleBulkToggleActive(false)}
                 icon={<XCircleIcon className="w-4 h-4" />}
+                className="border-orange-300 text-orange-700 hover:bg-orange-50"
               >
                 Deactivate
               </EnhancedButton>
@@ -455,6 +477,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 size="sm"
                 onClick={handleBulkDelete}
                 icon={<TrashIcon className="w-4 h-4" />}
+                className="shadow-sm"
               >
                 Delete
               </EnhancedButton>
@@ -466,6 +489,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   setSelectedUsers(new Set());
                   setShowBulkActions(false);
                 }}
+                className="text-gray-600 hover:text-gray-800"
               >
                 Cancel
               </EnhancedButton>
@@ -475,67 +499,67 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       )}
 
       {/* Table */}
-      <EnhancedCard className="overflow-hidden">
+      <EnhancedCard className="overflow-hidden shadow-sm border border-gray-100">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left">
+                <th className="px-6 py-4 text-left">
                   <input
                     type="checkbox"
                     checked={
                       selectedUsers.size === displayedUsers.length && displayedUsers.length > 0
                     }
                     onChange={handleSelectAll}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm"
                   />
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
                   onClick={() => handleSort('username')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     {t.username || 'Username'}
                     <SortIcon field="username" />
                   </div>
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
                   onClick={() => handleSort('full_name')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     {t.full_name_label || 'Full Name'}
                     <SortIcon field="full_name" />
                   </div>
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
                   onClick={() => handleSort('role')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     {t.role_label || 'Role'}
                     <SortIcon field="role" />
                   </div>
                 </th>
 
                 <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
                   onClick={() => handleSort('is_active')}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-2">
                     {t.status || 'Status'}
                     <SortIcon field="is_active" />
                   </div>
                 </th>
 
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   {t.permissions || 'Permissions'}
                 </th>
 
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                   {t.actions || 'Actions'}
                 </th>
               </tr>
@@ -543,113 +567,127 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
             <tbody className="bg-white divide-y divide-gray-200">
               {displayedUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr key={user.id} className="hover:bg-blue-50/30 transition-colors duration-150">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
                       checked={selectedUsers.has(user.id)}
                       onChange={() => handleSelectUser(user.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm"
                     />
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-shrink-0">
                         {user.avatar_url ? (
                           <img
-                            className="h-10 w-10 rounded-full object-cover"
+                            className="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200"
                             src={user.avatar_url}
                             alt={user.username}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <UserIcon className="h-5 w-5 text-gray-600" />
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center ring-2 ring-gray-200">
+                            <span className="text-white font-semibold text-sm">
+                              {user.username.charAt(0).toUpperCase()}
+                            </span>
                           </div>
                         )}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                        <div className="text-sm text-gray-500">ID: {user.id.slice(0, 8)}...</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-gray-900 truncate">
+                          {user.username}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate">
+                          ID: {user.id.slice(0, 8)}...
+                        </div>
                       </div>
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.full_name || '-'}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900 font-medium">
+                      {user.full_name || <span className="text-gray-400 italic">Not set</span>}
+                    </div>
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <EnhancedBadge variant={getRoleColor(user.role)}>{user.role}</EnhancedBadge>
-                  </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <EnhancedBadge variant={user.is_active ? 'success' : 'error'}>
-                      {user.is_active ? t.active || 'Active' : t.inactive || 'Inactive'}
+                    <EnhancedBadge variant={getRoleColor(user.role)} className="font-medium">
+                      {user.role}
                     </EnhancedBadge>
+                  </td>
+
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-2 h-2 rounded-full ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}
+                      ></div>
+                      <EnhancedBadge
+                        variant={user.is_active ? 'success' : 'error'}
+                        className="font-medium"
+                      >
+                        {user.is_active ? t.active || 'Active' : t.inactive || 'Inactive'}
+                      </EnhancedBadge>
+                    </div>
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs">
                     <div
-                      className="truncate cursor-pointer hover:bg-gray-100 p-1 rounded"
+                      className="group flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition-colors"
                       title={getPermissionsSummary(user.permissions)}
                       onClick={() => handleViewPermissions(user)}
                     >
-                      {getPermissionsSummary(user.permissions)}
-                      <EyeIcon className="inline-block w-4 h-4 ml-1 text-gray-400" />
+                      <span className="truncate text-sm">
+                        {getPermissionsSummary(user.permissions)}
+                      </span>
+                      <EyeIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEditUser(user)}
-                      icon={<EditIcon className="w-4 h-4" />}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      {t.edit || 'Edit'}
-                    </EnhancedButton>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEditUser(user)}
+                        icon={<EditIcon className="w-4 h-4" />}
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1"
+                      />
 
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditPermissions(user)}
-                      icon={<CogIcon className="w-4 h-4" />}
-                      className="text-purple-600 hover:text-purple-800"
-                    >
-                      Edit Permissions
-                    </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditPermissions(user)}
+                        icon={<CogIcon className="w-4 h-4" />}
+                        className="text-purple-600 hover:text-purple-800 hover:bg-purple-50 px-2 py-1"
+                      />
 
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleActive(user.id, user.is_active)}
-                      icon={
-                        user.is_active ? (
-                          <XCircleIcon className="w-4 h-4" />
-                        ) : (
-                          <CheckIcon className="w-4 h-4" />
-                        )
-                      }
-                      className={
-                        user.is_active
-                          ? 'text-red-600 hover:text-red-800'
-                          : 'text-green-600 hover:text-green-800'
-                      }
-                    >
-                      {user.is_active ? 'Deactivate' : 'Activate'}
-                    </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleActive(user.id, user.is_active)}
+                        icon={
+                          user.is_active ? (
+                            <XCircleIcon className="w-4 h-4" />
+                          ) : (
+                            <CheckIcon className="w-4 h-4" />
+                          )
+                        }
+                        className={`px-2 py-1 ${
+                          user.is_active
+                            ? 'text-red-600 hover:text-red-800 hover:bg-red-50'
+                            : 'text-green-600 hover:text-green-800 hover:bg-green-50'
+                        }`}
+                      />
 
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user.id)}
-                      icon={<TrashIcon className="w-4 h-4" />}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      {t.delete || 'Delete'}
-                    </EnhancedButton>
+                      <EnhancedButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteUser(user.id)}
+                        icon={<TrashIcon className="w-4 h-4" />}
+                        className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1"
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -659,22 +697,25 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
         {/* Empty State */}
         {displayedUsers.length === 0 && (
-          <div className="text-center py-12">
-            <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              {debouncedSearchTerm || roleFilter !== 'all' ? 'No users found' : 'No users'}
+          <div className="text-center py-16 px-6">
+            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
+              <UserIcon className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {debouncedSearchTerm || roleFilter !== 'all' ? 'No users found' : 'No users yet'}
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="text-sm text-gray-600 mb-8 max-w-sm mx-auto">
               {debouncedSearchTerm || roleFilter !== 'all'
-                ? 'Try adjusting your search or filter settings.'
-                : 'Get started by adding a new user.'}
+                ? "Try adjusting your search terms or filters to find what you're looking for."
+                : 'Get started by adding your first user to the system.'}
             </p>
             {!(debouncedSearchTerm || roleFilter !== 'all') && (
-              <div className="mt-6">
+              <div className="flex justify-center">
                 <EnhancedButton
                   variant="primary"
                   onClick={onAddUser}
-                  icon={<PlusIcon className="w-4 h-4" />}
+                  icon={<PlusIcon className="w-5 h-5" />}
+                  className="shadow-lg hover:shadow-xl transition-shadow"
                 >
                   {t.add_user_button || 'Add User'}
                 </EnhancedButton>
@@ -685,50 +726,40 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <EnhancedButton
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </EnhancedButton>
-              <EnhancedButton
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </EnhancedButton>
-            </div>
-
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing{' '}
-                  <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
-                  <span className="font-medium">
-                    {Math.min(currentPage * itemsPerPage, totalUsers)}
-                  </span>{' '}
-                  of <span className="font-medium">{totalUsers}</span> results
-                </p>
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-700 font-medium">
+                Showing{' '}
+                <span className="text-gray-900 font-semibold">
+                  {(currentPage - 1) * itemsPerPage + 1}
+                </span>{' '}
+                to{' '}
+                <span className="text-gray-900 font-semibold">
+                  {Math.min(currentPage * itemsPerPage, totalUsers)}
+                </span>{' '}
+                of <span className="text-gray-900 font-semibold">{totalUsers}</span> users
               </div>
 
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <EnhancedButton
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="rounded-l-md"
-                  >
-                    Previous
-                  </EnhancedButton>
+              <div className="flex items-center gap-2">
+                <EnhancedButton
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  }
+                />
 
+                <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
                     if (pageNum > totalPages) return null;
@@ -739,23 +770,33 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         variant={pageNum === currentPage ? 'primary' : 'outline'}
                         size="sm"
                         onClick={() => setCurrentPage(pageNum)}
-                        className="rounded-none"
+                        className={`min-w-[40px] shadow-sm hover:shadow-md transition-all ${
+                          pageNum === currentPage ? 'shadow-md' : ''
+                        }`}
                       >
                         {pageNum}
                       </EnhancedButton>
                     );
                   })}
+                </div>
 
-                  <EnhancedButton
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="rounded-r-md"
-                  >
-                    Next
-                  </EnhancedButton>
-                </nav>
+                <EnhancedButton
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  }
+                />
               </div>
             </div>
           </div>

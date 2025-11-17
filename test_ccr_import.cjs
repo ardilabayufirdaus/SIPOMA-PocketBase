@@ -4,7 +4,7 @@ const ExcelJS = require('exceljs');
 async function testCCRImport() {
   try {
     // Initialize PocketBase
-    const pb = new PocketBase('http://141.11.25.69:8090');
+    const pb = new PocketBase('https://api.sipoma.site');
 
     // Authenticate
     await pb.admins.authWithPassword('ardila.firdaus@sig.id', 'makassar@270989');

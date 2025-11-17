@@ -41,7 +41,9 @@ export const useRolePermissions = () => {
     async (role: UserRole, updates: Partial<PermissionMatrix>) => {
       setLoading(true);
       try {
-        const existing = await pb.collection('role_permissions').getFirstListItem(`role="${role}"`);
+        const existing = await pb
+          .collection('role_permissions')
+          .getFirstListItem(`role = "${role}"`);
 
         if (existing) {
           await pb.collection('role_permissions').update(existing.id, updates);

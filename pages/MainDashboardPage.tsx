@@ -140,7 +140,7 @@ const SubMenuModal: React.FC<SubMenuModalProps> = ({
         <div className="border-t border-slate-200 p-4">
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+            className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 min-h-[44px]"
             aria-label={language === 'id' ? 'Tutup modal submenu' : 'Close submenu modal'}
           >
             {language === 'id' ? 'Batal' : 'Cancel'}
@@ -299,7 +299,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
   const permissionChecker = usePermissions(currentUser);
 
   // Get dashboard metrics and activities
-  const { metrics, activities, loading } = useDashboardMetrics();
+  const { metrics, activities, loading: _loading } = useDashboardMetrics();
 
   // Define all possible cards with their permission requirements
   const allCards = [

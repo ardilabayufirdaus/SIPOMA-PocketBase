@@ -1,7 +1,7 @@
 const PocketBase = require('pocketbase/cjs');
 
 // Connect to PocketBase
-const pb = new PocketBase('http://141.11.25.69:8090');
+const pb = new PocketBase('https://api.sipoma.site');
 
 async function checkAndFixSuperAdminPermissions() {
   try {
