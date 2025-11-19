@@ -2553,910 +2553,1370 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <Card
-        variant="interactive"
-        padding="lg"
-        className="bg-gradient-to-br from-primary-50 to-secondary-50"
-      >
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-primary-600 mb-3">{t.op_cop_analysis}</h1>
-            <p className="text-base text-gray-700">
-              Kelola data COP untuk monitoring performa pabrik
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-6 min-w-0">
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <label
-                htmlFor="cop-filter-category"
-                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-              >
-                Plant Category:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-filter-category"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
-                >
-                  {plantCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="cop-filter-unit"
-                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-              >
-                Unit:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-filter-unit"
-                  value={selectedUnit}
-                  onChange={(e) => setSelectedUnit(e.target.value)}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
-                  disabled={unitsForCategory.length === 0}
-                >
-                  {unitsForCategory.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <label
-                htmlFor="cop-filter-cement-type"
-                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-              >
-                Cement Type:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-filter-cement-type"
-                  value={selectedCementType}
-                  onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200 appearance-none"
-                >
-                  <option value="">Pilih Cement Type</option>
-                  <option value="OPC">OPC</option>
-                  <option value="PCC">PCC</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="cop-filter-month"
-                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-              >
-                Month:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-filter-month"
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
-                >
-                  {monthOptions.map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <label
-                htmlFor="cop-filter-year"
-                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-              >
-                Year:
-              </label>
-              <div className="relative flex-1 min-w-0">
-                <select
-                  id="cop-filter-year"
-                  value={filterYear}
-                  onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-colors appearance-none"
-                >
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Analysis Features Tabs */}
-      <Card variant="elevated" padding="md" className="bg-white">
-        <div className="flex flex-wrap gap-2 mb-4">
-          <button
-            onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              showStatisticalSummary
-                ? 'bg-blue-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            📊 Statistical Summary
-          </button>
-          <button
-            onClick={() => setShowPeriodComparison(!showPeriodComparison)}
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              showPeriodComparison
-                ? 'bg-green-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            📈 Period Comparison
-          </button>
-          <button
-            onClick={() => setShowCorrelationMatrix(!showCorrelationMatrix)}
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              showCorrelationMatrix
-                ? 'bg-purple-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            🔗 Correlation Matrix
-          </button>
-          <button
-            onClick={() => setShowAnomalyDetection(!showAnomalyDetection)}
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              showAnomalyDetection
-                ? 'bg-red-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            ⚠️ Anomaly Detection
-          </button>
-          <button
-            onClick={() => setShowPredictiveInsights(!showPredictiveInsights)}
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              showPredictiveInsights
-                ? 'bg-orange-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            🔮 Predictive Insights
-          </button>
-          <button
-            onClick={() => setShowQualityMetrics(!showQualityMetrics)}
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium transition-all duration-200 min-h-[44px] ${
-              showQualityMetrics
-                ? 'bg-indigo-500 text-white shadow-md'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            🏆 Quality Metrics
-          </button>
-        </div>
-      </Card>
-
-      {/* Statistical Summary Panel */}
-      {showStatisticalSummary && statisticalSummary.length > 0 && (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+      <div className="max-w-full mx-auto space-y-6">
         <Card
-          variant="floating"
-          padding="md"
-          className="bg-gradient-to-br from-blue-50 to-indigo-50"
-        >
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-blue-800">📊 Statistical Summary</h2>
-            <p className="text-xs text-slate-600 mt-1">
-              Ringkasan statistik parameter COP bulan ini
-            </p>
-          </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
-            {statisticalSummary.map((stat) => (
-              <div
-                key={stat.parameterId}
-                className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
-              >
-                <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
-                  {stat.parameter}
-                </h3>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Mean:</span>
-                    <span className="font-mono text-slate-800 font-medium">
-                      {stat.mean !== null ? formatCopNumber(stat.mean) : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Median:</span>
-                    <span className="font-mono text-slate-800 font-medium">
-                      {stat.median !== null ? formatCopNumber(stat.median) : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Std:</span>
-                    <span className="font-mono text-slate-800 font-medium">
-                      {stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Range:</span>
-                    <span className="font-mono text-slate-800 font-medium text-xs">
-                      {stat.min !== null ? formatCopNumber(stat.min) : '-'}-
-                      {stat.max !== null ? formatCopNumber(stat.max) : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Complete:</span>
-                    <span
-                      className={`font-mono font-medium ${
-                        stat.completeness >= 80
-                          ? 'text-green-600'
-                          : stat.completeness >= 60
-                            ? 'text-yellow-600'
-                            : 'text-red-600'
-                      }`}
-                    >
-                      {stat.completeness.toFixed(0)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Trend:</span>
-                    <span
-                      className={`font-medium text-xs ${
-                        stat.trend === 'increasing'
-                          ? 'text-green-600'
-                          : stat.trend === 'decreasing'
-                            ? 'text-red-600'
-                            : 'text-slate-600'
-                      }`}
-                    >
-                      {stat.trend === 'increasing'
-                        ? '↗️'
-                        : stat.trend === 'decreasing'
-                          ? '↘️'
-                          : stat.trend === 'stable'
-                            ? '➡️'
-                            : '?'}
-                    </span>
-                  </div>
-                  {stat.targetMin !== undefined && stat.targetMax !== undefined && (
-                    <div className="pt-1 mt-1 border-t border-slate-200">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500 text-xs">Target:</span>
-                        <span className="font-mono text-blue-600 text-xs font-medium">
-                          {formatCopNumber(stat.targetMin)}-{formatCopNumber(stat.targetMax)}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Anomaly Detection Panel */}
-      {showAnomalyDetection && anomalyDetection.length > 0 && (
-        <Card variant="floating" padding="md" className="bg-gradient-to-br from-red-50 to-pink-50">
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
-            <p className="text-xs text-slate-600 mt-1">
-              Deteksi nilai abnormal menggunakan metode 3-sigma rule
-            </p>
-          </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
-            {anomalyDetection.map((anomaly) => (
-              <div
-                key={anomaly.parameterId}
-                className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
-              >
-                <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
-                  {anomaly.parameter}
-                </h3>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Outliers:</span>
-                    <span
-                      className={`font-mono font-bold ${
-                        anomaly.severity === 'high'
-                          ? 'text-red-600'
-                          : anomaly.severity === 'medium'
-                            ? 'text-yellow-600'
-                            : 'text-green-600'
-                      }`}
-                    >
-                      {anomaly.outliers.length}/{anomaly.totalDays}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Severity:</span>
-                    <span
-                      className={`font-medium px-1.5 py-0.5 rounded text-xs ${
-                        anomaly.severity === 'high'
-                          ? 'bg-red-100 text-red-800'
-                          : anomaly.severity === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-green-100 text-green-800'
-                      }`}
-                    >
-                      {anomaly.severity.toUpperCase()}
-                    </span>
-                  </div>
-                  {anomaly.outliers.length > 0 && (
-                    <div className="pt-1 mt-1 border-t border-slate-200">
-                      <span className="text-slate-500 text-xs">Outlier Values:</span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {anomaly.outliers.slice(0, 3).map((value, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
-                          >
-                            {formatCopNumber(value)}
-                          </span>
-                        ))}
-                        {anomaly.outliers.length > 3 && (
-                          <span className="text-slate-500 text-xs">
-                            +{anomaly.outliers.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Correlation Matrix Panel */}
-      {showCorrelationMatrix && correlationMatrix.length > 0 && (
-        <Card
-          variant="floating"
-          padding="md"
-          className="bg-gradient-to-br from-purple-50 to-violet-50"
-        >
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-purple-800">
-              🔗 Parameter Correlation Matrix
-            </h2>
-            <p className="text-xs text-slate-600 mt-1">
-              Analisis korelasi antar parameter untuk mengidentifikasi hubungan dan dependensi
-            </p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-slate-200 rounded-lg">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-slate-800">
-                    Parameter Pair
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                    Correlation
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                    Strength
-                  </th>
-                  <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                    Direction
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {correlationMatrix.map((corr, idx) => (
-                  <tr key={idx} className="border-t border-slate-200">
-                    <td className="px-3 py-2 text-xs text-slate-800">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-xs">{corr.param1}</span>
-                        <span className="text-slate-500 text-xs">vs {corr.param2}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-center text-xs font-mono">
-                      {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                          corr.strength === 'strong'
-                            ? 'bg-red-100 text-red-800'
-                            : corr.strength === 'moderate'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : corr.strength === 'weak'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-slate-100 text-slate-800'
-                        }`}
-                      >
-                        {corr.strength.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {corr.correlation !== null && (
-                        <span
-                          className={`text-sm ${
-                            corr.correlation > 0 ? 'text-green-600' : 'text-red-600'
-                          }`}
-                        >
-                          {corr.correlation > 0 ? '↗️' : '↘️'}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* Quality Metrics Dashboard */}
-      {showQualityMetrics && (
-        <Card
-          variant="floating"
+          variant="interactive"
           padding="lg"
-          className="bg-gradient-to-br from-indigo-50 to-blue-50"
+          className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white shadow-2xl border-0"
         >
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-indigo-800">🏆 Quality Metrics Dashboard</h2>
-            <p className="text-sm text-slate-600 mt-2">
-              Metrik kualitas data dan performa proses secara keseluruhan
-            </p>
-          </div>
-          <div className="grid gap-6" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
-            <div className="bg-white p-6 rounded-lg border border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <span className="text-sm text-slate-500">Stability Score</span>
-              </div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {qualityMetrics.overallStability.toFixed(1)}%
-              </div>
-              <p className="text-sm text-slate-600">
-                Average parameter stability across all metrics
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
+            <div className="flex-1">
+              <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                {t.op_cop_analysis}
+              </h1>
+              <p className="text-lg text-blue-100">
+                Advanced COP Performance Analytics & Monitoring Dashboard
               </p>
             </div>
-
-            <div className="bg-white p-6 rounded-lg border border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <span className="text-2xl">✅</span>
-                </div>
-                <span className="text-sm text-slate-500">Data Completeness</span>
-              </div>
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {qualityMetrics.averageCompleteness.toFixed(1)}%
-              </div>
-              <p className="text-sm text-slate-600">
-                Average data completeness across all parameters
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <span className="text-2xl">🔢</span>
-                </div>
-                <span className="text-sm text-slate-500">Parameters</span>
-              </div>
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {qualityMetrics.parameterCount}
-              </div>
-              <p className="text-sm text-slate-600">Total parameters being monitored</p>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg border border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <span className="text-2xl">📈</span>
-                </div>
-                <span className="text-sm text-slate-500">Data Points</span>
-              </div>
-              <div className="text-3xl font-bold text-orange-600 mb-2">
-                {qualityMetrics.validDataPoints}/{qualityMetrics.totalDataPoints}
-              </div>
-              <p className="text-sm text-slate-600">Valid data points out of total expected</p>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      {/* Period Comparison Panel */}
-      {showPeriodComparison && (
-        <Card
-          variant="floating"
-          padding="md"
-          className="bg-gradient-to-br from-green-50 to-emerald-50"
-        >
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-semibold text-green-800">📈 Period Comparison</h2>
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-6 min-w-0">
+              <div className="flex items-center gap-4 w-full sm:w-auto">
                 <label
-                  htmlFor="comparison-year-select"
-                  className="text-sm font-medium text-slate-700"
+                  htmlFor="cop-filter-category"
+                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
                 >
-                  Compare with:
+                  Plant Category:
                 </label>
-                <div className="relative">
+                <div className="relative flex-1 min-w-0">
                   <select
-                    id="comparison-year-select"
-                    value={comparisonPeriod.year}
-                    onChange={(e) =>
-                      setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
-                    }
-                    className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium transition-colors appearance-none"
+                    id="cop-filter-category"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full pl-4 pr-8 py-3 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-all duration-200 appearance-none"
                   >
-                    {availableYearsWithData.map((y) => (
+                    {plantCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <label
+                  htmlFor="cop-filter-unit"
+                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+                >
+                  Unit:
+                </label>
+                <div className="relative flex-1 min-w-0">
+                  <select
+                    id="cop-filter-unit"
+                    value={selectedUnit}
+                    onChange={(e) => setSelectedUnit(e.target.value)}
+                    className="w-full pl-4 pr-8 py-2.5 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white disabled:bg-white/50 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                    disabled={unitsForCategory.length === 0}
+                  >
+                    {unitsForCategory.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className="flex items-center gap-4 w-full sm:w-auto">
+                <label
+                  htmlFor="cop-filter-cement-type"
+                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+                >
+                  Cement Type:
+                </label>
+                <div className="relative flex-1 min-w-0">
+                  <select
+                    id="cop-filter-cement-type"
+                    value={selectedCementType}
+                    onChange={(e) => setSelectedCementType(e.target.value)}
+                    className="w-full pl-4 pr-8 py-3 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-all duration-200 appearance-none"
+                  >
+                    <option value="">Pilih Cement Type</option>
+                    <option value="OPC">OPC</option>
+                    <option value="PCC">PCC</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <label
+                  htmlFor="cop-filter-month"
+                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+                >
+                  Month:
+                </label>
+                <div className="relative flex-1 min-w-0">
+                  <select
+                    id="cop-filter-month"
+                    value={filterMonth}
+                    onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                    className="w-full pl-4 pr-8 py-2.5 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-colors appearance-none"
+                  >
+                    {monthOptions.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <label
+                  htmlFor="cop-filter-year"
+                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+                >
+                  Year:
+                </label>
+                <div className="relative flex-1 min-w-0">
+                  <select
+                    id="cop-filter-year"
+                    value={filterYear}
+                    onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                    className="w-full pl-4 pr-8 py-2.5 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-colors appearance-none"
+                  >
+                    {yearOptions.map((y) => (
                       <option key={y} value={y}>
                         {y}
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 </div>
               </div>
             </div>
-            <p className="text-xs text-slate-600">
-              Perbandingan performa dengan periode sebelumnya ({comparisonPeriod.year})
-            </p>
           </div>
-
-          {isLoadingComparison ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-                <p className="text-sm text-slate-600">Memuat data perbandingan...</p>
-              </div>
-            </div>
-          ) : periodComparison.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-slate-400 mb-2">
-                <span className="text-2xl">📊</span>
-              </div>
-              <p className="text-sm text-slate-600">
-                Tidak ada data perbandingan tersedia untuk tahun {comparisonPeriod.year}
+        </Card>{' '}
+        {/* Analysis Features Tabs */}
+        <Card
+          variant="elevated"
+          padding="md"
+          className="bg-white/80 backdrop-blur-sm shadow-xl border-0"
+        >
+          <div className="flex flex-wrap gap-3 mb-4">
+            <button
+              onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+                showStatisticalSummary
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
+                  : 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200 border border-blue-200'
+              }`}
+            >
+              📊 Statistical Summary
+            </button>
+            <button
+              onClick={() => setShowPeriodComparison(!showPeriodComparison)}
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+                showPeriodComparison
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30'
+                  : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 hover:from-green-100 hover:to-green-200 border border-green-200'
+              }`}
+            >
+              📈 Period Comparison
+            </button>
+            <button
+              onClick={() => setShowCorrelationMatrix(!showCorrelationMatrix)}
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+                showCorrelationMatrix
+                  ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30'
+                  : 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 hover:from-purple-100 hover:to-purple-200 border border-purple-200'
+              }`}
+            >
+              🔗 Correlation Matrix
+            </button>
+            <button
+              onClick={() => setShowAnomalyDetection(!showAnomalyDetection)}
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+                showAnomalyDetection
+                  ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30'
+                  : 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border border-red-200'
+              }`}
+            >
+              ⚠️ Anomaly Detection
+            </button>
+            <button
+              onClick={() => setShowPredictiveInsights(!showPredictiveInsights)}
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+                showPredictiveInsights
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/30'
+                  : 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 hover:from-orange-100 hover:to-orange-200 border border-orange-200'
+              }`}
+            >
+              🔮 Predictive Insights
+            </button>
+            <button
+              onClick={() => setShowQualityMetrics(!showQualityMetrics)}
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+                showQualityMetrics
+                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200'
+              }`}
+            >
+              🏆 Quality Metrics
+            </button>
+          </div>
+        </Card>
+        {/* Statistical Summary Panel */}
+        {showStatisticalSummary && statisticalSummary.length > 0 && (
+          <Card
+            variant="floating"
+            padding="md"
+            className="bg-gradient-to-br from-blue-50 to-indigo-50"
+          >
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-blue-800">📊 Statistical Summary</h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Ringkasan statistik parameter COP bulan ini
               </p>
-              <p className="text-xs text-slate-500 mt-1">Pilih tahun lain yang memiliki data COP</p>
             </div>
-          ) : (
             <div
               className="grid gap-4"
               style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
             >
-              {periodComparison.map((comparison) => (
+              {statisticalSummary.map((stat) => (
                 <div
-                  key={comparison.parameterId}
+                  key={stat.parameterId}
                   className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
                 >
                   <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
-                    {comparison.parameter}
+                    {stat.parameter}
                   </h3>
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Current:</span>
+                      <span className="text-slate-500">Mean:</span>
                       <span className="font-mono text-slate-800 font-medium">
-                        {comparison.current.mean !== null
-                          ? formatCopNumber(comparison.current.mean)
-                          : '-'}
+                        {stat.mean !== null ? formatCopNumber(stat.mean) : '-'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Previous:</span>
+                      <span className="text-slate-500">Median:</span>
                       <span className="font-mono text-slate-800 font-medium">
-                        {comparison.previous.mean !== null
-                          ? formatCopNumber(comparison.previous.mean)
-                          : '-'}
+                        {stat.median !== null ? formatCopNumber(stat.median) : '-'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
-                      <span className="text-slate-500">Change:</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Std:</span>
+                      <span className="font-mono text-slate-800 font-medium">
+                        {stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Range:</span>
+                      <span className="font-mono text-slate-800 font-medium text-xs">
+                        {stat.min !== null ? formatCopNumber(stat.min) : '-'}-
+                        {stat.max !== null ? formatCopNumber(stat.max) : '-'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Complete:</span>
                       <span
-                        className={`font-bold text-xs ${
-                          comparison.delta !== null && comparison.delta > 0
+                        className={`font-mono font-medium ${
+                          stat.completeness >= 80
                             ? 'text-green-600'
-                            : comparison.delta !== null && comparison.delta < 0
-                              ? 'text-red-600'
-                              : 'text-slate-600'
+                            : stat.completeness >= 60
+                              ? 'text-yellow-600'
+                              : 'text-red-600'
                         }`}
                       >
-                        {comparison.delta !== null
-                          ? `${comparison.delta > 0 ? '+' : ''}${comparison.delta.toFixed(1)}%`
-                          : 'N/A'}
+                        {stat.completeness.toFixed(0)}%
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-500">Trend:</span>
                       <span
-                        className={`font-medium text-xs px-1 py-0.5 rounded ${
-                          comparison.trend === 'increased'
-                            ? 'bg-green-100 text-green-800'
-                            : comparison.trend === 'decreased'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-slate-100 text-slate-800'
+                        className={`font-medium text-xs ${
+                          stat.trend === 'increasing'
+                            ? 'text-green-600'
+                            : stat.trend === 'decreasing'
+                              ? 'text-red-600'
+                              : 'text-slate-600'
                         }`}
                       >
-                        {comparison.trend === 'increased'
+                        {stat.trend === 'increasing'
                           ? '↗️'
-                          : comparison.trend === 'decreased'
+                          : stat.trend === 'decreasing'
                             ? '↘️'
-                            : '➡️'}
+                            : stat.trend === 'stable'
+                              ? '➡️'
+                              : '?'}
+                      </span>
+                    </div>
+                    {stat.targetMin !== undefined && stat.targetMax !== undefined && (
+                      <div className="pt-1 mt-1 border-t border-slate-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 text-xs">Target:</span>
+                          <span className="font-mono text-blue-600 text-xs font-medium">
+                            {formatCopNumber(stat.targetMin)}-{formatCopNumber(stat.targetMax)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+        {/* Anomaly Detection Panel */}
+        {showAnomalyDetection && anomalyDetection.length > 0 && (
+          <Card
+            variant="floating"
+            padding="md"
+            className="bg-gradient-to-br from-red-50 to-pink-50"
+          >
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Deteksi nilai abnormal menggunakan metode 3-sigma rule
+              </p>
+            </div>
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
+            >
+              {anomalyDetection.map((anomaly) => (
+                <div
+                  key={anomaly.parameterId}
+                  className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                >
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                    {anomaly.parameter}
+                  </h3>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Outliers:</span>
+                      <span
+                        className={`font-mono font-bold ${
+                          anomaly.severity === 'high'
+                            ? 'text-red-600'
+                            : anomaly.severity === 'medium'
+                              ? 'text-yellow-600'
+                              : 'text-green-600'
+                        }`}
+                      >
+                        {anomaly.outliers.length}/{anomaly.totalDays}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Severity:</span>
+                      <span
+                        className={`font-medium px-1.5 py-0.5 rounded text-xs ${
+                          anomaly.severity === 'high'
+                            ? 'bg-red-100 text-red-800'
+                            : anomaly.severity === 'medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {anomaly.severity.toUpperCase()}
+                      </span>
+                    </div>
+                    {anomaly.outliers.length > 0 && (
+                      <div className="pt-1 mt-1 border-t border-slate-200">
+                        <span className="text-slate-500 text-xs">Outlier Values:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {anomaly.outliers.slice(0, 3).map((value, idx) => (
+                            <span
+                              key={idx}
+                              className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
+                            >
+                              {formatCopNumber(value)}
+                            </span>
+                          ))}
+                          {anomaly.outliers.length > 3 && (
+                            <span className="text-slate-500 text-xs">
+                              +{anomaly.outliers.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+        {/* Correlation Matrix Panel */}
+        {showCorrelationMatrix && correlationMatrix.length > 0 && (
+          <Card
+            variant="floating"
+            padding="md"
+            className="bg-gradient-to-br from-purple-50 to-violet-50"
+          >
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-purple-800">
+                🔗 Parameter Correlation Matrix
+              </h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Analisis korelasi antar parameter untuk mengidentifikasi hubungan dan dependensi
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-slate-200 rounded-lg">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-800">
+                      Parameter Pair
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
+                      Correlation
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
+                      Strength
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
+                      Direction
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {correlationMatrix.map((corr, idx) => (
+                    <tr key={idx} className="border-t border-slate-200">
+                      <td className="px-3 py-2 text-xs text-slate-800">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-xs">{corr.param1}</span>
+                          <span className="text-slate-500 text-xs">vs {corr.param2}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-center text-xs font-mono">
+                        {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                            corr.strength === 'strong'
+                              ? 'bg-red-100 text-red-800'
+                              : corr.strength === 'moderate'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : corr.strength === 'weak'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-slate-100 text-slate-800'
+                          }`}
+                        >
+                          {corr.strength.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {corr.correlation !== null && (
+                          <span
+                            className={`text-sm ${
+                              corr.correlation > 0 ? 'text-green-600' : 'text-red-600'
+                            }`}
+                          >
+                            {corr.correlation > 0 ? '↗️' : '↘️'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+        {/* Quality Metrics Dashboard */}
+        {showQualityMetrics && (
+          <Card
+            variant="floating"
+            padding="lg"
+            className="bg-gradient-to-br from-indigo-50 to-blue-50"
+          >
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-indigo-800">
+                🏆 Quality Metrics Dashboard
+              </h2>
+              <p className="text-sm text-slate-600 mt-2">
+                Metrik kualitas data dan performa proses secara keseluruhan
+              </p>
+            </div>
+            <div
+              className="grid gap-6"
+              style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
+            >
+              <div className="bg-white p-6 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <span className="text-sm text-slate-500">Stability Score</span>
+                </div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">
+                  {qualityMetrics.overallStability.toFixed(1)}%
+                </div>
+                <p className="text-sm text-slate-600">
+                  Average parameter stability across all metrics
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <span className="text-sm text-slate-500">Data Completeness</span>
+                </div>
+                <div className="text-3xl font-bold text-green-600 mb-2">
+                  {qualityMetrics.averageCompleteness.toFixed(1)}%
+                </div>
+                <p className="text-sm text-slate-600">
+                  Average data completeness across all parameters
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <span className="text-2xl">🔢</span>
+                  </div>
+                  <span className="text-sm text-slate-500">Parameters</span>
+                </div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  {qualityMetrics.parameterCount}
+                </div>
+                <p className="text-sm text-slate-600">Total parameters being monitored</p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <span className="text-2xl">📈</span>
+                  </div>
+                  <span className="text-sm text-slate-500">Data Points</span>
+                </div>
+                <div className="text-3xl font-bold text-orange-600 mb-2">
+                  {qualityMetrics.validDataPoints}/{qualityMetrics.totalDataPoints}
+                </div>
+                <p className="text-sm text-slate-600">Valid data points out of total expected</p>
+              </div>
+            </div>
+          </Card>
+        )}
+        {/* Period Comparison Panel */}
+        {showPeriodComparison && (
+          <Card
+            variant="floating"
+            padding="md"
+            className="bg-gradient-to-br from-green-50 to-emerald-50"
+          >
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-semibold text-green-800">📈 Period Comparison</h2>
+                <div className="flex items-center gap-2">
+                  <label
+                    htmlFor="comparison-year-select"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Compare with:
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="comparison-year-select"
+                      value={comparisonPeriod.year}
+                      onChange={(e) =>
+                        setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
+                      }
+                      className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium transition-colors appearance-none"
+                    >
+                      {availableYearsWithData.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600">
+                Perbandingan performa dengan periode sebelumnya ({comparisonPeriod.year})
+              </p>
+            </div>
+
+            {isLoadingComparison ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
+                  <p className="text-sm text-slate-600">Memuat data perbandingan...</p>
+                </div>
+              </div>
+            ) : periodComparison.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-slate-400 mb-2">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <p className="text-sm text-slate-600">
+                  Tidak ada data perbandingan tersedia untuk tahun {comparisonPeriod.year}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Pilih tahun lain yang memiliki data COP
+                </p>
+              </div>
+            ) : (
+              <div
+                className="grid gap-4"
+                style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
+              >
+                {periodComparison.map((comparison) => (
+                  <div
+                    key={comparison.parameterId}
+                    className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                  >
+                    <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                      {comparison.parameter}
+                    </h3>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Current:</span>
+                        <span className="font-mono text-slate-800 font-medium">
+                          {comparison.current.mean !== null
+                            ? formatCopNumber(comparison.current.mean)
+                            : '-'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Previous:</span>
+                        <span className="font-mono text-slate-800 font-medium">
+                          {comparison.previous.mean !== null
+                            ? formatCopNumber(comparison.previous.mean)
+                            : '-'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
+                        <span className="text-slate-500">Change:</span>
+                        <span
+                          className={`font-bold text-xs ${
+                            comparison.delta !== null && comparison.delta > 0
+                              ? 'text-green-600'
+                              : comparison.delta !== null && comparison.delta < 0
+                                ? 'text-red-600'
+                                : 'text-slate-600'
+                          }`}
+                        >
+                          {comparison.delta !== null
+                            ? `${comparison.delta > 0 ? '+' : ''}${comparison.delta.toFixed(1)}%`
+                            : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Trend:</span>
+                        <span
+                          className={`font-medium text-xs px-1 py-0.5 rounded ${
+                            comparison.trend === 'increased'
+                              ? 'bg-green-100 text-green-800'
+                              : comparison.trend === 'decreased'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-slate-100 text-slate-800'
+                          }`}
+                        >
+                          {comparison.trend === 'increased'
+                            ? '↗️'
+                            : comparison.trend === 'decreased'
+                              ? '↘️'
+                              : '➡️'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
+        {/* Predictive Insights Panel */}
+        {showPredictiveInsights && predictiveInsights.length > 0 && (
+          <Card
+            variant="floating"
+            padding="md"
+            className="bg-gradient-to-br from-orange-50 to-amber-50"
+          >
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold text-orange-800">🔮 Predictive Insights</h2>
+              <p className="text-xs text-slate-600 mt-1">
+                Prediksi tren parameter dan peringatan dini untuk 7 hari ke depan
+              </p>
+            </div>
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
+            >
+              {predictiveInsights.map((insight) => (
+                <div
+                  key={insight.parameterId}
+                  className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                >
+                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                    {insight.parameter}
+                  </h3>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Current:</span>
+                      <span className="font-mono text-slate-800 font-medium">
+                        {insight.currentValue !== null
+                          ? formatCopNumber(insight.currentValue)
+                          : '-'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">7-Day:</span>
+                      <span className="font-mono text-slate-800 font-medium">
+                        {insight.forecast !== null ? formatCopNumber(insight.forecast) : '-'}
+                      </span>
+                    </div>
+                    {insight.targetMin !== undefined && insight.targetMax !== undefined && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-500">Target:</span>
+                        <span className="font-mono text-blue-600 text-xs font-medium">
+                          {formatCopNumber(insight.targetMin)}-{formatCopNumber(insight.targetMax)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
+                      <span className="text-slate-500">Risk:</span>
+                      <span
+                        className={`font-medium px-1.5 py-0.5 rounded text-xs ${
+                          insight.risk === 'high'
+                            ? 'bg-red-100 text-red-800'
+                            : insight.risk === 'medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {insight.risk.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500">Trend:</span>
+                      <span
+                        className={`font-medium text-xs ${
+                          insight.trend === 'increasing'
+                            ? 'text-green-600'
+                            : insight.trend === 'decreasing'
+                              ? 'text-red-600'
+                              : 'text-slate-600'
+                        }`}
+                      >
+                        {insight.trend === 'increasing'
+                          ? '↗️'
+                          : insight.trend === 'decreasing'
+                            ? '↘️'
+                            : insight.trend === 'stable'
+                              ? '➡️'
+                              : '?'}
                       </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          )}
-        </Card>
-      )}
-
-      {/* Predictive Insights Panel */}
-      {showPredictiveInsights && predictiveInsights.length > 0 && (
-        <Card
-          variant="floating"
-          padding="md"
-          className="bg-gradient-to-br from-orange-50 to-amber-50"
-        >
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-orange-800">🔮 Predictive Insights</h2>
-            <p className="text-xs text-slate-600 mt-1">
-              Prediksi tren parameter dan peringatan dini untuk 7 hari ke depan
-            </p>
-          </div>
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
-            {predictiveInsights.map((insight) => (
-              <div
-                key={insight.parameterId}
-                className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
-              >
-                <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
-                  {insight.parameter}
-                </h3>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Current:</span>
-                    <span className="font-mono text-slate-800 font-medium">
-                      {insight.currentValue !== null ? formatCopNumber(insight.currentValue) : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">7-Day:</span>
-                    <span className="font-mono text-slate-800 font-medium">
-                      {insight.forecast !== null ? formatCopNumber(insight.forecast) : '-'}
-                    </span>
-                  </div>
-                  {insight.targetMin !== undefined && insight.targetMax !== undefined && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Target:</span>
-                      <span className="font-mono text-blue-600 text-xs font-medium">
-                        {formatCopNumber(insight.targetMin)}-{formatCopNumber(insight.targetMax)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
-                    <span className="text-slate-500">Risk:</span>
-                    <span
-                      className={`font-medium px-1.5 py-0.5 rounded text-xs ${
-                        insight.risk === 'high'
-                          ? 'bg-red-100 text-red-800'
-                          : insight.risk === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-green-100 text-green-800'
-                      }`}
-                    >
-                      {insight.risk.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-500">Trend:</span>
-                    <span
-                      className={`font-medium text-xs ${
-                        insight.trend === 'increasing'
-                          ? 'text-green-600'
-                          : insight.trend === 'decreasing'
-                            ? 'text-red-600'
-                            : 'text-slate-600'
-                      }`}
-                    >
-                      {insight.trend === 'increasing'
-                        ? '↗️'
-                        : insight.trend === 'decreasing'
-                          ? '↘️'
-                          : insight.trend === 'stable'
-                            ? '➡️'
-                            : '?'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      <Card variant="glass" padding="lg" className="backdrop-blur-xl bg-white/80">
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16 space-y-6">
-            <div className="flex items-center space-x-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-              <span className="text-lg font-medium text-slate-600">
-                Loading COP analysis data...
-              </span>
-            </div>
-            {/* Loading skeleton */}
-            <div className="w-full max-w-2xl">
-              <div className="animate-pulse">
-                <div className="h-3 bg-slate-200 rounded w-1/3 mb-3"></div>
-                <div className="space-y-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex space-x-2">
-                      <div className="h-3 bg-slate-200 rounded w-1/5"></div>
-                      <div className="h-3 bg-slate-200 rounded w-1/3"></div>
-                      <div className="h-3 bg-slate-200 rounded w-1/5"></div>
-                      <div className="h-3 bg-slate-200 rounded w-1/6"></div>
-                      {Array.from({ length: 10 }).map((_, j) => (
-                        <div key={j} className="h-3 bg-slate-200 rounded w-8"></div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          </Card>
         )}
-
-        {error && (
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <div className="text-red-500 mb-2">
-                <svg
-                  className="w-6 h-6 mx-auto"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+        <Card
+          variant="glass"
+          padding="lg"
+          className="backdrop-blur-xl bg-white/90 shadow-2xl border-0"
+        >
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-16 space-y-6">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                <span className="text-xl font-medium text-slate-600">
+                  Loading COP analysis data...
+                </span>
               </div>
-              <p className="text-sm text-slate-600 mb-4">{error}</p>
-              <button
-                onClick={() => {
-                  setError(null);
-                  // Trigger re-fetch by calling the data fetch function
-                  const retryFetch = async () => {
-                    setIsLoading(true);
-                    try {
-                      // Re-run the data fetching logic
-                      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-                      const dates = Array.from({ length: daysInMonth }, (_, i) => {
-                        const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
-                        return date.toISOString().split('T')[0];
-                      });
+              {/* Loading skeleton */}
+              <div className="w-full max-w-2xl">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/3 mb-4"></div>
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex space-x-2">
+                        <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/5"></div>
+                        <div className="h-4 bg-gradient-to-r from-green-200 to-blue-200 rounded w-1/3"></div>
+                        <div className="h-4 bg-gradient-to-r from-purple-200 to-pink-200 rounded w-1/5"></div>
+                        <div className="h-4 bg-gradient-to-r from-orange-200 to-red-200 rounded w-1/6"></div>
+                        {Array.from({ length: 10 }).map((_, j) => (
+                          <div
+                            key={j}
+                            className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded w-8"
+                          ></div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
-                      const dailyAverages = new Map<string, Map<string, number>>();
-                      const footerDataPromises = dates.map((dateString) =>
-                        getFooterDataForDate(dateString)
-                      );
-                      const allFooterDataForMonth = await Promise.all(footerDataPromises);
+          {error && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center bg-gradient-to-r from-red-50 to-pink-50 p-8 rounded-2xl border border-red-200">
+                <div className="text-red-500 mb-2">
+                  <svg
+                    className="w-8 h-8 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-lg text-slate-600 mb-4">{error}</p>
+                <button
+                  onClick={() => {
+                    setError(null);
+                    // Trigger re-fetch by calling the data fetch function
+                    const retryFetch = async () => {
+                      setIsLoading(true);
+                      try {
+                        // Re-run the data fetching logic
+                        const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+                        const dates = Array.from({ length: daysInMonth }, (_, i) => {
+                          const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
+                          return date.toISOString().split('T')[0];
+                        });
 
-                      allFooterDataForMonth.flat().forEach((footerData) => {
-                        if (
-                          footerData.average !== null &&
-                          footerData.average !== undefined &&
-                          !isNaN(footerData.average)
-                        ) {
-                          if (!dailyAverages.has(footerData.parameter_id)) {
-                            dailyAverages.set(footerData.parameter_id, new Map());
+                        const dailyAverages = new Map<string, Map<string, number>>();
+                        const footerDataPromises = dates.map((dateString) =>
+                          getFooterDataForDate(dateString)
+                        );
+                        const allFooterDataForMonth = await Promise.all(footerDataPromises);
+
+                        allFooterDataForMonth.flat().forEach((footerData) => {
+                          if (
+                            footerData.average !== null &&
+                            footerData.average !== undefined &&
+                            !isNaN(footerData.average)
+                          ) {
+                            if (!dailyAverages.has(footerData.parameter_id)) {
+                              dailyAverages.set(footerData.parameter_id, new Map());
+                            }
+                            dailyAverages
+                              .get(footerData.parameter_id)!
+                              .set(footerData.date, footerData.average);
                           }
-                          dailyAverages
-                            .get(footerData.parameter_id)!
-                            .set(footerData.date, footerData.average);
-                        }
-                      });
+                        });
 
-                      const data = filteredCopParameters
-                        .map((parameter) => {
-                          if (!parameter || !parameter.id || !parameter.parameter) return null;
+                        const data = filteredCopParameters
+                          .map((parameter) => {
+                            if (!parameter || !parameter.id || !parameter.parameter) return null;
 
-                          const dailyValues = dates.map((dateString) => {
-                            const avg = dailyAverages.get(parameter.id)?.get(dateString);
-                            const { min: min_value, max: max_value } = getMinMaxForCementType(
+                            const dailyValues = dates.map((dateString) => {
+                              const avg = dailyAverages.get(parameter.id)?.get(dateString);
+                              const { min: min_value, max: max_value } = getMinMaxForCementType(
+                                parameter,
+                                selectedCementType
+                              );
+
+                              if (
+                                min_value === undefined ||
+                                max_value === undefined ||
+                                max_value <= min_value ||
+                                avg === undefined
+                              ) {
+                                return { value: null, raw: avg };
+                              }
+
+                              const percentage =
+                                ((avg - min_value) / (max_value - min_value)) * 100;
+                              return {
+                                value:
+                                  isNaN(percentage) || !isFinite(percentage) ? null : percentage,
+                                raw: avg,
+                              };
+                            });
+
+                            const validDailyPercentages = dailyValues
+                              .map((d) => d.value)
+                              .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
+                            const monthlyAverage =
+                              validDailyPercentages.length > 0
+                                ? validDailyPercentages.reduce((a, b) => a + b, 0) /
+                                  validDailyPercentages.length
+                                : null;
+
+                            return {
                               parameter,
-                              selectedCementType
+                              dailyValues,
+                              monthlyAverage,
+                              monthlyAverageRaw: null,
+                            };
+                          })
+                          .filter((p): p is NonNullable<typeof p> => p !== null);
+
+                        setAnalysisData(data);
+                      } catch (retryError) {
+                        const errorMessage =
+                          retryError instanceof Error ? retryError.message : 'Retry failed';
+                        setError(
+                          `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
+                        );
+                        setAnalysisData([]);
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    };
+                    retryFetch();
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <div className="mb-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                      COP Analysis Dashboard
+                    </h2>
+                    <p className="text-slate-600 text-lg">
+                      Comprehensive parameter performance monitoring and analytics
+                    </p>
+                  </div>
+                  <button
+                    onClick={refreshData}
+                    disabled={isLoading}
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-green-400 disabled:to-emerald-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[48px]"
+                  >
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    {isLoading ? 'Refreshing...' : 'Refresh Data'}
+                  </button>
+                </div>
+              </div>
+              <div
+                className="overflow-x-auto scroll-smooth rounded-2xl shadow-2xl"
+                role="region"
+                aria-label="COP Analysis Data Table"
+                tabIndex={0}
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#cbd5e1 #f1f5f9',
+                }}
+              >
+                <table
+                  className="min-w-full text-xs border-collapse bg-white rounded-2xl overflow-hidden shadow-lg"
+                  role="table"
+                  aria-label="COP Analysis Table"
+                >
+                  <thead className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white">
+                    <tr>
+                      <th className="sticky left-0 bg-gradient-to-r from-blue-600 to-blue-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 rounded-tl-2xl">
+                        No.
+                      </th>
+                      <th className="sticky left-12 bg-gradient-to-r from-blue-600 to-blue-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 min-w-[100px]">
+                        {t.parameter}
+                      </th>
+                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-red-500 to-red-600">
+                        {t.min}
+                      </th>
+                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-green-500 to-green-600">
+                        {t.max}
+                      </th>
+                      {daysHeader.map((day) => (
+                        <th
+                          key={day}
+                          className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 bg-gradient-to-r from-slate-600 to-slate-700"
+                        >
+                          {day}
+                        </th>
+                      ))}
+                      <th className="sticky right-0 bg-gradient-to-r from-emerald-500 to-emerald-600 z-30 px-3 py-4 text-center text-xs font-bold uppercase tracking-wider border-l-2 border-white/20 w-20 rounded-tr-2xl">
+                        Avg.
+                      </th>
+                    </tr>
+                  </thead>
+                  <Droppable droppableId="cop-analysis-table">
+                    {(provided) => (
+                      <tbody
+                        className="bg-white divide-y divide-slate-200"
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                      >
+                        {analysisData.map((row, rowIndex) => (
+                          <Draggable
+                            key={row.parameter.id}
+                            draggableId={row.parameter.id}
+                            index={rowIndex}
+                          >
+                            {(provided, snapshot) => (
+                              <tr
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`transition-colors duration-150 ${
+                                  snapshot.isDragging
+                                    ? 'shadow-2xl bg-gradient-to-r from-blue-50 to-purple-50'
+                                    : 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50'
+                                } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                }}
+                              >
+                                <td className="sticky left-0 z-20 px-3 py-3 whitespace-nowrap text-slate-700 border-r-2 border-slate-200 bg-gradient-to-r from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 w-12 font-bold text-center rounded-l-xl">
+                                  {rowIndex + 1}
+                                </td>
+                                <td className="sticky left-12 z-20 px-3 py-3 whitespace-nowrap font-bold text-slate-800 border-r-2 border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 group-hover:from-slate-100 group-hover:to-slate-200 min-w-[100px]">
+                                  {row.parameter.parameter}
+                                </td>
+                                {/* Use helper function for consistent min/max display */}
+                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-red-50 to-red-100 font-semibold">
+                                  {(() => {
+                                    const { min } = getMinMaxForCementType(
+                                      row.parameter,
+                                      selectedCementType
+                                    );
+                                    return formatCopNumber(min);
+                                  })()}
+                                </td>
+                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-green-50 to-green-100 font-semibold">
+                                  {(() => {
+                                    const { max } = getMinMaxForCementType(
+                                      row.parameter,
+                                      selectedCementType
+                                    );
+                                    return formatCopNumber(max);
+                                  })()}
+                                </td>
+                                {row.dailyValues.map((day, dayIndex) => {
+                                  const colors = getPercentageColor(day.value);
+                                  return (
+                                    <td
+                                      key={dayIndex}
+                                      className={`relative px-2 py-3 whitespace-nowrap text-center border-b-2 border-r-2 border-white/20 transition-colors duration-150 ${colors.bg}`}
+                                    >
+                                      <div className="relative group/cell h-full w-full flex items-center justify-center">
+                                        <span
+                                          className={`font-bold text-xs ${colors.text} drop-shadow-sm`}
+                                        >
+                                          {formatCopNumber(day.raw)}
+                                        </span>
+                                        {day.raw !== undefined && (
+                                          <div className="absolute bottom-full mb-2 w-max max-w-sm bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
+                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                              <span className="font-bold text-xs text-blue-300">
+                                                {formatDate(
+                                                  new Date(
+                                                    Date.UTC(filterYear, filterMonth, dayIndex + 1)
+                                                  )
+                                                )}
+                                              </span>
+                                              <span
+                                                className={`px-2 py-1 rounded-lg text-white text-[10px] uppercase font-bold ${colors.bg} shadow-sm`}
+                                              >
+                                                {colors.status}
+                                              </span>
+                                            </div>
+                                            <hr className="border-slate-600 my-2" />
+                                            <p className="text-xs mb-1">
+                                              <strong className="text-blue-300">
+                                                {t.average}:
+                                              </strong>{' '}
+                                              <span className="font-mono text-green-300">
+                                                {formatCopNumber(day.raw)} {row.parameter.unit}
+                                              </span>
+                                            </p>
+                                            {/* Use helper function for consistent target display */}
+                                            <p className="text-xs mb-1">
+                                              <strong className="text-purple-300">Target:</strong>{' '}
+                                              <span className="font-mono text-xs text-yellow-300">
+                                                {(() => {
+                                                  const { min, max } = getMinMaxForCementType(
+                                                    row.parameter,
+                                                    selectedCementType
+                                                  );
+                                                  return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
+                                                })()}
+                                              </span>
+                                            </p>
+                                            {day.value !== null && (
+                                              <p className="text-xs">
+                                                <strong className="text-orange-300">
+                                                  Normalized:
+                                                </strong>{' '}
+                                                <span className="font-mono text-red-300">
+                                                  {day.value.toFixed(1)}%
+                                                </span>
+                                              </p>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+                                  );
+                                })}
+                                {(() => {
+                                  const avgColors = getPercentageColor(row.monthlyAverage);
+                                  return (
+                                    <td
+                                      className={`sticky right-0 z-20 px-3 py-3 whitespace-nowrap text-center font-bold border-b-2 border-l-4 border-white/30 transition-colors duration-150 ${avgColors.bg} w-20 rounded-r-xl`}
+                                    >
+                                      <span
+                                        className={`${avgColors.text} text-sm drop-shadow-sm font-extrabold`}
+                                      >
+                                        {formatCopNumber(row.monthlyAverageRaw)}
+                                      </span>
+                                    </td>
+                                  );
+                                })()}
+                              </tr>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                        {analysisData.length === 0 && (
+                          <tr>
+                            <td
+                              colSpan={daysHeader.length + 5}
+                              className="text-center py-10 text-slate-500"
+                            >
+                              {!selectedCategory || !selectedUnit
+                                ? 'Please select both Category and Unit to view COP analysis data.'
+                                : filteredCopParameters.length === 0
+                                  ? 'No COP parameters found for the selected Category and Unit.'
+                                  : 'No data available for the selected period.'}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    )}
+                  </Droppable>
+                  <tfoot className="font-bold bg-gradient-to-r from-slate-100 to-slate-200">
+                    <tr className="border-t-4 border-slate-400">
+                      <td
+                        colSpan={4}
+                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-slate-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-100 to-blue-200 font-bold rounded-bl-2xl"
+                      >
+                        {t.qaf_daily}
+                      </td>
+                      {dailyQaf.daily.map((qaf, index) => {
+                        const colors = getQafColor(qaf.value);
+                        return (
+                          <td
+                            key={index}
+                            className={`px-2 py-4 text-center border-b-2 border-r-2 border-white/30 ${colors.bg} ${colors.text} hover:shadow-md transition-colors duration-150`}
+                          >
+                            <div className="relative group/cell h-full w-full flex items-center justify-center">
+                              <span className="text-sm font-extrabold drop-shadow-sm">
+                                {qaf.value !== null && !isNaN(qaf.value)
+                                  ? `${formatCopNumber(qaf.value)}%`
+                                  : '-'}
+                              </span>
+                              {qaf.total > 0 && (
+                                <div className="absolute bottom-full mb-2 w-max max-w-xs bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
+                                  {t.qaf_tooltip
+                                    ?.replace('{inRange}', qaf.inRange.toString())
+                                    .replace('{total}', qaf.total.toString())}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        );
+                      })}
+                      {(() => {
+                        const qaf = dailyQaf.monthly;
+                        const colors = getQafColor(qaf.value);
+                        return (
+                          <td
+                            className={`sticky right-0 z-20 px-3 py-4 text-center border-b-2 border-l-4 border-white/30 ${colors.bg} ${colors.text} font-extrabold text-lg rounded-br-2xl`}
+                          >
+                            <div className="relative group/cell h-full w-full flex items-center justify-center">
+                              <span className="drop-shadow-sm">
+                                {qaf.value !== null && !isNaN(qaf.value)
+                                  ? `${formatCopNumber(qaf.value)}%`
+                                  : '-'}
+                              </span>
+                              {qaf.total > 0 && (
+                                <div className="absolute bottom-full mb-2 w-max max-w-xs bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
+                                  {t.qaf_tooltip
+                                    ?.replace('{inRange}', qaf.inRange.toString())
+                                    .replace('{total}', qaf.total.toString())}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        );
+                      })()}
+                    </tr>
+                    {/* Moisture Content Row */}
+                    <tr className="border-t-2 border-slate-300 bg-gradient-to-r from-blue-50 to-cyan-50">
+                      <td
+                        colSpan={4}
+                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-blue-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-200 to-cyan-200 font-bold"
+                      >
+                        % Moisture Content
+                      </td>
+                      {Array.from(
+                        { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                        (_, i) => {
+                          // Get daily average moisture content from monthly data
+                          const day = i + 1;
+                          const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const dailyAverage = monthlyMoistureData.get(dateString);
+
+                          return (
+                            <td
+                              key={`moisture-${day}`}
+                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-blue-100 to-cyan-100 transition-colors duration-150"
+                            >
+                              <span className="text-sm font-bold text-blue-800 drop-shadow-sm">
+                                {dailyAverage !== undefined && !isNaN(dailyAverage)
+                                  ? `${formatCopNumber(dailyAverage)}%`
+                                  : '-'}
+                              </span>
+                            </td>
+                          );
+                        }
+                      )}
+                      {/* Monthly average for moisture content */}
+                      <td className="sticky right-0 z-20 px-3 py-4 text-center border-b-2 border-l-4 border-white/30 bg-gradient-to-r from-emerald-100 to-green-100 font-bold text-lg rounded-r-2xl">
+                        <span className="text-emerald-800 drop-shadow-sm">
+                          {(() => {
+                            // Calculate monthly average from daily moisture data
+                            const validValues = Array.from(monthlyMoistureData.values()).filter(
+                              (v) => v !== null && v !== undefined && !isNaN(v)
                             );
 
-                            if (
-                              min_value === undefined ||
-                              max_value === undefined ||
-                              max_value <= min_value ||
-                              avg === undefined
-                            ) {
-                              return { value: null, raw: avg };
-                            }
+                            if (validValues.length === 0) return '-';
 
-                            const percentage = ((avg - min_value) / (max_value - min_value)) * 100;
-                            return {
-                              value: isNaN(percentage) || !isFinite(percentage) ? null : percentage,
-                              raw: avg,
-                            };
-                          });
+                            const average =
+                              validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
+                            return `${formatCopNumber(average)}%`;
+                          })()}
+                        </span>
+                      </td>
+                    </tr>
+                    {/* Capacity Row */}
+                    <tr className="border-t-2 border-slate-300 bg-gradient-to-r from-green-50 to-emerald-50">
+                      <td
+                        colSpan={4}
+                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-green-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-green-200 to-emerald-200 font-bold"
+                      >
+                        Capacity (ton)
+                      </td>
+                      {Array.from(
+                        { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                        (_, i) => {
+                          // Get daily feed and moisture data for capacity calculation
+                          const day = i + 1;
+                          const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const dailyFeed = monthlyFeedData.get(dateString);
+                          const dailyMoisture = monthlyMoistureData.get(dateString);
 
-                          const validDailyPercentages = dailyValues
-                            .map((d) => d.value)
-                            .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
-                          const monthlyAverage =
-                            validDailyPercentages.length > 0
-                              ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                                validDailyPercentages.length
+                          // Calculate capacity: Feed - (Moisture Content × Feed / 100)
+                          const capacity =
+                            dailyFeed && dailyMoisture !== undefined
+                              ? dailyFeed - (dailyMoisture * dailyFeed) / 100
                               : null;
 
-                          return {
-                            parameter,
-                            dailyValues,
-                            monthlyAverage,
-                            monthlyAverageRaw: null,
-                          };
-                        })
-                        .filter((p): p is NonNullable<typeof p> => p !== null);
+                          return (
+                            <td
+                              key={`capacity-${day}`}
+                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-green-100 to-emerald-100 transition-colors duration-150"
+                            >
+                              <span className="text-sm font-bold text-green-800 drop-shadow-sm">
+                                {capacity !== null && !isNaN(capacity)
+                                  ? `${formatCopNumber(capacity)}`
+                                  : '-'}
+                              </span>
+                            </td>
+                          );
+                        }
+                      )}
+                      {/* Monthly average for capacity */}
+                      <td className="sticky right-0 z-20 px-3 py-4 text-center border-b-2 border-l-4 border-white/30 bg-gradient-to-r from-emerald-200 to-green-200 font-bold text-lg rounded-r-2xl">
+                        <span className="text-emerald-900 drop-shadow-sm">
+                          {(() => {
+                            // Calculate monthly average capacity
+                            const validCapacities: number[] = [];
+                            Array.from(
+                              { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                              (_, i) => {
+                                const day = i + 1;
+                                const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                const dailyFeed = monthlyFeedData.get(dateString);
+                                const dailyMoisture = monthlyMoistureData.get(dateString);
 
-                      setAnalysisData(data);
-                    } catch (retryError) {
-                      const errorMessage =
-                        retryError instanceof Error ? retryError.message : 'Retry failed';
-                      setError(
-                        `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
-                      );
-                      setAnalysisData([]);
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  };
-                  retryFetch();
-                }}
-                className="px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[44px]"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        )}
+                                if (dailyFeed && dailyMoisture !== undefined) {
+                                  const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
+                                  if (!isNaN(capacity)) {
+                                    validCapacities.push(capacity);
+                                  }
+                                }
+                              }
+                            );
 
-        {!isLoading && !error && (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="mb-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-semibold text-slate-800">Tabel Analisis COP</h2>
-                  <p className="text-sm text-slate-600 mt-2">
-                    Data persentase pencapaian parameter COP per hari dalam sebulan.
-                  </p>
-                </div>
+                            if (validCapacities.length === 0) return '-';
+
+                            const average =
+                              validCapacities.reduce((sum, val) => sum + val, 0) /
+                              validCapacities.length;
+                            return `${formatCopNumber(average)}`;
+                          })()}
+                        </span>
+                      </td>
+                    </tr>
+                    {/* COP Footer Parameters */}
+                    {footerData.map((row, index) => (
+                      <tr key={`footer-${row.parameter.id}`} className="border-t border-slate-300">
+                        <td
+                          colSpan={4}
+                          className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
+                        >
+                          {row.parameter.parameter}
+                        </td>
+                        {row.dailyValues.map((day, dayIndex) => {
+                          const colors = getPercentageColor(day.value);
+                          return (
+                            <td
+                              key={dayIndex}
+                              className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg}`}
+                            >
+                              <span className={`text-xs font-medium ${colors.text}`}>
+                                {formatCopNumber(day.raw)}
+                              </span>
+                            </td>
+                          );
+                        })}
+                        <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-slate-100 font-bold text-sm">
+                          <span className="text-slate-800">
+                            {formatCopNumber(row.monthlyAverageRaw)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tfoot>
+                </table>
+              </div>
+              {/* Export Button */}
+              <div className="mt-4 flex justify-end">
                 <button
-                  onClick={refreshData}
-                  disabled={isLoading}
-                  className="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-h-[44px]"
+                  onClick={exportToExcel}
+                  className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[44px]"
+                  disabled={analysisData.length === 0}
                 >
                   <svg
                     className="w-4 h-4 mr-2"
@@ -3468,777 +3928,456 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  {isLoading ? 'Refreshing...' : 'Refresh Data'}
+                  Export to Excel
                 </button>
               </div>
+            </DragDropContext>
+          )}
+        </Card>
+        {/* Parameter Line Charts */}
+        {analysisData.length > 0 && (
+          <Card
+            variant="floating"
+            padding="lg"
+            className="mt-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-2xl border-0"
+          >
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
+                📈 Trend Parameter COP
+              </h2>
+              <p className="text-base text-slate-700 leading-relaxed">
+                Visualisasi tren nilai parameter sepanjang bulan untuk monitoring performa dan
+                identifikasi pola
+              </p>
             </div>
-            <div
-              className="overflow-x-auto scroll-smooth"
-              role="region"
-              aria-label="COP Analysis Data Table"
-              tabIndex={0}
-              style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#cbd5e1 #f1f5f9',
-              }}
-            >
-              <table
-                className="min-w-full text-xs border-collapse"
-                role="table"
-                aria-label="COP Analysis Table"
-              >
-                <thead className="bg-slate-100">
-                  <tr>
-                    <th className="sticky left-0 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-8">
-                      No.
-                    </th>
-                    <th className="sticky left-8 bg-slate-100 z-30 px-2 py-2 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 min-w-[80px]">
-                      {t.parameter}
-                    </th>
-                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-16">
-                      {t.min}
-                    </th>
-                    <th className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-16">
-                      {t.max}
-                    </th>
-                    {daysHeader.map((day) => (
-                      <th
-                        key={day}
-                        className="px-1 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-r border-slate-200 w-10"
-                      >
-                        {day}
-                      </th>
-                    ))}
-                    <th className="sticky right-0 bg-slate-100 z-30 px-2 py-2 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider border-b border-l-2 border-slate-300 w-16">
-                      Avg.
-                    </th>
-                  </tr>
-                </thead>
-                <Droppable droppableId="cop-analysis-table">
-                  {(provided) => (
-                    <tbody
-                      className="bg-white"
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
+              {analysisData.map((paramData, index) => {
+                // Prepare chart data
+                const chartData = paramData.dailyValues
+                  .map((day, dayIndex) => ({
+                    day: dayIndex + 1,
+                    value: day.raw !== undefined && day.raw !== null ? day.raw : null,
+                    date: new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1)),
+                  }))
+                  .filter((item) => item.value !== null);
+
+                const { min, max } = getMinMaxForCementType(
+                  paramData.parameter,
+                  selectedCementType
+                );
+
+                // Color variations for each chart
+                const colorSchemes = [
+                  {
+                    bg: 'from-blue-50 to-cyan-50',
+                    border: 'border-blue-200',
+                    accent: 'text-blue-700',
+                  },
+                  {
+                    bg: 'from-green-50 to-emerald-50',
+                    border: 'border-green-200',
+                    accent: 'text-green-700',
+                  },
+                  {
+                    bg: 'from-purple-50 to-violet-50',
+                    border: 'border-purple-200',
+                    accent: 'text-purple-700',
+                  },
+                  {
+                    bg: 'from-orange-50 to-amber-50',
+                    border: 'border-orange-200',
+                    accent: 'text-orange-700',
+                  },
+                  {
+                    bg: 'from-pink-50 to-rose-50',
+                    border: 'border-pink-200',
+                    accent: 'text-pink-700',
+                  },
+                  {
+                    bg: 'from-indigo-50 to-blue-50',
+                    border: 'border-indigo-200',
+                    accent: 'text-indigo-700',
+                  },
+                ];
+                const colorScheme = colorSchemes[index % colorSchemes.length];
+
+                // Skip rendering if no data
+                if (!chartData || chartData.length === 0) {
+                  return (
+                    <div
+                      key={paramData.parameter.id}
+                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-shadow duration-200`}
                     >
-                      {analysisData.map((row, rowIndex) => (
-                        <Draggable
-                          key={row.parameter.id}
-                          draggableId={row.parameter.id}
-                          index={rowIndex}
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className={`text-xl font-bold ${colorScheme.accent} truncate`}>
+                          {paramData.parameter.parameter}
+                        </h3>
+                        <div
+                          className={`px-3 py-1 bg-white/80 rounded-full text-xs font-semibold ${colorScheme.accent} border border-white/50`}
                         >
-                          {(provided, snapshot) => (
-                            <tr
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`group hover:bg-slate-50 ${
-                                snapshot.isDragging ? 'shadow-lg bg-blue-50' : ''
-                              }`}
-                              style={{
-                                ...provided.draggableProps.style,
-                              }}
-                            >
-                              <td className="sticky left-0 z-20 px-2 py-1.5 whitespace-nowrap text-slate-500 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 w-8">
-                                {rowIndex + 1}
-                              </td>
-                              <td className="sticky left-8 z-20 px-2 py-1.5 whitespace-nowrap font-medium text-slate-800 border-b border-r border-slate-200 bg-white group-hover:bg-slate-50 min-w-[80px]">
-                                {row.parameter.parameter}
-                              </td>
-                              {/* Use helper function for consistent min/max display */}
-                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 border-b border-r border-slate-200 w-16">
-                                {(() => {
-                                  const { min } = getMinMaxForCementType(
-                                    row.parameter,
-                                    selectedCementType
-                                  );
-                                  return formatCopNumber(min);
-                                })()}
-                              </td>
-                              <td className="px-1 py-1.5 whitespace-nowrap text-center text-slate-600 border-b border-r border-slate-200 w-16">
-                                {(() => {
-                                  const { max } = getMinMaxForCementType(
-                                    row.parameter,
-                                    selectedCementType
-                                  );
-                                  return formatCopNumber(max);
-                                })()}
-                              </td>
-                              {row.dailyValues.map((day, dayIndex) => {
-                                const colors = getPercentageColor(day.value);
-                                return (
-                                  <td
-                                    key={dayIndex}
-                                    className={`relative px-1 py-1 whitespace-nowrap text-center border-b border-r border-slate-200 transition-colors duration-150 ${colors.bg}`}
-                                  >
-                                    <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                      <span className={`font-medium text-xs ${colors.text}`}>
-                                        {formatCopNumber(day.raw)}
-                                      </span>
-                                      {day.raw !== undefined && (
-                                        <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
-                                          <div className="flex items-center justify-between gap-2">
-                                            <span className="font-bold text-xs">
-                                              {formatDate(
-                                                new Date(
-                                                  Date.UTC(filterYear, filterMonth, dayIndex + 1)
-                                                )
-                                              )}
-                                            </span>
-                                            <span
-                                              className={`px-1 py-0.5 rounded text-white text-[10px] uppercase ${colors.bg}`}
-                                            >
-                                              {colors.status}
-                                            </span>
-                                          </div>
-                                          <hr className="border-slate-600 my-1" />
-                                          <p className="text-xs">
-                                            <strong>{t.average}:</strong>{' '}
-                                            <span className="font-mono">
-                                              {formatCopNumber(day.raw)} {row.parameter.unit}
-                                            </span>
-                                          </p>
-                                          {/* Use helper function for consistent target display */}
-                                          <p className="text-xs">
-                                            <strong>Target:</strong>{' '}
-                                            <span className="font-mono text-xs">
-                                              {(() => {
-                                                const { min, max } = getMinMaxForCementType(
-                                                  row.parameter,
-                                                  selectedCementType
-                                                );
-                                                return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
-                                              })()}
-                                            </span>
-                                          </p>
-                                          {day.value !== null && (
-                                            <p className="text-xs">
-                                              <strong>Normalized:</strong>{' '}
-                                              <span className="font-mono">
-                                                {day.value.toFixed(1)}%
-                                              </span>
-                                            </p>
-                                          )}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </td>
-                                );
-                              })}
-                              {(() => {
-                                const avgColors = getPercentageColor(row.monthlyAverage);
-                                return (
-                                  <td
-                                    className={`sticky right-0 z-20 px-2 py-1.5 whitespace-nowrap text-center font-bold border-b border-l-2 border-slate-300 transition-colors duration-150 ${avgColors.bg} group-hover:bg-slate-100 w-16`}
-                                  >
-                                    <span className={`${avgColors.text} text-xs`}>
-                                      {formatCopNumber(row.monthlyAverageRaw)}
-                                    </span>
-                                  </td>
-                                );
-                              })()}
-                            </tr>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                      {analysisData.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={daysHeader.length + 5}
-                            className="text-center py-10 text-slate-500"
-                          >
-                            {!selectedCategory || !selectedUnit
-                              ? 'Please select both Category and Unit to view COP analysis data.'
-                              : filteredCopParameters.length === 0
-                                ? 'No COP parameters found for the selected Category and Unit.'
-                                : 'No data available for the selected period.'}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  )}
-                </Droppable>
-                <tfoot className="font-semibold bg-slate-50">
-                  <tr className="border-t-2 border-slate-300">
-                    <td
-                      colSpan={4}
-                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
-                    >
-                      {t.qaf_daily}
-                    </td>
-                    {dailyQaf.daily.map((qaf, index) => {
-                      const colors = getQafColor(qaf.value);
-                      return (
-                        <td
-                          key={index}
-                          className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg} ${colors.text}`}
-                        >
-                          <div className="relative group/cell h-full w-full flex items-center justify-center">
-                            <span className="text-xs font-bold">
-                              {qaf.value !== null && !isNaN(qaf.value)
-                                ? `${formatCopNumber(qaf.value)}%`
-                                : '-'}
-                            </span>
-                            {qaf.total > 0 && (
-                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
-                                {t.qaf_tooltip
-                                  ?.replace('{inRange}', qaf.inRange.toString())
-                                  .replace('{total}', qaf.total.toString())}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      );
-                    })}
-                    {(() => {
-                      const qaf = dailyQaf.monthly;
-                      const colors = getQafColor(qaf.value);
-                      return (
-                        <td
-                          className={`sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 ${colors.bg} ${colors.text} font-bold text-sm`}
-                        >
-                          <div className="relative group/cell h-full w-full flex items-center justify-center">
-                            <span>
-                              {qaf.value !== null && !isNaN(qaf.value)
-                                ? `${formatCopNumber(qaf.value)}%`
-                                : '-'}
-                            </span>
-                            {qaf.total > 0 && (
-                              <div className="absolute bottom-full mb-1 w-max max-w-xs bg-slate-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover/cell:opacity-100 transition-opacity pointer-events-none z-40 shadow-lg left-1/2 -translate-x-1/2">
-                                {t.qaf_tooltip
-                                  ?.replace('{inRange}', qaf.inRange.toString())
-                                  .replace('{total}', qaf.total.toString())}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      );
-                    })()}
-                  </tr>
-                  {/* Moisture Content Row */}
-                  <tr className="border-t border-slate-300">
-                    <td
-                      colSpan={4}
-                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
-                    >
-                      % Moisture Content
-                    </td>
-                    {Array.from(
-                      { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                      (_, i) => {
-                        // Get daily average moisture content from monthly data
-                        const day = i + 1;
-                        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const dailyAverage = monthlyMoistureData.get(dateString);
+                          No Data
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 mb-6 font-medium">
+                        Target:{' '}
+                        <span className="font-mono text-slate-800">
+                          {formatCopNumber(min)} - {formatCopNumber(max)}
+                        </span>{' '}
+                        <span className="text-slate-500">{paramData.parameter.unit}</span>
+                      </p>
+                      <div className="flex flex-col items-center justify-center h-64 bg-white/60 rounded-xl border-2 border-dashed border-slate-300">
+                        <div className="text-4xl mb-3">📊</div>
+                        <p className="text-slate-500 font-medium text-center">
+                          Tidak ada data
+                          <br />
+                          untuk periode ini
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
 
-                        return (
-                          <td
-                            key={`moisture-${day}`}
-                            className="px-1 py-2 text-center border-b border-r border-slate-200 bg-blue-50"
-                          >
-                            <span className="text-xs font-medium text-blue-700">
-                              {dailyAverage !== undefined && !isNaN(dailyAverage)
-                                ? `${formatCopNumber(dailyAverage)}%`
-                                : '-'}
-                            </span>
-                          </td>
-                        );
-                      }
-                    )}
-                    {/* Monthly average for moisture content */}
-                    <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-blue-100 font-bold text-sm">
-                      <span className="text-blue-800">
-                        {(() => {
-                          // Calculate monthly average from daily moisture data
-                          const validValues = Array.from(monthlyMoistureData.values()).filter(
-                            (v) => v !== null && v !== undefined && !isNaN(v)
-                          );
-
-                          if (validValues.length === 0) return '-';
-
-                          const average =
-                            validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
-                          return `${formatCopNumber(average)}%`;
-                        })()}
-                      </span>
-                    </td>
-                  </tr>
-                  {/* Capacity Row */}
-                  <tr className="border-t border-slate-300">
-                    <td
-                      colSpan={4}
-                      className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
-                    >
-                      Capacity (ton)
-                    </td>
-                    {Array.from(
-                      { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                      (_, i) => {
-                        // Get daily feed and moisture data for capacity calculation
-                        const day = i + 1;
-                        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                        const dailyFeed = monthlyFeedData.get(dateString);
-                        const dailyMoisture = monthlyMoistureData.get(dateString);
-
-                        // Calculate capacity: Feed - (Moisture Content × Feed / 100)
-                        const capacity =
-                          dailyFeed && dailyMoisture !== undefined
-                            ? dailyFeed - (dailyMoisture * dailyFeed) / 100
-                            : null;
-
-                        return (
-                          <td
-                            key={`capacity-${day}`}
-                            className="px-1 py-2 text-center border-b border-r border-slate-200 bg-green-50"
-                          >
-                            <span className="text-xs font-medium text-green-700">
-                              {capacity !== null && !isNaN(capacity)
-                                ? `${formatCopNumber(capacity)}`
-                                : '-'}
-                            </span>
-                          </td>
-                        );
-                      }
-                    )}
-                    {/* Monthly average for capacity */}
-                    <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-green-100 font-bold text-sm">
-                      <span className="text-green-800">
-                        {(() => {
-                          // Calculate monthly average capacity
-                          const validCapacities: number[] = [];
-                          Array.from(
-                            { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                            (_, i) => {
-                              const day = i + 1;
-                              const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                              const dailyFeed = monthlyFeedData.get(dateString);
-                              const dailyMoisture = monthlyMoistureData.get(dateString);
-
-                              if (dailyFeed && dailyMoisture !== undefined) {
-                                const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
-                                if (!isNaN(capacity)) {
-                                  validCapacities.push(capacity);
-                                }
-                              }
-                            }
-                          );
-
-                          if (validCapacities.length === 0) return '-';
-
-                          const average =
-                            validCapacities.reduce((sum, val) => sum + val, 0) /
-                            validCapacities.length;
-                          return `${formatCopNumber(average)}`;
-                        })()}
-                      </span>
-                    </td>
-                  </tr>
-                  {/* COP Footer Parameters */}
-                  {footerData.map((row, index) => (
-                    <tr key={`footer-${row.parameter.id}`} className="border-t border-slate-300">
-                      <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
-                      >
-                        {row.parameter.parameter}
-                      </td>
-                      {row.dailyValues.map((day, dayIndex) => {
-                        const colors = getPercentageColor(day.value);
-                        return (
-                          <td
-                            key={dayIndex}
-                            className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg}`}
-                          >
-                            <span className={`text-xs font-medium ${colors.text}`}>
-                              {formatCopNumber(day.raw)}
-                            </span>
-                          </td>
-                        );
-                      })}
-                      <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-slate-100 font-bold text-sm">
-                        <span className="text-slate-800">
-                          {formatCopNumber(row.monthlyAverageRaw)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tfoot>
-              </table>
-            </div>
-            {/* Export Button */}
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={exportToExcel}
-                className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[44px]"
-                disabled={analysisData.length === 0}
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-                Export to Excel
-              </button>
-            </div>
-          </DragDropContext>
-        )}
-      </Card>
-
-      {/* Parameter Line Charts */}
-      {analysisData.length > 0 && (
-        <Card
-          variant="floating"
-          padding="lg"
-          className="mt-6 bg-gradient-to-br from-blue-50 to-indigo-50"
-        >
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-blue-800">Trend Parameter COP</h2>
-            <p className="text-sm text-slate-600 mt-2">
-              Diagram garis menunjukkan tren nilai parameter sepanjang bulan untuk setiap parameter
-              COP.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {analysisData.map((paramData) => {
-              // Prepare chart data
-              const chartData = paramData.dailyValues
-                .map((day, index) => ({
-                  day: index + 1,
-                  value: day.raw !== undefined && day.raw !== null ? day.raw : null,
-                  date: new Date(Date.UTC(filterYear, filterMonth, index + 1)),
-                }))
-                .filter((item) => item.value !== null);
-
-              const { min, max } = getMinMaxForCementType(paramData.parameter, selectedCementType);
-
-              // Skip rendering if no data
-              if (!chartData || chartData.length === 0) {
                 return (
                   <div
                     key={paramData.parameter.id}
-                    className="bg-white p-4 rounded-lg border border-slate-200"
+                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-shadow duration-200 group`}
                   >
-                    <h3 className="text-lg font-semibold text-slate-800 mb-2">
-                      {paramData.parameter.parameter}
-                    </h3>
-                    <p className="text-xs text-slate-500 mb-4">
-                      Target: {formatCopNumber(min)} - {formatCopNumber(max)}{' '}
-                      {paramData.parameter.unit}
+                    <div className="flex items-center justify-between mb-4">
+                      <h3
+                        className={`text-xl font-bold ${colorScheme.accent} truncate group-hover:scale-105 transition-transform duration-200`}
+                      >
+                        {paramData.parameter.parameter}
+                      </h3>
+                      <div
+                        className={`px-3 py-1 bg-white/90 rounded-full text-xs font-semibold ${colorScheme.accent} border border-white/50 shadow-sm`}
+                      >
+                        {chartData.length} hari
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-600 mb-6 font-medium">
+                      Target:{' '}
+                      <span className="font-mono text-slate-800 font-bold">
+                        {formatCopNumber(min)} - {formatCopNumber(max)}
+                      </span>{' '}
+                      <span className="text-slate-500">{paramData.parameter.unit}</span>
                     </p>
-                    <div className="flex items-center justify-center h-64 text-slate-500">
-                      Tidak ada data untuk ditampilkan
+                    <div className="bg-white/80 rounded-xl p-2 shadow-inner">
+                      <ChartContainer
+                        chartData={chartData}
+                        parameter={paramData.parameter}
+                        min={min}
+                        max={max}
+                      />
                     </div>
                   </div>
                 );
-              }
-
-              return (
-                <div
-                  key={paramData.parameter.id}
-                  className="bg-white p-4 rounded-lg border border-slate-200"
-                >
-                  <h3 className="text-lg font-semibold text-slate-800 mb-2">
-                    {paramData.parameter.parameter}
-                  </h3>
-                  <p className="text-xs text-slate-500 mb-4">
-                    Target: {formatCopNumber(min)} - {formatCopNumber(max)}{' '}
-                    {paramData.parameter.unit}
-                  </p>
-                  <ChartContainer
-                    chartData={chartData}
-                    parameter={paramData.parameter}
-                    min={min}
-                    max={max}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      )}
-
-      {/* Kategori Pencapaian COP Operator */}
-      {operatorAchievementData.length > 0 && (
-        <Card
-          variant="floating"
-          padding="lg"
-          className="mt-6 bg-gradient-to-br from-emerald-50 to-teal-50"
-        >
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-            <h2 className="text-2xl font-semibold text-emerald-800">
-              Kategori Pencapaian COP Operator
-            </h2>
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <label
-                htmlFor="operator-filter"
-                className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-              >
-                Operator:
-              </label>
-              <select
-                id="operator-filter"
-                value={selectedOperator}
-                onChange={(e) => setSelectedOperator(e.target.value)}
-                className="flex-1 min-w-0 px-4 py-3 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium transition-all duration-200"
-              >
-                <option value="">Semua Operator</option>
-                {relevantOperators.map((operator) => (
-                  <option key={operator.id} value={operator.id}>
-                    {operator.full_name}
-                  </option>
-                ))}
-              </select>
+              })}
             </div>
-          </div>
-          <p className="text-sm text-slate-600 mb-4">
-            Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
-            target (di luar range 0-100%).
-          </p>
-          {selectedOperator && (
-            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-800">
-                <strong>Catatan:</strong> Filter operator belum dapat diterapkan karena data
-                operator belum tersedia di sistem. Diagram menampilkan semua parameter untuk
-                kategori dan unit yang dipilih.
+          </Card>
+        )}
+        {/* Kategori Pencapaian COP Operator */}
+        {operatorAchievementData.length > 0 && (
+          <Card
+            variant="floating"
+            padding="lg"
+            className="mt-6 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 shadow-2xl border-0"
+          >
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-3">
+                  🏆 Kategori Pencapaian COP Operator
+                </h2>
+                <p className="text-base text-slate-700 leading-relaxed">
+                  Analisis performa operator berdasarkan persentase pencapaian target parameter COP
+                </p>
+              </div>
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                <label
+                  htmlFor="operator-filter"
+                  className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
+                >
+                  Operator:
+                </label>
+                <select
+                  id="operator-filter"
+                  value={selectedOperator}
+                  onChange={(e) => setSelectedOperator(e.target.value)}
+                  className="flex-1 min-w-0 px-4 py-3 bg-white/90 text-slate-900 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium transition-all duration-200 hover:shadow-md"
+                >
+                  <option value="">Semua Operator</option>
+                  {relevantOperators.map((operator) => (
+                    <option key={operator.id} value={operator.id}>
+                      {operator.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-6 font-medium">
+              📊 Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
+              target (di luar range 0-100%).
+            </p>
+            {selectedOperator && (
+              <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl shadow-sm">
+                <p className="text-sm text-amber-800 font-medium">
+                  <strong>⚠️ Catatan:</strong> Filter operator belum dapat diterapkan karena data
+                  operator belum tersedia di sistem. Diagram menampilkan semua parameter untuk
+                  kategori dan unit yang dipilih.
+                </p>
+              </div>
+            )}
+            <div className="bg-white/80 rounded-2xl p-4 shadow-inner mb-8">
+              <div style={{ width: '100%', height: '400px' }}>
+                <OperatorAchievementChart data={operatorAchievementData} />
+              </div>
+            </div>
+            <div className="mb-8 text-sm text-slate-600 font-medium bg-white/60 rounded-xl p-4 border border-slate-200">
+              <p className="flex items-center gap-2">
+                <span className="text-lg">📈</span>
+                Total parameter yang tidak mencapai target:{' '}
+                <span className="font-bold text-slate-800">{operatorAchievementData.length}</span>
               </p>
             </div>
-          )}
-          <div style={{ width: '100%', height: '320px' }}>
-            <OperatorAchievementChart data={operatorAchievementData} />
-          </div>
-          <div className="mt-3 text-xs text-slate-600">
-            <p>Total parameter yang tidak mencapai target: {operatorAchievementData.length}</p>
-          </div>
 
-          {/* Statistik Ringkasan Performa */}
-          {operatorAchievementData.length > 0 && (
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white p-4 rounded-lg border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-800 mb-2">Rata-rata Kegagalan</h4>
-                <p className="text-2xl font-bold text-red-600">
-                  {operatorAchievementData.length > 0
-                    ? (
-                        operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
-                        operatorAchievementData.length
-                      ).toFixed(1)
-                    : 0}
-                  %
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Rata-rata persentase kegagalan parameter
-                </p>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-800 mb-2">Parameter Terburuk</h4>
-                <p className="text-lg font-bold text-slate-800 truncate">
-                  {operatorAchievementData[0]?.parameter || '-'}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {operatorAchievementData[0]?.percentage || 0}% kegagalan
-                </p>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-800 mb-2">Status Performa</h4>
-                {(() => {
-                  const avgFailure =
-                    operatorAchievementData.length > 0
-                      ? operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
-                        operatorAchievementData.length
-                      : 0;
-                  const performance = getPerformanceStatus(avgFailure);
-                  return (
-                    <>
-                      <p className={`text-lg font-bold ${performance.color}`}>
-                        {performance.status}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Berdasarkan rata-rata {avgFailure.toFixed(1)}% kegagalan
-                      </p>
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
-          {selectedParameterStats && (
-            <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white rounded-lg shadow-xl border border-slate-300 text-sm text-slate-800 max-h-80 overflow-y-auto">
-              <div className="flex justify-between items-center mb-2">
-                <h4 className="font-semibold text-sm truncate pr-2">
-                  {selectedParameterStats.parameter}
-                </h4>
-                <button
-                  className="text-slate-400 hover:text-slate-600 p-1"
-                  onClick={() => setSelectedParameterStats(null)}
-                  aria-label="Close stats"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <ul className="space-y-1 text-xs">
-                <li className="flex justify-between">
-                  <strong>Avg:</strong>
-                  <span className="font-mono">
-                    {selectedParameterStats.avg !== null
-                      ? selectedParameterStats.avg.toFixed(2)
-                      : '-'}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <strong>Median:</strong>
-                  <span className="font-mono">
-                    {selectedParameterStats.median !== null
-                      ? selectedParameterStats.median.toFixed(2)
-                      : '-'}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <strong>Min:</strong>
-                  <span className="font-mono">
-                    {selectedParameterStats.min !== null
-                      ? selectedParameterStats.min.toFixed(2)
-                      : '-'}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <strong>Max:</strong>
-                  <span className="font-mono">
-                    {selectedParameterStats.max !== null
-                      ? selectedParameterStats.max.toFixed(2)
-                      : '-'}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <strong>Stdev:</strong>
-                  <span className="font-mono">
-                    {selectedParameterStats.stdev !== null
-                      ? selectedParameterStats.stdev.toFixed(2)
-                      : '-'}
-                  </span>
-                </li>
-                <li className="flex justify-between">
-                  <strong>QAF:</strong>
-                  <span className="font-mono">
-                    {selectedParameterStats.qaf !== null
-                      ? `${selectedParameterStats.qaf.toFixed(2)}%`
-                      : '-'}
-                  </span>
-                </li>
-              </ul>
-            </div>
-          )}
-        </Card>
-      )}
-
-      {/* Modal Breakdown Harian */}
-      <Modal
-        isOpen={breakdownModal.isOpen}
-        onClose={() => setBreakdownModal({ isOpen: false, parameter: '', data: null })}
-        title={`Breakdown Harian - ${breakdownModal.parameter}`}
-      >
-        <div className="p-8 max-h-96 overflow-y-auto">
-          {breakdownModal.data && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-7 gap-3">
-                {breakdownModal.data.dailyValues.map((day, index) => {
-                  const isOutOfRange = day.value === null || day.value < 0 || day.value > 100;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        // Simulasi data jam-jam (24 jam)
-                        const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
-                          hour,
-                          value: day.value ? day.value + (Math.random() - 0.5) * 20 : null,
-                          isOutOfRange: day.value ? Math.random() > 0.8 : true,
-                        }));
-                        setHourlyBreakdownModal({
-                          isOpen: true,
-                          parameter: breakdownModal.parameter,
-                          dayIndex: index,
-                          data: hourlyData,
-                        });
-                      }}
-                      className={`p-3 rounded-lg text-sm font-medium transition-colors ${
-                        isOutOfRange
-                          ? 'bg-red-100 text-red-800 hover:bg-red-200'
-                          : 'bg-green-100 text-green-800 hover:bg-green-200'
-                      }`}
-                    >
-                      <div className="text-center">
-                        <div className="text-xs">Hari {index + 1}</div>
-                        <div className="text-lg font-bold">
-                          {day.value !== null ? `${day.value.toFixed(1)}%` : '-'}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="text-xs text-slate-600 mt-4">
-                Klik pada hari untuk melihat breakdown jam-jam. Hari berwarna merah menunjukkan
-                parameter di luar range (0-100%).
-              </div>
-            </div>
-          )}
-        </div>
-      </Modal>
-
-      {/* Modal Breakdown Jam-jam */}
-      <Modal
-        isOpen={hourlyBreakdownModal.isOpen}
-        onClose={() =>
-          setHourlyBreakdownModal({
-            isOpen: false,
-            parameter: '',
-            dayIndex: -1,
-            data: [],
-          })
-        }
-        title={`Breakdown Jam - ${hourlyBreakdownModal.parameter} (Hari ${
-          hourlyBreakdownModal.dayIndex + 1
-        })`}
-      >
-        <div className="p-8 max-h-96 overflow-y-auto">
-          <div className="grid grid-cols-6 gap-3">
-            {hourlyBreakdownModal.data.map((hour) => (
-              <div
-                key={hour.hour}
-                className={`p-4 rounded-lg text-sm transition-all duration-200 ${
-                  hour.isOutOfRange
-                    ? 'bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-50'
-                    : 'bg-green-100 text-green-800 hover:bg-green-50'
-                }`}
-              >
-                <div className="text-center">
-                  <div className="text-xs font-medium text-slate-600">Jam {hour.hour}:00</div>
-                  <div className="text-lg font-bold">
-                    {hour.value !== null ? `${hour.value.toFixed(1)}%` : '-'}
+            {/* Statistik Ringkasan Performa */}
+            {operatorAchievementData.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-2xl border-2 border-red-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                      <span className="text-red-600 font-bold text-lg">📉</span>
+                    </div>
+                    <h4 className="text-lg font-bold text-red-800">Rata-rata Kegagalan</h4>
                   </div>
+                  <p className="text-3xl font-bold text-red-600 mb-2">
+                    {operatorAchievementData.length > 0
+                      ? (
+                          operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
+                          operatorAchievementData.length
+                        ).toFixed(1)
+                      : 0}
+                    %
+                  </p>
+                  <p className="text-sm text-slate-600 font-medium">
+                    Rata-rata persentase kegagalan parameter
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-2xl border-2 border-orange-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                      <span className="text-orange-600 font-bold text-lg">⚠️</span>
+                    </div>
+                    <h4 className="text-lg font-bold text-orange-800">Parameter Terburuk</h4>
+                  </div>
+                  <p className="text-xl font-bold text-slate-800 truncate mb-2">
+                    {operatorAchievementData[0]?.parameter || '-'}
+                  </p>
+                  <p className="text-sm text-slate-600 font-medium">
+                    {operatorAchievementData[0]?.percentage || 0}% kegagalan
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                      <span className="text-green-600 font-bold text-lg">🎯</span>
+                    </div>
+                    <h4 className="text-lg font-bold text-green-800">Status Performa</h4>
+                  </div>
+                  {(() => {
+                    const avgFailure =
+                      operatorAchievementData.length > 0
+                        ? operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
+                          operatorAchievementData.length
+                        : 0;
+                    const performance = getPerformanceStatus(avgFailure);
+                    return (
+                      <>
+                        <p className={`text-2xl font-bold ${performance.color} mb-2`}>
+                          {performance.status}
+                        </p>
+                        <p className="text-sm text-slate-600 font-medium">
+                          Berdasarkan rata-rata {avgFailure.toFixed(1)}% kegagalan
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
-            ))}
+            )}
+            {selectedParameterStats && (
+              <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white rounded-lg shadow-xl border border-slate-300 text-sm text-slate-800 max-h-80 overflow-y-auto">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="font-semibold text-sm truncate pr-2">
+                    {selectedParameterStats.parameter}
+                  </h4>
+                  <button
+                    className="text-slate-400 hover:text-slate-600 p-1"
+                    onClick={() => setSelectedParameterStats(null)}
+                    aria-label="Close stats"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <ul className="space-y-1 text-xs">
+                  <li className="flex justify-between">
+                    <strong>Avg:</strong>
+                    <span className="font-mono">
+                      {selectedParameterStats.avg !== null
+                        ? selectedParameterStats.avg.toFixed(2)
+                        : '-'}
+                    </span>
+                  </li>
+                  <li className="flex justify-between">
+                    <strong>Median:</strong>
+                    <span className="font-mono">
+                      {selectedParameterStats.median !== null
+                        ? selectedParameterStats.median.toFixed(2)
+                        : '-'}
+                    </span>
+                  </li>
+                  <li className="flex justify-between">
+                    <strong>Min:</strong>
+                    <span className="font-mono">
+                      {selectedParameterStats.min !== null
+                        ? selectedParameterStats.min.toFixed(2)
+                        : '-'}
+                    </span>
+                  </li>
+                  <li className="flex justify-between">
+                    <strong>Max:</strong>
+                    <span className="font-mono">
+                      {selectedParameterStats.max !== null
+                        ? selectedParameterStats.max.toFixed(2)
+                        : '-'}
+                    </span>
+                  </li>
+                  <li className="flex justify-between">
+                    <strong>Stdev:</strong>
+                    <span className="font-mono">
+                      {selectedParameterStats.stdev !== null
+                        ? selectedParameterStats.stdev.toFixed(2)
+                        : '-'}
+                    </span>
+                  </li>
+                  <li className="flex justify-between">
+                    <strong>QAF:</strong>
+                    <span className="font-mono">
+                      {selectedParameterStats.qaf !== null
+                        ? `${selectedParameterStats.qaf.toFixed(2)}%`
+                        : '-'}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </Card>
+        )}
+        {/* Modal Breakdown Harian */}
+        <Modal
+          isOpen={breakdownModal.isOpen}
+          onClose={() => setBreakdownModal({ isOpen: false, parameter: '', data: null })}
+          title={`Breakdown Harian - ${breakdownModal.parameter}`}
+        >
+          <div className="p-8 max-h-96 overflow-y-auto">
+            {breakdownModal.data && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-7 gap-3">
+                  {breakdownModal.data.dailyValues.map((day, index) => {
+                    const isOutOfRange = day.value === null || day.value < 0 || day.value > 100;
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          // Simulasi data jam-jam (24 jam)
+                          const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
+                            hour,
+                            value: day.value ? day.value + (Math.random() - 0.5) * 20 : null,
+                            isOutOfRange: day.value ? Math.random() > 0.8 : true,
+                          }));
+                          setHourlyBreakdownModal({
+                            isOpen: true,
+                            parameter: breakdownModal.parameter,
+                            dayIndex: index,
+                            data: hourlyData,
+                          });
+                        }}
+                        className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                          isOutOfRange
+                            ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                            : 'bg-green-100 text-green-800 hover:bg-green-200'
+                        }`}
+                      >
+                        <div className="text-center">
+                          <div className="text-xs">Hari {index + 1}</div>
+                          <div className="text-lg font-bold">
+                            {day.value !== null ? `${day.value.toFixed(1)}%` : '-'}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-xs text-slate-600 mt-4">
+                  Klik pada hari untuk melihat breakdown jam-jam. Hari berwarna merah menunjukkan
+                  parameter di luar range (0-100%).
+                </div>
+              </div>
+            )}
           </div>
-          <div className="text-sm text-slate-600 mt-6 p-4 bg-slate-50 rounded-lg">
-            💡 Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
+        </Modal>
+        {/* Modal Breakdown Jam-jam */}
+        <Modal
+          isOpen={hourlyBreakdownModal.isOpen}
+          onClose={() =>
+            setHourlyBreakdownModal({
+              isOpen: false,
+              parameter: '',
+              dayIndex: -1,
+              data: [],
+            })
+          }
+          title={`Breakdown Jam - ${hourlyBreakdownModal.parameter} (Hari ${
+            hourlyBreakdownModal.dayIndex + 1
+          })`}
+        >
+          <div className="p-8 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-6 gap-3">
+              {hourlyBreakdownModal.data.map((hour) => (
+                <div
+                  key={hour.hour}
+                  className={`p-4 rounded-lg text-sm transition-all duration-200 ${
+                    hour.isOutOfRange
+                      ? 'bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-50'
+                      : 'bg-green-100 text-green-800 hover:bg-green-50'
+                  }`}
+                >
+                  <div className="text-center">
+                    <div className="text-xs font-medium text-slate-600">Jam {hour.hour}:00</div>
+                    <div className="text-lg font-bold">
+                      {hour.value !== null ? `${hour.value.toFixed(1)}%` : '-'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="text-sm text-slate-600 mt-6 p-4 bg-slate-50 rounded-lg">
+              💡 Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      </div>
     </div>
   );
 };

@@ -209,6 +209,12 @@ export default defineConfig({
           }
 
           // Utility chunks
+          if (id.includes('utils/Microinteractions.tsx')) {
+            return 'utils-interactions';
+          }
+          if (id.includes('utils/ResponsiveLayout.tsx')) {
+            return 'utils-layout';
+          }
           if (id.includes('utils/') && !id.includes('permissions')) {
             return 'app-utils';
           }

@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { forwardRef } from 'react';
 
 // =============================================================================
 // RESPONSIVE UTILITIES (LOCAL DEFINITIONS)

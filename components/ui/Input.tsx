@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React from 'react';
 import { designSystem } from '../../utils/designSystem';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -15,7 +15,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   required?: boolean;
 }
 
-const Input = forwardRef<HTMLInputElement, InputProps>(
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       label,
@@ -204,25 +204,27 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input';
 
 // Specific input variants for common use cases
-export const EmailInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>((props, ref) => (
-  <Input
-    ref={ref}
-    type="email"
-    leftIcon={
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-        />
-      </svg>
-    }
-    {...props}
-  />
-));
+export const EmailInput = React.forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>(
+  (props, ref) => (
+    <Input
+      ref={ref}
+      type="email"
+      leftIcon={
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+          />
+        </svg>
+      }
+      {...props}
+    />
+  )
+);
 
-export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>(
+export const PasswordInput = React.forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>(
   (props, ref) => (
     <Input
       ref={ref}
@@ -243,23 +245,25 @@ export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type
   )
 );
 
-export const SearchInput = forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>((props, ref) => (
-  <Input
-    ref={ref}
-    type="search"
-    leftIcon={
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-        />
-      </svg>
-    }
-    {...props}
-  />
-));
+export const SearchInput = React.forwardRef<HTMLInputElement, Omit<InputProps, 'type'>>(
+  (props, ref) => (
+    <Input
+      ref={ref}
+      type="search"
+      leftIcon={
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+      }
+      {...props}
+    />
+  )
+);
 
 EmailInput.displayName = 'EmailInput';
 PasswordInput.displayName = 'PasswordInput';

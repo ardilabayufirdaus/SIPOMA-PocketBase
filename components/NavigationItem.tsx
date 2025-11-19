@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -10,7 +10,7 @@ interface IconButtonProps {
   isExpanded?: boolean;
 }
 
-export const NavigationItem = forwardRef<HTMLButtonElement, IconButtonProps>(
+export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProps>(
   (
     {
       icon,
@@ -113,6 +113,8 @@ export const NavigationItem = forwardRef<HTMLButtonElement, IconButtonProps>(
     );
   }
 );
+
+NavigationItem.displayName = 'NavigationItem';
 
 NavigationItem.displayName = 'NavigationItem';
 

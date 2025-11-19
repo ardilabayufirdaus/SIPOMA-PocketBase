@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useSimpleReportSettings } from '../../hooks/useSimpleReportSettings';
 import { useParameterSettings } from '../../hooks/useParameterSettings';
@@ -26,6 +27,7 @@ import {
   formatDuration,
 } from '../../utils/formatters';
 import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
+import { LoadingSpinner } from '../../utils/Microinteractions';
 import { InteractiveReport } from './components/InteractiveReport';
 
 declare global {
@@ -93,6 +95,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -664,15 +667,102 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const handleCopyImage = async () => {
     if (!reportRef.current) return;
 
+    // Check if clipboard API is supported
+    if (!navigator.clipboard || !navigator.clipboard.write) {
+      alert(
+        'Clipboard API not supported in this browser. Please use a modern browser like Chrome, Firefox, or Edge.'
+      );
+      return;
+    }
+
     setIsCopying(true);
     setCopySuccess(false);
+
+    // Initialize originalStyles outside try block so it's accessible in catch
+    const originalStyles: Array<{ element: Element; originalClass: string }> = [];
 
     try {
       const element = reportRef.current;
 
       // Temporarily adjust styling for better image capture
       const problemCells = element.querySelectorAll('.truncate');
-      const originalStyles: Array<{ element: Element; originalClass: string }> = [];
+
+      problemCells.forEach((cell) => {
+        const originalClass = cell.className;
+        originalStyles.push({ element: cell, originalClass });
+        // Remove truncate class and add word-wrap for better text rendering
+        cell.className = cell.className.replace('truncate', 'break-words whitespace-normal');
+      });
+
+      // Wait a bit for DOM to update (reduced from 100ms to 50ms)
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const rect = element.getBoundingClientRect();
+      const canvas = await html2canvas(element, {
+        scale: 1.5, // Further reduced from 2 to 1.5 for better performance while maintaining quality
+        width: rect.width,
+        height: rect.height,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        imageTimeout: 0,
+        foreignObjectRendering: false, // Disable for better performance
+      });
+
+      // Disable image smoothing for sharper image
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+      }
+
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          // Restore original styling after canvas creation to avoid forced reflow
+          originalStyles.forEach(({ element, originalClass }) => {
+            element.className = originalClass;
+          });
+
+          // Use PNG format as JPEG is not supported by Clipboard API
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          setCopySuccess(true);
+          // Clear any existing timeout before setting new one
+          if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+          }
+          timeoutRef.current = setTimeout(() => setCopySuccess(false), 2000);
+        } else {
+          // Restore styling even if blob creation failed
+          originalStyles.forEach(({ element, originalClass }) => {
+            element.className = originalClass;
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Failed to copy report as image:', error);
+      // Restore original styling in case of error
+      originalStyles.forEach(({ element, originalClass }) => {
+        element.className = originalClass;
+      });
+      alert('Failed to copy image to clipboard. Please try again or check browser permissions.');
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!reportRef.current) return;
+
+    setIsExportingPDF(true);
+
+    // Initialize originalStyles outside try block so it's accessible in catch
+    const originalStyles: Array<{ element: Element; originalClass: string }> = [];
+
+    try {
+      const element = reportRef.current;
+
+      // Temporarily adjust styling for better PDF capture
+      const problemCells = element.querySelectorAll('.truncate');
 
       problemCells.forEach((cell) => {
         const originalClass = cell.className;
@@ -682,11 +772,11 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       });
 
       // Wait a bit for DOM to update
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const rect = element.getBoundingClientRect();
       const canvas = await html2canvas(element, {
-        scale: 8,
+        scale: 1.5, // Lower scale for PDF to keep file size reasonable
         width: rect.width,
         height: rect.height,
         useCORS: true,
@@ -694,34 +784,48 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
+        foreignObjectRendering: false,
       });
-
-      // Disable image smoothing for sharper image
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-      }
 
       // Restore original styling
       originalStyles.forEach(({ element, originalClass }) => {
         element.className = originalClass;
       });
 
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-          setCopySuccess(true);
-          // Clear any existing timeout before setting new one
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          timeoutRef.current = setTimeout(() => setCopySuccess(false), 2000);
-        }
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
       });
-    } catch {
-      // Failed to copy report as image
+
+      // Calculate dimensions to fit A4 page
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10; // Small top margin
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `DAILY_OPERATIONAL_REPORT_${currentDate}.pdf`;
+
+      // Download PDF
+      pdf.save(filename);
+    } catch (error) {
+      console.error('Failed to export PDF:', error);
+      // Restore original styling in case of error
+      originalStyles.forEach(({ element, originalClass }) => {
+        element.className = originalClass;
+      });
+      alert('Failed to export PDF. Please try again.');
     } finally {
-      setIsCopying(false);
+      setIsExportingPDF(false);
     }
   };
 
@@ -831,7 +935,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <EnhancedButton
                 onClick={handleGenerateSimpleData}
                 disabled={isLoading || simpleReportConfig.length === 0}
-                variant="secondary"
+                variant="success"
                 size="sm"
                 className="px-3 py-1.5 h-auto text-sm"
                 ariaLabel={t.generate_simple_data_button}
@@ -840,37 +944,55 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </EnhancedButton>
 
               {reportData && (
-                <EnhancedButton
-                  onClick={handleCopyImage}
-                  variant="secondary"
-                  size="sm"
-                  className="px-3 py-1.5 h-auto text-sm whitespace-nowrap"
-                  ariaLabel="Copy report as image"
-                  disabled={isCopying}
-                >
-                  {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
-                </EnhancedButton>
+                <>
+                  <EnhancedButton
+                    onClick={handleCopyImage}
+                    variant="warning"
+                    size="sm"
+                    className="px-3 py-1.5 h-auto text-sm whitespace-nowrap"
+                    ariaLabel="Copy report as image"
+                    disabled={isCopying}
+                  >
+                    {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
+                  </EnhancedButton>
+
+                  <EnhancedButton
+                    onClick={handleExportPDF}
+                    variant="outline"
+                    size="sm"
+                    className="px-3 py-1.5 h-auto text-sm whitespace-nowrap"
+                    ariaLabel="Export report as PDF"
+                    disabled={isExportingPDF}
+                  >
+                    {isExportingPDF ? 'Exporting...' : 'Export PDF'}
+                  </EnhancedButton>
+                </>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-md min-h-[60vh] flex items-center justify-center">
+      <div className="bg-gradient-to-br from-slate-50 via-white to-gray-50 p-8 rounded-3xl shadow-2xl min-h-[80vh] flex items-center justify-center border-2 border-slate-200/50 backdrop-blur-sm">
         {reportConfig.length === 0 && (
           <div className="text-center text-slate-500">
-            <h3 className="text-lg font-semibold">{t.no_report_parameters}</h3>
-            <p>Please configure parameters in Plant Operations - Master Data.</p>
+            <h3 className="text-2xl font-semibold mb-4">{t.no_report_parameters}</h3>
+            <p className="text-lg">
+              Please configure parameters in Plant Operations - Master Data.
+            </p>
           </div>
         )}
         {isLoading && (
           <div className="text-center text-slate-500">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-            <p className="mt-4">{t.generating_report_message}</p>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-xl">{t.generating_report_message}</p>
           </div>
         )}
         {reportData && !isLoading && (
-          <div ref={reportRef} className="p-8 bg-white">
+          <div
+            ref={reportRef}
+            className="w-full max-w-full p-8 bg-white rounded-2xl shadow-xl border border-slate-200/30"
+          >
             <InteractiveReport
               groupedHeaders={reportData.groupedHeaders}
               rows={reportData.rows}
@@ -888,13 +1010,26 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         )}
         {!isLoading && !reportData && reportConfig.length > 0 && (
           <div className="text-center text-slate-400">
-            <p>
+            <p className="text-xl">
               Select filters and click &quot;Generate Report&quot; to view the daily operational
               report.
             </p>
           </div>
         )}
       </div>
+
+      {/* Floating Loading Overlay for Copy Image */}
+      {isCopying && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 min-w-[300px]">
+            <LoadingSpinner size="lg" color="blue" />
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Copying Report Image</h3>
+              <p className="text-slate-600">Please wait while we prepare your image...</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

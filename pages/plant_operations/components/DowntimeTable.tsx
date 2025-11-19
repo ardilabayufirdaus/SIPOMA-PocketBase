@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { CcrDowntimeData } from '../../../types';
 import { calculateDuration, formatDuration } from '../../../utils/formatters';
 
@@ -10,40 +9,34 @@ interface DowntimeTableProps {
 
 export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t }) => {
   return (
-    <motion.div
-      className="bg-gradient-to-br from-white to-red-50/30 rounded-xl shadow-xl overflow-hidden border border-red-200/50 mt-6"
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ scale: 1.01 }}
-    >
-      <div className="p-4 border-b border-red-200/50 bg-gradient-to-r from-red-500/10 to-pink-500/10">
-        <h3 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-full"></div>
+    <div className="bg-gradient-to-br from-rose-50 via-white to-pink-50 rounded-2xl shadow-2xl overflow-hidden border-2 border-rose-200/50 mt-4">
+      <div className="p-3 border-b-2 border-rose-300/50 bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-purple-500/10">
+        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <div className="w-2 h-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full"></div>
           {t.downtime_report_title || 'Downtime Report'}
         </h3>
       </div>
 
       <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-[6px] min-w-max">
+        <table className="w-full text-sm min-w-max">
           <thead>
-            <tr className="bg-gradient-to-r from-red-100 to-pink-100">
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+            <tr className="bg-gradient-to-r from-rose-400 via-pink-400 to-purple-400 text-white">
+              <th className="px-3 py-3 text-left font-semibold border-r-2 border-white/30 align-middle">
                 {t.start_time || 'Start Time'}
               </th>
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+              <th className="px-3 py-3 text-left font-semibold border-r-2 border-white/30 align-middle">
                 {t.end_time || 'End Time'}
               </th>
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+              <th className="px-3 py-3 text-left font-semibold border-r-2 border-white/30 align-middle">
                 {t.duration || 'Duration'}
               </th>
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+              <th className="px-3 py-3 text-left font-semibold border-r-2 border-white/30 align-middle">
                 {t.pic || 'PIC'}
               </th>
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 border-r border-slate-200 align-middle text-[6px] min-w-[140px]">
+              <th className="px-3 py-3 text-left font-semibold border-r-2 border-white/30 align-middle min-w-[180px]">
                 {t.problem || 'Problem'}
               </th>
-              <th className="px-1 py-1 text-left font-semibold text-slate-800 align-middle text-[6px] min-w-[140px]">
+              <th className="px-3 py-3 text-left font-semibold align-middle min-w-[180px]">
                 {t.action || 'Action'}
               </th>
             </tr>
@@ -61,28 +54,30 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
                   <tr
                     key={`${downtime.start_time}-${downtime.end_time}-${index}`}
                     className={`${
-                      index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-                    } hover:bg-slate-100 transition-colors`}
+                      index % 2 === 0
+                        ? 'bg-gradient-to-r from-white to-rose-50/30'
+                        : 'bg-gradient-to-r from-pink-50/50 to-purple-50/30'
+                    }`}
                   >
-                    <td className="px-1 py-1 text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+                    <td className="px-3 py-3 text-slate-800 border-r-2 border-rose-200/50 align-middle font-medium">
                       {downtime.start_time}
                     </td>
-                    <td className="px-1 py-1 text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+                    <td className="px-3 py-3 text-slate-800 border-r-2 border-rose-200/50 align-middle font-medium">
                       {downtime.end_time}
                     </td>
-                    <td className="px-1 py-1 text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+                    <td className="px-3 py-3 text-slate-800 border-r-2 border-rose-200/50 align-middle font-medium">
                       {durationText}
                     </td>
-                    <td className="px-1 py-1 text-slate-800 border-r border-slate-200 align-middle text-[6px]">
+                    <td className="px-3 py-3 text-slate-800 border-r-2 border-rose-200/50 align-middle font-medium">
                       {downtime.pic}
                     </td>
-                    <td className="px-1 py-1 text-slate-800 max-w-xs border-r border-slate-200 align-middle text-[6px] min-w-[140px]">
-                      <div className="truncate" title={downtime.problem}>
+                    <td className="px-3 py-3 text-slate-800 max-w-xs border-r-2 border-rose-200/50 align-middle font-medium min-w-[180px]">
+                      <div className="break-words" title={downtime.problem}>
                         {downtime.problem}
                       </div>
                     </td>
-                    <td className="px-1 py-1 text-slate-800 max-w-xs align-middle text-[6px] min-w-[140px]">
-                      <div className="truncate" title={downtime.action}>
+                    <td className="px-3 py-3 text-slate-800 max-w-xs align-middle font-medium min-w-[180px]">
+                      <div className="break-words" title={downtime.action}>
                         {downtime.action || '-'}
                       </div>
                     </td>
@@ -90,8 +85,8 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
                 );
               })
             ) : (
-              <tr className="bg-slate-50">
-                <td colSpan={6} className="px-1 py-2 text-center text-slate-600 italic text-[6px]">
+              <tr className="bg-gradient-to-r from-rose-50/50 to-pink-50/50">
+                <td colSpan={6} className="px-3 py-4 text-center text-slate-600 italic font-medium">
                   {t.no_downtime_recorded || 'Tidak ada downtime tercatat'}
                 </td>
               </tr>
@@ -99,6 +94,6 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
           </tbody>
         </table>
       </div>
-    </motion.div>
+    </div>
   );
 };

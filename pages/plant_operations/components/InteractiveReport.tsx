@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
 import { ParameterTable } from './ParameterTable';
 import { OperatorTable } from './OperatorTable';
 import { SiloTable } from './SiloTable';
@@ -82,95 +81,63 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   const isDailyOperationalReport = title.toUpperCase().includes('DAILY OPERATIONAL REPORT');
 
   return (
-    <motion.div
+    <div
       ref={reportRef}
-      className="space-y-6 max-w-full overflow-hidden pb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      className="w-full space-y-4 overflow-hidden pb-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen p-4"
     >
       {/* Report Header */}
-      <motion.div
-        className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl shadow-lg p-4 sm:p-6 border border-orange-200/50"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1, duration: 0.4 }}
-      >
+      <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl shadow-2xl p-4 sm:p-6 border-2 border-white/20 backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
-            <img src="/sipoma-logo.png" alt="Sipoma Logo" className="h-9 w-auto" />
+            <img src="/sipoma-logo.png" alt="Sipoma Logo" className="h-10 w-auto drop-shadow-lg" />
           </div>
           <div className="text-center flex-1">
             <h1
-              className={`${isDailyOperationalReport ? 'text-xl' : 'text-2xl'} font-bold text-orange-600 mb-2`}
+              className={`${isDailyOperationalReport ? 'text-xl' : 'text-2xl'} font-bold text-white mb-1 drop-shadow-lg`}
             >
               {title}
             </h1>
             <p
-              className={`${isDailyOperationalReport ? 'text-xs' : 'text-sm'} text-slate-600 font-medium`}
+              className={`${isDailyOperationalReport ? 'text-sm' : 'text-sm'} text-white/90 font-medium drop-shadow-md`}
             >
               {date}
             </p>
           </div>
           <div className="flex-shrink-0">
-            <img src="/tonasa-logo.png" alt="Tonasa Logo" className="h-11 w-auto" />
+            <img src="/tonasa-logo.png" alt="Tonasa Logo" className="h-12 w-auto drop-shadow-lg" />
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Parameter Data Table - Full Width */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.4 }}
-      >
+      <div>
         <ParameterTable groupedHeaders={groupedHeaders} rows={rows} footer={footer} t={t} />
-      </motion.div>
+      </div>
 
       {/* Downtime Report - Full Width */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
-      >
+      <div>
         <DowntimeTable downtimeData={downtimeData} t={t} />
-      </motion.div>
+      </div>
 
       {/* Information Table - Full Width */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.4 }}
-      >
+      <div>
         <InformationTable informationData={informationData} t={t} />
-      </motion.div>
+      </div>
 
-      {/* 3-Column Grid Layout for Remaining Tables */}
+      {/* Compact Horizontal Layout for Remaining Tables */}
       {isDailyOperationalReport && (
-        <div className="grid grid-cols-1 md:grid-cols-[0.8fr_1.6fr_1.6fr] gap-2 mt-2">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-          >
+        <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: '0.8fr 1.8fr 1.8fr' }}>
+          <div>
             <OperatorTable operatorData={operatorData} t={t} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55, duration: 0.4 }}
-          >
+          </div>
+          <div>
             <MaterialUsageTable materialUsageData={materialUsageData} t={t} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.4 }}
-          >
+          </div>
+          <div>
             <SiloTable siloData={siloData} t={t} />
-          </motion.div>
+          </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
