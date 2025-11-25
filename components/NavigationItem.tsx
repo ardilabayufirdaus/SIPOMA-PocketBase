@@ -196,7 +196,7 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
             onSelect(item);
             onClose();
           }}
-          className={`w-full px-4 py-3 text-left hover:bg-red-50 hover:text-red-600 flex items-center space-x-4 transition-all duration-200 group ${
+          className={`w-full px-4 py-3 text-left hover:bg-red-50 hover:text-blue-600 flex items-center space-x-4 transition-all duration-200 group ${
             _index === focusedIndex ? 'bg-red-50' : ''
           }`}
           role="menuitem"
@@ -213,3 +213,5 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
     </div>
   );
 };
+
+

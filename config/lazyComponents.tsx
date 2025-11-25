@@ -15,7 +15,7 @@ export const MainDashboardPage = createStandardLazy({
   displayName: 'MainDashboardPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading Dashboard. Please refresh.
     </div>
   ),
@@ -29,7 +29,7 @@ export const PlantOperationsPage = createStandardLazy({
   displayName: 'PlantOperationsPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading Plant Operations. Please refresh.
     </div>
   ),
@@ -51,7 +51,7 @@ export const ProjectManagementPage = createStandardLazy({
   displayName: 'ProjectManagementPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading Project Management. Please refresh.
     </div>
   ),
@@ -65,7 +65,7 @@ export const InspectionPage = createStandardLazy({
   displayName: 'InspectionPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading Inspection. Please refresh.
     </div>
   ),
@@ -79,7 +79,7 @@ export const UserListPage = createStandardLazy({
   displayName: 'UserListPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading User List. Please refresh.
     </div>
   ),
@@ -90,7 +90,7 @@ export const UserActivityPage = createStandardLazy({
   displayName: 'UserActivityPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading User Activity. Please refresh.
     </div>
   ),
@@ -104,7 +104,7 @@ export const SettingsPage = createStandardLazy({
   displayName: 'SettingsPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading Settings. Please refresh.
     </div>
   ),
@@ -118,7 +118,7 @@ export const WhatsAppReportsPage = createStandardLazy({
   displayName: 'WhatsAppReportsPage',
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: (
-    <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+    <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
       Error loading WhatsApp Reports. Please refresh.
     </div>
   ),

@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <>
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 via-slate-100 to-slate-300">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-slate-100 to-slate-300">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ const LoginPage: React.FC = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-4xl font-extrabold text-red-600 tracking-wide mb-1"
+              className="text-4xl font-extrabold text-blue-600 tracking-wide mb-1"
             >
               SIPOMA
             </motion.h1>
@@ -162,7 +162,7 @@ const LoginPage: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="mb-4 text-red-600 text-sm text-center"
+                className="mb-4 text-blue-600 text-sm text-center"
                 role="alert"
               >
                 {error}
@@ -189,3 +189,6 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+
+
+

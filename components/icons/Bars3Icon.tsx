@@ -22,3 +22,5 @@ const Bars3Icon: React.FC<IconProps> = ({ className = 'w-6 h-6' }) => (
 );
 
 export default Bars3Icon;
+
+

@@ -53,7 +53,7 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
 
   return (
     <div className="bg-gradient-to-br from-amber-50 via-white to-orange-50 rounded-2xl shadow-2xl overflow-hidden border-2 border-amber-200/50 mt-4">
-      <div className="p-3 border-b-2 border-amber-300/50 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10">
+      <div className="p-3 border-b-2 border-amber-300/50 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-blue-500/10">
         <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
           <div className="w-2 h-2 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"></div>
           {t.material_usage || 'Material Usage'}
@@ -85,7 +85,7 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
                   className={`${
                     index % 2 === 0
                       ? 'bg-gradient-to-r from-white to-amber-50/30'
-                      : 'bg-gradient-to-r from-orange-50/50 to-red-50/30'
+                      : 'bg-gradient-to-r from-orange-50/50 to-blue-50/30'
                   }`}
                 >
                   <td className="px-3 py-3 font-semibold text-slate-900 border-r-2 border-amber-200/50 align-middle">
@@ -115,7 +115,7 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
             )}
           </tbody>
           {sortedMaterialUsageData.length > 0 && (
-            <tfoot className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-red-500/20 border-t-2 border-amber-300/50">
+            <tfoot className="bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-blue-500/20 border-t-2 border-amber-300/50">
               <tr>
                 <td className="px-3 py-3 text-base font-semibold text-slate-900 border-r-2 border-amber-200/50">
                   Total
@@ -136,3 +136,5 @@ export const MaterialUsageTable: React.FC<MaterialUsageTableProps> = ({ material
     </div>
   );
 };
+
+

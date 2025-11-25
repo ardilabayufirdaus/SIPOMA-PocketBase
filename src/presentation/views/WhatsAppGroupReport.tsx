@@ -41,7 +41,7 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
             onChange={(e) =>
               setSelectedReportType(e.target.value as 'daily' | 'weekly' | 'monthly')
             }
-            className="px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            className="px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-sm sm:text-base"
           >
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
@@ -187,3 +187,4 @@ export const WhatsAppGroupReport: React.FC<WhatsAppGroupReportProps> = ({
     </div>
   );
 };
+

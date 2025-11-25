@@ -133,7 +133,7 @@ const SmartLoader: React.FC<SmartLoaderProps> = ({
   if (isTimedOut && retry) {
     return (
       <div className="flex flex-col items-center justify-center p-6 text-center">
-        <p className="text-red-600 mb-4">
+        <p className="text-blue-600 mb-4">
           Waktu muat data telah habis. Server mungkin sibuk atau koneksi lambat.
         </p>
         <button
@@ -151,3 +151,5 @@ const SmartLoader: React.FC<SmartLoaderProps> = ({
 };
 
 export default SmartLoader;
+
+

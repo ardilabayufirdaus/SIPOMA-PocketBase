@@ -58,7 +58,7 @@ export const WhatsAppGroupReportContainer: React.FC<WhatsAppGroupReportContainer
         <p className="text-red-600">{error}</p>
         <button
           onClick={loadReports}
-          className="mt-4 px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 min-h-[44px]"
+          className="mt-4 px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 min-h-[44px]"
         >
           Retry
         </button>

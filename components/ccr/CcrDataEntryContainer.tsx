@@ -224,7 +224,7 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
           {/* Parameter Data Table */}
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-white"
                   fill="none"
@@ -350,3 +350,5 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
     </div>
   );
 };
+
+

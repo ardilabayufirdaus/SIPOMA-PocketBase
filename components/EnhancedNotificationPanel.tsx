@@ -157,7 +157,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
             <BellIcon className="w-5 h-5 text-slate-600" />
             <h3 className="font-semibold text-slate-900">Notifications</h3>
             {unreadCount > 0 && (
-              <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">
+              <span className="bg-orange-100 text-red-700 text-xs px-2 py-1 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -258,7 +258,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
               onClick={() => setFilter(tab.key as typeof filter)}
               className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
                 filter === tab.key
-                  ? 'text-red-600 border-b-2 border-red-600'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -272,7 +272,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
           <div className="p-3 border-b border-slate-200">
             <button
               onClick={onMarkAllAsRead}
-              className="text-sm text-red-600 hover:text-red-700 transition-colors"
+              className="text-sm text-blue-600 hover:text-red-700 transition-colors"
             >
               <CheckIcon className="w-4 h-4 inline mr-1" />
               Mark all as read
@@ -317,7 +317,7 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
                           {notification.actionUrl && (
                             <button
                               onClick={() => onAction?.(notification)}
-                              className="text-xs text-red-600 hover:text-red-700 transition-colors"
+                              className="text-xs text-blue-600 hover:text-red-700 transition-colors"
                             >
                               {notification.actionLabel || 'View'}
                             </button>
@@ -374,3 +374,5 @@ const EnhancedNotificationPanel: React.FC<EnhancedNotificationPanelProps> = ({
 };
 
 export default EnhancedNotificationPanel;
+
+

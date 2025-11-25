@@ -245,7 +245,7 @@ const DefaultPermissionsModal: React.FC<DefaultPermissionsModalProps> = ({
         {/* Messages */}
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-blue-600" />
             <span className="text-red-700 text-sm">{error}</span>
           </div>
         )}
@@ -262,3 +262,5 @@ const DefaultPermissionsModal: React.FC<DefaultPermissionsModalProps> = ({
 };
 
 export default DefaultPermissionsModal;
+
+

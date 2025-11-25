@@ -54,3 +54,5 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, t }) => {
     </div>
   );
 };
+
+

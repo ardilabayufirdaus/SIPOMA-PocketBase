@@ -50,7 +50,7 @@ export function DebugLazyComponent({ component: Component, fallback = 'Loading..
 
   if (!isValid) {
     return (
-      <div className="error-box p-4 bg-red-50 border border-red-300 rounded">
+      <div className="error-box p-4 bg-red-50 border border-orange-300 rounded">
         <h3 className="font-medium text-red-700">Invalid Lazy Component</h3>
         <pre className="mt-2 text-sm bg-gray-100 p-2 rounded">
           {JSON.stringify(
@@ -69,7 +69,7 @@ export function DebugLazyComponent({ component: Component, fallback = 'Loading..
   return (
     <ErrorBoundary
       fallback={(error) => (
-        <div className="error-box p-4 bg-red-50 border border-red-300 rounded">
+        <div className="error-box p-4 bg-red-50 border border-orange-300 rounded">
           <h3 className="font-medium text-red-700">Error in Lazy Component</h3>
           <p className="text-sm mt-1">{error?.message || 'Unknown error'}</p>
           <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">

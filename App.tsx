@@ -265,7 +265,7 @@ const App: React.FC = () => {
   return (
     <SimpleErrorBoundary
       fallback={
-        <div className="flex items-center justify-center min-h-screen text-red-600">
+        <div className="flex items-center justify-center min-h-screen text-blue-600">
           Terjadi error pada aplikasi. Silakan refresh halaman.
         </div>
       }
@@ -483,9 +483,9 @@ const App: React.FC = () => {
         >
           <div className="p-8">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-red-600"
+                  className="w-6 h-6 text-blue-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -523,7 +523,7 @@ const App: React.FC = () => {
           <div className="bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10">
             <button
               onClick={handleSignOutCancel}
-              className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 hover:scale-[1.02]"
+              className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-[1.02]"
             >
               {t.cancel_button}
             </button>

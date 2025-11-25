@@ -108,7 +108,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({ recordToEdit, onSave, onC
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={t.action_placeholder || 'Enter action taken...'}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
             </div>
 
@@ -129,7 +129,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({ recordToEdit, onSave, onC
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={t.corrective_action_placeholder || 'Enter corrective action...'}
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
             </div>
 
@@ -154,7 +154,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({ recordToEdit, onSave, onC
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/10 to-blue-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                   <svg
                     className="w-4 h-4 text-slate-600"
@@ -193,7 +193,7 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({ recordToEdit, onSave, onC
             variant="primary"
             size="md"
             type="submit"
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-xl px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-orange-500 to-blue-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-xl px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             aria-label={t.save_button || 'Save downtime record'}
           >
             {t.save_button}
@@ -205,3 +205,5 @@ const AutonomousDowntimeForm: React.FC<FormProps> = ({ recordToEdit, onSave, onC
 };
 
 export default AutonomousDowntimeForm;
+
+

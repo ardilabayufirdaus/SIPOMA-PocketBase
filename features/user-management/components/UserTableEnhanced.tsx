@@ -675,7 +675,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         }
                         className={`px-2 py-1 ${
                           user.is_active
-                            ? 'text-red-600 hover:text-red-800 hover:bg-red-50'
+                            ? 'text-blue-600 hover:text-orange-800 hover:bg-red-50'
                             : 'text-green-600 hover:text-green-800 hover:bg-green-50'
                         }`}
                       />
@@ -685,7 +685,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         size="sm"
                         onClick={() => handleDeleteUser(user.id)}
                         icon={<TrashIcon className="w-4 h-4" />}
-                        className="text-red-600 hover:text-red-800 hover:bg-red-50 px-2 py-1"
+                        className="text-blue-600 hover:text-orange-800 hover:bg-red-50 px-2 py-1"
                       />
                     </div>
                   </td>
@@ -831,7 +831,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               perm.level === 'ADMIN'
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-orange-100 text-orange-800'
                                 : perm.level === 'WRITE'
                                   ? 'bg-orange-100 text-orange-800'
                                   : 'bg-blue-100 text-blue-800'
@@ -873,3 +873,5 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 };
 
 export default UserTable;
+
+

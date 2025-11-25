@@ -34,7 +34,7 @@ export const Filters: React.FC<FiltersProps> = ({
         id="log-filter-area"
         value={filterArea}
         onChange={(e) => setFilterArea(e.target.value)}
-        className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+        className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
         aria-label={t.filter_by_area}
       >
         <option value="All Areas">{t.all_areas}</option>
@@ -53,7 +53,7 @@ export const Filters: React.FC<FiltersProps> = ({
         id="log-filter-month"
         value={filterMonth}
         onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-        className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+        className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
         aria-label={t.filter_by_month}
       >
         {monthOptions.map((month) => (
@@ -71,7 +71,7 @@ export const Filters: React.FC<FiltersProps> = ({
         id="log-filter-year"
         value={filterYear}
         onChange={(e) => setFilterYear(parseInt(e.target.value))}
-        className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-red-500 focus:border-red-500 rounded-md"
+        className="block w-full pl-2 pr-8 py-1.5 text-sm bg-white text-slate-900 border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
         aria-label={t.filter_by_year}
       >
         {yearOptions.map((year) => (
@@ -91,3 +91,5 @@ export const Filters: React.FC<FiltersProps> = ({
     </div>
   </div>
 );
+
+

@@ -140,8 +140,8 @@ const getPerformanceStatus = (percentage: number) => {
     };
   return {
     status: 'Needs Improvement',
-    color: 'text-red-600',
-    bg: 'bg-red-100',
+    color: 'text-blue-600',
+    bg: 'bg-orange-100',
   };
 };
 
@@ -156,8 +156,8 @@ const getPercentageColor = (
     };
   if (percentage < 0)
     return {
-      bg: 'bg-red-100',
-      text: 'text-red-800',
+      bg: 'bg-orange-100',
+      text: 'text-orange-800',
       status: 'Low',
     };
   if (percentage > 100)
@@ -178,7 +178,7 @@ const getQafColor = (qaf: number | null): { bg: string; text: string } => {
   if (qaf === null) return { bg: 'bg-slate-100', text: 'text-slate-600' };
   if (qaf >= 95) return { bg: 'bg-emerald-100', text: 'text-emerald-800' };
   if (qaf >= 85) return { bg: 'bg-amber-100', text: 'text-amber-800' };
-  return { bg: 'bg-red-100', text: 'text-red-800' };
+  return { bg: 'bg-orange-100', text: 'text-orange-800' };
 };
 
 interface AnalysisDataRow {
@@ -450,10 +450,10 @@ interface ChartDataItem {
 }
 
 interface OperatorAchievementData {
-  parameter: string;
-  percentage: number;
-  outOfRange: number;
-  total: number;
+  operatorName: string;
+  operatorId: string;
+  achievementPercentage: number;
+  totalParameters: number;
   onClick: () => void;
 }
 
@@ -465,179 +465,197 @@ const ChartContainer: React.FC<{
 }> = ({ chartData, parameter, min, max }) => {
   const { containerRef, isContainerReady, containerStyle } = useSafeChartRendering();
 
+  // Memoize chart data to prevent unnecessary recalculations
+  const chartDataFormatted = useMemo(() => {
+    if (!chartData || chartData.length === 0) return null;
+
+    return {
+      labels: chartData.map((item) => item.day.toString().padStart(2, '0')),
+      datasets: [
+        // Max line (drawn first, no fill)
+        ...(max !== undefined
+          ? [
+              {
+                label: `Max (${formatCopNumber(max)})`,
+                data: chartData.map(() => max),
+                borderColor: '#ef4444',
+                backgroundColor: '#ef4444',
+                borderWidth: 3,
+                borderDash: [8, 4],
+                fill: false,
+                pointRadius: 0,
+                type: 'line' as const,
+                order: 2,
+              },
+            ]
+          : []),
+        // Min line with fill to max
+        ...(min !== undefined
+          ? [
+              {
+                label: `Min (${formatCopNumber(min)})`,
+                data: chartData.map(() => min),
+                borderColor: '#10b981',
+                backgroundColor: max !== undefined ? 'rgba(34, 197, 94, 0.1)' : '#10b981',
+                borderWidth: 3,
+                borderDash: [8, 4],
+                fill: max !== undefined ? 0 : false, // Fill to the first dataset (max line)
+                pointRadius: 0,
+                type: 'line' as const,
+                order: 1,
+              },
+            ]
+          : []),
+        // Actual parameter line
+        {
+          label: parameter.parameter,
+          data: chartData.map((item) => item.value),
+          borderColor: '#3b82f6',
+          backgroundColor: '#3b82f6',
+          borderWidth: 4,
+          fill: false,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          spanGaps: false,
+          order: 0,
+        },
+      ],
+    };
+  }, [chartData, parameter, min, max]);
+
+  // Memoize y-axis calculations
+  const { yAxisMin, yAxisMax } = useMemo(() => {
+    if (!chartData || chartData.length === 0) {
+      return { yAxisMin: 0, yAxisMax: 100 };
+    }
+
+    const allValues = chartData
+      .map((item) => item.value)
+      .filter((val) => val !== null && val !== undefined);
+    const yMin = min !== undefined ? Math.min(min, ...allValues) : Math.min(...allValues);
+    const yMax = max !== undefined ? Math.max(max, ...allValues) : Math.max(...allValues);
+
+    // Add padding (10% of range)
+    const range = yMax - yMin;
+    const padding = range * 0.1;
+    return {
+      yAxisMin: yMin - padding,
+      yAxisMax: yMax + padding,
+    };
+  }, [chartData, min, max]);
+
+  const options: ChartOptions<'line'> = useMemo(() => {
+    if (!chartDataFormatted) {
+      return {};
+    }
+
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top' as const,
+          labels: {
+            font: {
+              size: 10, // ✅ Legend labels: text-xs 10px
+              family: 'Inter, system-ui, sans-serif',
+              weight: 'normal',
+            },
+          },
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          titleFont: {
+            size: 10, // ✅ Tooltip title & body: text-xs 10px
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
+          bodyFont: {
+            size: 10,
+            family: 'Inter, system-ui, sans-serif',
+            weight: 'normal',
+          },
+          callbacks: {
+            label: (context) => {
+              if (context.datasetIndex === chartDataFormatted.datasets.length - 1) {
+                // Main data line
+                const value = context.parsed.y;
+                return `${parameter.parameter}: ${formatNumberIndonesian(value, 2)} ${parameter.unit}`;
+              }
+              return context.dataset.label || '';
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Tanggal',
+            font: {
+              size: 10, // ✅ X-axis title & ticks: text-xs 10px
+              family: 'Inter, system-ui, sans-serif',
+              weight: 'normal',
+            },
+          },
+          ticks: {
+            font: {
+              size: 10,
+              family: 'Inter, system-ui, sans-serif',
+              weight: 'normal',
+            },
+          },
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: parameter.unit,
+            font: {
+              size: 10, // ✅ Y-axis title & ticks: text-xs 10px
+              family: 'Inter, system-ui, sans-serif',
+              weight: 'normal',
+            },
+          },
+          ticks: {
+            font: {
+              size: 10,
+              family: 'Inter, system-ui, sans-serif',
+              weight: 'normal',
+            },
+          },
+          min: yAxisMin,
+          max: yAxisMax,
+          beginAtZero: false, // Don't force start at zero for better data visibility
+        },
+      },
+      elements: {
+        point: {
+          hoverRadius: 8,
+        },
+      },
+    };
+  }, [chartDataFormatted, parameter, yAxisMin, yAxisMax]);
+
   // Don't render chart until container is ready
-  if (!isContainerReady || !chartData || chartData.length === 0) {
+  if (!isContainerReady || !chartDataFormatted) {
     return (
       <div ref={containerRef} style={containerStyle}>
         <div className="flex items-center justify-center h-full text-slate-500 text-sm">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-500 mx-auto mb-2"></div>
+            <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-2"></div>
             Memuat chart...
           </div>
         </div>
       </div>
     );
   }
-
-  // Prepare Chart.js data
-  const chartDataFormatted = {
-    labels: chartData.map((item) => item.day.toString().padStart(2, '0')),
-    datasets: [
-      // Max line (drawn first, no fill)
-      ...(max !== undefined
-        ? [
-            {
-              label: `Max (${formatCopNumber(max)})`,
-              data: chartData.map(() => max),
-              borderColor: '#ef4444',
-              backgroundColor: '#ef4444',
-              borderWidth: 3,
-              borderDash: [8, 4],
-              fill: false,
-              pointRadius: 0,
-              type: 'line' as const,
-              order: 2,
-            },
-          ]
-        : []),
-      // Min line with fill to max
-      ...(min !== undefined
-        ? [
-            {
-              label: `Min (${formatCopNumber(min)})`,
-              data: chartData.map(() => min),
-              borderColor: '#10b981',
-              backgroundColor: max !== undefined ? 'rgba(34, 197, 94, 0.1)' : '#10b981',
-              borderWidth: 3,
-              borderDash: [8, 4],
-              fill: max !== undefined ? 0 : false, // Fill to the first dataset (max line)
-              pointRadius: 0,
-              type: 'line' as const,
-              order: 1,
-            },
-          ]
-        : []),
-      // Actual parameter line
-      {
-        label: parameter.parameter,
-        data: chartData.map((item) => item.value),
-        borderColor: '#3b82f6',
-        backgroundColor: '#3b82f6',
-        borderWidth: 4,
-        fill: false,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        pointBackgroundColor: '#3b82f6',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        spanGaps: false,
-        order: 0,
-      },
-    ],
-  };
-
-  // Calculate y-axis range based on min, max, and actual data
-  const allValues = chartData
-    .map((item) => item.value)
-    .filter((val) => val !== null && val !== undefined);
-  const yMin = min !== undefined ? Math.min(min, ...allValues) : Math.min(...allValues);
-  const yMax = max !== undefined ? Math.max(max, ...allValues) : Math.max(...allValues);
-
-  // Add padding (10% of range)
-  const range = yMax - yMin;
-  const padding = range * 0.1;
-  const yAxisMin = yMin - padding;
-  const yAxisMax = yMax + padding;
-
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top' as const,
-        labels: {
-          font: {
-            size: 10, // ✅ Legend labels: text-xs 10px
-            family: 'Inter, system-ui, sans-serif',
-            weight: 'normal',
-          },
-        },
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        titleFont: {
-          size: 10, // ✅ Tooltip title & body: text-xs 10px
-          family: 'Inter, system-ui, sans-serif',
-          weight: 'normal',
-        },
-        bodyFont: {
-          size: 10,
-          family: 'Inter, system-ui, sans-serif',
-          weight: 'normal',
-        },
-        callbacks: {
-          label: (context) => {
-            if (context.datasetIndex === chartDataFormatted.datasets.length - 1) {
-              // Main data line
-              const value = context.parsed.y;
-              return `${parameter.parameter}: ${formatNumberIndonesian(value, 2)} ${parameter.unit}`;
-            }
-            return context.dataset.label || '';
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Tanggal',
-          font: {
-            size: 10, // ✅ X-axis title & ticks: text-xs 10px
-            family: 'Inter, system-ui, sans-serif',
-            weight: 'normal',
-          },
-        },
-        ticks: {
-          font: {
-            size: 10,
-            family: 'Inter, system-ui, sans-serif',
-            weight: 'normal',
-          },
-        },
-      },
-      y: {
-        display: true,
-        title: {
-          display: true,
-          text: parameter.unit,
-          font: {
-            size: 10, // ✅ Y-axis title & ticks: text-xs 10px
-            family: 'Inter, system-ui, sans-serif',
-            weight: 'normal',
-          },
-        },
-        ticks: {
-          font: {
-            size: 10,
-            family: 'Inter, system-ui, sans-serif',
-            weight: 'normal',
-          },
-        },
-        min: yAxisMin,
-        max: yAxisMax,
-        beginAtZero: false, // Don't force start at zero for better data visibility
-      },
-    },
-    elements: {
-      point: {
-        hoverRadius: 8,
-      },
-    },
-  };
 
   return (
     <div ref={containerRef} style={containerStyle}>
@@ -652,99 +670,112 @@ const OperatorAchievementChart: React.FC<{
 }> = ({ data }) => {
   const { containerRef, isContainerReady, containerStyle } = useSafeChartRendering();
 
+  // Memoize chart data to prevent unnecessary recalculations
+  const chartDataFormatted = useMemo(() => {
+    if (!data || data.length === 0) return null;
+
+    const backgroundColors = data.map((entry) => {
+      if (entry.achievementPercentage >= 90) {
+        return '#10b981'; // Green for excellent
+      } else if (entry.achievementPercentage >= 80) {
+        return '#3b82f6'; // Blue for good
+      } else if (entry.achievementPercentage >= 70) {
+        return '#f59e0b'; // Amber for fair
+      }
+      return '#ef4444'; // Red for poor
+    });
+
+    const borderColors = backgroundColors; // Same as background
+
+    return {
+      labels: data.map((item) => item.operatorName),
+      datasets: [
+        {
+          label: 'Pencapaian Target COP',
+          data: data.map((item) => item.achievementPercentage),
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
+          borderWidth: 1,
+          borderRadius: 4,
+          borderSkipped: false,
+        },
+      ],
+    };
+  }, [data]);
+
+  const options: ChartOptions<'bar'> = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {};
+    }
+
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false, // Hide legend for cleaner look
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: (context) => {
+              const dataIndex = context.dataIndex;
+              const item = data[dataIndex];
+              return [`Pencapaian: ${context.parsed.y}%`, `Parameter: ${item.totalParameters}`];
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: false,
+          },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45,
+          },
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Persentase Pencapaian (%)',
+          },
+          beginAtZero: true,
+          max: 100,
+        },
+      },
+      onClick: (event, elements) => {
+        if (elements.length > 0) {
+          const dataIndex = elements[0].index;
+          data[dataIndex].onClick();
+        }
+      },
+      onHover: (event, elements) => {
+        if (event.native?.target) {
+          (event.native.target as HTMLElement).style.cursor =
+            elements.length > 0 ? 'pointer' : 'default';
+        }
+      },
+    };
+  }, [data]);
+
   // Don't render chart until container is ready
-  if (!isContainerReady || !data || data.length === 0) {
+  if (!isContainerReady || !chartDataFormatted) {
     return (
       <div ref={containerRef} style={containerStyle}>
         <div className="flex items-center justify-center h-full text-slate-500 text-sm">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-500 mx-auto mb-2"></div>
+            <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-2"></div>
             Memuat chart...
           </div>
         </div>
       </div>
     );
   }
-
-  // Prepare Chart.js data with custom colors
-  const backgroundColors = data.map((entry) => {
-    if (entry.percentage > 50) {
-      return '#ef4444'; // Red for high failure
-    } else if (entry.percentage > 25) {
-      return '#f59e0b'; // Amber for medium failure
-    }
-    return '#10b981'; // Green for low failure
-  });
-
-  const borderColors = backgroundColors; // Same as background
-
-  const chartDataFormatted = {
-    labels: data.map((item) => item.parameter),
-    datasets: [
-      {
-        label: 'Kegagalan Parameter',
-        data: data.map((item) => item.percentage),
-        backgroundColor: backgroundColors,
-        borderColor: borderColors,
-        borderWidth: 1,
-        borderRadius: 4,
-        borderSkipped: false,
-      },
-    ],
-  };
-
-  const options: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false, // Hide legend for cleaner look
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        callbacks: {
-          label: (context) => {
-            const dataIndex = context.dataIndex;
-            const item = data[dataIndex];
-            return [`Kegagalan: ${context.parsed.y}%`, `(${item.outOfRange}/${item.total} hari)`];
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        display: true,
-        title: {
-          display: false,
-        },
-        ticks: {
-          maxRotation: 45,
-          minRotation: 45,
-        },
-      },
-      y: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Persentase Kegagalan (%)',
-        },
-        beginAtZero: true,
-      },
-    },
-    onClick: (event, elements) => {
-      if (elements.length > 0) {
-        const dataIndex = elements[0].index;
-        data[dataIndex].onClick();
-      }
-    },
-    onHover: (event, elements) => {
-      if (event.native?.target) {
-        (event.native.target as HTMLElement).style.cursor =
-          elements.length > 0 ? 'pointer' : 'default';
-      }
-    },
-  };
 
   return (
     <div ref={containerRef} style={containerStyle}>
@@ -769,6 +800,32 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedUnit, setSelectedUnit] = useState('');
   const [selectedCementType, setSelectedCementType] = useState('');
   const [selectedOperator, setSelectedOperator] = useState('');
+  const [operatorAchievementData, setOperatorAchievementData] = useState<OperatorAchievementData[]>(
+    []
+  );
+  const [globalOperatorRanking, setGlobalOperatorRanking] = useState<
+    {
+      category: string;
+      operatorName: string;
+      operatorId: string;
+      overallAchievement: number;
+      totalParameters: number;
+      rank: number;
+      totalChecks: number;
+      totalInRange: number;
+    }[]
+  >([]);
+
+  const [selectedOperatorBreakdown, setSelectedOperatorBreakdown] = useState<{
+    category: string;
+    operatorName: string;
+    operatorId: string;
+    overallAchievement: number;
+    totalParameters: number;
+    rank: number;
+    totalChecks: number;
+    totalInRange: number;
+  } | null>(null);
 
   // Moisture data for footer - fetch for entire month
   const [monthlyMoistureData, setMonthlyMoistureData] = useState<Map<string, number>>(new Map());
@@ -792,7 +849,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           return;
         }
       } catch (error) {
-        console.warn('Error reading moisture cache:', error);
+        // console.warn('Error reading moisture cache:', error);
       }
 
       // Cache miss - compute data
@@ -918,7 +975,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         await indexedDBCache.set(cacheKey, moistureMap, cacheExpiry);
       } catch (error) {
-        console.warn('Error caching moisture data:', error);
+        // console.warn('Error caching moisture data:', error);
       }
 
       setMonthlyMoistureData(moistureMap);
@@ -943,7 +1000,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           return;
         }
       } catch (error) {
-        console.warn('Error reading feed cache:', error);
+        // console.warn('Error reading feed cache:', error);
       }
 
       // Cache miss - compute data
@@ -993,7 +1050,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         await indexedDBCache.set(cacheKey, feedMap, cacheExpiry);
       } catch (error) {
-        console.warn('Error caching feed data:', error);
+        // console.warn('Error caching feed data:', error);
       }
 
       setMonthlyFeedData(feedMap);
@@ -1052,6 +1109,24 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [showCorrelationMatrix, setShowCorrelationMatrix] = useState(false);
   const [showAnomalyDetection, setShowAnomalyDetection] = useState(false);
   const [showPredictiveInsights, setShowPredictiveInsights] = useState(false);
+  const [operatorBreakdownModal, setOperatorBreakdownModal] = useState<{
+    isOpen: boolean;
+    operatorName: string;
+    operatorId: string;
+    breakdownData: {
+      parameterName: string;
+      totalChecks: number;
+      inRangeCount: number;
+      achievementPercentage: number;
+      min: number;
+      max: number;
+    }[];
+  }>({
+    isOpen: false,
+    operatorName: '',
+    operatorId: '',
+    breakdownData: [],
+  });
   const [showQualityMetrics, setShowQualityMetrics] = useState(false);
 
   // Set default filter only after plantUnits are loaded
@@ -1163,9 +1238,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const relevantOperators = useMemo(() => {
     if (!users) return [];
 
-    return users
-      .filter((user) => user.role === 'Operator' && user.is_active)
-      .sort((a, b) => a.full_name.localeCompare(b.full_name));
+    const filtered = users
+      .filter((user) => user.role === 'Operator' && user.is_active && user.name)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    return filtered;
   }, [users]);
 
   const { getFooterDataForDate } = useCcrFooterData();
@@ -1813,51 +1889,409 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     };
   };
 
-  const operatorAchievementData = useMemo(() => {
-    if (!analysisData || analysisData.length === 0) {
-      return [];
-    }
+  // Calculate operator achievement data
+  useEffect(() => {
+    const calculateOperatorAchievement = async () => {
+      if (
+        !relevantOperators ||
+        relevantOperators.length === 0 ||
+        !selectedCategory ||
+        !selectedUnit
+      ) {
+        setOperatorAchievementData([]);
+        return;
+      }
 
-    // Filter berdasarkan operator yang dipilih jika ada
-    let filteredData = analysisData;
-    if (selectedOperator) {
-      // TODO: Filter berdasarkan operator_id ketika tersedia di data
-      // Untuk sementara, tampilkan semua data dengan catatan
-      filteredData = analysisData;
-    }
+      try {
+        // Get COP parameters for this category/unit
+        const copParams = filteredCopParameters;
+        if (copParams.length === 0) {
+          setOperatorAchievementData([]);
+          return;
+        }
 
-    return filteredData
-      .map((row) => {
-        const totalDays = row.dailyValues.length;
-        const outOfRangeDays = row.dailyValues.filter(
-          (day) => day.value === null || day.value < 0 || day.value > 100
-        ).length;
-        const percentage = totalDays > 0 ? (outOfRangeDays / totalDays) * 100 : 0;
+        // Get date range for the month
+        const startDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
+        const endDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(new Date(filterYear, filterMonth + 1, 0).getDate()).padStart(2, '0')}`;
+        const dateFilter = `date >= "${startDateStr}" && date <= "${endDateStr}"`;
 
-        return {
-          parameter: row.parameter.parameter,
-          percentage: Math.round(percentage * 10) / 10,
-          outOfRange: outOfRangeDays,
-          total: totalDays,
-          operatorId: null, // Placeholder until operator_id is added to type
-          onClick: () => {
-            const stats = calculateParameterStats(row);
-            setSelectedParameterStats({
-              parameter: row.parameter.parameter,
-              ...stats,
+        // Get parameter IDs
+        const parameterIds = copParams.map((p) => p.id);
+
+        // Get all ccr_parameter_data for the month (filter parameters client-side to avoid long URL)
+        const records = await pb.collection('ccr_parameter_data').getFullList({
+          filter: dateFilter,
+          fields:
+            'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+        });
+
+        // Filter records client-side by parameter IDs
+        const filteredRecords = records.filter((record) =>
+          parameterIds.includes(record.parameter_id)
+        );
+
+        // Group by operator with parameter breakdown
+        const operatorData = new Map<
+          string,
+          {
+            name: string;
+            parameters: Map<
+              string,
+              {
+                paramName: string;
+                values: number[];
+                min: number;
+                max: number;
+              }
+            >;
+            paramCount: number;
+          }
+        >();
+
+        filteredRecords.forEach((record) => {
+          const operatorName = record.name;
+          if (!operatorName) return;
+
+          if (!operatorData.has(operatorName)) {
+            operatorData.set(operatorName, {
+              name: operatorName,
+              parameters: new Map(),
+              paramCount: 0,
             });
-            // Buka modal breakdown harian
-            setBreakdownModal({
-              isOpen: true,
-              parameter: row.parameter.parameter,
-              data: row,
+          }
+
+          const opData = operatorData.get(operatorName)!;
+
+          // Get parameter settings for min/max
+          const paramSetting = copParams.find((p) => p.id === record.parameter_id);
+          if (!paramSetting) return;
+
+          const { min, max } = getMinMaxForCementType(paramSetting, selectedCementType);
+          if (min === undefined || max === undefined) return;
+
+          // Initialize parameter data if not exists
+          if (!opData.parameters.has(record.parameter_id)) {
+            opData.parameters.set(record.parameter_id, {
+              paramName: paramSetting.parameter || record.parameter_id,
+              values: [],
+              min,
+              max,
             });
-          },
-        };
-      })
-      .filter((item) => item.percentage > 0)
-      .sort((a, b) => b.percentage - a.percentage); // Sort by highest failure rate first
-  }, [analysisData, selectedOperator]);
+            opData.paramCount++;
+          }
+
+          const paramData = opData.parameters.get(record.parameter_id)!;
+
+          // Check each hour
+          for (let hour = 1; hour <= 24; hour++) {
+            const hourKey = `hour${hour}` as keyof typeof record;
+            const value = record[hourKey] as number | null;
+            if (value !== null && value !== undefined && !isNaN(value)) {
+              // Check if in range
+              const inRange = value >= min && value <= max;
+              paramData.values.push(inRange ? 1 : 0);
+            }
+          }
+        });
+
+        // Calculate achievement for each operator
+        const results: OperatorAchievementData[] = [];
+
+        operatorData.forEach((data, operatorName) => {
+          if (!operatorName || data.paramCount === 0) return;
+
+          // Calculate total achievement across all parameters
+          let totalChecks = 0;
+          let totalInRange = 0;
+
+          const breakdownData: {
+            parameterName: string;
+            totalChecks: number;
+            inRangeCount: number;
+            achievementPercentage: number;
+            min: number;
+            max: number;
+          }[] = [];
+
+          data.parameters.forEach((paramData) => {
+            const paramTotalChecks = paramData.values.length;
+            const paramInRangeCount = paramData.values.filter((v) => v === 1).length;
+            const paramAchievement =
+              paramTotalChecks > 0 ? (paramInRangeCount / paramTotalChecks) * 100 : 0;
+
+            totalChecks += paramTotalChecks;
+            totalInRange += paramInRangeCount;
+
+            breakdownData.push({
+              parameterName: paramData.paramName,
+              totalChecks: paramTotalChecks,
+              inRangeCount: paramInRangeCount,
+              achievementPercentage: Math.round(paramAchievement * 10) / 10,
+              min: paramData.min,
+              max: paramData.max,
+            });
+          });
+
+          const overallAchievement = totalChecks > 0 ? (totalInRange / totalChecks) * 100 : 0;
+
+          // Find operator details
+          const operator = relevantOperators.find((op) => op.name === operatorName);
+          if (!operator) return;
+
+          results.push({
+            operatorName: operatorName,
+            operatorId: operator.id,
+            achievementPercentage: Math.round(overallAchievement * 10) / 10,
+            totalParameters: data.paramCount,
+            onClick: () => {
+              setOperatorBreakdownModal({
+                isOpen: true,
+                operatorName: operatorName,
+                operatorId: operator.id,
+                breakdownData: breakdownData,
+              });
+            },
+          });
+        });
+
+        // Filter by selected operator if any
+        let filteredResults = results;
+        if (selectedOperator) {
+          filteredResults = results.filter((r) => r.operatorId === selectedOperator);
+        }
+
+        // Sort by achievement percentage descending
+        const finalResults = filteredResults.sort(
+          (a, b) => b.achievementPercentage - a.achievementPercentage
+        );
+
+        setOperatorAchievementData(finalResults);
+      } catch (error) {
+        // console.error('Error calculating operator achievement data:', error);
+        setOperatorAchievementData([]);
+      }
+    };
+
+    calculateOperatorAchievement();
+  }, [
+    relevantOperators,
+    selectedCategory,
+    selectedUnit,
+    filteredCopParameters,
+    filterYear,
+    filterMonth,
+    selectedCementType,
+    selectedOperator,
+  ]);
+
+  // Calculate global operator ranking across all plant categories and cement types
+  useEffect(() => {
+    const calculateGlobalOperatorRanking = async () => {
+      if (!relevantOperators || relevantOperators.length === 0) {
+        setGlobalOperatorRanking([]);
+        return;
+      }
+
+      try {
+        // Get all plant categories and units for comprehensive ranking
+        const allCategories = Array.from(new Set(plantUnits.map((unit) => unit.category)));
+        const allUnits = plantUnits.map((unit) => unit.unit);
+
+        // Get all COP parameters across all categories/units
+        const allCopParams = allParameters.filter(
+          (param) => allCategories.includes(param.category) && allUnits.includes(param.unit)
+        );
+
+        if (allCopParams.length === 0) {
+          setGlobalOperatorRanking([]);
+          return;
+        }
+
+        // Get date range for the current month
+        const startDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
+        const endDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(new Date(filterYear, filterMonth + 1, 0).getDate()).padStart(2, '0')}`;
+        const dateFilter = `date >= "${startDateStr}" && date <= "${endDateStr}"`;
+
+        // Get all parameter IDs
+        const allParameterIds = allCopParams.map((p) => p.id);
+
+        // Get all ccr_parameter_data for the month (filter parameters client-side to avoid long URL)
+        let records = [];
+        let retryCount = 0;
+        const maxRetries = 3;
+        const retryDelay = 1000; // 1 second
+
+        while (retryCount < maxRetries) {
+          try {
+            records = await pb.collection('ccr_parameter_data').getFullList({
+              filter: dateFilter,
+              fields:
+                'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+            });
+            break; // Success, exit retry loop
+          } catch (error) {
+            retryCount++;
+            if (retryCount < maxRetries) {
+              await new Promise((resolve) => setTimeout(resolve, retryDelay * retryCount)); // Exponential backoff
+            } else {
+              throw error; // Re-throw after max retries
+            }
+          }
+        }
+
+        // Filter records client-side by parameter IDs
+        records = records.filter((record) => allParameterIds.includes(record.parameter_id));
+
+        // Group by operator and category
+        const operatorCategoryData = new Map<
+          string,
+          Map<
+            string,
+            {
+              name: string;
+              totalChecks: number;
+              totalInRange: number;
+              parametersCount: number;
+            }
+          >
+        >();
+
+        records.forEach((record) => {
+          const operatorName = record.name;
+          if (!operatorName) return;
+
+          // Find parameter and its category
+          const paramSetting = allCopParams.find((p) => p.id === record.parameter_id);
+          if (!paramSetting) return;
+
+          const category = paramSetting.category;
+
+          // Initialize category map if not exists
+          if (!operatorCategoryData.has(category)) {
+            operatorCategoryData.set(category, new Map());
+          }
+
+          const categoryOperators = operatorCategoryData.get(category)!;
+
+          // Initialize operator data for this category
+          if (!categoryOperators.has(operatorName)) {
+            categoryOperators.set(operatorName, {
+              name: operatorName,
+              totalChecks: 0,
+              totalInRange: 0,
+              parametersCount: 0,
+            });
+          }
+
+          const opData = categoryOperators.get(operatorName)!;
+
+          // Count this parameter for the operator
+          opData.parametersCount++;
+
+          // Check each hour
+          for (let hour = 1; hour <= 24; hour++) {
+            const hourKey = `hour${hour}` as keyof typeof record;
+            const value = record[hourKey] as number | null;
+            if (value !== null && value !== undefined && !isNaN(value)) {
+              opData.totalChecks++;
+              // Check if in range for any cement type (general, OPC, PCC)
+              const generalMin = paramSetting.min_value;
+              const generalMax = paramSetting.max_value;
+              const opcMin = paramSetting.opc_min_value;
+              const opcMax = paramSetting.opc_max_value;
+              const pccMin = paramSetting.pcc_min_value;
+              const pccMax = paramSetting.pcc_max_value;
+              const inRange =
+                (generalMin !== undefined &&
+                  generalMax !== undefined &&
+                  value >= generalMin &&
+                  value <= generalMax) ||
+                (opcMin !== undefined &&
+                  opcMax !== undefined &&
+                  value >= opcMin &&
+                  value <= opcMax) ||
+                (pccMin !== undefined &&
+                  pccMax !== undefined &&
+                  value >= pccMin &&
+                  value <= pccMax);
+              if (inRange) {
+                opData.totalInRange++;
+              }
+            }
+          }
+        });
+
+        // Calculate top operator for each category
+        const categoryTopOperators: {
+          category: string;
+          operatorName: string;
+          operatorId: string;
+          overallAchievement: number;
+          totalParameters: number;
+          rank: number;
+          totalChecks: number;
+          totalInRange: number;
+        }[] = [];
+
+        operatorCategoryData.forEach((categoryOperators, category) => {
+          const categoryResults: {
+            operatorName: string;
+            operatorId: string;
+            overallAchievement: number;
+            totalParameters: number;
+            totalChecks: number;
+            totalInRange: number;
+          }[] = [];
+
+          categoryOperators.forEach((data, operatorName) => {
+            if (data.totalChecks === 0) {
+              return;
+            }
+
+            const overallAchievement = (data.totalInRange / data.totalChecks) * 100;
+
+            // Find operator details
+            const operator = relevantOperators.find((op) => op.name === operatorName);
+            if (!operator) return;
+
+            categoryResults.push({
+              operatorName: operatorName,
+              operatorId: operator.id,
+              overallAchievement: Math.round(overallAchievement * 10) / 10,
+              totalParameters: data.parametersCount,
+              totalChecks: data.totalChecks,
+              totalInRange: data.totalInRange,
+            });
+          });
+
+          // Sort by achievement and take top 1 for this category
+          const sortedCategoryResults = categoryResults.sort(
+            (a, b) => b.overallAchievement - a.overallAchievement
+          );
+
+          if (sortedCategoryResults.length > 0) {
+            const topOperator = sortedCategoryResults[0];
+            categoryTopOperators.push({
+              category: category,
+              operatorName: topOperator.operatorName,
+              operatorId: topOperator.operatorId,
+              overallAchievement: topOperator.overallAchievement,
+              totalParameters: topOperator.totalParameters,
+              rank: 1,
+              totalChecks: topOperator.totalChecks,
+              totalInRange: topOperator.totalInRange,
+            });
+          }
+        });
+
+        setGlobalOperatorRanking(categoryTopOperators);
+      } catch (error) {
+        setGlobalOperatorRanking([]);
+      }
+    };
+
+    calculateGlobalOperatorRanking();
+  }, [relevantOperators, allParameters, plantUnits, filterYear, filterMonth]);
 
   const yearOptions = useMemo(
     () => Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i),
@@ -1878,19 +2312,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       }
 
       try {
-        // Get all dates from ccr_footer_data that have data for the COP parameters
+        // Get all dates from ccr_footer_data that have data for the COP parameters (filter client-side)
         const parameterIds = filteredCopParameters.map((p) => p.id);
-        const filter = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
 
         const records = await pb.collection('ccr_footer_data').getFullList({
-          filter: filter,
-          fields: 'date',
+          fields: 'date,parameter_id',
           sort: '-date', // Get latest first
         });
 
+        // Filter records client-side
+        const filteredRecords = records.filter((record) =>
+          parameterIds.includes(record.parameter_id)
+        );
+
         // Extract unique years from the dates
         const yearsSet = new Set<number>();
-        records.forEach((record) => {
+        filteredRecords.forEach((record) => {
           const year = new Date(record.date).getFullYear();
           yearsSet.add(year);
         });
@@ -2556,7 +2993,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-full mx-auto space-y-6">
         <Card
-          variant="interactive"
+          variant="default"
           padding="lg"
           className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white shadow-2xl border-0"
         >
@@ -2582,7 +3019,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     id="cop-filter-category"
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full pl-4 pr-8 py-3 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-all duration-200 appearance-none"
+                    className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
                   >
                     {plantCategories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -2605,7 +3042,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     id="cop-filter-unit"
                     value={selectedUnit}
                     onChange={(e) => setSelectedUnit(e.target.value)}
-                    className="w-full pl-4 pr-8 py-2.5 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white disabled:bg-white/50 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                    className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm font-medium appearance-none"
                     disabled={unitsForCategory.length === 0}
                   >
                     {unitsForCategory.map((unit) => (
@@ -2629,7 +3066,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     id="cop-filter-cement-type"
                     value={selectedCementType}
                     onChange={(e) => setSelectedCementType(e.target.value)}
-                    className="w-full pl-4 pr-8 py-3 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-all duration-200 appearance-none"
+                    className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
                   >
                     <option value="">Pilih Cement Type</option>
                     <option value="OPC">OPC</option>
@@ -2650,7 +3087,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     id="cop-filter-month"
                     value={filterMonth}
                     onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                    className="w-full pl-4 pr-8 py-2.5 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-colors appearance-none"
+                    className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
                   >
                     {monthOptions.map((m) => (
                       <option key={m.value} value={m.value}>
@@ -2673,7 +3110,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     id="cop-filter-year"
                     value={filterYear}
                     onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                    className="w-full pl-4 pr-8 py-2.5 bg-white/90 backdrop-blur-sm text-slate-900 border border-white/30 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-white text-sm font-medium transition-colors appearance-none"
+                    className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
                   >
                     {yearOptions.map((y) => (
                       <option key={y} value={y}>
@@ -2688,68 +3125,64 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         </Card>{' '}
         {/* Analysis Features Tabs */}
-        <Card
-          variant="elevated"
-          padding="md"
-          className="bg-white/80 backdrop-blur-sm shadow-xl border-0"
-        >
+        <Card variant="elevated" padding="md" className="bg-white shadow-xl border-0">
           <div className="flex flex-wrap gap-3 mb-4">
             <button
               onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showStatisticalSummary
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:from-blue-100 hover:to-blue-200 border border-blue-200'
+                  ? 'bg-blue-500 text-white shadow-lg'
+                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
               }`}
             >
               📊 Statistical Summary
             </button>
             <button
               onClick={() => setShowPeriodComparison(!showPeriodComparison)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showPeriodComparison
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30'
-                  : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 hover:from-green-100 hover:to-green-200 border border-green-200'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
               }`}
             >
               📈 Period Comparison
             </button>
             <button
               onClick={() => setShowCorrelationMatrix(!showCorrelationMatrix)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showCorrelationMatrix
-                  ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30'
-                  : 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 hover:from-purple-100 hover:to-purple-200 border border-purple-200'
+                  ? 'bg-purple-500 text-white shadow-lg'
+                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
               }`}
             >
               🔗 Correlation Matrix
             </button>
             <button
               onClick={() => setShowAnomalyDetection(!showAnomalyDetection)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showAnomalyDetection
-                  ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30'
-                  : 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border border-red-200'
+                  ? 'bg-red-500 text-white shadow-lg'
+                  : 'bg-red-50 text-red-700 hover:bg-orange-100 border border-red-200'
               }`}
             >
               ⚠️ Anomaly Detection
             </button>
             <button
               onClick={() => setShowPredictiveInsights(!showPredictiveInsights)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showPredictiveInsights
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/30'
-                  : 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 hover:from-orange-100 hover:to-orange-200 border border-orange-200'
+                  ? 'bg-orange-500 text-white shadow-lg'
+                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'
               }`}
             >
               🔮 Predictive Insights
             </button>
             <button
               onClick={() => setShowQualityMetrics(!showQualityMetrics)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold transition-colors duration-150 min-h-[48px] ${
+              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showQualityMetrics
-                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                  : 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 hover:from-indigo-100 hover:to-indigo-200 border border-indigo-200'
+                  ? 'bg-indigo-500 text-white shadow-lg'
+                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
               }`}
             >
               🏆 Quality Metrics
@@ -2815,7 +3248,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             ? 'text-green-600'
                             : stat.completeness >= 60
                               ? 'text-yellow-600'
-                              : 'text-red-600'
+                              : 'text-blue-600'
                         }`}
                       >
                         {stat.completeness.toFixed(0)}%
@@ -2828,7 +3261,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           stat.trend === 'increasing'
                             ? 'text-green-600'
                             : stat.trend === 'decreasing'
-                              ? 'text-red-600'
+                              ? 'text-blue-600'
                               : 'text-slate-600'
                         }`}
                       >
@@ -2862,10 +3295,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <Card
             variant="floating"
             padding="md"
-            className="bg-gradient-to-br from-red-50 to-pink-50"
+            className="bg-gradient-to-br from-blue-50 to-pink-50"
           >
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
+              <h2 className="text-xl font-semibold text-orange-800">⚠️ Anomaly Detection</h2>
               <p className="text-xs text-slate-600 mt-1">
                 Deteksi nilai abnormal menggunakan metode 3-sigma rule
               </p>
@@ -2888,7 +3321,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`font-mono font-bold ${
                           anomaly.severity === 'high'
-                            ? 'text-red-600'
+                            ? 'text-blue-600'
                             : anomaly.severity === 'medium'
                               ? 'text-yellow-600'
                               : 'text-green-600'
@@ -2902,7 +3335,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`font-medium px-1.5 py-0.5 rounded text-xs ${
                           anomaly.severity === 'high'
-                            ? 'bg-red-100 text-red-800'
+                            ? 'bg-orange-100 text-orange-800'
                             : anomaly.severity === 'medium'
                               ? 'bg-yellow-100 text-yellow-800'
                               : 'bg-green-100 text-green-800'
@@ -2918,7 +3351,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {anomaly.outliers.slice(0, 3).map((value, idx) => (
                             <span
                               key={idx}
-                              className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
+                              className="bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded text-xs font-mono"
                             >
                               {formatCopNumber(value)}
                             </span>
@@ -2986,7 +3419,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <span
                           className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                             corr.strength === 'strong'
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-orange-100 text-orange-800'
                               : corr.strength === 'moderate'
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : corr.strength === 'weak'
@@ -3001,7 +3434,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         {corr.correlation !== null && (
                           <span
                             className={`text-sm ${
-                              corr.correlation > 0 ? 'text-green-600' : 'text-red-600'
+                              corr.correlation > 0 ? 'text-green-600' : 'text-blue-600'
                             }`}
                           >
                             {corr.correlation > 0 ? '↗️' : '↘️'}
@@ -3189,7 +3622,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             comparison.delta !== null && comparison.delta > 0
                               ? 'text-green-600'
                               : comparison.delta !== null && comparison.delta < 0
-                                ? 'text-red-600'
+                                ? 'text-blue-600'
                                 : 'text-slate-600'
                           }`}
                         >
@@ -3205,7 +3638,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             comparison.trend === 'increased'
                               ? 'bg-green-100 text-green-800'
                               : comparison.trend === 'decreased'
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-orange-100 text-orange-800'
                                 : 'bg-slate-100 text-slate-800'
                           }`}
                         >
@@ -3276,7 +3709,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`font-medium px-1.5 py-0.5 rounded text-xs ${
                           insight.risk === 'high'
-                            ? 'bg-red-100 text-red-800'
+                            ? 'bg-orange-100 text-orange-800'
                             : insight.risk === 'medium'
                               ? 'bg-yellow-100 text-yellow-800'
                               : 'bg-green-100 text-green-800'
@@ -3292,7 +3725,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           insight.trend === 'increasing'
                             ? 'text-green-600'
                             : insight.trend === 'decreasing'
-                              ? 'text-red-600'
+                              ? 'text-blue-600'
                               : 'text-slate-600'
                         }`}
                       >
@@ -3311,15 +3744,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </Card>
         )}
-        <Card
-          variant="glass"
-          padding="lg"
-          className="backdrop-blur-xl bg-white/90 shadow-2xl border-0"
-        >
+        <Card variant="glass" padding="lg" className="bg-white shadow-2xl border-0">
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-16 space-y-6">
               <div className="flex items-center space-x-3">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                <div className="w-10 h-10 border-2 border-gray-300 border-t-blue-500 rounded-full"></div>
                 <span className="text-xl font-medium text-slate-600">
                   Loading COP analysis data...
                 </span>
@@ -3351,7 +3780,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
           {error && (
             <div className="flex items-center justify-center py-8">
-              <div className="text-center bg-gradient-to-r from-red-50 to-pink-50 p-8 rounded-2xl border border-red-200">
+              <div className="text-center bg-gradient-to-r from-blue-50 to-pink-50 p-8 rounded-2xl border border-red-200">
                 <div className="text-red-500 mb-2">
                   <svg
                     className="w-8 h-8 mx-auto"
@@ -3465,7 +3894,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     };
                     retryFetch();
                   }}
-                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
                 >
                   Try Again
                 </button>
@@ -3530,7 +3959,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <th className="sticky left-12 bg-gradient-to-r from-blue-600 to-blue-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 min-w-[100px]">
                         {t.parameter}
                       </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-red-500 to-red-600">
+                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-blue-500 to-red-600">
                         {t.min}
                       </th>
                       <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-green-500 to-green-600">
@@ -3583,7 +4012,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   {row.parameter.parameter}
                                 </td>
                                 {/* Use helper function for consistent min/max display */}
-                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-red-50 to-red-100 font-semibold">
+                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-blue-50 to-blue-100 font-semibold">
                                   {(() => {
                                     const { min } = getMinMaxForCementType(
                                       row.parameter,
@@ -4046,9 +4475,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-shadow duration-200 group`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h3
-                        className={`text-xl font-bold ${colorScheme.accent} truncate group-hover:scale-105 transition-transform duration-200`}
-                      >
+                      <h3 className={`text-xl font-bold ${colorScheme.accent} truncate`}>
                         {paramData.parameter.parameter}
                       </h3>
                       <div
@@ -4105,30 +4532,20 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="operator-filter"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="flex-1 min-w-0 px-4 py-3 bg-white/90 text-slate-900 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium transition-all duration-200 hover:shadow-md"
+                  className="flex-1 min-w-0 px-4 py-3 bg-white/90 text-slate-900 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium hover:shadow-md"
                 >
                   <option value="">Semua Operator</option>
                   {relevantOperators.map((operator) => (
                     <option key={operator.id} value={operator.id}>
-                      {operator.full_name}
+                      {operator.name || 'Unknown Operator'}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
             <p className="text-sm text-slate-600 mb-6 font-medium">
-              📊 Diagram batang menunjukkan persentase hari dimana operator tidak mencapai parameter
-              target (di luar range 0-100%).
+              📊 Diagram batang menunjukkan persentase pencapaian target parameter COP per operator.
             </p>
-            {selectedOperator && (
-              <div className="mb-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl shadow-sm">
-                <p className="text-sm text-amber-800 font-medium">
-                  <strong>⚠️ Catatan:</strong> Filter operator belum dapat diterapkan karena data
-                  operator belum tersedia di sistem. Diagram menampilkan semua parameter untuk
-                  kategori dan unit yang dipilih.
-                </p>
-              </div>
-            )}
             <div className="bg-white/80 rounded-2xl p-4 shadow-inner mb-8">
               <div style={{ width: '100%', height: '400px' }}>
                 <OperatorAchievementChart data={operatorAchievementData} />
@@ -4141,148 +4558,469 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <span className="font-bold text-slate-800">{operatorAchievementData.length}</span>
               </p>
             </div>
-
-            {/* Statistik Ringkasan Performa */}
-            {operatorAchievementData.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-2xl border-2 border-red-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                      <span className="text-red-600 font-bold text-lg">📉</span>
-                    </div>
-                    <h4 className="text-lg font-bold text-red-800">Rata-rata Kegagalan</h4>
-                  </div>
-                  <p className="text-3xl font-bold text-red-600 mb-2">
-                    {operatorAchievementData.length > 0
-                      ? (
-                          operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
-                          operatorAchievementData.length
-                        ).toFixed(1)
-                      : 0}
-                    %
-                  </p>
-                  <p className="text-sm text-slate-600 font-medium">
-                    Rata-rata persentase kegagalan parameter
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-2xl border-2 border-orange-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                      <span className="text-orange-600 font-bold text-lg">⚠️</span>
-                    </div>
-                    <h4 className="text-lg font-bold text-orange-800">Parameter Terburuk</h4>
-                  </div>
-                  <p className="text-xl font-bold text-slate-800 truncate mb-2">
-                    {operatorAchievementData[0]?.parameter || '-'}
-                  </p>
-                  <p className="text-sm text-slate-600 font-medium">
-                    {operatorAchievementData[0]?.percentage || 0}% kegagalan
-                  </p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                      <span className="text-green-600 font-bold text-lg">🎯</span>
-                    </div>
-                    <h4 className="text-lg font-bold text-green-800">Status Performa</h4>
-                  </div>
-                  {(() => {
-                    const avgFailure =
-                      operatorAchievementData.length > 0
-                        ? operatorAchievementData.reduce((sum, item) => sum + item.percentage, 0) /
-                          operatorAchievementData.length
-                        : 0;
-                    const performance = getPerformanceStatus(avgFailure);
-                    return (
-                      <>
-                        <p className={`text-2xl font-bold ${performance.color} mb-2`}>
-                          {performance.status}
-                        </p>
-                        <p className="text-sm text-slate-600 font-medium">
-                          Berdasarkan rata-rata {avgFailure.toFixed(1)}% kegagalan
-                        </p>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
-            {selectedParameterStats && (
-              <div className="fixed top-20 right-4 z-50 w-64 p-3 bg-white rounded-lg shadow-xl border border-slate-300 text-sm text-slate-800 max-h-80 overflow-y-auto">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-semibold text-sm truncate pr-2">
-                    {selectedParameterStats.parameter}
-                  </h4>
-                  <button
-                    className="text-slate-400 hover:text-slate-600 p-1"
-                    onClick={() => setSelectedParameterStats(null)}
-                    aria-label="Close stats"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <ul className="space-y-1 text-xs">
-                  <li className="flex justify-between">
-                    <strong>Avg:</strong>
-                    <span className="font-mono">
-                      {selectedParameterStats.avg !== null
-                        ? selectedParameterStats.avg.toFixed(2)
-                        : '-'}
-                    </span>
-                  </li>
-                  <li className="flex justify-between">
-                    <strong>Median:</strong>
-                    <span className="font-mono">
-                      {selectedParameterStats.median !== null
-                        ? selectedParameterStats.median.toFixed(2)
-                        : '-'}
-                    </span>
-                  </li>
-                  <li className="flex justify-between">
-                    <strong>Min:</strong>
-                    <span className="font-mono">
-                      {selectedParameterStats.min !== null
-                        ? selectedParameterStats.min.toFixed(2)
-                        : '-'}
-                    </span>
-                  </li>
-                  <li className="flex justify-between">
-                    <strong>Max:</strong>
-                    <span className="font-mono">
-                      {selectedParameterStats.max !== null
-                        ? selectedParameterStats.max.toFixed(2)
-                        : '-'}
-                    </span>
-                  </li>
-                  <li className="flex justify-between">
-                    <strong>Stdev:</strong>
-                    <span className="font-mono">
-                      {selectedParameterStats.stdev !== null
-                        ? selectedParameterStats.stdev.toFixed(2)
-                        : '-'}
-                    </span>
-                  </li>
-                  <li className="flex justify-between">
-                    <strong>QAF:</strong>
-                    <span className="font-mono">
-                      {selectedParameterStats.qaf !== null
-                        ? `${selectedParameterStats.qaf.toFixed(2)}%`
-                        : '-'}
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            )}
           </Card>
+        )}
+        {/* Statistik Ringkasan Performa */}
+        {operatorAchievementData.length > 0 && (
+          <Card
+            variant="floating"
+            padding="lg"
+            className="mt-6 bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 shadow-2xl border-0"
+          >
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-600 via-gray-600 to-zinc-600 bg-clip-text text-transparent mb-2">
+                📊 Statistik Ringkasan Performa
+              </h2>
+              <p className="text-slate-600 font-medium">
+                Ringkasan performa operator berdasarkan data COP bulan ini
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                    <span className="text-green-600 font-bold text-lg">🏆</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-green-800">Rata-rata Pencapaian</h4>
+                </div>
+                <p className="text-3xl font-bold text-green-600 mb-2">
+                  {operatorAchievementData.length > 0
+                    ? (
+                        operatorAchievementData.reduce(
+                          (sum, item) => sum + item.achievementPercentage,
+                          0
+                        ) / operatorAchievementData.length
+                      ).toFixed(1)
+                    : 0}
+                  %
+                </p>
+                <p className="text-sm text-slate-600 font-medium">
+                  Rata-rata persentase pencapaian target parameter
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                    <span className="text-blue-600 font-bold text-lg">👑</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-blue-800">Operator Terbaik</h4>
+                </div>
+                <p className="text-xl font-bold text-slate-800 truncate mb-2">
+                  {operatorAchievementData[0]?.operatorName || '-'}
+                </p>
+                <p className="text-sm text-slate-600 font-medium">
+                  {operatorAchievementData[0]?.achievementPercentage || 0}% pencapaian
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-2xl border-2 border-purple-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                    <span className="text-purple-600 font-bold text-lg">📊</span>
+                  </div>
+                  <h4 className="text-lg font-bold text-purple-800">Total Operator</h4>
+                </div>
+                <p className="text-3xl font-bold text-purple-600 mb-2">
+                  {operatorAchievementData.length}
+                </p>
+                <p className="text-sm text-slate-600 font-medium">
+                  Operator dengan data COP di bulan ini
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        {/* Peringkat Tertinggi Operator per Kategori */}
+        {globalOperatorRanking.length > 0 && (
+          <Card
+            variant="floating"
+            padding="lg"
+            className="mt-6 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 shadow-2xl border-0"
+          >
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+              <div>
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 bg-clip-text text-transparent mb-3">
+                  🏅 Peringkat Tertinggi Operator
+                </h2>
+                <p className="text-slate-600 font-medium">
+                  Operator terbaik dari masing-masing Plant Category dengan standar OPC & PCC
+                </p>
+              </div>
+              <div className="flex items-center gap-3 bg-white/60 rounded-xl px-4 py-3 border border-amber-200">
+                <div className="text-2xl">📊</div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-800">
+                    {globalOperatorRanking.length} Kategori
+                  </div>
+                  <div className="text-xs text-slate-600">Peringkat bulan ini</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Operators by Category */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {globalOperatorRanking.map((operator, index) => {
+                const categoryColors = [
+                  {
+                    bg: 'from-blue-400 to-blue-500',
+                    text: 'text-blue-800',
+                    border: 'border-blue-300',
+                    icon: '🏭',
+                  },
+                  {
+                    bg: 'from-green-400 to-green-500',
+                    text: 'text-green-800',
+                    border: 'border-green-300',
+                    icon: '🌿',
+                  },
+                  {
+                    bg: 'from-purple-400 to-purple-500',
+                    text: 'text-purple-800',
+                    border: 'border-purple-300',
+                    icon: '🏔️',
+                  },
+                ];
+                const colorScheme = categoryColors[index % categoryColors.length];
+
+                return (
+                  <div
+                    key={`${operator.category}-${operator.operatorId}`}
+                    className={`relative bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-all duration-300 group`}
+                  >
+                    {/* Category Badge */}
+                    <div className="absolute -top-3 -right-3 px-3 py-1 bg-white rounded-full border-2 border-white shadow-lg">
+                      <span className={`text-sm font-bold ${colorScheme.text}`}>
+                        {operator.category}
+                      </span>
+                    </div>
+
+                    {/* Trophy Icon */}
+                    <div className="text-center mb-4">
+                      <div className="text-4xl mb-2">🏆</div>
+                      <div className="text-sm font-semibold text-white">Rank #{operator.rank}</div>
+                    </div>
+
+                    {/* Operator Info */}
+                    <div className="text-center">
+                      <h3 className={`text-xl font-bold text-white mb-2 truncate`}>
+                        {operator.operatorName}
+                      </h3>
+                      <div
+                        className="bg-white/90 rounded-lg p-3 mb-3 cursor-pointer hover:bg-white transition-colors"
+                        onClick={async () => {
+                          try {
+                            // Calculate detailed breakdown for this operator
+                            const startDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
+                            const endDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(new Date(filterYear, filterMonth + 1, 0).getDate()).padStart(2, '0')}`;
+                            const dateFilter = `date >= "${startDateStr}" && date <= "${endDateStr}"`;
+
+                            // Get all COP parameters for this category
+                            const categoryParams = allParameters.filter(
+                              (param) => param.category === operator.category
+                            );
+
+                            if (categoryParams.length === 0) {
+                              setOperatorBreakdownModal({
+                                isOpen: true,
+                                operatorName: operator.operatorName,
+                                operatorId: operator.operatorId,
+                                breakdownData: [],
+                              });
+                              return;
+                            }
+
+                            // Get parameter IDs
+                            const parameterIds = categoryParams.map((p) => p.id);
+
+                            // Get ccr_parameter_data for this operator and date range
+                            let records = [];
+                            let retryCount = 0;
+                            const maxRetries = 3;
+                            const retryDelay = 1000;
+
+                            while (retryCount < maxRetries) {
+                              try {
+                                records = await pb.collection('ccr_parameter_data').getFullList({
+                                  filter: `${dateFilter} && name = "${operator.operatorName}"`,
+                                  fields:
+                                    'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
+                                });
+                                break;
+                              } catch (error) {
+                                retryCount++;
+                                if (retryCount < maxRetries) {
+                                  await new Promise((resolve) =>
+                                    setTimeout(resolve, retryDelay * retryCount)
+                                  );
+                                } else {
+                                  throw error;
+                                }
+                              }
+                            }
+
+                            // Filter records by parameter IDs
+                            records = records.filter((record) =>
+                              parameterIds.includes(record.parameter_id)
+                            );
+
+                            // Group by parameter and calculate achievement
+                            const parameterBreakdown = new Map();
+
+                            records.forEach((record) => {
+                              const paramId = record.parameter_id;
+                              const paramSetting = categoryParams.find((p) => p.id === paramId);
+                              if (!paramSetting) return;
+
+                              if (!parameterBreakdown.has(paramId)) {
+                                parameterBreakdown.set(paramId, {
+                                  parameterName: paramSetting.parameter,
+                                  totalChecks: 0,
+                                  inRangeCount: 0,
+                                  min:
+                                    paramSetting.min_value ||
+                                    paramSetting.opc_min_value ||
+                                    paramSetting.pcc_min_value ||
+                                    0,
+                                  max:
+                                    paramSetting.max_value ||
+                                    paramSetting.opc_max_value ||
+                                    paramSetting.pcc_max_value ||
+                                    100,
+                                });
+                              }
+
+                              const paramData = parameterBreakdown.get(paramId);
+
+                              // Check each hour
+                              for (let hour = 1; hour <= 24; hour++) {
+                                const hourKey = `hour${hour}` as keyof typeof record;
+                                const value = record[hourKey] as number | null;
+                                if (value !== null && value !== undefined && !isNaN(value)) {
+                                  paramData.totalChecks++;
+                                  // Check if in range for any cement type
+                                  const inRange =
+                                    (paramSetting.min_value !== undefined &&
+                                      paramSetting.max_value !== undefined &&
+                                      value >= paramSetting.min_value &&
+                                      value <= paramSetting.max_value) ||
+                                    (paramSetting.opc_min_value !== undefined &&
+                                      paramSetting.opc_max_value !== undefined &&
+                                      value >= paramSetting.opc_min_value &&
+                                      value <= paramSetting.opc_max_value) ||
+                                    (paramSetting.pcc_min_value !== undefined &&
+                                      paramSetting.pcc_max_value !== undefined &&
+                                      value >= paramSetting.pcc_min_value &&
+                                      value <= paramSetting.pcc_max_value);
+                                  if (inRange) {
+                                    paramData.inRangeCount++;
+                                  }
+                                }
+                              }
+                            });
+
+                            // Convert to array and calculate percentages
+                            const breakdownData = Array.from(parameterBreakdown.values()).map(
+                              (param) => ({
+                                parameterName: param.parameterName,
+                                totalChecks: param.totalChecks,
+                                inRangeCount: param.inRangeCount,
+                                achievementPercentage:
+                                  param.totalChecks > 0
+                                    ? Math.round(
+                                        (param.inRangeCount / param.totalChecks) * 100 * 10
+                                      ) / 10
+                                    : 0,
+                                min: param.min,
+                                max: param.max,
+                              })
+                            );
+
+                            setOperatorBreakdownModal({
+                              isOpen: true,
+                              operatorName: operator.operatorName,
+                              operatorId: operator.operatorId,
+                              breakdownData: breakdownData,
+                            });
+                          } catch (error) {
+                            console.error('Error calculating operator breakdown:', error);
+                            setOperatorBreakdownModal({
+                              isOpen: true,
+                              operatorName: operator.operatorName,
+                              operatorId: operator.operatorId,
+                              breakdownData: [],
+                            });
+                          }
+                        }}
+                      >
+                        <div className={`text-2xl font-bold ${colorScheme.text} mb-1`}>
+                          {operator.overallAchievement}%
+                        </div>
+                        <div className="text-xs text-slate-600 font-medium">
+                          Pencapaian Keseluruhan
+                        </div>
+                        <div className="text-xs text-slate-700 mt-1 font-semibold">
+                          📊 Klik untuk detail parameter
+                        </div>
+                      </div>
+                      <div className="text-xs text-white/90 mt-2 font-medium">
+                        {operator.totalParameters} parameter
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 text-sm text-slate-600 font-medium bg-white/60 rounded-xl p-4 border border-amber-200">
+              <p className="flex items-center gap-2">
+                <span className="text-lg">🎯</span>
+                Peringkat dihitung berdasarkan pencapaian keseluruhan di semua Plant Category dengan
+                standar OPC & PCC, tidak terpengaruh oleh filter di header halaman.
+              </p>
+            </div>
+          </Card>
+        )}
+        {selectedParameterStats && (
+          <div className="fixed top-20 left-4 z-50 w-64 p-3 bg-white rounded-lg shadow-xl border border-slate-300 text-sm text-slate-800 max-h-80 overflow-y-auto">
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="font-semibold text-sm truncate pr-2">
+                {selectedParameterStats.parameter}
+              </h4>
+              <button
+                className="text-slate-400 hover:text-slate-600 p-1"
+                onClick={() => setSelectedParameterStats(null)}
+                aria-label="Close stats"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <ul className="space-y-1 text-xs">
+              <li className="flex justify-between">
+                <strong>Avg:</strong>
+                <span className="font-mono">
+                  {selectedParameterStats.avg !== null
+                    ? selectedParameterStats.avg.toFixed(2)
+                    : '-'}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <strong>Median:</strong>
+                <span className="font-mono">
+                  {selectedParameterStats.median !== null
+                    ? selectedParameterStats.median.toFixed(2)
+                    : '-'}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <strong>Min:</strong>
+                <span className="font-mono">
+                  {selectedParameterStats.min !== null
+                    ? selectedParameterStats.min.toFixed(2)
+                    : '-'}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <strong>Max:</strong>
+                <span className="font-mono">
+                  {selectedParameterStats.max !== null
+                    ? selectedParameterStats.max.toFixed(2)
+                    : '-'}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <strong>Stdev:</strong>
+                <span className="font-mono">
+                  {selectedParameterStats.stdev !== null
+                    ? selectedParameterStats.stdev.toFixed(2)
+                    : '-'}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <strong>QAF:</strong>
+                <span className="font-mono">
+                  {selectedParameterStats.qaf !== null
+                    ? `${selectedParameterStats.qaf.toFixed(2)}%`
+                    : '-'}
+                </span>
+              </li>
+            </ul>
+          </div>
+        )}
+        {selectedOperatorBreakdown && (
+          <Modal
+            isOpen={true}
+            onClose={() => setSelectedOperatorBreakdown(null)}
+            title={`Breakdown Pencapaian - ${selectedOperatorBreakdown.operatorName}`}
+          >
+            <div className="p-8 max-h-96 overflow-y-auto">
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-slate-800 text-sm">Ringkasan Pencapaian</h4>
+                      <div className="text-xs text-slate-600 mt-1">
+                        Kategori: {selectedOperatorBreakdown.category}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-slate-800">
+                        {selectedOperatorBreakdown.overallAchievement}%
+                      </div>
+                      <div className="text-xs text-slate-600">
+                        {selectedOperatorBreakdown.totalInRange}/
+                        {selectedOperatorBreakdown.totalChecks} checks
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        selectedOperatorBreakdown.overallAchievement >= 90
+                          ? 'bg-green-500'
+                          : selectedOperatorBreakdown.overallAchievement >= 80
+                            ? 'bg-blue-500'
+                            : selectedOperatorBreakdown.overallAchievement >= 70
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                      }`}
+                      style={{
+                        width: `${Math.min(selectedOperatorBreakdown.overallAchievement, 100)}%`,
+                      }}
+                    ></div>
+                  </div>
+
+                  {/* Status indicators */}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-green-600 font-medium">
+                      ✓ {selectedOperatorBreakdown.totalInRange} tercapai
+                    </span>
+                    <span className="text-blue-600 font-medium">
+                      ✗{' '}
+                      {selectedOperatorBreakdown.totalChecks -
+                        selectedOperatorBreakdown.totalInRange}{' '}
+                      tidak tercapai
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-sm text-slate-600 mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                💡 <strong>Penjelasan:</strong> Pencapaian dihitung berdasarkan jumlah nilai
+                parameter COP yang berada dalam range min-max gabungan (umum/OPC/PCC) selama bulan
+                berjalan.
+              </div>
+            </div>
+          </Modal>
         )}
         {/* Modal Breakdown Harian */}
         <Modal
@@ -4315,7 +5053,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         }}
                         className={`p-3 rounded-lg text-sm font-medium transition-colors ${
                           isOutOfRange
-                            ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                            ? 'bg-orange-100 text-orange-800 hover:bg-red-200'
                             : 'bg-green-100 text-green-800 hover:bg-green-200'
                         }`}
                       >
@@ -4359,7 +5097,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   key={hour.hour}
                   className={`p-4 rounded-lg text-sm transition-all duration-200 ${
                     hour.isOutOfRange
-                      ? 'bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-50'
+                      ? 'bg-orange-100 text-orange-800 border-2 border-orange-300 hover:bg-red-50'
                       : 'bg-green-100 text-green-800 hover:bg-green-50'
                   }`}
                 >
@@ -4377,9 +5115,94 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </div>
         </Modal>
+        {/* Modal Breakdown Operator Achievement */}
+        <Modal
+          isOpen={operatorBreakdownModal.isOpen}
+          onClose={() =>
+            setOperatorBreakdownModal({
+              isOpen: false,
+              operatorName: '',
+              operatorId: '',
+              breakdownData: [],
+            })
+          }
+          title={`Breakdown Pencapaian - ${operatorBreakdownModal.operatorName}`}
+        >
+          <div className="p-8 max-h-96 overflow-y-auto">
+            <div className="space-y-4">
+              {operatorBreakdownModal.breakdownData.map((param, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-slate-800 text-sm">
+                        {param.parameterName}
+                      </h4>
+                      <div className="text-xs text-slate-600 mt-1">
+                        Target: {param.min} - {param.max}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-slate-800">
+                        {param.achievementPercentage}%
+                      </div>
+                      <div className="text-xs text-slate-600">
+                        {param.inRangeCount}/{param.totalChecks} checks
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        param.achievementPercentage >= 90
+                          ? 'bg-green-500'
+                          : param.achievementPercentage >= 80
+                            ? 'bg-blue-500'
+                            : param.achievementPercentage >= 70
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(param.achievementPercentage, 100)}%` }}
+                    ></div>
+                  </div>
+
+                  {/* Status indicators */}
+                  <div className="flex justify-between text-xs">
+                    <span className="text-green-600 font-medium">
+                      ✓ {param.inRangeCount} tercapai
+                    </span>
+                    <span className="text-blue-600 font-medium">
+                      ✗ {param.totalChecks - param.inRangeCount} tidak tercapai
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {operatorBreakdownModal.breakdownData.length === 0 && (
+              <div className="text-center py-8 text-slate-500">
+                <div className="text-4xl mb-4">📊</div>
+                <div>Tidak ada data parameter untuk operator ini</div>
+              </div>
+            )}
+
+            <div className="text-sm text-slate-600 mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              💡 <strong>Penjelasan:</strong> Setiap parameter dievaluasi terhadap nilai min-max
+              sesuai jenis semen ({selectedCementType}). Pencapaian dihitung berdasarkan jumlah jam
+              dalam sebulan dimana parameter berada dalam range target.
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );
 };
 
 export default CopAnalysisPage;
+
+
+

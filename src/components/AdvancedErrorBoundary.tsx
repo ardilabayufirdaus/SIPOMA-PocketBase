@@ -169,9 +169,9 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
           <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center mb-4">
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-red-600"
+                    className="w-6 h-6 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -209,20 +209,20 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             {showErrorDetails && error && (
               <div className="mb-4">
                 <details className="bg-red-50 border border-red-200 rounded-md p-4">
-                  <summary className="cursor-pointer text-red-800 font-medium mb-2">
+                  <summary className="cursor-pointer text-orange-800 font-medium mb-2">
                     Error Details (Click to expand)
                   </summary>
                   <div className="text-sm text-red-700 space-y-2">
                     <div>
                       <strong>Message:</strong>
-                      <pre className="mt-1 whitespace-pre-wrap font-mono text-xs bg-red-100 p-2 rounded">
+                      <pre className="mt-1 whitespace-pre-wrap font-mono text-xs bg-orange-100 p-2 rounded">
                         {error.message}
                       </pre>
                     </div>
                     {error.stack && (
                       <div>
                         <strong>Stack Trace:</strong>
-                        <pre className="mt-1 whitespace-pre-wrap font-mono text-xs bg-red-100 p-2 rounded max-h-40 overflow-y-auto">
+                        <pre className="mt-1 whitespace-pre-wrap font-mono text-xs bg-orange-100 p-2 rounded max-h-40 overflow-y-auto">
                           {error.stack}
                         </pre>
                       </div>
@@ -230,7 +230,7 @@ export class AdvancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                     {errorInfo?.componentStack && (
                       <div>
                         <strong>Component Stack:</strong>
-                        <pre className="mt-1 whitespace-pre-wrap font-mono text-xs bg-red-100 p-2 rounded max-h-40 overflow-y-auto">
+                        <pre className="mt-1 whitespace-pre-wrap font-mono text-xs bg-orange-100 p-2 rounded max-h-40 overflow-y-auto">
                           {errorInfo.componentStack}
                         </pre>
                       </div>

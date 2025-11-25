@@ -24,6 +24,7 @@ interface CcrFooterData {
   shift2_counter: number;
   shift3_counter: number;
   shift3_cont_counter: number;
+  operator_id?: string;
 }
 
 export const useCcrFooterData = () => {

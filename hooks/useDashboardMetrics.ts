@@ -4,6 +4,7 @@ import { useUsers } from './useUsers';
 import { useProjects } from './useProjects';
 import { useCcrMaterialUsage } from './useCcrMaterialUsage';
 import useCcrDowntimeData from './useCcrDowntimeData';
+import { usePresenceTracker } from './usePresenceTracker';
 import { ProjectStatus } from '../types';
 
 export interface DashboardMetrics {
@@ -38,7 +39,8 @@ export const useDashboardMetrics = () => {
 
   // Get data from existing hooks
   const { users } = useUsers();
-  const onlineUsersCount = useOnlineUsers(users);
+  const onlineUsersCount = useOnlineUsers(users); // Fallback
+  const { onlineUsers: presenceOnlineUsers, isConnected: presenceConnected } = usePresenceTracker();
   const { projects } = useProjects();
   const materialUsageHook = useCcrMaterialUsage();
   const downtimeHook = useCcrDowntimeData();
@@ -58,13 +60,16 @@ export const useDashboardMetrics = () => {
       // Today's inspections: Count downtime records from today
       const todaysInspections = 0; // Placeholder - will be updated when we have today's data
 
+      // Online users: Use presence tracking if available, otherwise fallback to last_active logic
+      const onlineUsers = presenceConnected ? presenceOnlineUsers.length : onlineUsersCount;
+
       // System status: Based on data availability
       const systemStatus: 'active' | 'warning' | 'error' = 'active';
 
       return {
         activeOperations,
         activeProjects,
-        onlineUsers: onlineUsersCount,
+        onlineUsers,
         todaysInspections,
         systemStatus,
       };
@@ -72,12 +77,12 @@ export const useDashboardMetrics = () => {
       return {
         activeOperations: 0,
         activeProjects: 0,
-        onlineUsers: onlineUsersCount,
+        onlineUsers: presenceConnected ? presenceOnlineUsers.length : onlineUsersCount,
         todaysInspections: 0,
         systemStatus: 'error' as const,
       };
     }
-  }, [projects, onlineUsersCount]);
+  }, [projects, onlineUsersCount, presenceOnlineUsers, presenceConnected]);
 
   // Generate activities from real data
   const generatedActivities = useMemo(() => {

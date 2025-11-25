@@ -202,7 +202,7 @@ const CustomDashboardBuilder: React.FC<CustomDashboardBuilderProps> = ({
                     e.stopPropagation();
                     deleteWidget(widget.id);
                   }}
-                  className="p-1 text-red-400 hover:text-red-600 rounded"
+                  className="p-1 text-red-400 hover:text-blue-600 rounded"
                 >
                   🗑️
                 </button>
@@ -409,3 +409,5 @@ const CustomDashboardBuilder: React.FC<CustomDashboardBuilderProps> = ({
 };
 
 export default CustomDashboardBuilder;
+
+

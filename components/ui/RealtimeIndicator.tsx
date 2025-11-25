@@ -29,7 +29,7 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({
             isConnected ? `bg-green-500 ${showPulse ? 'animate-pulse' : ''}` : 'bg-red-500'
           }`}
         />
-        <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+        <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-blue-600'}`}>
           {isConnected ? 'Realtime' : 'Offline'}
         </span>
       </div>
@@ -41,3 +41,5 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({
 };
 
 export default RealtimeIndicator;
+
+

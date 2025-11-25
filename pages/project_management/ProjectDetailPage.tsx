@@ -53,7 +53,7 @@ type ChartView = 's-curve' | 'gantt';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full p-10">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
   </div>
 );
 
@@ -62,7 +62,7 @@ const getStatusClasses = (status: string, t: any) => {
   if (status === t.proj_status_completed) {
     return 'bg-green-100 text-green-800';
   } else if (status === t.proj_status_delayed) {
-    return 'bg-red-100 text-red-800';
+    return 'bg-orange-100 text-orange-800';
   } else {
     return 'bg-blue-100 text-blue-800';
   }
@@ -147,7 +147,7 @@ const GanttChart: React.FC<{
           const isOverdue = taskEnd < today && task.percent_complete < 100;
 
           const plannedBarColor = isOverdue ? 'text-red-200' : 'text-blue-200';
-          const progressBarColor = isOverdue ? 'text-red-600' : 'text-blue-600';
+          const progressBarColor = isOverdue ? 'text-blue-600' : 'text-blue-600';
 
           return (
             <g
@@ -245,7 +245,7 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
         }`}
         onClick={handleClick}
       >
-        <div className="p-3 rounded-full bg-red-50 text-red-600 mr-4">{icon}</div>
+        <div className="p-3 rounded-full bg-red-50 text-blue-600 mr-4">{icon}</div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500">{title}</p>
@@ -1093,7 +1093,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                       {performanceMetrics.deviation > 0 ? (
                         <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
                       ) : (
-                        <ArrowTrendingDownIcon className="w-4 h-4 text-red-600" />
+                        <ArrowTrendingDownIcon className="w-4 h-4 text-blue-600" />
                       )}
                     </div>
                     <p
@@ -1101,7 +1101,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                         performanceMetrics.deviation > 5
                           ? 'text-green-600'
                           : performanceMetrics.deviation < -5
-                            ? 'text-red-600'
+                            ? 'text-blue-600'
                             : 'text-slate-900'
                       }`}
                     >
@@ -1172,7 +1172,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                       onClick={() => setChartView('s-curve')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         chartView === 's-curve'
-                          ? 'bg-red-600 text-white shadow-sm'
+                          ? 'bg-blue-600 text-white shadow-sm'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1182,7 +1182,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                       onClick={() => setChartView('gantt')}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         chartView === 'gantt'
-                          ? 'bg-red-600 text-white shadow-sm'
+                          ? 'bg-blue-600 text-white shadow-sm'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1195,7 +1195,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   <Suspense
                     fallback={
                       <div className="h-80 sm:h-96 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       </div>
                     }
                   >
@@ -1405,7 +1405,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                                 </button>
                                 <button
                                   onClick={() => handleOpenDeleteModal(task.id)}
-                                  className="text-red-600 hover:text-red-900"
+                                  className="text-blue-600 hover:text-red-900"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </button>
@@ -1595,3 +1595,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 };
 
 export default ProjectDetailPage;
+
+
+

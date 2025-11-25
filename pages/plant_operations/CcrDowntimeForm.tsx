@@ -283,12 +283,12 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   required
                   className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 ${
                     isFieldInvalid('start_time')
-                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                 />
                 {isFieldInvalid('start_time') && (
-                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">
+                  <div className="absolute -bottom-6 left-0 text-blue-600 text-xs">
                     {errors.start_time}
                   </div>
                 )}
@@ -311,12 +311,12 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   required
                   className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 ${
                     isFieldInvalid('end_time')
-                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                 />
                 {isFieldInvalid('end_time') && (
-                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">
+                  <div className="absolute -bottom-6 left-0 text-blue-600 text-xs">
                     {errors.end_time}
                   </div>
                 )}
@@ -366,7 +366,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   onBlur={handleBlur}
                   className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none ${
                     isFieldInvalid('pic')
-                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                   disabled={picSettings.length === 0}
@@ -434,12 +434,12 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   placeholder="Describe the problem that occurred..."
                   className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 resize-none ${
                     isFieldInvalid('problem')
-                      ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                      ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
                   }`}
                 />
                 {isFieldInvalid('problem') && (
-                  <div className="absolute -bottom-6 left-0 text-red-600 text-xs">
+                  <div className="absolute -bottom-6 left-0 text-blue-600 text-xs">
                     {errors.problem}
                   </div>
                 )}
@@ -493,3 +493,6 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
 };
 
 export default CcrDowntimeForm;
+
+
+

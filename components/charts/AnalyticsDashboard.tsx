@@ -332,7 +332,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             return (
               <>
                 <div className="glass-card p-4 rounded-xl text-center">
-                  <div className="text-2xl font-bold text-red-600 mb-1">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">
                     {avgProduction.toFixed(1)}%
                   </div>
                   <div className="text-sm text-slate-600">Avg Production</div>
@@ -364,3 +364,5 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 };
 
 export default AnalyticsDashboard;
+
+

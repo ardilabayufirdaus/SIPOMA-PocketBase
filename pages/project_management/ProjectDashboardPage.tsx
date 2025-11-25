@@ -37,7 +37,7 @@ import { ResourceAllocationChart } from '../../components/charts/ResourceAllocat
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-64">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
       <p className="text-slate-600">Loading dashboard data...</p>
     </div>
   </div>
@@ -80,9 +80,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
       case 'warning':
         return 'bg-yellow-50 text-yellow-600';
       case 'danger':
-        return 'bg-red-50 text-red-600';
+        return 'bg-red-50 text-blue-600';
       default:
-        return 'bg-red-50 text-red-600';
+        return 'bg-red-50 text-blue-600';
     }
   };
 
@@ -136,7 +136,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
                   ) : null}
                   <span
                     className={`text-xs font-medium ${
-                      trend > 0 ? 'text-green-600' : trend < 0 ? 'text-red-600' : 'text-gray-600'
+                      trend > 0 ? 'text-green-600' : trend < 0 ? 'text-blue-600' : 'text-gray-600'
                     }`}
                   >
                     {trend > 0 ? '+' : ''}
@@ -249,7 +249,7 @@ const ProjectDashboardPage: React.FC<{
         statusColor = 'text-blue-600';
       } else if (new Date() > projectEndDate) {
         status = t.proj_status_delayed;
-        statusColor = 'text-red-600';
+        statusColor = 'text-blue-600';
       }
 
       return { ...project, progress: overallProgress, status, statusColor };
@@ -752,9 +752,9 @@ const ProjectDashboardPage: React.FC<{
 
           {/* Critical Issues Alert - Ultra Compact */}
           {criticalIssues.length > 0 && (
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-2 rounded-lg">
-              <h3 className="text-xs font-semibold text-red-800 mb-1 flex items-center gap-1">
-                <ExclamationTriangleIcon className="w-3 h-3 text-red-600" />
+            <div className="bg-gradient-to-r from-blue-50 to-orange-50 border border-red-200 p-2 rounded-lg">
+              <h3 className="text-xs font-semibold text-orange-800 mb-1 flex items-center gap-1">
+                <ExclamationTriangleIcon className="w-3 h-3 text-blue-600" />
                 {t.critical_issues || 'Critical Issues'} ({criticalIssues.length})
               </h3>
               <div className="space-y-0.5">
@@ -865,7 +865,7 @@ const ProjectDashboardPage: React.FC<{
                             {projects.find((p) => p.id === task.project_id)?.title}
                           </p>
                         </div>
-                        <div className="text-xs font-semibold text-red-600">
+                        <div className="text-xs font-semibold text-blue-600">
                           {formatDate(task.planned_end)}
                         </div>
                       </div>
@@ -940,7 +940,7 @@ const ProjectDashboardPage: React.FC<{
                                 p.status === t.proj_status_completed
                                   ? 'bg-blue-100'
                                   : p.status === t.proj_status_delayed
-                                    ? 'bg-red-100'
+                                    ? 'bg-orange-100'
                                     : 'bg-green-100'
                               }`}
                             >
@@ -951,7 +951,7 @@ const ProjectDashboardPage: React.FC<{
                             <span>{projectTasks.length} tasks</span>
                             <span>{completedTasks} completed</span>
                             {overdueTasks > 0 && (
-                              <span className="text-red-600 font-medium">
+                              <span className="text-blue-600 font-medium">
                                 {overdueTasks} overdue
                               </span>
                             )}
@@ -964,7 +964,7 @@ const ProjectDashboardPage: React.FC<{
                           <div className="flex items-center gap-1">
                             <div className="w-full bg-slate-200 rounded-full h-2">
                               <div
-                                className="bg-red-600 h-2 rounded-full"
+                                className="bg-blue-600 h-2 rounded-full"
                                 style={{ width: `${p.progress}%` }}
                               ></div>
                             </div>
@@ -1114,3 +1114,6 @@ const ProjectDashboardPage: React.FC<{
 };
 
 export default ProjectDashboardPage;
+
+
+

@@ -44,7 +44,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       case 'warning':
         return 'bg-yellow-50 text-yellow-600';
       case 'critical':
-        return 'bg-red-50 text-red-600';
+        return 'bg-red-50 text-blue-600';
       default:
         return 'bg-slate-50 text-slate-600';
     }
@@ -97,7 +97,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
                       ? 'bg-green-100 text-green-800'
                       : trend === 'warning'
                         ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
+                        : 'bg-orange-100 text-orange-800'
                   }`}
                   title={
                     trend === 'good'
@@ -152,3 +152,5 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     </>
   );
 };
+
+

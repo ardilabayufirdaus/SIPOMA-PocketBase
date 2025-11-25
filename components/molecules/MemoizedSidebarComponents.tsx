@@ -26,8 +26,8 @@ const MemoizedSidebarItem = memo<MemoizedSidebarItemProps>(
       const baseClasses =
         'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200';
       const activeClasses = isActive
-        ? 'bg-red-600 text-white shadow-lg transform scale-105'
-        : 'text-slate-700 hover:bg-slate-100 hover:text-red-600';
+        ? 'bg-blue-600 text-white shadow-lg transform scale-105'
+        : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600';
 
       return `${baseClasses} ${activeClasses} ${className}`;
     }, [isActive, className]);
@@ -88,8 +88,8 @@ const MemoizedSubmenu = memo<MemoizedSubmenuProps>(({ items, isVisible }) => {
             onClick={item.onClick}
             className={`block w-full text-left px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
               item.isActive
-                ? 'bg-red-100 text-red-700'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-red-600'
+                ? 'bg-orange-100 text-red-700'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-blue-600'
             }`}
             type="button"
           >
@@ -140,7 +140,7 @@ const MemoizedUserInfo = memo<MemoizedUserInfoProps>(({ user, onProfileClick, on
   return (
     <div className="p-4 border-t border-slate-200">
       <div className="flex items-center space-x-3 mb-3">
-        <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+        <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
           {userInitials}
         </div>
         <div className="flex-1 min-w-0">
@@ -161,7 +161,7 @@ const MemoizedUserInfo = memo<MemoizedUserInfoProps>(({ user, onProfileClick, on
         </button>
         <button
           onClick={handleSignOutClick}
-          className="flex-1 px-3 py-2 text-xs font-medium text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors duration-200"
+          className="flex-1 px-3 py-2 text-xs font-medium text-red-700 bg-red-50 rounded-md hover:bg-orange-100 transition-colors duration-200"
           type="button"
         >
           Sign Out
@@ -174,3 +174,5 @@ const MemoizedUserInfo = memo<MemoizedUserInfoProps>(({ user, onProfileClick, on
 MemoizedUserInfo.displayName = 'MemoizedUserInfo';
 
 export { MemoizedSidebarItem, MemoizedSubmenu, MemoizedUserInfo };
+
+

@@ -37,3 +37,5 @@ export const InformationTable: React.FC<InformationTableProps> = ({ informationD
     </div>
   );
 };
+
+

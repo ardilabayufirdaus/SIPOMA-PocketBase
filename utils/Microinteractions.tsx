@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { forwardRef } from 'react';
 
 // =============================================================================
 // ANIMATION UTILITIES
@@ -216,7 +217,7 @@ interface AnimatedButtonProps {
   fullWidth?: boolean;
 }
 
-export const AnimatedButton = React.forwardRef<HTMLButtonElement, AnimatedButtonProps>(
+export const AnimatedButton = forwardRef<HTMLButtonElement, AnimatedButtonProps>(
   (
     {
       children,
@@ -321,8 +322,6 @@ export const AnimatedButton = React.forwardRef<HTMLButtonElement, AnimatedButton
     );
   }
 );
-
-AnimatedButton.displayName = 'AnimatedButton';
 
 interface AnimatedCardProps {
   children: React.ReactNode;

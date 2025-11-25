@@ -11,7 +11,7 @@ import LoadingSkeleton from '../../components/LoadingSkeleton';
 
 // Default error fallback
 const DefaultErrorFallback = ({ name }: { name: string }) => (
-  <div className="text-center p-8 bg-red-50 border border-red-300 rounded">
+  <div className="text-center p-8 bg-red-50 border border-orange-300 rounded">
     Error loading {name}. Please refresh.
   </div>
 );

@@ -11,7 +11,9 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { usePermissions } from '../utils/permissions';
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
-import { PermissionMatrix } from '../types';
+import { useUsers } from '../hooks/useUsers';
+import { usePresenceTracker } from '../hooks/usePresenceTracker';
+import { PermissionMatrix, User } from '../types';
 
 // Import icons
 import ChartBarIcon from '../components/icons/ChartBarIcon';
@@ -290,6 +292,111 @@ const DailyQuote: React.FC = () => {
   );
 };
 
+// Online Users Modal Component
+interface OnlineUsersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onlineUsers: User[];
+  language: 'en' | 'id';
+  presenceConnected: boolean;
+}
+
+const OnlineUsersModal: React.FC<OnlineUsersModalProps> = ({
+  isOpen,
+  onClose,
+  onlineUsers,
+  language,
+  presenceConnected,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white">
+          <h2 className="text-xl font-bold">
+            {language === 'id' ? 'Pengguna Online' : 'Online Users'}
+          </h2>
+          <div className="flex items-center space-x-2 mt-1">
+            <p className="text-amber-100 text-sm">
+              {presenceConnected
+                ? `${onlineUsers.length} ${language === 'id' ? 'pengguna aktif membuka aplikasi' : 'users actively using app'}`
+                : `${onlineUsers.length} ${language === 'id' ? 'pengguna aktif (perkiraan)' : 'users active (estimated)'}`}
+            </p>
+            <div
+              className={`w-2 h-2 rounded-full ${presenceConnected ? 'bg-green-400' : 'bg-yellow-400'} animate-pulse`}
+            ></div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 max-h-96 overflow-y-auto">
+          {onlineUsers.length === 0 ? (
+            <div className="text-center py-8">
+              <svg
+                className="w-12 h-12 text-gray-400 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                />
+              </svg>
+              <p className="text-gray-500">
+                {language === 'id'
+                  ? 'Tidak ada pengguna online saat ini'
+                  : 'No users online currently'}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {onlineUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
+                    {(user.full_name || user.username).charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {user.full_name || user.username}
+                    </p>
+                    <p className="text-xs text-gray-500">@{user.username}</p>
+                    <p className="text-xs text-gray-400">{user.role}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-gray-200 p-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            {language === 'id' ? 'Tutup' : 'Close'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Dashboard Component
 const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) => {
   const { language } = useTranslation();
@@ -300,6 +407,44 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
 
   // Get dashboard metrics and activities
   const { metrics, activities, loading: _loading } = useDashboardMetrics();
+
+  // Get users data for fallback online users list
+  const { users } = useUsers();
+
+  // Get users data for online users list using presence tracking
+  const { onlineUsers: presenceOnlineUsers, isConnected: presenceConnected } = usePresenceTracker();
+
+  // Calculate online users list using presence tracking or fallback to last_active
+  const onlineUsersList = React.useMemo(() => {
+    // Use presence tracking if available and connected
+    if (presenceConnected && presenceOnlineUsers.length > 0) {
+      return presenceOnlineUsers.map((presenceUser) => ({
+        id: presenceUser.id,
+        username: presenceUser.username,
+        full_name: presenceUser.full_name,
+        role: presenceUser.role as any,
+        is_active: true,
+        created_at: '',
+        updated_at: '',
+        last_active: presenceUser.last_seen.toISOString(),
+        permissions: {} as any,
+      }));
+    }
+
+    // Fallback to last_active based logic if presence tracking not available
+    if (!users) return [];
+    const ONLINE_THRESHOLD_MINUTES = 5;
+    const now = new Date();
+    const thresholdTime = new Date(now.getTime() - ONLINE_THRESHOLD_MINUTES * 60 * 1000);
+
+    return users.filter((user) => {
+      if (!user.is_active) return false;
+      if (!user.last_active) return false;
+
+      const lastActive = new Date(user.last_active);
+      return lastActive >= thresholdTime;
+    });
+  }, [presenceOnlineUsers, presenceConnected, users]);
 
   // Define all possible cards with their permission requirements
   const allCards = [
@@ -568,6 +713,9 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
   // State for submenu modal
   const [selectedModule, setSelectedModule] = useState<Page | null>(null);
 
+  // State for online users modal
+  const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
+
   // Handlers for submenu modal
   const handleCardClick = (page: Page) => {
     setSelectedModule(page);
@@ -582,6 +730,15 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
 
   const handleModalClose = () => {
     setSelectedModule(null);
+  };
+
+  // Handler for online users modal
+  const handleOnlineUsersClick = () => {
+    setShowOnlineUsersModal(true);
+  };
+
+  const handleOnlineUsersModalClose = () => {
+    setShowOnlineUsersModal(false);
   };
 
   return (
@@ -681,6 +838,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
                   period: language === 'id' ? 'jam lalu' : 'hour ago',
                 }}
                 variant="warning"
+                onClick={handleOnlineUsersClick}
               />
             </div>
 
@@ -903,8 +1061,19 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           language={language}
         />
       )}
+
+      {/* Online Users Modal */}
+      <OnlineUsersModal
+        isOpen={showOnlineUsersModal}
+        onClose={handleOnlineUsersModalClose}
+        onlineUsers={onlineUsersList}
+        language={language}
+        presenceConnected={presenceConnected}
+      />
     </div>
   );
 };
 
 export default MainDashboardPage;
+
+

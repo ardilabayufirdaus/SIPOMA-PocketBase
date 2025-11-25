@@ -135,7 +135,7 @@ interface DefaultErrorFallbackProps {
 
 export function DefaultErrorFallback({ name = 'component', error }: DefaultErrorFallbackProps) {
   return (
-    <div className="p-4 border border-red-300 rounded bg-red-50 text-center">
+    <div className="p-4 border border-orange-300 rounded bg-red-50 text-center">
       <p className="font-medium text-red-700">Failed to load {name}</p>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <p className="text-sm mt-2">Please try refreshing the page</p>

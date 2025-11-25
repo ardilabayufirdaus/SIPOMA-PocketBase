@@ -27,6 +27,7 @@ export interface User {
   username: string;
   email?: string;
   password?: string; // Optional karena tidak selalu dikirim dari frontend
+  name?: string; // Nama lengkap operator
   full_name?: string; // Optional karena bisa null di database
   role: UserRole;
   avatar_url?: string;

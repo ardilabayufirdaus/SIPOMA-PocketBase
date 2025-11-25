@@ -849,7 +849,7 @@ const UserForm: React.FC<UserFormProps> = ({
               autoComplete="username"
             />
             {validationErrors.username && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
+              <p className="text-sm text-blue-600 flex items-center gap-1">
                 <ExclamationTriangleIcon className="w-4 h-4" />
                 {validationErrors.username}
               </p>
@@ -892,7 +892,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   <span
                     className={`text-xs font-medium ${
                       passwordStrength.color === 'error'
-                        ? 'text-red-600'
+                        ? 'text-blue-600'
                         : passwordStrength.color === 'warning'
                           ? 'text-yellow-600'
                           : passwordStrength.color === 'primary'
@@ -905,7 +905,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 </div>
               )}
               {validationErrors.password && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
+                <p className="text-sm text-blue-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="w-4 h-4" />
                   {validationErrors.password}
                 </p>
@@ -927,7 +927,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 autoComplete="new-password"
               />
               {validationErrors.confirmPassword && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
+                <p className="text-sm text-blue-600 flex items-center gap-1">
                   <ExclamationTriangleIcon className="w-4 h-4" />
                   {validationErrors.confirmPassword}
                 </p>
@@ -950,7 +950,7 @@ const UserForm: React.FC<UserFormProps> = ({
               autoComplete="name"
             />
             {validationErrors.full_name && (
-              <p className="text-sm text-red-600 flex items-center gap-1">
+              <p className="text-sm text-blue-600 flex items-center gap-1">
                 <ExclamationTriangleIcon className="w-4 h-4" />
                 {validationErrors.full_name}
               </p>
@@ -1077,7 +1077,7 @@ const UserForm: React.FC<UserFormProps> = ({
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2">
-                <ExclamationTriangleIcon className="w-5 h-5 text-red-600" />
+                <ExclamationTriangleIcon className="w-5 h-5 text-blue-600" />
                 <span className="text-red-800 font-medium">{error}</span>
               </div>
             </div>
@@ -1133,3 +1133,5 @@ const UserForm: React.FC<UserFormProps> = ({
 };
 
 export default UserForm;
+
+

@@ -127,7 +127,7 @@ const UserListPage: React.FC = () => {
                 ? 'bg-green-100'
                 : color === 'warning'
                   ? 'bg-yellow-100'
-                  : 'bg-red-100'
+                  : 'bg-orange-100'
           }`}
         >
           <Icon
@@ -138,7 +138,7 @@ const UserListPage: React.FC = () => {
                   ? 'text-green-600'
                   : color === 'warning'
                     ? 'text-yellow-600'
-                    : 'text-red-600'
+                    : 'text-blue-600'
             }`}
           />
         </div>
@@ -256,7 +256,7 @@ const UserListPage: React.FC = () => {
           icon={ShieldCheckIcon}
           color="error"
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-red-50 to-red-100 border-red-200"
+          className="bg-gradient-to-br from-blue-50 to-blue-100 border-red-200"
         />
 
         <StatCard
@@ -328,3 +328,5 @@ const UserListPage: React.FC = () => {
 };
 
 export default UserListPage;
+
+

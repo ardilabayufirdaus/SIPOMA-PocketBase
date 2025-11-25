@@ -32,7 +32,7 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ recommendation
             <div
               className={`p-2 rounded-full ${
                 rec.type === 'critical'
-                  ? 'bg-red-100'
+                  ? 'bg-orange-100'
                   : rec.type === 'warning'
                     ? 'bg-yellow-100'
                     : 'bg-blue-100'
@@ -41,7 +41,7 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ recommendation
               <ExclamationTriangleIcon
                 className={`w-5 h-5 ${
                   rec.type === 'critical'
-                    ? 'text-red-600'
+                    ? 'text-blue-600'
                     : rec.type === 'warning'
                       ? 'text-yellow-600'
                       : 'text-blue-600'
@@ -78,3 +78,5 @@ export const Recommendations: React.FC<RecommendationsProps> = ({ recommendation
     </div>
   </div>
 );
+
+

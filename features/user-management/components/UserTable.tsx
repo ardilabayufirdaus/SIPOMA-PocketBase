@@ -48,7 +48,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
   if (error) {
     return (
-      <div className="text-red-600 text-center py-4">
+      <div className="text-blue-600 text-center py-4">
         {error}
         <button onClick={clearError} className="ml-2 text-blue-600 hover:text-blue-800">
           Retry
@@ -105,7 +105,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      user.is_active ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
                     }`}
                   >
                     {user.is_active ? t.active || 'Active' : t.inactive || 'Inactive'}
@@ -122,7 +122,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                     onClick={() => handleToggleActive(user.id, user.is_active)}
                     className={`${
                       user.is_active
-                        ? 'text-red-600 hover:text-red-900'
+                        ? 'text-blue-600 hover:text-red-900'
                         : 'text-green-600 hover:text-green-900'
                     }`}
                   >
@@ -130,7 +130,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   </button>
                   <button
                     onClick={() => handleDeleteUser(user.id)}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-blue-600 hover:text-red-900"
                   >
                     {t.delete || 'Delete'}
                   </button>
@@ -147,3 +147,5 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 };
 
 export default UserTable;
+
+

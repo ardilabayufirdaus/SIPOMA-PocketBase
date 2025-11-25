@@ -159,7 +159,7 @@ const DebugUserPermissions: React.FC<DebugUserPermissionsProps> = ({ isOpen, onC
                           <div key={module} className="flex justify-between">
                             <span className="text-sm">{module}:</span>
                             <span
-                              className={`text-sm font-medium ${hasAccess ? 'text-green-600' : 'text-red-600'}`}
+                              className={`text-sm font-medium ${hasAccess ? 'text-green-600' : 'text-blue-600'}`}
                             >
                               {hasAccess ? '✅ ACCESS' : '❌ NO ACCESS'}
                             </span>
@@ -179,3 +179,5 @@ const DebugUserPermissions: React.FC<DebugUserPermissionsProps> = ({ isOpen, onC
 };
 
 export default DebugUserPermissions;
+
+

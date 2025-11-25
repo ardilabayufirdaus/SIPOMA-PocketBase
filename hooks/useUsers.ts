@@ -8,7 +8,7 @@ interface PocketBaseUser {
   id: string;
   username: string;
   email?: string;
-  full_name?: string;
+  name?: string;
   role: string;
   avatar?: string;
   last_active?: string;
@@ -39,7 +39,7 @@ export const useUsers = () => {
       const records = await pb.collection('users').getFullList({
         sort: '-created',
         fields:
-          'id,username,email,full_name,role,avatar,last_active,is_active,created,updated,permissions',
+          'id,username,email,name,role,avatar,last_active,is_active,created,updated,permissions',
       });
 
       // Use the PocketBaseUser interface defined at the top
@@ -50,7 +50,8 @@ export const useUsers = () => {
           id: user.id,
           username: user.username,
           email: user.email || '',
-          full_name: user.full_name || '',
+          name: user.name || '',
+          full_name: user.name || '', // Keep for compatibility
           role: user.role as UserRole,
           avatar_url: user.avatar,
           last_active: user.last_active ? new Date(user.last_active) : new Date(),
@@ -124,7 +125,7 @@ export const useCurrentUser = () => {
             const currentUser: User = {
               id: pocketBaseUser.id,
               username: pocketBaseUser.username,
-              full_name: pocketBaseUser.full_name || '',
+              full_name: pocketBaseUser.name || '',
               role: pocketBaseUser.role as UserRole,
               is_active: true,
               created_at: new Date(pocketBaseUser.created),

@@ -131,3 +131,5 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
 };
 
 export default MonitoringPage;
+
+

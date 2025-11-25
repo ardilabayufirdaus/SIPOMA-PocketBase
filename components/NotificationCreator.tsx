@@ -61,7 +61,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
   const severityOptions = [
     { value: AlertSeverity.INFO, label: 'Info', color: 'text-blue-600' },
     { value: AlertSeverity.WARNING, label: 'Warning', color: 'text-amber-600' },
-    { value: AlertSeverity.CRITICAL, label: 'Critical', color: 'text-red-600' },
+    { value: AlertSeverity.CRITICAL, label: 'Critical', color: 'text-blue-600' },
   ];
 
   const categoryOptions = [
@@ -104,7 +104,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               rows={3}
               placeholder="Enter notification message..."
               required
@@ -116,7 +116,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value as AlertSeverity)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {severityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -131,7 +131,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as any)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {categoryOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -174,3 +174,5 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
 };
 
 export default NotificationCreator;
+
+

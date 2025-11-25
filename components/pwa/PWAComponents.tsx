@@ -280,3 +280,5 @@ const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
 };
 
 export { PWAInstallBanner, PWAUpdateNotification, PWAStatusIndicator, OfflineIndicator };
+
+

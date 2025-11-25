@@ -29,7 +29,7 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
           <tr>
             {tableData.headers.map((header, i) => {
               const isSelected = typeof header === 'number' && header === selectedDay;
-              const bgClass = isSelected ? 'bg-red-100' : 'bg-slate-50';
+              const bgClass = isSelected ? 'bg-orange-100' : 'bg-slate-50';
               const stickyClass = i === 0 ? 'sticky left-0 z-10' : '';
               const textAlign = i === 0 ? 'text-left' : 'text-center';
               return (
@@ -86,7 +86,7 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
                 <td
                   key={i}
                   className={`px-4 py-3 whitespace-nowrap font-bold text-slate-700 text-center transition-colors duration-200 ${
-                    isSelected ? 'bg-red-100' : ''
+                    isSelected ? 'bg-orange-100' : ''
                   }`}
                 >
                   {formatNumber(total)}
@@ -99,3 +99,5 @@ export const StockOutTable: React.FC<StockOutTableProps> = ({
     </div>
   </div>
 );
+
+

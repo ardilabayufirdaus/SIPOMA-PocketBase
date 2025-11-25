@@ -97,7 +97,7 @@ export default function UnifiedPlantOpsDashboard() {
           <button
             onClick={loadAllData}
             disabled={isLoading}
-            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors min-h-[44px]"
+            className="px-3 py-2 sm:px-4 sm:py-2.5 bg-blue-600 hover:bg-green-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors min-h-[44px]"
           >
             {isLoading ? 'Loading...' : 'Refresh Data'}
           </button>
@@ -208,7 +208,7 @@ export default function UnifiedPlantOpsDashboard() {
                   ? 'bg-green-100 text-green-800'
                   : isCachingEnabled || isBatchingEnabled
                     ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
+                    : 'bg-orange-100 text-orange-800'
               }`}
             >
               {isCachingEnabled && isBatchingEnabled
@@ -220,13 +220,13 @@ export default function UnifiedPlantOpsDashboard() {
           </div>
           <div>
             <span className="font-medium text-slate-700">Query Caching:</span>
-            <span className={`ml-2 ${isCachingEnabled ? 'text-green-600' : 'text-red-600'}`}>
+            <span className={`ml-2 ${isCachingEnabled ? 'text-green-600' : 'text-blue-600'}`}>
               {isCachingEnabled ? 'Enabled' : 'Disabled'}
             </span>
           </div>
           <div>
             <span className="font-medium text-slate-700">Batch Loading:</span>
-            <span className={`ml-2 ${isBatchingEnabled ? 'text-green-600' : 'text-red-600'}`}>
+            <span className={`ml-2 ${isBatchingEnabled ? 'text-green-600' : 'text-blue-600'}`}>
               {isBatchingEnabled ? 'Enabled' : 'Disabled'}
             </span>
           </div>
@@ -235,3 +235,6 @@ export default function UnifiedPlantOpsDashboard() {
     </div>
   );
 }
+
+
+

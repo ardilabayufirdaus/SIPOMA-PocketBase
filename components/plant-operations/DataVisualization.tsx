@@ -83,7 +83,7 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
       <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-red-50 rounded-lg">
-            <AlertTriangleIcon className="w-5 h-5 text-red-600" />
+            <AlertTriangleIcon className="w-5 h-5 text-blue-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-slate-900">Risk Management</h3>
@@ -258,3 +258,5 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
 };
 
 export default DataVisualization;
+
+

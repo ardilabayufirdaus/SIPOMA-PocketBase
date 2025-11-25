@@ -21,7 +21,7 @@ import {
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
   </div>
 );
 
@@ -152,7 +152,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 
   const statusColorMap: { [key: string]: string } = {
     on_track: 'bg-green-100 text-green-800',
-    delayed: 'bg-red-100 text-red-800',
+    delayed: 'bg-orange-100 text-orange-800',
     completed: 'bg-blue-100 text-blue-800',
   };
 
@@ -223,7 +223,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
                     <div className="flex items-center gap-2">
                       <div className="w-24 bg-slate-200 rounded-full h-2.5">
                         <div
-                          className="bg-red-600 h-2.5 rounded-full"
+                          className="bg-blue-600 h-2.5 rounded-full"
                           style={{ width: `${p.progress}%` }}
                         ></div>
                       </div>
@@ -333,3 +333,5 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 };
 
 export default ProjectListPage;
+
+

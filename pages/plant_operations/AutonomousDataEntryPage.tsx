@@ -171,7 +171,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   }));
 
   const statusColors: { [key in DowntimeStatus | RiskStatus]: string } = {
-    [DowntimeStatus.OPEN]: 'bg-red-100 text-red-800',
+    [DowntimeStatus.OPEN]: 'bg-orange-100 text-orange-800',
     [DowntimeStatus.CLOSE]: 'bg-green-100 text-green-800',
     [RiskStatus.IDENTIFIED]: 'bg-yellow-100 text-yellow-800',
     [RiskStatus.IN_PROGRESS]: 'bg-blue-100 text-blue-800',
@@ -179,22 +179,22 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-6">
-      <div className="w-full mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="w-full space-y-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 animate-pulse">
             Autonomous Data Entry System
           </h1>
-          <p className="text-slate-600 text-lg">
+          <p className="text-indigo-700 text-xl font-medium">
             Monitor and manage autonomous operations data with real-time tracking
           </p>
         </div>
         {/* Main Filter Bar */}
-        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+        <div className="backdrop-blur-lg bg-gradient-to-r from-white/20 via-blue-50/30 to-purple-50/30 border border-indigo-200/50 rounded-3xl p-8 shadow-2xl hover:shadow-indigo-200/50 transition-shadow duration-500">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
               <svg
-                className="w-5 h-5 text-white"
+                className="w-6 h-6 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -207,7 +207,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-800 to-purple-800 bg-clip-text text-transparent">
               {t.filters}
             </h3>
           </div>
@@ -225,7 +225,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-white/60 to-indigo-50/60 backdrop-blur-sm border border-indigo-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-gradient-to-r hover:from-white/80 hover:to-purple-50/80 text-indigo-800 font-medium appearance-none shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -264,7 +264,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-white/60 to-indigo-50/60 backdrop-blur-sm border border-indigo-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-gradient-to-r hover:from-white/80 hover:to-purple-50/80 text-indigo-800 font-medium appearance-none shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -303,7 +303,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-white/60 to-indigo-50/60 backdrop-blur-sm border border-indigo-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-gradient-to-r hover:from-white/80 hover:to-purple-50/80 text-indigo-800 font-medium appearance-none shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -332,12 +332,12 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </div>
         </div>
         {/* Downtime Follow-up Section */}
-        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+        <div className="backdrop-blur-lg bg-gradient-to-r from-white/20 via-orange-50/30 to-blue-50/30 border border-orange-200/50 rounded-3xl p-8 shadow-2xl hover:shadow-orange-200/50 transition-shadow duration-500">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center shadow-lg">
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-6 h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -350,41 +350,41 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-800 to-red-800 bg-clip-text text-transparent">
                 {t.autonomous_downtime_follow_up}
               </h2>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-white/20">
-            <table className="min-w-full divide-y divide-white/20">
-              <thead className="bg-white/30 backdrop-blur-sm">
+          <div className="overflow-x-auto rounded-2xl border border-orange-200/50 shadow-inner">
+            <table className="min-w-full divide-y divide-orange-200/30">
+              <thead className="bg-gradient-to-r from-orange-100/50 to-blue-100/50 backdrop-blur-sm">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.start_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.end_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.duration}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.problem}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.corrective_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -392,7 +392,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white/20 backdrop-blur-sm divide-y divide-white/10">
+              <tbody className="bg-gradient-to-r from-white/30 to-orange-50/30 backdrop-blur-sm divide-y divide-orange-100/20">
                 {downtimeDataForMonth.length > 0 ? (
                   downtimeDataForMonth.map((d) => {
                     const { hours, minutes } = calculateDuration(d.start_time, d.end_time);
@@ -428,7 +428,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                             className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
                               d.status === DowntimeStatus.CLOSE
                                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                                : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                                : 'bg-gradient-to-r from-blue-500 to-orange-500 text-white'
                             }`}
                           >
                             {d.status || DowntimeStatus.OPEN}
@@ -460,12 +460,12 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
           </div>
         </div>{' '}
         {/* Risk Management Section */}
-        <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-fire flex items-center justify-center">
+        <div className="backdrop-blur-lg bg-gradient-to-r from-white/20 via-emerald-50/30 to-teal-50/30 border border-emerald-200/50 rounded-3xl p-8 shadow-2xl hover:shadow-emerald-200/50 transition-shadow duration-500">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-6 h-6 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -478,7 +478,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-800 to-teal-800 bg-clip-text text-transparent">
                 {t.autonomous_risk_management}
               </h2>
             </div>
@@ -487,33 +487,33 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               size="sm"
               onClick={handleOpenAddRisk}
               aria-label={t.add_risk_button || 'Add new risk'}
-              className="bg-gradient-fire hover:bg-gradient-ocean text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
             >
               <PlusIcon className="w-4 h-4 mr-2" />
               {t.add_risk_button}
             </EnhancedButton>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-white/20">
-            <table className="min-w-full divide-y divide-white/20">
-              <thead className="bg-white/30 backdrop-blur-sm">
+          <div className="overflow-x-auto rounded-2xl border border-emerald-200/50 shadow-inner">
+            <table className="min-w-full divide-y divide-emerald-200/30">
+              <thead className="bg-gradient-to-r from-emerald-100/50 to-teal-100/50 backdrop-blur-sm">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     {t.potential_disruption}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     {t.preventive_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     {t.mitigation_plan}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -521,7 +521,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white/20 backdrop-blur-sm divide-y divide-white/10">
+              <tbody className="bg-gradient-to-r from-white/30 to-emerald-50/30 backdrop-blur-sm divide-y divide-emerald-100/20">
                 {filteredRiskRecords.map((risk) => (
                   <tr key={risk.id} className="hover:bg-white/40 transition-colors duration-200">
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
@@ -568,7 +568,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           size="xs"
                           onClick={() => handleOpenDeleteRisk(risk.id)}
                           aria-label={`Delete risk for ${risk.unit}`}
-                          className="hover:bg-red-100 text-red-600"
+                          className="hover:bg-orange-100 text-blue-600"
                         >
                           <TrashIcon />
                         </EnhancedButton>
@@ -652,3 +652,5 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 };
 
 export default AutonomousDataEntryPage;
+
+

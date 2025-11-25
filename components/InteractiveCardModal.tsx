@@ -249,7 +249,7 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                           <div className="flex items-center mt-1">
                             <span
                               className={`text-xs font-medium ${
-                                metric.trend.isPositive ? 'text-green-600' : 'text-red-600'
+                                metric.trend.isPositive ? 'text-green-600' : 'text-blue-600'
                               }`}
                             >
                               metric.trend.value
@@ -320,9 +320,9 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
                   onClick={action.onClick}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                     action.variant === 'primary'
-                      ? 'bg-red-600 hover:bg-red-700 text-white'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
                       : action.variant === 'danger'
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
                         : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
                   }`}
                 >
@@ -336,3 +336,5 @@ export const InteractiveCardModal: React.FC<InteractiveCardModalProps> = ({
     </div>
   );
 };
+
+

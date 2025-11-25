@@ -355,7 +355,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-2 text-sm text-red-600 flex items-center"
+                  className="mt-2 text-sm text-blue-600 flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -396,7 +396,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-2 text-sm text-red-600 flex items-center"
+                  className="mt-2 text-sm text-blue-600 flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -468,3 +468,5 @@ const ReportSettingForm: React.FC<FormProps> = ({
 };
 
 export default ReportSettingForm;
+
+

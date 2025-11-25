@@ -156,7 +156,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
               id="plant_category"
               value={formData.plant_category}
               onChange={handleCategoryChange}
-              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
+              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
             >
               {uniqueCategories.map((cat) => (
                 <motion.option
@@ -188,7 +188,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
               onChange={handleChange}
               required
               disabled={unitsForCategory.length === 0}
-              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500"
+              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500"
             >
               {unitsForCategory.map((u) => (
                 <motion.option
@@ -222,7 +222,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 onChange={handleChange}
                 required
                 placeholder={t.silo_name_placeholder || 'Enter silo name'}
-                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
+                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
               />
             </div>
           </motion.div>
@@ -248,7 +248,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 min="0"
                 step="0.01"
                 placeholder="0.00"
-                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
+                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
               />
             </div>
           </motion.div>
@@ -274,7 +274,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 min="0"
                 step="0.01"
                 placeholder="0.00"
-                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
+                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
               />
             </div>
           </motion.div>
@@ -320,7 +320,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 type="submit"
                 variant="primary"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
+                className="px-6 py-2 bg-blue-600 hover:bg-green-700"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {t.save_button}
@@ -334,3 +334,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
 };
 
 export default SiloCapacityForm;
+
+
+
+

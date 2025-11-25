@@ -53,7 +53,7 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
             <div className="p-2 bg-blue-50 rounded-lg">{kpi.icon}</div>
             <div
               className={`flex items-center gap-1 text-sm ${
-                kpi.trend.isPositive ? 'text-green-600' : 'text-red-600'
+                kpi.trend.isPositive ? 'text-green-600' : 'text-blue-600'
               }`}
             >
               {kpi.trend.isPositive ? (
@@ -84,3 +84,5 @@ const KPICards: React.FC<KPICardsProps> = ({ kpis, isLoading }) => {
 };
 
 export default KPICards;
+
+

@@ -322,7 +322,7 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
               {uploadError && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-w-md mx-auto">
                   <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 text-red-600 mt-0.5">
+                    <div className="flex-shrink-0 w-5 h-5 text-blue-600 mt-0.5">
                       <svg fill="currentColor" viewBox="0 0 20 20">
                         <path
                           fillRule="evenodd"
@@ -533,3 +533,5 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 };
 
 export default ProfileEditModal;
+
+

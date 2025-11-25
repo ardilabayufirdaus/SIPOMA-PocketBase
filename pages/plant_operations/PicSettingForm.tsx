@@ -219,7 +219,7 @@ const PicSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-2 flex items-center gap-2 text-sm text-red-600"
+              className="mt-2 flex items-center gap-2 text-sm text-blue-600"
               id="pic-error"
               role="alert"
             >
@@ -296,3 +296,5 @@ const PicSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t
 };
 
 export default PicSettingForm;
+
+

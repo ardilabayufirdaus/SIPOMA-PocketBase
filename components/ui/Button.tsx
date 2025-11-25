@@ -75,9 +75,9 @@ const Button: React.FC<ButtonProps> = ({
       'focus:ring-amber-500'
     ),
     error: cn(
-      'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25',
+      'bg-gradient-to-r from-blue-500 to-red-600 text-white shadow-lg shadow-red-500/25',
       'hover:shadow-xl hover:shadow-red-500/30 hover:from-red-400 hover:to-red-600',
-      'focus:ring-red-500'
+      'focus:ring-blue-500'
     ),
     glass: cn(
       'bg-white/10 backdrop-blur-md border border-white/20 text-gray-800',
@@ -137,3 +137,5 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
+
+

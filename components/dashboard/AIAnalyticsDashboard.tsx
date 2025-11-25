@@ -57,9 +57,9 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
       case 'medium':
         return 'text-yellow-600 bg-yellow-100';
       case 'high':
-        return 'text-red-600 bg-red-100';
+        return 'text-blue-600 bg-orange-100';
       case 'critical':
-        return 'text-red-800 bg-red-200';
+        return 'text-orange-800 bg-red-200';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -72,7 +72,7 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
       case 'medium':
         return 'text-yellow-600 bg-yellow-100';
       case 'high':
-        return 'text-red-600 bg-red-100';
+        return 'text-blue-600 bg-orange-100';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -105,8 +105,8 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
                 {filteredData.anomalies.filter((a) => !a.isResolved).length}
               </p>
             </div>
-            <div className="p-2 rounded-lg bg-red-100">
-              <div className="w-6 h-6 text-red-600">🚨</div>
+            <div className="p-2 rounded-lg bg-orange-100">
+              <div className="w-6 h-6 text-blue-600">🚨</div>
             </div>
           </div>
         </div>
@@ -578,3 +578,5 @@ const AIAnalyticsDashboard: React.FC<AIAnalyticsDashboardProps> = ({ className =
 };
 
 export default AIAnalyticsDashboard;
+
+

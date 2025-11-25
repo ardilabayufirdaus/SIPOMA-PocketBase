@@ -37,7 +37,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
               {t.notifications_title || 'Notifications'}
             </h3>
             {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-red-100 text-red-800 rounded-full">
+              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold bg-orange-100 text-orange-800 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -109,7 +109,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                       onClick={() => dismissNotification(notification.id)}
                       variant="ghost"
                       size="sm"
-                      className="p-1 text-red-500 hover:text-red-600"
+                      className="p-1 text-red-500 hover:text-blue-600"
                       ariaLabel="Dismiss notification"
                     >
                       <XMarkIcon className="w-4 h-4" />
@@ -145,3 +145,5 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
 };
 
 export default NotificationModal;
+
+

@@ -320,7 +320,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             <option value="summary">Summary (Report Summary)</option>
           </select>
           {errors.jenis && touched.jenis && (
-            <p id="jenis-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="jenis-error" className="mt-1 text-sm text-blue-600" role="alert">
               {errors.jenis}
             </p>
           )}
@@ -349,7 +349,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             <option value="shift">Shift Report</option>
           </select>
           {errors.report_type && touched.report_type && (
-            <p id="report_type-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="report_type-error" className="mt-1 text-sm text-blue-600" role="alert">
               {errors.report_type}
             </p>
           )}
@@ -395,7 +395,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               </p>
             )}
             {errors.parameter_id && touched.parameter_id && (
-              <p id="parameter_id-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="parameter_id-error" className="mt-1 text-sm text-blue-600" role="alert">
                 {errors.parameter_id}
               </p>
             )}
@@ -430,7 +430,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               <option value="max">Max</option>
             </select>
             {errors.kalkulasi && touched.kalkulasi && (
-              <p id="kalkulasi-error" className="mt-1 text-sm text-red-600" role="alert">
+              <p id="kalkulasi-error" className="mt-1 text-sm text-blue-600" role="alert">
                 {errors.kalkulasi}
               </p>
             )}
@@ -482,7 +482,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             </div>
           )}
           {errors.data && touched.data && (
-            <p id="data-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="data-error" className="mt-1 text-sm text-blue-600" role="alert">
               {errors.data}
             </p>
           )}
@@ -525,7 +525,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             </p>
           )}
           {errors.category && touched.category && (
-            <p id="category-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="category-error" className="mt-1 text-sm text-blue-600" role="alert">
               {errors.category}
             </p>
           )}
@@ -560,7 +560,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             Leave empty to apply to all units in the selected category, or select specific unit.
           </p>
           {errors.plant_unit && touched.plant_unit && (
-            <p id="plant_unit-error" className="mt-1 text-sm text-red-600" role="alert">
+            <p id="plant_unit-error" className="mt-1 text-sm text-blue-600" role="alert">
               {errors.plant_unit}
             </p>
           )}
@@ -599,3 +599,6 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
 };
 
 export default WhatsAppReportSettingForm;
+
+
+

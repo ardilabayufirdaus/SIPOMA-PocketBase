@@ -154,7 +154,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Masukkan nama lengkap"
               aria-describedby="name-error"
             />
@@ -168,7 +168,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Masukkan alamat email"
               aria-describedby="email-error"
             />
@@ -181,7 +181,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
               id="recaptcha"
               checked={!!recaptchaToken}
               onChange={(e) => setRecaptchaToken(e.target.checked ? 'verified' : null)}
-              className="w-4 h-4 text-red-600 bg-slate-100 border-slate-300 rounded focus:ring-red-500"
+              className="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="recaptcha" className="text-sm text-slate-700">
               Saya bukan robot
@@ -189,7 +189,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
           </div>
 
           {error && (
-            <div className="text-red-600 text-sm text-center" role="alert">
+            <div className="text-blue-600 text-sm text-center" role="alert">
               {error}
             </div>
           )}
@@ -228,3 +228,5 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({ onClose, onSuccess,
 };
 
 export default RegistrationForm;
+
+

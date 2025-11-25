@@ -117,7 +117,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
       <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center">
               <svg
                 className="w-5 h-5 text-white"
                 fill="none"
@@ -203,7 +203,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                 >
                   <tr className="border-b border-orange-300/30" role="row">
                     <th
-                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-0 bg-gradient-to-r from-orange-500 to-red-500 z-30 shadow-md"
+                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-0 bg-gradient-to-r from-orange-500 to-blue-500 z-30 shadow-md"
                       style={{ width: '90px' }}
                       role="columnheader"
                       scope="col"
@@ -211,7 +211,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       {t.hour}
                     </th>
                     <th
-                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-24 bg-gradient-to-r from-orange-500 to-red-500 z-30 shadow-md"
+                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-24 bg-gradient-to-r from-orange-500 to-blue-500 z-30 shadow-md"
                       style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
@@ -219,7 +219,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                       {t.shift}
                     </th>
                     <th
-                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-56 bg-gradient-to-r from-orange-500 to-red-500 z-30 shadow-md"
+                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-56 bg-gradient-to-r from-orange-500 to-blue-500 z-30 shadow-md"
                       style={{ width: '200px' }}
                       role="columnheader"
                       scope="col"
@@ -264,7 +264,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                         key={hour}
                         className={`border-b border-slate-200/50 group transition-all duration-200 ${
                           hour % 2 === 0 ? 'bg-slate-50/30' : 'bg-white/60'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/30 hover:shadow-md hover:scale-[1.002] transform`}
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-blue-50/30 hover:shadow-md hover:scale-[1.002] transform`}
                         role="row"
                       >
                         <td
@@ -462,3 +462,5 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
 CcrParameterDataTable.displayName = 'CcrParameterDataTable';
 
 export default CcrParameterDataTable;
+
+

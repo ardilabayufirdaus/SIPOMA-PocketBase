@@ -40,3 +40,5 @@ const CcrTableSkeleton: React.FC = () => {
 };
 
 export default CcrTableSkeleton;
+
+

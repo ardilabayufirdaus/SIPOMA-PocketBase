@@ -22,3 +22,5 @@ const DocumentArrowUpIcon: React.FC<IconProps> = ({ className = 'w-6 h-6' }) => 
 );
 
 export default DocumentArrowUpIcon;
+
+

@@ -22,3 +22,5 @@ const ChartBarSquareIcon: React.FC<IconProps> = ({ className = 'w-6 h-6' }) => (
 );
 
 export default ChartBarSquareIcon;
+
+

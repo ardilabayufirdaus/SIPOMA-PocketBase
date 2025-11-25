@@ -102,7 +102,7 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
         <div className="mt-6 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             Got it!
           </button>
@@ -113,3 +113,5 @@ const CcrNavigationHelp: React.FC<CcrNavigationHelpProps> = ({ isVisible, onClos
 };
 
 export default CcrNavigationHelp;
+
+

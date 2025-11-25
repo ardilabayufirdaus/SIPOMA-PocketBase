@@ -93,7 +93,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
             value={formData.activity}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
@@ -107,7 +107,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
             value={formData.planned_start}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
@@ -121,7 +121,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
             value={formData.planned_end}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
@@ -134,7 +134,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
             id="actual_start"
             value={formData.actual_start ?? ''}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
@@ -147,7 +147,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
             id="actual_end"
             value={formData.actual_end ?? ''}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div className="sm:col-span-2">
@@ -163,7 +163,7 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
               max="100"
               value={formData.percent_complete}
               onChange={handleChange}
-              className="block w-full pr-10 px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="block w-full pr-10 px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               onBlur={(e) => {
                 const value = Math.max(0, Math.min(100, Number(e.target.value)));
                 setFormData((prev) => ({ ...prev, percent_complete: value }));
@@ -200,3 +200,5 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
 };
 
 export default ProjectTaskForm;
+
+

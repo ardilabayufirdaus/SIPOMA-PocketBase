@@ -52,9 +52,9 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
       case 'medium':
         return 'text-yellow-600 bg-yellow-100';
       case 'high':
-        return 'text-red-600 bg-red-100';
+        return 'text-blue-600 bg-orange-100';
       case 'critical':
-        return 'text-red-800 bg-red-200';
+        return 'text-orange-800 bg-red-200';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -67,9 +67,9 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
       case 'warning':
         return 'text-yellow-600 bg-yellow-100';
       case 'error':
-        return 'text-red-600 bg-red-100';
+        return 'text-blue-600 bg-orange-100';
       case 'critical':
-        return 'text-red-800 bg-red-200';
+        return 'text-orange-800 bg-red-200';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -86,10 +86,10 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
               <p className="text-2xl font-bold text-slate-900">{metrics.riskScore}</p>
             </div>
             <div
-              className={`p-2 rounded-lg ${metrics.riskScore > 70 ? 'bg-red-100' : metrics.riskScore > 40 ? 'bg-yellow-100' : 'bg-green-100'}`}
+              className={`p-2 rounded-lg ${metrics.riskScore > 70 ? 'bg-orange-100' : metrics.riskScore > 40 ? 'bg-yellow-100' : 'bg-green-100'}`}
             >
               <div
-                className={`w-6 h-6 ${metrics.riskScore > 70 ? 'text-red-600' : metrics.riskScore > 40 ? 'text-yellow-600' : 'text-green-600'}`}
+                className={`w-6 h-6 ${metrics.riskScore > 70 ? 'text-blue-600' : metrics.riskScore > 40 ? 'text-yellow-600' : 'text-green-600'}`}
               >
                 🛡️
               </div>
@@ -115,8 +115,8 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
               <p className="text-sm font-medium text-slate-600">Failed Logins</p>
               <p className="text-2xl font-bold text-slate-900">{metrics.failedLogins}</p>
             </div>
-            <div className="p-2 rounded-lg bg-red-100">
-              <div className="w-6 h-6 text-red-600">🚫</div>
+            <div className="p-2 rounded-lg bg-orange-100">
+              <div className="w-6 h-6 text-blue-600">🚫</div>
             </div>
           </div>
         </div>
@@ -211,7 +211,7 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
                       event.result === 'success'
                         ? 'bg-green-100 text-green-800'
                         : event.result === 'failure'
-                          ? 'bg-red-100 text-red-800'
+                          ? 'bg-orange-100 text-orange-800'
                           : 'bg-gray-100 text-gray-800'
                     }`}
                   >
@@ -397,3 +397,5 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ className = '' })
 };
 
 export default SecurityDashboard;
+
+

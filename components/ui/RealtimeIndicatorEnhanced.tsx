@@ -44,7 +44,7 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({ className = '' })
             isConnected ? `bg-green-500 ${showPulse ? 'animate-pulse' : ''}` : 'bg-red-500'
           }`}
         />
-        <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
+        <span className={`font-medium ${isConnected ? 'text-green-600' : 'text-blue-600'}`}>
           {isConnected ? 'Realtime' : 'Offline'}
         </span>
         {subscriptionCount > 0 && (
@@ -59,3 +59,5 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({ className = '' })
 };
 
 export default RealtimeIndicator;
+
+

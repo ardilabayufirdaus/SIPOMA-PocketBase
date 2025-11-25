@@ -302,7 +302,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     id="parameter-error"
-                    className="text-sm text-red-600 flex items-center"
+                    className="text-sm text-blue-600 flex items-center"
                     role="alert"
                   >
                     <AlertCircle className="h-4 w-4 mr-1" />
@@ -384,7 +384,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   id="unit-error"
-                  className="mt-2 text-sm text-red-600 flex items-center"
+                  className="mt-2 text-sm text-blue-600 flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -436,7 +436,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   id="category-error"
-                  className="mt-2 text-sm text-red-600 flex items-center"
+                  className="mt-2 text-sm text-blue-600 flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -464,7 +464,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                   className="bg-slate-50 rounded-lg p-4"
                 >
                   <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
-                    <Settings className="h-5 w-5 mr-2 text-red-600" />
+                    <Settings className="h-5 w-5 mr-2 text-blue-600" />
                     {t.basic_range_title || 'Basic Range Settings'}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -493,7 +493,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-red-600 flex items-center"
+                            className="text-sm text-blue-600 flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -527,7 +527,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-red-600 flex items-center"
+                            className="text-sm text-blue-600 flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -576,7 +576,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-red-600 flex items-center"
+                            className="text-sm text-blue-600 flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -610,7 +610,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-red-600 flex items-center"
+                            className="text-sm text-blue-600 flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -659,7 +659,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-red-600 flex items-center"
+                            className="text-sm text-blue-600 flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -693,7 +693,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-red-600 flex items-center"
+                            className="text-sm text-blue-600 flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -722,12 +722,12 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center justify-center space-x-2 text-red-600 bg-red-50 px-4 py-2 rounded-lg"
+                className="flex items-center justify-center space-x-2 text-blue-600 bg-red-50 px-4 py-2 rounded-lg"
               >
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full"
+                  className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"
                 />
                 <span className="text-sm font-medium">Saving parameter settings...</span>
               </motion.div>
@@ -749,7 +749,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                 type="submit"
                 variant="primary"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700"
+                className="px-6 py-2 bg-blue-600 hover:bg-green-700"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {t.save_button}
@@ -763,3 +763,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
 };
 
 export default ParameterSettingForm;
+
+
+
+

@@ -84,13 +84,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const getVariantClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200';
+        return 'bg-gradient-to-br from-blue-50 to-blue-100 border-red-200';
       case 'success':
         return 'bg-gradient-to-br from-green-50 to-green-100 border-green-200';
       case 'warning':
         return 'bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200';
       case 'danger':
-        return 'bg-gradient-to-br from-red-50 to-red-100 border-red-200';
+        return 'bg-gradient-to-br from-blue-50 to-blue-100 border-red-200';
       default:
         return 'bg-gradient-to-br from-slate-50 to-white border-slate-200';
     }
@@ -173,7 +173,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
                   trend.direction === 'up'
                     ? 'bg-green-100 text-green-700'
                     : trend.direction === 'down'
-                      ? 'bg-red-100 text-red-700'
+                      ? 'bg-orange-100 text-red-700'
                       : 'bg-slate-100 text-slate-700'
                 }`}
               >
@@ -258,14 +258,14 @@ const QuickAction: React.FC<QuickActionProps> = ({
       onClick={onClick}
       className={`w-full p-4 text-left group transition-all duration-300 ${
         variant === 'primary'
-          ? 'bg-gradient-to-r from-red-500 to-red-600 border-red-600 text-white shadow-lg hover:shadow-xl'
-          : 'bg-white border-slate-200 hover:border-red-300'
+          ? 'bg-gradient-to-r from-blue-500 to-red-600 border-blue-600 text-white shadow-lg hover:shadow-xl'
+          : 'bg-white border-slate-200 hover:border-orange-300'
       }`}
       icon={
         <div
           className={`
           p-2 rounded-lg flex-shrink-0 transition-colors
-          ${variant === 'primary' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-red-100'}`}
+          ${variant === 'primary' ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-orange-100'}`}
         >
           {icon}
         </div>
@@ -424,3 +424,5 @@ export {
   scaleOnHover,
   colors,
 };
+
+

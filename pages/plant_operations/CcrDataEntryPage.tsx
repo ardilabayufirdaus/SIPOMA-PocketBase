@@ -1219,6 +1219,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               shift2_counter: counterData.shift2[param.id] || 0,
               shift3_counter: counterData.shift3[param.id] || 0,
               shift3_cont_counter: counterData.shift3Cont[param.id] || 0,
+              operator_id: loggedInUser?.id,
             });
           }
         });
@@ -3546,7 +3547,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     variant="ghost"
                     size="xs"
                     onClick={() => setError(null)}
-                    className="mt-2 text-red-600 hover:text-red-500 underline font-medium"
+                    className="mt-2 text-blue-600 hover:text-red-500 underline font-medium"
                     aria-label="Tutup pesan error"
                   >
                     Tutup
@@ -3629,7 +3630,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center">
               <svg
                 className="w-5 h-5 text-white"
                 fill="none"
@@ -3916,7 +3917,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={columnSearchQuery}
                 onChange={(e) => setColumnSearchQuery(e.target.value)}
                 placeholder={t.ccr_search_placeholder}
-                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+                className="pl-10 pr-12 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-150"
                 style={{ width: '320px' }}
                 autoComplete="off"
                 title={t.search_columns_tooltip}
@@ -4065,7 +4066,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         scope="col"
                       >
                         <div className="text-center space-y-1">
-                          <div className="text-[6px] leading-tight text-red-600 font-medium">
+                          <div className="text-[6px] leading-tight text-blue-600 font-medium">
                             {param.min_value !== undefined ? `Min: ${param.min_value}` : '-'}
                           </div>
                           <div className="text-[6px] leading-tight text-blue-600 font-medium">
@@ -4083,7 +4084,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         key={hour}
                         className={`border-b border-slate-200/50 group ${
                           hour % 2 === 0 ? 'bg-white/40' : 'bg-slate-50/30'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-150`}
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-blue-50/50 transition-all duration-150`}
                         role="row"
                       >
                         <td
@@ -4212,7 +4213,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             const numValue = parseFloat(value.replace(/,/g, ''));
                             if (!isNaN(numValue)) {
                               if (param.min_value !== undefined && numValue < param.min_value) {
-                                cellBgClass = 'bg-red-100';
+                                cellBgClass = 'bg-orange-100';
                               } else if (
                                 param.max_value !== undefined &&
                                 numValue > param.max_value
@@ -4713,7 +4714,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-white"
                     fill="none"
@@ -4754,7 +4755,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
-                <thead className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">
+                <thead className="bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-lg">
                   <tr>
                     <th className="px-4 py-3 text-left font-bold border-b border-orange-400/30">
                       {t.start_time}
@@ -4795,7 +4796,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         key={downtime.id}
                         className={`border-b border-slate-200/50 group ${
                           idx % 2 === 0 ? 'bg-white/40' : 'bg-slate-50/30'
-                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-red-50/50 transition-all duration-150`}
+                        } hover:bg-gradient-to-r hover:from-orange-50/50 hover:to-blue-50/50 transition-all duration-150`}
                       >
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-slate-800">
                           {downtime.start_time}
@@ -4894,10 +4895,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <div className="p-6">
           <div className="flex items-start space-x-4">
             <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-red-600"
+                    className="w-6 h-6 text-blue-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -4954,7 +4955,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     )}
                   </div>
                 )}
-                <p className="text-sm text-red-600 mt-4 font-medium">
+                <p className="text-sm text-blue-600 mt-4 font-medium">
                   ⚠️ Pastikan data ini benar-benar perlu dihapus sebelum melanjutkan.
                 </p>
               </div>
@@ -5062,7 +5063,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               type="text"
               value={modalSearchQuery}
               onChange={(e) => setModalSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm"
               placeholder="Cari parameter..."
               aria-label="Cari parameter"
             />
@@ -5115,7 +5116,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <div className="flex justify-end gap-3 pt-4 border-t flex-wrap">
             <div className="flex gap-2 items-center">
               <EnhancedButton
-                variant="outline"
+                variant="secondary"
                 onClick={exportParameterOrderToExcel}
                 aria-label="Export to Excel"
                 className="flex items-center gap-1"
@@ -5124,7 +5125,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 Export to Excel
               </EnhancedButton>
               <EnhancedButton
-                variant="outline"
+                variant="secondary"
                 onClick={() => document.getElementById('import-parameter-order-excel').click()}
                 aria-label="Import from Excel"
                 className="flex items-center gap-1"
@@ -5193,21 +5194,21 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
             <div className="flex gap-2">
               <EnhancedButton
-                variant="outline"
+                variant="secondary"
                 onClick={() => setShowLoadProfileModal(true)}
                 aria-label="Load profile"
               >
                 Load Profile
               </EnhancedButton>
               <EnhancedButton
-                variant="outline"
+                variant="secondary"
                 onClick={() => setShowSaveProfileModal(true)}
                 aria-label="Save profile"
               >
                 Save Profile
               </EnhancedButton>
               <EnhancedButton
-                variant="outline"
+                variant="secondary"
                 onClick={() => {
                   // Reset to default order (sorted by parameter name)
                   const defaultOrder = [...filteredParameterSettings].sort((a, b) =>
@@ -5257,7 +5258,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={profileName}
                 onChange={(e) => setProfileName(e.target.value)}
                 placeholder="Enter profile name"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 autoFocus
               />
             </div>
@@ -5270,14 +5271,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 onChange={(e) => setProfileDescription(e.target.value)}
                 placeholder="Enter profile description"
                 rows={3}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
               />
             </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <EnhancedButton
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setShowSaveProfileModal(false);
                 setProfileName('');
@@ -5339,7 +5340,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </EnhancedButton>
                     {(profile.user_id === loggedInUser?.id || isSuperAdmin(loggedInUser?.role)) && (
                       <EnhancedButton
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -5347,7 +5348,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           setShowDeleteProfileModal(true);
                         }}
                         aria-label={`Delete profile ${profile.name}`}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-blue-600 hover:text-red-700"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </EnhancedButton>
@@ -5360,7 +5361,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
           <div className="flex justify-end gap-3 pt-4 border-t">
             <EnhancedButton
-              variant="outline"
+              variant="secondary"
               onClick={() => setShowLoadProfileModal(false)}
               aria-label="Close load profile modal"
             >
@@ -5403,7 +5404,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             Delete Profile
           </EnhancedButton>
           <EnhancedButton
-            variant="outline"
+            variant="secondary"
             onClick={() => {
               setShowDeleteProfileModal(false);
               setProfileToDelete(null);
@@ -5428,3 +5429,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 };
 
 export default CcrDataEntryPage;
+
+
+
+

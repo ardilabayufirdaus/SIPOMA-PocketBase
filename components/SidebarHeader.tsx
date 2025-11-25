@@ -8,7 +8,7 @@ interface SidebarHeaderProps {
 export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose }) => {
   return (
     <div className="h-20 flex items-center justify-center border-b border-white/10 relative overflow-hidden px-3">
-      <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-red-600/10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-red-600/10" />
       <div className="flex items-center justify-center relative z-10">
         <div className="p-2 rounded-lg bg-white/90 shadow-lg border border-white/20">
           <img
@@ -44,3 +44,5 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose 
     </div>
   );
 };
+
+

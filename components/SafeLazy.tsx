@@ -29,7 +29,7 @@ export function createSafeLazy<T extends ComponentType<any>>(
         return {
           default: (() => {
             const FallbackComponent = () => (
-              <div className="p-4 border border-red-300 rounded bg-red-50 text-center">
+              <div className="p-4 border border-orange-300 rounded bg-red-50 text-center">
                 {errorFallback || (
                   <>
                     <p className="font-medium">Failed to load {displayName}</p>
@@ -74,3 +74,5 @@ export const SafeLazy: React.FC<SafeLazyProps> = ({
     <Suspense fallback={fallback}>{children}</Suspense>
   </ErrorBoundary>
 );
+
+

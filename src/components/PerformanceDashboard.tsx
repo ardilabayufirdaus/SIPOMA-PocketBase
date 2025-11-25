@@ -32,7 +32,7 @@ export const PerformanceDashboard: React.FC = () => {
         <div className="flex items-center space-x-4">
           <div
             className={`flex items-center space-x-2 ${
-              isOnline ? 'text-green-600' : 'text-red-600'
+              isOnline ? 'text-green-600' : 'text-blue-600'
             }`}
           >
             <div
@@ -41,7 +41,7 @@ export const PerformanceDashboard: React.FC = () => {
             <span className="text-sm font-medium">{isOnline ? 'Online' : 'Offline'}</span>
           </div>
           {hasMemoryLeak && (
-            <div className="flex items-center space-x-2 text-red-600">
+            <div className="flex items-center space-x-2 text-blue-600">
               <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
               <span className="text-sm font-medium">Memory Leak Detected</span>
             </div>
@@ -63,7 +63,7 @@ export const PerformanceDashboard: React.FC = () => {
           </h3>
           <p
             className={`text-2xl font-bold ${
-              metrics.lcp > 2500 ? 'text-red-600' : 'text-green-600'
+              metrics.lcp > 2500 ? 'text-blue-600' : 'text-green-600'
             }`}
           >
             {formatTime(metrics.lcp)}
@@ -75,7 +75,7 @@ export const PerformanceDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-green-800 mb-2">FID</h3>
           <p
             className={`text-2xl font-bold ${
-              metrics.fid > 100 ? 'text-red-600' : 'text-green-600'
+              metrics.fid > 100 ? 'text-blue-600' : 'text-green-600'
             }`}
           >
             {formatTime(metrics.fid)}
@@ -87,7 +87,7 @@ export const PerformanceDashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-slate-800 mb-2">CLS</h3>
           <p
             className={`text-2xl font-bold ${
-              metrics.cls > 0.1 ? 'text-red-600' : 'text-green-600'
+              metrics.cls > 0.1 ? 'text-blue-600' : 'text-green-600'
             }`}
           >
             {metrics.cls.toFixed(3)}
@@ -165,7 +165,7 @@ export const PerformanceDashboard: React.FC = () => {
       {/* Recommendations */}
       {recommendations.length > 0 && (
         <div className="bg-red-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-red-800 mb-4">Performance Recommendations</h3>
+          <h3 className="text-lg font-semibold text-orange-800 mb-4">Performance Recommendations</h3>
           <ul className="space-y-2">
             {recommendations.map((rec, index) => (
               <li key={index} className="flex items-start space-x-2">

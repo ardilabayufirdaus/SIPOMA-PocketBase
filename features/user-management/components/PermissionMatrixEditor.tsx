@@ -544,10 +544,10 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg animate-pulse">
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-red-200 rounded-lg animate-pulse">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                <ExclamationTriangleIcon className="w-4 h-4 text-blue-600" />
               </div>
               <span className="text-red-800 font-medium">{error}</span>
             </div>
@@ -613,3 +613,5 @@ const PermissionMatrixEditor: React.FC<PermissionMatrixEditorProps> = ({
 };
 
 export default PermissionMatrixEditor;
+
+

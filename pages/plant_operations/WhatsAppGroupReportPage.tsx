@@ -1894,7 +1894,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900 shadow-sm hover:shadow-md"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white text-slate-900 shadow-sm hover:shadow-md"
               />
             </div>{' '}
             {/* Plant Category Selection */}
@@ -1922,7 +1922,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
                 id="category-select"
                 value={selectedPlantCategory}
                 onChange={(e) => setSelectedPlantCategory(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white shadow-sm hover:shadow-md"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white shadow-sm hover:shadow-md"
               >
                 {plantCategories.map((category) => (
                   <option key={category} value={category}>
@@ -2037,7 +2037,7 @@ const WhatsAppGroupReportPage: React.FC = () => {
                                 );
                               }
                             }}
-                            className="mr-3 text-blue-600 focus:ring-blue-500"
+                            className="mr-3 text-blue-600 focus:ring-red-500"
                           />
                           <span className="text-sm text-gray-700">
                             Unit {unit.unit} - {unit.description || 'No description'}
@@ -2372,3 +2372,6 @@ const WhatsAppGroupReportPage: React.FC = () => {
 };
 
 export default WhatsAppGroupReportPage;
+
+
+

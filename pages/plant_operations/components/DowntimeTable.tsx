@@ -97,3 +97,5 @@ export const DowntimeTable: React.FC<DowntimeTableProps> = ({ downtimeData, t })
     </div>
   );
 };
+
+

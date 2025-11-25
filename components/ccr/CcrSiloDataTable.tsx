@@ -161,7 +161,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                   handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
                                 }}
                                 onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
-                                className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
+                                className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs transition-all duration-200 hover:border-slate-400"
                                 aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi ruang kosong untuk ${
                                   masterSilo.silo_name
@@ -194,7 +194,7 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
                                   handleSiloDataBlur(siloData.silo_id, shift, 'content');
                                 }}
                                 onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)}
-                                className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs transition-all duration-200 hover:border-slate-400"
+                                className="w-full text-center px-1 py-1 bg-white text-slate-900 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs transition-all duration-200 hover:border-slate-400"
                                 aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                                 title={`Isi konten untuk ${
                                   masterSilo.silo_name
@@ -245,3 +245,5 @@ const CcrSiloDataTable: React.FC<CcrSiloDataTableProps> = React.memo(
 CcrSiloDataTable.displayName = 'CcrSiloDataTable';
 
 export default CcrSiloDataTable;
+
+

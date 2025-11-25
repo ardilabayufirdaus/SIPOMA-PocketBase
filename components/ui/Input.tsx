@@ -186,7 +186,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {(error || success || helperText) && (
           <div className="mt-1">
             {error && (
-              <p className="text-sm text-red-600" role="alert">
+              <p className="text-sm text-blue-600" role="alert">
                 {error}
               </p>
             )}
@@ -270,3 +270,5 @@ PasswordInput.displayName = 'PasswordInput';
 SearchInput.displayName = 'SearchInput';
 
 export default Input;
+
+

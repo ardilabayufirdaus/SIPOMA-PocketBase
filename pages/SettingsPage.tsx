@@ -213,7 +213,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                       value={passwordData.current}
                       onChange={(e) => setPasswordData((p) => ({ ...p, current: e.target.value }))}
                       autoComplete="current-password"
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                       placeholder="Enter current password"
                       required
                     />
@@ -228,7 +228,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                         value={passwordData.new}
                         onChange={(e) => setPasswordData((p) => ({ ...p, new: e.target.value }))}
                         autoComplete="new-password"
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                         placeholder="Enter new password"
                         required
                       />
@@ -244,7 +244,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                           setPasswordData((p) => ({ ...p, confirm: e.target.value }))
                         }
                         autoComplete="new-password"
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                         placeholder="Confirm new password"
                         required
                       />
@@ -280,7 +280,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                       id="language-select"
                       value={currentLanguage}
                       onChange={(e) => onLanguageChange(e.target.value as Language)}
-                      className="w-full px-4 py-3 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none"
+                      className="w-full px-4 py-3 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white appearance-none"
                     >
                       <option value="en">🇺🇸 English</option>
                       <option value="id">🇮🇩 Bahasa Indonesia</option>
@@ -404,3 +404,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 };
 
 export default SettingsPage;
+
+
+
