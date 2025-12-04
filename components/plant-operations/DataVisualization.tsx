@@ -169,31 +169,31 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
                     backgroundColor: chartData.map((item) => {
                       if (timeRange === 'daily') {
                         return item.availability >= 95
-                          ? '#10b981'
+                          ? 'rgba(16, 185, 129, 1)'
                           : item.availability >= 90
-                            ? '#f59e0b'
-                            : '#ef4444';
+                            ? 'rgba(245, 158, 11, 1)'
+                            : 'rgba(239, 68, 68, 1)';
                       } else {
                         return item.runningHours >= item.totalHours * 0.95
-                          ? '#10b981'
+                          ? 'rgba(16, 185, 129, 1)'
                           : item.runningHours >= item.totalHours * 0.9
-                            ? '#f59e0b'
-                            : '#ef4444';
+                            ? 'rgba(245, 158, 11, 1)'
+                            : 'rgba(239, 68, 68, 1)';
                       }
                     }),
                     borderColor: chartData.map((item) => {
                       if (timeRange === 'daily') {
                         return item.availability >= 95
-                          ? '#10b981'
+                          ? 'rgba(16, 185, 129, 1)'
                           : item.availability >= 90
-                            ? '#f59e0b'
-                            : '#ef4444';
+                            ? 'rgba(245, 158, 11, 1)'
+                            : 'rgba(239, 68, 68, 1)';
                       } else {
                         return item.runningHours >= item.totalHours * 0.95
-                          ? '#10b981'
+                          ? 'rgba(16, 185, 129, 1)'
                           : item.runningHours >= item.totalHours * 0.9
-                            ? '#f59e0b'
-                            : '#ef4444';
+                            ? 'rgba(245, 158, 11, 1)'
+                            : 'rgba(239, 68, 68, 1)';
                       }
                     }),
                     borderWidth: 1,
@@ -258,5 +258,3 @@ const DataVisualization: React.FC<DataVisualizationProps> = ({
 };
 
 export default DataVisualization;
-
-

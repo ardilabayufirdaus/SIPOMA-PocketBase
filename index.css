@@ -4,7 +4,7 @@
 
 /* CSS Variables for consistent theming */
 :root {
-  /* Colors */
+  /* Light mode colors */
   --color-neutral-50: #f8fafc;
   --color-neutral-100: #f1f5f9;
   --color-neutral-200: #e2e8f0;
@@ -27,6 +27,27 @@
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 250ms ease-in-out;
   --transition-slow: 350ms ease-in-out;
+}
+
+/* Dark mode colors */
+.dark {
+  --color-neutral-50: #0f172a;
+  --color-neutral-100: #1e293b;
+  --color-neutral-200: #334155;
+  --color-neutral-300: #475569;
+  --color-neutral-400: #64748b;
+  --color-neutral-500: #94a3b8;
+  --color-neutral-600: #cbd5e1;
+  --color-neutral-700: #e2e8f0;
+  --color-neutral-800: #f1f5f9;
+  --color-neutral-900: #f8fafc;
+
+  /* Dark mode shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
 }
 
 /* Root font size adjustment for better 100% zoom experience */
@@ -359,11 +380,11 @@ html {
 }
 
 .ccr-table thead th {
-  @apply bg-slate-100 font-semibold text-slate-900 border-b-2 border-slate-300;
+  @apply bg-primary-100 font-semibold text-slate-900 border-b-2 border-primary-300;
 }
 
 .ccr-table tfoot {
-  @apply bg-slate-50;
+  @apply bg-primary-50;
 }
 
 .ccr-table .sticky-col {
@@ -371,15 +392,15 @@ html {
 }
 
 .ccr-table .sticky-col-header {
-  @apply bg-slate-100;
+  @apply bg-primary-100;
 }
 
 .ccr-table tbody tr:hover .sticky-col {
-  @apply bg-slate-50;
+  @apply bg-primary-50;
 }
 
 .ccr-table input {
-  @apply w-full px-2 py-1 text-[8px] border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply w-full px-2 py-1 text-[8px] border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
 }
 
 .ccr-table input:focus {
@@ -391,7 +412,7 @@ html {
 }
 
 .ccr-column-search input {
-  @apply w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white;
+  @apply w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white;
 }
 
 .ccr-column-search input:focus {
@@ -403,19 +424,19 @@ html {
 }
 
 .ccr-column-search input:focus + .ccr-column-search-icon {
-  @apply text-blue-500;
+  @apply text-primary-500;
 }
 
 .ccr-table th.filtered-column {
-  @apply bg-blue-50;
+  @apply bg-primary-50;
 }
 
 .ccr-table td.filtered-column {
-  @apply bg-blue-50;
+  @apply bg-primary-50;
 }
 
 .ccr-search-results-indicator {
-  @apply bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium;
+  @apply bg-primary-100 text-primary-800 px-2 py-1 rounded-full text-xs font-medium;
 }
 
 .ccr-table input:focus {

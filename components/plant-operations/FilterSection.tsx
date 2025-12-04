@@ -92,9 +92,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
           <motion.div
             whileHover={{ rotate: 15, scale: 1.1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-            className="p-2 bg-primary-500/20 rounded-xl"
+            className="p-2 !bg-primary-100 rounded-xl"
           >
-            <FilterIcon className="w-5 h-5 text-primary-600" />
+            <FilterIcon className="w-5 h-5 !text-primary-800" />
           </motion.div>
           <div>
             <h3 className="text-lg font-bold text-slate-900 tracking-tight">Smart Filters</h3>
@@ -234,5 +234,3 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 };
 
 export default FilterSection;
-
-
