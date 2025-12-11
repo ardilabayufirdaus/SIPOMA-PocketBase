@@ -1,6 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
 // ...existing code...
 
+// Import ThemeProvider
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+
 // ...existing code...
 // Using SimpleErrorBoundary instead
 import SimpleErrorBoundary from './components/SimpleErrorBoundary';
@@ -62,9 +65,12 @@ export type Theme = 'light';
 const App: React.FC = () => {
   const { language, setLanguage, t } = useTranslation();
   const isMobile = useIsMobile();
+  const { theme } = useTheme();
 
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   const { loading: plantUnitsLoading } = usePlantUnits();
   const { currentUser, loading: currentUserLoading, logout } = useCurrentUser();
@@ -158,6 +164,10 @@ const App: React.FC = () => {
       setIsSidebarOpen(false);
     }
   }, [isMobile]);
+
+  const handleToggleExpand = useCallback(() => {
+    setIsSidebarExpanded((prev) => !prev);
+  }, []);
 
   // Sidebar toggle/close handlers removed
 
@@ -265,277 +275,277 @@ const App: React.FC = () => {
   return (
     <SimpleErrorBoundary
       fallback={
-        <div className="flex items-center justify-center min-h-screen text-blue-600">
+        <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
           Terjadi error pada aplikasi. Silakan refresh halaman.
         </div>
       }
     >
-      <div>
-        <div className="min-h-screen bg-white font-sans compact">
-          <Sidebar
-            currentPage={currentPage}
-            onNavigate={handleNavigate}
-            t={t}
-            isOpen={isSidebarOpen}
-            onClose={handleCloseSidebar}
-            currentUser={currentUser}
-          />
-          <div
-            className="flex flex-col min-h-screen transition-all duration-300"
-            style={{
-              marginLeft: isMobile ? '0' : '5rem', // 80px untuk compact sidebar width (w-20)
-            }}
-          >
-            <Header
-              pageTitle={getPageTitle()}
-              showAddUserButton={false}
-              onAddUser={handleOpenAddUserModal}
-              t={t}
-              onNavigate={handleNavigate}
-              onSignOut={handleSignOutClick}
-              currentUser={currentUser}
-              onToggleSidebar={handleToggleSidebar}
-              currentLanguage={language}
-              onLanguageChange={setLanguage}
-            />
-            <main className="flex-grow px-4 sm:px-6 lg:px-8 py-6 overflow-y-auto text-slate-700 page-transition bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30">
-              <div className="max-w-none w-full">
-                <LazyContainer
-                  fallback={
-                    <LoadingSkeleton
-                      variant="rectangular"
-                      height={200}
-                      width="100%"
-                      className="mx-auto mt-24"
-                    />
-                  }
-                  errorFallback={
-                    <div className="p-4 border border-red-400 bg-red-50 rounded text-center mt-24">
-                      <p className="text-red-700">Failed to load content</p>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      >
-                        Reload
-                      </button>
-                    </div>
-                  }
-                >
-                  {/* Dashboard - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="dashboard"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'dashboard' && (
-                      <MainDashboardPage language={language} onNavigate={handleNavigate} t={t} />
-                    )}
-                  </PermissionGuard>
-
-                  {/* Inspection Module - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="inspection"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'inspection' && (
-                      <InspectionPage
-                        language={language}
-                        subPage={activeSubPages.inspection}
-                        onNavigate={handleNavigate}
-                      />
-                    )}
-                  </PermissionGuard>
-
-                  {/* User Management - Only for Super Admin */}
-                  {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
-                    <>{activeSubPages.users === 'user_list' && <UserListPage />}</>
-                  )}
-
-                  {/* Settings - Accessible to all users */}
-                  {currentPage === 'settings' && (
-                    <SettingsPage
-                      t={t}
-                      user={currentUser}
-                      onOpenProfileModal={handleOpenProfileModal}
-                      currentLanguage={language}
-                      onLanguageChange={setLanguage}
-                    />
-                  )}
-
-                  {/* WhatsApp Reports - Accessible to all users */}
-                  {currentPage === 'whatsapp-reports' && (
-                    <React.Suspense
-                      fallback={
-                        <LoadingSkeleton
-                          variant="rectangular"
-                          height={200}
-                          width="100%"
-                          className="mt-4"
-                        />
-                      }
-                    >
-                      <WhatsAppReportsPage />
-                    </React.Suspense>
-                  )}
-
-                  {/* Plant Operations - Check permission */}
-                  <PermissionGuard
-                    user={currentUser}
-                    feature="plant_operations"
-                    requiredLevel="READ"
-                    fallback={null}
-                  >
-                    {currentPage === 'operations' && (
-                      <PlantOperationsPage
-                        activePage={activeSubPages.operations}
-                        t={t}
-                        plantData={{
-                          loading: plantDataLoading,
-                        }}
-                      />
-                    )}
-                  </PermissionGuard>
-
-                  {/* Project Management */}
-                  {currentPage === 'projects' && (
-                    <ProjectManagementPage
-                      activePage={activeSubPages.projects}
-                      t={t}
-                      onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
-                    />
-                  )}
-                </LazyContainer>
-              </div>
-            </main>
-          </div>
-        </div>
-        <Modal
-          isOpen={isUserModalOpen}
-          onClose={handleCloseUserModal}
-          title={editingUser ? t.edit_user_title : t.add_user_title}
-        >
-          <UserForm
-            user={editingUser}
-            onClose={handleCloseUserModal}
-            onSuccess={handleCloseUserModal}
-            language={language}
-          />
-        </Modal>
-        <ProfileEditModal
-          isOpen={isProfileModalOpen}
-          onClose={handleCloseProfileModal}
-          user={currentUser}
-          onSave={(updatedUser) => {
-            if (currentUser) {
-              // Force a refresh of the auth record to get new avatar
-              import('./utils/pocketbase-simple')
-                .then(({ pb }) => {
-                  pb.collection('users').authRefresh();
-                })
-                .then(() => {
-                  // Update user in the store
-                  updateUser(currentUser.id, updatedUser);
-
-                  // Force refresh current user
-                  window.dispatchEvent(new CustomEvent('user-profile-updated'));
-
-                  setToastMessage(t.avatar_updated || 'Profile updated successfully!');
-                  setToastType('success');
-                  setShowToast(true);
-                  handleCloseProfileModal();
-                })
-                .catch((err) => {
-                  // Use logger instead of console.error
-                  import('./utils/logger').then(({ logger }) => {
-                    logger.error('Failed to refresh auth:', err);
-                  });
-                  setToastMessage('Profile updated but display may not refresh automatically');
-                  setToastType('warning');
-                  setShowToast(true);
-                });
-            }
+      <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans compact transition-colors duration-300 flex">
+        <Sidebar
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          t={t}
+          isOpen={isSidebarOpen}
+          onClose={handleCloseSidebar}
+          currentUser={currentUser}
+          isExpanded={isSidebarExpanded}
+          onToggleExpand={handleToggleExpand}
+        />
+        <div
+          className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300"
+          style={{
+            marginLeft: isMobile ? '0' : isSidebarExpanded ? '16rem' : '6rem',
           }}
+        >
+          <Header
+            pageTitle={getPageTitle()}
+            showAddUserButton={false}
+            onAddUser={handleOpenAddUserModal}
+            t={t}
+            onNavigate={handleNavigate}
+            onSignOut={handleSignOutClick}
+            currentUser={currentUser}
+            onToggleSidebar={handleToggleSidebar}
+            currentLanguage={language}
+            onLanguageChange={setLanguage}
+          />
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-slate-50/50 via-transparent to-slate-100/30 dark:from-slate-900/50 dark:via-transparent dark:to-slate-800/30 page-transition relative">
+            <div className="w-full h-full pb-20">
+              <LazyContainer
+                fallback={
+                  <LoadingSkeleton
+                    variant="rectangular"
+                    height={200}
+                    width="100%"
+                    className="mx-auto mt-24"
+                  />
+                }
+                errorFallback={
+                  <div className="p-4 border border-red-400 bg-red-50 dark:bg-red-900/20 dark:border-red-600 rounded text-center mt-24">
+                    <p className="text-red-700 dark:text-red-400">Failed to load content</p>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="mt-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white rounded transition-colors"
+                    >
+                      Reload
+                    </button>
+                  </div>
+                }
+              >
+                {/* Dashboard - Check permission */}
+                <PermissionGuard
+                  user={currentUser}
+                  feature="dashboard"
+                  requiredLevel="READ"
+                  fallback={null}
+                >
+                  {currentPage === 'dashboard' && (
+                    <MainDashboardPage language={language} onNavigate={handleNavigate} t={t} />
+                  )}
+                </PermissionGuard>
+
+                {/* Inspection Module - Check permission */}
+                <PermissionGuard
+                  user={currentUser}
+                  feature="inspection"
+                  requiredLevel="READ"
+                  fallback={null}
+                >
+                  {currentPage === 'inspection' && (
+                    <InspectionPage
+                      language={language}
+                      subPage={activeSubPages.inspection}
+                      onNavigate={handleNavigate}
+                    />
+                  )}
+                </PermissionGuard>
+
+                {/* User Management - Only for Super Admin */}
+                {currentPage === 'users' && currentUser?.role === 'Super Admin' && (
+                  <>{activeSubPages.users === 'user_list' && <UserListPage />}</>
+                )}
+
+                {/* Settings - Accessible to all users */}
+                {currentPage === 'settings' && (
+                  <SettingsPage
+                    t={t}
+                    user={currentUser}
+                    onOpenProfileModal={handleOpenProfileModal}
+                    currentLanguage={language}
+                    onLanguageChange={setLanguage}
+                  />
+                )}
+
+                {/* WhatsApp Reports - Accessible to all users */}
+                {currentPage === 'whatsapp-reports' && (
+                  <React.Suspense
+                    fallback={
+                      <LoadingSkeleton
+                        variant="rectangular"
+                        height={200}
+                        width="100%"
+                        className="mt-4"
+                      />
+                    }
+                  >
+                    <WhatsAppReportsPage />
+                  </React.Suspense>
+                )}
+
+                {/* Plant Operations - Check permission */}
+                <PermissionGuard
+                  user={currentUser}
+                  feature="plant_operations"
+                  requiredLevel="READ"
+                  fallback={null}
+                >
+                  {currentPage === 'operations' && (
+                    <PlantOperationsPage
+                      activePage={activeSubPages.operations}
+                      t={t}
+                      plantData={{
+                        loading: plantDataLoading,
+                      }}
+                    />
+                  )}
+                </PermissionGuard>
+
+                {/* Project Management */}
+                {currentPage === 'projects' && (
+                  <ProjectManagementPage
+                    activePage={activeSubPages.projects}
+                    t={t}
+                    onNavigate={(subpage: string) => handleNavigate('projects', subpage)}
+                  />
+                )}
+              </LazyContainer>
+            </div>
+          </main>
+        </div>
+      </div>
+      <Modal
+        isOpen={isUserModalOpen}
+        onClose={handleCloseUserModal}
+        title={editingUser ? t.edit_user_title : t.add_user_title}
+      >
+        <UserForm
+          user={editingUser}
+          onClose={handleCloseUserModal}
+          onSuccess={handleCloseUserModal}
+          language={language}
+        />
+      </Modal>
+      <ProfileEditModal
+        isOpen={isProfileModalOpen}
+        onClose={handleCloseProfileModal}
+        user={currentUser}
+        onSave={(updatedUser) => {
+          if (currentUser) {
+            // Force a refresh of the auth record to get new avatar
+            import('./utils/pocketbase-simple')
+              .then(({ pb }) => {
+                pb.collection('users').authRefresh();
+              })
+              .then(() => {
+                // Update user in the store
+                updateUser(currentUser.id, updatedUser);
+
+                // Force refresh current user
+                window.dispatchEvent(new CustomEvent('user-profile-updated'));
+
+                setToastMessage(t.avatar_updated || 'Profile updated successfully!');
+                setToastType('success');
+                setShowToast(true);
+                handleCloseProfileModal();
+              })
+              .catch((err) => {
+                // Use logger instead of console.error
+                import('./utils/logger').then(({ logger }) => {
+                  logger.error('Failed to refresh auth:', err);
+                });
+                setToastMessage('Profile updated but display may not refresh automatically');
+                setToastType('warning');
+                setShowToast(true);
+              });
+          }
+        }}
+        t={t}
+      />
+      {showPasswordDisplay && (
+        <PasswordDisplay
+          password={generatedPassword}
+          username={newUsername}
+          fullName={newUserFullName}
+          onClose={() => setShowPasswordDisplay(false)}
           t={t}
         />
-        {showPasswordDisplay && (
-          <PasswordDisplay
-            password={generatedPassword}
-            username={newUsername}
-            fullName={newUserFullName}
-            onClose={() => setShowPasswordDisplay(false)}
-            t={t}
-          />
-        )}
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          isVisible={showToast}
-          onClose={() => setShowToast(false)}
-          duration={4000}
-        />
-        <Modal
-          isOpen={isSignOutModalOpen}
-          onClose={handleSignOutCancel}
-          title={t.confirm_sign_out_title}
-        >
-          <div className="p-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold text-slate-800">Konfirmasi Keluar</h4>
-                <p className="text-slate-600">{t.confirm_sign_out_message}</p>
+      )}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        duration={4000}
+      />
+      <Modal
+        isOpen={isSignOutModalOpen}
+        onClose={handleSignOutCancel}
+        title={t.confirm_sign_out_title}
+      >
+        <div className="p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold text-slate-800">Konfirmasi Keluar</h4>
+              <p className="text-slate-600">{t.confirm_sign_out_message}</p>
 
-                {/* Info tentang data yang akan dihapus */}
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium text-blue-800">
-                      Akan menghapus cookies & site data untuk localhost dan sipoma.site
-                    </span>
-                  </div>
+              {/* Info tentang data yang akan dihapus */}
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium text-blue-800">
+                    Akan menghapus cookies & site data untuk localhost dan sipoma.site
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10">
-            <button
-              onClick={handleSignOutCancel}
-              className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-[1.02]"
-            >
-              {t.cancel_button}
-            </button>
-            <button
-              onClick={handleSignOutConfirm}
-              className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
-            >
-              {t.header_sign_out}
-            </button>
-          </div>
-        </Modal>
-      </div>
+        </div>
+        <div className="bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10">
+          <button
+            onClick={handleSignOutCancel}
+            className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-[1.02]"
+          >
+            {t.cancel_button}
+          </button>
+          <button
+            onClick={handleSignOutConfirm}
+            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
+          >
+            {t.header_sign_out}
+          </button>
+        </div>
+      </Modal>
 
       {/* Logout Progress Modal */}
       <LogoutProgress isVisible={isLogoutInProgress} stage={logoutStage} />
@@ -547,4 +557,10 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+const AppWithTheme: React.FC = () => (
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>
+);
+
+export default AppWithTheme;

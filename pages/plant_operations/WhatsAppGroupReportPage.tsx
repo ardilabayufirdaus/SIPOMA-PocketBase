@@ -1838,12 +1838,17 @@ const WhatsAppGroupReportPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="w-full mx-auto py-8 px-6">
-        {/* Header */}
-        <Card variant="gradient" gradientDirection="ocean" padding="lg" className="mb-8 text-white">
-          <div className="flex items-center space-x-6">
-            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-xl">
+        {/* Header - Indigo/Slate Theme */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6 mb-8">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+
+          <div className="relative flex items-center gap-5">
+            <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-lg">
               <svg
-                className="w-10 h-10 text-blue-600"
+                className="w-9 h-9 text-indigo-200"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1857,13 +1862,15 @@ const WhatsAppGroupReportPage: React.FC = () => {
               </svg>
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-slate-900">WhatsApp Group Report</h1>
-              <p className="text-lg text-slate-600 mt-2">
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                WhatsApp Group Report
+              </h1>
+              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
                 Generate daily production reports for plant operations
               </p>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Controls Section */}
         <Card variant="glass" padding="lg" className="mb-8 backdrop-blur-xl bg-white/90">
@@ -2372,6 +2379,3 @@ const WhatsAppGroupReportPage: React.FC = () => {
 };
 
 export default WhatsAppGroupReportPage;
-
-
-

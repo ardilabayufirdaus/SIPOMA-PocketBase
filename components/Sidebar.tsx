@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Page } from '../App';
 import { useIsMobile } from '../hooks/useIsMobile';
 import HomeIcon from './icons/HomeIcon';
@@ -35,6 +36,8 @@ interface SidebarProps {
   isOpen: boolean;
   onClose?: () => void;
   currentUser?: User | null;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -44,6 +47,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onClose,
   currentUser,
+  isExpanded = false,
+  onToggleExpand,
 }) => {
   const isMobile = useIsMobile();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -296,102 +301,137 @@ const Sidebar: React.FC<SidebarProps> = ({
       <aside
         {...bind()}
         style={{ touchAction: 'none' }} /* Fix for @use-gesture warning */
-        className={`fixed inset-y-0 left-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white flex flex-col border-r border-white/10 transition-all duration-300 w-20 ${
-          isMobile
-            ? isOpen
-              ? 'translate-x-0 shadow-2xl'
-              : '-translate-x-full'
-            : 'translate-x-0 shadow-xl'
-        }`}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ${
+          isExpanded ? 'w-64' : 'w-24'
+        } ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Header */}
-        <SidebarHeader isMobile={isMobile} onClose={onClose} />
+        {/* Glass Background with Blur */}
+        <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl border-r border-white/5 shadow-2xl transition-all duration-300" />
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 flex flex-col items-center space-y-4 overflow-y-auto">
-          {/* Dashboard - Check permission */}
-          {permissionChecker.hasPermission('dashboard', 'READ') && (
-            <NavigationItem
-              ref={dashboardButtonRef}
-              icon={<HomeIcon className={iconClass} />}
-              label={t.mainDashboard}
-              isActive={currentPage === 'dashboard'}
-              onClick={() => handleNavigate('dashboard')}
-            />
+        {/* Content Container */}
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Header */}
+          <SidebarHeader isMobile={isMobile} onClose={onClose} isExpanded={isExpanded} />
+
+          {/* Floating Toggle Button (Desktop Only) */}
+          {!isMobile && onToggleExpand && (
+            <button
+              onClick={onToggleExpand}
+              className={`absolute -right-3 top-9 z-50 rounded-full p-1 border border-white/20 shadow-lg cursor-pointer hover:bg-slate-700 transition-all duration-300 bg-slate-800 text-slate-200`}
+              aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              <svg
+                className={`w-4 h-4 transition-transform duration-300 ${
+                  isExpanded ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
           )}
 
-          {/* Plant Operations - Check permission */}
-          {permissionChecker.hasPermission('plant_operations', 'READ') && (
-            <NavigationItem
-              ref={operationsButtonRef}
-              icon={<FactoryIcon className={iconClass} />}
-              label={t.plantOperations}
-              isActive={currentPage === 'operations'}
-              onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
-              hasDropdown={true}
-              isExpanded={activeDropdown === 'operations'}
-            />
-          )}
+          {/* Navigation */}
+          <nav className="flex-1 px-3 py-6 flex flex-col items-center space-y-3 overflow-y-auto scrollbar-hide">
+            {/* Dashboard - Check permission */}
+            {permissionChecker.hasPermission('dashboard', 'READ') && (
+              <NavigationItem
+                ref={dashboardButtonRef}
+                icon={<HomeIcon className={iconClass} />}
+                label={t.mainDashboard}
+                isActive={currentPage === 'dashboard'}
+                onClick={() => handleNavigate('dashboard')}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
 
-          {/* Inspection Module - Check permission */}
-          {permissionChecker.hasPermission('inspection', 'READ') && (
-            <NavigationItem
-              ref={inspectionButtonRef}
-              icon={<ClipboardCheckIcon className={iconClass} />}
-              label={t.inspection || 'Inspection'}
-              isActive={currentPage === 'inspection'}
-              onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
-              hasDropdown={true}
-              isExpanded={activeDropdown === 'inspection'}
-            />
-          )}
+            {/* Plant Operations - Check permission */}
+            {permissionChecker.hasPermission('plant_operations', 'READ') && (
+              <NavigationItem
+                ref={operationsButtonRef}
+                icon={<FactoryIcon className={iconClass} />}
+                label={t.plantOperations}
+                isActive={currentPage === 'operations'}
+                onClick={() => handleDropdownToggle('operations', operationsButtonRef)}
+                hasDropdown={!isExpanded}
+                isExpanded={activeDropdown === 'operations'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
 
-          {/* Project Management - Check permission */}
-          {permissionChecker.hasPermission('project_management', 'READ') && (
-            <NavigationItem
-              ref={projectsButtonRef}
-              icon={<ClipboardDocumentListIcon className={iconClass} />}
-              label={t.projectManagement}
-              isActive={currentPage === 'projects'}
-              onClick={() => handleDropdownToggle('projects', projectsButtonRef)}
-              hasDropdown={true}
-              isExpanded={activeDropdown === 'projects'}
-            />
-          )}
+            {/* Inspection Module - Check permission */}
+            {permissionChecker.hasPermission('inspection', 'READ') && (
+              <NavigationItem
+                ref={inspectionButtonRef}
+                icon={<ClipboardCheckIcon className={iconClass} />}
+                label={t.inspection || 'Inspection'}
+                isActive={currentPage === 'inspection'}
+                onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
+                hasDropdown={!isExpanded}
+                isExpanded={activeDropdown === 'inspection'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
 
-          {/* User Management - Only for Super Admin */}
-          {currentUser?.role === 'Super Admin' && (
-            <NavigationItem
-              ref={usersButtonRef}
-              icon={<UserGroupIcon className={iconClass} />}
-              label={t.userManagement || 'User Management'}
-              isActive={currentPage === 'users'}
-              onClick={() => handleDropdownToggle('users', usersButtonRef)}
-              hasDropdown={true}
-              isExpanded={activeDropdown === 'users'}
-            />
-          )}
+            {/* Project Management - Check permission */}
+            {permissionChecker.hasPermission('project_management', 'READ') && (
+              <NavigationItem
+                ref={projectsButtonRef}
+                icon={<ClipboardDocumentListIcon className={iconClass} />}
+                label={t.projectManagement}
+                isActive={currentPage === 'projects'}
+                onClick={() => handleDropdownToggle('projects', projectsButtonRef)}
+                hasDropdown={!isExpanded}
+                isExpanded={activeDropdown === 'projects'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
 
-          {/* Notification Creator - Only for Super Admin */}
-          {currentUser?.role === 'Super Admin' && (
-            <NavigationItem
-              ref={notificationCreatorButtonRef}
-              icon={<BellIcon className={iconClass} />}
-              label="Broadcast Notification"
-              isActive={false}
-              onClick={() => setIsNotificationCreatorOpen(true)}
-            />
-          )}
-        </nav>
+            {/* User Management - Only for Super Admin */}
+            {currentUser?.role === 'Super Admin' && (
+              <NavigationItem
+                ref={usersButtonRef}
+                icon={<UserGroupIcon className={iconClass} />}
+                label={t.userManagement || 'User Management'}
+                isActive={currentPage === 'users'}
+                onClick={() => handleDropdownToggle('users', usersButtonRef)}
+                hasDropdown={!isExpanded}
+                isExpanded={activeDropdown === 'users'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
 
-        {/* Footer */}
-        <div className="px-3 py-4 border-t border-slate-700 bg-slate-800/50">
-          <div className="text-center">
-            <p className="text-xs text-slate-400">© 2025 SIPOMA</p>
+            {/* Notification Creator - Only for Super Admin */}
+            {currentUser?.role === 'Super Admin' && (
+              <NavigationItem
+                ref={notificationCreatorButtonRef}
+                icon={<BellIcon className={iconClass} />}
+                label="Broadcast Notification"
+                isActive={false}
+                onClick={() => setIsNotificationCreatorOpen(true)}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+          </nav>
+
+          {/* Footer */}
+          <div className="px-6 py-6 border-t border-white/5 bg-slate-900/30">
+            <div className="text-center">
+              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">
+                © 2025 SIPOMA
+              </p>
+            </div>
           </div>
         </div>
       </aside>
@@ -419,5 +459,3 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 export default Sidebar;
-
-

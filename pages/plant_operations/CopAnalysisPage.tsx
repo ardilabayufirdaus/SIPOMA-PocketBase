@@ -1,7 +1,15 @@
 /// <reference types="node" />
 
 import React, { useState, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+import {
+  ChevronDown,
+  TrendingUp,
+  Layers,
+  Building2,
+  Beaker,
+  Calendar,
+  CalendarDays,
+} from 'lucide-react';
 import { ParameterSetting, CcrFooterData } from '../../types';
 import { formatDate, formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
@@ -140,8 +148,8 @@ const getPerformanceStatus = (percentage: number) => {
     };
   return {
     status: 'Needs Improvement',
-    color: 'text-blue-600',
-    bg: 'bg-orange-100',
+    color: 'text-red-600',
+    bg: 'bg-red-100',
   };
 };
 
@@ -156,8 +164,8 @@ const getPercentageColor = (
     };
   if (percentage < 0)
     return {
-      bg: 'bg-orange-100',
-      text: 'text-orange-800',
+      bg: 'bg-red-100',
+      text: 'text-red-800',
       status: 'Low',
     };
   if (percentage > 100)
@@ -178,7 +186,7 @@ const getQafColor = (qaf: number | null): { bg: string; text: string } => {
   if (qaf === null) return { bg: 'bg-slate-100', text: 'text-slate-600' };
   if (qaf >= 95) return { bg: 'bg-emerald-100', text: 'text-emerald-800' };
   if (qaf >= 85) return { bg: 'bg-amber-100', text: 'text-amber-800' };
-  return { bg: 'bg-orange-100', text: 'text-orange-800' };
+  return { bg: 'bg-red-100', text: 'text-red-800' };
 };
 
 interface AnalysisDataRow {
@@ -649,7 +657,7 @@ const ChartContainer: React.FC<{
       <div ref={containerRef} style={containerStyle}>
         <div className="flex items-center justify-center h-full text-slate-500 text-sm">
           <div className="text-center">
-            <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-2"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-500 mx-auto mb-2"></div>
             Memuat chart...
           </div>
         </div>
@@ -769,7 +777,7 @@ const OperatorAchievementChart: React.FC<{
       <div ref={containerRef} style={containerStyle}>
         <div className="flex items-center justify-center h-full text-slate-500 text-sm">
           <div className="text-center">
-            <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-2"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-500 mx-auto mb-2"></div>
             Memuat chart...
           </div>
         </div>
@@ -2990,149 +2998,174 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 p-6">
       <div className="max-w-full mx-auto space-y-6">
-        <Card
-          variant="default"
-          padding="lg"
-          className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white shadow-2xl border-0"
-        >
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
-            <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                {t.op_cop_analysis}
-              </h1>
-              <p className="text-lg text-blue-100">
+        {/* Header Title Section */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+
+          <div className="relative flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+              <TrendingUp className="w-7 h-7 text-indigo-200" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_cop_analysis}</h2>
+              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
                 Advanced COP Performance Analytics & Monitoring Dashboard
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start gap-6 min-w-0">
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <label
-                  htmlFor="cop-filter-category"
-                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+          </div>
+        </div>
+
+        {/* Filter Section - Separate Card */}
+        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
+          <div className="flex flex-wrap items-end gap-4">
+            {/* Plant Category */}
+            <div className="flex-1 min-w-[180px]">
+              <label
+                htmlFor="cop-filter-category"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Plant Category
+              </label>
+              <div className="relative">
+                <select
+                  id="cop-filter-category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
-                  Plant Category:
-                </label>
-                <div className="relative flex-1 min-w-0">
-                  <select
-                    id="cop-filter-category"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
-                  >
-                    {plantCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
+                  {plantCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <label
-                  htmlFor="cop-filter-unit"
-                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+            </div>
+
+            {/* Unit Name */}
+            <div className="flex-1 min-w-[180px]">
+              <label
+                htmlFor="cop-filter-unit"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                Unit
+              </label>
+              <div className="relative">
+                <select
+                  id="cop-filter-unit"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                  disabled={unitsForCategory.length === 0}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
-                  Unit:
-                </label>
-                <div className="relative flex-1 min-w-0">
-                  <select
-                    id="cop-filter-unit"
-                    value={selectedUnit}
-                    onChange={(e) => setSelectedUnit(e.target.value)}
-                    className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm font-medium appearance-none"
-                    disabled={unitsForCategory.length === 0}
-                  >
-                    {unitsForCategory.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
+                  {unitsForCategory.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
-              <div className="flex items-center gap-4 w-full sm:w-auto">
-                <label
-                  htmlFor="cop-filter-cement-type"
-                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+            </div>
+
+            {/* Cement Type */}
+            <div className="flex-1 min-w-[160px]">
+              <label
+                htmlFor="cop-filter-cement-type"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              >
+                <Beaker className="w-3.5 h-3.5" />
+                Cement Type
+              </label>
+              <div className="relative">
+                <select
+                  id="cop-filter-cement-type"
+                  value={selectedCementType}
+                  onChange={(e) => setSelectedCementType(e.target.value)}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
-                  Cement Type:
-                </label>
-                <div className="relative flex-1 min-w-0">
-                  <select
-                    id="cop-filter-cement-type"
-                    value={selectedCementType}
-                    onChange={(e) => setSelectedCementType(e.target.value)}
-                    className="w-full pl-4 pr-8 py-3 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
-                  >
-                    <option value="">Pilih Cement Type</option>
-                    <option value="OPC">OPC</option>
-                    <option value="PCC">PCC</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
+                  <option value="">Pilih Cement Type</option>
+                  <option value="OPC">OPC</option>
+                  <option value="PCC">PCC</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <label
-                  htmlFor="cop-filter-month"
-                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+            </div>
+
+            {/* Month */}
+            <div className="flex-1 min-w-[140px]">
+              <label
+                htmlFor="cop-filter-month"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                Month
+              </label>
+              <div className="relative">
+                <select
+                  id="cop-filter-month"
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
-                  Month:
-                </label>
-                <div className="relative flex-1 min-w-0">
-                  <select
-                    id="cop-filter-month"
-                    value={filterMonth}
-                    onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                    className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
-                  >
-                    {monthOptions.map((m) => (
-                      <option key={m.value} value={m.value}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
+                  {monthOptions.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <label
-                  htmlFor="cop-filter-year"
-                  className="text-sm font-semibold text-blue-100 whitespace-nowrap min-w-fit"
+            </div>
+
+            {/* Year */}
+            <div className="flex-1 min-w-[120px]">
+              <label
+                htmlFor="cop-filter-year"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              >
+                <CalendarDays className="w-3.5 h-3.5" />
+                Year
+              </label>
+              <div className="relative">
+                <select
+                  id="cop-filter-year"
+                  value={filterYear}
+                  onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
-                  Year:
-                </label>
-                <div className="relative flex-1 min-w-0">
-                  <select
-                    id="cop-filter-year"
-                    value={filterYear}
-                    onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                    className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm font-medium appearance-none"
-                  >
-                    {yearOptions.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
+                  {yearOptions.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               </div>
             </div>
           </div>
-        </Card>{' '}
+        </div>
         {/* Analysis Features Tabs */}
-        <Card variant="elevated" padding="md" className="bg-white shadow-xl border-0">
-          <div className="flex flex-wrap gap-3 mb-4">
+        <Card
+          variant="elevated"
+          padding="md"
+          className="bg-white/80 backdrop-blur-sm shadow-xl border-0"
+        >
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
               className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showStatisticalSummary
-                  ? 'bg-blue-500 text-white shadow-lg'
-                  : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
+                  : 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200'
               }`}
             >
               📊 Statistical Summary
@@ -3141,8 +3174,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onClick={() => setShowPeriodComparison(!showPeriodComparison)}
               className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showPeriodComparison
-                  ? 'bg-green-500 text-white shadow-lg'
-                  : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30'
+                  : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 border border-green-200'
               }`}
             >
               📈 Period Comparison
@@ -3151,8 +3184,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onClick={() => setShowCorrelationMatrix(!showCorrelationMatrix)}
               className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showCorrelationMatrix
-                  ? 'bg-purple-500 text-white shadow-lg'
-                  : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
+                  ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30'
+                  : 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border border-purple-200'
               }`}
             >
               🔗 Correlation Matrix
@@ -3161,8 +3194,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onClick={() => setShowAnomalyDetection(!showAnomalyDetection)}
               className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showAnomalyDetection
-                  ? 'bg-red-500 text-white shadow-lg'
-                  : 'bg-red-50 text-red-700 hover:bg-orange-100 border border-red-200'
+                  ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30'
+                  : 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200'
               }`}
             >
               ⚠️ Anomaly Detection
@@ -3171,8 +3204,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onClick={() => setShowPredictiveInsights(!showPredictiveInsights)}
               className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showPredictiveInsights
-                  ? 'bg-orange-500 text-white shadow-lg'
-                  : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/30'
+                  : 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border border-orange-200'
               }`}
             >
               🔮 Predictive Insights
@@ -3181,8 +3214,8 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onClick={() => setShowQualityMetrics(!showQualityMetrics)}
               className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
                 showQualityMetrics
-                  ? 'bg-indigo-500 text-white shadow-lg'
-                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
+                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 border border-indigo-200'
               }`}
             >
               🏆 Quality Metrics
@@ -3209,7 +3242,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {statisticalSummary.map((stat) => (
                 <div
                   key={stat.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                  className="bg-white p-3 rounded-md border border-slate-200"
                 >
                   <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                     {stat.parameter}
@@ -3248,7 +3281,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             ? 'text-green-600'
                             : stat.completeness >= 60
                               ? 'text-yellow-600'
-                              : 'text-blue-600'
+                              : 'text-red-600'
                         }`}
                       >
                         {stat.completeness.toFixed(0)}%
@@ -3261,7 +3294,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           stat.trend === 'increasing'
                             ? 'text-green-600'
                             : stat.trend === 'decreasing'
-                              ? 'text-blue-600'
+                              ? 'text-red-600'
                               : 'text-slate-600'
                         }`}
                       >
@@ -3295,10 +3328,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           <Card
             variant="floating"
             padding="md"
-            className="bg-gradient-to-br from-blue-50 to-pink-50"
+            className="bg-gradient-to-br from-red-50 to-pink-50"
           >
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-orange-800">⚠️ Anomaly Detection</h2>
+              <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
               <p className="text-xs text-slate-600 mt-1">
                 Deteksi nilai abnormal menggunakan metode 3-sigma rule
               </p>
@@ -3310,7 +3343,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {anomalyDetection.map((anomaly) => (
                 <div
                   key={anomaly.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                  className="bg-white p-3 rounded-md border border-slate-200"
                 >
                   <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                     {anomaly.parameter}
@@ -3321,7 +3354,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`font-mono font-bold ${
                           anomaly.severity === 'high'
-                            ? 'text-blue-600'
+                            ? 'text-red-600'
                             : anomaly.severity === 'medium'
                               ? 'text-yellow-600'
                               : 'text-green-600'
@@ -3335,7 +3368,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`font-medium px-1.5 py-0.5 rounded text-xs ${
                           anomaly.severity === 'high'
-                            ? 'bg-orange-100 text-orange-800'
+                            ? 'bg-red-100 text-red-800'
                             : anomaly.severity === 'medium'
                               ? 'bg-yellow-100 text-yellow-800'
                               : 'bg-green-100 text-green-800'
@@ -3351,7 +3384,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           {anomaly.outliers.slice(0, 3).map((value, idx) => (
                             <span
                               key={idx}
-                              className="bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded text-xs font-mono"
+                              className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
                             >
                               {formatCopNumber(value)}
                             </span>
@@ -3419,7 +3452,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <span
                           className={`px-1.5 py-0.5 rounded text-xs font-medium ${
                             corr.strength === 'strong'
-                              ? 'bg-orange-100 text-orange-800'
+                              ? 'bg-red-100 text-red-800'
                               : corr.strength === 'moderate'
                                 ? 'bg-yellow-100 text-yellow-800'
                                 : corr.strength === 'weak'
@@ -3434,7 +3467,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         {corr.correlation !== null && (
                           <span
                             className={`text-sm ${
-                              corr.correlation > 0 ? 'text-green-600' : 'text-blue-600'
+                              corr.correlation > 0 ? 'text-green-600' : 'text-red-600'
                             }`}
                           >
                             {corr.correlation > 0 ? '↗️' : '↘️'}
@@ -3549,7 +3582,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       onChange={(e) =>
                         setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
                       }
-                      className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium transition-colors appearance-none"
+                      className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium appearance-none"
                     >
                       {availableYearsWithData.map((y) => (
                         <option key={y} value={y}>
@@ -3593,7 +3626,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 {periodComparison.map((comparison) => (
                   <div
                     key={comparison.parameterId}
-                    className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                    className="bg-white p-3 rounded-md border border-slate-200"
                   >
                     <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                       {comparison.parameter}
@@ -3622,7 +3655,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             comparison.delta !== null && comparison.delta > 0
                               ? 'text-green-600'
                               : comparison.delta !== null && comparison.delta < 0
-                                ? 'text-blue-600'
+                                ? 'text-red-600'
                                 : 'text-slate-600'
                           }`}
                         >
@@ -3638,7 +3671,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             comparison.trend === 'increased'
                               ? 'bg-green-100 text-green-800'
                               : comparison.trend === 'decreased'
-                                ? 'bg-orange-100 text-orange-800'
+                                ? 'bg-red-100 text-red-800'
                                 : 'bg-slate-100 text-slate-800'
                           }`}
                         >
@@ -3676,7 +3709,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {predictiveInsights.map((insight) => (
                 <div
                   key={insight.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200 hover:shadow-sm transition-shadow"
+                  className="bg-white p-3 rounded-md border border-slate-200"
                 >
                   <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
                     {insight.parameter}
@@ -3709,7 +3742,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <span
                         className={`font-medium px-1.5 py-0.5 rounded text-xs ${
                           insight.risk === 'high'
-                            ? 'bg-orange-100 text-orange-800'
+                            ? 'bg-red-100 text-red-800'
                             : insight.risk === 'medium'
                               ? 'bg-yellow-100 text-yellow-800'
                               : 'bg-green-100 text-green-800'
@@ -3725,7 +3758,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           insight.trend === 'increasing'
                             ? 'text-green-600'
                             : insight.trend === 'decreasing'
-                              ? 'text-blue-600'
+                              ? 'text-red-600'
                               : 'text-slate-600'
                         }`}
                       >
@@ -3744,11 +3777,15 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </Card>
         )}
-        <Card variant="glass" padding="lg" className="bg-white shadow-2xl border-0">
+        <Card
+          variant="glass"
+          padding="lg"
+          className="backdrop-blur-xl bg-white/90 shadow-2xl border-0"
+        >
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-16 space-y-6">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 border-2 border-gray-300 border-t-blue-500 rounded-full"></div>
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
                 <span className="text-xl font-medium text-slate-600">
                   Loading COP analysis data...
                 </span>
@@ -3780,7 +3817,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
           {error && (
             <div className="flex items-center justify-center py-8">
-              <div className="text-center bg-gradient-to-r from-blue-50 to-pink-50 p-8 rounded-2xl border border-red-200">
+              <div className="text-center bg-gradient-to-r from-red-50 to-pink-50 p-8 rounded-2xl border border-red-200">
                 <div className="text-red-500 mb-2">
                   <svg
                     className="w-8 h-8 mx-auto"
@@ -3894,7 +3931,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     };
                     retryFetch();
                   }}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
+                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
                 >
                   Try Again
                 </button>
@@ -3907,17 +3944,17 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <div className="mb-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-slate-700 bg-clip-text text-transparent mb-2">
                       COP Analysis Dashboard
                     </h2>
-                    <p className="text-slate-600 text-lg">
+                    <p className="text-slate-500 text-sm">
                       Comprehensive parameter performance monitoring and analytics
                     </p>
                   </div>
                   <button
                     onClick={refreshData}
                     disabled={isLoading}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-green-400 disabled:to-emerald-500 text-white text-sm font-semibold rounded-xl shadow-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[48px]"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-green-400 disabled:to-emerald-500 text-white text-sm font-semibold rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[48px]"
                   >
                     <svg
                       className="w-5 h-5 mr-2"
@@ -3951,29 +3988,29 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   role="table"
                   aria-label="COP Analysis Table"
                 >
-                  <thead className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white">
+                  <thead className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 text-white">
                     <tr>
-                      <th className="sticky left-0 bg-gradient-to-r from-blue-600 to-blue-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 rounded-tl-2xl">
+                      <th className="sticky left-0 bg-indigo-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 rounded-tl-2xl">
                         No.
                       </th>
-                      <th className="sticky left-12 bg-gradient-to-r from-blue-600 to-blue-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 min-w-[100px]">
+                      <th className="sticky left-12 bg-indigo-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 min-w-[100px]">
                         {t.parameter}
                       </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-blue-500 to-red-600">
+                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-rose-600/90">
                         {t.min}
                       </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-gradient-to-r from-green-500 to-green-600">
+                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-emerald-600/90">
                         {t.max}
                       </th>
                       {daysHeader.map((day) => (
                         <th
                           key={day}
-                          className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 bg-gradient-to-r from-slate-600 to-slate-700"
+                          className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 bg-slate-700"
                         >
                           {day}
                         </th>
                       ))}
-                      <th className="sticky right-0 bg-gradient-to-r from-emerald-500 to-emerald-600 z-30 px-3 py-4 text-center text-xs font-bold uppercase tracking-wider border-l-2 border-white/20 w-20 rounded-tr-2xl">
+                      <th className="sticky right-0 bg-indigo-600 z-30 px-3 py-4 text-center text-xs font-bold uppercase tracking-wider border-l-2 border-white/20 w-20 rounded-tr-2xl">
                         Avg.
                       </th>
                     </tr>
@@ -3996,7 +4033,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`transition-colors duration-150 ${
+                                className={`${
                                   snapshot.isDragging
                                     ? 'shadow-2xl bg-gradient-to-r from-blue-50 to-purple-50'
                                     : 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50'
@@ -4012,7 +4049,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   {row.parameter.parameter}
                                 </td>
                                 {/* Use helper function for consistent min/max display */}
-                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-blue-50 to-blue-100 font-semibold">
+                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-red-50 to-red-100 font-semibold">
                                   {(() => {
                                     const { min } = getMinMaxForCementType(
                                       row.parameter,
@@ -4035,7 +4072,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   return (
                                     <td
                                       key={dayIndex}
-                                      className={`relative px-2 py-3 whitespace-nowrap text-center border-b-2 border-r-2 border-white/20 transition-colors duration-150 ${colors.bg}`}
+                                      className={`relative px-2 py-3 whitespace-nowrap text-center border-b-2 border-r-2 border-white/20 ${colors.bg}`}
                                     >
                                       <div className="relative group/cell h-full w-full flex items-center justify-center">
                                         <span
@@ -4101,7 +4138,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                   const avgColors = getPercentageColor(row.monthlyAverage);
                                   return (
                                     <td
-                                      className={`sticky right-0 z-20 px-3 py-3 whitespace-nowrap text-center font-bold border-b-2 border-l-4 border-white/30 transition-colors duration-150 ${avgColors.bg} w-20 rounded-r-xl`}
+                                      className={`sticky right-0 z-20 px-3 py-3 whitespace-nowrap text-center font-bold border-b-2 border-l-4 border-white/30 ${avgColors.bg} w-20 rounded-r-xl`}
                                     >
                                       <span
                                         className={`${avgColors.text} text-sm drop-shadow-sm font-extrabold`}
@@ -4146,7 +4183,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         return (
                           <td
                             key={index}
-                            className={`px-2 py-4 text-center border-b-2 border-r-2 border-white/30 ${colors.bg} ${colors.text} hover:shadow-md transition-colors duration-150`}
+                            className={`px-2 py-4 text-center border-b-2 border-r-2 border-white/30 ${colors.bg} ${colors.text}`}
                           >
                             <div className="relative group/cell h-full w-full flex items-center justify-center">
                               <span className="text-sm font-extrabold drop-shadow-sm">
@@ -4209,7 +4246,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           return (
                             <td
                               key={`moisture-${day}`}
-                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-blue-100 to-cyan-100 transition-colors duration-150"
+                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-blue-100 to-cyan-100"
                             >
                               <span className="text-sm font-bold text-blue-800 drop-shadow-sm">
                                 {dailyAverage !== undefined && !isNaN(dailyAverage)
@@ -4264,7 +4301,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           return (
                             <td
                               key={`capacity-${day}`}
-                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-green-100 to-emerald-100 transition-colors duration-150"
+                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-green-100 to-emerald-100"
                             >
                               <span className="text-sm font-bold text-green-800 drop-shadow-sm">
                                 {capacity !== null && !isNaN(capacity)
@@ -4438,7 +4475,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   return (
                     <div
                       key={paramData.parameter.id}
-                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-shadow duration-200`}
+                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3 className={`text-xl font-bold ${colorScheme.accent} truncate`}>
@@ -4472,7 +4509,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 return (
                   <div
                     key={paramData.parameter.id}
-                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-shadow duration-200 group`}
+                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg group`}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3 className={`text-xl font-bold ${colorScheme.accent} truncate`}>
@@ -4532,7 +4569,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="operator-filter"
                   value={selectedOperator}
                   onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="flex-1 min-w-0 px-4 py-3 bg-white/90 text-slate-900 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium hover:shadow-md"
+                  className="flex-1 min-w-0 px-4 py-3 bg-white/90 text-slate-900 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium transition-all duration-200 hover:shadow-md"
                 >
                   <option value="">Semua Operator</option>
                   {relevantOperators.map((operator) => (
@@ -4576,9 +4613,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-lg group">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <span className="text-green-600 font-bold text-lg">🏆</span>
                   </div>
                   <h4 className="text-lg font-bold text-green-800">Rata-rata Pencapaian</h4>
@@ -4599,9 +4636,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-200 shadow-lg group">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-blue-600 font-bold text-lg">👑</span>
                   </div>
                   <h4 className="text-lg font-bold text-blue-800">Operator Terbaik</h4>
@@ -4614,9 +4651,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-2xl border-2 border-purple-200 shadow-lg hover:shadow-xl transition-shadow duration-200 group">
+              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-2xl border-2 border-purple-200 shadow-lg group">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                     <span className="text-purple-600 font-bold text-lg">📊</span>
                   </div>
                   <h4 className="text-lg font-bold text-purple-800">Total Operator</h4>
@@ -4686,7 +4723,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 return (
                   <div
                     key={`${operator.category}-${operator.operatorId}`}
-                    className={`relative bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl transition-all duration-300 group`}
+                    className={`relative bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl group`}
                   >
                     {/* Category Badge */}
                     <div className="absolute -top-3 -right-3 px-3 py-1 bg-white rounded-full border-2 border-white shadow-lg">
@@ -5004,7 +5041,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <span className="text-green-600 font-medium">
                       ✓ {selectedOperatorBreakdown.totalInRange} tercapai
                     </span>
-                    <span className="text-blue-600 font-medium">
+                    <span className="text-red-600 font-medium">
                       ✗{' '}
                       {selectedOperatorBreakdown.totalChecks -
                         selectedOperatorBreakdown.totalInRange}{' '}
@@ -5051,9 +5088,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             data: hourlyData,
                           });
                         }}
-                        className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`p-3 rounded-lg text-sm font-medium ${
                           isOutOfRange
-                            ? 'bg-orange-100 text-orange-800 hover:bg-red-200'
+                            ? 'bg-red-100 text-red-800 hover:bg-red-200'
                             : 'bg-green-100 text-green-800 hover:bg-green-200'
                         }`}
                       >
@@ -5095,9 +5132,9 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {hourlyBreakdownModal.data.map((hour) => (
                 <div
                   key={hour.hour}
-                  className={`p-4 rounded-lg text-sm transition-all duration-200 ${
+                  className={`p-4 rounded-lg text-sm ${
                     hour.isOutOfRange
-                      ? 'bg-orange-100 text-orange-800 border-2 border-orange-300 hover:bg-red-50'
+                      ? 'bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-50'
                       : 'bg-green-100 text-green-800 hover:bg-green-50'
                   }`}
                 >
@@ -5133,7 +5170,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {operatorBreakdownModal.breakdownData.map((param, index) => (
                 <div
                   key={index}
-                  className="p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100"
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
@@ -5157,7 +5194,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   {/* Progress bar */}
                   <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
                     <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
+                      className={`h-2 rounded-full ${
                         param.achievementPercentage >= 90
                           ? 'bg-green-500'
                           : param.achievementPercentage >= 80
@@ -5175,7 +5212,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <span className="text-green-600 font-medium">
                       ✓ {param.inRangeCount} tercapai
                     </span>
-                    <span className="text-blue-600 font-medium">
+                    <span className="text-red-600 font-medium">
                       ✗ {param.totalChecks - param.inRangeCount} tidak tercapai
                     </span>
                   </div>
@@ -5203,6 +5240,3 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 };
 
 export default CopAnalysisPage;
-
-
-

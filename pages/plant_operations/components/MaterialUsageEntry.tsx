@@ -238,10 +238,10 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   return (
     <div className="space-y-4">
       {/* Real-time Info */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+      <div className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 rounded-xl p-4 shadow-sm">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -250,7 +250,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-green-700">
+            <p className="text-sm text-emerald-800 font-medium">
               <strong>Real-time Auto-Save:</strong> Material usage dihitung dari counter feeder data
               dan otomatis tersimpan setiap 2 detik ketika ada perubahan.
             </p>
@@ -259,20 +259,20 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
       </div>
 
       {/* Material Usage Table */}
-      <div className="overflow-x-auto rounded-xl border border-slate-200/50 shadow-inner">
+      <div className="overflow-x-auto rounded-2xl border border-white/20 shadow-2xl backdrop-blur-md bg-white/10">
         <table className="min-w-full divide-y divide-slate-200 border border-slate-200">
-          <thead className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
+          <thead className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-slate-800 text-white shadow-xl backdrop-blur-md">
             {/* Header Row 1 */}
             <tr>
               <th
                 rowSpan={2}
-                className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-purple-400/30"
+                className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-700/50"
               >
                 Shift
               </th>
               <th
                 colSpan={7}
-                className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-purple-400/30"
+                className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-slate-700/50"
               >
                 Material Usage
               </th>
@@ -288,8 +288,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
               {materialFields.map((field, index) => (
                 <th
                   key={field.key}
-                  className={`px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-purple-400/30 ${
-                    index < materialFields.length - 1 ? 'border-r border-purple-400/30' : ''
+                  className={`px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-700/50 ${
+                    index < materialFields.length - 1 ? 'border-r border-slate-700/50' : ''
                   }`}
                 >
                   {field.label}
@@ -297,7 +297,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
               ))}
             </tr>
           </thead>
-          <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-slate-200/50">
+          <tbody className="bg-white/40 backdrop-blur-md divide-y divide-white/20">
             {shifts.map((shift, shiftIndex) => {
               const shiftData = materialData[shift.key];
               const rowTotal = materialFields.reduce((sum, field) => {
@@ -330,8 +330,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                           value={value === 0 ? '' : formatNumberWithPrecision(value, 1)}
                           disabled={true}
                           readOnly
-                          className="w-full px-2 py-1 text-sm text-center bg-slate-100 border border-slate-300 rounded focus:outline-none focus:ring-0 cursor-not-allowed"
-                          placeholder="Real-time calculated"
+                          className="w-full px-2 py-1.5 text-sm text-center bg-white/50 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm text-slate-800 font-medium transition-all duration-200 cursor-not-allowed hover:bg-white/60"
+                          placeholder="Real-time"
                         />
                       </td>
                     );
@@ -344,8 +344,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             })}
 
             {/* Footer Row - Totals */}
-            <tr className="bg-gradient-to-r from-purple-100 to-indigo-100 border-t-2 border-purple-300">
-              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 border-r">
+            <tr className="bg-slate-100/80 backdrop-blur-sm border-t-2 border-white/30 font-semibold shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+              <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 border-r border-slate-300">
                 Total
               </td>
               {materialFields.map((field, fieldIndex) => {
@@ -388,5 +388,3 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
 };
 
 export default MaterialUsageEntry;
-
-

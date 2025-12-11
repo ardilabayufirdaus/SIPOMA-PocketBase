@@ -1,18 +1,20 @@
-import React from 'react';
-import { designSystem } from '../../utils/designSystem';
+import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '../../utils/cn';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: string;
   success?: string;
+  warning?: boolean;
   helperText?: string;
-  size?: 'sm' | 'base' | 'lg';
-  variant?: 'default' | 'error' | 'success';
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'filled' | 'outlined' | 'minimal';
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   loading?: boolean;
   required?: boolean;
+  className?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -21,8 +23,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       label,
       error,
       success,
+      warning,
       helperText,
-      size = 'base',
+      size = 'md',
       variant = 'default',
       fullWidth = false,
       leftIcon,
@@ -32,116 +35,112 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       className = '',
       disabled = false,
       id,
+      value,
+      onChange,
       ...props
     },
     ref
   ) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const [isFocused, setIsFocused] = useState(false);
+    const [hasValue, setHasValue] = useState(Boolean(value));
 
-    // Determine the variant based on error/success states
-    const currentVariant = error ? 'error' : success ? 'success' : variant;
+    useEffect(() => {
+      setHasValue(Boolean(value));
+    }, [value]);
 
-    const inputConfig = designSystem.componentVariants.input;
-    const sizeConfig = inputConfig.sizes[size];
-    const variantConfig = inputConfig.states[currentVariant] || inputConfig.states.default;
-
-    const getInputClasses = () => {
-      const baseClasses = [
-        'block',
-        'border',
-        'rounded-md',
-        'shadow-sm',
-        'transition-colors',
-        'duration-200',
-        'focus:outline-none',
-        'focus:ring-2',
-        'focus:ring-offset-1',
-        'disabled:bg-gray-50',
-        'disabled:text-gray-500',
-        'disabled:cursor-not-allowed',
-        fullWidth ? 'w-full' : '',
-        leftIcon ? 'pl-10' : '',
-        rightIcon || loading ? 'pr-10' : '',
-      ].filter(Boolean);
-
-      // Apply design system styles
-      const style = {
-        paddingLeft: leftIcon ? `calc(${sizeConfig.paddingX} + 2.5rem)` : sizeConfig.paddingX,
-        paddingRight:
-          rightIcon || loading ? `calc(${sizeConfig.paddingX} + 2.5rem)` : sizeConfig.paddingX,
-        paddingTop: sizeConfig.paddingY,
-        paddingBottom: sizeConfig.paddingY,
-        fontSize: sizeConfig.fontSize,
-        borderRadius: designSystem.borderRadius.md,
-        borderColor: disabled ? designSystem.colors.neutral[200] : variantConfig.border,
-        backgroundColor: disabled ? designSystem.colors.neutral[100] : variantConfig.background,
-        color: disabled ? designSystem.colors.neutral[400] : variantConfig.color,
-      };
-
-      return {
-        classes: baseClasses.join(' '),
-        style: style,
-      };
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(true);
+      props.onFocus?.(e);
     };
 
-    const getLabelClasses = () => {
-      const baseClasses = ['block', 'text-sm', 'font-medium', 'mb-1'];
-
-      switch (currentVariant) {
-        case 'error':
-          baseClasses.push('text-red-700');
-          break;
-        case 'success':
-          baseClasses.push('text-green-700');
-          break;
-        case 'default':
-        default:
-          baseClasses.push('text-gray-700');
-          break;
-      }
-
-      return baseClasses.join(' ');
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      setIsFocused(false);
+      props.onBlur?.(e);
     };
 
-    const getIconClasses = () => {
-      switch (size) {
-        case 'sm':
-          return 'h-4 w-4';
-        case 'lg':
-          return 'h-6 w-6';
-        case 'base':
-        default:
-          return 'h-5 w-5';
-      }
+    // Base styles
+    const baseClasses = cn(
+      'block transition-all duration-200 ease-out',
+      'focus:outline-none',
+      fullWidth && 'w-full',
+      disabled && 'opacity-60 cursor-not-allowed'
+    );
+
+    // Size styles
+    const sizeClasses = {
+      sm: 'px-3 py-2 text-sm',
+      md: 'px-4 py-2.5 text-base',
+      lg: 'px-4 py-3 text-lg',
     };
+
+    // Variant styles
+    const variantClasses = {
+      default: cn(
+        'bg-white dark:bg-slate-800',
+        'border border-slate-300 dark:border-slate-600',
+        'focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
+      ),
+      filled: cn(
+        'bg-slate-50 dark:bg-slate-900',
+        'border border-slate-200 dark:border-slate-700',
+        'focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
+      ),
+      outlined: cn(
+        'bg-transparent',
+        'border-2 border-slate-300 dark:border-slate-600',
+        'focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20'
+      ),
+      minimal: cn(
+        'bg-transparent border-b-2 border-slate-300 dark:border-slate-600',
+        'focus:border-indigo-500',
+        'rounded-none px-0'
+      ),
+    };
+
+    // State styles
+    const stateClasses = cn(
+      error && 'border-rose-500 focus:border-rose-500 focus:ring-rose-500/20',
+      success && 'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/20',
+      warning && 'border-amber-500 focus:border-amber-500 focus:ring-amber-500/20'
+    );
+
+    const inputClasses = cn(
+      baseClasses,
+      sizeClasses[size],
+      variantClasses[variant],
+      stateClasses,
+      'rounded-lg',
+      leftIcon && 'pl-10',
+      (rightIcon || loading) && 'pr-10',
+      className
+    );
 
     const getIconColor = () => {
-      switch (currentVariant) {
-        case 'error':
-          return 'text-red-400';
-        case 'success':
-          return 'text-green-400';
-        case 'default':
-        default:
-          return 'text-gray-400';
-      }
+      if (error) return 'text-rose-400';
+      if (success) return 'text-emerald-400';
+      if (warning) return 'text-amber-400';
+      return 'text-slate-400';
     };
 
-    const inputStyles = getInputClasses();
-
     return (
-      <div className={fullWidth ? 'w-full' : ''}>
-        {label && (
-          <label htmlFor={inputId} className={getLabelClasses()}>
+      <div className={cn('flex flex-col gap-1.5', fullWidth ? 'w-full' : '')}>
+        {label && variant !== 'minimal' && (
+          <label
+            htmlFor={inputId}
+            className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-1"
+          >
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span className="text-rose-500 ml-1">*</span>}
           </label>
         )}
 
         <div className="relative">
           {leftIcon && (
-            <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none`}>
-              <span className={`${getIconClasses()} ${getIconColor()}`}>{leftIcon}</span>
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <span className={cn('h-5 w-5 flex items-center justify-center', getIconColor())}>
+                {leftIcon}
+              </span>
             </div>
           )}
 
@@ -149,16 +148,19 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             disabled={disabled || loading}
-            className={`${inputStyles.classes} ${className}`}
-            style={inputStyles.style}
+            className={inputClasses}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            value={value}
+            onChange={onChange}
             {...props}
           />
 
           {(rightIcon || loading) && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
               {loading ? (
                 <svg
-                  className={`animate-spin ${getIconClasses()} ${getIconColor()}`}
+                  className={cn('animate-spin h-5 w-5', getIconColor())}
                   fill="none"
                   viewBox="0 0 24 24"
                 >
@@ -176,24 +178,35 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-              ) : rightIcon ? (
-                <span className={`${getIconClasses()} ${getIconColor()}`}>{rightIcon}</span>
-              ) : null}
+              ) : (
+                <span className={cn('h-5 w-5 flex items-center justify-center', getIconColor())}>
+                  {rightIcon}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Floating label effect for minimal variant */}
+          {variant === 'minimal' && label && (
+            <div
+              className={cn(
+                'absolute left-0 transition-all duration-200 pointer-events-none',
+                hasValue || isFocused
+                  ? '-top-5 text-xs text-indigo-600'
+                  : 'top-1/2 -translate-y-1/2 text-base text-slate-500'
+              )}
+            >
+              {label}
+              {required && <span className="text-rose-500 ml-1">*</span>}
             </div>
           )}
         </div>
 
-        {(error || success || helperText) && (
-          <div className="mt-1">
-            {error && (
-              <p className="text-sm text-blue-600" role="alert">
-                {error}
-              </p>
-            )}
-            {success && !error && <p className="text-sm text-green-600">{success}</p>}
-            {helperText && !error && !success && (
-              <p className="text-sm text-gray-500">{helperText}</p>
-            )}
+        {(helperText || error || success) && (
+          <div className="ml-1 text-xs">
+            {error && <p className="text-rose-500 font-medium">{error}</p>}
+            {success && <p className="text-emerald-500 font-medium">{success}</p>}
+            {helperText && !error && !success && <p className="text-slate-500">{helperText}</p>}
           </div>
         )}
       </div>
@@ -270,5 +283,3 @@ PasswordInput.displayName = 'PasswordInput';
 SearchInput.displayName = 'SearchInput';
 
 export default Input;
-
-

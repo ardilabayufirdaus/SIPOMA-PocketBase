@@ -192,7 +192,7 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="w-full space-y-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">
             CCR Data Entry System
@@ -350,5 +350,3 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
     </div>
   );
 };
-
-

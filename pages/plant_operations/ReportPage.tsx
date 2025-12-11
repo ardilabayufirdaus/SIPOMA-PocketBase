@@ -840,135 +840,183 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   return (
     <div className="space-y-6">
-      {/* Compact Header Section */}
-      <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-          {/* Title - More compact */}
-          <div className="flex-shrink-0">
-            <h2 className="text-lg font-semibold text-slate-800">{t.op_report}</h2>
+      {/* Header Title Section - Indigo/Slate Theme */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+
+        <div className="relative flex items-center gap-4">
+          <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+            <svg
+              className="w-7 h-7 text-indigo-200"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_report}</h2>
+            <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+              {t.op_report_description || 'Generate daily operational log sheets and reports'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Section - Separate Card */}
+      <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
+        <div className="flex flex-wrap items-end gap-4">
+          {/* Plant Category */}
+          <div className="flex-1 min-w-[180px]">
+            <label
+              htmlFor="report-category"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+              {t.plant_category_label}
+            </label>
+            <div className="relative">
+              <select
+                id="report-category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+              >
+                {plantCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
           </div>
 
-          {/* Filters and Controls - Compact horizontal layout */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-1 min-w-0">
-            {/* Filter Controls - Compact */}
-            <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 flex-1 min-w-0">
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
-                <label
-                  htmlFor="report-category"
-                  className="text-sm font-medium text-slate-700 whitespace-nowrap"
-                >
-                  {t.plant_category_label}:
-                </label>
-                <div className="relative min-w-0 flex-1 sm:w-32">
-                  <select
-                    id="report-category"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm appearance-none"
-                  >
-                    {plantCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
-                <label
-                  htmlFor="report-unit"
-                  className="text-sm font-medium text-slate-700 whitespace-nowrap"
-                >
-                  {t.unit_label}:
-                </label>
-                <div className="relative min-w-0 flex-1 sm:w-32">
-                  <select
-                    id="report-unit"
-                    value={selectedUnit}
-                    onChange={(e) => setSelectedUnit(e.target.value)}
-                    disabled={unitsForCategory.length === 0}
-                    className="w-full pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm disabled:bg-slate-100 appearance-none"
-                  >
-                    {unitsForCategory.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
-                <label
-                  htmlFor="report-date"
-                  className="text-sm font-medium text-slate-700 whitespace-nowrap"
-                >
-                  {t.select_date}:
-                </label>
-                <input
-                  type="date"
-                  id="report-date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="min-w-0 flex-1 sm:w-36 px-3 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 text-sm"
+          {/* Unit Name */}
+          <div className="flex-1 min-w-[150px]">
+            <label
+              htmlFor="report-unit"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                 />
-              </div>
-            </div>
-
-            {/* Action Buttons - Compact */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <EnhancedButton
-                onClick={handleGenerateReport}
-                disabled={isLoading || reportConfig.length === 0}
-                variant="primary"
-                size="sm"
-                className="px-3 py-1.5 h-auto text-sm font-medium"
-                ariaLabel={t.generate_report_button}
-                loading={isLoading}
+              </svg>
+              {t.unit_label}
+            </label>
+            <div className="relative">
+              <select
+                id="report-unit"
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                disabled={unitsForCategory.length === 0}
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
               >
-                {isLoading ? t.generating_report_message : t.generate_report_button}
-              </EnhancedButton>
-
-              <EnhancedButton
-                onClick={handleGenerateSimpleData}
-                disabled={isLoading || simpleReportConfig.length === 0}
-                variant="success"
-                size="sm"
-                className="px-3 py-1.5 h-auto text-sm"
-                ariaLabel={t.generate_simple_data_button}
-              >
-                {t.generate_simple_data_button}
-              </EnhancedButton>
-
-              {reportData && (
-                <>
-                  <EnhancedButton
-                    onClick={handleCopyImage}
-                    variant="warning"
-                    size="sm"
-                    className="px-3 py-1.5 h-auto text-sm whitespace-nowrap"
-                    ariaLabel="Copy report as image"
-                    disabled={isCopying}
-                  >
-                    {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
-                  </EnhancedButton>
-
-                  <EnhancedButton
-                    onClick={handleExportPDF}
-                    variant="outline"
-                    size="sm"
-                    className="px-3 py-1.5 h-auto text-sm whitespace-nowrap"
-                    ariaLabel="Export report as PDF"
-                    disabled={isExportingPDF}
-                  >
-                    {isExportingPDF ? 'Exporting...' : 'Export PDF'}
-                  </EnhancedButton>
-                </>
-              )}
+                {unitsForCategory.map((unit) => (
+                  <option key={unit} value={unit}>
+                    {unit}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
+          </div>
+
+          {/* Select Date */}
+          <div className="flex-1 min-w-[160px]">
+            <label
+              htmlFor="report-date"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              {t.select_date}
+            </label>
+            <input
+              type="date"
+              id="report-date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-end gap-2 flex-shrink-0">
+            <EnhancedButton
+              onClick={handleGenerateReport}
+              disabled={isLoading || reportConfig.length === 0}
+              variant="primary"
+              size="sm"
+              className="px-4 py-2.5 h-auto text-sm font-medium bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-200"
+              ariaLabel={t.generate_report_button}
+              loading={isLoading}
+            >
+              {isLoading ? t.generating_report_message : t.generate_report_button}
+            </EnhancedButton>
+
+            <EnhancedButton
+              onClick={handleGenerateSimpleData}
+              disabled={isLoading || simpleReportConfig.length === 0}
+              variant="success"
+              size="sm"
+              className="px-4 py-2.5 h-auto text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200"
+              ariaLabel={t.generate_simple_data_button}
+            >
+              {t.generate_simple_data_button}
+            </EnhancedButton>
+
+            {reportData && (
+              <>
+                <EnhancedButton
+                  onClick={handleCopyImage}
+                  variant="warning"
+                  size="sm"
+                  className="px-4 py-2.5 h-auto text-sm whitespace-nowrap shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold"
+                  ariaLabel="Copy report as image"
+                  disabled={isCopying}
+                >
+                  {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
+                </EnhancedButton>
+
+                <EnhancedButton
+                  onClick={handleExportPDF}
+                  variant="outline"
+                  size="sm"
+                  className="px-4 py-2.5 h-auto text-sm whitespace-nowrap border-2 border-indigo-500 text-indigo-600 font-semibold hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all duration-200"
+                  ariaLabel="Export report as PDF"
+                  disabled={isExportingPDF}
+                >
+                  {isExportingPDF ? 'Exporting...' : 'Export PDF'}
+                </EnhancedButton>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1035,6 +1083,3 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 };
 
 export default ReportPage;
-
-
-

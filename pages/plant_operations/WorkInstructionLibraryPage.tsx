@@ -149,298 +149,345 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   ];
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-slate-800">{t.op_work_instruction_library}</h2>
-        <button
-          onClick={handleOpenAddModal}
-          className="inline-flex items-center justify-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-semibold text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 min-h-[44px]"
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6 mb-6"
         >
-          <PlusIcon className="w-5 h-5" />
-          {t.add_data_button}
-        </button>
-      </div>
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
 
-      {/* Search and Filter Controls */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <label htmlFor="search" className="sr-only">
-            Search work instructions
-          </label>
-          <div className="relative">
-            <input
-              id="search"
-              type="text"
-              placeholder={t.search_placeholder || 'Search by title, description, code...'}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900"
-            />
-          </div>
-        </div>
-        <div className="sm:w-64">
-          <label htmlFor="activity-filter" className="sr-only">
-            Filter by activity
-          </label>
-          <select
-            id="activity-filter"
-            value={filterActivity}
-            onChange={(e) => setFilterActivity(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900"
-          >
-            <option value="">{t.all_activities || 'All Activities'}</option>
-            {Array.from(new Set(instructions.map((i) => i.activity)))
-              .sort()
-              .map((activity) => (
-                <option key={activity} value={activity}>
-                  {activity}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className="sm:w-64">
-          <label htmlFor="plant-category-filter" className="sr-only">
-            Filter by plant category
-          </label>
-          <select
-            id="plant-category-filter"
-            value={filterPlantCategory}
-            onChange={(e) => {
-              setFilterPlantCategory(e.target.value);
-              setFilterPlantUnit(''); // Reset unit filter when category changes
-            }}
-            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900"
-          >
-            <option value="">All Plant Categories</option>
-            {Array.from(new Set(plantUnits.map((unit) => unit.category)))
-              .sort()
-              .map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-          </select>
-        </div>
-        <div className="sm:w-64">
-          <label htmlFor="plant-unit-filter" className="sr-only">
-            Filter by plant unit
-          </label>
-          <select
-            id="plant-unit-filter"
-            value={filterPlantUnit}
-            onChange={(e) => setFilterPlantUnit(e.target.value)}
-            disabled={!filterPlantCategory}
-            className="w-full px-4 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <option value="">All Plant Units</option>
-            {plantUnits
-              .filter((unit) => !filterPlantCategory || unit.category === filterPlantCategory)
-              .map((unit) => (
-                <option key={unit.id} value={unit.unit}>
-                  {unit.unit}
-                </option>
-              ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        {loading ? (
-          <div className="flex justify-center items-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-            <span className="ml-2 text-slate-600">Loading work instructions...</span>
-          </div>
-        ) : error ? (
-          <div className="text-center py-10">
-            <div className="text-red-600 mb-2">
-              <ExclamationTriangleIcon className="w-8 h-8 mx-auto" />
+          <div className="relative flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+                <LinkIcon className="w-6 h-6 text-indigo-200" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight">
+                  {t.op_work_instruction_library}
+                </h2>
+                <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+                  Manage work instructions and documentation
+                </p>
+              </div>
             </div>
-            <p className="text-slate-600">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 text-white rounded-md hover:bg-red-700 min-h-[44px]"
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-sm hover:bg-indigo-400 ring-1 ring-indigo-400/50 transition-all duration-200 min-h-[44px]"
             >
-              Retry
+              <PlusIcon className="w-5 h-5" />
+              {t.add_data_button}
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Search and Filter Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4 mb-6"
+        >
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label htmlFor="search" className="sr-only">
+                Search work instructions
+              </label>
+              <div className="relative">
+                <input
+                  id="search"
+                  type="text"
+                  placeholder={t.search_placeholder || 'Search by title, description, code...'}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-4 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-slate-900 transition-all duration-200"
+                />
+              </div>
+            </div>
+            <div className="sm:w-64">
+              <label htmlFor="activity-filter" className="sr-only">
+                Filter by activity
+              </label>
+              <select
+                id="activity-filter"
+                value={filterActivity}
+                onChange={(e) => setFilterActivity(e.target.value)}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-slate-900 transition-all duration-200"
+              >
+                <option value="">{t.all_activities || 'All Activities'}</option>
+                {Array.from(new Set(instructions.map((i) => i.activity)))
+                  .sort()
+                  .map((activity) => (
+                    <option key={activity} value={activity}>
+                      {activity}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="sm:w-64">
+              <label htmlFor="plant-category-filter" className="sr-only">
+                Filter by plant category
+              </label>
+              <select
+                id="plant-category-filter"
+                value={filterPlantCategory}
+                onChange={(e) => {
+                  setFilterPlantCategory(e.target.value);
+                  setFilterPlantUnit(''); // Reset unit filter when category changes
+                }}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-slate-900 transition-all duration-200"
+              >
+                <option value="">All Plant Categories</option>
+                {Array.from(new Set(plantUnits.map((unit) => unit.category)))
+                  .sort()
+                  .map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="sm:w-64">
+              <label htmlFor="plant-unit-filter" className="sr-only">
+                Filter by plant unit
+              </label>
+              <select
+                id="plant-unit-filter"
+                value={filterPlantUnit}
+                onChange={(e) => setFilterPlantUnit(e.target.value)}
+                disabled={!filterPlantCategory}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                <option value="">All Plant Units</option>
+                {plantUnits
+                  .filter((unit) => !filterPlantCategory || unit.category === filterPlantCategory)
+                  .map((unit) => (
+                    <option key={unit.id} value={unit.unit}>
+                      {unit.unit}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Table Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden"
+        >
+          <div className="overflow-x-auto">
+            {loading ? (
+              <div className="flex justify-center items-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <span className="ml-2 text-slate-600">Loading work instructions...</span>
+              </div>
+            ) : error ? (
+              <div className="text-center py-10">
+                <div className="text-red-600 mb-2">
+                  <ExclamationTriangleIcon className="w-8 h-8 mx-auto" />
+                </div>
+                <p className="text-slate-600">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 px-3 py-2 sm:px-4 sm:py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 min-h-[44px] transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <table
+                className="min-w-full divide-y-4 divide-transparent"
+                role="table"
+                aria-label="Work Instructions Library"
+              >
+                <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <tr>
+                    {tableHeaders.map((header) => (
+                      <th
+                        key={header}
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                      >
+                        {header !== 'actions' && header !== 'link' ? (
+                          <button
+                            onClick={() => handleSort(header)}
+                            className="flex items-center gap-1 hover:text-slate-800 transition-colors"
+                            aria-sort={
+                              sortColumn === header
+                                ? sortDirection === 'asc'
+                                  ? 'ascending'
+                                  : 'descending'
+                                : 'none'
+                            }
+                            aria-label={`Sort by ${t[header]} ${sortColumn === header ? (sortDirection === 'asc' ? 'ascending' : 'descending') : ''}`}
+                          >
+                            {t[header]}
+                            {sortColumn === header && (
+                              <span className="text-slate-500" aria-hidden="true">
+                                {sortDirection === 'asc' ? '↑' : '↓'}
+                              </span>
+                            )}
+                          </button>
+                        ) : (
+                          t[header]
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {groupedInstructions.map(([activity, instructionList], groupIndex) => (
+                    <React.Fragment key={activity}>
+                      <motion.tr
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: groupIndex * 0.1 }}
+                      >
+                        <td colSpan={tableHeaders.length} className="px-6 py-3 bg-slate-100">
+                          <h3 className="text-sm font-bold text-slate-800">{activity}</h3>
+                        </td>
+                      </motion.tr>
+                      {instructionList.map((instruction, index) => (
+                        <motion.tr
+                          key={instruction.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: groupIndex * 0.1 + index * 0.05 }}
+                          className="hover:bg-slate-50 transition-colors duration-150 border-b border-slate-200"
+                        >
+                          {/* FIX: Use snake_case properties */}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
+                            {instruction.doc_code}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
+                            {instruction.doc_title}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {instruction.plant_category}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {instruction.plant_unit}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-500 max-w-sm">
+                            {instruction.description}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <a
+                              href={instruction.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 hover:underline transition-colors"
+                            >
+                              <LinkIcon className="w-4 h-4" />
+                              <span>Open</span>
+                            </a>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-2">
+                              <motion.button
+                                onClick={() => handleOpenEditModal(instruction)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleOpenEditModal(instruction);
+                                  }
+                                }}
+                                className="p-2 text-slate-400 hover:text-indigo-600 rounded-full hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                                aria-label={`Edit ${instruction.doc_title}`}
+                                tabIndex={0}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                              >
+                                <EditIcon />
+                              </motion.button>
+                              <motion.button
+                                onClick={() => handleOpenDeleteModal(instruction.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleOpenDeleteModal(instruction.id);
+                                  }
+                                }}
+                                className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                aria-label={`Delete ${instruction.doc_title}`}
+                                tabIndex={0}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                              >
+                                <TrashIcon />
+                              </motion.button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                  {groupedInstructions.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={tableHeaders.length}
+                        className="text-center py-10 text-slate-500"
+                      >
+                        No work instructions found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </motion.div>
+
+        <Modal
+          isOpen={isFormModalOpen}
+          onClose={handleCloseModals}
+          title={editingInstruction ? t.edit_instruction_title : t.add_instruction_title}
+        >
+          <WorkInstructionForm
+            instructionToEdit={editingInstruction}
+            onSave={handleSave}
+            onCancel={handleCloseModals}
+            t={t}
+          />
+        </Modal>
+
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseModals}
+          title={t.delete_confirmation_title}
+        >
+          <div className="p-6">
+            <p className="text-sm text-slate-600">{t.delete_confirmation_message}</p>
+          </div>
+          <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+            <button
+              onClick={handleDeleteConfirm}
+              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
+            >
+              {t.confirm_delete_button}
+            </button>
+            <button
+              onClick={handleCloseModals}
+              className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
+            >
+              {t.cancel_button}
             </button>
           </div>
-        ) : (
-          <table
-            className="min-w-full divide-y-4 divide-transparent"
-            role="table"
-            aria-label="Work Instructions Library"
-          >
-            <thead className="bg-slate-50">
-              <tr>
-                {tableHeaders.map((header) => (
-                  <th
-                    key={header}
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                  >
-                    {header !== 'actions' && header !== 'link' ? (
-                      <button
-                        onClick={() => handleSort(header)}
-                        className="flex items-center gap-1 hover:text-slate-800 transition-colors"
-                        aria-sort={
-                          sortColumn === header
-                            ? sortDirection === 'asc'
-                              ? 'ascending'
-                              : 'descending'
-                            : 'none'
-                        }
-                        aria-label={`Sort by ${t[header]} ${sortColumn === header ? (sortDirection === 'asc' ? 'ascending' : 'descending') : ''}`}
-                      >
-                        {t[header]}
-                        {sortColumn === header && (
-                          <span className="text-slate-500" aria-hidden="true">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </button>
-                    ) : (
-                      t[header]
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {groupedInstructions.map(([activity, instructionList], groupIndex) => (
-                <React.Fragment key={activity}>
-                  <motion.tr
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: groupIndex * 0.1 }}
-                  >
-                    <td colSpan={tableHeaders.length} className="px-6 py-3 bg-slate-100">
-                      <h3 className="text-sm font-bold text-slate-800">{activity}</h3>
-                    </td>
-                  </motion.tr>
-                  {instructionList.map((instruction, index) => (
-                    <motion.tr
-                      key={instruction.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: groupIndex * 0.1 + index * 0.05 }}
-                      className="hover:bg-slate-50 transition-colors duration-150 border-b border-slate-200"
-                    >
-                      {/* FIX: Use snake_case properties */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
-                        {instruction.doc_code}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">
-                        {instruction.doc_title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                        {instruction.plant_category}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                        {instruction.plant_unit}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 max-w-sm">
-                        {instruction.description}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <a
-                          href={instruction.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-red-600 hover:text-red-800 hover:underline"
-                        >
-                          <LinkIcon className="w-4 h-4" />
-                          <span>Open</span>
-                        </a>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          <motion.button
-                            onClick={() => handleOpenEditModal(instruction)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleOpenEditModal(instruction);
-                              }
-                            }}
-                            className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            aria-label={`Edit ${instruction.doc_title}`}
-                            tabIndex={0}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                          >
-                            <EditIcon />
-                          </motion.button>
-                          <motion.button
-                            onClick={() => handleOpenDeleteModal(instruction.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleOpenDeleteModal(instruction.id);
-                              }
-                            }}
-                            className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            aria-label={`Delete ${instruction.doc_title}`}
-                            tabIndex={0}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                          >
-                            <TrashIcon />
-                          </motion.button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </React.Fragment>
-              ))}
-              {groupedInstructions.length === 0 && (
-                <tr>
-                  <td colSpan={tableHeaders.length} className="text-center py-10 text-slate-500">
-                    No work instructions found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+        </Modal>
       </div>
-
-      <Modal
-        isOpen={isFormModalOpen}
-        onClose={handleCloseModals}
-        title={editingInstruction ? t.edit_instruction_title : t.add_instruction_title}
-      >
-        <WorkInstructionForm
-          instructionToEdit={editingInstruction}
-          onSave={handleSave}
-          onCancel={handleCloseModals}
-          t={t}
-        />
-      </Modal>
-
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={handleCloseModals}
-        title={t.delete_confirmation_title}
-      >
-        <div className="p-6">
-          <p className="text-sm text-slate-600">{t.delete_confirmation_message}</p>
-        </div>
-        <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-          <button
-            onClick={handleDeleteConfirm}
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
-          >
-            {t.confirm_delete_button}
-          </button>
-          <button
-            onClick={handleCloseModals}
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
-          >
-            {t.cancel_button}
-          </button>
-        </div>
-      </Modal>
     </div>
   );
 };

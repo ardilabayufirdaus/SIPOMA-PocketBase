@@ -905,7 +905,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         {/* Enhanced Header with Better Mobile Support */}
         <div className="bg-white border-b border-slate-200 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -1595,6 +1595,3 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 };
 
 export default ProjectDetailPage;
-
-
-

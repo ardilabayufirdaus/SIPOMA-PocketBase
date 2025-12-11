@@ -1,5 +1,6 @@
 import React from 'react';
 import { getColor, getBorderRadius } from '../utils/designTokens';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 interface LoadingSkeletonProps {
   className?: string;
@@ -16,8 +17,12 @@ const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
   height,
   lines = 1,
 }) => {
-  const baseClasses =
-    'animate-pulse bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 bg-[length:200%_100%]';
+  const colors = useThemeColors();
+  const isDark = colors.neutral[0] !== '#ffffff';
+
+  const baseClasses = isDark
+    ? 'animate-pulse bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 bg-[length:200%_100%]'
+    : 'animate-pulse bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 bg-[length:200%_100%]';
 
   const getVariantClasses = () => {
     switch (variant) {
@@ -234,5 +239,3 @@ export const SkeletonList: React.FC<{ items?: number; className?: string }> = ({
 );
 
 export default LoadingSkeleton;
-
-

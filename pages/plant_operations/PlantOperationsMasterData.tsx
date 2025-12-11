@@ -1047,22 +1047,33 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-8"
+          className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-8 mb-8"
         >
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+
+          <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-red-100 rounded-xl">
-                <Database className="w-8 h-8 text-red-600" />
+              <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+                <Database className="w-7 h-7 text-indigo-200" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-slate-900">{t['op_master_data']}</h1>
-                <p className="text-slate-600 mt-1">
+                <h1 className="text-2xl font-bold text-white tracking-tight">
+                  {t['op_master_data']}
+                </h1>
+                <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
                   Manage plant operations master data and configurations
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <RealtimeIndicator isConnected={true} lastUpdate={new Date()} className="text-sm" />
+              <RealtimeIndicator
+                isConnected={true}
+                lastUpdate={new Date()}
+                className="text-sm text-indigo-200"
+              />
               <div className="flex gap-2">
                 <input
                   type="file"
@@ -1076,7 +1087,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileTap={{ scale: 0.98 }}
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isImporting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <DocumentArrowUpIcon className="w-5 h-5" />
                   {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
@@ -1086,7 +1097,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileTap={{ scale: 0.98 }}
                   onClick={handleExportAll}
                   disabled={isExporting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-sm hover:bg-indigo-400 ring-1 ring-indigo-400/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <DocumentArrowDownIcon className="w-5 h-5" />
                   {isExporting ? t['exporting'] || 'Exporting...' : t['export_all']}
@@ -1108,8 +1119,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Settings className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Settings className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1122,7 +1133,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleOpenAddModal('plantUnit')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -1132,7 +1143,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['unit']}
@@ -1179,7 +1190,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                                 onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50"
                               >
                                 <EditIcon className="w-4 h-4" />
                               </motion.button>
@@ -1219,8 +1230,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Users className="w-5 h-5 text-green-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Users className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1233,7 +1244,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleOpenAddModal('picSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -1243,7 +1254,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['pic']}
@@ -1266,19 +1277,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           <div className="flex items-center justify-end space-x-1">
                             <motion.button
                               whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => handleOpenEditModal('picSetting', pic)}
-                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                              className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
                             >
-                              <EditIcon className="w-4 h-4" />
+                              <EditIcon className="h-4 w-4" />
                             </motion.button>
                             <motion.button
                               whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
                             >
-                              <TrashIcon className="w-4 h-4" />
+                              <TrashIcon className="h-4 w-4" />
                             </motion.button>
                           </div>
                         </td>
@@ -1307,8 +1318,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1321,7 +1332,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleOpenAddModal('parameterSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -1349,7 +1360,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="param-cat-filter"
                         value={parameterCategoryFilter}
                         onChange={handleParameterCategoryFilterChange}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
                       >
                         <option value="">{t['all_categories'] || 'All Categories'}</option>
                         {uniquePlantCategories.map((category) => (
@@ -1374,7 +1385,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         value={parameterUnitFilter}
                         onChange={handleParameterUnitFilterChange}
                         disabled={!parameterCategoryFilter}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                       >
                         <option value="">{t['all_units'] || 'All Units'}</option>
                         {unitsForParameterFilter.map((unit) => (
@@ -1427,7 +1438,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
 
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
+                <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                       {t['parameter_id']}
@@ -1519,7 +1530,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             onClick={() => handleOpenEditModal('parameterSetting', param)}
-                            className="p-2 text-slate-400 hover:text-red-600"
+                            className="p-2 text-slate-400 hover:text-indigo-600"
                           >
                             <EditIcon />
                           </button>
@@ -1560,8 +1571,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-100 rounded-lg">
-                    <Database className="w-5 h-5 text-amber-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Database className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1574,7 +1585,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleOpenAddModal('siloCapacity')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -1602,7 +1613,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="silo-cat-filter"
                         value={siloCategoryFilter}
                         onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -1625,7 +1636,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="silo-unit-filter"
                         value={siloUnitFilter}
                         onChange={(e) => setSiloUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForSiloFilter.length === 0}
                       >
                         {unitsForSiloFilter.map((unit) => (
@@ -1645,7 +1656,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['plant_category']}
@@ -1759,8 +1770,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -1773,7 +1784,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleOpenCopModal}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -1801,7 +1812,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-cat-filter"
                         value={copCategoryFilter}
                         onChange={(e) => setCopCategoryFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -1824,7 +1835,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-unit-filter"
                         value={copUnitFilter}
                         onChange={(e) => setCopUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForCopFilter.length === 0}
                       >
                         {unitsForCopFilter.map((unit) => (
@@ -1844,7 +1855,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['parameter']}
@@ -1929,8 +1940,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">COP Parameters Footer</h3>
@@ -1943,7 +1954,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleOpenCopFooterModal}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -1983,7 +1994,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-footer-cat-filter"
                         value={copFooterCategoryFilter}
                         onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2006,7 +2017,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-footer-unit-filter"
                         value={copFooterUnitFilter}
                         onChange={(e) => setCopFooterUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForCopFooterFilter.length === 0}
                       >
                         {unitsForCopFooterFilter.map((unit) => (
@@ -2026,7 +2037,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         Parameter
@@ -2125,7 +2136,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleOpenAddModal('reportSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -2153,7 +2164,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="report-cat-filter"
                         value={reportCategoryFilter}
                         onChange={handleReportCategoryChange}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2176,7 +2187,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="report-unit-filter"
                         value={reportUnitFilter}
                         onChange={(e) => setReportUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForReportFilter.length === 0}
                       >
                         {unitsForReportFilter.map((unit) => (
@@ -2203,7 +2214,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               <div className="overflow-x-auto">
                 <DragDropContext onDragEnd={handleReportSettingsDragEnd}>
                   <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
+                    <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                           {t['order'] || 'Order'}
@@ -2323,8 +2334,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             <div className="p-6 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-cyan-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-cyan-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-slate-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900">
@@ -2337,7 +2348,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleOpenAddModal('simpleReportSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl shadow-sm hover:bg-red-700 transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
                 >
                   <PlusIcon className="w-4 h-4" />
                   {t['add_data_button']}
@@ -2365,7 +2376,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="simple-report-cat-filter"
                         value={simpleReportCategoryFilter}
                         onChange={handleSimpleReportCategoryChange}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2388,7 +2399,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="simple-report-unit-filter"
                         value={simpleReportUnitFilter}
                         onChange={(e) => setSimpleReportUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForSimpleReportFilter.length === 0}
                       >
                         {unitsForSimpleReportFilter.map((unit) => (
@@ -2415,7 +2426,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               <div className="overflow-x-auto">
                 <DragDropContext onDragEnd={handleSimpleReportSettingsDragEnd}>
                   <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
+                    <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                           {t['order'] || 'Order'}

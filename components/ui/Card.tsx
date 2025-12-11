@@ -6,7 +6,7 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-interface CardProps {
+interface CardProps extends Omit<React.HTMLAttributes<HTMLElement>, 'onClick'> {
   children: React.ReactNode;
   variant?:
     | 'default'
@@ -18,7 +18,7 @@ interface CardProps {
     | 'neon'
     | 'floating'
     | 'interactive';
-  padding?: 'sm' | 'md' | 'lg' | 'xl';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   onClick?: () => void;
   ariaLabel?: string;
@@ -35,6 +35,7 @@ export const Card: React.FC<CardProps> = ({
   ariaLabel,
   ariaDescribedBy,
   gradientDirection = 'fire',
+  ...props
 }) => {
   // Base classes
   const baseClasses = cn(
@@ -45,6 +46,7 @@ export const Card: React.FC<CardProps> = ({
 
   // Padding variants
   const paddingVariants = {
+    none: 'p-0',
     sm: 'p-4',
     md: 'p-6',
     lg: 'p-8',
@@ -58,11 +60,7 @@ export const Card: React.FC<CardProps> = ({
     outlined: cn('bg-transparent border-2 border-primary-200', 'hover:border-primary-300'),
     filled: cn('bg-gradient-to-br from-gray-50 to-gray-100', 'shadow-inner'),
     gradient: cn(`bg-gradient-${gradientDirection} text-white shadow-lg`, 'hover:shadow-xl'),
-    glass: cn(
-      'bg-white/20 backdrop-blur-md',
-      'border border-white/30',
-      'shadow-glass hover:bg-white/30'
-    ),
+    glass: 'glass-card',
     neon: cn(
       'bg-gray-900 border-2 border-primary-500',
       'shadow-glow-fire hover:shadow-neon',
@@ -85,12 +83,14 @@ export const Card: React.FC<CardProps> = ({
   const ariaProps = {
     ...(ariaLabel && { 'aria-label': ariaLabel }),
     ...(ariaDescribedBy && { 'aria-describedby': ariaDescribedBy }),
+    ...props,
   };
 
   const Component = onClick ? 'button' : 'div';
+  const componentProps = onClick ? { type: 'button' as const } : {};
 
   return (
-    <Component className={cardClasses} onClick={onClick} {...ariaProps}>
+    <Component className={cardClasses} onClick={onClick} {...componentProps} {...ariaProps}>
       {/* Gradient overlay for enhanced visual appeal */}
       {variant === 'interactive' && (
         <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 to-secondary-500/5 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300" />
@@ -160,5 +160,3 @@ export const CardFooter: React.FC<CardFooterProps> = ({
 };
 
 export default Card;
-
-

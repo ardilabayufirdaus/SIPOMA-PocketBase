@@ -1,0 +1,5 @@
+﻿components/ui/Card.tsx(93,6): error TS2322: Type '{ children: Element[]; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; accessKey?: string; ... 272 more ...; onClick: () => void; } | { ...; }' is not assignable to type 'IntrinsicAttributes & ClassAttributes<HTMLButtonElement> & ButtonHTMLAttributes<HTMLButtonElement> & ClassAttributes<...> & HTMLAttributes<...>'.
+  Type '{ children: Element[]; defaultChecked?: boolean; defaultValue?: string | number | readonly string[]; suppressContentEditableWarning?: boolean; suppressHydrationWarning?: boolean; accessKey?: string; ... 272 more ...; onClick: () => void; }' is not assignable to type 'ButtonHTMLAttributes<HTMLButtonElement>'.
+    Types of property 'onCopy' are incompatible.
+      Type 'ClipboardEventHandler<HTMLDivElement>' is not assignable to type 'ClipboardEventHandler<HTMLButtonElement>'.
+        Type 'HTMLDivElement' is missing the following properties from type 'HTMLButtonElement': disabled, form, formAction, formEnctype, and 15 more.

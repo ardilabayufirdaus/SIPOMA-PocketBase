@@ -7,6 +7,10 @@ import { MetricCard } from '../components/dashboard/Dashboard';
 import { ActivityFeed } from '../components/dashboard/ActivityFeed';
 import { useTranslation } from '../hooks/useTranslation';
 
+// Import UI components
+import Modal from '../components/Modal';
+import Button from '../components/ui/Button';
+
 // Import hooks for permissions
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { usePermissions } from '../utils/permissions';
@@ -48,7 +52,6 @@ interface QuickCardProps {
   description: string;
   icon: React.ReactNode;
   onClick: () => void;
-  color: string;
   language: 'en' | 'id';
 }
 
@@ -60,153 +63,108 @@ const SubMenuModal: React.FC<SubMenuModalProps> = ({
   onSelect,
   language,
 }) => {
-  // Handle keyboard navigation
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onKeyDown={handleKeyDown}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="submenu-modal-title"
-      aria-describedby="submenu-modal-description"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      description={language === 'id' ? 'Pilih submenu yang ingin dibuka' : 'Choose submenu to open'}
+      maxWidth="md"
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
-          <h2 id="submenu-modal-title" className="text-xl font-bold">
-            {title}
-          </h2>
-          <p id="submenu-modal-description" className="text-indigo-100 text-sm mt-1">
-            {language === 'id' ? 'Pilih submenu yang ingin dibuka' : 'Choose submenu to open'}
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 max-h-96 overflow-y-auto">
-          <div className="space-y-2">
-            {subMenus.map((menu) => (
-              <button
-                key={menu.key}
-                onClick={() => {
-                  onSelect(menu.key);
-                  onClose();
-                }}
-                className="w-full flex items-center space-x-3 p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                aria-label={`${language === 'id' ? 'Buka' : 'Open'} ${menu.label}`}
-              >
-                <div className="flex-shrink-0 w-10 h-10 bg-slate-100 group-hover:bg-indigo-100 rounded-lg flex items-center justify-center transition-colors">
-                  {menu.icon}
-                </div>
-                <div className="flex-1 text-left">
-                  <span className="font-medium text-slate-800 group-hover:text-indigo-700 transition-colors">
-                    {menu.label}
-                  </span>
-                </div>
-                <div className="flex-shrink-0">
-                  <svg
-                    className="w-4 h-4 text-slate-400 group-hover:text-indigo-500 transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="border-t border-slate-200 p-4">
-          <button
-            onClick={onClose}
-            className="w-full px-3 py-2 sm:px-4 sm:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 min-h-[44px]"
-            aria-label={language === 'id' ? 'Tutup modal submenu' : 'Close submenu modal'}
-          >
-            {language === 'id' ? 'Batal' : 'Cancel'}
-          </button>
+      <div className="max-h-[60vh] overflow-y-auto -m-2 p-2">
+        <div className="space-y-2">
+          {subMenus.map((menu) => (
+            <button
+              key={menu.key}
+              onClick={() => {
+                onSelect(menu.key);
+                onClose();
+              }}
+              className="w-full flex items-center space-x-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              aria-label={`${language === 'id' ? 'Buka' : 'Open'} ${menu.label}`}
+            >
+              <div className="flex-shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-700 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 rounded-lg flex items-center justify-center transition-colors">
+                {menu.icon}
+              </div>
+              <div className="flex-1 text-left">
+                <span className="font-medium text-slate-700 dark:text-slate-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
+                  {menu.label}
+                </span>
+              </div>
+              <div className="flex-shrink-0">
+                <svg
+                  className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
-    </div>
+
+      <div className="mt-6 flex justify-end">
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          {language === 'id' ? 'Batal' : 'Cancel'}
+        </Button>
+      </div>
+    </Modal>
   );
 };
 
-const QuickCard: React.FC<QuickCardProps> = ({
-  title,
-  description,
-  icon,
-  onClick,
-  color,
-  language,
-}) => {
+const QuickCard: React.FC<QuickCardProps> = ({ title, description, icon, onClick, language }) => {
   return (
     <div
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-3xl border border-white/30 bg-white/95 backdrop-blur-xl shadow-xl hover:shadow-2xl p-8 cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${color}`}
+      className="group relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl p-6 border border-white/50 dark:border-slate-700/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 cursor-pointer overflow-hidden"
       role="button"
       tabIndex={0}
+      aria-label={`${language === 'id' ? 'Buka' : 'Open'} ${title}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
           onClick();
         }
       }}
-      aria-label={`${language === 'id' ? 'Buka' : 'Open'} ${title}`}
     >
-      {/* Enhanced background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      {/* Background gradient decoration */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-indigo-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/10 group-hover:to-indigo-500/5 transition-all duration-500" />
 
-      {/* Animated background pattern */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500">
-        <div className="absolute top-4 right-4 w-16 h-16 border-2 border-current rounded-full animate-spin-slow"></div>
-        <div className="absolute bottom-4 left-4 w-12 h-12 border-2 border-current rounded-full animate-spin-slow-reverse"></div>
-      </div>
+      {/* Top corner decorative glow */}
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-indigo-400/20 to-purple-500/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       {/* Card content */}
-      <div className="relative flex items-start space-x-6">
+      <div className="relative flex items-start space-x-5">
         <div className="flex-shrink-0">
-          <div className="w-16 h-16 bg-gradient-to-br from-white/80 to-white/40 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-500 group-hover:scale-110 border border-white/50 group-hover:border-white/70">
-            <div className="text-slate-700 group-hover:text-slate-800 transition-colors duration-300 filter drop-shadow-sm scale-110">
-              {icon}
-            </div>
+          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/30 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+            <div className="text-white scale-110">{icon}</div>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-xl font-bold text-slate-800 group-hover:text-slate-900 transition-colors duration-300 mb-3 leading-tight">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors duration-300 mb-1.5 leading-tight">
             {title}
           </h3>
-          <p className="text-slate-600 group-hover:text-slate-700 transition-colors duration-300 leading-relaxed text-base">
+          <p className="text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors duration-300 leading-relaxed text-sm line-clamp-2">
             {description}
           </p>
         </div>
 
         <div className="flex-shrink-0 self-center">
-          <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 group-hover:from-indigo-100 group-hover:to-indigo-200 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-md group-hover:shadow-lg">
+          <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700/50 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-indigo-500 group-hover:to-purple-600 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-indigo-500/30">
             <svg
-              className="w-5 h-5 text-slate-500 group-hover:text-indigo-600 transition-colors duration-300"
+              className="w-5 h-5 text-slate-400 dark:text-slate-500 group-hover:text-white transition-colors duration-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -223,11 +181,8 @@ const QuickCard: React.FC<QuickCardProps> = ({
         </div>
       </div>
 
-      {/* Enhanced hover effect line */}
-      <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 group-hover:w-full transition-all duration-500 rounded-t-full"></div>
-
-      {/* Subtle glow effect */}
-      <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-indigo-500/0 via-purple-500/0 to-blue-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-500 pointer-events-none"></div>
+      {/* Enhanced bottom hover effect line */}
+      <div className="absolute bottom-0 left-0 w-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-400 group-hover:w-full transition-all duration-500 rounded-b-2xl" />
     </div>
   );
 };
@@ -269,10 +224,10 @@ const DailyQuote: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-32">
+      <div className="flex items-center justify-center p-8">
         <div className="flex items-center space-x-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-500 border-t-transparent"></div>
-          <span className="text-slate-600 font-medium">
+          <div className="animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent"></div>
+          <span className="text-slate-500 dark:text-slate-400 font-medium text-sm">
             {language === 'id' ? 'Memuat inspirasi...' : 'Loading inspiration...'}
           </span>
         </div>
@@ -281,13 +236,19 @@ const DailyQuote: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <blockquote className="text-2xl lg:text-3xl font-light text-slate-800 mb-6 leading-relaxed">
-        <span className="text-indigo-600 text-4xl lg:text-5xl font-serif">&ldquo;</span>
+    <div className="max-w-4xl mx-auto text-center px-4">
+      <blockquote className="text-xl lg:text-2xl font-light text-slate-700 dark:text-slate-300 mb-3 leading-relaxed">
+        <span className="text-indigo-500 dark:text-indigo-400 text-3xl font-serif mr-1">
+          &ldquo;
+        </span>
         {quote?.content}
-        <span className="text-indigo-600 text-4xl lg:text-5xl font-serif">&rdquo;</span>
+        <span className="text-indigo-500 dark:text-indigo-400 text-3xl font-serif ml-1">
+          &rdquo;
+        </span>
       </blockquote>
-      <cite className="text-lg text-slate-600 font-medium">— {quote?.author}</cite>
+      <cite className="text-base text-slate-500 dark:text-slate-400 font-medium not-italic">
+        — {quote?.author}
+      </cite>
     </div>
   );
 };
@@ -308,92 +269,70 @@ const OnlineUsersModal: React.FC<OnlineUsersModalProps> = ({
   language,
   presenceConnected,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white">
-          <h2 className="text-xl font-bold">
-            {language === 'id' ? 'Pengguna Online' : 'Online Users'}
-          </h2>
-          <div className="flex items-center space-x-2 mt-1">
-            <p className="text-amber-100 text-sm">
-              {presenceConnected
-                ? `${onlineUsers.length} ${language === 'id' ? 'pengguna aktif membuka aplikasi' : 'users actively using app'}`
-                : `${onlineUsers.length} ${language === 'id' ? 'pengguna aktif (perkiraan)' : 'users active (estimated)'}`}
-            </p>
-            <div
-              className={`w-2 h-2 rounded-full ${presenceConnected ? 'bg-green-400' : 'bg-yellow-400'} animate-pulse`}
-            ></div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 max-h-96 overflow-y-auto">
-          {onlineUsers.length === 0 ? (
-            <div className="text-center py-8">
-              <svg
-                className="w-12 h-12 text-gray-400 mx-auto mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                />
-              </svg>
-              <p className="text-gray-500">
-                {language === 'id'
-                  ? 'Tidak ada pengguna online saat ini'
-                  : 'No users online currently'}
-              </p>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={language === 'id' ? 'Pengguna Online' : 'Online Users'}
+      description={
+        presenceConnected
+          ? `${onlineUsers.length} ${language === 'id' ? 'pengguna aktif membuka aplikasi' : 'users actively using app'}`
+          : `${onlineUsers.length} ${language === 'id' ? 'pengguna aktif (perkiraan)' : 'users active (estimated)'}`
+      }
+      maxWidth="md"
+    >
+      <div className="max-h-[60vh] overflow-y-auto -m-2 p-2">
+        {onlineUsers.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
+              <UserIcon className="w-6 h-6 text-slate-400 dark:text-slate-500" />
             </div>
-          ) : (
-            <div className="space-y-3">
-              {onlineUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
-                    {(user.full_name || user.username).charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {user.full_name || user.username}
-                    </p>
-                    <p className="text-xs text-gray-500">@{user.username}</p>
-                    <p className="text-xs text-gray-400">{user.role}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
+              {language === 'id'
+                ? 'Tidak ada pengguna online saat ini'
+                : 'No users online currently'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {onlineUsers.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-600"
+              >
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold shadow-sm">
+                  {(user.full_name || user.username).charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                    {user.full_name || user.username}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">@{user.username}</p>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 dark:bg-slate-600 rounded text-slate-600 dark:text-slate-300">
+                      {user.role}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t border-gray-200 p-4 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-          >
-            {language === 'id' ? 'Tutup' : 'Close'}
-          </button>
-        </div>
+                <div className="flex items-center">
+                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+
+      <div className="mt-6 flex justify-end">
+        <Button
+          variant="ghost"
+          onClick={onClose}
+          className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          {language === 'id' ? 'Tutup' : 'Close'}
+        </Button>
+      </div>
+    </Modal>
   );
 };
 
@@ -457,7 +396,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           : 'Monitor and manage cement plant operations',
       icon: (
         <svg
-          className="w-6 h-6 text-slate-700"
+          className="w-6 h-6 text-slate-700 dark:text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -470,7 +409,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           />
         </svg>
       ),
-      color: 'hover:border-blue-200',
+      color: 'hover:border-primary-200 dark:hover:border-primary-700',
       page: 'operations' as Page,
       permission: 'plant_operations' as keyof PermissionMatrix,
     },
@@ -481,7 +420,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
         language === 'id' ? 'Kelola proyek dan tugas tim' : 'Manage projects and team tasks',
       icon: (
         <svg
-          className="w-6 h-6 text-slate-700"
+          className="w-6 h-6 text-slate-700 dark:text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -494,7 +433,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           />
         </svg>
       ),
-      color: 'hover:border-green-200',
+      color: 'hover:border-secondary-200 dark:hover:border-secondary-700',
       page: 'projects' as Page,
       permission: 'project_management' as keyof PermissionMatrix,
     },
@@ -507,7 +446,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           : 'Manage users and access permissions',
       icon: (
         <svg
-          className="w-6 h-6 text-slate-700"
+          className="w-6 h-6 text-slate-700 dark:text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -520,7 +459,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           />
         </svg>
       ),
-      color: 'hover:border-purple-200',
+      color: 'hover:border-success-200 dark:hover:border-success-700',
       page: 'users' as Page,
       permission: 'user_management' as keyof PermissionMatrix,
     },
@@ -531,7 +470,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
         language === 'id' ? 'Lakukan inspeksi dan laporan' : 'Perform inspections and reports',
       icon: (
         <svg
-          className="w-6 h-6 text-slate-700"
+          className="w-6 h-6 text-slate-700 dark:text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -544,7 +483,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           />
         </svg>
       ),
-      color: 'hover:border-orange-200',
+      color: 'hover:border-warning-200 dark:hover:border-warning-700',
       page: 'inspection' as Page,
       permission: 'inspection' as keyof PermissionMatrix,
     },
@@ -557,7 +496,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           : 'Configure app settings and preferences',
       icon: (
         <svg
-          className="w-6 h-6 text-slate-700"
+          className="w-6 h-6 text-slate-700 dark:text-slate-300"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -576,7 +515,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           />
         </svg>
       ),
-      color: 'hover:border-gray-200',
+      color: 'hover:border-neutral-200 dark:hover:border-neutral-700',
       page: 'settings' as Page,
       permission: 'system_settings' as keyof PermissionMatrix,
     },
@@ -742,12 +681,12 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 relative overflow-hidden">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900 relative overflow-hidden transition-colors duration-300">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-cyan-400/20 to-blue-600/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-indigo-300/10 to-purple-300/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary-400/10 to-secondary-600/10 rounded-full blur-3xl dark:from-primary-400/5 dark:to-secondary-600/5"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-secondary-400/10 to-primary-600/10 rounded-full blur-3xl dark:from-secondary-400/5 dark:to-primary-600/5"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-primary-300/5 to-secondary-300/5 rounded-full blur-3xl dark:from-primary-300/3 dark:to-secondary-300/3"></div>
       </div>
 
       <div className="relative w-full px-4 lg:px-8 py-6 space-y-8">
@@ -881,13 +820,34 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
 
             <div className="xl:col-span-1 order-1 xl:order-2 space-y-6">
               {/* Quick Actions */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-4 sm:p-6">
-                <h3 className="text-lg font-bold text-slate-800 mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  {language === 'id' ? 'Aksi Cepat' : 'Quick Actions'}
+              <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-lg p-5 overflow-hidden">
+                {/* Decorative background */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-400/10 to-purple-500/5 rounded-full blur-3xl" />
+
+                <h3 className="relative text-lg font-bold mb-5 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    {language === 'id' ? 'Aksi Cepat' : 'Quick Actions'}
+                  </span>
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-300 border border-blue-200/50 hover:border-blue-300/50 group">
-                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+
+                <div className="relative grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+                  <button className="group w-full flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-500/10 dark:to-purple-500/10 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-500/20 dark:hover:to-purple-500/20 transition-all duration-300 border border-indigo-200/50 dark:border-indigo-500/20 hover:border-indigo-300/70 dark:hover:border-indigo-400/40 hover:shadow-md hover:shadow-indigo-500/5">
+                    <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:shadow-indigo-500/30 transition-shadow">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -902,13 +862,13 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
                         />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-blue-700 transition-colors text-left">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors text-left">
                       {language === 'id' ? 'Entry Data Baru' : 'New Data Entry'}
                     </span>
                   </button>
 
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 transition-all duration-300 border border-green-200/50 hover:border-green-300/50 group">
-                    <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <button className="group w-full flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-500/20 dark:hover:to-teal-500/20 transition-all duration-300 border border-emerald-200/50 dark:border-emerald-500/20 hover:border-emerald-300/70 dark:hover:border-emerald-400/40 hover:shadow-md hover:shadow-emerald-500/5">
+                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:shadow-emerald-500/30 transition-shadow">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -923,13 +883,13 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
                         />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-green-700 transition-colors text-left">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors text-left">
                       {language === 'id' ? 'Buat Inspeksi' : 'Create Inspection'}
                     </span>
                   </button>
 
-                  <button className="w-full flex items-center space-x-3 p-3 rounded-xl bg-gradient-to-r from-purple-50 to-violet-50 hover:from-purple-100 hover:to-violet-100 transition-all duration-300 border border-purple-200/50 hover:border-purple-300/50 group">
-                    <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <button className="group w-full flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-500/10 dark:to-purple-500/10 hover:from-violet-100 hover:to-purple-100 dark:hover:from-violet-500/20 dark:hover:to-purple-500/20 transition-all duration-300 border border-violet-200/50 dark:border-violet-500/20 hover:border-violet-300/70 dark:hover:border-violet-400/40 hover:shadow-md hover:shadow-violet-500/5">
+                    <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md group-hover:shadow-violet-500/30 transition-shadow">
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -944,7 +904,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
                         />
                       </svg>
                     </div>
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-purple-700 transition-colors text-left">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors text-left">
                       {language === 'id' ? 'Lihat Laporan' : 'View Reports'}
                     </span>
                   </button>
@@ -952,54 +912,75 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
               </div>
 
               {/* System Status */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-4 sm:p-6">
-                <h3 className="text-lg font-bold text-slate-800 mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  {language === 'id' ? 'Status Sistem' : 'System Status'}
+              <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-lg p-5 overflow-hidden">
+                {/* Decorative background */}
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-slate-400/10 to-indigo-400/5 rounded-full blur-3xl" />
+
+                <h3 className="relative text-lg font-bold mb-5 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-slate-700 dark:from-slate-500 dark:to-slate-600 rounded-lg flex items-center justify-center shadow-md">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="bg-gradient-to-r from-slate-700 to-slate-600 dark:from-slate-300 dark:to-slate-400 bg-clip-text text-transparent">
+                    {language === 'id' ? 'Status Sistem' : 'System Status'}
+                  </span>
                 </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-slate-600">
+
+                <div className="relative space-y-2">
+                  <div className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'id' ? 'Database' : 'Database'}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-green-600 font-medium">
+                      <div className="w-2.5 h-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full animate-pulse shadow-sm shadow-emerald-500/50" />
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md">
                         {language === 'id' ? 'Aktif' : 'Active'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-slate-600">
+                  <div className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'id' ? 'API Server' : 'API Server'}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-green-600 font-medium">
+                      <div className="w-2.5 h-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full animate-pulse shadow-sm shadow-emerald-500/50" />
+                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md">
                         {language === 'id' ? 'Aktif' : 'Active'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-slate-600">
+                  <div className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'id' ? 'WebSocket' : 'WebSocket'}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-yellow-600 font-medium">
+                      <div className="w-2.5 h-2.5 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full animate-pulse shadow-sm shadow-amber-500/50" />
+                      <span className="text-xs text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded-md">
                         {language === 'id' ? 'Menghubungkan' : 'Connecting'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-slate-600">
+                  <div className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-slate-50/50 dark:bg-slate-700/30 hover:bg-slate-100/70 dark:hover:bg-slate-700/50 transition-colors">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                       {language === 'id' ? 'Backup' : 'Backup'}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                      <span className="text-xs text-green-600 font-medium">
+                      <div className="w-2.5 h-2.5 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full shadow-sm shadow-indigo-500/50" />
+                      <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md">
                         {language === 'id' ? 'Terjadwal' : 'Scheduled'}
                       </span>
                     </div>
@@ -1012,18 +993,43 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
 
         {/* Daily Quote */}
         <div className="w-full">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-xl p-8 lg:p-12 text-center relative overflow-hidden mx-4 lg:mx-8">
-            {/* Quote background pattern */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute top-4 left-4 w-20 h-20 border-2 border-indigo-300 rounded-full"></div>
-              <div className="absolute bottom-4 right-4 w-16 h-16 border-2 border-purple-300 rounded-full"></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 border-2 border-cyan-300 rounded-full"></div>
+          <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-lg p-8 lg:p-10 text-center overflow-hidden mx-4 lg:mx-8">
+            {/* Enhanced decorative background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-transparent to-purple-50/50 dark:from-indigo-500/5 dark:via-transparent dark:to-purple-500/5" />
+
+            {/* Floating decorative orbs */}
+            <div className="absolute -top-8 -left-8 w-40 h-40 bg-gradient-to-br from-indigo-400/15 to-purple-500/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-gradient-to-tl from-purple-400/15 to-indigo-500/10 rounded-full blur-3xl" />
+
+            {/* Subtle decorative circles */}
+            <div className="absolute inset-0">
+              <div className="absolute top-6 left-8 w-16 h-16 border border-indigo-200/30 dark:border-indigo-500/10 rounded-full" />
+              <div className="absolute bottom-6 right-8 w-12 h-12 border border-purple-200/30 dark:border-purple-500/10 rounded-full" />
+              <div className="absolute top-1/2 left-1/4 transform -translate-y-1/2 w-8 h-8 border border-violet-200/20 dark:border-violet-500/10 rounded-full" />
+              <div className="absolute top-1/3 right-1/4 w-6 h-6 border border-indigo-200/20 dark:border-indigo-500/10 rounded-full" />
             </div>
 
             <div className="relative">
-              <h2 className="text-xl lg:text-2xl font-bold text-slate-800 mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                {t.quote_of_the_day}
-              </h2>
+              <div className="inline-flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  {t.quote_of_the_day}
+                </h2>
+              </div>
               <DailyQuote />
             </div>
           </div>
@@ -1041,7 +1047,6 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
                 title={card.title}
                 description={card.description}
                 icon={card.icon}
-                color={card.color}
                 language={language}
                 onClick={() => handleCardClick(card.page)}
               />
@@ -1075,5 +1080,3 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
 };
 
 export default MainDashboardPage;
-
-

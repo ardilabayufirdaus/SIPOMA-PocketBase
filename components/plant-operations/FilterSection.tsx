@@ -81,52 +81,41 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   ].filter(Boolean).length;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-4"
-    >
+    <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-5">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <motion.div
-            whileHover={{ rotate: 15, scale: 1.1 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-            className="p-2 !bg-primary-100 rounded-xl"
-          >
-            <FilterIcon className="w-5 h-5 !text-primary-800" />
-          </motion.div>
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md">
+            <FilterIcon className="w-5 h-5 text-white" />
+          </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 tracking-tight">Smart Filters</h3>
-            <p className="text-sm text-slate-600">Refine your data view</p>
+            <h3 className="text-lg font-semibold text-slate-800">Smart Filters</h3>
+            <p className="text-xs text-slate-500">Refine your data view</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-end gap-4">
           {/* Plant Category Filter */}
-          <motion.div
-            className="flex items-center gap-3 min-w-0"
-            animate={
-              animatingField === 'plantCategory'
-                ? {
-                    scale: [1, 1.02, 1],
-                    transition: { duration: 0.3 },
-                  }
-                : {}
-            }
-          >
+          <div className="flex-1 min-w-[180px]">
             <label
               htmlFor="plant-category"
-              className="text-sm font-semibold text-slate-700 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
             >
-              Plant Category:
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+              Plant Category
             </label>
-            <div className="relative min-w-[140px]">
+            <div className="relative">
               <select
                 id="plant-category"
                 value={filters.plantCategory}
                 onChange={(e) => handleFieldChange('plantCategory', e.target.value)}
-                className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors appearance-none"
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
               >
                 <option value="">Choose Category</option>
                 {allowedCategories.map((category) => (
@@ -137,33 +126,31 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               </select>
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
-          </motion.div>
+          </div>
 
           {/* Plant Unit Filter */}
-          <motion.div
-            className="flex items-center gap-3 min-w-0"
-            animate={
-              animatingField === 'plantUnit'
-                ? {
-                    scale: [1, 1.02, 1],
-                    transition: { duration: 0.3 },
-                  }
-                : {}
-            }
-          >
+          <div className="flex-1 min-w-[150px]">
             <label
               htmlFor="plant-unit"
-              className="text-sm font-semibold text-slate-700 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
             >
-              Unit:
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+              Unit
             </label>
-            <div className="relative min-w-[120px]">
+            <div className="relative">
               <select
                 id="plant-unit"
                 value={filters.plantUnit}
                 onChange={(e) => handleFieldChange('plantUnit', e.target.value)}
                 disabled={allowedUnits.length === 0}
-                className="w-full pl-4 pr-8 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm font-medium transition-colors appearance-none"
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
               >
                 <option value="">Choose Unit</option>
                 {allowedUnits.map((unit) => (
@@ -174,62 +161,49 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               </select>
               <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
-          </motion.div>
+          </div>
 
           {/* Date Filter */}
-          <motion.div
-            className="flex items-center gap-3 min-w-0"
-            animate={
-              animatingField === 'date'
-                ? {
-                    scale: [1, 1.02, 1],
-                    transition: { duration: 0.3 },
-                  }
-                : {}
-            }
-          >
+          <div className="flex-1 min-w-[160px]">
             <label
               htmlFor="filter-date"
-              className="text-sm font-semibold text-slate-700 whitespace-nowrap"
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
             >
-              Date:
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Date
             </label>
             <input
               type="date"
               id="filter-date"
               value={filters.date}
               onChange={(e) => handleFieldChange('date', e.target.value)}
-              className="min-w-[140px] px-3 py-2.5 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm font-medium transition-colors"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
             />
-          </motion.div>
+          </div>
 
           {/* Reset Button */}
           {onReset && activeFiltersCount > 0 && (
-            <motion.div
-              animate={
-                animatingField === 'reset'
-                  ? {
-                      scale: [1, 1.05, 1],
-                      transition: { duration: 0.3 },
-                    }
-                  : {}
-              }
+            <EnhancedButton
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
+              disabled={isLoading}
+              className="whitespace-nowrap px-4 py-2.5 h-auto border-slate-300 hover:border-indigo-500 hover:text-indigo-600 transition-all duration-200"
             >
-              <EnhancedButton
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                disabled={isLoading}
-                className="whitespace-nowrap"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Reset
-              </EnhancedButton>
-            </motion.div>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reset
+            </EnhancedButton>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

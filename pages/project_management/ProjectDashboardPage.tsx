@@ -76,13 +76,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const getColorClasses = () => {
     switch (colorScheme) {
       case 'success':
-        return 'bg-green-50 text-green-600';
+        return 'bg-emerald-50 text-emerald-600';
       case 'warning':
-        return 'bg-yellow-50 text-yellow-600';
+        return 'bg-amber-50 text-amber-600';
       case 'danger':
-        return 'bg-red-50 text-blue-600';
+        return 'bg-red-50 text-red-600';
       default:
-        return 'bg-red-50 text-blue-600';
+        return 'bg-indigo-50 text-indigo-600';
     }
   };
 
@@ -91,9 +91,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-red-200 ${
+        className={`bg-white p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-indigo-200 ${
           isInteractive
-            ? 'cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 focus:outline-none'
+            ? 'cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 focus:outline-none'
             : ''
         }`}
         onClick={handleClick}
@@ -469,30 +469,27 @@ const ProjectDashboardPage: React.FC<{
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+      <div className="w-full p-4 lg:p-6 space-y-6">
         {/* Modern Dashboard Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-700 to-red-800 rounded-2xl shadow-2xl">
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-          <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
 
           <div className="relative p-6 lg:p-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                    <PresentationChartLineIcon className="w-8 h-8 text-white" />
+                  <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+                    <PresentationChartLineIcon className="w-7 h-7 text-indigo-200" />
                   </div>
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
                       {t.project_dashboard_title || 'Project Management Dashboard'}
                     </h1>
-                    <div className="flex items-center gap-2">
-                      <div className="h-1 w-8 bg-white/60 rounded-full"></div>
-                      <p className="text-white/80 text-sm lg:text-base">
-                        {t.executive_insights || 'Comprehensive project overview and analytics'}
-                      </p>
-                    </div>
+                    <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+                      {t.executive_insights || 'Comprehensive project overview and analytics'}
+                    </p>
                   </div>
                 </div>
 
@@ -752,16 +749,16 @@ const ProjectDashboardPage: React.FC<{
 
           {/* Critical Issues Alert - Ultra Compact */}
           {criticalIssues.length > 0 && (
-            <div className="bg-gradient-to-r from-blue-50 to-orange-50 border border-red-200 p-2 rounded-lg">
-              <h3 className="text-xs font-semibold text-orange-800 mb-1 flex items-center gap-1">
-                <ExclamationTriangleIcon className="w-3 h-3 text-blue-600" />
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 p-2 rounded-lg">
+              <h3 className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1">
+                <ExclamationTriangleIcon className="w-3 h-3 text-amber-600" />
                 {t.critical_issues || 'Critical Issues'} ({criticalIssues.length})
               </h3>
               <div className="space-y-0.5">
                 {criticalIssues.map((issue, index) => (
                   <div
                     key={index}
-                    className="flex items-start space-x-1 p-1.5 bg-white rounded border border-red-100"
+                    className="flex items-start space-x-1 p-1.5 bg-white rounded border border-amber-100"
                   >
                     <div
                       className={`w-1.5 h-1.5 rounded-full mt-1 ${
@@ -951,7 +948,7 @@ const ProjectDashboardPage: React.FC<{
                             <span>{projectTasks.length} tasks</span>
                             <span>{completedTasks} completed</span>
                             {overdueTasks > 0 && (
-                              <span className="text-blue-600 font-medium">
+                              <span className="text-red-600 font-medium">
                                 {overdueTasks} overdue
                               </span>
                             )}
@@ -964,7 +961,7 @@ const ProjectDashboardPage: React.FC<{
                           <div className="flex items-center gap-1">
                             <div className="w-full bg-slate-200 rounded-full h-2">
                               <div
-                                className="bg-blue-600 h-2 rounded-full"
+                                className="bg-indigo-600 h-2 rounded-full"
                                 style={{ width: `${p.progress}%` }}
                               ></div>
                             </div>
@@ -1114,6 +1111,3 @@ const ProjectDashboardPage: React.FC<{
 };
 
 export default ProjectDashboardPage;
-
-
-

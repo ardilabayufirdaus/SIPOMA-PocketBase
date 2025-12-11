@@ -179,22 +179,19 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="w-full space-y-8">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2 animate-pulse">
-            Autonomous Data Entry System
-          </h1>
-          <p className="text-indigo-700 text-xl font-medium">
-            Monitor and manage autonomous operations data with real-time tracking
-          </p>
-        </div>
-        {/* Main Filter Bar */}
-        <div className="backdrop-blur-lg bg-gradient-to-r from-white/20 via-blue-50/30 to-purple-50/30 border border-indigo-200/50 rounded-3xl p-8 shadow-2xl hover:shadow-indigo-200/50 transition-shadow duration-500">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg">
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="w-full space-y-6">
+        {/* Header Section - Indigo/Slate Theme */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+
+          <div className="relative flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
               <svg
-                className="w-6 h-6 text-white"
+                className="w-7 h-7 text-indigo-200"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -203,21 +200,58 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                 />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-800 to-purple-800 bg-clip-text text-transparent">
-              {t.filters}
-            </h3>
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-tight">
+                {t.op_autonomous_data_entry || 'Autonomous Data Entry'}
+              </h1>
+              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+                {t.autonomous_data_entry_description ||
+                  'Monitor and manage autonomous operations data with real-time tracking'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter Section */}
+        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md">
+              <svg
+                className="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800">{t.filters}</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="group">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Plant Category */}
+            <div>
               <label
                 htmlFor="auto-filter-category"
-                className="block text-sm font-semibold text-slate-700 mb-2 group-focus-within:text-blue-600 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
               >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
                 {t.plant_category_label}
               </label>
               <div className="relative">
@@ -225,7 +259,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-white/60 to-indigo-50/60 backdrop-blur-sm border border-indigo-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-gradient-to-r hover:from-white/80 hover:to-purple-50/80 text-indigo-800 font-medium appearance-none shadow-sm"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -233,30 +267,36 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                <svg
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </div>
             </div>
 
-            <div className="group">
+            {/* Filter by Month */}
+            <div>
               <label
                 htmlFor="auto-filter-month"
-                className="block text-sm font-semibold text-slate-700 mb-2 group-focus-within:text-blue-600 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
               >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
                 {t.filter_by_month}
               </label>
               <div className="relative">
@@ -264,7 +304,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-white/60 to-indigo-50/60 backdrop-blur-sm border border-indigo-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-gradient-to-r hover:from-white/80 hover:to-purple-50/80 text-indigo-800 font-medium appearance-none shadow-sm"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -272,30 +312,36 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                <svg
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </div>
             </div>
 
-            <div className="group">
+            {/* Filter by Year */}
+            <div>
               <label
                 htmlFor="auto-filter-year"
-                className="block text-sm font-semibold text-slate-700 mb-2 group-focus-within:text-blue-600 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
               >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
                 {t.filter_by_year}
               </label>
               <div className="relative">
@@ -303,7 +349,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   id="auto-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-white/60 to-indigo-50/60 backdrop-blur-sm border border-indigo-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-gradient-to-r hover:from-white/80 hover:to-purple-50/80 text-indigo-800 font-medium appearance-none shadow-sm"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -311,33 +357,31 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                  <svg
-                    className="w-5 h-5 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                <svg
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </div>
             </div>
           </div>
         </div>
+
         {/* Downtime Follow-up Section */}
-        <div className="backdrop-blur-lg bg-gradient-to-r from-white/20 via-orange-50/30 to-blue-50/30 border border-orange-200/50 rounded-3xl p-8 shadow-2xl hover:shadow-orange-200/50 transition-shadow duration-500">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-blue-500 flex items-center justify-center shadow-lg">
+        <div className="bg-white rounded-xl shadow-md border border-slate-200/60 overflow-hidden">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-5 h-5 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -350,41 +394,39 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-800 to-red-800 bg-clip-text text-transparent">
-                {t.autonomous_downtime_follow_up}
-              </h2>
+              <h2 className="text-lg font-bold text-white">{t.autonomous_downtime_follow_up}</h2>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-orange-200/50 shadow-inner">
-            <table className="min-w-full divide-y divide-orange-200/30">
-              <thead className="bg-gradient-to-r from-orange-100/50 to-blue-100/50 backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.start_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.end_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.duration}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.problem}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.corrective_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-orange-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -392,55 +434,55 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-gradient-to-r from-white/30 to-orange-50/30 backdrop-blur-sm divide-y divide-orange-100/20">
+              <tbody className="bg-white divide-y divide-slate-100">
                 {downtimeDataForMonth.length > 0 ? (
                   downtimeDataForMonth.map((d) => {
                     const { hours, minutes } = calculateDuration(d.start_time, d.end_time);
                     const duration = formatDuration(hours, minutes);
                     return (
-                      <tr key={d.id} className="hover:bg-white/40 transition-colors duration-200">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
+                      <tr key={d.id} className="hover:bg-slate-50 transition-colors duration-150">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-medium">
                           {formatDate(d.date)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-mono">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 font-mono">
                           {d.start_time}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-mono">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 font-mono">
                           {d.end_time}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-amber-600">
                           {duration}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-medium">
                           {d.unit}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 max-w-xs truncate">
+                        <td className="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">
                           {d.problem}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 max-w-xs truncate">
+                        <td className="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">
                           {d.action || '-'}
                         </td>
-                        <td className="px-4 py-4 text-sm text-slate-700 max-w-xs truncate">
+                        <td className="px-4 py-3 text-sm text-slate-600 max-w-xs truncate">
                           {d.corrective_action || '-'}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">
                           <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
+                            className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               d.status === DowntimeStatus.CLOSE
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                                : 'bg-gradient-to-r from-blue-500 to-orange-500 text-white'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-amber-100 text-amber-700'
                             }`}
                           >
                             {d.status || DowntimeStatus.OPEN}
                           </span>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm">
+                        <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
                           <EnhancedButton
                             variant="ghost"
                             size="xs"
                             onClick={() => handleOpenEditDowntime(d)}
                             aria-label={`Edit downtime record for ${d.unit}`}
-                            className="hover:bg-white/50"
+                            className="hover:bg-slate-100 text-slate-500 hover:text-indigo-600"
                           >
                             <EditIcon />
                           </EnhancedButton>
@@ -450,7 +492,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={10} className="text-center py-8 text-slate-500">
+                    <td colSpan={10} className="text-center py-8 text-slate-400">
                       {t.no_downtime_for_month}
                     </td>
                   </tr>
@@ -458,62 +500,63 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               </tbody>
             </table>
           </div>
-        </div>{' '}
+        </div>
+
         {/* Risk Management Section */}
-        <div className="backdrop-blur-lg bg-gradient-to-r from-white/20 via-emerald-50/30 to-teal-50/30 border border-emerald-200/50 rounded-3xl p-8 shadow-2xl hover:shadow-emerald-200/50 transition-shadow duration-500">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
+        <div className="bg-white rounded-xl shadow-md border border-slate-200/60 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-bold text-white">{t.autonomous_risk_management}</h2>
               </div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-800 to-teal-800 bg-clip-text text-transparent">
-                {t.autonomous_risk_management}
-              </h2>
+              <EnhancedButton
+                variant="primary"
+                size="sm"
+                onClick={handleOpenAddRisk}
+                aria-label={t.add_risk_button || 'Add new risk'}
+                className="bg-white/20 hover:bg-white/30 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm"
+              >
+                <PlusIcon className="w-4 h-4 mr-2" />
+                {t.add_risk_button}
+              </EnhancedButton>
             </div>
-            <EnhancedButton
-              variant="primary"
-              size="sm"
-              onClick={handleOpenAddRisk}
-              aria-label={t.add_risk_button || 'Add new risk'}
-              className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              {t.add_risk_button}
-            </EnhancedButton>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-emerald-200/50 shadow-inner">
-            <table className="min-w-full divide-y divide-emerald-200/30">
-              <thead className="bg-gradient-to-r from-emerald-100/50 to-teal-100/50 backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.potential_disruption}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.preventive_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.mitigation_plan}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -521,45 +564,45 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-gradient-to-r from-white/30 to-emerald-50/30 backdrop-blur-sm divide-y divide-emerald-100/20">
+              <tbody className="bg-white divide-y divide-slate-100">
                 {filteredRiskRecords.map((risk) => (
-                  <tr key={risk.id} className="hover:bg-white/40 transition-colors duration-200">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
+                  <tr key={risk.id} className="hover:bg-slate-50 transition-colors duration-150">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-medium">
                       {formatDate(risk.date)}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-bold text-slate-800">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-800">
                       {risk.unit}
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-3 text-sm text-slate-600 max-w-sm">
                       {risk.potential_disruption}
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-3 text-sm text-slate-600 max-w-sm">
                       {risk.preventive_action}
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-700 max-w-sm whitespace-pre-wrap">
+                    <td className="px-4 py-3 text-sm text-slate-600 max-w-sm">
                       {risk.mitigation_plan}
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
                       <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
+                        className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           risk.status === RiskStatus.RESOLVED
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                            ? 'bg-emerald-100 text-emerald-700'
                             : risk.status === RiskStatus.IN_PROGRESS
-                              ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                              : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-amber-100 text-amber-700'
                         }`}
                       >
                         {risk.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm">
-                      <div className="flex items-center justify-end space-x-2">
+                    <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
+                      <div className="flex items-center justify-end gap-1">
                         <EnhancedButton
                           variant="ghost"
                           size="xs"
                           onClick={() => handleOpenEditRisk(risk)}
                           aria-label={`Edit risk for ${risk.unit}`}
-                          className="hover:bg-white/50"
+                          className="hover:bg-slate-100 text-slate-500 hover:text-indigo-600"
                         >
                           <EditIcon />
                         </EnhancedButton>
@@ -568,7 +611,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                           size="xs"
                           onClick={() => handleOpenDeleteRisk(risk.id)}
                           aria-label={`Delete risk for ${risk.unit}`}
-                          className="hover:bg-orange-100 text-blue-600"
+                          className="hover:bg-red-50 text-slate-500 hover:text-red-600"
                         >
                           <TrashIcon />
                         </EnhancedButton>
@@ -578,7 +621,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
                 ))}
                 {filteredRiskRecords.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-slate-500">
+                    <td colSpan={7} className="text-center py-8 text-slate-400">
                       {t.no_risks_found}
                     </td>
                   </tr>
@@ -587,6 +630,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
             </table>
           </div>
         </div>
+
         {/* Modals */}
         <Modal
           isOpen={isDowntimeModalOpen}
@@ -626,7 +670,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
               variant="warning"
               size="sm"
               onClick={handleDeleteRiskConfirm}
-              className="sm:ml-3"
+              className="sm:ml-3 bg-red-600 hover:bg-red-700"
               rounded="lg"
               elevation="sm"
               aria-label={t.confirm_delete_button || 'Confirm delete'}
@@ -652,5 +696,3 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
 };
 
 export default AutonomousDataEntryPage;
-
-

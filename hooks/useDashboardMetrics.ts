@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useOnlineUsers } from './useOnlineUsers';
 import { useUsers } from './useUsers';
 import { useProjects } from './useProjects';
-import { useCcrMaterialUsage } from './useCcrMaterialUsage';
 import useCcrDowntimeData from './useCcrDowntimeData';
 import { usePresenceTracker } from './usePresenceTracker';
 import { ProjectStatus } from '../types';
@@ -42,7 +41,6 @@ export const useDashboardMetrics = () => {
   const onlineUsersCount = useOnlineUsers(users); // Fallback
   const { onlineUsers: presenceOnlineUsers, isConnected: presenceConnected } = usePresenceTracker();
   const { projects } = useProjects();
-  const materialUsageHook = useCcrMaterialUsage();
   const downtimeHook = useCcrDowntimeData();
 
   // Calculate metrics from real data
@@ -89,93 +87,97 @@ export const useDashboardMetrics = () => {
     const activityItems: ActivityItem[] = [];
 
     try {
-      // Add recent CCR material usage activities (real operations data)
-      // Note: We'll simulate recent activities since we don't have direct access to recent records
-      // In production, you'd fetch recent records from the collections
-      const recentOperations = [
-        { unit: 'CM220', type: 'clinker', amount: 1250, time: Date.now() - 1000 * 60 * 15 },
-        { unit: 'CM320', type: 'gypsum', amount: 890, time: Date.now() - 1000 * 60 * 45 },
-        { unit: 'CM220', type: 'limestone', amount: 2100, time: Date.now() - 1000 * 60 * 120 },
-      ];
-
-      recentOperations.forEach((op, index) => {
-        activityItems.push({
-          id: `ccr-op-${index}`,
-          type: 'operation',
-          title: 'Data CCR Diperbarui',
-          description: `Material ${op.type} untuk unit ${op.unit}: ${op.amount} ton`,
-          timestamp: new Date(op.time),
-          user: 'System',
-          status: 'success',
-        });
-      });
-
-      // Add recent project activities
+      // Add recent project activities (real data from projects)
       if (projects && projects.length > 0) {
         const recentProjects = projects
-          .sort(
-            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-          )
-          .slice(0, 2);
+          .filter((project) => project.created_at || project.updated_at)
+          .sort((a, b) => {
+            const dateA = new Date(a.updated_at || a.created_at || 0).getTime();
+            const dateB = new Date(b.updated_at || b.created_at || 0).getTime();
+            return dateB - dateA;
+          })
+          .slice(0, 3);
 
         recentProjects.forEach((project) => {
+          const isNew = project.created_at === project.updated_at;
           activityItems.push({
             id: `project-${project.id}`,
             type: 'project',
-            title: 'Proyek Dibuat',
-            description: `Proyek "${project.title}" telah dibuat`,
-            timestamp: new Date(project.created_at || Date.now()),
-            user: 'System',
+            title: isNew ? 'Proyek Baru Dibuat' : 'Proyek Diperbarui',
+            description: `${project.title}${project.description ? ` - ${project.description.substring(0, 50)}...` : ''}`,
+            timestamp: new Date(project.updated_at || project.created_at || Date.now()),
+            user: 'Project Manager',
             status: 'info',
           });
         });
       }
 
-      // Add recent inspection activities (simulated downtime checks)
-      const recentInspections = [
-        { unit: 'CM220', issue: 'Maintenance rutin', time: Date.now() - 1000 * 60 * 30 },
-        { unit: 'CM320', issue: 'Inspeksi keselamatan', time: Date.now() - 1000 * 60 * 90 },
-      ];
-
-      recentInspections.forEach((insp, index) => {
-        activityItems.push({
-          id: `inspection-${index}`,
-          type: 'inspection',
-          title: 'Inspeksi Selesai',
-          description: `${insp.issue} untuk unit ${insp.unit}`,
-          timestamp: new Date(insp.time),
-          user: 'Operator',
-          status: 'success',
-        });
-      });
-
-      // Add user activity if available
+      // Add user login/activity from recent active users (real data)
       if (users && users.length > 0) {
-        const recentUsers = users
-          .filter((user) => user.is_active)
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 1);
+        const recentActiveUsers = users
+          .filter((user) => user.is_active && user.last_active)
+          .sort((a, b) => new Date(b.last_active!).getTime() - new Date(a.last_active!).getTime())
+          .slice(0, 3);
 
-        recentUsers.forEach((user) => {
+        recentActiveUsers.forEach((user) => {
+          const now = Date.now();
+          const lastActive = new Date(user.last_active!).getTime();
+          const minutesAgo = Math.floor((now - lastActive) / (1000 * 60));
+
+          // Only show if active in last hour
+          if (minutesAgo <= 60) {
+            activityItems.push({
+              id: `user-activity-${user.id}`,
+              type: 'user',
+              title: minutesAgo <= 5 ? 'Pengguna sedang Online' : 'Aktivitas Pengguna',
+              description: `${user.full_name || user.username} ${minutesAgo <= 5 ? 'aktif sekarang' : `terakhir aktif ${minutesAgo} menit yang lalu`}`,
+              timestamp: new Date(user.last_active!),
+              user: user.full_name || user.username,
+              status: minutesAgo <= 5 ? 'success' : 'info',
+            });
+          }
+        });
+      }
+
+      // Add downtime info if available using getAllDowntime()
+      const allDowntimes = downtimeHook.getAllDowntime();
+      if (allDowntimes && allDowntimes.length > 0) {
+        const recentDowntimes = allDowntimes
+          .filter((dt) => dt.date)
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(0, 3);
+
+        recentDowntimes.forEach((downtime, index) => {
+          // Calculate duration from start_time and end_time
+          let durationMinutes = 0;
+          if (downtime.start_time && downtime.end_time) {
+            const [startH, startM] = downtime.start_time.split(':').map(Number);
+            const [endH, endM] = downtime.end_time.split(':').map(Number);
+            durationMinutes = endH * 60 + endM - (startH * 60 + startM);
+            if (durationMinutes < 0) durationMinutes += 24 * 60; // Handle overnight
+          }
+
+          const hasDowntime = durationMinutes > 0;
           activityItems.push({
-            id: `user-${user.id}`,
-            type: 'user',
-            title: 'Pengguna Aktif',
-            description: `${user.full_name || user.username} sedang aktif`,
-            timestamp: new Date(user.last_active || user.created_at),
-            user: user.full_name || user.username,
-            status: 'info',
+            id: `downtime-${downtime.id || index}`,
+            type: 'inspection',
+            title: hasDowntime ? 'Downtime Tercatat' : 'Data Operasional',
+            description: `Unit: ${downtime.unit || 'N/A'}${hasDowntime ? ` - ${durationMinutes} menit` : ''} (${downtime.problem || 'N/A'})`,
+            timestamp: new Date(downtime.date),
+            user: downtime.pic || 'Operator',
+            status: durationMinutes > 30 ? 'warning' : 'success',
           });
         });
       }
 
-      // Add system status activity
+      // Add system status activity (always show current status)
+      const systemStatusTime = new Date();
       activityItems.push({
-        id: 'system-status',
+        id: `system-status-${systemStatusTime.getTime()}`,
         type: 'system',
         title: 'Sistem Operasional',
-        description: 'Semua sistem pabrik berjalan normal',
-        timestamp: new Date(),
+        description: 'Semua sistem berjalan dengan baik',
+        timestamp: systemStatusTime,
         user: 'System Monitor',
         status: 'success',
       });
@@ -188,7 +190,7 @@ export const useDashboardMetrics = () => {
     } catch {
       return [];
     }
-  }, [projects, users]);
+  }, [projects, users, downtimeHook]);
 
   // Update metrics and activities when data changes
   useEffect(() => {

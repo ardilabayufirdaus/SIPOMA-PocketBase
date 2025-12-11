@@ -114,7 +114,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
       <div className="h-full p-4 lg:p-6 xl:p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           {/* Header Section */}
           <div className="mb-8 lg:mb-12">
             <div className="text-center lg:text-left">
@@ -404,6 +404,3 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 };
 
 export default SettingsPage;
-
-
-

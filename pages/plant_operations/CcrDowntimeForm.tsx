@@ -3,7 +3,7 @@ import { CcrDowntimeData } from '../../types';
 import { usePicSettings } from '../../hooks/usePicSettings';
 
 // Import Enhanced Components
-import { EnhancedButton } from '../../components/ui/EnhancedComponents';
+import { EnhancedButton, EnhancedInput } from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
@@ -135,6 +135,22 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
     setErrors(newErrors);
   };
 
+  const handleInputChange = (name: string, value: string) => {
+    // Use HH:MM format directly for time values
+    if (name === 'start_time' || name === 'end_time') {
+      const formattedTime = value.split(':').slice(0, 2).join(':');
+      setFormData((prev) => ({ ...prev, [name]: formattedTime }));
+      if (touched[name]) {
+        validateField(name, formattedTime);
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (touched[name]) {
+        validateField(name, value);
+      }
+    }
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -255,7 +271,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   };
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
+    <div className="p-6 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/40">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Time Section */}
         <div className="space-y-4">
@@ -267,61 +283,25 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="start_time" className="block text-sm font-medium text-slate-700">
-                {t.start_time}
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="time"
-                  name="start_time"
-                  id="start_time"
-                  value={formatTimeForInput(formData.start_time)}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  required
-                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 ${
-                    isFieldInvalid('start_time')
-                      ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
-                  }`}
-                />
-                {isFieldInvalid('start_time') && (
-                  <div className="absolute -bottom-6 left-0 text-blue-600 text-xs">
-                    {errors.start_time}
-                  </div>
-                )}
-              </div>
-            </div>
+            <EnhancedInput
+              type="time"
+              label={t.start_time}
+              required
+              value={formatTimeForInput(formData.start_time)}
+              onChange={(val) => handleInputChange('start_time', val)}
+              error={isFieldInvalid('start_time') ? errors.start_time : undefined}
+              className="bg-white/50"
+            />
 
-            <div className="space-y-2">
-              <label htmlFor="end_time" className="block text-sm font-medium text-slate-700">
-                {t.end_time}
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="time"
-                  name="end_time"
-                  id="end_time"
-                  value={formatTimeForInput(formData.end_time)}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  required
-                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 ${
-                    isFieldInvalid('end_time')
-                      ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
-                  }`}
-                />
-                {isFieldInvalid('end_time') && (
-                  <div className="absolute -bottom-6 left-0 text-blue-600 text-xs">
-                    {errors.end_time}
-                  </div>
-                )}
-              </div>
-            </div>
+            <EnhancedInput
+              type="time"
+              label={t.end_time}
+              required
+              value={formatTimeForInput(formData.end_time)}
+              onChange={(val) => handleInputChange('end_time', val)}
+              error={isFieldInvalid('end_time') ? errors.end_time : undefined}
+              className="bg-white/50"
+            />
           </div>
         </div>
 
@@ -335,22 +315,15 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
-                {t.unit}
-                <span className="text-red-500 ml-1">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="unit"
-                  id="unit"
-                  value={formData.unit}
-                  readOnly
-                  className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-xl shadow-sm text-slate-900 cursor-not-allowed"
-                />
-              </div>
-            </div>
+            <EnhancedInput
+              type="text"
+              label={t.unit}
+              required
+              value={formData.unit}
+              readOnly
+              onChange={() => {}} // ReadOnly
+              className="bg-slate-100/50"
+            />
 
             <div className="space-y-2">
               <label htmlFor="pic" className="block text-sm font-medium text-slate-700">
@@ -364,10 +337,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   value={formData.pic}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none ${
+                  className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none transition-all duration-200 ${
                     isFieldInvalid('pic')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400'
                   }`}
                   disabled={picSettings.length === 0}
                 >
@@ -432,10 +405,10 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   rows={4}
                   required
                   placeholder="Describe the problem that occurred..."
-                  className={`w-full px-4 py-3 bg-white border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 resize-none ${
+                  className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 resize-none transition-all duration-200 ${
                     isFieldInvalid('problem')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-red-500 focus:border-red-500'
+                      : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400'
                   }`}
                 />
                 {isFieldInvalid('problem') && (
@@ -457,7 +430,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                 onChange={handleChange}
                 rows={4}
                 placeholder="Describe the actions taken to resolve the issue..."
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400 resize-none transition-all duration-200"
               />
             </div>
           </div>
@@ -493,6 +466,3 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
 };
 
 export default CcrDowntimeForm;
-
-
-

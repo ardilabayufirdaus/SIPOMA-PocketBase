@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import CheckBadgeIcon from './icons/CheckBadgeIcon';
-import { designSystem } from '../utils/designSystem';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 interface ToastProps {
   message: string;
@@ -23,25 +24,17 @@ const Toast: React.FC<ToastProps> = ({
   duration = 5000,
   actionButton,
 }) => {
-  const [isAnimating, setIsAnimating] = useState(false);
+  const colors = useThemeColors();
 
   useEffect(() => {
     if (isVisible) {
-      setIsAnimating(true);
       const timer = setTimeout(() => {
-        handleClose();
+        onClose();
       }, duration);
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible, duration]);
-
-  const handleClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onClose();
-    }, 300);
-  };
+  }, [isVisible, duration, onClose]);
 
   const getToastStyles = () => {
     const baseStyles =
@@ -51,31 +44,32 @@ const Toast: React.FC<ToastProps> = ({
   };
 
   const getToastColors = () => {
+    const isDark = colors.neutral[0] !== '#ffffff';
     switch (type) {
       case 'success':
         return {
-          backgroundColor: designSystem.colors.success[50] + '80',
-          borderColor: designSystem.colors.success[400],
+          backgroundColor: isDark ? colors.success[900] + '90' : colors.success[50] + '80',
+          borderColor: colors.success[400],
         };
       case 'error':
         return {
-          backgroundColor: designSystem.colors.error[50] + '80',
-          borderColor: designSystem.colors.error[400],
+          backgroundColor: isDark ? colors.error[900] + '90' : colors.error[50] + '80',
+          borderColor: colors.error[400],
         };
       case 'warning':
         return {
-          backgroundColor: designSystem.colors.warning[50] + '80',
-          borderColor: designSystem.colors.warning[400],
+          backgroundColor: isDark ? colors.warning[900] + '90' : colors.warning[50] + '80',
+          borderColor: colors.warning[400],
         };
       case 'info':
         return {
-          backgroundColor: designSystem.colors.info[50] + '80',
-          borderColor: designSystem.colors.info[400],
+          backgroundColor: isDark ? colors.info[900] + '90' : colors.info[50] + '80',
+          borderColor: colors.info[400],
         };
       default:
         return {
-          backgroundColor: designSystem.colors.gray[50],
-          borderColor: designSystem.colors.gray[400],
+          backgroundColor: isDark ? colors.neutral[800] + '90' : colors.neutral[50] + '80',
+          borderColor: colors.neutral[400],
         };
     }
   };
@@ -83,45 +77,48 @@ const Toast: React.FC<ToastProps> = ({
   const getIconColor = () => {
     switch (type) {
       case 'success':
-        return designSystem.colors.success[400];
+        return colors.success[400];
       case 'error':
-        return designSystem.colors.error[400];
+        return colors.error[400];
       case 'warning':
-        return designSystem.colors.warning[400];
+        return colors.warning[400];
       case 'info':
-        return designSystem.colors.info[400];
+        return colors.info[400];
       default:
-        return designSystem.colors.gray[400];
+        return colors.neutral[400];
     }
   };
 
   const getTextColor = () => {
+    const isDark = colors.neutral[0] !== '#ffffff';
     switch (type) {
       case 'success':
-        return designSystem.colors.success[800];
+        return isDark ? colors.success[200] : colors.success[800];
       case 'error':
-        return designSystem.colors.error[800];
+        return isDark ? colors.error[200] : colors.error[800];
       case 'warning':
-        return designSystem.colors.warning[800];
+        return isDark ? colors.warning[200] : colors.warning[800];
       case 'info':
-        return designSystem.colors.info[800];
+        return isDark ? colors.info[200] : colors.info[800];
       default:
-        return designSystem.colors.gray[800];
+        return isDark ? colors.neutral[200] : colors.neutral[800];
     }
   };
 
   if (!isVisible) return null;
 
   return (
-    <div
-      className={`${getToastStyles()} ${
-        isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-      }`}
+    <motion.div
+      className={getToastStyles()}
       style={{
         ...getToastColors(),
         borderLeft: `4px solid ${getToastColors().borderColor}`,
-        boxShadow: designSystem.shadows.lg,
+        boxShadow: 'var(--shadow-lg)',
       }}
+      initial={{ x: '100%', opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: '100%', opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
     >
       <div className="p-4">
         <div className="flex items-start">
@@ -138,26 +135,20 @@ const Toast: React.FC<ToastProps> = ({
               <button
                 className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150"
                 style={{
-                  backgroundColor:
-                    type === 'success'
-                      ? designSystem.colors.success[600]
-                      : designSystem.colors.info[600],
+                  backgroundColor: type === 'success' ? colors.success[600] : colors.info[600],
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor =
-                    type === 'success'
-                      ? designSystem.colors.success[700]
-                      : designSystem.colors.info[700];
+                    type === 'success' ? colors.success[700] : colors.info[700];
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor =
-                    type === 'success'
-                      ? designSystem.colors.success[600]
-                      : designSystem.colors.info[600];
+                    type === 'success' ? colors.success[600] : colors.info[600];
                 }}
                 onClick={actionButton.onClick}
               >
-                {actionButton.icon && <actionButton.icon className="h-4 w-4 mr-1" />}
+                {actionButton.icon &&
+                  React.createElement(actionButton.icon, { className: 'h-4 w-4 mr-1' })}
                 {actionButton.label}
               </button>
             </div>
@@ -165,14 +156,14 @@ const Toast: React.FC<ToastProps> = ({
           <div className="ml-4 flex-shrink-0 flex">
             <button
               className="inline-flex focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150"
-              style={{ color: designSystem.colors.gray[400] }}
+              style={{ color: colors.neutral[400] }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = designSystem.colors.gray[500];
+                e.currentTarget.style.color = colors.neutral[500];
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = designSystem.colors.gray[400];
+                e.currentTarget.style.color = colors.neutral[400];
               }}
-              onClick={handleClose}
+              onClick={onClose}
             >
               <span className="sr-only">Close</span>
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -186,10 +177,8 @@ const Toast: React.FC<ToastProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 export default Toast;
-
-

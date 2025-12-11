@@ -10,6 +10,7 @@ import { Page, Language } from '../App';
 import { User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useTheme } from '../contexts/ThemeContext';
 
 // Import Enhanced Components
 import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
@@ -54,6 +55,7 @@ const Header: React.FC<HeaderProps> = React.memo(
   }) => {
     const [isNotifMenuOpen, setIsNotifMenuOpen] = useState(false);
     const isMobile = useIsMobile();
+    const { theme, toggleTheme } = useTheme();
 
     // Use the new notifications hook
     const { notifications, unreadCount, settings, markAsRead, markAllAsRead, dismissNotification } =
@@ -64,19 +66,10 @@ const Header: React.FC<HeaderProps> = React.memo(
         {/* Skip Links for accessibility */}
         <SkipLinks />
 
-        <header
-          className="sticky top-0 z-50 relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white"
-          role="banner"
-          style={{
-            borderBottom: `1px solid rgba(255, 255, 255, 0.1)`,
-            boxShadow: getShadow('md'),
-          }}
-        >
-          {/* Remove gradient overlay - now using solid dark gradient */}
-
+        <header className="glass-header" role="banner">
           <div className="relative z-10 px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-20">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex items-center justify-between h-16 sm:h-20">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
                 {/* Mobile Hamburger Menu */}
                 {isMobile && onToggleSidebar && (
                   <div>
@@ -85,8 +78,8 @@ const Header: React.FC<HeaderProps> = React.memo(
                       size="sm"
                       onClick={onToggleSidebar}
                       ariaLabel="Toggle navigation menu"
-                      className="md:hidden flex-shrink-0 p-2 rounded-lg hover:bg-white/10 transition-colors border-0 min-h-[44px] min-w-[44px]"
-                      icon={<Bars3Icon className="w-5 h-5 text-white" />}
+                      className="md:hidden flex-shrink-0 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-0"
+                      icon={<Bars3Icon className="w-6 h-6 text-slate-700 dark:text-slate-200" />}
                     >
                       <span className="sr-only">Toggle navigation menu</span>
                     </EnhancedButton>
@@ -94,16 +87,21 @@ const Header: React.FC<HeaderProps> = React.memo(
                 )}
 
                 {/* Title Section */}
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-lg sm:text-xl font-bold truncate text-white">{pageTitle}</h1>
-                  <p className="text-xs sm:text-sm text-slate-300 truncate hidden sm:block">
-                    {t.header_welcome}, {currentUser?.full_name || 'Admin'}
+                <div className="min-w-0 flex flex-col justify-center">
+                  <h1 className="text-lg sm:text-xl font-display font-bold truncate text-slate-900 dark:text-white leading-tight">
+                    {pageTitle}
+                  </h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:block font-medium">
+                    {t.header_welcome},{' '}
+                    <span className="text-primary-600 dark:text-primary-400">
+                      {currentUser?.full_name || 'Admin'}
+                    </span>
                   </p>
                 </div>
               </div>
 
               {/* Right Section - Actions */}
-              <div className="flex items-center gap-4 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                 {/* Add User Button */}
                 {showAddUserButton && (
                   <div>
@@ -112,78 +110,87 @@ const Header: React.FC<HeaderProps> = React.memo(
                       size="sm"
                       onClick={onAddUser}
                       ariaLabel={t.add_user_button || 'Add new user'}
-                      icon={<PlusIcon className="w-4 h-4" />}
-                      className="hidden sm:flex bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 border-0 min-h-[44px] min-w-[44px]"
+                      icon={<PlusIcon className="w-5 h-5" />}
+                      className="hidden sm:flex bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 border-0 rounded-xl px-4 py-2"
                     >
                       {t.add_user_button}
                     </EnhancedButton>
                   </div>
                 )}
+
                 {/* Notifications */}
                 <div className="flex flex-col items-center gap-1">
-                  <div
+                  <button
                     onClick={() => setIsNotifMenuOpen(true)}
-                    className="relative cursor-pointer p-1 rounded-lg hover:bg-white/10 transition-all duration-300 group"
+                    className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
                     aria-label={`View notifications. ${
                       unreadCount > 0
                         ? `${unreadCount} unread notifications`
                         : 'No new notifications'
                     }`}
                   >
-                    <div className="relative w-10 h-10 flex items-center justify-center">
+                    <div className="relative">
                       {settings.browser ? (
-                        <BellIcon className="w-6 h-6 text-white" />
+                        <BellIcon className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
                       ) : (
-                        <BellSlashIcon className="w-6 h-6 text-slate-300" />
+                        <BellSlashIcon className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                       )}
                       {unreadCount > 0 && (
                         <span
-                          className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-red-600 text-xs font-bold text-white ring-2 ring-white animate-pulse"
+                          className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900 animate-pulse"
                           aria-label={`${unreadCount} unread`}
                         >
                           {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                       )}
                     </div>
-                  </div>
-                  <span className="text-xs text-slate-300 font-medium">Notif</span>
+                  </button>
                 </div>
-                {/* Sign Out Button */}
+
+                {/* Theme Toggle */}
                 <div className="flex flex-col items-center gap-1">
-                  <div
-                    onClick={onSignOut}
-                    className="relative cursor-pointer p-1 rounded-lg hover:bg-red-500/10 transition-all duration-300 group"
-                    aria-label="Sign out from application"
+                  <button
+                    onClick={toggleTheme}
+                    className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
                   >
-                    <div className="relative w-10 h-10 flex items-center justify-center">
-                      <div className="relative">
-                        <ArrowRightOnRectangleIcon className="w-6 h-6 text-red-500 group-hover:text-red-400 transition-colors duration-200" />
-                        {/* Subtle glow effect */}
-                        <div className="absolute inset-0 rounded-full bg-red-500 opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-200" />
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-xs text-slate-300 font-medium">
-                    {t.sign_out || 'Logout'}
-                  </span>
-                </div>
-                {/* Language Switcher */}
-                <div className="flex flex-col items-center gap-1">
-                  <div
-                    onClick={() => onLanguageChange(currentLanguage === 'en' ? 'id' : 'en')}
-                    className="relative cursor-pointer p-1 rounded-lg hover:bg-white/10 transition-all duration-300 group"
-                    aria-label={`Switch to ${currentLanguage === 'en' ? 'Indonesian' : 'English'}`}
-                  >
-                    <div className="relative w-10 h-10 flex items-center justify-center">
-                      {currentLanguage === 'en' ? (
-                        <FlagENIcon className="w-6 h-auto rounded-md" />
+                    <div className="relative">
+                      {theme === 'light' ? (
+                        <svg
+                          className="w-6 h-6 text-slate-600 hover:text-orange-500 transition-colors"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                          />
+                        </svg>
                       ) : (
-                        <FlagIDIcon className="w-6 h-auto rounded-md" />
+                        <svg
+                          className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-colors"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                          />
+                        </svg>
                       )}
                     </div>
-                  </div>
-                  <span className="text-xs text-slate-300 font-medium">Language</span>
+                  </button>
                 </div>
+
+                {/* Vertical Divider */}
+                <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block" />
+
                 {/* User Profile Dropdown */}
                 <UserMenuButton currentUser={currentUser} onNavigate={onNavigate} t={t} />
               </div>
@@ -210,6 +217,3 @@ const Header: React.FC<HeaderProps> = React.memo(
 Header.displayName = 'Header';
 
 export default Header;
-
-
-

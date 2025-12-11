@@ -113,6 +113,63 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
       return 1;
     };
 
+    // Helper function to determine color based on value vs min/max
+    const getValueColor = (
+      value: string | number | null | undefined,
+      minValue: number | undefined,
+      maxValue: number | undefined
+    ): { bgClass: string; textClass: string; borderClass: string } => {
+      // Default styling (no color)
+      const defaultStyle = {
+        bgClass: 'bg-white',
+        textClass: 'text-slate-800',
+        borderClass: 'border-slate-300',
+      };
+
+      // If no value or empty string, return default
+      if (value === null || value === undefined || value === '') {
+        return defaultStyle;
+      }
+
+      // Parse value to number
+      const numValue =
+        typeof value === 'number' ? value : parseFloat(String(value).replace(/,/g, '.'));
+
+      // If not a valid number, return default
+      if (isNaN(numValue)) {
+        return defaultStyle;
+      }
+
+      // If both min and max are undefined, return default
+      if (minValue === undefined && maxValue === undefined) {
+        return defaultStyle;
+      }
+
+      // Check if value is out of range (red)
+      const isBelowMin = minValue !== undefined && numValue < minValue;
+      const isAboveMax = maxValue !== undefined && numValue > maxValue;
+
+      if (isBelowMin || isAboveMax) {
+        return {
+          bgClass: 'bg-red-100',
+          textClass: 'text-red-800 font-semibold',
+          borderClass: 'border-red-400',
+        };
+      }
+
+      // Value is within range (green)
+      const hasMinOrMax = minValue !== undefined || maxValue !== undefined;
+      if (hasMinOrMax) {
+        return {
+          bgClass: 'bg-green-100',
+          textClass: 'text-green-800 font-semibold',
+          borderClass: 'border-green-400',
+        };
+      }
+
+      return defaultStyle;
+    };
+
     return (
       <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6 space-y-4">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
@@ -197,54 +254,101 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                     <col key={index} style={{ width: '100px' }} />
                   ))}
                 </colgroup>
-                <thead
-                  className="bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 text-white sticky top-0 z-20 shadow-lg"
-                  role="rowgroup"
-                >
-                  <tr className="border-b border-orange-300/30" role="row">
+                <thead className="sticky top-0 z-20 shadow-lg" role="rowgroup">
+                  {/* Main Header Row */}
+                  <tr
+                    className="bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600"
+                    role="row"
+                  >
                     <th
-                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-0 bg-gradient-to-r from-orange-500 to-blue-500 z-30 shadow-md"
+                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-0 bg-gradient-to-br from-slate-800 via-slate-700 to-indigo-800 z-30 shadow-lg"
                       style={{ width: '90px' }}
                       role="columnheader"
                       scope="col"
+                      rowSpan={2}
                     >
-                      {t.hour}
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-white font-semibold">{t.hour}</span>
+                      </div>
                     </th>
                     <th
-                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-24 bg-gradient-to-r from-orange-500 to-blue-500 z-30 shadow-md"
+                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-24 bg-gradient-to-br from-slate-800 via-slate-700 to-indigo-800 z-30 shadow-lg"
                       style={{ width: '140px' }}
                       role="columnheader"
                       scope="col"
+                      rowSpan={2}
                     >
-                      {t.shift}
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-white font-semibold">{t.shift}</span>
+                      </div>
                     </th>
                     <th
-                      className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-orange-300/30 sticky left-56 bg-gradient-to-r from-orange-500 to-blue-500 z-30 shadow-md"
+                      className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider border-r border-white/20 sticky left-56 bg-gradient-to-br from-slate-800 via-slate-700 to-indigo-800 z-30 shadow-lg"
                       style={{ width: '200px' }}
                       role="columnheader"
                       scope="col"
+                      rowSpan={2}
                     >
-                      {t.name}
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="text-white font-semibold">{t.name}</span>
+                      </div>
                     </th>
-                    {filteredParameterSettings.map((param) => (
+                    {filteredParameterSettings.map((param, idx) => (
                       <th
                         key={param.id}
-                        className={`px-3 py-4 text-xs font-bold border-r border-orange-300/30 text-center transition-all duration-200 ${
-                          shouldHighlightColumn(param)
-                            ? 'bg-gradient-to-b from-yellow-400/20 to-orange-500/20 ring-2 ring-yellow-400/50'
-                            : ''
+                        className={`px-3 py-2 text-xs font-bold border-r border-white/20 text-center transition-all duration-200 ${
+                          idx % 4 === 0
+                            ? 'bg-gradient-to-b from-indigo-500 to-indigo-600'
+                            : idx % 4 === 1
+                              ? 'bg-gradient-to-b from-purple-500 to-purple-600'
+                              : idx % 4 === 2
+                                ? 'bg-gradient-to-b from-violet-500 to-violet-600'
+                                : 'bg-gradient-to-b from-fuchsia-500 to-fuchsia-600'
+                        } ${
+                          shouldHighlightColumn(param) ? 'ring-2 ring-yellow-400/50 ring-inset' : ''
                         }`}
                         style={{ width: '100px', minWidth: '100px' }}
                         role="columnheader"
                         scope="col"
                       >
                         <div className="text-center">
-                          <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white">
+                          <div className="font-bold text-[9px] leading-tight uppercase tracking-wide text-white drop-shadow-sm">
                             {param.parameter}
                           </div>
-                          <div className="font-normal normal-case text-[10px] text-orange-100 mt-1 opacity-90">
+                          <div className="font-medium normal-case text-[10px] text-white/80 mt-0.5">
                             ({param.unit})
                           </div>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                  {/* Min/Max Sub-Header Row */}
+                  <tr
+                    className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700"
+                    role="row"
+                  >
+                    {filteredParameterSettings.map((param, idx) => (
+                      <th
+                        key={`minmax-${param.id}`}
+                        className={`px-2 py-1.5 text-center border-r border-white/10 ${
+                          idx % 4 === 0
+                            ? 'bg-indigo-700/80'
+                            : idx % 4 === 1
+                              ? 'bg-purple-700/80'
+                              : idx % 4 === 2
+                                ? 'bg-violet-700/80'
+                                : 'bg-fuchsia-700/80'
+                        }`}
+                        style={{ width: '100px', minWidth: '100px' }}
+                      >
+                        <div className="flex items-center justify-center gap-2 text-[9px]">
+                          <span className="text-cyan-300 font-medium">
+                            Min: {param.min_value ?? '-'}
+                          </span>
+                          <span className="text-white/40">|</span>
+                          <span className="text-amber-300 font-medium">
+                            Max: {param.max_value ?? '-'}
+                          </span>
                         </div>
                       </th>
                     ))}
@@ -349,13 +453,14 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
 
                           const isCurrentlySaving = savingParameterId === param.id;
 
+                          // Get color styling based on value vs min/max
+                          const valueColor = getValueColor(value, param.min_value, param.max_value);
+
                           return (
                             <td
                               key={param.id}
-                              className={`p-2 border-r border-slate-200/50 bg-white/60 group-hover:bg-orange-50/40 relative transition-all duration-200 ${
-                                shouldHighlightColumn(param)
-                                  ? 'ring-2 ring-yellow-400/30 bg-yellow-50/50'
-                                  : ''
+                              className={`p-2 border-r border-slate-200/50 relative transition-all duration-200 ${valueColor.bgClass} ${
+                                shouldHighlightColumn(param) ? 'ring-2 ring-yellow-400/30' : ''
                               }`}
                               style={{ width: '160px', minWidth: '160px' }}
                               role="gridcell"
@@ -401,10 +506,8 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
                                     handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                   }
                                   disabled={isCurrentlySaving}
-                                  className={`w-full text-center px-1 py-1 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-white hover:bg-slate-50 text-slate-800 transition-all duration-200 text-xs ${
-                                    isCurrentlySaving
-                                      ? 'opacity-50 cursor-not-allowed bg-slate-100'
-                                      : ''
+                                  className={`w-full text-center px-1 py-1 border rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-transparent transition-all duration-200 text-xs ${valueColor.textClass} ${valueColor.borderClass} ${
+                                    isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                   }`}
                                   style={{
                                     fontSize: '11px',
@@ -462,5 +565,3 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
 CcrParameterDataTable.displayName = 'CcrParameterDataTable';
 
 export default CcrParameterDataTable;
-
-

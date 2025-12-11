@@ -17,7 +17,7 @@ const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate
   return (
     <div className="relative flex flex-col items-center gap-1">
       <div
-        className="relative cursor-pointer p-1 rounded-full hover:bg-white/10 transition-all duration-300 group"
+        className="relative cursor-pointer p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 group ring-2 ring-transparent hover:ring-indigo-100 dark:hover:ring-slate-700"
         onClick={handleClick}
         aria-label="Open settings"
       >
@@ -25,18 +25,18 @@ const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate
           {currentUser?.avatar_url ? (
             <div className="relative w-10 h-10">
               <img
-                className="w-full h-full rounded-full object-cover transition-all duration-200"
+                className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:scale-105 shadow-sm"
                 src={currentUser.avatar_url}
                 alt="User avatar"
               />
               {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900"></div>
             </div>
           ) : (
-            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center transition-all duration-200 shadow-md group-hover:shadow-lg">
-              <UserIcon className="w-6 h-6 text-white" />
+            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center transition-all duration-300 shadow-md group-hover:shadow-lg group-hover:scale-105">
+              <UserIcon className="w-5 h-5 text-white" />
               {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
             </div>
           )}
         </div>
@@ -48,5 +48,3 @@ const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate
 };
 
 export default UserMenuButton;
-
-
