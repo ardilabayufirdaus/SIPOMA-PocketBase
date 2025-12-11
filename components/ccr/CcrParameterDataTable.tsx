@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { ParameterSetting, CcrParameterData, ParameterDataType } from '../../types';
 
 interface CcrParameterDataTableProps {
-  t: any;
+  t: Record<string, string>;
   loading: boolean;
   filteredParameterSettings: ParameterSetting[];
   parameterDataMap: Map<string, CcrParameterData>;
@@ -21,8 +21,8 @@ interface CcrParameterDataTableProps {
   formatInputValue: (value: number | string | null | undefined, precision?: number) => string;
   parseInputValue: (value: string) => number | null;
   formatStatValue: (value: number | undefined, precision?: number) => string;
-  parameterShiftFooterData: any;
-  parameterFooterData: any;
+  parameterShiftFooterData: Record<string, Record<string, number | undefined>>;
+  parameterFooterData: Record<string, Record<string, number | undefined>>;
   currentUserName?: string;
 }
 
@@ -40,9 +40,7 @@ const CcrParameterDataTable: React.FC<CcrParameterDataTableProps> = React.memo(
     shouldHighlightColumn,
     formatInputValue,
     parseInputValue,
-    formatStatValue: _formatStatValue,
-    parameterShiftFooterData: _parameterShiftFooterData,
-    parameterFooterData: _parameterFooterData,
+    // formatStatValue, parameterShiftFooterData, parameterFooterData - passed for future use
     currentUserName,
   }) => {
     // Virtual scrolling state

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React from 'react';
 import { FilterIcon, ChevronDown, RefreshCw } from 'lucide-react';
 import { EnhancedButton } from '../ui/EnhancedComponents';
 import { usePermissions } from '../../utils/permissions';
@@ -30,7 +29,6 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 }) => {
   const currentUser = useCurrentUser();
   const permissionChecker = usePermissions(currentUser.currentUser);
-  const [animatingField, setAnimatingField] = useState<string | null>(null);
 
   // Check if user has any access to plant operations
   const hasPlantOperationsAccess = permissionChecker.canAccessPlantOperations();
@@ -61,16 +59,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     .map((unit) => unit.unit);
 
   const handleFieldChange = (key: keyof DashboardFilters, value: string) => {
-    setAnimatingField(key as string);
     onFilterChange(key, value);
-    setTimeout(() => setAnimatingField(null), 300);
   };
 
   const handleReset = () => {
     if (onReset) {
-      setAnimatingField('reset');
       onReset();
-      setTimeout(() => setAnimatingField(null), 300);
     }
   };
 

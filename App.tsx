@@ -65,7 +65,7 @@ export type Theme = 'light';
 const App: React.FC = () => {
   const { language, setLanguage, t } = useTranslation();
   const isMobile = useIsMobile();
-  const { theme } = useTheme();
+  useTheme(); // Theme context is initialized
 
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
@@ -129,7 +129,7 @@ const App: React.FC = () => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then((_registration) => {
+        .then(() => {
           // Register background sync
           registerBackgroundSync();
         })

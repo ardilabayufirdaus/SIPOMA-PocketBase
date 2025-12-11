@@ -12,30 +12,20 @@ import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 // Import permissions
 import { usePermissions } from '../../utils/permissions';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 
-const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
+const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { records: plantUnits } = usePlantUnits();
 
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
 
-  // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
+  // Accessibility hooks - initializing context
 
   // Downtime State
   const { getAllDowntime, updateDowntime } = useCcrDowntimeData();
@@ -170,7 +160,7 @@ const AutonomousDataEntryPage: React.FC<{ t: any }> = ({ t }) => {
       ],
   }));
 
-  const statusColors: { [key in DowntimeStatus | RiskStatus]: string } = {
+  const _statusColors: { [key in DowntimeStatus | RiskStatus]: string } = {
     [DowntimeStatus.OPEN]: 'bg-orange-100 text-orange-800',
     [DowntimeStatus.CLOSE]: 'bg-green-100 text-green-800',
     [RiskStatus.IDENTIFIED]: 'bg-yellow-100 text-yellow-800',

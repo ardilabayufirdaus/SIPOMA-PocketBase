@@ -3,12 +3,12 @@ import { ParameterSetting } from '../../types';
 
 interface CcrTableFooterProps {
   filteredParameterSettings: ParameterSetting[];
-  parameterShiftFooterData: any;
-  parameterShiftAverageData: any;
-  parameterShiftCounterData: any;
-  parameterFooterData: any;
+  parameterShiftFooterData: Record<string, Record<string, number | undefined>>;
+  parameterShiftAverageData: Record<string, Record<string, number | undefined>>;
+  parameterShiftCounterData: Record<string, Record<string, number | undefined>>;
+  parameterFooterData: Record<string, Record<string, number | undefined>>;
   formatStatValue: (value: number) => string;
-  t: any;
+  t: Record<string, string>;
   mainTableScrollElement?: HTMLElement | null;
 }
 

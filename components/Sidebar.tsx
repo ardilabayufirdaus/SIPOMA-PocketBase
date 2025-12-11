@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Page } from '../App';
 import { useIsMobile } from '../hooks/useIsMobile';
 import HomeIcon from './icons/HomeIcon';

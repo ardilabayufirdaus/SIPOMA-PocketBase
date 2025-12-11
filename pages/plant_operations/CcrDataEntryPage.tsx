@@ -60,7 +60,6 @@ import { formatDateToISO8601, formatToWITA } from '../../utils/dateUtils';
 import {
   EnhancedButton,
   EnhancedCard,
-  EnhancedInput,
   useAccessibility,
 } from '../../components/ui/EnhancedComponents';
 
@@ -1426,7 +1425,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     downtimeRefetch,
   ]);
 
-  const formatStatValue = (value: number | undefined, _precision = 1) => {
+  const formatStatValue = (value: number | undefined) => {
     if (value === undefined || value === null) return '-';
     return formatNumber(value);
   };
@@ -2982,10 +2981,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               }
             }
           }
-        } catch {
+        } catch (err) {
           // Console statement removed for production
           errorMessages.push(
-            `Parameter Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+            `Parameter Data import failed: ${err instanceof Error ? err.message : 'Unknown error'}`
           );
         }
       } else {
@@ -2999,10 +2998,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           const savedCount = await bulkSaveParameterChanges(allParameterChanges);
           importCount += savedCount;
           // Console statement removed for production
-        } catch {
+        } catch (err) {
           // Console statement removed for production
           errorMessages.push(
-            `Bulk save failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+            `Bulk save failed: ${err instanceof Error ? err.message : 'Unknown error'}`
           );
         }
       }
@@ -3080,10 +3079,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               );
             }
           }
-        } catch {
+        } catch (err) {
           // Console statement removed for production
           errorMessages.push(
-            `Footer Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+            `Footer Data import failed: ${err instanceof Error ? err.message : 'Unknown error'}`
           );
         }
       } else {
@@ -3185,10 +3184,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   // Refresh downtime data to reflect changes
                   downtimeRefetch();
                   // Console statement removed for production
-                } catch {
+                } catch (err) {
                   // Console statement removed for production
                   errorMessages.push(
-                    `Error deleting existing downtime data: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                    `Error deleting existing downtime data: ${err instanceof Error ? err.message : 'Unknown error'}`
                   );
                 }
               }
@@ -3234,19 +3233,19 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       `Failed to save downtime data for ${row.Date}: ${result.error}`
                     );
                   }
-                } catch {
+                } catch (err) {
                   // Console statement removed for production
                   errorMessages.push(
-                    `Failed to save downtime data for ${row.Date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                    `Failed to save downtime data for ${row.Date}: ${err instanceof Error ? err.message : 'Unknown error'}`
                   );
                 }
               }
             }
           }
-        } catch {
+        } catch (err) {
           // Console statement removed for production
           errorMessages.push(
-            `Downtime Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+            `Downtime Data import failed: ${err instanceof Error ? err.message : 'Unknown error'}`
           );
         }
       } else {
@@ -3341,10 +3340,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     setAllDailySiloData(data);
                   });
                   // Console statement removed for production
-                } catch {
+                } catch (err) {
                   // Console statement removed for production
                   errorMessages.push(
-                    `Error deleting existing silo data: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                    `Error deleting existing silo data: ${err instanceof Error ? err.message : 'Unknown error'}`
                   );
                 }
               }
@@ -3401,10 +3400,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         );
                         await updateSiloData(date, siloId, 'shift1', 'content', shift1.content);
                         // Console statement removed for production
-                      } catch {
+                      } catch (err) {
                         // Console statement removed for production
                         errorMessages.push(
-                          `Failed to update silo ${siloId} shift1 for ${date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                          `Failed to update silo ${siloId} shift1 for ${date}: ${err instanceof Error ? err.message : 'Unknown error'}`
                         );
                       }
                     }
@@ -3422,10 +3421,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         // Add small delay to prevent rate limiting
                         await new Promise((resolve) => setTimeout(resolve, 50));
                         // Console statement removed for production
-                      } catch {
+                      } catch (err) {
                         // Console statement removed for production
                         errorMessages.push(
-                          `Failed to update silo ${siloId} shift2 for ${date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                          `Failed to update silo ${siloId} shift2 for ${date}: ${err instanceof Error ? err.message : 'Unknown error'}`
                         );
                       }
                     }
@@ -3443,10 +3442,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         // Add small delay to prevent rate limiting
                         await new Promise((resolve) => setTimeout(resolve, 50));
                         // Console statement removed for production
-                      } catch {
+                      } catch (err) {
                         // Console statement removed for production
                         errorMessages.push(
-                          `Failed to update silo ${siloId} shift3 for ${date}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                          `Failed to update silo ${siloId} shift3 for ${date}: ${err instanceof Error ? err.message : 'Unknown error'}`
                         );
                       }
                     }
@@ -3459,26 +3458,26 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   } else {
                     // Console statement removed for production
                   }
-                } catch {
+                } catch (err) {
                   console.error(
                     '❌ DEBUG: Failed to save silo data for',
                     row.Date,
                     'silo',
                     row.Silo_ID,
                     ':',
-                    error
+                    err
                   );
                   errorMessages.push(
-                    `Failed to save silo data for ${row.Date} silo ${row.Silo_ID}: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+                    `Failed to save silo data for ${row.Date} silo ${row.Silo_ID}: ${err instanceof Error ? err.message : 'Unknown error'}`
                   );
                 }
               }
             }
           }
-        } catch {
+        } catch (err) {
           // Console statement removed for production
           errorMessages.push(
-            `Silo Data import failed: ${(error as any) instanceof Error ? (error as any).message : 'Unknown error'}`
+            `Silo Data import failed: ${err instanceof Error ? err.message : 'Unknown error'}`
           );
         }
       } else {

@@ -1,5 +1,4 @@
 import React from 'react';
-import { getColor, getBorderRadius } from '../utils/designTokens';
 import { useThemeColors } from '../hooks/useThemeColors';
 
 interface LoadingSkeletonProps {

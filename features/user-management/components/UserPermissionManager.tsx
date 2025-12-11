@@ -150,22 +150,17 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
       return;
     }
 
-    try {
-      console.log('💾 handleSavePermissions called');
-      // Import the correct save function from userPermissionManager
-      const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
+    console.log('💾 handleSavePermissions called');
+    // Import the correct save function from userPermissionManager
+    const { saveUserPermissions } = await import('../../../utils/userPermissionManager');
 
-      // Save the pending permissions using the same API as other components
-      await saveUserPermissions(selectedUser.id, pendingPermissions, 'system');
-      console.log('💾 Permissions saved successfully, calling fetchUsers');
+    // Save the pending permissions using the same API as other components
+    await saveUserPermissions(selectedUser.id, pendingPermissions, 'system');
+    console.log('💾 Permissions saved successfully, calling fetchUsers');
 
-      // Refresh users to get updated permissions
-      await fetchUsers();
-      console.log('💾 fetchUsers completed');
-    } catch (error) {
-      // Re-throw so PermissionMatrixEditor can handle the error
-      throw error;
-    }
+    // Refresh users to get updated permissions
+    await fetchUsers();
+    console.log('💾 fetchUsers completed');
   };
 
   const handleResetToDefault = async () => {
@@ -344,5 +339,3 @@ const UserPermissionManager: React.FC<UserPermissionManagerProps> = ({ language 
 };
 
 export default UserPermissionManager;
-
-

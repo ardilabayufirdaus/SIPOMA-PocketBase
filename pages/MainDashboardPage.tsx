@@ -345,7 +345,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
   const permissionChecker = usePermissions(currentUser);
 
   // Get dashboard metrics and activities
-  const { metrics, activities, loading: _loading } = useDashboardMetrics();
+  const { metrics, activities } = useDashboardMetrics();
 
   // Get users data for fallback online users list
   const { users } = useUsers();
@@ -361,12 +361,12 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
         id: presenceUser.id,
         username: presenceUser.username,
         full_name: presenceUser.full_name,
-        role: presenceUser.role as any,
+        role: presenceUser.role as User['role'],
         is_active: true,
         created_at: '',
         updated_at: '',
         last_active: presenceUser.last_seen.toISOString(),
-        permissions: {} as any,
+        permissions: {} as PermissionMatrix,
       }));
     }
 

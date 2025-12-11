@@ -1,25 +1,20 @@
 import React, { useState } from 'react';
 import { AlertSeverity } from '../hooks/useNotifications';
-import { useNotifications } from '../hooks/useNotifications';
-import { createDemoNotifications, clearDemoNotifications } from '../utils/demoNotifications';
-import PlusIcon from './icons/PlusIcon';
-import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 import { EnhancedButton, useAccessibility } from './ui/EnhancedComponents';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useNotificationStore } from '../stores/notificationStore';
 
 interface NotificationCreatorProps {
-  t: any;
+  t: Record<string, string>;
   isOpen?: boolean;
   onClose?: () => void;
 }
 
 const NotificationCreator: React.FC<NotificationCreatorProps> = ({
-  t,
   isOpen: externalIsOpen,
   onClose,
 }) => {
-  const { announceToScreenReader } = useAccessibility();
+  useAccessibility(); // Initialize accessibility context
   const { currentUser } = useCurrentUser();
   const { broadcastNotification } = useNotificationStore();
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -29,7 +24,7 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
     'system' | 'maintenance' | 'production' | 'user' | 'security'
   >('system');
 
-  const { createNotification } = useNotifications();
+  // Note: createNotification is available from useNotifications if needed
 
   // Use external control if provided, otherwise use internal state
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
@@ -217,7 +212,11 @@ const NotificationCreator: React.FC<NotificationCreatorProps> = ({
             <div className="relative">
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
+                onChange={(e) =>
+                  setCategory(
+                    e.target.value as 'system' | 'maintenance' | 'production' | 'user' | 'security'
+                  )
+                }
                 className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all duration-200 hover:border-slate-300 cursor-pointer font-medium"
               >
                 {categoryOptions.map((option) => (

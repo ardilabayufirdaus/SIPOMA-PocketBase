@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import PlusIcon from './icons/PlusIcon';
-import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
 import Bars3Icon from './icons/Bars3Icon';
 import BellIcon from './icons/BellIcon';
 import BellSlashIcon from './icons/BellSlashIcon';
-import FlagENIcon from './icons/FlagENIcon';
-import FlagIDIcon from './icons/FlagIDIcon';
 import { Page, Language } from '../App';
 import { User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
@@ -14,9 +11,6 @@ import { useTheme } from '../contexts/ThemeContext';
 
 // Import Enhanced Components
 import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
-
-// Import design tokens
-import { getShadow } from '../utils/designTokens';
 
 // Import micro-interactions hook
 // import { useMicroInteraction } from '../hooks/useMicroInteractions'; // Commented out for now
@@ -47,11 +41,9 @@ const Header: React.FC<HeaderProps> = React.memo(
     onAddUser,
     t,
     onNavigate,
-    onSignOut,
+    // onSignOut, currentLanguage, onLanguageChange are used by parent but not directly in this component
     currentUser,
     onToggleSidebar,
-    currentLanguage,
-    onLanguageChange,
   }) => {
     const [isNotifMenuOpen, setIsNotifMenuOpen] = useState(false);
     const isMobile = useIsMobile();

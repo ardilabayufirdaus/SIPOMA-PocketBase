@@ -6,7 +6,7 @@ import CcrDataFilters from './CcrDataFilters';
 import CcrDataActions from './CcrDataActions';
 
 interface CcrDataEntryContainerProps {
-  t: any;
+  t: Record<string, string>;
   selectedDate: string;
   plantUnit: string;
   onDateChange: (date: string) => void;
@@ -44,7 +44,7 @@ export const CcrDataEntryContainer: React.FC<CcrDataEntryContainerProps> = ({
         if (e.data.success) {
           // Process and save the data
           const { parameterData, footerData, downtimeData, siloData } = e.data.data;
-          const importCount = 0;
+
           const errors: string[] = [];
 
           try {
