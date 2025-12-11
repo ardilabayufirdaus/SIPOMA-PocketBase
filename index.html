@@ -178,31 +178,45 @@
         }
       }
 
-      /* Enhanced loading spinner */
+      /* Enhanced loading spinner - Indigo/Slate Theme */
       .modern-spinner {
-        width: 40px;
-        height: 40px;
-        background: conic-gradient(from 0deg, transparent, #ef4444);
+        width: 48px;
+        height: 48px;
+        background: conic-gradient(from 0deg, transparent 0%, #6366f1 25%, #4f46e5 50%, #818cf8 75%, transparent 100%);
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         position: relative;
+        box-shadow: 0 0 24px rgba(99, 102, 241, 0.3);
       }
 
       .modern-spinner::before {
         content: '';
         position: absolute;
-        top: 4px;
-        left: 4px;
-        right: 4px;
-        bottom: 4px;
-        background: inherit;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         border-radius: 50%;
-        filter: blur(8px);
+      }
+
+      html.dark .modern-spinner::before {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
       }
 
       @keyframes spin {
         to {
           transform: rotate(360deg);
+        }
+      }
+
+      /* Loading pulse animation */
+      @keyframes pulse-glow {
+        0%, 100% {
+          box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 40px rgba(99, 102, 241, 0.5);
         }
       }
     </style>

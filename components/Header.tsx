@@ -3,6 +3,7 @@ import PlusIcon from './icons/PlusIcon';
 import Bars3Icon from './icons/Bars3Icon';
 import BellIcon from './icons/BellIcon';
 import BellSlashIcon from './icons/BellSlashIcon';
+import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
 import { Page, Language } from '../App';
 import { User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
@@ -41,7 +42,7 @@ const Header: React.FC<HeaderProps> = React.memo(
     onAddUser,
     t,
     onNavigate,
-    // onSignOut, currentLanguage, onLanguageChange are used by parent but not directly in this component
+    onSignOut,
     currentUser,
     onToggleSidebar,
   }) => {
@@ -176,6 +177,20 @@ const Header: React.FC<HeaderProps> = React.memo(
                           />
                         </svg>
                       )}
+                    </div>
+                  </button>
+                </div>
+
+                {/* Sign Out Button */}
+                <div className="flex flex-col items-center gap-1">
+                  <button
+                    onClick={onSignOut}
+                    className="relative p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-red-500"
+                    aria-label={t.header_sign_out || 'Sign Out'}
+                    title={t.header_sign_out || 'Sign Out'}
+                  >
+                    <div className="relative">
+                      <ArrowRightOnRectangleIcon className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
                     </div>
                   </button>
                 </div>

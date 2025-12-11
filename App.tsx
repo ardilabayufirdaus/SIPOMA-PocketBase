@@ -260,12 +260,66 @@ const App: React.FC = () => {
     (currentUserLoading && !localStorage.getItem('currentUser'))
   ) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="modern-spinner mx-auto mb-6"></div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-slate-700">Memuat SIPOMA</h2>
-            <p className="text-sm text-slate-500">Mohon tunggu sebentar...</p>
+      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-800">
+        {/* Background pattern */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-400/5 rounded-full blur-3xl animate-pulse" />
+          <div
+            className="absolute -bottom-40 -left-40 w-80 h-80 bg-slate-500/10 dark:bg-slate-400/5 rounded-full blur-3xl animate-pulse"
+            style={{ animationDelay: '1s' }}
+          />
+        </div>
+
+        <div className="relative z-10 text-center">
+          {/* Logo Container */}
+          <div className="relative mb-8">
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-400 dark:to-indigo-500 shadow-xl shadow-indigo-500/30 flex items-center justify-center animate-pulse">
+              <svg
+                className="w-10 h-10 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                />
+              </svg>
+            </div>
+            {/* Spinner ring around logo */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="w-28 h-28 rounded-full border-2 border-transparent border-t-indigo-500 border-r-indigo-300 dark:border-t-indigo-400 dark:border-r-indigo-600 animate-spin"
+                style={{ animationDuration: '1.5s' }}
+              />
+            </div>
+          </div>
+
+          {/* Text Content */}
+          <div className="space-y-3">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-slate-700 to-indigo-600 dark:from-indigo-400 dark:via-slate-200 dark:to-indigo-400 bg-clip-text text-transparent">
+              SIPOMA
+            </h2>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Memuat sistem...
+            </p>
+            {/* Loading dots */}
+            <div className="flex justify-center gap-1.5 pt-2">
+              <span
+                className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce"
+                style={{ animationDelay: '0ms' }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce"
+                style={{ animationDelay: '150ms' }}
+              />
+              <span
+                className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce"
+                style={{ animationDelay: '300ms' }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -492,11 +546,13 @@ const App: React.FC = () => {
         onClose={handleSignOutCancel}
         title={t.confirm_sign_out_title}
       >
-        <div className="p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center">
+        <div className="p-6">
+          {/* Icon and Title Section */}
+          <div className="flex flex-col items-center text-center mb-6">
+            {/* Logout Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-slate-100 dark:from-indigo-900/50 dark:to-slate-800 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/10">
               <svg
-                className="w-6 h-6 text-blue-600"
+                className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -505,42 +561,57 @@ const App: React.FC = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
             </div>
-            <div>
-              <h4 className="text-lg font-semibold text-slate-800">Konfirmasi Keluar</h4>
-              <p className="text-slate-600">{t.confirm_sign_out_message}</p>
 
-              {/* Info tentang data yang akan dihapus */}
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium text-blue-800">
-                    Akan menghapus cookies & site data untuk localhost dan sipoma.site
-                  </span>
-                </div>
+            {/* Title */}
+            <h4 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+              {t.confirm_sign_out_title || 'Konfirmasi Keluar'}
+            </h4>
+            <p className="text-slate-500 dark:text-slate-400">{t.confirm_sign_out_message}</p>
+          </div>
+
+          {/* Info Box */}
+          <div className="p-4 bg-gradient-to-r from-indigo-50 to-slate-50 dark:from-indigo-950/30 dark:to-slate-900/50 border border-indigo-200/50 dark:border-indigo-800/50 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-indigo-600 dark:text-indigo-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-indigo-900 dark:text-indigo-200">
+                  Data yang akan dihapus
+                </p>
+                <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mt-1">
+                  Cookies & site data untuk localhost dan sipoma.site
+                </p>
               </div>
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-slate-50/50 to-white/50 backdrop-blur-sm px-8 py-6 flex justify-end gap-4 border-t border-white/10">
+
+        {/* Footer Buttons */}
+        <div className="bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-800/50 dark:to-indigo-950/30 px-6 py-4 flex justify-end gap-3 border-t border-slate-200/50 dark:border-slate-700/50">
           <button
             onClick={handleSignOutCancel}
-            className="px-6 py-2.5 text-sm font-semibold text-slate-700 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-xl shadow-sm hover:bg-white/90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 hover:scale-[1.02]"
+            className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
           >
             {t.cancel_button}
           </button>
           <button
             onClick={handleSignOutConfirm}
-            className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-xl shadow-lg shadow-red-600/25 hover:shadow-red-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-all duration-200 hover:scale-[1.02]"
+            className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all duration-200"
           >
             {t.header_sign_out}
           </button>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { EnhancedButton } from '../components/ui/EnhancedComponents';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, AlertCircle } from 'lucide-react';
 import EyeIcon from '../components/icons/EyeIcon';
 import EyeSlashIcon from '../components/icons/EyeSlashIcon';
 import { motion } from 'framer-motion';
@@ -70,125 +70,176 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <>
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-slate-100 to-slate-300">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="w-full max-w-md p-8 bg-white rounded-2xl shadow-2xl flex flex-col items-center glass-card"
-        >
-          <div className="mb-6 flex flex-col items-center">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
+        <div
+          className="absolute bottom-0 -right-40 w-96 h-96 bg-slate-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-3xl" />
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+        className="relative z-10 w-full max-w-md mx-4"
+      >
+        {/* Card */}
+        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-2xl shadow-indigo-500/10 overflow-hidden">
+          {/* Header Section with gradient */}
+          <div className="bg-gradient-to-br from-indigo-600/20 to-slate-800/50 px-8 pt-10 pb-8 text-center relative">
+            {/* Top decorative line */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent rounded-full" />
+
+            {/* Logo */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5, type: 'spring', stiffness: 200 }}
-              className="p-2 rounded-2xl bg-white/95 shadow-lg border border-white/30 mb-2"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.2, duration: 0.6, type: 'spring', stiffness: 150 }}
+              className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-xl shadow-indigo-500/30 mb-5"
             >
-              <img src="/sipoma-logo.png" alt="SIPOMA Logo" className="h-14 w-14 object-contain" />
+              <img
+                src="/sipoma-logo.png"
+                alt="SIPOMA Logo"
+                className="h-12 w-12 object-contain filter brightness-0 invert"
+              />
             </motion.div>
+
+            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-4xl font-extrabold text-blue-600 tracking-wide mb-1"
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-3xl font-bold bg-gradient-to-r from-white via-indigo-200 to-white bg-clip-text text-transparent mb-2"
             >
               SIPOMA
             </motion.h1>
-            <motion.span
+            <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.5 }}
-              className="text-base text-slate-500"
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-sm text-slate-300/80"
             >
               {t.login_subtitle}
-            </motion.span>
+            </motion.p>
           </div>
-          <form onSubmit={handleLogin} className="w-full">
-            <div className="mb-4 relative">
-              <label htmlFor="identifier" className="block mb-2 text-sm font-medium text-slate-700">
-                {t.login_username_label}
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input
-                  type="text"
-                  id="identifier"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  required
-                  autoComplete="username"
-                  className="w-full pl-10 pr-3 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400"
-                />
-              </div>
-            </div>
-            <div className="mb-6 relative">
-              <label htmlFor="password" className="block mb-2 text-sm font-medium text-slate-700">
-                {t.login_password_label}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleLogin();
-                    }
-                  }}
-                  required
-                  autoComplete="current-password"
-                  className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 hover:border-slate-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 hover:text-slate-600 cursor-pointer bg-transparent border-none p-0"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+
+          {/* Form Section */}
+          <div className="px-8 py-8">
+            <form onSubmit={handleLogin} className="space-y-5">
+              {/* Username Field */}
+              <div>
+                <label
+                  htmlFor="identifier"
+                  className="block mb-2 text-sm font-medium text-slate-300"
                 >
-                  {showPassword ? (
-                    <EyeSlashIcon className="w-5 h-5" />
-                  ) : (
-                    <EyeIcon className="w-5 h-5" />
-                  )}
-                </button>
+                  {t.login_username_label}
+                </label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
+                  <input
+                    type="text"
+                    id="identifier"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
+                    required
+                    autoComplete="username"
+                    placeholder="Masukkan username"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-slate-400 transition-all duration-200"
+                    style={{ color: '#1e293b' }}
+                  />
+                </div>
               </div>
-            </div>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="mb-4 text-blue-600 text-sm text-center"
-                role="alert"
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block mb-2 text-sm font-medium text-slate-300">
+                  {t.login_password_label}
+                </label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleLogin();
+                      }
+                    }}
+                    required
+                    autoComplete="current-password"
+                    placeholder="Masukkan password"
+                    className="w-full pl-12 pr-12 py-3.5 bg-white border border-slate-300 rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-slate-400 transition-all duration-200"
+                    style={{ color: '#1e293b' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-indigo-400 transition-colors bg-transparent border-none p-0 cursor-pointer"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl"
+                  role="alert"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <span className="text-sm text-red-300">{error}</span>
+                </motion.div>
+              )}
+
+              {/* Submit Button */}
+              <EnhancedButton
+                type="submit"
+                loading={isSubmitting || loading}
+                disabled={isSubmitting || loading}
+                fullWidth
+                size="lg"
+                className="!bg-gradient-to-r !from-indigo-600 !to-indigo-700 hover:!from-indigo-500 hover:!to-indigo-600 !border-0 !shadow-lg !shadow-indigo-500/25 hover:!shadow-indigo-500/40 !rounded-xl !py-4 !text-base !font-semibold transition-all duration-300"
               >
-                {error}
-              </motion.div>
-            )}
-            <EnhancedButton
-              type="submit"
-              loading={isSubmitting || loading}
-              disabled={isSubmitting || loading}
-              fullWidth
-              size="lg"
-              className="font-semibold text-lg shadow"
-            >
-              {isSubmitting || loading ? t.login_logging_in : t.sign_in}
-            </EnhancedButton>
-          </form>
-          <div className="mt-8 text-xs text-slate-400 text-center animate-fadein-footer">
-            &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
+                {isSubmitting || loading ? t.login_logging_in : t.sign_in}
+              </EnhancedButton>
+            </form>
           </div>
-        </motion.div>
-      </div>
-    </>
+
+          {/* Footer */}
+          <div className="px-8 py-5 bg-white/5 border-t border-white/10">
+            <p className="text-xs text-slate-400/70 text-center">
+              &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
+            </p>
+          </div>
+        </div>
+
+        {/* Version Badge */}
+        <div className="mt-4 text-center">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-400">
+            v2.0 • Secure Login
+          </span>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
 export default LoginPage;
-
-
-
