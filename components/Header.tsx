@@ -9,6 +9,7 @@ import { User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useTheme } from '../contexts/ThemeContext';
+import './Header.css';
 
 // Import Enhanced Components
 import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
@@ -115,12 +116,13 @@ const Header: React.FC<HeaderProps> = React.memo(
                 <div className="flex flex-col items-center gap-1">
                   <button
                     onClick={() => setIsNotifMenuOpen(true)}
-                    className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="header-icon-btn relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
                     aria-label={`View notifications. ${
                       unreadCount > 0
                         ? `${unreadCount} unread notifications`
                         : 'No new notifications'
                     }`}
+                    data-tooltip={t.header_notifications || 'Notifications'}
                   >
                     <div className="relative">
                       {settings.browser ? (
@@ -144,8 +146,13 @@ const Header: React.FC<HeaderProps> = React.memo(
                 <div className="flex flex-col items-center gap-1">
                   <button
                     onClick={toggleTheme}
-                    className="relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="header-icon-btn relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
                     aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                    data-tooltip={
+                      theme === 'light'
+                        ? t.header_dark_mode || 'Dark Mode'
+                        : t.header_light_mode || 'Light Mode'
+                    }
                   >
                     <div className="relative">
                       {theme === 'light' ? (
@@ -185,9 +192,9 @@ const Header: React.FC<HeaderProps> = React.memo(
                 <div className="flex flex-col items-center gap-1">
                   <button
                     onClick={onSignOut}
-                    className="relative p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="header-icon-btn relative p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-red-500"
                     aria-label={t.header_sign_out || 'Sign Out'}
-                    title={t.header_sign_out || 'Sign Out'}
+                    data-tooltip={t.header_sign_out || 'Sign Out'}
                   >
                     <div className="relative">
                       <ArrowRightOnRectangleIcon className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />

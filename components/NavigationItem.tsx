@@ -155,7 +155,7 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
 
         {showTooltip && (
           <div
-            className="fixed z-50 px-3 py-1.5 bg-slate-900 text-white text-xs font-medium rounded-lg shadow-xl border border-white/10 pointer-events-none whitespace-nowrap backdrop-blur-sm"
+            className="fixed z-50 px-3 py-1.5 text-white font-medium rounded-lg shadow-xl border border-white/10 pointer-events-none whitespace-nowrap backdrop-blur-sm"
             style={{
               top: `${getTooltipPosition().top}px`,
               left: `${getTooltipPosition().left}px`,
@@ -163,6 +163,9 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
                 tooltipPosition === 'right' || tooltipPosition === 'left'
                   ? 'translateY(-50%)'
                   : 'translateX(-50%) translateY(-100%)',
+              background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+              fontSize: '12px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
             }}
           >
             {label}

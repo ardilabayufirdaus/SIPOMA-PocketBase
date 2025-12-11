@@ -14,31 +14,21 @@ export const useOnlineUsers = (users: User[]) => {
       const activeUsers = users.filter((u) => u.is_active);
 
       // Calculate actual online users based on last_active
+      // Only count users who are truly active within the threshold time
       const realOnlineUsers = users.filter((user) => {
         if (!user.is_active) return false;
+        if (!user.last_active) return false;
 
         const lastActive = new Date(user.last_active);
+        // Validate date is valid
+        if (isNaN(lastActive.getTime())) return false;
+
         return lastActive >= thresholdTime;
       });
 
-      // For demo purposes, simulate online users with some realistic variation
-      let onlineCount = realOnlineUsers.length;
-
-      if (onlineCount === 0 && activeUsers.length > 0) {
-        // If no real online users, simulate some based on active users
-        // Typically 40-80% of active users might be online at any given time
-        const baseOnlineRatio = 0.6; // 60% base
-        const variation = 0.2; // ±20% variation
-        const randomFactor = Math.random() * variation * 2 - variation; // -0.2 to +0.2
-        const finalRatio = Math.max(0.2, Math.min(0.9, baseOnlineRatio + randomFactor));
-
-        onlineCount = Math.max(1, Math.floor(activeUsers.length * finalRatio));
-      }
-
-      // Ensure online count doesn't exceed active users
-      onlineCount = Math.min(onlineCount, activeUsers.length);
-
-      setOnlineUsersCount(onlineCount);
+      // No simulation - only show real online users count
+      // This ensures accurate data on the dashboard
+      setOnlineUsersCount(realOnlineUsers.length);
     };
 
     // Calculate initially

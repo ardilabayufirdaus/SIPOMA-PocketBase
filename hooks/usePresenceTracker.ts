@@ -58,6 +58,10 @@ export const usePresenceTracker = () => {
     }
   }, [updatePresence]);
 
+  // Threshold for considering a user as online (in milliseconds)
+  // User must have heartbeat within last 2 minutes to be considered online
+  const ONLINE_THRESHOLD_MS = 2 * 60 * 1000;
+
   // Fetch current online users
   const fetchOnlineUsers = useCallback(async () => {
     try {
@@ -69,16 +73,32 @@ export const usePresenceTracker = () => {
 
       // Get user details for each presence record
       const onlineUsersData: PresenceUser[] = [];
+      const now = Date.now();
 
       for (const presence of presenceRecords) {
         try {
+          // Validate last_seen is within the threshold
+          const lastSeen = new Date(presence.last_seen || 0);
+          const timeSinceLastSeen = now - lastSeen.getTime();
+
+          // Skip users who haven't been seen recently (stale presence data)
+          if (timeSinceLastSeen > ONLINE_THRESHOLD_MS) {
+            // Mark as offline since they haven't been active
+            try {
+              await pb.collection('user_presence').update(presence.id, { is_online: false });
+            } catch {
+              // Ignore update errors
+            }
+            continue;
+          }
+
           const userRecord = await pb.collection('users').getOne(presence.user_id);
           onlineUsersData.push({
             id: userRecord.id,
             username: userRecord.username,
             full_name: userRecord.name,
             role: userRecord.role,
-            last_seen: new Date(presence.last_seen || Date.now()),
+            last_seen: lastSeen,
             is_online: true,
           });
         } catch {
