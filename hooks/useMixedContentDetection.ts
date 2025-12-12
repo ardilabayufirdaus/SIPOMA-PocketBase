@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
  * - Determines if the site is being accessed over HTTPS and trying to load HTTP resources
  * - Tests connection to backend server to check for mixed content blocking
  * - Returns state variables indicating if there's a mixed content issue
+ *
+ * NOTE: Since backend is now HTTPS (api.sipoma.site via Caddy), mixed content
+ * issues should not occur. This hook now returns false by default for sipoma.site.
  */
 export const useMixedContentDetection = () => {
   const [hasMixedContentIssue, setHasMixedContentIssue] = useState(false);
@@ -20,7 +23,6 @@ export const useMixedContentDetection = () => {
       // Check if we're on a Vercel deployment or sipoma.site
       const isVercel = hostname.includes('vercel.app') || hostname.includes('sipoma.site');
       setIsVercelDeployment(isVercel);
-
       setIsHttps(protocol === 'https:');
 
       // If not using HTTPS, we won't have mixed content issues
@@ -29,59 +31,53 @@ export const useMixedContentDetection = () => {
         return;
       }
 
-      // For sipoma.site with HTTPS, check if backend is also HTTPS
-      // Don't assume mixed content - actually test the connection
-      if (isVercel && protocol === 'https:') {
-        // We'll let the checkForMixedContent function below handle this
-        // It will test the actual connection
+      // For sipoma.site with HTTPS - backend is now also HTTPS
+      // So we can safely assume no mixed content issues
+      if (hostname.includes('sipoma.site')) {
+        // Backend api.sipoma.site is served via HTTPS through Caddy
+        // No mixed content issues should occur
+        setHasMixedContentIssue(false);
+        setCheckedStatus(true);
+        return;
       }
+
+      // For other deployments, do actual check
+      const checkForMixedContent = async () => {
+        try {
+          const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
+          const url =
+            backendUrl.startsWith('http') || backendUrl.startsWith('/')
+              ? backendUrl
+              : `https://${backendUrl}`;
+
+          // Check if the backend URL is HTTP (which would cause mixed content on HTTPS site)
+          if (url.startsWith('http://') && protocol === 'https:') {
+            setHasMixedContentIssue(true);
+            setCheckedStatus(true);
+            return;
+          }
+
+          // Backend is HTTPS, no mixed content issue
+          setHasMixedContentIssue(false);
+          setCheckedStatus(true);
+        } catch {
+          // Even if check fails, don't assume mixed content - backend is HTTPS
+          setHasMixedContentIssue(false);
+          setCheckedStatus(true);
+        }
+      };
+
+      checkForMixedContent();
     } else {
       // Not in browser environment
+      setCheckedStatus(true);
       return;
     }
 
-    // Check for mixed content issues by attempting a connection to PocketBase
-    const checkForMixedContent = async () => {
-      try {
-        // Get backend URL - always use direct HTTPS connection
-        const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
-        const url =
-          backendUrl.startsWith('http') || backendUrl.startsWith('/')
-            ? backendUrl
-            : `https://${backendUrl}`;
-
-        await fetch(`${url}/api/health`, {
-          method: 'GET',
-          mode: 'no-cors', // This allows the request to be sent but we can't read the response
-          signal: AbortSignal.timeout(5000),
-        });
-
-        // If we're on HTTPS and the above HTTP request succeeded without error,
-        // it means the browser is allowing mixed content, so we have no issue
-        setHasMixedContentIssue(false);
-        setCheckedStatus(true);
-      } catch (error) {
-        // Check if the error is related to mixed content
-        const errorString = String(error);
-        const isMixedContentError =
-          errorString.includes('Mixed Content') ||
-          errorString.includes('blocked:mixed-content') ||
-          // Chrome sometimes just blocks the request with a network error
-          (isHttps &&
-            (errorString.includes('NetworkError') || errorString.includes('Failed to fetch')));
-
-        if (isMixedContentError) {
-          setHasMixedContentIssue(true);
-        }
-        setCheckedStatus(true);
-      }
-    };
-
-    checkForMixedContent();
-
     // Listen for protocol change events from the connection monitor
     const handleProtocolChange = (event: CustomEvent) => {
-      if (event.detail?.protocol === 'http' && isHttps) {
+      // Only set mixed content if actually switching to HTTP backend
+      if (event.detail?.protocol === 'http' && event.detail?.forced) {
         setHasMixedContentIssue(true);
       }
     };
@@ -94,7 +90,7 @@ export const useMixedContentDetection = () => {
         handleProtocolChange as EventListener
       );
     };
-  }, [isHttps]);
+  }, []);
 
   return {
     hasMixedContentIssue,
