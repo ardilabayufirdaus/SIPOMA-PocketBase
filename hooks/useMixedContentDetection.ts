@@ -17,23 +17,23 @@ export const useMixedContentDetection = () => {
       const protocol = window.location.protocol;
       const hostname = window.location.hostname;
 
-      // Check if we're on a Vercel deployment
+      // Check if we're on a Vercel deployment or sipoma.site
       const isVercel = hostname.includes('vercel.app') || hostname.includes('sipoma.site');
       setIsVercelDeployment(isVercel);
 
       setIsHttps(protocol === 'https:');
 
-      // Auto-detect mixed content issue on Vercel HTTPS deployments
-      if (isVercel && protocol === 'https:') {
-        setHasMixedContentIssue(true);
+      // If not using HTTPS, we won't have mixed content issues
+      if (protocol !== 'https:') {
         setCheckedStatus(true);
         return;
       }
 
-      if (protocol !== 'https:') {
-        // Not using HTTPS, so we won't have mixed content issues
-        setCheckedStatus(true);
-        return;
+      // For sipoma.site with HTTPS, check if backend is also HTTPS
+      // Don't assume mixed content - actually test the connection
+      if (isVercel && protocol === 'https:') {
+        // We'll let the checkForMixedContent function below handle this
+        // It will test the actual connection
       }
     } else {
       // Not in browser environment
