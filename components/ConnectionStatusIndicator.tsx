@@ -92,8 +92,9 @@ const ConnectionStatusIndicator: React.FC = () => {
     (window.location.hostname.includes('vercel.app') ||
       window.location.hostname.includes('sipoma.site'));
 
-  // Show a more prominent indicator for Vercel deployments
-  if (isVercel && isHttps) {
+  // Only show prominent indicator if there's actually a mixed content issue detected
+  // Previously this would always show for isVercel && isHttps, which was incorrect
+  if (isVercel && isHttps && hasMixedContentIssue) {
     return (
       <div
         style={{
@@ -195,5 +196,3 @@ const ConnectionStatusIndicator: React.FC = () => {
 };
 
 export default ConnectionStatusIndicator;
-
-
