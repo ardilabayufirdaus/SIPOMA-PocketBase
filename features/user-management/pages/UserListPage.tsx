@@ -92,16 +92,16 @@ const UserListPage: React.FC = () => {
     className?: string;
   }) => (
     <EnhancedCard
-      className={`p-6 hover:shadow-lg transition-all duration-200 ${isLoading ? 'opacity-75' : ''} ${className}`}
+      className={`p-5 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 ${isLoading ? 'opacity-75' : ''} ${className}`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{title}</p>
           <div className="min-h-[36px] flex items-center">
             {isLoading ? (
-              <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1"></div>
+              <div className="animate-pulse h-8 w-16 bg-slate-200 rounded mt-1"></div>
             ) : (
-              <p className="text-3xl font-bold text-gray-900 mt-1">
+              <p className="text-3xl font-bold text-slate-800 mt-1">
                 {typeof value === 'number' ? formatIndonesianNumber(value) : value}
               </p>
             )}
@@ -109,9 +109,9 @@ const UserListPage: React.FC = () => {
           {subtitle && (
             <div className="min-h-[16px]">
               {isLoading ? (
-                <div className="animate-pulse h-4 w-24 bg-gray-200 rounded mt-1"></div>
+                <div className="animate-pulse h-4 w-24 bg-slate-200 rounded mt-1"></div>
               ) : (
-                <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
+                <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
               )}
             </div>
           )}
@@ -120,25 +120,33 @@ const UserListPage: React.FC = () => {
           {children}
         </div>
         <div
-          className={`p-3 rounded-full ${
+          className={`p-3 rounded-xl ${
             color === 'primary'
-              ? 'bg-blue-100'
+              ? 'bg-gradient-to-br from-indigo-100 to-indigo-200/80'
               : color === 'success'
-                ? 'bg-green-100'
+                ? 'bg-gradient-to-br from-emerald-100 to-emerald-200/80'
                 : color === 'warning'
-                  ? 'bg-yellow-100'
-                  : 'bg-orange-100'
+                  ? 'bg-gradient-to-br from-amber-100 to-amber-200/80'
+                  : color === 'secondary'
+                    ? 'bg-gradient-to-br from-violet-100 to-violet-200/80'
+                    : color === 'error'
+                      ? 'bg-gradient-to-br from-rose-100 to-rose-200/80'
+                      : 'bg-gradient-to-br from-slate-100 to-slate-200/80'
           }`}
         >
           <Icon
             className={`w-6 h-6 ${
               color === 'primary'
-                ? 'text-blue-600'
+                ? 'text-indigo-600'
                 : color === 'success'
-                  ? 'text-green-600'
+                  ? 'text-emerald-600'
                   : color === 'warning'
-                    ? 'text-yellow-600'
-                    : 'text-blue-600'
+                    ? 'text-amber-600'
+                    : color === 'secondary'
+                      ? 'text-violet-600'
+                      : color === 'error'
+                        ? 'text-rose-600'
+                        : 'text-slate-600'
             }`}
           />
         </div>
@@ -148,23 +156,33 @@ const UserListPage: React.FC = () => {
 
   return (
     <div className="space-y-8 w-full">
-      {/* Page Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:p-8">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-              {t.userManagement || 'User Management'}
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl">
-              {t.user_list_description ||
-                'Manage and view all users in the system. Control access, permissions, and user status efficiently.'}
-            </p>
+      {/* Page Header - Indigo/Slate Gradient Theme */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6 lg:p-8">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
+        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+
+        <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+              <UserGroupIcon className="w-7 h-7 text-indigo-200" />
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold text-white tracking-tight">
+                {t.userManagement || 'User Management'}
+              </h1>
+              <p className="text-sm text-indigo-200/80 font-medium max-w-2xl">
+                {t.user_list_description ||
+                  'Manage and view all users in the system. Control access, permissions, and user status efficiently.'}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-sm text-gray-500">Last updated</div>
-              <div className="font-semibold text-gray-900">
+            <div className="text-right bg-white/5 backdrop-blur-sm rounded-lg px-4 py-2 border border-white/10">
+              <div className="text-xs text-indigo-200/70">Last updated</div>
+              <div className="font-semibold text-white text-sm">
                 {new Date().toLocaleDateString('id-ID', {
                   weekday: 'long',
                   year: 'numeric',
@@ -178,37 +196,25 @@ const UserListPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDefaultPermissions(true)}
-                className="flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
+                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all"
               >
                 <CogIcon className="w-5 h-5" />
                 Default Permissions
               </EnhancedButton>
             )}
-            <EnhancedButton
-              variant="secondary"
-              size="sm"
-              onClick={refreshStats}
-              disabled={isLoadingStats}
-              className="flex items-center gap-2 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <ArrowPathRoundedSquareIcon
-                className={`w-5 h-5 ${isLoadingStats ? 'animate-spin' : ''}`}
-              />
-              Refresh Stats
-            </EnhancedButton>
           </div>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <StatCard
           title={t.total_users_title}
           value={isLoadingStats ? '...' : stats.total}
           icon={UserGroupIcon}
           color="primary"
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
+          className="bg-gradient-to-br from-slate-50 to-indigo-50/50 border border-slate-200/80"
         />
 
         <StatCard
@@ -222,7 +228,7 @@ const UserListPage: React.FC = () => {
               : `${stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}% of total`
           }
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-green-50 to-green-100 border-green-200"
+          className="bg-gradient-to-br from-emerald-50/80 to-emerald-100/50 border border-emerald-200/60"
         />
 
         <StatCard
@@ -238,16 +244,16 @@ const UserListPage: React.FC = () => {
                 }% of total`
           }
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200"
+          className="bg-gradient-to-br from-amber-50/80 to-amber-100/50 border border-amber-200/60"
         />
 
         <StatCard
           title={t.administrators_title}
           value={isLoadingStats ? '...' : stats.admins}
           icon={ShieldCheckIcon}
-          color="warning"
+          color="primary"
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200"
+          className="bg-gradient-to-br from-indigo-50/80 to-indigo-100/50 border border-indigo-200/60"
         />
 
         <StatCard
@@ -256,7 +262,7 @@ const UserListPage: React.FC = () => {
           icon={ShieldCheckIcon}
           color="error"
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-blue-50 to-blue-100 border-red-200"
+          className="bg-gradient-to-br from-violet-50/80 to-violet-100/50 border border-violet-200/60"
         />
 
         <StatCard
@@ -266,7 +272,7 @@ const UserListPage: React.FC = () => {
           color="secondary"
           subtitle={t.recent_users_subtitle}
           isLoading={isLoadingStats}
-          className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
+          className="bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-200/80"
         >
           {!isLoadingStats && stats.recentUsers && stats.recentUsers.length > 0 && (
             <div className="mt-4">
@@ -284,14 +290,14 @@ const UserListPage: React.FC = () => {
                         className="h-full w-full object-cover rounded-full"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600 text-white text-xs font-semibold rounded-full">
+                      <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-semibold rounded-full">
                         {user.username.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
                 ))}
                 {stats.recentUsers.length > 5 && (
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600">
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
                     +{stats.recentUsers.length - 5}
                   </div>
                 )}
@@ -328,5 +334,3 @@ const UserListPage: React.FC = () => {
 };
 
 export default UserListPage;
-
-

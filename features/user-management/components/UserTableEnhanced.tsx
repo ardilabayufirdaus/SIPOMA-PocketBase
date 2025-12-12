@@ -372,12 +372,12 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
   return (
     <div className="space-y-6">
       {/* Header with Search and Add Button */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white/80 backdrop-blur-md p-5 rounded-xl shadow-md border border-slate-200/60">
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-            {t.user_list || 'Users'}
+          <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+            {t.user_list || 'Users List'}
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-500">
             {totalUsers} {totalUsers === 1 ? 'user' : 'users'} total
           </p>
         </div>
@@ -393,7 +393,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             />
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
-                className="h-4 w-4 text-gray-400"
+                className="h-4 w-4 text-slate-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -411,7 +411,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[160px] shadow-sm"
+            className="px-4 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-800 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 min-w-[160px] shadow-sm transition-all duration-200 hover:border-slate-300 cursor-pointer"
           >
             <option value="all">All Roles</option>
             <option value="Super Admin">Super Admin</option>
@@ -428,7 +428,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
             onClick={onAddUser}
             icon={<PlusIcon className="w-4 h-4" />}
             size="sm"
-            className="shadow-sm hover:shadow-md transition-shadow"
+            className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all"
           >
             {t.add_user_button || 'Add User'}
           </EnhancedButton>
@@ -437,17 +437,19 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
       {/* Bulk Actions */}
       {showBulkActions && (
-        <EnhancedCard className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
+        <EnhancedCard className="bg-gradient-to-r from-indigo-50/80 to-violet-50/50 border-indigo-200/60 shadow-md">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <CheckIcon className="w-4 h-4 text-blue-600" />
+              <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                <CheckIcon className="w-4 h-4 text-indigo-600" />
               </div>
               <div>
-                <span className="font-semibold text-blue-800">
+                <span className="font-semibold text-indigo-800">
                   {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
                 </span>
-                <p className="text-sm text-blue-600">Choose an action to apply to selected users</p>
+                <p className="text-sm text-indigo-600">
+                  Choose an action to apply to selected users
+                </p>
               </div>
             </div>
 
@@ -457,7 +459,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 size="sm"
                 onClick={() => handleBulkToggleActive(true)}
                 icon={<CheckIcon className="w-4 h-4" />}
-                className="border-green-300 text-green-700 hover:bg-green-50"
+                className="border-emerald-300 text-emerald-700 hover:bg-emerald-50"
               >
                 Activate
               </EnhancedButton>
@@ -467,7 +469,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 size="sm"
                 onClick={() => handleBulkToggleActive(false)}
                 icon={<XCircleIcon className="w-4 h-4" />}
-                className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                className="border-amber-300 text-amber-700 hover:bg-amber-50"
               >
                 Deactivate
               </EnhancedButton>
@@ -489,7 +491,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   setSelectedUsers(new Set());
                   setShowBulkActions(false);
                 }}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-slate-600 hover:text-slate-800"
               >
                 Cancel
               </EnhancedButton>
@@ -499,10 +501,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
       )}
 
       {/* Table */}
-      <EnhancedCard className="overflow-hidden shadow-sm border border-gray-100">
+      <EnhancedCard className="overflow-hidden shadow-md border border-slate-200/60">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-gradient-to-r from-slate-50 via-indigo-50/30 to-slate-50">
               <tr>
                 <th className="px-6 py-4 text-left">
                   <input
@@ -511,12 +513,12 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                       selectedUsers.size === displayedUsers.length && displayedUsers.length > 0
                     }
                     onChange={handleSelectAll}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm"
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 shadow-sm"
                   />
                 </th>
 
                 <th
-                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
+                  className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-indigo-100/50 transition-colors"
                   onClick={() => handleSort('username')}
                 >
                   <div className="flex items-center gap-2">
@@ -526,7 +528,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
+                  className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-indigo-100/50 transition-colors"
                   onClick={() => handleSort('full_name')}
                 >
                   <div className="flex items-center gap-2">
@@ -536,7 +538,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
+                  className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-indigo-100/50 transition-colors"
                   onClick={() => handleSort('role')}
                 >
                   <div className="flex items-center gap-2">
@@ -546,7 +548,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                 </th>
 
                 <th
-                  className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
+                  className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-indigo-100/50 transition-colors"
                   onClick={() => handleSort('is_active')}
                 >
                   <div className="flex items-center gap-2">
@@ -555,25 +557,25 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   </div>
                 </th>
 
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   {t.permissions || 'Permissions'}
                 </th>
 
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   {t.actions || 'Actions'}
                 </th>
               </tr>
             </thead>
 
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-slate-100">
               {displayedUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-blue-50/30 transition-colors duration-150">
+                <tr key={user.id} className="hover:bg-indigo-50/30 transition-colors duration-150">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="checkbox"
                       checked={selectedUsers.has(user.id)}
                       onChange={() => handleSelectUser(user.id)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 shadow-sm"
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 shadow-sm"
                     />
                   </td>
 
@@ -582,12 +584,12 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                       <div className="flex-shrink-0">
                         {user.avatar_url ? (
                           <img
-                            className="h-10 w-10 rounded-full object-cover ring-2 ring-gray-200"
+                            className="h-10 w-10 rounded-full object-cover ring-2 ring-slate-200"
                             src={user.avatar_url}
                             alt={user.username}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center ring-2 ring-gray-200">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center ring-2 ring-slate-200">
                             <span className="text-white font-semibold text-sm">
                               {user.username.charAt(0).toUpperCase()}
                             </span>
@@ -595,10 +597,10 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold text-gray-900 truncate">
+                        <div className="text-sm font-semibold text-slate-800 truncate">
                           {user.username}
                         </div>
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-slate-500 truncate">
                           ID: {user.id.slice(0, 8)}...
                         </div>
                       </div>
@@ -606,8 +608,8 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-medium">
-                      {user.full_name || <span className="text-gray-400 italic">Not set</span>}
+                    <div className="text-sm text-slate-800 font-medium">
+                      {user.full_name || <span className="text-slate-400 italic">Not set</span>}
                     </div>
                   </td>
 
@@ -631,16 +633,16 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-xs">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800 max-w-xs">
                     <div
-                      className="group flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                      className="group flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2 rounded-lg transition-colors"
                       title={getPermissionsSummary(user.permissions)}
                       onClick={() => handleViewPermissions(user)}
                     >
                       <span className="truncate text-sm">
                         {getPermissionsSummary(user.permissions)}
                       </span>
-                      <EyeIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
+                      <EyeIcon className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 flex-shrink-0" />
                     </div>
                   </td>
 
@@ -651,7 +653,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         size="sm"
                         onClick={() => onEditUser(user)}
                         icon={<EditIcon className="w-4 h-4" />}
-                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1"
+                        className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-2 py-1"
                       />
 
                       <EnhancedButton
@@ -675,8 +677,8 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         }
                         className={`px-2 py-1 ${
                           user.is_active
-                            ? 'text-blue-600 hover:text-orange-800 hover:bg-red-50'
-                            : 'text-green-600 hover:text-green-800 hover:bg-green-50'
+                            ? 'text-amber-600 hover:text-amber-800 hover:bg-amber-50'
+                            : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50'
                         }`}
                       />
 
@@ -685,7 +687,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                         size="sm"
                         onClick={() => handleDeleteUser(user.id)}
                         icon={<TrashIcon className="w-4 h-4" />}
-                        className="text-blue-600 hover:text-orange-800 hover:bg-red-50 px-2 py-1"
+                        className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1"
                       />
                     </div>
                   </td>
@@ -698,13 +700,13 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
         {/* Empty State */}
         {displayedUsers.length === 0 && (
           <div className="text-center py-16 px-6">
-            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
-              <UserIcon className="w-10 h-10 text-gray-400" />
+            <div className="mx-auto w-24 h-24 bg-gradient-to-br from-slate-100 to-indigo-100 rounded-full flex items-center justify-center mb-6">
+              <UserIcon className="w-10 h-10 text-indigo-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-slate-800 mb-2">
               {debouncedSearchTerm || roleFilter !== 'all' ? 'No users found' : 'No users yet'}
             </h3>
-            <p className="text-sm text-gray-600 mb-8 max-w-sm mx-auto">
+            <p className="text-sm text-slate-500 mb-8 max-w-sm mx-auto">
               {debouncedSearchTerm || roleFilter !== 'all'
                 ? "Try adjusting your search terms or filters to find what you're looking for."
                 : 'Get started by adding your first user to the system.'}
@@ -715,7 +717,7 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
                   variant="primary"
                   onClick={onAddUser}
                   icon={<PlusIcon className="w-5 h-5" />}
-                  className="shadow-lg hover:shadow-xl transition-shadow"
+                  className="bg-gradient-to-r from-indigo-600 to-indigo-700 shadow-lg hover:shadow-xl transition-all"
                 >
                   {t.add_user_button || 'Add User'}
                 </EnhancedButton>
@@ -726,18 +728,18 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-t border-gray-200">
+          <div className="bg-gradient-to-r from-slate-50 via-indigo-50/30 to-slate-50 px-6 py-4 border-t border-slate-200">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-gray-700 font-medium">
+              <div className="text-sm text-slate-600 font-medium">
                 Showing{' '}
-                <span className="text-gray-900 font-semibold">
+                <span className="text-slate-800 font-semibold">
                   {(currentPage - 1) * itemsPerPage + 1}
                 </span>{' '}
                 to{' '}
-                <span className="text-gray-900 font-semibold">
+                <span className="text-slate-800 font-semibold">
                   {Math.min(currentPage * itemsPerPage, totalUsers)}
                 </span>{' '}
-                of <span className="text-gray-900 font-semibold">{totalUsers}</span> users
+                of <span className="text-slate-800 font-semibold">{totalUsers}</span> users
               </div>
 
               <div className="flex items-center gap-2">
@@ -873,5 +875,3 @@ const UserTable: React.FC<UserTableProps> = ({ onEditUser, onAddUser, language =
 };
 
 export default UserTable;
-
-

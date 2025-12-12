@@ -395,12 +395,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           ? 'Pantau dan kelola operasi pabrik semen'
           : 'Monitor and manage cement plant operations',
       icon: (
-        <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -419,12 +414,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
       description:
         language === 'id' ? 'Kelola proyek dan tugas tim' : 'Manage projects and team tasks',
       icon: (
-        <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -445,12 +435,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           ? 'Kelola pengguna dan izin akses'
           : 'Manage users and access permissions',
       icon: (
-        <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -469,12 +454,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
       description:
         language === 'id' ? 'Lakukan inspeksi dan laporan' : 'Perform inspections and reports',
       icon: (
-        <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -495,12 +475,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ onNavigate, t }) 
           ? 'Konfigurasi aplikasi dan preferensi'
           : 'Configure app settings and preferences',
       icon: (
-        <svg
-          className="w-6 h-6 text-slate-700 dark:text-slate-300"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

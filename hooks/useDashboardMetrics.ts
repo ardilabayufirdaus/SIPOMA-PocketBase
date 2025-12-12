@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useOnlineUsers } from './useOnlineUsers';
 import { useUsers } from './useUsers';
 import { useProjects } from './useProjects';
@@ -25,16 +25,8 @@ export interface ActivityItem {
 }
 
 export const useDashboardMetrics = () => {
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
-    activeOperations: 0,
-    activeProjects: 0,
-    onlineUsers: 0,
-    todaysInspections: 0,
-    systemStatus: 'active',
-  });
-
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   // Get data from existing hooks
   const { users } = useUsers();
@@ -42,6 +34,10 @@ export const useDashboardMetrics = () => {
   const { onlineUsers: presenceOnlineUsers, isConnected: presenceConnected } = usePresenceTracker();
   const { projects } = useProjects();
   const downtimeHook = useCcrDowntimeData();
+
+  // Store getAllDowntime function reference to avoid dependency issues
+  const getAllDowntimeRef = useRef(downtimeHook.getAllDowntime);
+  getAllDowntimeRef.current = downtimeHook.getAllDowntime;
 
   // Calculate metrics from real data
   const calculatedMetrics = useMemo(() => {
@@ -140,7 +136,7 @@ export const useDashboardMetrics = () => {
       }
 
       // Add downtime info if available using getAllDowntime()
-      const allDowntimes = downtimeHook.getAllDowntime();
+      const allDowntimes = getAllDowntimeRef.current();
       if (allDowntimes && allDowntimes.length > 0) {
         const recentDowntimes = allDowntimes
           .filter((dt) => dt.date)
@@ -190,22 +186,26 @@ export const useDashboardMetrics = () => {
     } catch {
       return [];
     }
-  }, [projects, users, downtimeHook]);
+    // Note: We intentionally exclude getAllDowntimeRef from dependencies
+    // as it's a stable ref that updates synchronously
+  }, [projects, users]);
 
-  // Update metrics and activities when data changes
+  // Set loading to false once data is available
   useEffect(() => {
-    setMetrics(calculatedMetrics);
-    setActivities(generatedActivities);
-    setLoading(false);
-  }, [calculatedMetrics, generatedActivities]);
+    if (!initializedRef.current && (projects || users)) {
+      initializedRef.current = true;
+      setLoading(false);
+    }
+  }, [projects, users]);
 
   return {
-    metrics,
-    activities,
+    metrics: calculatedMetrics,
+    activities: generatedActivities,
     loading,
-    refetch: () => {
-      // Trigger refetch by updating dependencies
+    refetch: useCallback(() => {
+      // Trigger refetch by resetting state
+      initializedRef.current = false;
       setLoading(true);
-    },
+    }, []),
   };
 };
