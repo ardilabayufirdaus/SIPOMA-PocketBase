@@ -30,10 +30,10 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMobile, onClose,
           </div>
           {isExpanded && (
             <div className="flex flex-col justify-center">
-              <span className="font-display font-bold text-xl tracking-tight text-white whitespace-nowrap leading-none">
+              <span className="font-display font-bold text-lg tracking-tight text-white whitespace-nowrap leading-none">
                 SIPOMA
               </span>
-              <span className="text-[9px] text-indigo-200 mt-0.5 font-medium tracking-wide">
+              <span className="text-[10px] text-indigo-200 mt-0.5 font-medium tracking-wide leading-tight">
                 Dept. Clinker & Cement Prod.
               </span>
             </div>

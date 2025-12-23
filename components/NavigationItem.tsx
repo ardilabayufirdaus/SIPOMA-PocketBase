@@ -126,7 +126,7 @@ export const NavigationItem = React.forwardRef<HTMLButtonElement, IconButtonProp
           {isSidebarExpanded && (
             <div className="flex-1 flex items-center justify-between overflow-hidden relative z-10">
               <span
-                className={`font-medium whitespace-nowrap truncate text-[15px] tracking-wide ${
+                className={`font-medium text-sm leading-tight tracking-wide ${
                   isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
                 }`}
               >
@@ -270,7 +270,7 @@ export const FloatingDropdown: React.FC<FloatingDropdownProps> = ({
             <div className="flex-shrink-0 w-5 h-5 text-slate-400 group-hover:text-primary-400 transition-colors duration-200">
               {item.icon}
             </div>
-            <span className="text-sm text-slate-300 group-hover:text-white font-medium truncate transition-colors duration-200">
+            <span className="text-sm text-slate-300 group-hover:text-white font-medium leading-tight transition-colors duration-200">
               {item.label}
             </span>
           </button>

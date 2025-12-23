@@ -58,6 +58,9 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 // Import drag and drop
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
+// Import AI Assistant
+import { AiOperationsAssistant } from '../../components/ai/AiOperationsAssistant';
+
 // Utility functions for better maintainability
 const formatCopNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) {
@@ -3777,6 +3780,19 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </Card>
         )}
+
+        {/* AI Operations Assistant */}
+        <div className="mb-6">
+          <AiOperationsAssistant
+            analysisData={analysisData}
+            isLoading={isLoading}
+            selectedUnit={selectedUnit}
+            moistureData={Array.from(monthlyMoistureData.entries())
+              .map(([date, value]) => ({ date, value }))
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+          />
+        </div>
+
         <Card
           variant="glass"
           padding="lg"
