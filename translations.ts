@@ -791,6 +791,7 @@ export const translations = {
 
     // Plant Operations Dropdown & Page
     op_dashboard: 'Dashboard',
+    op_people_champion: 'People Champion',
     op_optimized_dashboard: 'Optimized Dashboard',
     op_report: 'Report',
     op_wag_report: 'WhatsApp Group Report',
@@ -1970,6 +1971,7 @@ export const translations = {
 
     // Plant Operations Dropdown & Page
     op_dashboard: 'Dasbor',
+    op_people_champion: 'People Champion',
     op_optimized_dashboard: 'Dasbor Teroptimasi',
     op_report: 'Laporan',
     op_wag_report: 'Laporan WhatsApp Group',
