@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { PresentationChartLineIcon } from '@heroicons/react/24/outline';
-import { motion } from 'framer-motion';
+
 import FilterSection, { DashboardFilters } from '../../components/plant-operations/FilterSection';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
 import MoistureContentTable from './components/MoistureContentTable';
+import ProductionCapacityTable from './components/ProductionCapacityTable';
+import MonthlyCapacityTable from './components/MonthlyCapacityTable';
 
 interface MonitoringPageProps {
   t: Record<string, string>;
@@ -19,6 +21,7 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
     plantUnit: '',
     date: today,
     searchQuery: '',
+    viewMode: 'daily', // Default to daily
   });
 
   const handleFilterChange = (key: keyof DashboardFilters, value: string) => {
@@ -32,8 +35,11 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
       plantUnit: '',
       date: today,
       searchQuery: '',
+      viewMode: 'daily',
     });
   };
+
+  const isMonthlyView = filters.viewMode === 'monthly';
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
@@ -72,8 +78,15 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
 
         {/* Content */}
         {filters.plantUnit ? (
-          <div className="w-full">
-            <MoistureContentTable filters={filters} plantUnit={filters.plantUnit} />
+          <div className="w-full space-y-8">
+            {isMonthlyView ? (
+              <MonthlyCapacityTable filters={filters} plantUnit={filters.plantUnit} />
+            ) : (
+              <>
+                <ProductionCapacityTable filters={filters} plantUnit={filters.plantUnit} />
+                <MoistureContentTable filters={filters} plantUnit={filters.plantUnit} />
+              </>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-md border border-slate-200/60 p-8">
@@ -109,6 +122,12 @@ const MonitoringPage: React.FC<MonitoringPageProps> = ({ t }) => {
                     <span className="font-medium text-slate-700">Date:</span>
                     <span className="px-2 py-0.5 bg-white rounded border border-slate-200">
                       {filters.date}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-slate-700">View:</span>
+                    <span className="px-2 py-0.5 bg-white rounded border border-slate-200 uppercase text-xs">
+                      {filters.viewMode || 'DAILY'}
                     </span>
                   </div>
                 </div>

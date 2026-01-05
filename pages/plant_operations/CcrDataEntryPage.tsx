@@ -110,12 +110,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [, setToastMessage] = useState<string | null>(null);
 
   // Function to show toast message for 3 seconds
-  const showToast = (message: string) => {
+  // Function to show toast message for 3 seconds
+  const showToast = useCallback((message: string) => {
     setToastMessage(message);
     setTimeout(() => {
       setToastMessage(null);
     }, 3000);
-  };
+  }, []);
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
@@ -186,7 +187,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const footerSaveInProgress = useRef(false);
 
   const { users } = useUsers();
-  const currentUser = users[0] || { full_name: 'Operator' };
+  // Memoize currentUser to prevent unnecessary re-renders
+  const currentUser = useMemo(() => users[0] || { full_name: 'Operator' }, [users]);
 
   // Filter state and options from Plant Units master data
   const { records: plantUnits } = usePlantUnits();
@@ -270,7 +272,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       showToast(t.failed_to_fetch_profiles);
       setProfiles([]);
     }
-  }, []);
+  }, [t.failed_to_fetch_profiles, showToast]);
 
   // Save profile
   const saveProfile = useCallback(async () => {
@@ -308,6 +310,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     selectedUnit,
     fetchProfiles,
     showToast,
+    t.profile_saved_successfully,
+    t.failed_to_save_profile,
   ]);
 
   // Load profiles on mount
@@ -451,7 +455,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         }
       }
     },
-    [selectedDate, selectedUnit, getSiloDataForDate, siloMasterData, selectedCategory]
+    [
+      selectedDate,
+      selectedUnit,
+      getSiloDataForDate,
+      siloMasterData,
+      selectedCategory,
+      showToast,
+      t.error_fetching_parameter_data,
+    ]
   );
 
   useEffect(() => {
@@ -473,7 +485,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     }, 5000);
 
     return () => clearInterval(pollInterval);
-  }, [selectedDate, selectedCategory, selectedUnit]);
+  }, [selectedDate, selectedCategory, selectedUnit, fetchSiloData]);
 
   // Parameter Data Hooks and Filtering
   const { records: parameterSettings } = useParameterSettings();
@@ -1174,6 +1186,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     parameterSettings,
     getFooterDataForDate,
     saveMaterialUsageSilent,
+    fetchParameterData,
   ]);
 
   // Auto-save footer data when it changes - immediate save for data integrity
@@ -2305,22 +2318,23 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }
 
   // Information change handler with debounced auto-save
-  const saveInformationWithDebounce = useCallback(
-    createDebounce(async (value: string) => {
-      if (!selectedDate || !selectedUnit || isSavingInformation) return;
+  const saveInformationWithDebounce = useMemo(
+    () =>
+      createDebounce(async (value: string) => {
+        if (!selectedDate || !selectedUnit || isSavingInformation) return;
 
-      try {
-        await saveInformation({
-          date: selectedDate,
-          plantUnit: selectedUnit,
-          information: value,
-        });
-        // setHasUnsavedInformationChanges(false);
-      } catch {
-        // Error logging removed for production
-        // Silently fail without showing a toast for auto-save
-      }
-    }, 3000), // 3 second debounce
+        try {
+          await saveInformation({
+            date: selectedDate,
+            plantUnit: selectedUnit,
+            information: value,
+          });
+          // setHasUnsavedInformationChanges(false);
+        } catch {
+          // Error logging removed for production
+          // Silently fail without showing a toast for auto-save
+        }
+      }, 3000), // 3 second debounce
     [selectedDate, selectedUnit, saveInformation, isSavingInformation]
   );
 
@@ -2604,43 +2618,161 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       // Export Silo Data
       if (siloData && siloData.length > 0) {
-        const worksheetSilo = workbook.addWorksheet('Silo Data');
+        // Filter silo data by selected unit
+        // First check if 'plant_unit' field exists in data (newer schema)
+        // If not, rely on the fact that existing siloData query might not be unit-specific enough or check expand data
 
-        // Add headers
-        const siloHeaders = [
-          'Date',
-          'Silo_Name',
-          'Shift1_EmptySpace',
-          'Shift1_Content',
-          'Shift2_EmptySpace',
-          'Shift2_Content',
-          'Shift3_EmptySpace',
-          'Shift3_Content',
-        ];
-        worksheetSilo.addRow(siloHeaders);
+        const filteredSiloData = siloData.filter((row) => {
+          // Check explicit unit field if available
+          if (row.plant_unit && row.plant_unit === selectedUnit) return true;
 
-        // Transform silo data to export format and add rows
-        const siloExportData = siloData.map((row) => {
-          // Get silo name from expanded relation or fallback to lookup
-          const siloName =
-            row.expand?.silo_id?.silo_name ||
-            siloCapacities.find((s) => s.id === row.silo_id)?.silo_name ||
-            row.silo_id;
+          // Check expanded relation
+          if (row.expand?.silo_id?.unit === selectedUnit) return true;
 
-          return [
-            row.date,
-            siloName,
-            row.shift1_empty_space ?? '',
-            row.shift1_content ?? '',
-            row.shift2_empty_space ?? '',
-            row.shift2_content ?? '',
-            row.shift3_empty_space ?? '',
-            row.shift3_content ?? '',
-          ];
+          // Check fallback to master data
+          const masterSilo = siloCapacities.find((s) => s.id === row.silo_id);
+          if (masterSilo && masterSilo.unit === selectedUnit) return true;
+
+          // If no unit info found but we are filtering by unit, be conservative or check if legacy data
+          // For now, if no unit info is found on the record, we assume it matches if we filtered the Fetch query correctly
+          // But since the Fetch query above was `filter: date="${selectedDate}"`, it fetched all units.
+          // So we MUST filter here.
+          return false;
         });
 
-        // Add data rows
-        siloExportData.forEach((row) => worksheetSilo.addRow(row));
+        if (filteredSiloData.length > 0) {
+          const worksheetSilo = workbook.addWorksheet('Silo Data');
+
+          // Add headers
+          const siloHeaders = [
+            'Date',
+            'Silo_Name',
+            'Shift1_EmptySpace',
+            'Shift1_Content',
+            'Shift2_EmptySpace',
+            'Shift2_Content',
+            'Shift3_EmptySpace',
+            'Shift3_Content',
+          ];
+          worksheetSilo.addRow(siloHeaders);
+
+          // Transform silo data to export format and add rows
+          const siloExportData = filteredSiloData.map((row) => {
+            // Get silo name from expanded relation or fallback to lookup
+            const siloName =
+              row.expand?.silo_id?.silo_name ||
+              siloCapacities.find((s) => s.id === row.silo_id)?.silo_name ||
+              row.silo_id;
+
+            return [
+              row.date,
+              siloName,
+              row.shift1_empty_space ?? '',
+              row.shift1_content ?? '',
+              row.shift2_empty_space ?? '',
+              row.shift2_content ?? '',
+              row.shift3_empty_space ?? '',
+              row.shift3_content ?? '',
+            ];
+          });
+
+          // Add data rows
+          siloExportData.forEach((row) => worksheetSilo.addRow(row));
+        }
+      }
+
+      // Export Material Usage Data
+      console.log('Fetching material usage data...');
+      const materialUsageData = await pb
+        .collection('ccr_material_usage')
+        .getFullList({
+          filter: `date="${selectedDate}" && plant_unit="${selectedUnit}"`,
+          sort: 'created',
+        })
+        .catch((error) => {
+          console.error('Error fetching material usage data:', error);
+          return [];
+        });
+
+      if (materialUsageData && materialUsageData.length > 0) {
+        const worksheetMaterial = workbook.addWorksheet('Material Usage');
+
+        // Add headers
+        const materialHeaders = [
+          'Date',
+          'Unit',
+          'Shift',
+          'Clinker',
+          'Gypsum',
+          'Limestone',
+          'Trass',
+          'Fly Ash',
+          'Fine Trass',
+          'CKD',
+          'Total Production',
+        ];
+        worksheetMaterial.addRow(materialHeaders);
+
+        // Transform data
+        const materialExportData = materialUsageData.map((row) => [
+          row.date,
+          row.plant_unit,
+          row.shift,
+          row.clinker || 0,
+          row.gypsum || 0,
+          row.limestone || 0,
+          row.trass || 0,
+          row.fly_ash || 0,
+          row.fine_trass || 0,
+          row.ckd || 0,
+          row.total_production || 0,
+        ]);
+
+        // Add rows
+        materialExportData.forEach((row) => worksheetMaterial.addRow(row));
+
+        // Calculate Totals
+        const totalRow = {
+          clinker: 0,
+          gypsum: 0,
+          limestone: 0,
+          trass: 0,
+          fly_ash: 0,
+          fine_trass: 0,
+          ckd: 0,
+          total_production: 0,
+        };
+
+        materialUsageData.forEach((row) => {
+          totalRow.clinker += row.clinker || 0;
+          totalRow.gypsum += row.gypsum || 0;
+          totalRow.limestone += row.limestone || 0;
+          totalRow.trass += row.trass || 0;
+          totalRow.fly_ash += row.fly_ash || 0;
+          totalRow.fine_trass += row.fine_trass || 0;
+          totalRow.ckd += row.ckd || 0;
+          totalRow.total_production += row.total_production || 0;
+        });
+
+        // Add Footer Row (Empty line then Total)
+        worksheetMaterial.addRow([]); // Empty row for separation
+        const footerRow = worksheetMaterial.addRow([
+          'TOTAL',
+          '',
+          '',
+          totalRow.clinker,
+          totalRow.gypsum,
+          totalRow.limestone,
+          totalRow.trass,
+          totalRow.fly_ash,
+          totalRow.fine_trass,
+          totalRow.ckd,
+          totalRow.total_production,
+        ]);
+
+        // Style the footer row
+        footerRow.font = { bold: true };
+        footerRow.getCell(1).alignment = { horizontal: 'left' };
       }
 
       // Export Information Data

@@ -13,11 +13,12 @@ import {
 import { ParameterSetting, CcrFooterData } from '../../types';
 import { formatDate, formatNumberIndonesian } from '../../utils/formatters';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
-import { useUsers } from '../../hooks/useUsers';
+
 import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useCopParameters } from '../../hooks/useCopParameters';
 import { useCopFooterParameters } from '../../hooks/useCopFooterParameters';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
+
 import { pb } from '../../utils/pocketbase-simple';
 import { indexedDBCache } from '../../utils/cache/indexedDB';
 import Modal from '../../components/Modal';
@@ -35,7 +36,7 @@ import {
   Filler,
   ChartOptions,
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import ExcelJS from 'exceljs';
 
 // Register Chart.js components
@@ -62,49 +63,13 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { AiOperationsAssistant } from '../../components/ai/AiOperationsAssistant';
 
 // Utility functions for better maintainability
+
 const formatCopNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) {
     return '-';
   }
   return formatNumberIndonesian(num, 1);
 };
-
-// Interfaces for moisture data
-interface MoistureDataItem {
-  hour: number;
-  gypsum: number | null;
-  trass: number | null;
-  limestone: number | null;
-  total: number | null;
-}
-
-interface ParameterDataRecord {
-  parameter_id: string;
-  hour1?: number | null;
-  hour2?: number | null;
-  hour3?: number | null;
-  hour4?: number | null;
-  hour5?: number | null;
-  hour6?: number | null;
-  hour7?: number | null;
-  hour8?: number | null;
-  hour9?: number | null;
-  hour10?: number | null;
-  hour11?: number | null;
-  hour12?: number | null;
-  hour13?: number | null;
-  hour14?: number | null;
-  hour15?: number | null;
-  hour16?: number | null;
-  hour17?: number | null;
-  hour18?: number | null;
-  hour19?: number | null;
-  hour20?: number | null;
-  hour21?: number | null;
-  hour22?: number | null;
-  hour23?: number | null;
-  hour24?: number | null;
-}
 
 // Helper function to get min/max values based on cement type
 const getMinMaxForCementType = (
@@ -460,14 +425,6 @@ interface ChartDataItem {
   date: Date;
 }
 
-interface OperatorAchievementData {
-  operatorName: string;
-  operatorId: string;
-  achievementPercentage: number;
-  totalParameters: number;
-  onClick: () => void;
-}
-
 const ChartContainer: React.FC<{
   chartData: ChartDataItem[];
   parameter: ParameterSetting;
@@ -675,133 +632,20 @@ const ChartContainer: React.FC<{
   );
 };
 
-// Safe Bar Chart Container for Operator Achievement
-const OperatorAchievementChart: React.FC<{
-  data: OperatorAchievementData[];
-}> = ({ data }) => {
-  const { containerRef, isContainerReady, containerStyle } = useSafeChartRendering();
-
-  // Memoize chart data to prevent unnecessary recalculations
-  const chartDataFormatted = useMemo(() => {
-    if (!data || data.length === 0) return null;
-
-    const backgroundColors = data.map((entry) => {
-      if (entry.achievementPercentage >= 90) {
-        return '#10b981'; // Green for excellent
-      } else if (entry.achievementPercentage >= 80) {
-        return '#3b82f6'; // Blue for good
-      } else if (entry.achievementPercentage >= 70) {
-        return '#f59e0b'; // Amber for fair
-      }
-      return '#ef4444'; // Red for poor
-    });
-
-    const borderColors = backgroundColors; // Same as background
-
-    return {
-      labels: data.map((item) => item.operatorName),
-      datasets: [
-        {
-          label: 'Pencapaian Target COP',
-          data: data.map((item) => item.achievementPercentage),
-          backgroundColor: backgroundColors,
-          borderColor: borderColors,
-          borderWidth: 1,
-          borderRadius: 4,
-          borderSkipped: false,
-        },
-      ],
-    };
-  }, [data]);
-
-  const options: ChartOptions<'bar'> = useMemo(() => {
-    if (!data || data.length === 0) {
-      return {};
-    }
-
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false, // Hide legend for cleaner look
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          callbacks: {
-            label: (context) => {
-              const dataIndex = context.dataIndex;
-              const item = data[dataIndex];
-              return [`Pencapaian: ${context.parsed.y}%`, `Parameter: ${item.totalParameters}`];
-            },
-          },
-        },
-      },
-      scales: {
-        x: {
-          display: true,
-          title: {
-            display: false,
-          },
-          ticks: {
-            maxRotation: 45,
-            minRotation: 45,
-          },
-        },
-        y: {
-          display: true,
-          title: {
-            display: true,
-            text: 'Persentase Pencapaian (%)',
-          },
-          beginAtZero: true,
-          max: 100,
-        },
-      },
-      onClick: (event, elements) => {
-        if (elements.length > 0) {
-          const dataIndex = elements[0].index;
-          data[dataIndex].onClick();
-        }
-      },
-      onHover: (event, elements) => {
-        if (event.native?.target) {
-          (event.native.target as HTMLElement).style.cursor =
-            elements.length > 0 ? 'pointer' : 'default';
-        }
-      },
-    };
-  }, [data]);
-
-  // Don't render chart until container is ready
-  if (!isContainerReady || !chartDataFormatted) {
-    return (
-      <div ref={containerRef} style={containerStyle}>
-        <div className="flex items-center justify-center h-full text-slate-500 text-sm">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-500 mx-auto mb-2"></div>
-            Memuat chart...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div ref={containerRef} style={containerStyle}>
-      <Bar data={chartDataFormatted} options={options} />
-    </div>
-  );
-};
-
 const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
+  // Sync Global Data Hook
+
+  // const isSyncing = false;
+  // const syncProgress = 0;
+  // const syncStatus = "";
+  // const error = null;
+  // const syncAllData = () => {};
+
   const { records: allParameters } = useParameterSettings();
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth());
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
   const { records: plantUnits } = usePlantUnits();
-  const { users } = useUsers();
 
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
@@ -810,33 +654,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
   const [selectedCementType, setSelectedCementType] = useState('');
-  const [selectedOperator, setSelectedOperator] = useState('');
-  const [operatorAchievementData, setOperatorAchievementData] = useState<OperatorAchievementData[]>(
-    []
-  );
-  const [globalOperatorRanking, setGlobalOperatorRanking] = useState<
-    {
-      category: string;
-      operatorName: string;
-      operatorId: string;
-      overallAchievement: number;
-      totalParameters: number;
-      rank: number;
-      totalChecks: number;
-      totalInRange: number;
-    }[]
-  >([]);
-
-  const [selectedOperatorBreakdown, setSelectedOperatorBreakdown] = useState<{
-    category: string;
-    operatorName: string;
-    operatorId: string;
-    overallAchievement: number;
-    totalParameters: number;
-    rank: number;
-    totalChecks: number;
-    totalInRange: number;
-  } | null>(null);
 
   // Moisture data for footer - fetch for entire month
   const [monthlyMoistureData, setMonthlyMoistureData] = useState<Map<string, number>>(new Map());
@@ -844,156 +661,245 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Feed data for capacity calculation - fetch for entire month
   const [monthlyFeedData, setMonthlyFeedData] = useState<Map<string, number>>(new Map());
 
+  // State defined early to avoid scope issues
+  // const [isSyncing, setIsSyncing] = useState(false);  // Removed in favor of hook
+
   // Fetch moisture data for the entire month
   useEffect(() => {
     const fetchMonthlyMoistureData = async () => {
-      if (!selectedUnit) return;
+      if (!selectedCategory || !selectedUnit) return;
 
-      const cacheKey = `monthly-moisture-${selectedUnit}-${filterYear}-${filterMonth}`;
-      const cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+      const cacheKey = `monthly-moisture-${selectedCategory}-${selectedUnit}-${filterYear}-${filterMonth}`;
+      const cacheExpiry = 60 * 60 * 1000; // 1 hour
+
+      const moistureMap = new Map<string, number>();
 
       try {
-        // Try to get from cache first
         const cachedData = (await indexedDBCache.get(cacheKey)) as Map<string, number> | null;
         if (cachedData) {
           setMonthlyMoistureData(cachedData);
-          return;
-        }
-      } catch (error) {
-        // console.warn('Error reading moisture cache:', error);
-      }
-
-      // Cache miss - compute data
-      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-      const moistureMap = new Map<string, number>();
-
-      // Fetch moisture data for each day of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-        try {
-          // Use the same logic as MoistureContentTable footer to calculate daily average
-          const { data: dayMoistureData } = await new Promise<{ data: MoistureDataItem[] }>(
-            (resolve) => {
-              // Create a temporary hook-like call
-              const fetchData = async () => {
-                const paramSettings = await pb.collection('parameter_settings').getFullList({
-                  filter: `unit="${selectedUnit}"`,
-                });
-
-                const paramMap = new Map<string, string>();
-                paramSettings.forEach((setting) => {
-                  const paramSetting = setting as unknown as ParameterSetting;
-                  paramMap.set(paramSetting.parameter, paramSetting.id);
-                });
-
-                const h2oGypsumId = paramMap.get('H2O Gypsum (%)');
-                const setGypsumId = paramMap.get('Set. Feeder Gypsum (%)');
-                const h2oTrassId = paramMap.get('H2O Trass (%)');
-                const setTrassId = paramMap.get('Set. Feeder Trass (%)');
-                const h2oLimestoneId = paramMap.get('H2O Limestone (%)');
-                const setLimestoneId = paramMap.get('Set. Feeder Limestone (%)');
-
-                const parameterIds = [
-                  h2oGypsumId,
-                  setGypsumId,
-                  h2oTrassId,
-                  setTrassId,
-                  h2oLimestoneId,
-                  setLimestoneId,
-                ].filter(Boolean);
-
-                if (parameterIds.length === 0) {
-                  resolve({ data: [] });
-                  return;
-                }
-
-                const filterConditions = parameterIds
-                  .map((id) => `parameter_id="${id}"`)
-                  .join(' || ');
-                const paramData = await pb.collection('ccr_parameter_data').getFullList({
-                  filter: `date="${dateString}" && (${filterConditions})`,
-                });
-
-                const dataMap = new Map<string, ParameterDataRecord>();
-                paramData.forEach((record) => {
-                  const paramRecord = record as unknown as ParameterDataRecord;
-                  dataMap.set(paramRecord.parameter_id, paramRecord);
-                });
-
-                // Calculate moisture content for each hour (same as useMoistureData)
-                const moistureData: MoistureDataItem[] = [];
-                for (let hour = 1; hour <= 24; hour++) {
-                  const hourKey = `hour${hour}` as keyof ParameterDataRecord;
-                  const h2oGypsum = h2oGypsumId
-                    ? (dataMap.get(h2oGypsumId)?.[hourKey] as number | null)
-                    : null;
-                  const setGypsum = setGypsumId
-                    ? (dataMap.get(setGypsumId)?.[hourKey] as number | null)
-                    : null;
-                  const h2oTrass = h2oTrassId
-                    ? (dataMap.get(h2oTrassId)?.[hourKey] as number | null)
-                    : null;
-                  const setTrass = setTrassId
-                    ? (dataMap.get(setTrassId)?.[hourKey] as number | null)
-                    : null;
-                  const h2oLimestone = h2oLimestoneId
-                    ? (dataMap.get(h2oLimestoneId)?.[hourKey] as number | null)
-                    : null;
-                  const setLimestone = setLimestoneId
-                    ? (dataMap.get(setLimestoneId)?.[hourKey] as number | null)
-                    : null;
-
-                  const gypsum = h2oGypsum && setGypsum ? (setGypsum * h2oGypsum) / 100 : null;
-                  const trass = h2oTrass && setTrass ? (setTrass * h2oTrass) / 100 : null;
-                  const limestone =
-                    h2oLimestone && setLimestone ? (setLimestone * h2oLimestone) / 100 : null;
-
-                  const values = [gypsum, trass, limestone].filter(
-                    (val) => val !== null && !isNaN(val)
-                  );
-                  const total =
-                    values.length > 0 ? values.reduce((sum, val) => sum + val, 0) : null;
-
-                  moistureData.push({ hour, gypsum, trass, limestone, total });
-                }
-
-                resolve({ data: moistureData });
-              };
-              fetchData();
-            }
-          );
-
-          // Calculate daily average (same as MoistureContentTable footer)
-          const validValues = dayMoistureData
-            .map((d: MoistureDataItem) => d.total)
-            .filter((v: number | null) => v !== null && v !== undefined && !isNaN(v));
-
-          const dailyAverage =
-            validValues.length > 0
-              ? validValues.reduce((sum: number, val: number) => sum + val, 0) / validValues.length
-              : null;
-
-          if (dailyAverage !== null) {
-            moistureMap.set(dateString, dailyAverage);
+          if (cachedData.size >= new Date(filterYear, filterMonth + 1, 0).getDate()) {
+            console.log('[Moisture] Client cache loaded (Validating with server...)');
+            // return; // REMOVED: Continue to server fetch to ensure freshness
           }
-        } catch {
-          // Error fetching moisture data for this day - continue with other days
         }
+      } catch (error) {
+        /* ignore */
       }
 
-      // Cache the computed data
+      const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
+      const startDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
+      const endDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${daysInMonth}`;
+
+      // 1. Try fetching from moisture_monitoring (Server-Side Cache)
+      // This is the new centralized collection
       try {
-        await indexedDBCache.set(cacheKey, moistureMap, cacheExpiry);
-      } catch (error) {
-        // console.warn('Error caching moisture data:', error);
+        // Approximate filter by date range
+        const aggregates = await pb.collection('moisture_monitoring').getFullList({
+          filter: `unit="${selectedUnit}" && date >= "${startDate} 00:00:00" && date <= "${endDate} 23:59:59"`,
+        });
+
+        if (aggregates.length > 0) {
+          console.log(
+            `[Moisture] Found ${aggregates.length} server records (moisture_monitoring).`
+          );
+          aggregates.forEach((rec) => {
+            const d = rec.date.split('T')[0];
+            // Access stats.avg_total
+            const val = rec.stats?.avg_total;
+            if (val !== null && val !== undefined) {
+              moistureMap.set(d, val);
+            }
+          });
+          setMonthlyMoistureData(new Map(moistureMap));
+
+          if (aggregates.length >= daysInMonth) {
+            console.log('[Moisture] Server data complete. Skipping raw calc.');
+            await indexedDBCache.set(cacheKey, moistureMap, cacheExpiry);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Moisture aggregate read fail', e);
+      }
+
+      // --- FALLBACK: RAW CALCULATION ---
+      try {
+        // (Keep existing Raw Calculation Logic - it is robust)
+        // ... (Parameter fetching logic) ...
+        const paramSettings = await pb.collection('parameter_settings').getFullList({
+          filter: `unit="${selectedUnit}" && (parameter~"H2O" || parameter~"Set. Feeder")`,
+        });
+
+        const paramMap = new Map<string, string>();
+        paramSettings.forEach((s: any) => paramMap.set(s.parameter, s.id));
+
+        const h2oGypsumId = paramMap.get('H2O Gypsum (%)');
+        const setGypsumId = paramMap.get('Set. Feeder Gypsum (%)');
+        const h2oTrassId = paramMap.get('H2O Trass (%)');
+        const setTrassId = paramMap.get('Set. Feeder Trass (%)');
+        const h2oLimestoneId = paramMap.get('H2O Limestone (%)');
+        const setLimestoneId = paramMap.get('Set. Feeder Limestone (%)');
+
+        const parameterIds = [
+          h2oGypsumId,
+          setGypsumId,
+          h2oTrassId,
+          setTrassId,
+          h2oLimestoneId,
+          setLimestoneId,
+        ].filter(Boolean);
+
+        if (parameterIds.length > 0) {
+          const filterConditions = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
+          // Single Request for entire month
+          const monthlyRecords = await pb.collection('ccr_parameter_data').getFullList({
+            filter: `date >= "${startDate}" && date <= "${endDate}" && (${filterConditions})`,
+          });
+
+          const recordsByDate = new Map<string, any[]>();
+          monthlyRecords.forEach((rec) => {
+            const dateKey = rec.date.split('T')[0];
+            if (!recordsByDate.has(dateKey)) recordsByDate.set(dateKey, []);
+            recordsByDate.get(dateKey)?.push(rec);
+          });
+
+          // Process each day
+          for (let day = 1; day <= daysInMonth; day++) {
+            const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+            const dayRecords = recordsByDate.get(dateString) || [];
+            if (dayRecords.length === 0) continue;
+
+            const dataMap = new Map<string, any>();
+            dayRecords.forEach((r) => dataMap.set(r.parameter_id, r));
+
+            const hours = [];
+            for (let hour = 1; hour <= 24; hour++) {
+              const hourKey = `hour${hour}`;
+              const getVal = (id: string | undefined) =>
+                id ? (dataMap.get(id)?.[hourKey] as number | null) : null;
+
+              const h2oGypsum = getVal(h2oGypsumId);
+              const setGypsum = getVal(setGypsumId);
+
+              const h2oTrass = getVal(h2oTrassId);
+              const setTrass = getVal(setTrassId);
+
+              const h2oLimestone = getVal(h2oLimestoneId);
+              const setLimestone = getVal(setLimestoneId);
+
+              const gypsum = h2oGypsum && setGypsum ? (setGypsum * h2oGypsum) / 100 : null;
+              const trass = h2oTrass && setTrass ? (setTrass * h2oTrass) / 100 : null;
+              const limestone =
+                h2oLimestone && setLimestone ? (setLimestone * h2oLimestone) / 100 : null;
+
+              // Helper for stats only (we don't persist hourly here yet, wait, we DOES need to persist hourly for compliance)
+              // But logic here was simple avg of totals.
+              // Actually, Monitoring Page logic is: sum(component) / sum(set) ? No, sum(hourly_total) / 24 ?
+              // Monitoring Page Avg Logic: sum(column) / count.
+              // Let's replicate strict Monitoring Page structure here so we can save it compatible.
+
+              const vals = [gypsum, trass, limestone].filter((v) => v !== null && !isNaN(v));
+              const total = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) : null;
+
+              hours.push({
+                hour,
+                gypsum,
+                trass,
+                limestone,
+                total,
+              });
+            }
+
+            // Calculate daily average (Footer Stat logic)
+            const validTotal = hours.filter((d) => d.total !== null).map((d) => d.total!);
+            const dayAvg =
+              validTotal.length > 0
+                ? validTotal.reduce((a, b) => a + b, 0) / validTotal.length
+                : null;
+
+            if (dayAvg !== null) {
+              moistureMap.set(dateString, dayAvg);
+
+              // --- AUTO SYNC TO MOISTURE_MONITORING ---
+              // We have the full hourly data calculated. Let's save it!
+              // This populates the Monitoring Page for this day too.
+              if (selectedUnit) {
+                (async () => {
+                  try {
+                    // Calc full stats
+                    const validGypsum = hours
+                      .filter((d) => d.gypsum !== null)
+                      .map((d) => d.gypsum!);
+                    const validTrass = hours.filter((d) => d.trass !== null).map((d) => d.trass!);
+                    const validLimestone = hours
+                      .filter((d) => d.limestone !== null)
+                      .map((d) => d.limestone!);
+
+                    const stats = {
+                      avg_gypsum: validGypsum.length
+                        ? validGypsum.reduce((a, b) => a + b, 0) / validGypsum.length
+                        : null,
+                      avg_trass: validTrass.length
+                        ? validTrass.reduce((a, b) => a + b, 0) / validTrass.length
+                        : null,
+                      avg_limestone: validLimestone.length
+                        ? validLimestone.reduce((a, b) => a + b, 0) / validLimestone.length
+                        : null,
+                      avg_total: dayAvg,
+                    };
+
+                    const isoDate = `${dateString} 12:00:00.000Z`;
+                    const dStart = `${dateString} 00:00:00`;
+                    const dEnd = `${dateString} 23:59:59`;
+
+                    try {
+                      const existing = await pb
+                        .collection('moisture_monitoring')
+                        .getFirstListItem(
+                          `unit="${selectedUnit}" && date >= "${dStart}" && date <= "${dEnd}"`,
+                          { requestKey: null }
+                        );
+                      // Only update if explicit diff? Or just upsert to be safe?
+                      // Just upsert.
+                      await pb.collection('moisture_monitoring').update(
+                        existing.id,
+                        {
+                          hourly_data: hours,
+                          stats,
+                        },
+                        { requestKey: null }
+                      );
+                    } catch {
+                      await pb.collection('moisture_monitoring').create(
+                        {
+                          date: isoDate,
+                          unit: selectedUnit,
+                          hourly_data: hours,
+                          stats,
+                        },
+                        { requestKey: null }
+                      );
+                    }
+                  } catch (e) {
+                    console.warn('Auto-sync to moisture_monitoring failed', e);
+                  }
+                })();
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching moisture data', err);
       }
 
       setMonthlyMoistureData(moistureMap);
+      await indexedDBCache.set(cacheKey, moistureMap, cacheExpiry);
     };
 
     fetchMonthlyMoistureData();
-  }, [filterYear, filterMonth, selectedUnit]);
+  }, [filterYear, filterMonth, selectedCategory, selectedUnit]);
 
   // Fetch feed data for the entire month for capacity calculation
   useEffect(() => {
@@ -1003,58 +909,102 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       const cacheKey = `monthly-feed-${selectedCategory}-${selectedUnit}-${filterYear}-${filterMonth}`;
       const cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
 
+      const feedMap = new Map<string, number>(); // Initialize feedMap here
+
       try {
         // Try to get from cache first
         const cachedData = (await indexedDBCache.get(cacheKey)) as Map<string, number> | null;
         if (cachedData) {
           setMonthlyFeedData(cachedData);
-          return;
+          // If cached data is complete, we can return early.
+          // Otherwise, we still need to check server aggregates and potentially calculate raw.
+          const daysInMonthV = new Date(filterYear, filterMonth + 1, 0).getDate();
+          if (cachedData.size >= daysInMonthV) {
+            console.log('[Feed] Client cache loaded (Validating with server...)');
+            // return; // REMOVED: Continue to server fetch to ensure freshness
+          }
+          console.log('[Feed] Client cache partial. Proceeding to server check/raw calc...');
+          // If partial, populate feedMap with cached data to avoid re-fetching
+          cachedData.forEach((value, key) => feedMap.set(key, value));
         }
       } catch (error) {
         // console.warn('Error reading feed cache:', error);
       }
 
-      // Cache miss - compute data
       const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-      const feedMap = new Map<string, number>();
+      const startDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
+      const endDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${daysInMonth}`;
 
-      // Fetch feed data for each day of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      // 1. Try fetching from cop_aggregates (Server-Side Cache)
+      try {
+        const aggregates = await pb.collection('cop_aggregates').getFullList({
+          filter: `unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+        });
 
-        try {
-          // Get Counter Feeder parameters for this unit
-          const counterFeederParams = await pb.collection('parameter_settings').getFullList({
-            filter: `category="${selectedCategory}" && unit="${selectedUnit}" && parameter~"Counter Feeder"`,
+        if (aggregates.length > 0) {
+          console.log(`[Feed] Found ${aggregates.length} server records from cop_aggregates.`);
+          aggregates.forEach((rec) => {
+            const d = rec.date.split('T')[0];
+            if (rec.total_feed_ton !== null && rec.total_feed_ton !== undefined) {
+              feedMap.set(d, rec.total_feed_ton);
+            }
           });
+          // Display what we have so far
+          setMonthlyFeedData(new Map(feedMap));
 
-          if (counterFeederParams.length === 0) continue;
-
-          // Get footer data for all Counter Feeder parameters for this date
-          const parameterIds = counterFeederParams.map((p) => p.id);
-          const filterConditions = parameterIds.map((id) => `parameter_id="${id}"`).join(' || ');
-
-          const footerData = await pb.collection('ccr_footer_data').getFullList({
-            filter: `date="${dateString}" && (${filterConditions})`,
-          });
-
-          // Calculate total feed for the day (sum of all counter feeder values)
-          let totalFeed = 0;
-          footerData.forEach((record) => {
-            // Sum all shift counters
-            const shift1 = record.shift1_counter || 0;
-            const shift2 = record.shift2_counter || 0;
-            const shift3 = record.shift3_counter || 0;
-            const shift3Cont = record.shift3_cont_counter || 0;
-            totalFeed += shift1 + shift2 + shift3 + shift3Cont;
-          });
-
-          if (totalFeed > 0) {
-            feedMap.set(dateString, totalFeed);
+          const daysInMonthV = new Date(filterYear, filterMonth + 1, 0).getDate();
+          if (aggregates.length >= daysInMonthV) {
+            console.log('[Feed] Server data complete. Skipping raw calc.');
+            await indexedDBCache.set(cacheKey, feedMap, cacheExpiry); // Re-cache if server data was complete
+            return;
           }
-        } catch {
-          // Error fetching feed data for this day - continue with other days
+          console.log('[Feed] Server data partial. Proceeding to raw calc...');
+        } else {
+          console.log('[Feed] No server data found. Calculating raw...');
         }
+      } catch (e) {
+        console.warn('Feed aggregate read fail', e);
+      }
+
+      // Fetch total production from ccr_material_usage for each day (Source: Capacity (ton))
+      try {
+        // We fetch strictly from ccr_material_usage as the source of truth for Production/Feed
+        // ignoring ccr_parameter_data counters.
+        const materialUsageRecords = await pb.collection('ccr_material_usage').getFullList({
+          filter: `plant_unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+        });
+
+        // Also fetch moisture for calculation
+        const moistureForCalc = await pb.collection('moisture_monitoring').getFullList({
+          filter: `unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+        });
+
+        const moistMap = new Map();
+        moistureForCalc.forEach((m) => {
+          if (m.stats?.avg_total) moistMap.set(m.date.split('T')[0], m.stats.avg_total);
+        });
+
+        const productionByDate = new Map<string, number>();
+
+        materialUsageRecords.forEach((rec) => {
+          const dateKey = rec.date.split('T')[0];
+          const currentTotal = productionByDate.get(dateKey) || 0;
+          // 'total_production' is the sum of materials for that shift record
+          const shiftTotal = rec.total_production || 0;
+          productionByDate.set(dateKey, currentTotal + shiftTotal);
+        });
+
+        // Merge into feedMap as CAPACITY
+        for (const [date, rawFeed] of productionByDate.entries()) {
+          if (!feedMap.has(date) && rawFeed > 0) {
+            const moisture = moistMap.get(date) ?? 0;
+            const capacity = rawFeed - (moisture * rawFeed) / 100;
+            feedMap.set(date, capacity);
+          }
+        }
+        console.log('[Feed] Final Feed Map Size:', feedMap.size);
+      } catch (err) {
+        console.error('Error fetching material usage for capacity', err);
       }
 
       // Cache the computed data
@@ -1065,6 +1015,49 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       }
 
       setMonthlyFeedData(feedMap);
+
+      // --- AUTO SYNC / BACKFILL TO SERVER ---
+      // If we calculated new data (fallback path), save it to cop_aggregates in background
+      if (feedMap.size > 0 && selectedUnit) {
+        const startDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
+        const endDate = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${daysInMonth}`;
+
+        (async () => {
+          try {
+            // Get existing records for this month
+            const existing = await pb.collection('cop_aggregates').getFullList({
+              filter: `unit="${selectedUnit}" && date >= "${startDate}" && date <= "${endDate}"`,
+            });
+            const existingMap = new Map();
+            existing.forEach((rec) => existingMap.set(rec.date.split('T')[0], rec));
+
+            for (const [date, feed] of feedMap.entries()) {
+              const existRec = existingMap.get(date);
+              if (existRec) {
+                if (existRec.total_feed_ton !== feed) {
+                  await pb
+                    .collection('cop_aggregates')
+                    .update(existRec.id, { total_feed_ton: feed });
+                }
+              } else {
+                // Creating solely for feed if moisture isn't there yet
+                try {
+                  const isoDate = `${date} 12:00:00.000Z`; // Noon UTC
+                  await pb.collection('cop_aggregates').create({
+                    date: isoDate,
+                    unit: selectedUnit,
+                    total_feed_ton: feed,
+                  });
+                } catch (e) {
+                  /* ignore */
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Auto-sync feed failed', err);
+          }
+        })();
+      }
     };
 
     fetchMonthlyFeedData();
@@ -1120,24 +1113,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [showCorrelationMatrix, setShowCorrelationMatrix] = useState(false);
   const [showAnomalyDetection, setShowAnomalyDetection] = useState(false);
   const [showPredictiveInsights, setShowPredictiveInsights] = useState(false);
-  const [operatorBreakdownModal, setOperatorBreakdownModal] = useState<{
-    isOpen: boolean;
-    operatorName: string;
-    operatorId: string;
-    breakdownData: {
-      parameterName: string;
-      totalChecks: number;
-      inRangeCount: number;
-      achievementPercentage: number;
-      min: number;
-      max: number;
-    }[];
-  }>({
-    isOpen: false,
-    operatorName: '',
-    operatorId: '',
-    breakdownData: [],
-  });
+
   const [showQualityMetrics, setShowQualityMetrics] = useState(false);
 
   // Set default filter only after plantUnits are loaded
@@ -1244,16 +1220,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     // Remove duplicates and sort
     return [...new Set(allowedCategories)].sort();
   }, [plantUnits, permissionChecker]);
-
-  // Update relevantOperators to get all active users with role Operator from User Management, ignoring category and unit permissions
-  const relevantOperators = useMemo(() => {
-    if (!users) return [];
-
-    const filtered = users
-      .filter((user) => user.role === 'Operator' && user.is_active && user.name)
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-    return filtered;
-  }, [users]);
 
   const { getFooterDataForDate } = useCcrFooterData();
 
@@ -1900,410 +1866,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     };
   };
 
-  // Calculate operator achievement data
-  useEffect(() => {
-    const calculateOperatorAchievement = async () => {
-      if (
-        !relevantOperators ||
-        relevantOperators.length === 0 ||
-        !selectedCategory ||
-        !selectedUnit
-      ) {
-        setOperatorAchievementData([]);
-        return;
-      }
-
-      try {
-        // Get COP parameters for this category/unit
-        const copParams = filteredCopParameters;
-        if (copParams.length === 0) {
-          setOperatorAchievementData([]);
-          return;
-        }
-
-        // Get date range for the month
-        const startDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
-        const endDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(new Date(filterYear, filterMonth + 1, 0).getDate()).padStart(2, '0')}`;
-        const dateFilter = `date >= "${startDateStr}" && date <= "${endDateStr}"`;
-
-        // Get parameter IDs
-        const parameterIds = copParams.map((p) => p.id);
-
-        // Get all ccr_parameter_data for the month (filter parameters client-side to avoid long URL)
-        const records = await pb.collection('ccr_parameter_data').getFullList({
-          filter: dateFilter,
-          fields:
-            'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-        });
-
-        // Filter records client-side by parameter IDs
-        const filteredRecords = records.filter((record) =>
-          parameterIds.includes(record.parameter_id)
-        );
-
-        // Group by operator with parameter breakdown
-        const operatorData = new Map<
-          string,
-          {
-            name: string;
-            parameters: Map<
-              string,
-              {
-                paramName: string;
-                values: number[];
-                min: number;
-                max: number;
-              }
-            >;
-            paramCount: number;
-          }
-        >();
-
-        filteredRecords.forEach((record) => {
-          const operatorName = record.name;
-          if (!operatorName) return;
-
-          if (!operatorData.has(operatorName)) {
-            operatorData.set(operatorName, {
-              name: operatorName,
-              parameters: new Map(),
-              paramCount: 0,
-            });
-          }
-
-          const opData = operatorData.get(operatorName)!;
-
-          // Get parameter settings for min/max
-          const paramSetting = copParams.find((p) => p.id === record.parameter_id);
-          if (!paramSetting) return;
-
-          const { min, max } = getMinMaxForCementType(paramSetting, selectedCementType);
-          if (min === undefined || max === undefined) return;
-
-          // Initialize parameter data if not exists
-          if (!opData.parameters.has(record.parameter_id)) {
-            opData.parameters.set(record.parameter_id, {
-              paramName: paramSetting.parameter || record.parameter_id,
-              values: [],
-              min,
-              max,
-            });
-            opData.paramCount++;
-          }
-
-          const paramData = opData.parameters.get(record.parameter_id)!;
-
-          // Check each hour
-          for (let hour = 1; hour <= 24; hour++) {
-            const hourKey = `hour${hour}` as keyof typeof record;
-            const value = record[hourKey] as number | null;
-            if (value !== null && value !== undefined && !isNaN(value)) {
-              // Check if in range
-              const inRange = value >= min && value <= max;
-              paramData.values.push(inRange ? 1 : 0);
-            }
-          }
-        });
-
-        // Calculate achievement for each operator
-        const results: OperatorAchievementData[] = [];
-
-        operatorData.forEach((data, operatorName) => {
-          if (!operatorName || data.paramCount === 0) return;
-
-          // Calculate total achievement across all parameters
-          let totalChecks = 0;
-          let totalInRange = 0;
-
-          const breakdownData: {
-            parameterName: string;
-            totalChecks: number;
-            inRangeCount: number;
-            achievementPercentage: number;
-            min: number;
-            max: number;
-          }[] = [];
-
-          data.parameters.forEach((paramData) => {
-            const paramTotalChecks = paramData.values.length;
-            const paramInRangeCount = paramData.values.filter((v) => v === 1).length;
-            const paramAchievement =
-              paramTotalChecks > 0 ? (paramInRangeCount / paramTotalChecks) * 100 : 0;
-
-            totalChecks += paramTotalChecks;
-            totalInRange += paramInRangeCount;
-
-            breakdownData.push({
-              parameterName: paramData.paramName,
-              totalChecks: paramTotalChecks,
-              inRangeCount: paramInRangeCount,
-              achievementPercentage: Math.round(paramAchievement * 10) / 10,
-              min: paramData.min,
-              max: paramData.max,
-            });
-          });
-
-          const overallAchievement = totalChecks > 0 ? (totalInRange / totalChecks) * 100 : 0;
-
-          // Find operator details
-          const operator = relevantOperators.find((op) => op.name === operatorName);
-          if (!operator) return;
-
-          results.push({
-            operatorName: operatorName,
-            operatorId: operator.id,
-            achievementPercentage: Math.round(overallAchievement * 10) / 10,
-            totalParameters: data.paramCount,
-            onClick: () => {
-              setOperatorBreakdownModal({
-                isOpen: true,
-                operatorName: operatorName,
-                operatorId: operator.id,
-                breakdownData: breakdownData,
-              });
-            },
-          });
-        });
-
-        // Filter by selected operator if any
-        let filteredResults = results;
-        if (selectedOperator) {
-          filteredResults = results.filter((r) => r.operatorId === selectedOperator);
-        }
-
-        // Sort by achievement percentage descending
-        const finalResults = filteredResults.sort(
-          (a, b) => b.achievementPercentage - a.achievementPercentage
-        );
-
-        setOperatorAchievementData(finalResults);
-      } catch (error) {
-        // console.error('Error calculating operator achievement data:', error);
-        setOperatorAchievementData([]);
-      }
-    };
-
-    calculateOperatorAchievement();
-  }, [
-    relevantOperators,
-    selectedCategory,
-    selectedUnit,
-    filteredCopParameters,
-    filterYear,
-    filterMonth,
-    selectedCementType,
-    selectedOperator,
-  ]);
-
-  // Calculate global operator ranking across all plant categories and cement types
-  useEffect(() => {
-    const calculateGlobalOperatorRanking = async () => {
-      if (!relevantOperators || relevantOperators.length === 0) {
-        setGlobalOperatorRanking([]);
-        return;
-      }
-
-      try {
-        // Get all plant categories and units for comprehensive ranking
-        const allCategories = Array.from(new Set(plantUnits.map((unit) => unit.category)));
-        const allUnits = plantUnits.map((unit) => unit.unit);
-
-        // Get all COP parameters across all categories/units
-        const allCopParams = allParameters.filter(
-          (param) => allCategories.includes(param.category) && allUnits.includes(param.unit)
-        );
-
-        if (allCopParams.length === 0) {
-          setGlobalOperatorRanking([]);
-          return;
-        }
-
-        // Get date range for the current month
-        const startDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
-        const endDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(new Date(filterYear, filterMonth + 1, 0).getDate()).padStart(2, '0')}`;
-        const dateFilter = `date >= "${startDateStr}" && date <= "${endDateStr}"`;
-
-        // Get all parameter IDs
-        const allParameterIds = allCopParams.map((p) => p.id);
-
-        // Get all ccr_parameter_data for the month (filter parameters client-side to avoid long URL)
-        let records = [];
-        let retryCount = 0;
-        const maxRetries = 3;
-        const retryDelay = 1000; // 1 second
-
-        while (retryCount < maxRetries) {
-          try {
-            records = await pb.collection('ccr_parameter_data').getFullList({
-              filter: dateFilter,
-              fields:
-                'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-            });
-            break; // Success, exit retry loop
-          } catch (error) {
-            retryCount++;
-            if (retryCount < maxRetries) {
-              await new Promise((resolve) => setTimeout(resolve, retryDelay * retryCount)); // Exponential backoff
-            } else {
-              throw error; // Re-throw after max retries
-            }
-          }
-        }
-
-        // Filter records client-side by parameter IDs
-        records = records.filter((record) => allParameterIds.includes(record.parameter_id));
-
-        // Group by operator and category
-        const operatorCategoryData = new Map<
-          string,
-          Map<
-            string,
-            {
-              name: string;
-              totalChecks: number;
-              totalInRange: number;
-              parametersCount: number;
-            }
-          >
-        >();
-
-        records.forEach((record) => {
-          const operatorName = record.name;
-          if (!operatorName) return;
-
-          // Find parameter and its category
-          const paramSetting = allCopParams.find((p) => p.id === record.parameter_id);
-          if (!paramSetting) return;
-
-          const category = paramSetting.category;
-
-          // Initialize category map if not exists
-          if (!operatorCategoryData.has(category)) {
-            operatorCategoryData.set(category, new Map());
-          }
-
-          const categoryOperators = operatorCategoryData.get(category)!;
-
-          // Initialize operator data for this category
-          if (!categoryOperators.has(operatorName)) {
-            categoryOperators.set(operatorName, {
-              name: operatorName,
-              totalChecks: 0,
-              totalInRange: 0,
-              parametersCount: 0,
-            });
-          }
-
-          const opData = categoryOperators.get(operatorName)!;
-
-          // Count this parameter for the operator
-          opData.parametersCount++;
-
-          // Check each hour
-          for (let hour = 1; hour <= 24; hour++) {
-            const hourKey = `hour${hour}` as keyof typeof record;
-            const value = record[hourKey] as number | null;
-            if (value !== null && value !== undefined && !isNaN(value)) {
-              opData.totalChecks++;
-              // Check if in range for any cement type (general, OPC, PCC)
-              const generalMin = paramSetting.min_value;
-              const generalMax = paramSetting.max_value;
-              const opcMin = paramSetting.opc_min_value;
-              const opcMax = paramSetting.opc_max_value;
-              const pccMin = paramSetting.pcc_min_value;
-              const pccMax = paramSetting.pcc_max_value;
-              const inRange =
-                (generalMin !== undefined &&
-                  generalMax !== undefined &&
-                  value >= generalMin &&
-                  value <= generalMax) ||
-                (opcMin !== undefined &&
-                  opcMax !== undefined &&
-                  value >= opcMin &&
-                  value <= opcMax) ||
-                (pccMin !== undefined &&
-                  pccMax !== undefined &&
-                  value >= pccMin &&
-                  value <= pccMax);
-              if (inRange) {
-                opData.totalInRange++;
-              }
-            }
-          }
-        });
-
-        // Calculate top operator for each category
-        const categoryTopOperators: {
-          category: string;
-          operatorName: string;
-          operatorId: string;
-          overallAchievement: number;
-          totalParameters: number;
-          rank: number;
-          totalChecks: number;
-          totalInRange: number;
-        }[] = [];
-
-        operatorCategoryData.forEach((categoryOperators, category) => {
-          const categoryResults: {
-            operatorName: string;
-            operatorId: string;
-            overallAchievement: number;
-            totalParameters: number;
-            totalChecks: number;
-            totalInRange: number;
-          }[] = [];
-
-          categoryOperators.forEach((data, operatorName) => {
-            if (data.totalChecks === 0) {
-              return;
-            }
-
-            const overallAchievement = (data.totalInRange / data.totalChecks) * 100;
-
-            // Find operator details
-            const operator = relevantOperators.find((op) => op.name === operatorName);
-            if (!operator) return;
-
-            categoryResults.push({
-              operatorName: operatorName,
-              operatorId: operator.id,
-              overallAchievement: Math.round(overallAchievement * 10) / 10,
-              totalParameters: data.parametersCount,
-              totalChecks: data.totalChecks,
-              totalInRange: data.totalInRange,
-            });
-          });
-
-          // Sort by achievement and take top 1 for this category
-          const sortedCategoryResults = categoryResults.sort(
-            (a, b) => b.overallAchievement - a.overallAchievement
-          );
-
-          if (sortedCategoryResults.length > 0) {
-            const topOperator = sortedCategoryResults[0];
-            categoryTopOperators.push({
-              category: category,
-              operatorName: topOperator.operatorName,
-              operatorId: topOperator.operatorId,
-              overallAchievement: topOperator.overallAchievement,
-              totalParameters: topOperator.totalParameters,
-              rank: 1,
-              totalChecks: topOperator.totalChecks,
-              totalInRange: topOperator.totalInRange,
-            });
-          }
-        });
-
-        setGlobalOperatorRanking(categoryTopOperators);
-      } catch (error) {
-        setGlobalOperatorRanking([]);
-      }
-    };
-
-    calculateGlobalOperatorRanking();
-  }, [relevantOperators, allParameters, plantUnits, filterYear, filterMonth]);
-
   const yearOptions = useMemo(
     () => Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i),
     []
@@ -2323,36 +1885,32 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       }
 
       try {
-        // Get all dates from ccr_footer_data that have data for the COP parameters (filter client-side)
-        const parameterIds = filteredCopParameters.map((p) => p.id);
-
-        const records = await pb.collection('ccr_footer_data').getFullList({
-          fields: 'date,parameter_id',
-          sort: '-date', // Get latest first
+        // Optimization: Use cop_aggregates instead of ccr_footer_data
+        // cop_aggregates is much smaller (1 record per day) vs footer_data (many per day)
+        const records = await pb.collection('cop_aggregates').getFullList({
+          filter: `unit="${selectedUnit}"`,
+          fields: 'date',
+          sort: '-date',
         });
 
-        // Filter records client-side
-        const filteredRecords = records.filter((record) =>
-          parameterIds.includes(record.parameter_id)
-        );
-
-        // Extract unique years from the dates
+        // Extract unique years
         const yearsSet = new Set<number>();
-        filteredRecords.forEach((record) => {
-          const year = new Date(record.date).getFullYear();
-          yearsSet.add(year);
+        records.forEach((record) => {
+          if (record.date) {
+            const year = new Date(record.date).getFullYear();
+            yearsSet.add(year);
+          }
         });
 
-        const availableYearsList = Array.from(yearsSet).sort((a, b) => b - a); // Sort descending
+        const availableYearsList = Array.from(yearsSet).sort((a, b) => b - a);
 
-        // If no data found, fall back to default years
         if (availableYearsList.length === 0) {
           setAvailableYears(yearOptions);
         } else {
           setAvailableYears(availableYearsList);
         }
-      } catch {
-        // Failed to fetch available years, fall back to default years
+      } catch (err) {
+        console.warn('Failed to fetch available years, defaulting', err);
         setAvailableYears(yearOptions);
       }
     };
@@ -2952,11 +2510,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         Array.from({ length: new Date(filterYear, filterMonth + 1, 0).getDate() }, (_, i) => {
           const day = i + 1;
           const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          const dailyFeed = monthlyFeedData.get(dateString);
-          const dailyMoisture = monthlyMoistureData.get(dateString);
-          if (dailyFeed && dailyMoisture !== undefined) {
-            const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
-            if (!isNaN(capacity)) validCapacities.push(capacity);
+          const feed = monthlyFeedData.get(dateString); // Now that total_feed_ton stores Calculated Capacity (synced), we use it directly.
+          if (feed !== undefined && feed !== null) {
+            // feed is now Capacity from cop_aggregates
+            validCapacities.push(feed);
           }
         });
         if (validCapacities.length === 0) return '-';
@@ -3020,8 +2577,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 Advanced COP Performance Analytics & Monitoring Dashboard
               </p>
             </div>
+
+            {/* Global Sync Button - Removed */}
           </div>
         </div>
+
+        {/* Sync Progress Modal */}
 
         {/* Filter Section - Separate Card */}
         <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
@@ -4558,382 +4119,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
           </Card>
         )}
-        {/* Kategori Pencapaian COP Operator */}
-        {operatorAchievementData.length > 0 && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className="mt-6 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 shadow-2xl border-0"
-          >
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent mb-3">
-                  🏆 Kategori Pencapaian COP Operator
-                </h2>
-                <p className="text-base text-slate-700 leading-relaxed">
-                  Analisis performa operator berdasarkan persentase pencapaian target parameter COP
-                </p>
-              </div>
-              <div className="flex items-center gap-4 w-full md:w-auto">
-                <label
-                  htmlFor="operator-filter"
-                  className="text-sm font-semibold text-slate-700 whitespace-nowrap min-w-fit"
-                >
-                  Operator:
-                </label>
-                <select
-                  id="operator-filter"
-                  value={selectedOperator}
-                  onChange={(e) => setSelectedOperator(e.target.value)}
-                  className="flex-1 min-w-0 px-4 py-3 bg-white/90 text-slate-900 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-medium transition-all duration-200 hover:shadow-md"
-                >
-                  <option value="">Semua Operator</option>
-                  {relevantOperators.map((operator) => (
-                    <option key={operator.id} value={operator.id}>
-                      {operator.name || 'Unknown Operator'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            <p className="text-sm text-slate-600 mb-6 font-medium">
-              📊 Diagram batang menunjukkan persentase pencapaian target parameter COP per operator.
-            </p>
-            <div className="bg-white/80 rounded-2xl p-4 shadow-inner mb-8">
-              <div style={{ width: '100%', height: '400px' }}>
-                <OperatorAchievementChart data={operatorAchievementData} />
-              </div>
-            </div>
-            <div className="mb-8 text-sm text-slate-600 font-medium bg-white/60 rounded-xl p-4 border border-slate-200">
-              <p className="flex items-center gap-2">
-                <span className="text-lg">📈</span>
-                Total parameter yang tidak mencapai target:{' '}
-                <span className="font-bold text-slate-800">{operatorAchievementData.length}</span>
-              </p>
-            </div>
-          </Card>
-        )}
-        {/* Statistik Ringkasan Performa */}
-        {operatorAchievementData.length > 0 && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className="mt-6 bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 shadow-2xl border-0"
-          >
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-600 via-gray-600 to-zinc-600 bg-clip-text text-transparent mb-2">
-                📊 Statistik Ringkasan Performa
-              </h2>
-              <p className="text-slate-600 font-medium">
-                Ringkasan performa operator berdasarkan data COP bulan ini
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-200 shadow-lg group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-bold text-lg">🏆</span>
-                  </div>
-                  <h4 className="text-lg font-bold text-green-800">Rata-rata Pencapaian</h4>
-                </div>
-                <p className="text-3xl font-bold text-green-600 mb-2">
-                  {operatorAchievementData.length > 0
-                    ? (
-                        operatorAchievementData.reduce(
-                          (sum, item) => sum + item.achievementPercentage,
-                          0
-                        ) / operatorAchievementData.length
-                      ).toFixed(1)
-                    : 0}
-                  %
-                </p>
-                <p className="text-sm text-slate-600 font-medium">
-                  Rata-rata persentase pencapaian target parameter
-                </p>
-              </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-200 shadow-lg group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-bold text-lg">👑</span>
-                  </div>
-                  <h4 className="text-lg font-bold text-blue-800">Operator Terbaik</h4>
-                </div>
-                <p className="text-xl font-bold text-slate-800 truncate mb-2">
-                  {operatorAchievementData[0]?.operatorName || '-'}
-                </p>
-                <p className="text-sm text-slate-600 font-medium">
-                  {operatorAchievementData[0]?.achievementPercentage || 0}% pencapaian
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-6 rounded-2xl border-2 border-purple-200 shadow-lg group">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                    <span className="text-purple-600 font-bold text-lg">📊</span>
-                  </div>
-                  <h4 className="text-lg font-bold text-purple-800">Total Operator</h4>
-                </div>
-                <p className="text-3xl font-bold text-purple-600 mb-2">
-                  {operatorAchievementData.length}
-                </p>
-                <p className="text-sm text-slate-600 font-medium">
-                  Operator dengan data COP di bulan ini
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
-        {/* Peringkat Tertinggi Operator per Kategori */}
-        {globalOperatorRanking.length > 0 && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className="mt-6 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 shadow-2xl border-0"
-          >
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-orange-600 bg-clip-text text-transparent mb-3">
-                  🏅 Peringkat Tertinggi Operator
-                </h2>
-                <p className="text-slate-600 font-medium">
-                  Operator terbaik dari masing-masing Plant Category dengan standar OPC & PCC
-                </p>
-              </div>
-              <div className="flex items-center gap-3 bg-white/60 rounded-xl px-4 py-3 border border-amber-200">
-                <div className="text-2xl">📊</div>
-                <div>
-                  <div className="text-sm font-semibold text-slate-800">
-                    {globalOperatorRanking.length} Kategori
-                  </div>
-                  <div className="text-xs text-slate-600">Peringkat bulan ini</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Top Operators by Category */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {globalOperatorRanking.map((operator, index) => {
-                const categoryColors = [
-                  {
-                    bg: 'from-blue-400 to-blue-500',
-                    text: 'text-blue-800',
-                    border: 'border-blue-300',
-                    icon: '🏭',
-                  },
-                  {
-                    bg: 'from-green-400 to-green-500',
-                    text: 'text-green-800',
-                    border: 'border-green-300',
-                    icon: '🌿',
-                  },
-                  {
-                    bg: 'from-purple-400 to-purple-500',
-                    text: 'text-purple-800',
-                    border: 'border-purple-300',
-                    icon: '🏔️',
-                  },
-                ];
-                const colorScheme = categoryColors[index % categoryColors.length];
-
-                return (
-                  <div
-                    key={`${operator.category}-${operator.operatorId}`}
-                    className={`relative bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg hover:shadow-xl group`}
-                  >
-                    {/* Category Badge */}
-                    <div className="absolute -top-3 -right-3 px-3 py-1 bg-white rounded-full border-2 border-white shadow-lg">
-                      <span className={`text-sm font-bold ${colorScheme.text}`}>
-                        {operator.category}
-                      </span>
-                    </div>
-
-                    {/* Trophy Icon */}
-                    <div className="text-center mb-4">
-                      <div className="text-4xl mb-2">🏆</div>
-                      <div className="text-sm font-semibold text-white">Rank #{operator.rank}</div>
-                    </div>
-
-                    {/* Operator Info */}
-                    <div className="text-center">
-                      <h3 className={`text-xl font-bold text-white mb-2 truncate`}>
-                        {operator.operatorName}
-                      </h3>
-                      <div
-                        className="bg-white/90 rounded-lg p-3 mb-3 cursor-pointer hover:bg-white transition-colors"
-                        onClick={async () => {
-                          try {
-                            // Calculate detailed breakdown for this operator
-                            const startDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-01`;
-                            const endDateStr = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(new Date(filterYear, filterMonth + 1, 0).getDate()).padStart(2, '0')}`;
-                            const dateFilter = `date >= "${startDateStr}" && date <= "${endDateStr}"`;
-
-                            // Get all COP parameters for this category
-                            const categoryParams = allParameters.filter(
-                              (param) => param.category === operator.category
-                            );
-
-                            if (categoryParams.length === 0) {
-                              setOperatorBreakdownModal({
-                                isOpen: true,
-                                operatorName: operator.operatorName,
-                                operatorId: operator.operatorId,
-                                breakdownData: [],
-                              });
-                              return;
-                            }
-
-                            // Get parameter IDs
-                            const parameterIds = categoryParams.map((p) => p.id);
-
-                            // Get ccr_parameter_data for this operator and date range
-                            let records = [];
-                            let retryCount = 0;
-                            const maxRetries = 3;
-                            const retryDelay = 1000;
-
-                            while (retryCount < maxRetries) {
-                              try {
-                                records = await pb.collection('ccr_parameter_data').getFullList({
-                                  filter: `${dateFilter} && name = "${operator.operatorName}"`,
-                                  fields:
-                                    'name,parameter_id,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
-                                });
-                                break;
-                              } catch (error) {
-                                retryCount++;
-                                if (retryCount < maxRetries) {
-                                  await new Promise((resolve) =>
-                                    setTimeout(resolve, retryDelay * retryCount)
-                                  );
-                                } else {
-                                  throw error;
-                                }
-                              }
-                            }
-
-                            // Filter records by parameter IDs
-                            records = records.filter((record) =>
-                              parameterIds.includes(record.parameter_id)
-                            );
-
-                            // Group by parameter and calculate achievement
-                            const parameterBreakdown = new Map();
-
-                            records.forEach((record) => {
-                              const paramId = record.parameter_id;
-                              const paramSetting = categoryParams.find((p) => p.id === paramId);
-                              if (!paramSetting) return;
-
-                              if (!parameterBreakdown.has(paramId)) {
-                                parameterBreakdown.set(paramId, {
-                                  parameterName: paramSetting.parameter,
-                                  totalChecks: 0,
-                                  inRangeCount: 0,
-                                  min:
-                                    paramSetting.min_value ||
-                                    paramSetting.opc_min_value ||
-                                    paramSetting.pcc_min_value ||
-                                    0,
-                                  max:
-                                    paramSetting.max_value ||
-                                    paramSetting.opc_max_value ||
-                                    paramSetting.pcc_max_value ||
-                                    100,
-                                });
-                              }
-
-                              const paramData = parameterBreakdown.get(paramId);
-
-                              // Check each hour
-                              for (let hour = 1; hour <= 24; hour++) {
-                                const hourKey = `hour${hour}` as keyof typeof record;
-                                const value = record[hourKey] as number | null;
-                                if (value !== null && value !== undefined && !isNaN(value)) {
-                                  paramData.totalChecks++;
-                                  // Check if in range for any cement type
-                                  const inRange =
-                                    (paramSetting.min_value !== undefined &&
-                                      paramSetting.max_value !== undefined &&
-                                      value >= paramSetting.min_value &&
-                                      value <= paramSetting.max_value) ||
-                                    (paramSetting.opc_min_value !== undefined &&
-                                      paramSetting.opc_max_value !== undefined &&
-                                      value >= paramSetting.opc_min_value &&
-                                      value <= paramSetting.opc_max_value) ||
-                                    (paramSetting.pcc_min_value !== undefined &&
-                                      paramSetting.pcc_max_value !== undefined &&
-                                      value >= paramSetting.pcc_min_value &&
-                                      value <= paramSetting.pcc_max_value);
-                                  if (inRange) {
-                                    paramData.inRangeCount++;
-                                  }
-                                }
-                              }
-                            });
-
-                            // Convert to array and calculate percentages
-                            const breakdownData = Array.from(parameterBreakdown.values()).map(
-                              (param) => ({
-                                parameterName: param.parameterName,
-                                totalChecks: param.totalChecks,
-                                inRangeCount: param.inRangeCount,
-                                achievementPercentage:
-                                  param.totalChecks > 0
-                                    ? Math.round(
-                                        (param.inRangeCount / param.totalChecks) * 100 * 10
-                                      ) / 10
-                                    : 0,
-                                min: param.min,
-                                max: param.max,
-                              })
-                            );
-
-                            setOperatorBreakdownModal({
-                              isOpen: true,
-                              operatorName: operator.operatorName,
-                              operatorId: operator.operatorId,
-                              breakdownData: breakdownData,
-                            });
-                          } catch (error) {
-                            console.error('Error calculating operator breakdown:', error);
-                            setOperatorBreakdownModal({
-                              isOpen: true,
-                              operatorName: operator.operatorName,
-                              operatorId: operator.operatorId,
-                              breakdownData: [],
-                            });
-                          }
-                        }}
-                      >
-                        <div className={`text-2xl font-bold ${colorScheme.text} mb-1`}>
-                          {operator.overallAchievement}%
-                        </div>
-                        <div className="text-xs text-slate-600 font-medium">
-                          Pencapaian Keseluruhan
-                        </div>
-                        <div className="text-xs text-slate-700 mt-1 font-semibold">
-                          📊 Klik untuk detail parameter
-                        </div>
-                      </div>
-                      <div className="text-xs text-white/90 mt-2 font-medium">
-                        {operator.totalParameters} parameter
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 text-sm text-slate-600 font-medium bg-white/60 rounded-xl p-4 border border-amber-200">
-              <p className="flex items-center gap-2">
-                <span className="text-lg">🎯</span>
-                Peringkat dihitung berdasarkan pencapaian keseluruhan di semua Plant Category dengan
-                standar OPC & PCC, tidak terpengaruh oleh filter di header halaman.
-              </p>
-            </div>
-          </Card>
-        )}
         {selectedParameterStats && (
           <div className="fixed top-20 left-4 z-50 w-64 p-3 bg-white rounded-lg shadow-xl border border-slate-300 text-sm text-slate-800 max-h-80 overflow-y-auto">
             <div className="flex justify-between items-center mb-2">
@@ -5007,74 +4193,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </ul>
           </div>
         )}
-        {selectedOperatorBreakdown && (
-          <Modal
-            isOpen={true}
-            onClose={() => setSelectedOperatorBreakdown(null)}
-            title={`Breakdown Pencapaian - ${selectedOperatorBreakdown.operatorName}`}
-          >
-            <div className="p-8 max-h-96 overflow-y-auto">
-              <div className="space-y-4">
-                <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-slate-800 text-sm">Ringkasan Pencapaian</h4>
-                      <div className="text-xs text-slate-600 mt-1">
-                        Kategori: {selectedOperatorBreakdown.category}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-slate-800">
-                        {selectedOperatorBreakdown.overallAchievement}%
-                      </div>
-                      <div className="text-xs text-slate-600">
-                        {selectedOperatorBreakdown.totalInRange}/
-                        {selectedOperatorBreakdown.totalChecks} checks
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Progress bar */}
-                  <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        selectedOperatorBreakdown.overallAchievement >= 90
-                          ? 'bg-green-500'
-                          : selectedOperatorBreakdown.overallAchievement >= 80
-                            ? 'bg-blue-500'
-                            : selectedOperatorBreakdown.overallAchievement >= 70
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                      }`}
-                      style={{
-                        width: `${Math.min(selectedOperatorBreakdown.overallAchievement, 100)}%`,
-                      }}
-                    ></div>
-                  </div>
-
-                  {/* Status indicators */}
-                  <div className="flex justify-between text-xs">
-                    <span className="text-green-600 font-medium">
-                      ✓ {selectedOperatorBreakdown.totalInRange} tercapai
-                    </span>
-                    <span className="text-red-600 font-medium">
-                      ✗{' '}
-                      {selectedOperatorBreakdown.totalChecks -
-                        selectedOperatorBreakdown.totalInRange}{' '}
-                      tidak tercapai
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-sm text-slate-600 mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                💡 <strong>Penjelasan:</strong> Pencapaian dihitung berdasarkan jumlah nilai
-                parameter COP yang berada dalam range min-max gabungan (umum/OPC/PCC) selama bulan
-                berjalan.
-              </div>
-            </div>
-          </Modal>
-        )}
         {/* Modal Breakdown Harian */}
         <Modal
           isOpen={breakdownModal.isOpen}
@@ -5165,88 +4284,6 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
             <div className="text-sm text-slate-600 mt-6 p-4 bg-slate-50 rounded-lg">
               💡 Kotak berwarna merah menunjukkan jam-jam dimana parameter di luar range target.
-            </div>
-          </div>
-        </Modal>
-        {/* Modal Breakdown Operator Achievement */}
-        <Modal
-          isOpen={operatorBreakdownModal.isOpen}
-          onClose={() =>
-            setOperatorBreakdownModal({
-              isOpen: false,
-              operatorName: '',
-              operatorId: '',
-              breakdownData: [],
-            })
-          }
-          title={`Breakdown Pencapaian - ${operatorBreakdownModal.operatorName}`}
-        >
-          <div className="p-8 max-h-96 overflow-y-auto">
-            <div className="space-y-4">
-              {operatorBreakdownModal.breakdownData.map((param, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-slate-800 text-sm">
-                        {param.parameterName}
-                      </h4>
-                      <div className="text-xs text-slate-600 mt-1">
-                        Target: {param.min} - {param.max}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-slate-800">
-                        {param.achievementPercentage}%
-                      </div>
-                      <div className="text-xs text-slate-600">
-                        {param.inRangeCount}/{param.totalChecks} checks
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="w-full bg-slate-200 rounded-full h-2 mb-2">
-                    <div
-                      className={`h-2 rounded-full ${
-                        param.achievementPercentage >= 90
-                          ? 'bg-green-500'
-                          : param.achievementPercentage >= 80
-                            ? 'bg-blue-500'
-                            : param.achievementPercentage >= 70
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                      }`}
-                      style={{ width: `${Math.min(param.achievementPercentage, 100)}%` }}
-                    ></div>
-                  </div>
-
-                  {/* Status indicators */}
-                  <div className="flex justify-between text-xs">
-                    <span className="text-green-600 font-medium">
-                      ✓ {param.inRangeCount} tercapai
-                    </span>
-                    <span className="text-red-600 font-medium">
-                      ✗ {param.totalChecks - param.inRangeCount} tidak tercapai
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {operatorBreakdownModal.breakdownData.length === 0 && (
-              <div className="text-center py-8 text-slate-500">
-                <div className="text-4xl mb-4">📊</div>
-                <div>Tidak ada data parameter untuk operator ini</div>
-              </div>
-            )}
-
-            <div className="text-sm text-slate-600 mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              💡 <strong>Penjelasan:</strong> Setiap parameter dievaluasi terhadap nilai min-max
-              sesuai jenis semen ({selectedCementType}). Pencapaian dihitung berdasarkan jumlah jam
-              dalam sebulan dimana parameter berada dalam range target.
             </div>
           </div>
         </Modal>

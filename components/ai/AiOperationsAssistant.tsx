@@ -7,13 +7,12 @@ import {
   CheckCircle2,
   ArrowRight,
   Activity,
-  Microscope,
-  Lightbulb,
-  Cpu,
+  Bot, // New Icon
 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import Button from '../ui/Button';
 import { ParameterSetting } from '../../types';
+import { genAIService } from '../../services/genAIService'; // Import Service
 
 // Interface for Analysis Data (matching CopAnalysisPage)
 interface AnalysisDataRow {
@@ -30,74 +29,11 @@ interface AiOperationsAssistantProps {
   moistureData?: { date: string; value: number }[];
 }
 
-// Knowledge Base for Cement Mill Parameter Influences
-interface KnowledgeBaseItem {
-  influencers: string[];
-  analysis: string;
-}
-
-const ParameterKnowledge: Record<string, KnowledgeBaseItem> = {
-  // Quality Parameters
-  Blaine: {
-    influencers: ['Separator Speed', 'Mill Draft', 'Grinding Aid', 'Clinker Hardness'],
-    analysis:
-      'Blaine (kehalusan) berbanding lurus dengan Separator Speed. Jika Blaine rendah, cek efisiensi separator atau tambah dosis Grinding Aid.',
-  },
-  Residue: {
-    influencers: ['Separator Speed', 'Mill Ventilation', 'Dam Ring Height'],
-    analysis:
-      'Residue tinggi menandakan separasi kurang optimal. Pertimbangkan menaikkan Separator Speed atau mengurangi ventilasi udara.',
-  },
-  SO3: {
-    influencers: ['Gypsum Feed Rate', 'Clinker SO3', 'Temperatur Mill'],
-    analysis:
-      'Kadar SO3 mengontrol setting time. Jika fluktuatif, periksa kestabilan feeding Gypsum dan temperatur mill (dehidrasi gipsum).',
-  },
-
-  // Operational Parameters
-  Feed: {
-    influencers: ['Mill Sound Level', 'Bucket Elevator Amps', 'Separator Return'],
-    analysis:
-      'Feed rate harus disesuaikan dengan Mill Load. Jika Sound Level tinggi (mill kosong), feed bisa dinaikkan untuk optimasi produksi.',
-  },
-  'Mill Motor': {
-    influencers: ['Ball Charge', 'Material Hardness', 'Liner Condition'],
-    analysis:
-      'Ampere motor mencerminkan beban giling. Penurunan drastis bisa indikasi "coating" pada liner atau grinding media aus.',
-  },
-  Separator: {
-    influencers: ['System Fan Speed', 'Reject Rate', 'Product Quality Target'],
-    analysis:
-      'Separator adalah kontrol utama kualitas. Speed tinggi meningkatkan Blaine tapi bisa menurunkan intlet pressure jika fan tidak diadjust.',
-  },
-  Vibration: {
-    influencers: ['Mill Filling Level', 'Bolts Loosening', 'Gear Alignment'],
-    analysis:
-      'Vibrasi tinggi biasanya karena mill terlalu kosong (impact ball ke liner) atau masalah mekanikal pada drive train.',
-  },
-  Temperature: {
-    influencers: ['Water Injection', 'Clinker Temp', 'Mill Ventilation'],
-    analysis:
-      'Temperatur semen > 110°C bisa menyebabkan false set (gypsum dehydration). Cek sistem water spray atau tambah ventilasi.',
-  },
-};
-
-const getKnowledge = (paramName: string): KnowledgeBaseItem => {
-  // Case insensitive partial match
-  const key = Object.keys(ParameterKnowledge).find((k) =>
-    paramName.toLowerCase().includes(k.toLowerCase())
-  );
-  return key
-    ? ParameterKnowledge[key]
-    : {
-        influencers: ['Operasi Hulu', 'Kondisi Mesin', 'Human Factors'],
-        analysis:
-          'Parameter ini dipengaruhi oleh stabilitas operasi equipment terkait dan konsistensi material input.',
-      };
-};
+import { ParameterKnowledge, getKnowledge, KnowledgeBaseItem } from './knowledgeBase';
 
 interface AnalysisResult {
   score: number;
+  aiAnalysis?: string; // New Field for GenAI Text
   criticalIssues: {
     parameter: string;
     value: number;
@@ -143,8 +79,6 @@ const calculateCpk = (mean: number, stdDev: number, min: number, max: number): n
 };
 
 // 3. Nelson Rules (Simplified)
-// Rule 3: 6 points in a row steadily increasing or decreasing (Trend)
-// Rule 4: 9 points in a row on same side of center line (Shift)
 const checkNelsonRules = (
   values: number[],
   mean: number
@@ -242,23 +176,52 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
   const [analysisStep, setAnalysisStep] = useState<string>('');
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     setIsAnalyzing(true);
-    setAnalysisStep('Calculated Standard Deviation (Sigma)...');
+    setAnalysisStep('Performing Statistical Analysis (Cpk, Sigma, Trends)...');
 
-    // Sequence of analysis steps for UX (processing real data)
-    setTimeout(() => {
-      setAnalysisStep('Evaluating Process Capability (Cpk)...');
-      setTimeout(() => {
-        setAnalysisStep('Checking Nelson Rules (Trends/Shifts)...');
-        setTimeout(() => {
-          const insightData = performAnalysis(analysisData, moistureData);
-          setResult(insightData);
-          setIsAnalyzing(false);
-          setAnalysisStep('');
-        }, 800);
-      }, 800);
-    }, 800);
+    // 1. Perform Local Statistical Analysis (Instant)
+    await new Promise((r) => setTimeout(r, 100)); // Small UI tick
+    const statsResult = performAnalysis(analysisData, moistureData);
+
+    // Check for API Key
+    const apiKey = import.meta.env.VITE_XAI_API_KEY || '';
+
+    if (apiKey) {
+      setAnalysisStep('Generating AI Insights via xAI Grok...');
+
+      // Prepare Context string for AI
+      const contextSummary = `
+ANALYSIS DATE: ${new Date().toLocaleDateString()}
+UNIT: ${selectedUnit || 'General'}
+HEALTH SCORE: ${statsResult.score}/100
+
+CRITICAL ISSUES:
+${statsResult.criticalIssues.map((i) => `- ${i.parameter}: Value=${i.value.toFixed(2)}, Issue=${i.issue}`).join('\n')}
+
+STATISTICAL RECOMMENDATIONS (Calculated Rule-based):
+${statsResult.recommendations.map((r) => `- ${r.parameter} [${r.priority}]: ${r.action} (Target: ${r.targetValue})`).join('\n')}
+
+INSIGHTS:
+${statsResult.insights.map((i) => `- ${i.type.toUpperCase()}: ${i.message}`).join('\n')}
+`;
+
+      try {
+        const aiText = await genAIService.sendMessage(
+          apiKey,
+          contextSummary,
+          "Review hasil analisis statistik di atas dan berikan 'Executive Summary' singkat (maksimal 3 paragraf) tentang kondisi operasi saat ini dan apa prioritas utama operator."
+        );
+        statsResult.aiAnalysis = aiText;
+      } catch (e) {
+        console.error(e);
+        statsResult.aiAnalysis = 'Gagal menghubungi xAI. Menampilkan hasil statistik saja.';
+      }
+    }
+
+    setResult(statsResult);
+    setIsAnalyzing(false);
+    setAnalysisStep('');
   };
 
   const calculateImpactScore = (
@@ -286,9 +249,9 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
     data: AnalysisDataRow[],
     moistureHistory: { date: string; value: number }[]
   ): AnalysisResult => {
-    const criticalIssues: any[] = [];
-    const insights: any[] = [];
-    const recommendations: any[] = [];
+    const criticalIssues: AnalysisResult['criticalIssues'] = [];
+    const insights: AnalysisResult['insights'] = [];
+    const recommendations: AnalysisResult['recommendations'] = [];
     let totalScore = 0;
     let validParams = 0;
 
@@ -509,11 +472,11 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
             <BrainCircuit className="w-6 h-6 text-indigo-600" />
             AI Operations Assistant{' '}
             <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
-              Available with Minitab-Engine
+              Powered by xAI Grok
             </span>
           </h2>
           <p className="text-sm text-slate-600 mt-1">
-            Statistical Process Control (SPC) & Predictive Recommendations
+            Statistical Process Control (SPC) & Generative Intelligence
           </p>
         </div>
         {!result ? (
@@ -530,7 +493,7 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
             ) : (
               <span className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
-                Jalankan Analisa Statistik
+                Jalankan Analisa AI
               </span>
             )}
           </Button>
@@ -637,6 +600,24 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
               ))}
             </div>
           </div>
+
+          {/* AI GROK ANALYSIS SECTION (New) */}
+          {result.aiAnalysis && (
+            <div className="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <Bot className="w-24 h-24 text-white" />
+              </div>
+              <h3 className="text-sm font-bold text-indigo-300 mb-3 flex items-center gap-2 relative z-10">
+                <Sparkles className="w-4 h-4" />
+                GROK Executive Summary
+              </h3>
+              <div className="prose prose-invert prose-sm max-w-none relative z-10">
+                <p className="whitespace-pre-wrap leading-relaxed opacity-90">
+                  {result.aiAnalysis}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* AI Recommendations Table */}
           <div>

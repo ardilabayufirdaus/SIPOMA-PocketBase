@@ -536,12 +536,16 @@ const WhatsAppGroupReportPage: React.FC = () => {
         const unitDowntime = downtimeNotes.filter((d) => d.unit.includes(unit));
         const unitInformation = getInformationForDate(date, unit);
 
-        if (unitDowntime.length > 0 || (unitInformation && unitInformation.information)) {
+        // Check if information should be shown (hide for Operator role)
+        const showInformation =
+          unitInformation && unitInformation.information && user?.role !== 'Operator';
+
+        if (unitDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
           // Tambahkan informasi dari CCR Data Entry jika ada
-          if (unitInformation && unitInformation.information) {
-            report += `├─ *Informasi:*\n${unitInformation.information
+          if (showInformation) {
+            report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
               .map((line) => `│  ${line}`)
               .join('\n')}\n`;
@@ -615,6 +619,11 @@ const WhatsAppGroupReportPage: React.FC = () => {
     getDowntimeForDate,
     parameterSettings,
     translateWithVars,
+    calculateTotalDowntime,
+    calculateTotalProductionFromFeeders,
+    getInformationForDate,
+    silos,
+    user?.role,
     t,
   ]);
 
@@ -880,12 +889,16 @@ const WhatsAppGroupReportPage: React.FC = () => {
         });
         const unitInformation = getInformationForDate(date, unit);
 
-        if (unitDowntime.length > 0 || (unitInformation && unitInformation.information)) {
+        // Check if information should be shown (hide for Operator role)
+        const showInformation =
+          unitInformation && unitInformation.information && user?.role !== 'Operator';
+
+        if (unitDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
           // Tambahkan informasi dari CCR Data Entry jika ada
-          if (unitInformation && unitInformation.information) {
-            report += `├─ *Informasi:*\n${unitInformation.information
+          if (showInformation) {
+            report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
               .map((line) => `│  ${line}`)
               .join('\n')}\n`;
@@ -963,6 +976,10 @@ const WhatsAppGroupReportPage: React.FC = () => {
     silos,
     translateWithVars,
     t,
+    calculateTotalProductionFromFeeders,
+    calculateTotalDowntime,
+    user?.role,
+    getInformationForDate,
   ]);
 
   // Generate Shift 2 Report sesuai format yang diminta (jam 15-23)
@@ -1224,12 +1241,16 @@ const WhatsAppGroupReportPage: React.FC = () => {
         });
         const unitInformation = getInformationForDate(date, unit);
 
-        if (unitDowntime.length > 0 || (unitInformation && unitInformation.information)) {
+        // Check if information should be shown (hide for Operator role)
+        const showInformation =
+          unitInformation && unitInformation.information && user?.role !== 'Operator';
+
+        if (unitDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
           // Tambahkan informasi dari CCR Data Entry jika ada
-          if (unitInformation && unitInformation.information) {
-            report += `├─ *Informasi:*\n${unitInformation.information
+          if (showInformation) {
+            report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
               .map((line) => `│  ${line}`)
               .join('\n')}\n`;
@@ -1305,6 +1326,13 @@ const WhatsAppGroupReportPage: React.FC = () => {
     getDowntimeForDate,
     parameterSettings,
     silos,
+    calculateTotalProductionFromFeeders,
+    getInformationForDate,
+    getOperatorName,
+    t.wag_silo_content,
+    t.wag_silo_empty,
+    t.wag_silo_fill,
+    user?.role,
   ]);
 
   // Generate Shift 3 Report sesuai format yang diminta (jam 23-07) dengan data shift3_cont hari berikutnya
@@ -1635,12 +1663,16 @@ const WhatsAppGroupReportPage: React.FC = () => {
         const allDowntime = [...unitDowntime, ...nextDayUnitDowntime];
         const unitInformation = getInformationForDate(date, unit);
 
-        if (allDowntime.length > 0 || (unitInformation && unitInformation.information)) {
+        // Check if information should be shown (hide for Operator role)
+        const showInformation =
+          unitInformation && unitInformation.information && user?.role !== 'Operator';
+
+        if (allDowntime.length > 0 || showInformation) {
           report += `⚠️ *CATATAN TAMBAHAN*\n`;
 
           // Tambahkan informasi dari CCR Data Entry jika ada
-          if (unitInformation && unitInformation.information) {
-            report += `├─ *Informasi:*\n${unitInformation.information
+          if (showInformation) {
+            report += `├─ *Informasi:*\n${unitInformation!.information
               .split('\n')
               .map((line) => `│  ${line}`)
               .join('\n')}\n`;
@@ -1716,6 +1748,13 @@ const WhatsAppGroupReportPage: React.FC = () => {
     getDowntimeForDate,
     parameterSettings,
     silos,
+    calculateTotalProductionFromFeeders,
+    getInformationForDate,
+    getOperatorName,
+    t.wag_silo_content,
+    t.wag_silo_empty,
+    t.wag_silo_fill,
+    user?.role,
   ]);
 
   // Handle generate report button click

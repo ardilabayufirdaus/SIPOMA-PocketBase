@@ -8,6 +8,7 @@ import { useOfflineStatus } from './useOfflineStatus';
 import { getData as getIndexedDBData, storeData, STORES } from '../utils/indexedDB';
 import { syncPendingOperations } from '../utils/syncManager';
 import { offlineDB } from '../utils/offlineDatabase';
+import { useProductionCapacity } from './useProductionCapacity';
 
 // Define a common type for hour values to ensure consistency
 export type HourValueType = string | number | null;
@@ -176,6 +177,7 @@ export interface CcrParameterDataWithName extends CcrParameterData {
 export const useCcrParameterDataFlat = () => {
   const { records: parameters, loading: paramsLoading } = useParameterSettings();
   const { isOnline, wasOffline, resetWasOffline } = useOfflineStatus();
+  const { recalculateAndSyncCapacity } = useProductionCapacity();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [dataVersion, setDataVersion] = useState<number>(0);
@@ -322,7 +324,7 @@ export const useCcrParameterDataFlat = () => {
         let localData: CcrParameterDataFlat[] = [];
         try {
           const cachedData = await getIndexedDBData(STORES.CCR_PARAMETERS);
-          localData = cachedData.filter((item: any) => item.date === isoDate);
+          localData = cachedData.filter((item: CcrParameterDataFlat) => item.date === isoDate);
         } catch (err) {
           logger.warn('Failed to load cached data:', err);
         }
@@ -512,7 +514,7 @@ export const useCcrParameterDataFlat = () => {
       value: string | number | null,
       userName: string, // nama user login
       selectedUnit?: string, // parameter tambahan untuk plant_unit
-      opts?: { skipTrigger?: boolean } // optional: skip global dataVersion trigger
+      opts?: { skipTrigger?: boolean; skipSync?: boolean } // optional: skip global dataVersion trigger or sync
     ) => {
       // Enhanced validation for date parameter
       if (
@@ -638,6 +640,23 @@ export const useCcrParameterDataFlat = () => {
           }
         }
 
+        // Sync Trigger: Update Capacity if parameter is relevant
+        if (!opts?.skipSync) {
+          const param = parameters.find((p) => p.id === parameter_id);
+          if (
+            param &&
+            (param.parameter.includes('H2O') || param.parameter.includes('Set. Feeder'))
+          ) {
+            // We need plantUnit. If selectedUnit is there, use it. Else use param.unit.
+            const unitToSync = selectedUnit || param.unit;
+            if (unitToSync) {
+              // Call robust sync function
+              // It will try to infer category
+              recalculateAndSyncCapacity(normalizedDate, unitToSync);
+            }
+          }
+        }
+
         // Trigger data update throughout the app unless explicitly skipped
         if (!opts || !opts.skipTrigger) {
           setDataVersion((prev) => prev + 1);
@@ -651,7 +670,7 @@ export const useCcrParameterDataFlat = () => {
         setLoading(false);
       }
     },
-    [setLoading, setError, setDataVersion]
+    [setLoading, setError, setDataVersion, recalculateAndSyncCapacity, parameters]
   );
 
   const batchUpdateParameterData = useCallback(
@@ -693,24 +712,41 @@ export const useCcrParameterDataFlat = () => {
         const batchSize = 5; // Process 5 updates at a time
         const results = [];
 
+        // Track unique units/dates to sync after batch
+        const syncTargets = new Map<string, { date: string; unit: string }>();
+
         for (let i = 0; i < updates.length; i += batchSize) {
           const batch = updates.slice(i, i + batchSize);
 
           // Process batch concurrently
-          const batchPromises = batch.map((update) =>
-            updateParameterData(
+          const batchPromises = batch.map((update) => {
+            // Collect targets for sync later
+            const param = parameters.find((p) => p.id === update.parameter_id);
+            if (
+              param &&
+              (param.parameter.includes('H2O') || param.parameter.includes('Set. Feeder'))
+            ) {
+              const unit = update.selectedUnit || param.unit;
+              if (unit) {
+                const key = `${update.date}-${unit}`;
+                syncTargets.set(key, { date: update.date, unit });
+              }
+            }
+
+            return updateParameterData(
               update.parameter_id,
               update.date,
               update.hour,
               update.value,
               update.userName,
-              update.selectedUnit
+              update.selectedUnit,
+              { skipSync: true } // Skip individual syncs
             ).catch((error) => {
               // Log error but don't fail the entire batch
               logger.error('Batch update error for parameter:', update.parameter_id, error);
               return null;
-            })
-          );
+            });
+          });
 
           const batchResults = await Promise.allSettled(batchPromises);
           results.push(...batchResults);
@@ -719,6 +755,11 @@ export const useCcrParameterDataFlat = () => {
           if (i + batchSize < updates.length) {
             await new Promise((resolve) => setTimeout(resolve, 200));
           }
+        }
+
+        // Trigger collected syncs
+        for (const target of syncTargets.values()) {
+          recalculateAndSyncCapacity(target.date, target.unit);
         }
 
         // Trigger data update throughout the app
@@ -740,7 +781,14 @@ export const useCcrParameterDataFlat = () => {
         setLoading(false);
       }
     },
-    [updateParameterData, setLoading, setError, setDataVersion]
+    [
+      updateParameterData,
+      setLoading,
+      setError,
+      setDataVersion,
+      recalculateAndSyncCapacity,
+      parameters,
+    ]
   );
 
   const getDataForDateRange = useCallback(

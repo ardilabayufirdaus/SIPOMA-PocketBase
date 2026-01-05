@@ -65,6 +65,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       plantOperationPages: [
         { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
         {
+          key: 'op_people_champion',
+          icon: <UserGroupIcon className={iconClass} />,
+        },
+        {
           key: 'op_report',
           icon: <ClipboardDocumentListIcon className={iconClass} />,
         },
@@ -223,7 +227,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           return [];
       }
     },
-    [navigationData, t, permissionChecker]
+    [navigationData, t, permissionChecker, currentUser]
   );
 
   const handleNavigate = useCallback(

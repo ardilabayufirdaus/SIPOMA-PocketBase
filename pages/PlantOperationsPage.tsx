@@ -9,6 +9,7 @@ import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibrar
 import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
 import PlantOperationsDashboardPage from './plant_operations/PlantOperationsDashboardPage';
 import MonitoringPage from './plant_operations/MonitoringPage';
+import PeopleChampionPage from './plant_operations/PeopleChampionPage';
 
 interface PlantData {
   loading: boolean;
@@ -21,32 +22,36 @@ interface PlantOperationsPageProps {
 }
 
 const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t }) => {
-  switch (activePage) {
-    case 'op_dashboard':
-      return <PlantOperationsDashboardPage t={t} />;
-    case 'op_report':
-      return <ReportPage t={t} />;
-    case 'op_wag_report':
-      return <WhatsAppGroupReportPage />;
-    case 'op_master_data':
-      return <PlantOperationsMasterData t={t} />;
-    case 'op_ccr_data_entry':
-      return <CcrDataEntryPage t={t} />;
-    case 'op_autonomous_data_entry':
-      return <AutonomousDataEntryPage t={t} />;
-    case 'op_cop_analysis':
-      return <CopAnalysisPage t={t} />;
-    case 'op_work_instruction_library':
-      return <WorkInstructionLibraryPage t={t} />;
-    case 'op_monitoring':
-      return <MonitoringPage t={t} />;
-    default: {
-      const pageTitle = t[activePage as keyof typeof t] || activePage;
-      return <PlaceholderPage title={pageTitle} t={t} />;
+  const renderContent = () => {
+    switch (activePage) {
+      case 'op_dashboard':
+        return <PlantOperationsDashboardPage t={t} />;
+      case 'op_report':
+        return <ReportPage t={t} />;
+      case 'op_people_champion':
+        return <PeopleChampionPage />;
+      case 'op_wag_report':
+        return <WhatsAppGroupReportPage />;
+      case 'op_master_data':
+        return <PlantOperationsMasterData t={t} />;
+      case 'op_ccr_data_entry':
+        return <CcrDataEntryPage t={t} />;
+      case 'op_autonomous_data_entry':
+        return <AutonomousDataEntryPage t={t} />;
+      case 'op_cop_analysis':
+        return <CopAnalysisPage t={t} />;
+      case 'op_work_instruction_library':
+        return <WorkInstructionLibraryPage t={t} />;
+      case 'op_monitoring':
+        return <MonitoringPage t={t} />;
+      default: {
+        const pageTitle = t[activePage as keyof typeof t] || activePage;
+        return <PlaceholderPage title={pageTitle} t={t} />;
+      }
     }
-  }
+  };
+
+  return <>{renderContent()}</>;
 };
 
 export default PlantOperationsPage;
-
-
