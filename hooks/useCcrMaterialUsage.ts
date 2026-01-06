@@ -26,7 +26,7 @@ interface CcrMaterialUsageSchema {
 }
 
 // Enhanced material usage data for UI (can be extended with calculated fields)
-interface MaterialUsageData extends CcrMaterialUsageSchema {
+export interface MaterialUsageData extends CcrMaterialUsageSchema {
   // Additional calculated fields can be added here if needed in the future
 }
 

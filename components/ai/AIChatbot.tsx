@@ -55,8 +55,7 @@ export const AIChatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // GenAI Settings
-  // Hardcoded API Key check (Moved to ENV)
-  const apiKey = import.meta.env.VITE_XAI_API_KEY || '';
+  // API Key handled by backend service
 
   // Data Hooks  // 1. Data Retrieval
   const today = new Date().toISOString().split('T')[0];
@@ -352,26 +351,15 @@ export const AIChatbot: React.FC = () => {
     }
 
     // --- DECISION: GEN AI OR RULE BASED? ---
-    if (apiKey) {
-      const aiResponse = await genAIService.sendMessage(apiKey, contextData, query);
-      return {
-        id: Date.now().toString(),
-        sender: 'bot',
-        text: aiResponse,
-        timestamp: new Date(),
-      };
-    } else {
-      let finalText = 'Mode: Offline Logic (Set API Key untuk Smart AI).\n\n';
-      if (contextData) finalText += 'Saya menemukan data berikut sistem:\n' + contextData;
-      else finalText += 'Maaf, saya tidak mengerti dan tidak ada konteks sistem yang cocok.';
-
-      return {
-        id: Date.now().toString(),
-        sender: 'bot',
-        text: finalText,
-        timestamp: new Date(),
-      };
-    }
+    // --- DECISION: GEN AI OR RULE BASED? ---
+    // API logic is now handled by the backend service
+    const aiResponse = await genAIService.sendMessage(contextData, query);
+    return {
+      id: Date.now().toString(),
+      sender: 'bot',
+      text: aiResponse,
+      timestamp: new Date(),
+    };
   };
 
   // ... (keep return logic but remove Toggle Button and use context isOpen)

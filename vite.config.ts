@@ -239,6 +239,15 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/xai/, ''),
         secure: true,
+        configure: (proxy, _options) => {
+          proxy.on('proxyReq', (proxyReq, _req, _res) => {
+            // Inject API key during development
+            const apiKey = process.env.VITE_XAI_API_KEY || process.env.XAI_API_KEY;
+            if (apiKey) {
+              proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
+            }
+          });
+        },
       },
       '/api': {
         target: 'https://api.sipoma.site',
