@@ -62,6 +62,8 @@ import {
   EnhancedCard,
   useAccessibility,
 } from '../../components/ui/EnhancedComponents';
+import { ShiftHandoverButton } from '@features/ai-advisor/presentation/components/ShiftHandoverButton';
+import { OptimizationAdvisorButton } from '@features/ai-advisor/presentation/components/OptimizationAdvisorButton';
 
 // Import UI Components
 import { Button } from '../../components/ui';
@@ -124,6 +126,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
+  const hasPermission = (
+    feature: Parameters<typeof permissionChecker.hasPermission>[0],
+    level?: Parameters<typeof permissionChecker.hasPermission>[1]
+  ) => permissionChecker.hasPermission(feature, level);
   useEffect(() => {
     // Debug: log role user setiap render
   }, [loggedInUser]);
@@ -209,7 +215,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     const categories = [...new Set(allowedCategories)].sort();
     // Debug log removed for cleaner console output
     return categories;
-  }, [plantUnits, permissionChecker]);
+  }, [plantUnits]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
 
@@ -327,14 +333,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       .filter(
         (unit) => unit.category === selectedCategory
         // Bypass permission check for debugging
-        // && permissionChecker.hasPlantOperationPermission(unit.category, unit.unit, 'READ')
       )
       .map((unit) => unit.unit)
       .sort();
 
     // Debug log removed for cleaner console output
     return units;
-  }, [plantUnits, selectedCategory, permissionChecker]);
+  }, [plantUnits, selectedCategory]);
 
   // Hapus auto-select: biarkan user memilih unit secara manual
 
@@ -3883,222 +3888,66 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
 
             {/* Enhanced Table Controls */}
-            <div className="flex items-center gap-2 flex-wrap justify-end flex-1 w-full lg:w-auto">
-              {/* Export/Import Controls - Only for allowed roles */}
-              {['Super Admin', 'Admin', 'Manager', 'Autonomous', 'Operator'].includes(
-                loggedInUser?.role
-              ) && (
-                <div className="flex items-center gap-2 flex-wrap justify-end">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImport}
-                    accept=".xlsx, .xls"
-                    className="hidden"
-                  />
-                  {/* Import Excel Button - Requires WRITE permission */}
-                  {permissionChecker.hasPermission('plant_operations', 'WRITE') && (
+            {/* Controls Toolbar */}
+            <div className="flex flex-col gap-2 w-full lg:w-auto items-end">
+              {/* Primary Actions Row */}
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {/* Visual Controls Group */}
+                <div className="flex items-center p-1 bg-white/50 rounded-lg border border-neutral-200/50 shadow-sm backdrop-blur-sm">
+                  {/* Refresh Button */}
+                  <div className="relative group/tooltip">
                     <Button
-                      size="lg"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isImporting || !selectedCategory || !selectedUnit}
-                      leftIcon={
-                        isImporting ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <DocumentArrowUpIcon className="w-5 h-5" />
-                        )
-                      }
-                      className="group relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/30 border-0"
+                      size="sm"
+                      onClick={refreshData}
+                      disabled={isRefreshing || !selectedCategory || !selectedUnit}
+                      variant="ghost"
+                      className="h-9 px-3 text-neutral-600 hover:text-indigo-600 hover:bg-indigo-50"
+                      title="Refresh Data"
                     >
-                      <span className="relative z-10">
-                        {isImporting ? 'Importing...' : t.import_excel || 'Import Excel'}
-                      </span>
-                      <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </Button>
-                  )}
-
-                  {/* Download Template Button - Requires READ permission */}
-                  {permissionChecker.hasPermission('plant_operations', 'READ') && (
-                    <Button
-                      size="lg"
-                      onClick={handleDownloadTemplate}
-                      disabled={
-                        isDownloadingTemplate ||
-                        !selectedCategory ||
-                        !selectedUnit ||
-                        filteredParameterSettings.length === 0
-                      }
-                      leftIcon={
-                        isDownloadingTemplate ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <DocumentArrowDownIcon className="w-5 h-5" />
-                        )
-                      }
-                      className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/30 border-0"
-                    >
-                      <span className="relative z-10">
-                        {isDownloadingTemplate ? 'Downloading...' : 'Download Template'}
-                      </span>
-                      <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </Button>
-                  )}
-
-                  {/* Export Excel Button - Requires READ permission */}
-                  {permissionChecker.hasPermission('plant_operations', 'READ') && (
-                    <Button
-                      size="lg"
-                      onClick={handleExport}
-                      disabled={
-                        isExporting ||
-                        !selectedCategory ||
-                        !selectedUnit ||
-                        filteredParameterSettings.length === 0
-                      }
-                      leftIcon={
-                        isExporting ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <DocumentArrowDownIcon className="w-5 h-5" />
-                        )
-                      }
-                      className="group relative overflow-hidden bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white shadow-lg shadow-teal-500/30 border-0"
-                    >
-                      <span className="relative z-10">
-                        {isExporting ? 'Exporting...' : t.export_excel || 'Export Excel'}
-                      </span>
-                      <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </Button>
-                  )}
-
-                  {/* Delete All Parameters & Names: Super Admin Only */}
-                  {isSuperAdmin(loggedInUser?.role) && (
-                    <>
-                      <Button
-                        size="lg"
-                        onClick={deleteAllParameters}
-                        disabled={
-                          isDeletingAll ||
-                          !selectedCategory ||
-                          !selectedUnit ||
-                          dailyParameterData.length === 0
-                        }
-                        leftIcon={
-                          isDeletingAll ? (
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            <TrashIcon className="w-5 h-5" />
-                          )
-                        }
-                        className="group relative overflow-hidden bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-500/30 border-0"
+                      <div
+                        className={`transition-transform duration-700 ${isRefreshing ? 'animate-spin' : ''}`}
                       >
-                        <span className="relative z-10">
-                          {isDeletingAll ? 'Deleting...' : 'Delete All Data'}
-                        </span>
-                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      </Button>
-                      <Button
-                        size="lg"
-                        onClick={deleteAllNames}
-                        disabled={
-                          isDeletingAllNames ||
-                          !selectedCategory ||
-                          !selectedUnit ||
-                          dailyParameterData.length === 0
-                        }
-                        leftIcon={
-                          isDeletingAllNames ? (
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                          )
-                        }
-                        className="group relative overflow-hidden bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-500/30 border-0"
-                      >
-                        <span className="relative z-10">
-                          {isDeletingAllNames ? 'Deleting...' : 'Delete All Names'}
-                        </span>
-                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      </Button>
-                    </>
-                  )}
-                </div>
-              )}
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                      </div>
+                    </Button>
+                    {/* Last Updated Tooltip */}
+                    {lastRefreshTime && (
+                      <div className="absolute right-0 top-full mt-2 hidden group-hover/tooltip:block z-50 px-2 py-1 text-xs text-white bg-neutral-800 rounded shadow-lg whitespace-nowrap">
+                        Updated:{' '}
+                        {formatToWITA(new Date(lastRefreshTime), {
+                          includeDate: false,
+                          includeTime: true,
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-              {/* Show/Hide Footer Button */}
-              <Button
-                variant="glass"
-                size="base"
-                onClick={() => setIsFooterVisible(!isFooterVisible)}
-                aria-label={isFooterVisible ? 'Hide footer' : 'Show footer'}
-                leftIcon={
-                  isFooterVisible ? (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 15l7-7 7 7"
-                      />
-                    </svg>
-                  )
-                }
-                className="group relative overflow-hidden backdrop-blur-md bg-white/20 border border-white/30 text-neutral-800 hover:bg-white/30 transition-all duration-300"
-              >
-                <span className="relative z-10">
-                  {isFooterVisible ? 'Hide Footer' : 'Show Footer'}
-                </span>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-white/10 transition-opacity duration-300"></div>
-              </Button>
+                  <div className="w-px h-4 bg-neutral-300 mx-1"></div>
 
-              {/* Reorder Parameters Button */}
-              <Button
-                size="lg"
-                onClick={() => setShowReorderModal(true)}
-                disabled={
-                  !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
-                }
-                leftIcon={<ArrowsUpDownIcon className="w-5 h-5" />}
-                className="group relative overflow-hidden bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-lg shadow-violet-500/30 border-0"
-              >
-                <span className="relative z-10">Reorder Parameters</span>
-                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Button>
-
-              {/* Refresh Data Button dengan Last Refresh Time */}
-              <div className="flex flex-col items-end gap-1">
-                <Button
-                  size="lg"
-                  onClick={refreshData}
-                  disabled={isRefreshing || !selectedCategory || !selectedUnit}
-                  leftIcon={
-                    isRefreshing ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
+                  {/* Show/Hide Footer */}
+                  <Button
+                    size="sm"
+                    onClick={() => setIsFooterVisible(!isFooterVisible)}
+                    variant="ghost"
+                    className={`h-9 px-3 ${isFooterVisible ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-neutral-600 hover:bg-neutral-100'}`}
+                    title={isFooterVisible ? 'Hide Footer' : 'Show Footer'}
+                  >
+                    <span className="text-sm mr-2">Footer</span>
+                    {isFooterVisible ? (
                       <svg
-                        className="w-5 h-5"
+                        className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -4107,27 +3956,180 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    )
-                  }
-                  className="group relative overflow-hidden bg-gradient-to-r from-slate-600 to-slate-800 hover:from-slate-500 hover:to-slate-700 text-white shadow-lg shadow-slate-500/30 border-0"
-                >
-                  <span className="relative z-10">
-                    {isRefreshing ? 'Memperbarui...' : 'Refresh Data'}
-                  </span>
-                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </Button>
+                    ) : (
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 15l7-7 7 7"
+                        />
+                      </svg>
+                    )}
+                  </Button>
 
-                {lastRefreshTime && (
-                  <span className="text-xs text-gray-500">
-                    Terakhir diperbarui:{' '}
-                    {formatToWITA(new Date(lastRefreshTime), {
-                      includeDate: false,
-                      includeTime: true,
-                    })}
-                  </span>
+                  <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+
+                  {/* Reorder Parameters */}
+                  <Button
+                    size="sm"
+                    onClick={() => setShowReorderModal(true)}
+                    disabled={
+                      !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
+                    }
+                    variant="ghost"
+                    className="h-9 px-3 text-neutral-600 hover:text-violet-600 hover:bg-violet-50"
+                    title="Reorder Parameters"
+                  >
+                    <span className="text-sm mr-2">Reorder</span>
+                    <ArrowsUpDownIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                {/* AI Features Group */}
+                {hasPermission('plant_operations', 'create') && selectedUnit && (
+                  <div className="flex items-center gap-2">
+                    {/* AI Parameter Optimization */}
+                    <OptimizationAdvisorButton
+                      unit={selectedUnit}
+                      className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 hover:shadow-md"
+                    />
+
+                    {/* AI Shift Report */}
+                    {selectedDate && (
+                      <ShiftHandoverButton
+                        date={selectedDate}
+                        unit={selectedUnit}
+                        className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:shadow-md"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Secondary Actions Row (Excel & Admin) */}
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                {/* Excel Operations Group */}
+                {hasPermission('plant_operations', 'READ') && (
+                  <div className="flex items-center bg-white rounded-lg border border-neutral-200/50 shadow-sm overflow-hidden">
+                    {/* Import */}
+                    {hasPermission('plant_operations', 'WRITE') && (
+                      <>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImport}
+                          accept=".xlsx, .xls"
+                          className="hidden"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isImporting || !selectedCategory || !selectedUnit}
+                          variant="ghost"
+                          className="h-8 px-3 rounded-none border-r border-neutral-100 text-neutral-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          title="Import Excel"
+                        >
+                          <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
+                          <span className="text-xs font-medium">Import</span>
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Template */}
+                    <Button
+                      size="sm"
+                      onClick={handleDownloadTemplate}
+                      disabled={
+                        isDownloadingTemplate ||
+                        !selectedCategory ||
+                        !selectedUnit ||
+                        filteredParameterSettings.length === 0
+                      }
+                      variant="ghost"
+                      className="h-8 px-3 rounded-none border-r border-neutral-100 text-neutral-600 hover:text-blue-700 hover:bg-blue-50"
+                      title="Download Template"
+                    >
+                      <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
+                      <span className="text-xs font-medium">Template</span>
+                    </Button>
+
+                    {/* Export */}
+                    <Button
+                      size="sm"
+                      onClick={handleExport}
+                      disabled={
+                        isExporting ||
+                        !selectedCategory ||
+                        !selectedUnit ||
+                        filteredParameterSettings.length === 0
+                      }
+                      variant="ghost"
+                      className="h-8 px-3 rounded-none text-neutral-600 hover:text-teal-700 hover:bg-teal-50"
+                      title="Export Excel"
+                    >
+                      <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
+                      <span className="text-xs font-medium">Export</span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Admin Destructive Actions */}
+                {isSuperAdmin(loggedInUser?.role) && (
+                  <div className="flex items-center gap-2 ml-2 pl-2 border-l border-neutral-200">
+                    <Button
+                      size="sm"
+                      onClick={deleteAllParameters}
+                      disabled={
+                        isDeletingAll ||
+                        !selectedCategory ||
+                        !selectedUnit ||
+                        dailyParameterData.length === 0
+                      }
+                      variant="ghost"
+                      className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded text-xs"
+                      title="Delete All Data"
+                    >
+                      <TrashIcon className="w-4 h-4 mr-1" />
+                      Delete Data
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={deleteAllNames}
+                      disabled={
+                        isDeletingAllNames ||
+                        !selectedCategory ||
+                        !selectedUnit ||
+                        dailyParameterData.length === 0
+                      }
+                      variant="ghost"
+                      className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded text-xs"
+                      title="Delete All Names"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      Delete Names
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -4906,6 +4908,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 selectedUnit={selectedUnit}
                 selectedCategory={selectedCategory}
                 disabled={!selectedCategory || !selectedUnit}
+                t={t}
               />
             </EnhancedCard>
           </div>
@@ -4994,19 +4997,20 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
                 <EnhancedButton
                   variant="primary"
-                  size="lg"
+                  size="sm"
                   onClick={handleOpenAddDowntimeModal}
                   disabled={
-                    !permissionChecker.hasPermission('plant_operations', 'WRITE') ||
+                    !hasPermission('plant_operations', 'WRITE') ||
                     !selectedCategory ||
                     !selectedUnit
                   }
                   aria-label={t.add_downtime_button || 'Add new downtime'}
-                  className="group relative overflow-hidden flex items-center gap-2"
+                  className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-500 hover:to-secondary-500 shadow-md transition-all"
                 >
-                  <PlusIcon className="w-5 h-5" />
-                  <span className="relative z-10">{t.add_downtime_button}</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                  <PlusIcon className="w-4 h-4 text-white" />
+                  <span className="relative z-10 text-sm font-medium text-white">
+                    {t.add_downtime_button}
+                  </span>
                 </EnhancedButton>
               </div>
               <div className="overflow-x-auto">

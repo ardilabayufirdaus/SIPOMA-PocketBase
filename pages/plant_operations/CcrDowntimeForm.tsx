@@ -4,6 +4,7 @@ import { usePicSettings } from '../../hooks/usePicSettings';
 
 // Import Enhanced Components
 import { EnhancedButton, EnhancedInput } from '../../components/ui/EnhancedComponents';
+import { RcaAnalysisButton } from '@features/ai-advisor/presentation/components/RcaAnalysisButton';
 
 interface FormProps {
   recordToEdit: CcrDowntimeData | null;
@@ -420,17 +421,31 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="action" className="block text-sm font-medium text-slate-700">
-                {t.action}
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="action" className="block text-sm font-medium text-slate-700">
+                  {t.action}
+                </label>
+                <div className="scale-90 origin-right">
+                  <RcaAnalysisButton
+                    currentDowntime={formData}
+                    onAnalysisComplete={(analysis) => {
+                      // Append analysis to action field
+                      const newAction = formData.action
+                        ? `${formData.action}\n\n[AI Analysis]\n${analysis}`
+                        : `[AI Analysis]\n${analysis}`;
+                      handleInputChange('action', newAction);
+                    }}
+                  />
+                </div>
+              </div>
               <textarea
                 name="action"
                 id="action"
                 value={formData.action}
                 onChange={handleChange}
-                rows={4}
-                placeholder="Describe the actions taken to resolve the issue..."
-                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400 resize-none transition-all duration-200"
+                rows={6}
+                placeholder="Describe the actions taken or click 'AI RCA' for suggestions..."
+                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400 resize-none transition-all duration-200 font-mono text-sm"
               />
             </div>
           </div>

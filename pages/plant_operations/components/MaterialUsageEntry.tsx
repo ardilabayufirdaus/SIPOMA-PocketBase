@@ -9,6 +9,7 @@ interface MaterialUsageEntryProps {
   selectedUnit: string;
   selectedCategory: string;
   disabled?: boolean;
+  t: any; // Using any for flexibility with translation structure
 }
 
 interface MaterialUsageData {
@@ -34,6 +35,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   selectedUnit,
   selectedCategory,
   disabled: _disabled = false,
+  t,
 }) => {
   const { saveMaterialUsageSilent, loading, error } = useCcrMaterialUsage();
   const { getFooterDataForDate } = useCcrFooterData();
@@ -186,10 +188,10 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   ]);
 
   const shifts = [
-    { key: 'shift3_cont', label: 'Shift 3 (Cont.)' },
-    { key: 'shift1', label: 'Shift 1' },
-    { key: 'shift2', label: 'Shift 2' },
-    { key: 'shift3', label: 'Shift 3' },
+    { key: 'shift3_cont', label: t.shift_3_cont || 'Shift 3 (Cont.)' },
+    { key: 'shift1', label: t.shift_1 || 'Shift 1' },
+    { key: 'shift2', label: t.shift_2 || 'Shift 2' },
+    { key: 'shift3', label: t.shift_3 || 'Shift 3' },
   ];
 
   const materialFields = [
@@ -221,7 +223,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     return (
       <div className="flex items-center justify-center py-16">
         <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-3 text-slate-600 font-medium">Loading material usage data...</span>
+        <span className="ml-3 text-slate-600 font-medium">
+          {t.loading_data || 'Loading material usage data...'}
+        </span>
       </div>
     );
   }
@@ -251,8 +255,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
           </div>
           <div className="ml-3">
             <p className="text-sm text-emerald-800 font-medium">
-              <strong>Real-time Auto-Save:</strong> Material usage dihitung dari counter feeder data
-              dan otomatis tersimpan setiap 2 detik ketika ada perubahan.
+              <strong>{t.ccr_realTimeAutoSave || 'Real-time Auto-Save'}:</strong>{' '}
+              {t.ccr_materialUsageAutoSaveMsg ||
+                'Material usage dihitung dari counter feeder data dan otomatis tersimpan setiap 2 detik ketika ada perubahan.'}
             </p>
           </div>
         </div>
@@ -268,19 +273,19 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                 rowSpan={2}
                 className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-700/50"
               >
-                Shift
+                {t.shift || 'Shift'}
               </th>
               <th
                 colSpan={7}
                 className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider border-r border-slate-700/50"
               >
-                Material Usage
+                {t.ccr_materialUsage || 'Material Usage'}
               </th>
               <th
                 rowSpan={2}
                 className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider"
               >
-                Produksi Semen
+                {t.ccr_cementProduction || 'Produksi Semen'}
               </th>
             </tr>
             {/* Header Row 2 */}
@@ -346,7 +351,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             {/* Footer Row - Totals */}
             <tr className="bg-slate-100/80 backdrop-blur-sm border-t-2 border-white/30 font-semibold shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
               <td className="px-4 py-3 whitespace-nowrap text-sm font-bold text-slate-900 border-r border-slate-300">
-                Total
+                {t.total || 'Total'}
               </td>
               {materialFields.map((field, fieldIndex) => {
                 const columnTotal = shifts.reduce((sum, shift) => {

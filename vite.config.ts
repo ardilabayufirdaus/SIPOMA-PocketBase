@@ -234,6 +234,12 @@ export default defineConfig({
     host: true, // Allow external access
     port: 5173,
     proxy: {
+      '/api/xai': {
+        target: 'https://api.x.ai',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/xai/, ''),
+        secure: true,
+      },
       '/api': {
         target: 'https://api.sipoma.site',
         changeOrigin: true,

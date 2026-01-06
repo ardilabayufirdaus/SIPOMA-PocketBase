@@ -1,3 +1,0 @@
-﻿components/dashboard/Dashboard.tsx(198,7): error TS2322: Type '"none"' is not assignable to type '"sm" | "md" | "lg" | "xl"'.
-pages/MainDashboardPage.tsx(143,7): error TS2322: Type '{ children: Element[]; variant: "glass"; onClick: () => void; className: string; role: string; tabIndex: number; ariaLabel: string; }' is not assignable to type 'IntrinsicAttributes & CardProps'.
-  Property 'role' does not exist on type 'IntrinsicAttributes & CardProps'.
