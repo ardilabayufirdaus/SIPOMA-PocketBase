@@ -14,10 +14,31 @@ export default async function handler(req, res) {
     return;
   }
 
-  const apiKey = process.env.XAI_API_KEY;
+  // Fetch API Key from PocketBase
+  let apiKey = '';
+  try {
+    // Dynamically import PocketBase to avoid build issues if not available in this context
+    // Note: Vercel functions support ESM if package.json has "type": "module" or .mjs extension
+    // Since this is .js and project is type: module, it should work.
+    const PocketBase = (await import('pocketbase')).default;
+    const pb = new PocketBase('https://api.sipoma.site');
+
+    // Attempt to fetch without auth (assuming public read or specific API rule)
+    // If strict rules apply, we would need admin auth here.
+    const record = await pb.collection('api_key').getFirstListItem('provider="xai"');
+    apiKey = record.key;
+  } catch (error) {
+    console.error('Failed to fetch API key from PocketBase:', error);
+    return res.status(500).json({
+      error: 'Configuration Error',
+      details: 'Could not retrieve API key from database.',
+    });
+  }
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'Server configuration error: XAI_API_KEY not set' });
+    return res
+      .status(500)
+      .json({ error: 'Server configuration error: XAI_API_KEY not found in DB' });
   }
 
   try {

@@ -4,257 +4,271 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  base: '/',
-  resolve: {
-    alias: {
-      '@': '/src',
-      '~': '/',
-      '@pages': '/pages',
-      '@components': '/components',
-      '@features': '/features',
+export default defineConfig(async (_env) => {
+  let xAiApiKey = process.env.VITE_XAI_API_KEY || process.env.XAI_API_KEY;
+
+  if (!xAiApiKey) {
+    try {
+      const { default: PocketBase } = await import('pocketbase');
+      const pb = new PocketBase('https://api.sipoma.site');
+      // Attempt to fetch without auth
+      const record = await pb.collection('api_key').getFirstListItem('provider="xai"');
+      xAiApiKey = record.key;
+    } catch (e) {
+      // console.warn('Failed to fetch x.AI key via PB in Dev Server');
+    }
+  }
+
+  return {
+    base: '/',
+    resolve: {
+      alias: {
+        '@': '/src',
+        '~': '/',
+        '@pages': '/pages',
+        '@components': '/components',
+        '@features': '/features',
+      },
     },
-  },
-  plugins: [
-    react(),
-    ViteImageOptimizer({
-      png: { quality: 80 },
-      jpeg: { quality: 80 },
-      jpg: { quality: 80 },
-      webp: { quality: 80 },
-      avif: { quality: 80 },
-    }),
-    VitePWA({
-      registerType: 'autoUpdate',
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,svg}'], // Exclude png from global patterns
-        // Force service worker update dan cleanup cache lama
-        skipWaiting: true,
-        clientsClaim: true,
-        cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\./i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache-v1.0.0', // Versioned cache name
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+    plugins: [
+      react(),
+      ViteImageOptimizer({
+        png: { quality: 80 },
+        jpeg: { quality: 80 },
+        jpg: { quality: 80 },
+        webp: { quality: 80 },
+        avif: { quality: 80 },
+      }),
+      VitePWA({
+        registerType: 'autoUpdate',
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,svg}'], // Exclude png from global patterns
+          // Force service worker update dan cleanup cache lama
+          skipWaiting: true,
+          clientsClaim: true,
+          cleanupOutdatedCaches: true,
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/api\./i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache-v1.0.0', // Versioned cache name
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 * 7, // 7 days
+                },
               },
             },
-          },
-          {
-            urlPattern: /\.(?:png|gif|jpg|jpeg|svg)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images-cache-v1.0.0', // Versioned cache name
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+            {
+              urlPattern: /\.(?:png|gif|jpg|jpeg|svg)$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'images-cache-v1.0.0', // Versioned cache name
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                },
               },
             },
-          },
+          ],
+        },
+        includeAssets: [
+          'favicon.ico',
+          'apple-touch-icon.png',
+          'masked-icon.svg',
+          'pwa-192x192.png',
+          'pwa-512x512.png',
         ],
-      },
-      includeAssets: [
-        'favicon.ico',
-        'apple-touch-icon.png',
-        'masked-icon.svg',
-        'pwa-192x192.png',
-        'pwa-512x512.png',
-      ],
-      manifest: {
-        name: 'SIPOMA - Sistem Informasi Produksi dan Operasi',
-        short_name: 'SIPOMA',
-        description: 'Aplikasi manajemen produksi dan operasi pabrik',
-        theme_color: '#1f2937',
-        background_color: '#ffffff',
-        display: 'standalone',
-        start_url: '/SIPOMA-PocketBase/', // ✅ tambahkan ini!
-        scope: '/SIPOMA-PocketBase/', // ✅ tambahkan ini!
-        icons: [
-          {
-            src: '/pwa-192x192.png', // Use absolute path with leading slash
-            sizes: '192x192',
-            type: 'image/png',
+        manifest: {
+          name: 'SIPOMA - Sistem Informasi Produksi dan Operasi',
+          short_name: 'SIPOMA',
+          description: 'Aplikasi manajemen produksi dan operasi pabrik',
+          theme_color: '#1f2937',
+          background_color: '#ffffff',
+          display: 'standalone',
+          start_url: '/SIPOMA-PocketBase/', // ✅ tambahkan ini!
+          scope: '/SIPOMA-PocketBase/', // ✅ tambahkan ini!
+          icons: [
+            {
+              src: '/pwa-192x192.png', // Use absolute path with leading slash
+              sizes: '192x192',
+              type: 'image/png',
+            },
+            {
+              src: '/pwa-512x512.png', // Use absolute path with leading slash
+              sizes: '512x512',
+              type: 'image/png',
+            },
+          ],
+        },
+      }),
+    ],
+    build: {
+      // Enable build cache for faster rebuilds
+      watch: null,
+      // Enable minification for production
+      minify: 'esbuild',
+      cssMinify: 'esbuild',
+      // Enable compressed size reporting
+      reportCompressedSize: true,
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            if (id.includes('node_modules')) {
+              // Database and auth
+              if (id.includes('pocketbase')) {
+                return 'data-vendor';
+              }
+              // Security utilities
+              if (id.includes('crypto-js') || id.includes('bcrypt')) {
+                return 'crypto-vendor';
+              }
+              // Excel libraries (lazy loaded)
+              if (id.includes('exceljs')) {
+                return 'excel-vendor';
+              }
+              // Small utilities
+              if (id.includes('uuid') || id.includes('focus-trap') || id.includes('classnames')) {
+                return 'utils-light';
+              }
+              // Chart libraries
+              if (
+                id.includes('chart.js') ||
+                id.includes('react-chartjs-2') ||
+                id.includes('recharts') ||
+                id.includes('d3')
+              ) {
+                return 'charts-vendor';
+              }
+              // UI libraries
+              if (
+                id.includes('@heroicons') ||
+                id.includes('lucide-react') ||
+                id.includes('framer-motion') ||
+                id.includes('@headlessui')
+              ) {
+                return 'ui-vendor';
+              }
+              // Form and query libraries
+              if (id.includes('@tanstack/react-query') || id.includes('react-hook-form')) {
+                return 'query-vendor';
+              }
+              // Date/time utilities
+              if (id.includes('date-fns') || id.includes('dayjs') || id.includes('moment')) {
+                return 'date-vendor';
+              }
+              // Router
+              if (id.includes('react-router')) {
+                return 'router-vendor';
+              }
+              // State management
+              if (id.includes('zustand') || id.includes('immer')) {
+                return 'state-vendor';
+              }
+              // Everything else
+              return 'vendor-misc';
+            }
+
+            // Application chunks - split pages more granularly
+            if (id.includes('pages/') && !id.includes('test')) {
+              // Plant operations pages
+              if (id.includes('PlantOperationsPage') || id.includes('plant_operations/')) {
+                return 'page-plant-ops';
+              }
+              // User management pages
+              if (
+                id.includes('UserListPage') ||
+                id.includes('UserRolesPage') ||
+                id.includes('UserActivityPage')
+              ) {
+                return 'page-users';
+              }
+              // Project management pages
+              if (
+                id.includes('ProjectDashboardPage') ||
+                id.includes('ProjectDetailPage') ||
+                id.includes('ProjectListPage') ||
+                id.includes('project_management/')
+              ) {
+                return 'page-projects';
+              }
+              // Settings pages
+              if (id.includes('SettingsPage') || id.includes('Settings/')) {
+                return 'page-settings';
+              }
+              // Dashboard pages
+              if (id.includes('MainDashboardPage')) {
+                return 'page-dashboard';
+              }
+              // Auth pages
+              if (id.includes('LoginPage')) {
+                return 'page-auth';
+              }
+              return 'pages-misc';
+            }
+
+            // Component chunks
+            if (id.includes('components/plant-operations')) {
+              return 'components-plant-ops';
+            }
+            if (id.includes('components/charts') || id.includes('Chart')) {
+              return 'components-charts';
+            }
+            if (id.includes('components/dashboard')) {
+              return 'components-dashboard';
+            }
+
+            // Hook chunks
+            if (id.includes('hooks/use') && id.includes('Data')) {
+              return 'hooks-data';
+            }
+
+            // Utility chunks
+            if (id.includes('utils/Microinteractions.tsx')) {
+              return 'utils-interactions';
+            }
+            if (id.includes('utils/ResponsiveLayout.tsx')) {
+              return 'utils-layout';
+            }
+            if (id.includes('utils/') && !id.includes('permissions')) {
+              return 'app-utils';
+            }
           },
-          {
-            src: '/pwa-512x512.png', // Use absolute path with leading slash
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
+        },
       },
-    }),
-  ],
-  build: {
-    // Enable build cache for faster rebuilds
-    watch: null,
-    // Enable minification for production
-    minify: 'esbuild',
-    cssMinify: 'esbuild',
-    // Enable compressed size reporting
-    reportCompressedSize: true,
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // Database and auth
-            if (id.includes('pocketbase')) {
-              return 'data-vendor';
-            }
-            // Security utilities
-            if (id.includes('crypto-js') || id.includes('bcrypt')) {
-              return 'crypto-vendor';
-            }
-            // Excel libraries (lazy loaded)
-            if (id.includes('exceljs')) {
-              return 'excel-vendor';
-            }
-            // Small utilities
-            if (id.includes('uuid') || id.includes('focus-trap') || id.includes('classnames')) {
-              return 'utils-light';
-            }
-            // Chart libraries
-            if (
-              id.includes('chart.js') ||
-              id.includes('react-chartjs-2') ||
-              id.includes('recharts') ||
-              id.includes('d3')
-            ) {
-              return 'charts-vendor';
-            }
-            // UI libraries
-            if (
-              id.includes('@heroicons') ||
-              id.includes('lucide-react') ||
-              id.includes('framer-motion') ||
-              id.includes('@headlessui')
-            ) {
-              return 'ui-vendor';
-            }
-            // Form and query libraries
-            if (id.includes('@tanstack/react-query') || id.includes('react-hook-form')) {
-              return 'query-vendor';
-            }
-            // Date/time utilities
-            if (id.includes('date-fns') || id.includes('dayjs') || id.includes('moment')) {
-              return 'date-vendor';
-            }
-            // Router
-            if (id.includes('react-router')) {
-              return 'router-vendor';
-            }
-            // State management
-            if (id.includes('zustand') || id.includes('immer')) {
-              return 'state-vendor';
-            }
-            // Everything else
-            return 'vendor-misc';
-          }
-
-          // Application chunks - split pages more granularly
-          if (id.includes('pages/') && !id.includes('test')) {
-            // Plant operations pages
-            if (id.includes('PlantOperationsPage') || id.includes('plant_operations/')) {
-              return 'page-plant-ops';
-            }
-            // User management pages
-            if (
-              id.includes('UserListPage') ||
-              id.includes('UserRolesPage') ||
-              id.includes('UserActivityPage')
-            ) {
-              return 'page-users';
-            }
-            // Project management pages
-            if (
-              id.includes('ProjectDashboardPage') ||
-              id.includes('ProjectDetailPage') ||
-              id.includes('ProjectListPage') ||
-              id.includes('project_management/')
-            ) {
-              return 'page-projects';
-            }
-            // Settings pages
-            if (id.includes('SettingsPage') || id.includes('Settings/')) {
-              return 'page-settings';
-            }
-            // Dashboard pages
-            if (id.includes('MainDashboardPage')) {
-              return 'page-dashboard';
-            }
-            // Auth pages
-            if (id.includes('LoginPage')) {
-              return 'page-auth';
-            }
-            return 'pages-misc';
-          }
-
-          // Component chunks
-          if (id.includes('components/plant-operations')) {
-            return 'components-plant-ops';
-          }
-          if (id.includes('components/charts') || id.includes('Chart')) {
-            return 'components-charts';
-          }
-          if (id.includes('components/dashboard')) {
-            return 'components-dashboard';
-          }
-
-          // Hook chunks
-          if (id.includes('hooks/use') && id.includes('Data')) {
-            return 'hooks-data';
-          }
-
-          // Utility chunks
-          if (id.includes('utils/Microinteractions.tsx')) {
-            return 'utils-interactions';
-          }
-          if (id.includes('utils/ResponsiveLayout.tsx')) {
-            return 'utils-layout';
-          }
-          if (id.includes('utils/') && !id.includes('permissions')) {
-            return 'app-utils';
-          }
+      chunkSizeWarningLimit: 500, // Reduced to catch large chunks
+      // Enable source maps for production debugging
+      sourcemap: false,
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: ['react', 'react-dom', '@tanstack/react-query', 'pocketbase'],
+    },
+    // Development server configuration
+    server: {
+      host: true, // Allow external access
+      port: 5173,
+      proxy: {
+        '/api/xai': {
+          target: 'https://api.x.ai',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/xai/, ''),
+          secure: true,
+          configure: (proxy, _options) => {
+            proxy.on('proxyReq', (proxyReq, _req, _res) => {
+              if (xAiApiKey) {
+                proxyReq.setHeader('Authorization', `Bearer ${xAiApiKey}`);
+              }
+            });
+          },
+        },
+        '/api': {
+          target: 'https://api.sipoma.site',
+          changeOrigin: true,
+          secure: false, // karena SSL self-signed
+          ws: true, // Enable WebSocket proxying for realtime connections
         },
       },
     },
-    chunkSizeWarningLimit: 500, // Reduced to catch large chunks
-    // Enable source maps for production debugging
-    sourcemap: false,
-  },
-  // Optimize dependencies
-  optimizeDeps: {
-    include: ['react', 'react-dom', '@tanstack/react-query', 'pocketbase'],
-  },
-  // Development server configuration
-  server: {
-    host: true, // Allow external access
-    port: 5173,
-    proxy: {
-      '/api/xai': {
-        target: 'https://api.x.ai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/xai/, ''),
-        secure: true,
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, _req, _res) => {
-            // Inject API key during development
-            const apiKey = process.env.VITE_XAI_API_KEY || process.env.XAI_API_KEY;
-            if (apiKey) {
-              proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
-            }
-          });
-        },
-      },
-      '/api': {
-        target: 'https://api.sipoma.site',
-        changeOrigin: true,
-        secure: false, // karena SSL self-signed
-        ws: true, // Enable WebSocket proxying for realtime connections
-      },
-    },
-  },
+  };
 });
