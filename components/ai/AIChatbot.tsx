@@ -17,7 +17,7 @@ import { useCcrMaterialUsage } from '../../hooks/useCcrMaterialUsage'; // NEW
 import { useCcrInformationData } from '../../hooks/useCcrInformationData'; // NEW
 import { useCcrFooterData } from '../../hooks/useCcrFooterData'; // NEW
 import { genAIService } from '../../services/genAIService';
-import { CcrSiloData, CcrDowntimeData, CcrParameterData, ParameterSetting } from '../../types';
+import { CcrSiloData, CcrDowntimeData } from '../../types';
 import { CcrParameterDataWithName } from '../../hooks/useCcrParameterData';
 // Import MaterialUsageData type, assuming it is exported now
 import { MaterialUsageData } from '../../hooks/useCcrMaterialUsage';
@@ -58,7 +58,6 @@ export const AIChatbot: React.FC = () => {
   // API Key handled by backend service
 
   // Data Hooks  // 1. Data Retrieval
-  const today = new Date().toISOString().split('T')[0];
   const { getDataForDateRange, getDataForDate } = useCcrParameterData();
   // Call without date argument to fetch broad history (last 1000 records)
   const { getAllDowntime } = useCcrDowntimeData();

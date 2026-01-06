@@ -39,4 +39,6 @@ pb_data/
 scripts/
 migrations/
 *.config.js
-*.config.cjs
+
+# Vercel Functions
+api/

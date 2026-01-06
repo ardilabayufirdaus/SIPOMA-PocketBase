@@ -10,6 +10,7 @@ export interface DashboardFilters {
   plantUnit: string;
   date: string;
   searchQuery: string;
+  viewMode?: string;
 }
 
 interface FilterSectionProps {

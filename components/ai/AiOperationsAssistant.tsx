@@ -184,14 +184,11 @@ export const AiOperationsAssistant: React.FC<AiOperationsAssistantProps> = ({
     await new Promise((r) => setTimeout(r, 100)); // Small UI tick
     const statsResult = performAnalysis(analysisData, moistureData);
 
-    // Check for API Key
-    const apiKey = import.meta.env.VITE_XAI_API_KEY || '';
+    // Check for API Key - Now handled by backend
+    setAnalysisStep('Generating AI Insights via xAI Grok...');
 
-    if (apiKey) {
-      setAnalysisStep('Generating AI Insights via xAI Grok...');
-
-      // Prepare Context string for AI
-      const contextSummary = `
+    // Prepare Context string for AI
+    const contextSummary = `
 ANALYSIS DATE: ${new Date().toLocaleDateString()}
 UNIT: ${selectedUnit || 'General'}
 HEALTH SCORE: ${statsResult.score}/100
@@ -206,17 +203,15 @@ INSIGHTS:
 ${statsResult.insights.map((i) => `- ${i.type.toUpperCase()}: ${i.message}`).join('\n')}
 `;
 
-      try {
-        const aiText = await genAIService.sendMessage(
-          apiKey,
-          contextSummary,
-          "Review hasil analisis statistik di atas dan berikan 'Executive Summary' singkat (maksimal 3 paragraf) tentang kondisi operasi saat ini dan apa prioritas utama operator."
-        );
-        statsResult.aiAnalysis = aiText;
-      } catch (e) {
-        console.error(e);
-        statsResult.aiAnalysis = 'Gagal menghubungi xAI. Menampilkan hasil statistik saja.';
-      }
+    try {
+      const aiText = await genAIService.sendMessage(
+        contextSummary,
+        "Review hasil analisis statistik di atas dan berikan 'Executive Summary' singkat (maksimal 3 paragraf) tentang kondisi operasi saat ini dan apa prioritas utama operator."
+      );
+      statsResult.aiAnalysis = aiText;
+    } catch (e) {
+      console.error(e);
+      statsResult.aiAnalysis = 'Gagal menghubungi xAI. Menampilkan hasil statistik saja.';
     }
 
     setResult(statsResult);
