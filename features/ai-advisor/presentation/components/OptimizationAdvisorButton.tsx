@@ -38,9 +38,7 @@ export const OptimizationAdvisorButton: React.FC<OptimizationAdvisorButtonProps>
       // Nice error message
       let msg = 'Gagal menganalisa parameter.';
       if (err instanceof Error) {
-        if (err.message.includes('API Key')) msg = 'Kunci API AI belum disetting.';
-        else if (err.message.includes('No parameter'))
-          msg = 'Tidak ada data parameter untuk unit ini hari ini.';
+        msg = err.message;
       }
       setError(msg);
     } finally {

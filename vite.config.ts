@@ -250,7 +250,7 @@ export default defineConfig(async (_env) => {
       port: 5173,
       proxy: {
         '/api/xai': {
-          target: 'https://api.x.ai',
+          target: 'https://api.x.ai/v1/chat/completions',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/xai/, ''),
           secure: true,

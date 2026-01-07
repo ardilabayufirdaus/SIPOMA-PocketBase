@@ -2,40 +2,16 @@ import { IAiAdvisorService } from '../../domain/repositories/IAiAdvisorService';
 import { DowntimeLog } from '../../domain/entities/DowntimeLog';
 
 export class XAiAdvisorService implements IAiAdvisorService {
-  private apiKey: string;
   private endpoint: string;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_XAI_API_KEY || '';
-    // Use the proxy endpoint defined in vite.config.ts if preventing CORS,
-    // or direct if server-side. Since this is client-side, we use proxy
-    // BUT current vite proxy is for /api/ -> api.sipoma.site.
-    // We need a proxy for x.AI or use the existing genAIService implementation pattern.
-    // The previous implementation used: /api/xai/v1/chat/completions (assumed proxy setup).
-    // Let's check vite.config.ts again.
-    // The current vite.config.ts ONLY proxies /api to api.sipoma.site.
-    // So calling /api/xai/... will go to api.sipoma.site/xai/...
-    // If api.sipoma.site doesn't have an xAI proxy, this will fail.
-    // However, x.AI supports CORS? Likely not.
-    // We should use a direct fetch to standard xAI endpoint if they support CORS,
-    // OR we need to add a proxy rule in vite.config.ts for development.
-    // Given user instructions "Grok" and "genAIService.ts" exists,
-    // let's look at how genAIService.ts was implemented.
-    // It used: `fetch('/api/xai/v1/chat/completions'...)`
-    // This implies there IS a proxy expectation.
-    // I will use standard fetch to xAI API directly if key is present,
-    // but typically we need a backend proxy.
-    // Let's assume for now we use the direct URL https://api.x.ai/v1/chat/completions
-    // and see if it works, or fallback to the generic generic proxy pattern if needed.
-
+    // We use the proxy endpoint.
+    // In dev: vite.config.ts proxies /api/xai -> https://api.x.ai AND injects the key.
+    // In prod: api/xai.js handles the request and injects the key from PocketBase.
     this.endpoint = '/api/xai/v1/chat/completions';
   }
 
   async analyzeRootCause(current: DowntimeLog, history: DowntimeLog[]): Promise<string> {
-    if (!this.apiKey) {
-      return 'Error: API Key x.AI belum dikonfigurasi.';
-    }
-
     const context = history
       .map((h) => `- Date: ${h.date}, Problem: ${h.problem}, Action: ${h.action}`)
       .join('\n');
@@ -60,7 +36,7 @@ export class XAiAdvisorService implements IAiAdvisorService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
+          // No Authorization header here; injected by proxy/backend
         },
         body: JSON.stringify({
           messages: [
@@ -76,6 +52,9 @@ export class XAiAdvisorService implements IAiAdvisorService {
       if (!response.ok) {
         const err = await response.text();
         console.error('xAI API Error:', err);
+        if (response.status === 401 || response.status === 403) {
+          return `Gagal menganalisa: API Key tidak valid atau kuota habis (${response.status}). Mohon cek di x.AI.`;
+        }
         return `Gagal menganalisa: Server merespon ${response.status}.`;
       }
 
@@ -89,10 +68,6 @@ export class XAiAdvisorService implements IAiAdvisorService {
   async generateShiftReport(
     data: import('../../domain/entities/ShiftData').ShiftData
   ): Promise<string> {
-    if (!this.apiKey) {
-      return 'Error: API Key x.AI belum dikonfigurasi.';
-    }
-
     const prompt = `
       Buatkan Laporan Serah Terima Shift (Shift Handover Report) yang profesional untuk pabrik semen.
       
@@ -125,7 +100,7 @@ export class XAiAdvisorService implements IAiAdvisorService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
+          // No Authorization header here; injected by proxy/backend
         },
         body: JSON.stringify({
           messages: [
@@ -144,6 +119,9 @@ export class XAiAdvisorService implements IAiAdvisorService {
       if (!response.ok) {
         const err = await response.text();
         console.error('xAI API Error:', err);
+        if (response.status === 401 || response.status === 403) {
+          return `Gagal membuat laporan: API Key tidak valid atau kuota habis (${response.status}). Mohon cek di x.AI.`;
+        }
         return `Gagal membuat laporan: Server merespon ${response.status}.`;
       }
 
@@ -159,10 +137,6 @@ export class XAiAdvisorService implements IAiAdvisorService {
     snapshots: import('../../domain/entities/OptimizationEntities').ParameterSnapshot[],
     unit: string
   ): Promise<import('../../domain/entities/OptimizationEntities').OptimizationRecommendation[]> {
-    if (!this.apiKey) {
-      throw new Error('Error: API Key x.AI belum dikonfigurasi.');
-    }
-
     if (snapshots.length === 0) return [];
 
     // Import knowledge base logic locally
@@ -212,7 +186,7 @@ export class XAiAdvisorService implements IAiAdvisorService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
+          // No Authorization header here; injected by proxy/backend
         },
         body: JSON.stringify({
           messages: [
@@ -228,6 +202,9 @@ export class XAiAdvisorService implements IAiAdvisorService {
       });
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(`API Key tidak valid/kuota habis (${response.status})`);
+        }
         throw new Error(`Server returned ${response.status}`);
       }
 
