@@ -8,7 +8,7 @@ export class XAiAdvisorService implements IAiAdvisorService {
     // We use the proxy endpoint.
     // In dev: vite.config.ts proxies /api/xai -> https://api.x.ai AND injects the key.
     // In prod: api/xai.js handles the request and injects the key from PocketBase.
-    this.endpoint = '/api/xai/v1/chat/completions';
+    this.endpoint = '/api/xai';
   }
 
   async analyzeRootCause(current: DowntimeLog, history: DowntimeLog[]): Promise<string> {
