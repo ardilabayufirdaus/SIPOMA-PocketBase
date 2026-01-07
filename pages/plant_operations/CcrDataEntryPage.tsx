@@ -67,6 +67,7 @@ import { OptimizationAdvisorButton } from '@features/ai-advisor/presentation/com
 
 // Import UI Components
 import { Button } from '../../components/ui';
+import { RcaAnalysisButton } from '@features/ai-advisor/presentation/components/RcaAnalysisButton';
 
 const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -4992,26 +4993,46 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent">
                       CCR Downtime Data Entry
                     </h3>
+                    <br className="hidden" />
                     <p className="text-sm text-neutral-600 mt-1">{t.ccr_downtime_description}</p>
                   </div>
                 </div>
-                <EnhancedButton
-                  variant="primary"
-                  size="sm"
-                  onClick={handleOpenAddDowntimeModal}
-                  disabled={
-                    !hasPermission('plant_operations', 'WRITE') ||
-                    !selectedCategory ||
-                    !selectedUnit
-                  }
-                  aria-label={t.add_downtime_button || 'Add new downtime'}
-                  className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-500 hover:to-secondary-500 shadow-md transition-all"
-                >
-                  <PlusIcon className="w-4 h-4 text-white" />
-                  <span className="relative z-10 text-sm font-medium text-white">
-                    {t.add_downtime_button}
-                  </span>
-                </EnhancedButton>
+                <div className="flex items-center gap-2">
+                  <RcaAnalysisButton
+                    currentDowntime={
+                      dailyDowntimeData.length > 0
+                        ? {
+                            id: dailyDowntimeData[dailyDowntimeData.length - 1].id,
+                            date: dailyDowntimeData[dailyDowntimeData.length - 1].date,
+                            startTime: dailyDowntimeData[dailyDowntimeData.length - 1].start_time,
+                            endTime: dailyDowntimeData[dailyDowntimeData.length - 1].end_time,
+                            pic: dailyDowntimeData[dailyDowntimeData.length - 1].pic,
+                            problem: dailyDowntimeData[dailyDowntimeData.length - 1].problem,
+                            unit: dailyDowntimeData[dailyDowntimeData.length - 1].unit,
+                            action: dailyDowntimeData[dailyDowntimeData.length - 1].action,
+                          }
+                        : {}
+                    }
+                    disabled={dailyDowntimeData.length === 0}
+                  />
+                  <EnhancedButton
+                    variant="primary"
+                    size="sm"
+                    onClick={handleOpenAddDowntimeModal}
+                    disabled={
+                      !hasPermission('plant_operations', 'WRITE') ||
+                      !selectedCategory ||
+                      !selectedUnit
+                    }
+                    aria-label={t.add_downtime_button || 'Add new downtime'}
+                    className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-500 hover:to-secondary-500 shadow-md transition-all"
+                  >
+                    <PlusIcon className="w-4 h-4 text-white" />
+                    <span className="relative z-10 text-sm font-medium text-white">
+                      {t.add_downtime_button}
+                    </span>
+                  </EnhancedButton>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
