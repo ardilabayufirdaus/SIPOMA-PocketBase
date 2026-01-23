@@ -118,6 +118,22 @@ export const useAuth = () => {
         // Record successful login
         rateLimiter.recordSuccessfulLogin(identifier);
 
+        // CREATE ONLINE USER RECORD
+        try {
+          // Check if already exists to avoid duplicates
+          const existing = await pb.collection('user_online').getList(1, 1, {
+            filter: `user_id = "${userData.id}"`,
+          });
+
+          if (existing.items.length === 0) {
+            await pb.collection('user_online').create({
+              user_id: userData.id,
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to create user_online record:', error);
+        }
+
         setUser(typedUserData as unknown as User);
         secureStorage.setItem('currentUser', typedUserData);
         return typedUserData;
@@ -147,7 +163,21 @@ export const useAuth = () => {
     [handleError]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    // DELETE ONLINE USER RECORD
+    try {
+      if (pb.authStore.model?.id) {
+        const records = await pb.collection('user_online').getList(1, 1, {
+          filter: `user_id = "${pb.authStore.model.id}"`,
+        });
+        if (records.items.length > 0) {
+          await pb.collection('user_online').delete(records.items[0].id);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to delete user_online record:', error);
+    }
+
     setUser(null);
     setLoading(false);
     secureStorage.removeItem('currentUser');

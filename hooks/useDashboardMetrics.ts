@@ -10,7 +10,7 @@ export interface DashboardMetrics {
   activeOperations: number;
   activeProjects: number;
   onlineUsers: number;
-  todaysInspections: number;
+
   systemStatus: 'active' | 'warning' | 'error';
 }
 
@@ -64,7 +64,6 @@ export const useDashboardMetrics = () => {
         activeOperations,
         activeProjects,
         onlineUsers,
-        todaysInspections,
         systemStatus,
       };
     } catch {
@@ -72,7 +71,6 @@ export const useDashboardMetrics = () => {
         activeOperations: 0,
         activeProjects: 0,
         onlineUsers: presenceConnected ? presenceOnlineUsers.length : onlineUsersCount,
-        todaysInspections: 0,
         systemStatus: 'error' as const,
       };
     }

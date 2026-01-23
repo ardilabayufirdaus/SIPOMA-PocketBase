@@ -67,9 +67,10 @@ export const useAuth = () => {
           // Permissions akan diambil dari server saat diperlukan
           permissions: {
             dashboard: 'NONE',
-            plant_operations: {},
-            inspection: 'NONE',
+            cm_plant_operations: 'NONE',
+            rkc_plant_operations: 'NONE',
             project_management: 'NONE',
+            database: 'NONE',
           },
         };
 
@@ -134,9 +135,10 @@ export const useAuth = () => {
         // Permissions diambil dari server saat diperlukan
         permissions: {
           dashboard: 'NONE',
-          plant_operations: {},
-          inspection: 'NONE',
+          cm_plant_operations: 'NONE',
+          rkc_plant_operations: 'NONE',
           project_management: 'NONE',
+          database: 'NONE',
         },
       });
     }
@@ -152,9 +154,10 @@ export const useAuth = () => {
           // Permissions diambil dari server saat diperlukan
           permissions: {
             dashboard: 'NONE',
-            plant_operations: {},
-            inspection: 'NONE',
+            cm_plant_operations: 'NONE',
+            rkc_plant_operations: 'NONE',
             project_management: 'NONE',
+            database: 'NONE',
           },
         });
       } else {

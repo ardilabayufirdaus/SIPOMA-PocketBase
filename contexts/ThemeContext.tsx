@@ -20,7 +20,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     const saved = localStorage.getItem('sipoma-theme');
     if (saved === 'light' || saved === 'dark') return saved;
 
-    // Default to light for now, but could check system preference
+    // Default to light as per user request
     return 'light';
   });
 

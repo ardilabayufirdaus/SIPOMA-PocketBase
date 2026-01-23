@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { EnhancedButton } from '../components/ui/EnhancedComponents';
-import { User, Lock, AlertCircle } from 'lucide-react';
+import { User, Lock, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import EyeIcon from '../components/icons/EyeIcon';
 import EyeSlashIcon from '../components/icons/EyeSlashIcon';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../hooks/useTranslation';
 
 const LoginPage: React.FC = () => {
@@ -20,7 +20,6 @@ const LoginPage: React.FC = () => {
   const [loginAttempted, setLoginAttempted] = useState(false);
 
   // Redirect if already logged in, but only if a login was actually attempted
-  // Ini mencegah redirect otomatis tanpa tindakan user
   useEffect(() => {
     if (user && !loading && loginAttempted) {
       navigate('/', { replace: true });
@@ -31,33 +30,27 @@ const LoginPage: React.FC = () => {
     if (e) e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    setLoginAttempted(true); // Tandai bahwa login telah dicoba
+    setLoginAttempted(true);
 
     if (!identifier.trim()) {
-      setError(t.login_username_required);
+      setError(t.login_username_required || 'Username is required');
       setIsSubmitting(false);
       return;
     }
 
     if (!password.trim()) {
-      setError(t.login_password_required);
+      setError(t.login_password_required || 'Password is required');
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // Use plain text password (as stored in database)
       const loggedInUser = await login(identifier, password);
 
       if (loggedInUser) {
-        // Clear any remaining localStorage data from old remember me functionality
         localStorage.removeItem('savedIdentifier');
         localStorage.removeItem('rememberMe');
-
-        // Dispatch auth state change event
         window.dispatchEvent(new CustomEvent('authStateChanged'));
-
-        // Navigate immediately without delay
         navigate('/', { replace: true });
       } else {
         setError('Invalid username or password');
@@ -70,174 +63,198 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -left-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
-        <div
-          className="absolute bottom-0 -right-40 w-96 h-96 bg-slate-500/20 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: '1s' }}
-        />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-3xl" />
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
-      </div>
+    <div className="min-h-screen w-full flex bg-white font-sans overflow-hidden">
+      {/* Left Side - Brand / Creative (Desktop Only) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center">
+        {/* Animated Background Mesh */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/30 rounded-full blur-[100px] mix-blend-screen opacity-50 animate-pulse" />
+          <div
+            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/30 rounded-full blur-[100px] mix-blend-screen opacity-50 animate-pulse"
+            style={{ animationDelay: '2s' }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+        </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-        className="relative z-10 w-full max-w-md mx-4"
-      >
-        {/* Card */}
-        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-2xl shadow-indigo-500/10 overflow-hidden">
-          {/* Header Section with gradient */}
-          <div className="bg-gradient-to-br from-indigo-600/20 to-slate-800/50 px-8 pt-10 pb-8 text-center relative">
-            {/* Top decorative line */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent rounded-full" />
-
-            {/* Logo */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.2, duration: 0.6, type: 'spring', stiffness: 150 }}
-              className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-xl shadow-indigo-500/30 mb-5"
-            >
+        {/* Content Wrapper */}
+        <div className="relative z-10 p-12 max-w-lg text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="mb-8 relative"
+          >
+            <div className="w-24 h-24 mx-auto bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-2xl">
               <img
                 src="/sipoma-logo.png"
                 alt="SIPOMA Logo"
-                className="h-12 w-12 object-contain filter brightness-0 invert"
+                className="w-16 h-16 object-contain drop-shadow-lg"
               />
-            </motion.div>
+            </div>
+          </motion.div>
 
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-3xl font-bold bg-gradient-to-r from-white via-indigo-200 to-white bg-clip-text text-transparent mb-2"
-            >
-              SIPOMA
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-sm text-slate-300/80"
-            >
-              {t.login_subtitle}
-            </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-4xl font-bold text-white mb-4 tracking-tight"
+          >
+            SIPOMA
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-slate-300 text-lg leading-relaxed"
+          >
+            Sistem Informasi Produksi & Operasional Manajemen Aset.
+            <br />
+            Optimize operations with real-time insights.
+          </motion.p>
+
+          {/* Trust/Feature badges underneath */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="mt-12 flex justify-center gap-6"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 text-indigo-300">
+                <CheckCircle2 size={18} />
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Secure</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 text-blue-300">
+                <CheckCircle2 size={18} />
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Reliable</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 text-emerald-300">
+                <CheckCircle2 size={18} />
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Fast</span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 bg-white relative">
+        <div className="w-full max-w-[400px]">
+          <div className="text-left mb-10">
+            <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Welcome Back</h2>
+            <p className="text-slate-500">Please enter your details to sign in.</p>
           </div>
 
-          {/* Form Section */}
-          <div className="px-8 py-8">
-            <form onSubmit={handleLogin} className="space-y-5">
-              {/* Username Field */}
-              <div>
-                <label
-                  htmlFor="identifier"
-                  className="block mb-2 text-sm font-medium text-slate-300"
-                >
-                  {t.login_username_label}
-                </label>
-                <div className="relative group">
-                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
-                  <input
-                    type="text"
-                    id="identifier"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    required
-                    autoComplete="username"
-                    placeholder="Masukkan username"
-                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-slate-400 transition-all duration-200"
-                    style={{ color: '#1e293b' }}
-                  />
+          <form onSubmit={handleLogin} className="space-y-6">
+            {/* Username Input */}
+            <div className="space-y-2">
+              <label htmlFor="identifier" className="block text-sm font-semibold text-slate-700">
+                {t.login_username_label}
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors duration-200" />
                 </div>
+                <input
+                  type="text"
+                  id="identifier"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                  autoFocus
+                  className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all duration-200 ease-out font-medium"
+                  placeholder="Username"
+                  autoComplete="username"
+                />
               </div>
+            </div>
 
-              {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block mb-2 text-sm font-medium text-slate-300">
+            {/* Password Input */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="block text-sm font-semibold text-slate-700">
                   {t.login_password_label}
                 </label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleLogin();
-                      }
-                    }}
-                    required
-                    autoComplete="current-password"
-                    placeholder="Masukkan password"
-                    className="w-full pl-12 pr-12 py-3.5 bg-white border border-slate-300 rounded-xl placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-slate-400 transition-all duration-200"
-                    style={{ color: '#1e293b' }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-indigo-400 transition-colors bg-transparent border-none p-0 cursor-pointer"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
-                      <EyeIcon className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
               </div>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors duration-200" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  required
+                  className="block w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all duration-200 ease-out font-medium"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-              {/* Error Message */}
+            {/* Error Alert */}
+            <AnimatePresence>
               {error && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl"
-                  role="alert"
+                  initial={{ opacity: 0, y: -10, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="rounded-lg bg-red-50 p-4 border border-red-100 flex items-start gap-3"
                 >
-                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                  <span className="text-sm text-red-300">{error}</span>
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-600 font-medium">{error}</p>
                 </motion.div>
               )}
+            </AnimatePresence>
 
-              {/* Submit Button */}
-              <EnhancedButton
-                type="submit"
-                loading={isSubmitting || loading}
-                disabled={isSubmitting || loading}
-                fullWidth
-                size="lg"
-                className="!bg-gradient-to-r !from-indigo-600 !to-indigo-700 hover:!from-indigo-500 hover:!to-indigo-600 !border-0 !shadow-lg !shadow-indigo-500/25 hover:!shadow-indigo-500/40 !rounded-xl !py-4 !text-base !font-semibold transition-all duration-300"
-              >
-                {isSubmitting || loading ? t.login_logging_in : t.sign_in}
-              </EnhancedButton>
-            </form>
-          </div>
+            {/* Action Button */}
+            <EnhancedButton
+              type="submit"
+              disabled={isSubmitting || loading}
+              loading={isSubmitting || loading}
+              fullWidth
+              className="!h-12 !text-base !bg-slate-900 hover:!bg-slate-800 !text-white !rounded-xl !shadow-xl !shadow-slate-900/10 hover:!shadow-slate-900/20 active:!scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group"
+            >
+              {isSubmitting || loading ? (
+                t.login_logging_in
+              ) : (
+                <>
+                  {t.sign_in}
+                  <ArrowRight
+                    size={18}
+                    className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                  />
+                </>
+              )}
+            </EnhancedButton>
+          </form>
 
-          {/* Footer */}
-          <div className="px-8 py-5 bg-white/5 border-t border-white/10">
-            <p className="text-xs text-slate-400/70 text-center">
-              &copy; {new Date().getFullYear()} SIPOMA. {t.login_copyright}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-slate-400">
+              By signing in, you agree to our Terms of Service.
             </p>
           </div>
         </div>
-
-        {/* Version Badge */}
-        <div className="mt-4 text-center">
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-400">
-            v2.0 • Secure Login
-          </span>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

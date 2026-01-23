@@ -235,9 +235,9 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t.edit_profile_title}>
-      <div className="max-h-[85vh] overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-        <div className="p-8 space-y-8">
+    <Modal isOpen={isOpen} onClose={onClose} title={t.edit_profile_title} maxWidth="2xl">
+      <div className="max-h-[85vh] overflow-y-auto bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+        <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
           {/* Header Section */}
           <div className="text-center">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent mb-2">
@@ -533,5 +533,3 @@ const ProfileEditModal: React.FC<ProfileEditModalProps> = ({
 };
 
 export default ProfileEditModal;
-
-

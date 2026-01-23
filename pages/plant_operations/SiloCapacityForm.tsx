@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SiloCapacity, PlantUnit } from '../../types';
-import { Package, AlertCircle, CheckCircle } from 'lucide-react';
-
-// Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useReducedMotion,
-} from '../../components/ui/EnhancedComponents';
+import { Database, CheckCircle, AlertCircle, Ruler, Factory, Box } from 'lucide-react';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: SiloCapacity | null;
@@ -16,6 +10,7 @@ interface FormProps {
   onCancel: () => void;
   t: Record<string, string>;
   plantUnits: PlantUnit[];
+  theme?: 'red' | 'indigo';
 }
 
 const SiloCapacityForm: React.FC<FormProps> = ({
@@ -24,15 +19,39 @@ const SiloCapacityForm: React.FC<FormProps> = ({
   onCancel,
   t,
   plantUnits,
+  theme = 'red',
 }) => {
-  // Enhanced accessibility hooks
-  const announceToScreenReader = useAccessibility();
-  const prefersReducedMotion = useReducedMotion();
+  // Theme configuration
+  const themeConfig = {
+    red: {
+      gradient: 'from-red-600 to-red-700',
+      text: 'text-red-700',
+      bg_light: 'bg-red-50',
+      border_focus: 'focus:border-red-500',
+      ring_focus: 'focus:ring-red-500',
+      button_primary: 'bg-red-600 hover:bg-red-700',
+      button_secondary: 'text-slate-600 hover:bg-red-50',
+      icon_color: 'text-red-600',
+      subtle_text: 'text-red-100',
+      border_light: 'border-red-100',
+    },
+    indigo: {
+      gradient: 'from-indigo-600 to-indigo-700',
+      text: 'text-indigo-700',
+      bg_light: 'bg-indigo-50',
+      border_focus: 'focus:border-indigo-500',
+      ring_focus: 'focus:ring-indigo-500',
+      button_primary: 'bg-indigo-600 hover:bg-indigo-700',
+      button_secondary: 'text-slate-600 hover:bg-indigo-50',
+      icon_color: 'text-indigo-600',
+      subtle_text: 'text-indigo-100',
+      border_light: 'border-indigo-100',
+    },
+  };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const formRef = React.useRef<HTMLFormElement>(null);
+  const colors = themeConfig[theme];
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Partial<SiloCapacity>>({
     plant_category: '',
     unit: '',
     silo_name: '',
@@ -40,301 +59,330 @@ const SiloCapacityForm: React.FC<FormProps> = ({
     dead_stock: 0,
   });
 
-  const uniqueCategories = useMemo(
-    () => [...new Set(plantUnits.map((u) => u.category).sort())],
-    [plantUnits]
-  );
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (recordToEdit) {
-      setFormData({
-        plant_category: recordToEdit.plant_category,
-        unit: recordToEdit.unit,
-        silo_name: recordToEdit.silo_name,
-        capacity: recordToEdit.capacity,
-        dead_stock: recordToEdit.dead_stock,
-      });
-    } else {
-      const firstCategory = uniqueCategories[0] || '';
-      const firstUnit = plantUnits.find((u) => u.category === firstCategory)?.unit || '';
-      setFormData({
-        plant_category: firstCategory,
-        unit: firstUnit,
-        silo_name: '',
-        capacity: 0,
-        dead_stock: 0,
-      });
+      setFormData(recordToEdit);
     }
-  }, [recordToEdit, plantUnits, uniqueCategories]);
+  }, [recordToEdit]);
 
-  const unitsForCategory = useMemo(() => {
+  // Derived unique categories
+  const categoryOptions = useMemo(() => {
+    return Array.from(new Set(plantUnits.map((u) => u.category))).sort();
+  }, [plantUnits]);
+
+  // Derived units based on selected category
+  const unitOptions = useMemo(() => {
+    if (!formData.plant_category) return [];
     return plantUnits
       .filter((u) => u.category === formData.plant_category)
       .map((u) => u.unit)
       .sort();
   }, [plantUnits, formData.plant_category]);
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newCategory = e.target.value;
-    const firstUnit = plantUnits.find((u) => u.category === newCategory)?.unit || '';
-    setFormData((prev) => ({
-      ...prev,
-      plant_category: newCategory,
-      unit: firstUnit,
-    }));
+  const validateField = (name: string, value: any): string => {
+    switch (name) {
+      case 'plant_category':
+        return !value ? t.required_field || 'Required' : '';
+      case 'unit':
+        return !value ? t.required_field || 'Required' : '';
+      case 'silo_name':
+        return !value ? t.required_field || 'Required' : '';
+      case 'capacity':
+        return value === undefined || value < 0 ? t.invalid_value || 'Invalid value' : '';
+      case 'dead_stock':
+        return value === undefined || value < 0 ? t.invalid_value || 'Invalid value' : '';
+      default:
+        return '';
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
-    }));
+    const { name, value } = e.target;
+    const processedValue =
+      name === 'capacity' || name === 'dead_stock' ? parseFloat(value) || 0 : value;
+
+    setFormData((prev) => ({ ...prev, [name]: processedValue }));
+
+    // Reset unit if category changes
+    if (name === 'plant_category') {
+      setFormData((prev) => ({ ...prev, unit: '' }));
+    }
+
+    if (touched[name]) {
+      setErrors((prev) => ({ ...prev, [name]: validateField(name, processedValue) }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const processedValue =
+      name === 'capacity' || name === 'dead_stock' ? parseFloat(value) || 0 : value;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setErrors((prev) => ({ ...prev, [name]: validateField(name, processedValue) }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => {
-      if (recordToEdit) {
-        onSave({ ...recordToEdit, ...formData });
-      } else {
-        onSave(formData);
+    const newErrors: Record<string, string> = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key as keyof SiloCapacity]);
+      if (error) {
+        newErrors[key] = error;
+        isValid = false;
       }
-      setIsSubmitting(false);
-    }, 1000); // simulasi loading
+    });
+
+    setErrors(newErrors);
+    setTouched(Object.keys(formData).reduce((acc, key) => ({ ...acc, [key]: true }), {}));
+
+    if (isValid) {
+      setIsSubmitting(true);
+      setTimeout(() => {
+        onSave(formData as SiloCapacity);
+        setIsSubmitting(false);
+      }, 500);
+    }
   };
+
+  const getInputClass = (error?: string) => `
+    block w-full px-4 py-3 bg-white border rounded-xl shadow-sm 
+    text-slate-900 placeholder-slate-400
+    focus:outline-none focus:ring-2 focus:ring-offset-1 
+    transition-all duration-200 sm:text-sm
+    ${
+      error
+        ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
+        : `border-slate-200 ${colors.border_focus} ${colors.ring_focus} focus:ring-opacity-50 hover:border-slate-300`
+    }
+  `;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
-      className="bg-white rounded-lg shadow-lg overflow-hidden"
+      className="bg-white rounded-lg shadow-lg overflow-hidden border border-slate-100"
     >
-      {/* Header with title */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
-        className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4"
-      >
-        <div className="flex items-center space-x-3">
-          <Package className="h-6 w-6 text-white" />
-          <h2 className="text-xl font-semibold text-white">
-            {t.silo_capacity_title || 'Silo Capacity'}
-          </h2>
+      {/* Header */}
+      <div className={`px-6 py-4 bg-gradient-to-r ${colors.gradient}`}>
+        <div className="flex items-center gap-3">
+          <Database className="w-6 h-6 text-white" />
+          <div>
+            <h2 className="text-xl font-bold text-white">
+              {t.silo_capacity_title || 'Silo Capacity'}
+            </h2>
+            <p className={`text-sm ${colors.subtle_text}`}>
+              {t.silo_capacity_subtitle || 'Manage silo storage capacities'}
+            </p>
+          </div>
         </div>
-        <p className="text-blue-100 text-sm mt-1">
-          {t.silo_capacity_description || 'Configure silo capacity and dead stock management'}
-        </p>
-      </motion.div>
+      </div>
 
-      <form ref={formRef} onSubmit={handleSubmit} aria-label="Silo Capacity Form" className="p-6">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.3 }}
-          className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6"
-        >
-          {/* Plant Category */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
-            className="sm:col-span-2"
-          >
-            <label
-              htmlFor="plant_category"
-              className="block text-sm font-medium text-slate-700 mb-2"
-            >
-              {t.plant_category_label_silo}
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Category */}
+          <div className="space-y-2">
+            <label htmlFor="plant_category" className="block text-sm font-medium text-slate-700">
+              {t.plant_category || 'Plant Category'} <span className="text-red-500">*</span>
             </label>
-            <motion.select
-              whileFocus={{ scale: 1.02 }}
-              name="plant_category"
-              id="plant_category"
-              value={formData.plant_category}
-              onChange={handleCategoryChange}
-              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
-            >
-              {uniqueCategories.map((cat) => (
-                <motion.option
-                  key={cat}
-                  value={cat}
-                  whileHover={{ backgroundColor: '#eff6ff' }}
-                  className="py-2"
+            <div className="relative">
+              <select
+                id="plant_category"
+                name="plant_category"
+                value={formData.plant_category}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={`${getInputClass(errors.plant_category)} appearance-none`}
+              >
+                <option value="">{t.select_category || 'Select Category'}</option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <Factory className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
+            <AnimatePresence>
+              {errors.plant_category && touched.plant_category && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
                 >
-                  {cat}
-                </motion.option>
-              ))}
-            </motion.select>
-          </motion.div>
+                  <AlertCircle className="w-3 h-3" /> {errors.plant_category}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Unit */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-          >
-            <label htmlFor="unit" className="block text-sm font-medium text-slate-700 mb-2">
-              {t.unit_label}
+          <div className="space-y-2">
+            <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
+              {t.unit || 'Unit'} <span className="text-red-500">*</span>
             </label>
-            <motion.select
-              whileFocus={{ scale: 1.02 }}
-              name="unit"
-              id="unit"
-              value={formData.unit}
-              onChange={handleChange}
-              required
-              disabled={unitsForCategory.length === 0}
-              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500"
-            >
-              {unitsForCategory.map((u) => (
-                <motion.option
-                  key={u}
-                  value={u}
-                  whileHover={{ backgroundColor: '#eff6ff' }}
-                  className="py-2"
+            <div className="relative">
+              <select
+                id="unit"
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                disabled={!formData.plant_category}
+                className={`${getInputClass(errors.unit)} appearance-none`}
+              >
+                <option value="">{t.select_unit || 'Select Unit'}</option>
+                {unitOptions.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+              <Box className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            </div>
+            <AnimatePresence>
+              {errors.unit && touched.unit && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
                 >
-                  {u}
-                </motion.option>
-              ))}
-            </motion.select>
-          </motion.div>
+                  <AlertCircle className="w-3 h-3" /> {errors.unit}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Silo Name */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-          >
-            <div className="space-y-2">
-              <label htmlFor="silo_name" className="block text-sm font-medium text-slate-700">
-                {t.silo_name_label}
-              </label>
-              <motion.input
-                whileFocus={{ scale: 1.02 }}
+          <div className="md:col-span-2 space-y-2">
+            <label htmlFor="silo_name" className="block text-sm font-medium text-slate-700">
+              {t.silo_name || 'Silo Name'} <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
                 type="text"
-                name="silo_name"
                 id="silo_name"
+                name="silo_name"
                 value={formData.silo_name}
                 onChange={handleChange}
-                required
-                placeholder={t.silo_name_placeholder || 'Enter silo name'}
-                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
+                onBlur={handleBlur}
+                placeholder="e.g. Silo 1"
+                className={getInputClass(errors.silo_name)}
               />
+              <Database className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
-          </motion.div>
+            <AnimatePresence>
+              {errors.silo_name && touched.silo_name && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                >
+                  <AlertCircle className="w-3 h-3" /> {errors.silo_name}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Capacity */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.3 }}
-          >
-            <div className="space-y-2">
-              <label htmlFor="capacity" className="block text-sm font-medium text-slate-700">
-                {t.capacity_label}
-              </label>
-              <motion.input
-                whileFocus={{ scale: 1.02 }}
+          <div className="space-y-2">
+            <label htmlFor="capacity" className="block text-sm font-medium text-slate-700">
+              {t.capacity || 'Capacity'} (Ton) <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
                 type="number"
-                name="capacity"
                 id="capacity"
+                name="capacity"
                 value={formData.capacity}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
                 min="0"
-                step="0.01"
-                placeholder="0.00"
-                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
+                className={getInputClass(errors.capacity)}
               />
+              <Ruler className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
-          </motion.div>
+            <AnimatePresence>
+              {errors.capacity && touched.capacity && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                >
+                  <AlertCircle className="w-3 h-3" /> {errors.capacity}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Dead Stock */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.3 }}
-          >
-            <div className="space-y-2">
-              <label htmlFor="dead_stock" className="block text-sm font-medium text-slate-700">
-                {t.dead_stock_label_silo}
-              </label>
-              <motion.input
-                whileFocus={{ scale: 1.02 }}
+          <div className="space-y-2">
+            <label htmlFor="dead_stock" className="block text-sm font-medium text-slate-700">
+              {t.dead_stock || 'Dead Stock'} (Ton) <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
                 type="number"
-                name="dead_stock"
                 id="dead_stock"
+                name="dead_stock"
                 value={formData.dead_stock}
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
                 min="0"
-                step="0.01"
-                placeholder="0.00"
-                className="block w-full px-4 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
+                className={getInputClass(errors.dead_stock)}
               />
+              <Ruler className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-slate-200"
-        >
-          <AnimatePresence>
-            {isSubmitting && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center justify-center space-x-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-lg"
-              >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"
-                />
-                <span className="text-sm font-medium">Saving silo capacity...</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="flex space-x-3">
-            <EnhancedButton
-              type="button"
-              variant="secondary"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              className="px-6 py-2"
-            >
-              {t.cancel_button}
-            </EnhancedButton>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <EnhancedButton
-                type="submit"
-                variant="primary"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {t.save_button}
-              </EnhancedButton>
-            </motion.div>
+            <AnimatePresence>
+              {errors.dead_stock && touched.dead_stock && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                >
+                  <AlertCircle className="w-3 h-3" /> {errors.dead_stock}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
-        </motion.div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end pt-4 border-t border-slate-100 gap-3">
+          <EnhancedButton
+            type="button"
+            variant="ghost" // Use ghost to avoid text-white issue (Fixed in step 489)
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className={`px-6 ${colors.button_secondary}`}
+          >
+            {t.cancel || 'Cancel'}
+          </EnhancedButton>
+          <EnhancedButton
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+            className={`px-8 ${colors.button_primary}`}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">Loading...</span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                {t.save || 'Save'}
+              </span>
+            )}
+          </EnhancedButton>
+        </div>
       </form>
     </motion.div>
   );
 };
 
 export default SiloCapacityForm;
-
-
-
-

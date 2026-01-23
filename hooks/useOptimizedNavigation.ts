@@ -91,11 +91,19 @@ export const useOptimizedNavigation = (
 
   // Memoized permission checks
   const permissions = useMemo(() => {
-    const hasPlantOperationsAccess =
-      user?.permissions?.plant_operations &&
-      Object.values(user.permissions.plant_operations).some((category) =>
+    const hasCmPlantOperationsAccess =
+      user?.permissions?.cm_plant_operations &&
+      Object.values(user.permissions.cm_plant_operations).some((category) =>
         Object.values(category).some((level) => level !== 'NONE')
       );
+
+    const hasRkcPlantOperationsAccess =
+      user?.permissions?.rkc_plant_operations &&
+      Object.values(user.permissions.rkc_plant_operations).some((category) =>
+        Object.values(category).some((level) => level !== 'NONE')
+      );
+
+    const hasPlantOperationsAccess = hasCmPlantOperationsAccess || hasRkcPlantOperationsAccess;
 
     return {
       canViewDashboard: user?.permissions?.dashboard !== 'NONE',

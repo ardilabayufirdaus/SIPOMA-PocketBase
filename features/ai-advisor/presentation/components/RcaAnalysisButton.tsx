@@ -6,11 +6,6 @@ import { DowntimeLog } from '../../domain/entities/DowntimeLog';
 import { Sparkles, X, Loader2, AlertTriangle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-// Manual Dependency Injection (In a larger app, use a DI container or Context)
-const downtimeRepo = new PocketBaseDowntimeRepository();
-const aiService = new XAiAdvisorService();
-const analyzeUseCase = new AnalyzeRootCause(downtimeRepo, aiService);
-
 interface RcaAnalysisButtonProps {
   currentDowntime: Partial<DowntimeLog>; // Partial because user might be typing
   onAnalysisComplete?: (analysis: string) => void;
@@ -39,6 +34,11 @@ export const RcaAnalysisButton: React.FC<RcaAnalysisButtonProps> = ({
     setIsOpen(true);
 
     try {
+      // Lazy instantiation of dependencies to prevent module evaluation side-effects
+      const downtimeRepo = new PocketBaseDowntimeRepository();
+      const aiService = new XAiAdvisorService();
+      const analyzeUseCase = new AnalyzeRootCause(downtimeRepo, aiService);
+
       // Cast to DowntimeLog safely
       const logToAnalyze: DowntimeLog = {
         id: 'new',

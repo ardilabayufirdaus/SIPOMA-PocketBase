@@ -1411,7 +1411,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <SearchInput
                       placeholder={t['parameter_search_placeholder']}
                       value={parameterSearchQuery}
-                      onChange={(e) => setParameterSearchQuery(e.target.value)}
+                      onChange={(value) => setParameterSearchQuery(value)}
                       className="w-full"
                     />
                   </div>

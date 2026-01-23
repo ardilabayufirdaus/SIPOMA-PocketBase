@@ -8,21 +8,7 @@ import {
 import { PocketBaseDowntimeRepository } from '../../data/repositories/PocketBaseDowntimeRepository';
 import { XAiAdvisorService } from '../../data/services/XAiAdvisorService';
 import { ShiftReportModal } from './ShiftReportModal';
-import { FileText, Sparkles } from 'lucide-react';
-
-// Dependencies
-const paramRepo = new PocketBaseParameterRepository();
-const siloRepo = new PocketBaseSiloRepository();
-const downtimeRepo = new PocketBaseDowntimeRepository();
-const infoRepo = new PocketBaseInformationRepository();
-const aiService = new XAiAdvisorService();
-const generateUseCase = new GenerateShiftSummary(
-  paramRepo,
-  siloRepo,
-  downtimeRepo,
-  infoRepo,
-  aiService
-);
+import { Sparkles } from 'lucide-react';
 
 interface ShiftHandoverButtonProps {
   date: string;
@@ -46,6 +32,20 @@ export const ShiftHandoverButton: React.FC<ShiftHandoverButtonProps & { classNam
     setLoading(true);
     setError(null);
     try {
+      // Lazy instantiation to prevent module evaluation errors
+      const paramRepo = new PocketBaseParameterRepository();
+      const siloRepo = new PocketBaseSiloRepository();
+      const downtimeRepo = new PocketBaseDowntimeRepository();
+      const infoRepo = new PocketBaseInformationRepository();
+      const aiService = new XAiAdvisorService();
+      const generateUseCase = new GenerateShiftSummary(
+        paramRepo,
+        siloRepo,
+        downtimeRepo,
+        infoRepo,
+        aiService
+      );
+
       // Determine shift based on current time or hardcode
       // Currently hardcoded to 1 for MVP or could be prop
       const currentHour = new Date().getHours();

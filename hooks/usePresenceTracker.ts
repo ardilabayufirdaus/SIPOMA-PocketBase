@@ -15,181 +15,82 @@ export const usePresenceTracker = () => {
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Update user presence
-  const updatePresence = useCallback(async (userId: string, isOnline: boolean) => {
-    try {
-      const presenceData = {
-        user_id: userId,
-        is_online: isOnline,
-        last_seen: new Date().toISOString(),
-      };
-
-      // Find existing presence record for this user
-      const existingRecords = await pb.collection('user_presence').getFullList({
-        filter: `user_id = "${userId}"`,
-        limit: 1,
-      });
-
-      if (existingRecords.length > 0) {
-        // Update existing record
-        await pb.collection('user_presence').update(existingRecords[0].id, presenceData);
-      } else {
-        // Create new record
-        await pb.collection('user_presence').create(presenceData);
-      }
-    } catch (error) {
-      logger.warn('Failed to update presence:', error);
-    }
-  }, []);
-
-  // Mark current user as online
-  const markOnline = useCallback(() => {
-    const currentUser = pb.authStore.model;
-    if (currentUser) {
-      updatePresence(currentUser.id, true);
-    }
-  }, [updatePresence]);
-
-  // Mark current user as offline
-  const markOffline = useCallback(() => {
-    const currentUser = pb.authStore.model;
-    if (currentUser) {
-      updatePresence(currentUser.id, false);
-    }
-  }, [updatePresence]);
-
-  // Threshold for considering a user as online (in milliseconds)
-  // User must have heartbeat within last 2 minutes to be considered online
-  const ONLINE_THRESHOLD_MS = 2 * 60 * 1000;
-
-  // Fetch current online users
+  // Fetch current online users from user_online collection
   const fetchOnlineUsers = useCallback(async () => {
     try {
-      // Get users who are marked as online in presence collection
-      const presenceRecords = await pb.collection('user_presence').getFullList({
-        filter: 'is_online = true',
-        sort: '-last_seen',
+      // Get all records from user_online
+      const onlineRecords = await pb.collection('user_online').getFullList({
+        sort: '-created',
       });
 
-      // Get user details for each presence record
       const onlineUsersData: PresenceUser[] = [];
-      const now = Date.now();
-
-      for (const presence of presenceRecords) {
+      const promises = onlineRecords.map(async (record) => {
         try {
-          // Validate last_seen is within the threshold
-          const lastSeen = new Date(presence.last_seen || 0);
-          const timeSinceLastSeen = now - lastSeen.getTime();
+          // user_id is a text field, so we must fetch the user manually
+          // We use getOne with silence error to avoid crashing if user deleted
+          if (!record.user_id) return null;
 
-          // Skip users who haven't been seen recently (stale presence data)
-          if (timeSinceLastSeen > ONLINE_THRESHOLD_MS) {
-            // Mark as offline since they haven't been active
-            try {
-              await pb.collection('user_presence').update(presence.id, { is_online: false });
-            } catch {
-              // Ignore update errors
-            }
-            continue;
-          }
-
-          const userRecord = await pb.collection('users').getOne(presence.user_id);
-          onlineUsersData.push({
-            id: userRecord.id,
-            username: userRecord.username,
-            full_name: userRecord.name,
-            role: userRecord.role,
-            last_seen: lastSeen,
+          const user = await pb.collection('users').getOne(record.user_id);
+          return {
+            id: user.id,
+            username: user.username,
+            full_name: user.name,
+            role: user.role,
+            last_seen: new Date(record.created),
             is_online: true,
-          });
-        } catch {
-          // User might be deleted, skip
-          continue;
+          };
+        } catch (e) {
+          return null;
         }
-      }
+      });
+
+      const results = await Promise.all(promises);
+
+      // Filter out nulls (deleted users or failed fetches)
+      results.forEach((user) => {
+        if (user) onlineUsersData.push(user);
+      });
 
       setOnlineUsers(onlineUsersData);
+      setIsConnected(true);
     } catch (error) {
       logger.warn('Failed to fetch online users:', error);
-      // Fallback to last_active based logic if presence tracking fails
       setOnlineUsers([]);
+      setIsConnected(false);
     }
   }, []);
 
   useEffect(() => {
-    let presenceSubscription: (() => void) | null = null;
+    let unsubscribe: (() => void) | null = null;
 
-    const initializePresenceTracking = async () => {
+    const initializeTracking = async () => {
+      await fetchOnlineUsers();
+
+      // Subscribe to changes in user_online collection
       try {
-        // Mark current user as online when component mounts
-        markOnline();
-
-        // Subscribe to presence changes
-        presenceSubscription = await pb.collection('user_presence').subscribe('*', (e) => {
-          if (e.action === 'create' || e.action === 'update') {
-            fetchOnlineUsers();
-          }
+        unsubscribe = await pb.collection('user_online').subscribe('*', () => {
+          fetchOnlineUsers();
         });
-
-        // Initial fetch
-        await fetchOnlineUsers();
-
-        setIsConnected(true);
       } catch (error) {
-        logger.warn('Presence tracking initialization failed:', error);
-        setIsConnected(false);
+        console.warn('Failed to subscribe to user_online:', error);
       }
     };
 
-    initializePresenceTracking();
-
-    // Heartbeat to keep user online
-    const heartbeatInterval = setInterval(() => {
-      markOnline();
-    }, 30000); // Update every 30 seconds
-
-    // Handle page visibility changes
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // Page is hidden, mark as offline after a delay
-        setTimeout(() => {
-          if (document.hidden) {
-            markOffline();
-          }
-        }, 60000); // 1 minute delay
-      } else {
-        // Page is visible again, mark as online
-        markOnline();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Handle beforeunload
-    const handleBeforeUnload = () => {
-      markOffline();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    initializeTracking();
 
     return () => {
-      clearInterval(heartbeatInterval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-
-      if (presenceSubscription) {
-        presenceSubscription();
+      if (unsubscribe) {
+        unsubscribe();
       }
-
-      // Mark offline when component unmounts
-      markOffline();
     };
-  }, [markOnline, markOffline, fetchOnlineUsers]);
+  }, [fetchOnlineUsers]);
 
   return {
     onlineUsers,
     isConnected,
-    markOnline,
-    markOffline,
+    // No-op functions to maintain interface compatibility with dashboard
+    markOnline: () => {},
+    markOffline: () => {},
     refreshOnlineUsers: fetchOnlineUsers,
   };
 };

@@ -36,6 +36,10 @@ interface EnhancedButtonProps {
   ariaExpanded?: boolean;
   loadingText?: string;
   align?: 'left' | 'center' | 'right';
+  // Additional props for compatibility
+  title?: string;
+  style?: React.CSSProperties;
+  leftIcon?: React.ReactNode;
 }
 
 export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
@@ -58,7 +62,13 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
   ariaExpanded,
   loadingText = 'Loading...',
   align = 'left',
+  title,
+  style,
+  leftIcon,
 }) => {
+  // Support legacy leftIcon prop
+  const effectiveIcon = icon || leftIcon;
+  const effectiveIconPosition = leftIcon ? 'left' : iconPosition;
   const [isPressed, setIsPressed] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { announceToScreenReader } = useAccessibility();
@@ -231,6 +241,8 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
       aria-disabled={disabled || loading}
       aria-pressed={isPressed}
       aria-expanded={ariaExpanded}
+      title={title}
+      style={style}
     >
       {loading && (
         <div
@@ -240,17 +252,17 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
         />
       )}
 
-      {!loading && icon && iconPosition === 'left' && (
+      {!loading && effectiveIcon && effectiveIconPosition === 'left' && (
         <span className="flex-shrink-0 w-5 h-5" aria-hidden="true">
-          {icon}
+          {effectiveIcon}
         </span>
       )}
 
       <span className="font-semibold tracking-wide truncate">{children}</span>
 
-      {!loading && icon && iconPosition === 'right' && (
+      {!loading && effectiveIcon && effectiveIconPosition === 'right' && (
         <span className="flex-shrink-0 w-5 h-5" aria-hidden="true">
-          {icon}
+          {effectiveIcon}
         </span>
       )}
 
@@ -266,5 +278,3 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
     </button>
   );
 };
-
-

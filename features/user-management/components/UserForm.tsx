@@ -1,245 +1,259 @@
 import React, { useState, useEffect } from 'react';
-import { useUserStore } from '../../../stores/userStore';
-import { translations } from '../../../translations';
-import { UserRole } from '../../../types';
-import { User } from '../../../src/shared/types';
+import { User, UserRole, UserPermission } from '../../../src/domain/entities/User';
+import { useUserMutations } from '../hooks/useUserUseCases';
+import {
+  EnhancedModal,
+  EnhancedInput,
+  EnhancedButton,
+} from '../../../components/ui/EnhancedComponents';
+import { UserAccessController } from './UserAccessController';
+import UserIcon from '../../../components/icons/UserIcon';
+import CheckIcon from '../../../components/icons/CheckIcon';
 
 interface UserFormProps {
-  user?: User; // For editing
+  user: User | null;
+  isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
-  language?: 'en' | 'id';
 }
 
-const UserForm: React.FC<UserFormProps> = ({ user, onClose, onSuccess, language = 'en' }) => {
+const DEFAULT_PERMISSIONS: UserPermission = {
+  dashboard: 'NONE',
+  cm_plant_operations: 'NONE',
+  rkc_plant_operations: 'NONE',
+  project_management: 'NONE',
+  database: 'NONE',
+};
+
+export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => {
+  const isEditing = !!user;
+  const { createUser, updateUser } = useUserMutations();
+
   const [formData, setFormData] = useState({
     username: '',
-    password: '',
-    full_name: '',
+    name: '',
+    email: '',
     role: 'Guest' as UserRole,
     is_active: true,
+    employee_id: '',
+    password: '',
+    passwordConfirm: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { createUser, updateUser } = useUserStore();
-  const t = translations[language];
+
+  const [permissions, setPermissions] = useState<UserPermission>(DEFAULT_PERMISSIONS);
+  const [activeTab, setActiveTab] = useState<'profile' | 'access'>('profile');
 
   useEffect(() => {
-    if (user) {
-      setFormData({
-        username: user.username || '',
-        password: '', // Don't show existing password
-        full_name: user.full_name || '',
-        role: user.role || 'Guest',
-        is_active: user.is_active ?? true,
-      });
+    if (isOpen) {
+      if (user) {
+        setFormData({
+          username: user.username || '',
+          name: user.name || '',
+          email: user.email || '',
+          role: user.role || 'Guest',
+          is_active: user.is_active ?? true,
+          employee_id: user.employee_id || '',
+          password: '',
+          passwordConfirm: '',
+        });
+        setPermissions(user.permissions || DEFAULT_PERMISSIONS);
+      } else {
+        setFormData({
+          username: '',
+          name: '',
+          email: '',
+          role: 'Operator',
+          is_active: true,
+          employee_id: '',
+          password: '',
+          passwordConfirm: '',
+        });
+        setPermissions(DEFAULT_PERMISSIONS);
+      }
+      setActiveTab('profile');
     }
-  }, [user]);
+  }, [isOpen, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
 
     try {
-      if (!formData.username) {
-        setError('Username is required');
-        return;
-      }
-
-      if (!user && !formData.password) {
-        setError('Password is required for new users');
-        return;
-      }
-
-      if (user) {
-        // Update user
-        await updateUser(user.id, {
-          username: formData.username,
-          full_name: formData.full_name,
-          role: formData.role,
-          is_active: formData.is_active,
-          ...(formData.password && { password: formData.password }),
+      if (isEditing && user) {
+        await updateUser.mutateAsync({
+          id: user.id,
+          data: {
+            ...formData,
+            permissions,
+          },
         });
       } else {
-        // Create new user
-        await createUser({
-          username: formData.username,
-          password: formData.password,
-          full_name: formData.full_name,
-          role: formData.role,
-          is_active: formData.is_active,
+        await createUser.mutateAsync({
+          ...formData,
+          permissions,
         });
       }
-
-      onSuccess();
       onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save user');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      console.error('Failed to save user', err);
+      alert('Failed to save user');
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
-    }));
-  };
+  const isLoading = createUser.isPending || updateUser.isPending;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            {user ? t.edit_user_title || 'Edit User' : t.add_user_title || 'Add New User'}
-          </h3>
-
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-4"
-            role="form"
-            aria-labelledby="user-form-title"
+    <EnhancedModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? 'Edit User' : 'New User'}
+      size="lg"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Tab Nav */}
+        <div className="flex bg-slate-50 p-1 rounded-lg mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab('profile')}
+            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'profile' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
           >
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                {t.username || 'Username'}
-              </label>
-              <input
-                id="username"
-                type="text"
-                name="username"
+            User Profile
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('access')}
+            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'access' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Access Control
+          </button>
+        </div>
+
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-left-2 duration-300">
+            <div className="grid grid-cols-2 gap-4">
+              <EnhancedInput
+                label="Username"
                 value={formData.username}
-                onChange={handleChange}
+                onChange={(v) => setFormData({ ...formData, username: v })}
                 required
                 autoComplete="username"
-                aria-describedby={error ? 'username-error' : undefined}
-                aria-invalid={error ? 'true' : 'false'}
-                className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
-                style={{
-                  borderColor: error ? 'var(--color-error)' : 'var(--color-neutral-300)',
-                  borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--color-neutral-0)',
-                }}
               />
-              {error && (
-                <p
-                  id="username-error"
-                  className="mt-1 text-sm"
-                  style={{ color: 'var(--color-error)' }}
-                  role="alert"
-                >
-                  {error}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                {t.password || 'Password'}
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required={!user}
-                autoComplete="new-password"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
-                {t.full_name_label || 'Full Name'}
-              </label>
-              <input
-                id="full_name"
-                type="text"
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleChange}
+              <EnhancedInput
+                label="Full Name"
+                value={formData.name}
+                onChange={(v) => setFormData({ ...formData, name: v })}
+                required
                 autoComplete="name"
-                aria-describedby="fullname-help"
-                aria-required="false"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
-              <p id="fullname-help" className="mt-1 text-sm text-gray-500">
-                Enter the user's full display name (optional)
-              </p>
+            </div>
+            <EnhancedInput
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(v) => setFormData({ ...formData, email: v })}
+              required
+              autoComplete="email"
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                <select
+                  className="w-full border-slate-300 rounded-lg p-2.5 text-sm"
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+                >
+                  <option value="Super Admin">Super Admin</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Operator">Operator</option>
+                  <option value="Outsourcing">Outsourcing</option>
+                  <option value="Autonomous">Autonomous</option>
+                  <option value="Guest">Guest</option>
+                </select>
+              </div>
+              <EnhancedInput
+                label="Employee ID (Optional)"
+                value={formData.employee_id}
+                onChange={(v) => setFormData({ ...formData, employee_id: v })}
+                autoComplete="off"
+              />
             </div>
 
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                {t.role_label || 'Role'}
-              </label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                aria-describedby="role-help"
-                aria-required="true"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="Guest">Guest</option>
-                <option value="Autonomous">Autonomous</option>
-                <option value="Outsourcing">Outsourcing</option>
-                <option value="Operator">Operator</option>
-                <option value="Manager">Manager</option>
-                <option value="Admin">Admin</option>
-                <option value="Super Admin">Super Admin</option>
-              </select>
-              <p id="role-help" className="mt-1 text-sm text-gray-500">
-                Select the user&apos;s role and permissions level
-              </p>
+            <hr className="my-4 border-slate-100" />
+
+            <div className="grid grid-cols-2 gap-4">
+              <EnhancedInput
+                label={isEditing ? 'New Password (Optional)' : 'Password'}
+                type="password"
+                value={formData.password}
+                onChange={(v) => setFormData({ ...formData, password: v })}
+                required={!isEditing}
+                autoComplete="new-password"
+              />
+              <EnhancedInput
+                label="Confirm Password"
+                type="password"
+                value={formData.passwordConfirm}
+                onChange={(v) => setFormData({ ...formData, passwordConfirm: v })}
+                required={!isEditing}
+                autoComplete="new-password"
+              />
             </div>
 
-            <div className="flex items-center">
+            <div className="flex items-center gap-2 mt-4">
               <input
-                id="is_active"
                 type="checkbox"
-                name="is_active"
+                id="is_active"
                 checked={formData.is_active}
-                onChange={handleChange}
-                aria-describedby="active-help"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
               />
-              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
-                Active
+              <label htmlFor="is_active" className="text-sm text-slate-700">
+                Active Account
               </label>
-              <p id="active-help" className="sr-only">
-                Toggle to activate or deactivate the user account
-              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Access Tab */}
+        {activeTab === 'access' && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+            <div className="bg-blue-50 p-4 rounded-lg flex items-start gap-3">
+              <UserIcon className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-bold text-blue-800">Access Control</h4>
+                <p className="text-xs text-blue-600 mt-1">
+                  Define what modules this user can see and interact with.
+                  <br />
+                  <span className="font-semibold">NONE</span> = Hidden,
+                  <span className="font-semibold"> READ</span> = View Only,
+                  <span className="font-semibold"> WRITE</span> = Full Access.
+                </p>
+              </div>
             </div>
 
-            {error && <div className="text-red-600 text-sm">{error}</div>}
+            <UserAccessController
+              permissions={permissions}
+              onPermissionChange={(key, level) => setPermissions({ ...permissions, [key]: level })}
+            />
+          </div>
+        )}
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 min-h-[44px]"
-              >
-                {t.cancel_button || 'Cancel'}
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 min-h-[44px]"
-              >
-                {isLoading ? t.loading || 'Saving...' : t.save_button || 'Save'}
-              </button>
-            </div>
-          </form>
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+          <EnhancedButton variant="ghost" type="button" onClick={onClose}>
+            Cancel
+          </EnhancedButton>
+          <EnhancedButton
+            variant="primary"
+            type="submit"
+            loading={isLoading}
+            icon={<CheckIcon className="w-4 h-4" />}
+          >
+            {isEditing ? 'Save Changes' : 'Create User'}
+          </EnhancedButton>
         </div>
-      </div>
-    </div>
+      </form>
+    </EnhancedModal>
   );
 };
 
 export default UserForm;
-
-

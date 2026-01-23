@@ -87,13 +87,15 @@ export class PermissionChecker {
     try {
       const permissions = await fetchUserPermissions(this.userId);
 
-      const plantOps = permissions.plant_operations;
+      const plantOps = permissions.cm_plant_operations;
       if (!plantOps || !plantOps[category] || !plantOps[category][unit]) {
         this.cache.set(cacheKey, false);
         return false;
       }
 
-      const result = this.comparePermissionLevel(plantOps[category][unit], requiredLevel);
+      // Perform type assertion to handle the casting cleanly
+      const unitPermission = plantOps[category][unit];
+      const result = this.comparePermissionLevel(unitPermission, requiredLevel);
       this.cache.set(cacheKey, result);
       return result;
     } catch {
@@ -157,7 +159,7 @@ export class PermissionChecker {
    * Check if user can access plant operations
    */
   canAccessPlantOperations(): boolean {
-    return this.hasPermission('plant_operations', 'READ');
+    return this.hasPermission('cm_plant_operations', 'READ');
   }
 
   /**
@@ -170,8 +172,11 @@ export class PermissionChecker {
   /**
    * Check if user can access inspection module
    */
-  canAccessInspection(): boolean {
-    return this.hasPermission('inspection', 'READ');
+  /**
+   * Check if user can access database module
+   */
+  canAccessDatabase(): boolean {
+    return this.hasPermission('database', 'READ');
   }
 
   /**

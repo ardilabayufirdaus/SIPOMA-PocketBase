@@ -1,7 +1,8 @@
-import { PermissionMatrix, PermissionLevel, PlantOperationsPermissions } from '../types';
+import { PermissionMatrix, PermissionLevel } from '../types';
 
 /**
  * Utility to format user permissions for display in the user table
+ * UPDATED: Simplified model
  */
 export const formatPermissionsForDisplay = (permissions: PermissionMatrix): string[] => {
   const accessList: string[] = [];
@@ -11,25 +12,20 @@ export const formatPermissionsForDisplay = (permissions: PermissionMatrix): stri
     accessList.push(`Dashboard: ${permissions.dashboard}`);
   }
 
-  // Plant Operations access
-  if (permissions.plant_operations && typeof permissions.plant_operations === 'object') {
-    Object.entries(permissions.plant_operations).forEach(([category, units]) => {
-      if (typeof units === 'object') {
-        const unitAccess = Object.entries(units)
-          .filter(([, level]) => level !== 'NONE')
-          .map(([unit, level]) => `${unit}: ${level}`)
-          .join(', ');
+  // Plant Operations access (CM)
+  if (permissions.cm_plant_operations && permissions.cm_plant_operations !== 'NONE') {
+    accessList.push(`CM Operations: ${permissions.cm_plant_operations}`);
+  }
 
-        if (unitAccess) {
-          accessList.push(`${category}: ${unitAccess}`);
-        }
-      }
-    });
+  // Plant Operations access (RKC)
+  if (permissions.rkc_plant_operations && permissions.rkc_plant_operations !== 'NONE') {
+    accessList.push(`RKC Operations: ${permissions.rkc_plant_operations}`);
   }
 
   // Other modules
   const moduleMap: Record<string, string> = {
     project_management: 'Project Management',
+    database: 'Database',
   };
 
   Object.entries(moduleMap).forEach(([key, label]) => {
@@ -64,8 +60,6 @@ export const getPermissionsSummary = (permissions: PermissionMatrix): string => 
  */
 export const getPermissionLevelColor = (level: PermissionLevel): string => {
   switch (level) {
-    case 'ADMIN':
-      return 'bg-red-100 text-red-800';
     case 'WRITE':
       return 'bg-orange-100 text-orange-800';
     case 'READ':
@@ -86,11 +80,8 @@ export const formatPermissionsDetailed = (
   const details: { module: string; access: string; level: string }[] = [];
 
   // Helper function to get permission level as string
-  const getPermissionLevel = (permission: PermissionLevel | PlantOperationsPermissions): string => {
-    if (typeof permission === 'string') {
-      return permission;
-    }
-    return 'Custom'; // For object permissions
+  const getPermissionLevel = (permission: PermissionLevel): string => {
+    return permission || 'NONE';
   };
 
   // Dashboard
@@ -103,25 +94,31 @@ export const formatPermissionsDetailed = (
     });
   }
 
-  // Plant Operations
-  if (permissions.plant_operations && typeof permissions.plant_operations === 'object') {
-    Object.entries(permissions.plant_operations).forEach(([category, units]) => {
-      if (typeof units === 'object') {
-        Object.entries(units).forEach(([unit, level]) => {
-          if (level !== 'NONE') {
-            details.push({
-              module: 'Plant Operations',
-              access: `${category} - ${unit}`,
-              level: level,
-            });
-          }
-        });
-      }
+  // Plant Operations (CM)
+  const cmLevel = getPermissionLevel(permissions.cm_plant_operations);
+  if (cmLevel !== 'NONE') {
+    details.push({
+      module: 'CM Plant Operations',
+      access: 'Full Access',
+      level: cmLevel,
+    });
+  }
+
+  // Plant Operations (RKC)
+  const rkcLevel = getPermissionLevel(permissions.rkc_plant_operations);
+  if (rkcLevel !== 'NONE') {
+    details.push({
+      module: 'RKC Plant Operations',
+      access: 'Full Access',
+      level: rkcLevel,
     });
   }
 
   // Other modules
-  const modules = [{ key: 'project_management', name: 'Project Management' }];
+  const modules = [
+    { key: 'project_management', name: 'Project Management' },
+    { key: 'database', name: 'Database' },
+  ];
 
   modules.forEach(({ key, name }) => {
     const level = permissions[key as keyof PermissionMatrix] as PermissionLevel;

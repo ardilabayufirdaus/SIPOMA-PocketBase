@@ -56,15 +56,6 @@ export const ProjectManagementPage = createLazyComponent(
 );
 
 /**
- * Inspection Pages
- */
-export const InspectionPage = createLazyComponent(() => import('../../pages/InspectionPage'), {
-  displayName: 'InspectionPage',
-  loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
-  errorFallback: <DefaultErrorFallback name="Inspection" />,
-});
-
-/**
  * User Management Pages
  */
 export const UserListPage = createLazyComponent(
@@ -96,3 +87,12 @@ export const WhatsAppReportsPage = createLazyComponent(
     errorFallback: <DefaultErrorFallback name="WhatsApp Reports" />,
   }
 );
+
+/**
+ * Database Pages
+ */
+export const DatabasePage = createLazyComponent(() => import('../../pages/DatabasePage'), {
+  displayName: 'DatabasePage',
+  loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
+  errorFallback: <DefaultErrorFallback name="Database" />,
+});

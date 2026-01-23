@@ -11,6 +11,15 @@ export const CacheKeys = {
   REPORT_SETTINGS: 'report_settings',
   PIC_SETTINGS: 'pic_settings',
 
+  // RKC Plant Operations
+  RKC_PLANT_UNITS: 'rkc_plant_units',
+  RKC_PARAMETER_SETTINGS: 'rkc_parameter_settings',
+  RKC_SILO_CAPACITIES: 'rkc_silo_capacities',
+  RKC_PIC_SETTINGS: 'rkc_pic_settings',
+  RKC_COP_PARAMETERS: 'rkc_cop_parameters',
+  RKC_REPORT_SETTINGS: 'rkc_report_settings',
+  RKC_COP_FOOTER_PARAMETERS: 'rkc_cop_footer_parameters',
+
   // CCR Data
   CCR_PARAMETER_DATA: 'ccr_parameter_data',
   CCR_DOWNTIME_DATA: 'ccr_downtime_data',

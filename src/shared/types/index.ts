@@ -17,9 +17,10 @@ export interface PlantOperationsPermissions {
 
 export interface PermissionMatrix {
   dashboard: PermissionLevel | PlantOperationsPermissions;
-  plant_operations: PermissionLevel | PlantOperationsPermissions;
-  inspection: PermissionLevel | PlantOperationsPermissions;
+  cm_plant_operations: PermissionLevel | PlantOperationsPermissions;
+  rkc_plant_operations: PermissionLevel | PlantOperationsPermissions;
   project_management: PermissionLevel | PlantOperationsPermissions;
+  database: PermissionLevel;
 }
 
 export interface User {

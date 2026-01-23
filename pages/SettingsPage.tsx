@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User } from '../types';
-import { Language } from '../App';
+import { Language } from '../types';
 import CogIcon from '../components/icons/CogIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import LanguageIcon from '../components/icons/LanguageIcon';

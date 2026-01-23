@@ -3996,7 +3996,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
 
                 {/* AI Features Group */}
-                {hasPermission('plant_operations', 'create') && selectedUnit && (
+                {hasPermission('cm_plant_operations', 'create') && selectedUnit && (
                   <div className="flex items-center gap-2">
                     {/* AI Parameter Optimization */}
                     <OptimizationAdvisorButton
@@ -4019,10 +4019,10 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               {/* Secondary Actions Row (Excel & Admin) */}
               <div className="flex items-center gap-2 flex-wrap justify-end">
                 {/* Excel Operations Group */}
-                {hasPermission('plant_operations', 'READ') && (
+                {hasPermission('cm_plant_operations', 'READ') && (
                   <div className="flex items-center bg-white rounded-lg border border-neutral-200/50 shadow-sm overflow-hidden">
                     {/* Import */}
-                    {hasPermission('plant_operations', 'WRITE') && (
+                    {hasPermission('cm_plant_operations', 'WRITE') && (
                       <>
                         <input
                           type="file"
@@ -5020,7 +5020,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     size="sm"
                     onClick={handleOpenAddDowntimeModal}
                     disabled={
-                      !hasPermission('plant_operations', 'WRITE') ||
+                      !hasPermission('cm_plant_operations', 'WRITE') ||
                       !selectedCategory ||
                       !selectedUnit
                     }

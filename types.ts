@@ -7,20 +7,18 @@ export type UserRole =
   | 'Autonomous'
   | 'Guest';
 
-export type PermissionLevel = 'NONE' | 'READ' | 'WRITE' | 'ADMIN';
+export type PermissionLevel = 'NONE' | 'READ' | 'WRITE';
 
-export interface PlantOperationsPermissions {
-  [category: string]: {
-    [unit: string]: PermissionLevel;
-  };
+export interface UserPermission {
+  dashboard: PermissionLevel;
+  cm_plant_operations: PermissionLevel;
+  rkc_plant_operations: PermissionLevel;
+  project_management: PermissionLevel;
+  database: PermissionLevel;
 }
 
-export interface PermissionMatrix {
-  dashboard: PermissionLevel | PlantOperationsPermissions;
-  plant_operations: PermissionLevel | PlantOperationsPermissions;
-  inspection: PermissionLevel | PlantOperationsPermissions;
-  project_management: PermissionLevel | PlantOperationsPermissions;
-}
+// Alias for compatibility if needed, or replace usages
+export type PermissionMatrix = UserPermission;
 
 export interface User {
   id: string;
@@ -114,6 +112,20 @@ export interface WhatsAppReportSetting {
 export interface PicSetting {
   id: string;
   pic: string;
+}
+
+export interface RkcReportSetting {
+  id: string;
+  parameter_id: string;
+  category: string;
+  order: number;
+}
+
+export interface RkcCopFooterSetting {
+  id: string;
+  plant_category: string;
+  plant_unit: string;
+  parameter_ids: string[];
 }
 
 export interface WorkInstruction {
@@ -265,3 +277,17 @@ export interface CcrFooterData {
   shift3_counter: number;
   shift3_cont_counter: number;
 }
+
+export type Page =
+  | 'dashboard'
+  | 'users'
+  | 'operations'
+  | 'packing'
+  | 'projects'
+  | 'settings'
+  | 'database'
+  | 'rkc_operations'
+  | 'whatsapp-reports';
+
+export type Language = 'en' | 'id';
+export type Theme = 'light';

@@ -4,8 +4,7 @@ import Bars3Icon from './icons/Bars3Icon';
 import BellIcon from './icons/BellIcon';
 import BellSlashIcon from './icons/BellSlashIcon';
 import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
-import { Page, Language } from '../App';
-import { User } from '../types';
+import { Page, Language, User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useTheme } from '../contexts/ThemeContext';
@@ -22,6 +21,9 @@ import NotificationModal from './NotificationModal';
 
 // Import UserMenuButton
 import UserMenuButton from './UserMenuButton';
+
+// Import Connection Status Indicator
+import ConnectionStatusIndicator from './ConnectionStatusIndicator';
 
 interface HeaderProps {
   pageTitle: string;
@@ -140,6 +142,11 @@ const Header: React.FC<HeaderProps> = React.memo(
                       )}
                     </div>
                   </button>
+                </div>
+
+                {/* Connection Status - Desktop Only */}
+                <div className="hidden md:flex flex-col items-center justify-center">
+                  <ConnectionStatusIndicator variant="inline" />
                 </div>
 
                 {/* Theme Toggle */}

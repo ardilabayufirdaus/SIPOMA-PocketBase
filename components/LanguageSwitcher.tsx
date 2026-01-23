@@ -1,5 +1,5 @@
 import React from 'react';
-import { Language } from '../App';
+import { Language } from '../types';
 import FlagENIcon from './icons/FlagENIcon';
 import FlagIDIcon from './icons/FlagIDIcon';
 import { EnhancedButton } from './ui/EnhancedComponents';
@@ -48,5 +48,3 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     </div>
   );
 };
-
-

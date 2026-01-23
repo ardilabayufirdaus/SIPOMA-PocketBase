@@ -9,8 +9,8 @@ import {
   Activity,
   Bot, // New Icon
 } from 'lucide-react';
-import { Card } from '../ui/Card';
-import Button from '../ui/Button';
+import { Card } from '../ui/Card'; // Direct import
+import Button from '../ui/Button'; // Direct import
 import { ParameterSetting } from '../../types';
 import { genAIService } from '../../services/genAIService'; // Import Service
 

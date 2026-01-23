@@ -23,15 +23,32 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
       return cached.matrix;
     }
 
-    // Fetch dari server
-    const result = await pb.collection('user_permissions').getFullList({
+    // Fetch dari server (user_management collection)
+    const records = await pb.collection('user_management').getList(1, 1, {
       filter: `user_id = '${userId}'`,
-      expand: 'permissions',
     });
 
-    // Import buildPermissionMatrix secara dinamis
-    const { buildPermissionMatrix } = await import('../utils/permissionUtils');
-    const permissionMatrix = buildPermissionMatrix(result || []);
+    let permissionMatrix: PermissionMatrix;
+
+    if (records.items.length > 0) {
+      const item = records.items[0];
+      permissionMatrix = {
+        dashboard: item.dashboard || 'NONE',
+        cm_plant_operations: item.cm_plant_operations || 'NONE',
+        rkc_plant_operations: item.rkc_plant_operations || 'NONE',
+        project_management: item.project_management || 'NONE',
+        database: item.database || 'NONE',
+      };
+    } else {
+      // Default empty if not found
+      permissionMatrix = {
+        dashboard: 'NONE',
+        cm_plant_operations: 'NONE',
+        rkc_plant_operations: 'NONE',
+        project_management: 'NONE',
+        database: 'NONE',
+      };
+    }
 
     // Simpan ke cache
     permissionCache.set(userId, {
@@ -47,9 +64,10 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
     // Return default empty permission matrix
     return {
       dashboard: 'NONE',
-      plant_operations: {},
-      inspection: 'NONE',
+      cm_plant_operations: 'NONE',
+      rkc_plant_operations: 'NONE',
       project_management: 'NONE',
+      database: 'NONE',
     };
   }
 };
@@ -78,14 +96,7 @@ export const checkUserPermission = async (
       return comparePermissionLevel(permissions[feature] as string, requiredLevel);
     }
 
-    // Handle nested features like plant_operations
-    if (feature === 'plant_operations' && typeof permissions[feature] === 'object') {
-      const plantOps = permissions[feature];
-      return Object.values(plantOps).some((category) =>
-        Object.values(category).some((level) => comparePermissionLevel(level, requiredLevel))
-      );
-    }
-
+    // Fallback for object-based legacy permissions, treated as simple if they slip through
     return false;
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -98,7 +109,7 @@ export const checkUserPermission = async (
  * Helper untuk membandingkan level hak akses
  */
 const comparePermissionLevel = (userLevel: string, requiredLevel: string): boolean => {
-  const levels = ['NONE', 'READ', 'WRITE', 'ADMIN'];
+  const levels = ['NONE', 'READ', 'WRITE'];
   const userIndex = levels.indexOf(userLevel);
   const requiredIndex = levels.indexOf(requiredLevel);
 

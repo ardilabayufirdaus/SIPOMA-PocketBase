@@ -31,20 +31,25 @@ export const useCurrentUser = () => {
       // Penanganan pengguna tamu - tetap ambil permissions dari database seperti user lainnya
       // Guest users now follow the same permission loading logic as regular users
 
-      // Ambil izin pengguna dari koleksi user_permissions dengan safeApiCall
-      const userPermissions = await safeApiCall(() =>
-        pb.collection('user_permissions').getList(1, 100, {
+      // Ambil izin pengguna dari koleksi user_management dengan safeApiCall
+      const permissionRecord = await safeApiCall(() =>
+        pb.collection('user_management').getList(1, 1, {
           filter: `user_id = "${dbUserRaw.id}"`,
-          expand: 'permissions',
         })
       );
 
       // Jika gagal mendapatkan permissions, gunakan permissions dari data tersimpan
       let permissionsData = {};
-      if (userPermissions) {
-        // Bangun matriks izin menggunakan data langsung dari user_permissions
-        const { buildPermissionMatrix } = await import('../utils/permissionUtils');
-        permissionsData = buildPermissionMatrix(userPermissions.items);
+
+      if (permissionRecord && permissionRecord.items.length > 0) {
+        const item = permissionRecord.items[0];
+        permissionsData = {
+          dashboard: item.dashboard || 'NONE',
+          cm_plant_operations: item.cm_plant_operations || 'NONE',
+          rkc_plant_operations: item.rkc_plant_operations || 'NONE',
+          project_management: item.project_management || 'NONE',
+          database: item.database || 'NONE',
+        };
       } else if (existingUser && existingUser.permissions) {
         permissionsData = existingUser.permissions;
       }
@@ -146,15 +151,26 @@ export const useCurrentUser = () => {
         return;
       }
 
-      // Fallback: Jika tidak ada data tersimpan, fetch dari server
-      const dbUserRaw = await safeApiCall(() => pb.collection('users').getOne(userId), {
-        retries: 2,
-        retryDelay: 1000,
+      // Fallback: Jika tidak ada data tersimpan, fetch dari server menggunakan authRefresh
+      // authRefresh lebih aman karena memvalidasi token sekaligus mengambil data user terbaru
+      // Jangan retry jika gagal (retries: 0) karena jika 401 berarti token memang tidak valid
+      const authData = await safeApiCall(() => pb.collection('users').authRefresh(), {
+        retries: 0,
       });
 
-      if (!dbUserRaw) {
+      if (!authData || !authData.record) {
+        // Jika authRefresh gagal, berarti token tidak valid
+        logger.warn('Auth refresh failed, clearing auth store');
+        pb.authStore.clear();
+        secureStorage.removeItem('currentUser');
         setCurrentUser(null);
         return;
+      }
+
+      const dbUserRaw = authData.record;
+      // Update auth store dengan data terbaru (otomatis dilakukan oleh authRefresh, tapi kita pastikan)
+      if (authData.token) {
+        pb.authStore.save(authData.token, authData.record);
       }
 
       // Process user data normally
@@ -163,20 +179,24 @@ export const useCurrentUser = () => {
       // Penanganan pengguna tamu - tetap ambil permissions dari database seperti user lainnya
       // Guest users now follow the same permission loading logic as regular users
 
-      // Ambil izin pengguna dari koleksi user_permissions dengan safeApiCall
-      const userPermissions = await safeApiCall(() =>
-        pb.collection('user_permissions').getList(1, 100, {
+      // Ambil izin pengguna dari koleksi user_management dengan safeApiCall
+      const permissionRecord = await safeApiCall(() =>
+        pb.collection('user_management').getList(1, 1, {
           filter: `user_id = "${dbUserRaw.id}"`,
-          expand: 'permissions',
         })
       );
 
       // Jika gagal mendapatkan permissions, gunakan permissions dari data tersimpan
       let permissionsData = {};
-      if (userPermissions) {
-        // Bangun matriks izin menggunakan data langsung dari user_permissions
-        const { buildPermissionMatrix } = await import('../utils/permissionUtils');
-        permissionsData = buildPermissionMatrix(userPermissions.items);
+      if (permissionRecord && permissionRecord.items.length > 0) {
+        const item = permissionRecord.items[0];
+        permissionsData = {
+          dashboard: item.dashboard || 'NONE',
+          cm_plant_operations: item.cm_plant_operations || 'NONE',
+          rkc_plant_operations: item.rkc_plant_operations || 'NONE',
+          project_management: item.project_management || 'NONE',
+          database: item.database || 'NONE',
+        };
       } else {
         const storedUser = secureStorage.getItem<User>('currentUser');
         if (storedUser && storedUser.permissions) {
@@ -281,11 +301,11 @@ export const useCurrentUser = () => {
           logger.error('❌ Failed to subscribe to users collection:', err);
         });
 
-      // Subscribe ke collection user_permissions untuk perubahan permissions
-      pb.collection('user_permissions')
+      // Subscribe ke collection user_management untuk perubahan permissions
+      pb.collection('user_management')
         .subscribe('*', (data) => {
           if (data.record && data.record.user_id === currentUserId) {
-            logger.info('🔄 Current user permissions updated via user_permissions collection');
+            logger.info('🔄 Current user permissions updated via user_management collection');
             throttledRefresh();
           }
         })
@@ -293,7 +313,7 @@ export const useCurrentUser = () => {
           unsubscribePermissions = unsub;
         })
         .catch((err) => {
-          logger.error('❌ Failed to subscribe to user_permissions collection:', err);
+          logger.error('❌ Failed to subscribe to user_management collection:', err);
         });
     }
 
@@ -343,6 +363,23 @@ export const useCurrentUser = () => {
   // Function untuk logout - clear SIPOMA domain data (SIMPLIFIED)
   const logout = useCallback(async () => {
     try {
+      try {
+        if (pb.authStore.model?.id) {
+          try {
+            const records = await pb.collection('user_online').getList(1, 1, {
+              filter: `user_id = "${pb.authStore.model.id}"`,
+            });
+            if (records.items.length > 0) {
+              await pb.collection('user_online').delete(records.items[0].id);
+            }
+          } catch (delError) {
+            logger.warn('Failed to delete user_online record during logout:', delError);
+          }
+        }
+      } catch (e) {
+        // Ignore
+      }
+
       // Clear PocketBase auth
       pb.authStore.clear();
       secureStorage.removeItem('currentUser');

@@ -19,7 +19,9 @@
         font-family: 'Roboto Condensed', sans-serif;
         color: #334155;
         min-height: 100vh;
+        overflow-x: hidden;
       }
+
       html.dark body {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         color: #e2e8f0;
@@ -44,6 +46,28 @@
         background-image:
           radial-gradient(circle at 25% 25%, rgba(239, 68, 68, 0.15) 0%, transparent 50%),
           radial-gradient(circle at 75% 75%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+      }
+
+      /* Grid Pattern */
+      body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      html.dark body {
+        /* Ensure consistency if specific dark overrides exist */
+        background-color: #0f172a;
+        color: #e2e8f0;
       }
 
       /* Enhanced scrollbar with modern styling */
@@ -182,7 +206,14 @@
       .modern-spinner {
         width: 48px;
         height: 48px;
-        background: conic-gradient(from 0deg, transparent 0%, #6366f1 25%, #4f46e5 50%, #818cf8 75%, transparent 100%);
+        background: conic-gradient(
+          from 0deg,
+          transparent 0%,
+          #6366f1 25%,
+          #4f46e5 50%,
+          #818cf8 75%,
+          transparent 100%
+        );
         border-radius: 50%;
         animation: spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         position: relative;
@@ -212,7 +243,8 @@
 
       /* Loading pulse animation */
       @keyframes pulse-glow {
-        0%, 100% {
+        0%,
+        100% {
           box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
         }
         50% {

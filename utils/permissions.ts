@@ -1,4 +1,4 @@
-import { User, PermissionMatrix, PlantOperationsPermissions } from '../types';
+import { User, PermissionMatrix } from '../types';
 import React from 'react';
 
 /**
@@ -43,14 +43,7 @@ export class PermissionChecker {
       return this.comparePermissionLevel(userPermission, requiredLevel);
     }
 
-    // Handle object permission format (for plant_operations or granular permissions)
-    if (typeof userPermission === 'object' && userPermission !== null) {
-      // For object format, check if user has any access that meets the required level
-      const plantOps = userPermission as PlantOperationsPermissions;
-      return Object.values(plantOps).some((category) =>
-        Object.values(category).some((level) => this.comparePermissionLevel(level, requiredLevel))
-      );
-    }
+    return false;
 
     return false;
   }
@@ -71,12 +64,23 @@ export class PermissionChecker {
     // Check if permissions object exists
     if (!this.user.permissions) return false;
 
-    const plantOps = this.user.permissions.plant_operations;
-    if (!plantOps || !plantOps[category] || !plantOps[category][unit]) {
-      return false;
+    // Check for both CM and RKC plant operations
+    // Note: Ideally we should accept a feature parameter, but for backward compatibility
+    // checking both or specifically checking what's passed in the future
+    // Simplified Model: Check module level permission instead of granular unit permission
+    // Map category/unit check to the general module permission
+
+    // Check CM Plant Operations
+    if (this._hasPermission('cm_plant_operations', requiredLevel)) {
+      return true;
     }
 
-    return this.comparePermissionLevel(plantOps[category][unit], requiredLevel);
+    // Check RKC Plant Operations
+    if (this._hasPermission('rkc_plant_operations', requiredLevel)) {
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -98,7 +102,10 @@ export class PermissionChecker {
    * Check if user can access plant operations
    */
   canAccessPlantOperations(): boolean {
-    return this.hasPermission('plant_operations', 'READ');
+    return (
+      this.hasPermission('cm_plant_operations', 'READ') ||
+      this.hasPermission('rkc_plant_operations', 'READ')
+    );
   }
 
   /**
@@ -109,10 +116,10 @@ export class PermissionChecker {
   }
 
   /**
-   * Check if user can access inspection module
+   * Check if user can access database module
    */
-  canAccessInspection(): boolean {
-    return this.hasPermission('inspection', 'READ');
+  canAccessDatabase(): boolean {
+    return this.hasPermission('database', 'READ');
   }
 
   /**
@@ -148,20 +155,7 @@ export class PermissionChecker {
     }
 
     // For plant operations, return the highest permission level across all categories/units
-    if (feature === 'plant_operations' && typeof userPermission === 'object') {
-      const plantOps = userPermission as PlantOperationsPermissions;
-      let highestLevel = 'NONE';
-
-      Object.values(plantOps).forEach((category) => {
-        Object.values(category).forEach((level) => {
-          if (this.comparePermissionLevel(level, highestLevel) && level !== highestLevel) {
-            highestLevel = level;
-          }
-        });
-      });
-
-      return highestLevel;
-    }
+    return 'NONE';
 
     return 'NONE';
   }
@@ -174,7 +168,7 @@ export class PermissionChecker {
       NONE: 0,
       READ: 1,
       WRITE: 2,
-      ADMIN: 3,
+      ADMIN: 2, // Map ADMIN to WRITE for simplified model
     };
 
     return levelHierarchy[userLevel] >= levelHierarchy[requiredLevel];
@@ -186,28 +180,32 @@ export class PermissionChecker {
  */
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
   'Super Admin': {
-    dashboard: 'ADMIN',
-    plant_operations: 'ADMIN',
-    inspection: 'ADMIN',
-    project_management: 'ADMIN',
+    dashboard: 'WRITE',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
+    project_management: 'WRITE',
+    database: 'WRITE',
   },
   Admin: {
-    dashboard: 'ADMIN',
-    plant_operations: 'WRITE',
-    inspection: 'WRITE',
+    dashboard: 'WRITE',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
+    database: 'WRITE',
   },
   Operator: {
     dashboard: 'READ',
-    plant_operations: 'WRITE', // Updated to WRITE to allow import/export operations
-    inspection: 'NONE',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
     project_management: 'NONE',
+    database: 'NONE',
   },
   Guest: {
     dashboard: 'NONE',
-    plant_operations: 'NONE',
-    inspection: 'NONE',
+    cm_plant_operations: 'NONE',
+    rkc_plant_operations: 'NONE',
     project_management: 'NONE',
+    database: 'NONE',
   },
 };
 
@@ -225,7 +223,7 @@ export const PERMISSION_LEVELS = {
   NONE: 0, // No access
   READ: 1, // View only
   WRITE: 2, // View + Create/Edit
-  ADMIN: 3, // Full access + Delete + Manage others
+  ADMIN: 2, // Deprecated, map to WRITE
 };
 
 /**
@@ -297,7 +295,11 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 
   let hasAccess = false;
 
-  if (category && unit && feature === 'plant_operations') {
+  if (
+    category &&
+    unit &&
+    (feature === 'cm_plant_operations' || feature === 'rkc_plant_operations')
+  ) {
     hasAccess = permissionChecker.hasPlantOperationPermission(category, unit, requiredLevel);
   } else {
     hasAccess = permissionChecker.hasPermission(feature, requiredLevel);

@@ -4,6 +4,7 @@ import {
   PocketBaseGroupMemberRepository,
   PocketBaseGroupReportRepository,
 } from './repositories/pocketbase-whatsapp';
+import { PocketBaseUserRepository } from './repositories/PocketBaseUserRepository';
 import {
   GenerateGroupReportUseCase,
   GetGroupReportsUseCase,
@@ -16,6 +17,7 @@ class DependencyContainer {
   private _messageRepo: PocketBaseMessageRepository;
   private _memberRepo: PocketBaseGroupMemberRepository;
   private _reportRepo: PocketBaseGroupReportRepository;
+  private _userRepo: PocketBaseUserRepository;
 
   constructor() {
     // PocketBase client is already initialized as singleton in utils/pocketbase.ts
@@ -25,6 +27,7 @@ class DependencyContainer {
     this._messageRepo = new PocketBaseMessageRepository(pb);
     this._memberRepo = new PocketBaseGroupMemberRepository(pb);
     this._reportRepo = new PocketBaseGroupReportRepository(pb);
+    this._userRepo = new PocketBaseUserRepository();
   }
 
   // Repository getters
@@ -42,6 +45,10 @@ class DependencyContainer {
 
   get reportRepository() {
     return this._reportRepo;
+  }
+
+  get userRepository() {
+    return this._userRepo;
   }
 
   // Use case factories

@@ -38,9 +38,11 @@ export const translations = {
     appSubtitle: 'Production Management Information System',
     header_welcome: 'Welcome',
     mainDashboard: 'Main Dashboard',
-    plantOperations: 'Plant Operations',
-    inspection: 'Inspection',
+    plantOperations: 'CM Plant Operations', // Renamed
+    rkcPlantOperations: 'RKC Plant Operations', // New
     projectManagement: 'Project Management',
+    database: 'Database',
+    database_description: 'Manage your database and collections',
     userManagement: 'User Management',
     permissions: 'Permissions',
     close: 'Close',
@@ -729,8 +731,10 @@ export const translations = {
     user_details_title: 'User Details',
     permissions_title: 'Module Permissions',
     module_dashboard: 'Main Dashboard',
-    module_plant_operations: 'Plant Operations',
+    module_cm_plant_operations: 'CM Plant Operations',
+    module_rkc_plant_operations: 'RKC Plant Operations',
     module_project_management: 'Project Management',
+    module_database: 'Database',
     permission_level_none: 'None',
     permission_level_read: 'View Only',
     permission_level_write: 'Can Edit',
@@ -790,7 +794,10 @@ export const translations = {
     mfa: 'MFA Management',
 
     // Plant Operations Dropdown & Page
+    plant_operations: 'CM Plant Operations', // Renamed from Plant Operations
+    rkc_plant_operations: 'RKC Plant Operations', // New Module
     op_dashboard: 'Dashboard',
+    rkc_dashboard: 'Dashboard', // RKC Dashboard key
     op_people_champion: 'People Champion',
     op_optimized_dashboard: 'Optimized Dashboard',
     op_report: 'Report',
@@ -807,6 +814,7 @@ export const translations = {
     op_cop_analysis: 'COP Analysis',
     op_work_instruction_library: 'Work Instruction Library',
     op_master_data: 'Master Data',
+    op_rkc_master_data: 'RKC Master Data',
     filters: 'Filters',
     filter_by_month: 'Filter by Month',
     filter_by_year: 'Filter by Year',
@@ -846,6 +854,49 @@ export const translations = {
     generating_report_message: 'Generating your report, please wait...',
     report_generated_success: 'Report generated. You can now download it.',
     no_report_parameters: 'No report parameters have been set in Master Data.',
+
+    // RKC Master Data
+    rkc_master_data_title: 'RKC Master Data Management',
+    rkc_master_data_subtitle: 'Manage Plant Units, PICs, Parameters, and Silo Capacities for RKC',
+    // Duplicates removed, using existing logic or specific keys
+    parameter_setting_subtitle_rkc: 'Configure parameters and their limits', // Renamed to avoid confusion if needed, or keep generic
+    cop_parameter_title: 'COP Parameters',
+    cop_parameter_subtitle: 'Select parameters for Cost of Production analysis',
+    add_data_button: 'Add Data',
+    edit_parameters: 'Edit Parameters',
+    plant_unit: 'Plant Unit',
+    // category key removed (collision)
+    pic_name: 'PIC Name',
+    parameter_name: 'Parameter Name',
+    measurement_unit: 'Unit', // Use this instead of 'unit'
+    // unit key removed (collision)
+    // data_type key removed (collision)
+    silo_number: 'Silo Number',
+    material_type: 'Material Type',
+    max_capacity: 'Max Capacity',
+    edit_plant_unit: 'Edit Plant Unit',
+    add_plant_unit: 'Add Plant Unit',
+    edit_parameter: 'Edit Parameter',
+    add_parameter: 'Add Parameter',
+    edit_silo_capacity: 'Edit Silo Capacity',
+    add_silo_capacity: 'Add Silo Capacity',
+    edit_pic_setting: 'Edit PIC Setting',
+    add_pic_setting: 'Add PIC Setting',
+    select_cop_parameters: 'Select COP Parameters',
+    import_excel: 'Import Excel',
+    export_excel: 'Export Excel',
+    export_all: 'Export All Tables',
+    delete_confirmation_message: 'Are you sure you want to delete this record?',
+    // confirm_delete key removed (collision)
+    no_data_available: 'No data available',
+    search_placeholder: 'Search...',
+    all_categories: 'All Categories',
+    all_units: 'All Units',
+    last_updated: 'Last updated',
+    auto_refresh_on: 'Auto-refresh on',
+    auto_refresh_off: 'Auto-refresh off',
+    realtime_active: 'Realtime active',
+    connecting: 'Connecting...',
     downtime_report_title: 'Downtime Report',
     silo_stock_report_title: 'Silo Stock Report',
     operator_report_title: 'Operator Report',

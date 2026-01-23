@@ -3,12 +3,20 @@ import { useMixedContentDetection } from '../hooks/useMixedContentDetection';
 import { checkConnection } from '../utils/connectionMonitor';
 import { useOfflineStatus } from '../hooks/useOfflineStatus';
 
+interface ConnectionStatusIndicatorProps {
+  className?: string;
+  variant?: 'fixed' | 'inline';
+}
+
 /**
  * ConnectionStatusIndicator - A small indicator showing backend connection status
  * - Shows connection status with color indicator
  * - Offers help link for mixed content issues when detected
  */
-const ConnectionStatusIndicator: React.FC = () => {
+const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({
+  className = '',
+  variant = 'fixed',
+}) => {
   const [connectionStatus, setConnectionStatus] = useState<
     'connected' | 'disconnected' | 'checking' | 'offline'
   >('checking');
@@ -42,18 +50,18 @@ const ConnectionStatusIndicator: React.FC = () => {
     return null;
   }
 
-  const getStatusColor = () => {
+  const getStatusColorClass = () => {
     switch (connectionStatus) {
       case 'connected':
-        return '#4caf50'; // Green
+        return 'bg-green-500';
       case 'disconnected':
-        return '#f44336'; // Red
+        return 'bg-red-500';
       case 'offline':
-        return '#ff5722'; // Deep Orange
+        return 'bg-orange-500';
       case 'checking':
-        return '#ff9800'; // Orange
+        return 'bg-amber-500';
       default:
-        return '#9e9e9e'; // Gray
+        return 'bg-slate-400';
     }
   };
 
@@ -64,13 +72,13 @@ const ConnectionStatusIndicator: React.FC = () => {
 
     switch (connectionStatus) {
       case 'connected':
-        return 'Connected';
+        return 'Online'; // Keep it short for header
       case 'disconnected':
         return 'Server Offline';
       case 'offline':
-        return 'Network Offline';
+        return 'No Network';
       case 'checking':
-        return 'Checking...';
+        return '...';
       default:
         return 'Unknown';
     }
@@ -93,51 +101,16 @@ const ConnectionStatusIndicator: React.FC = () => {
       window.location.hostname.includes('sipoma.site'));
 
   // Only show prominent indicator if there's actually a mixed content issue detected
-  // Previously this would always show for isVercel && isHttps, which was incorrect
+  // This stays fixed at top because it's a critical error
   if (isVercel && isHttps && hasMixedContentIssue) {
     return (
-      <div
-        style={{
-          position: 'fixed',
-          top: '10px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '12px 20px',
-          backgroundColor: '#f44336',
-          color: 'white',
-          borderRadius: '4px',
-          fontSize: '14px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          zIndex: 1000,
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-          fontWeight: 'bold',
-        }}
-      >
-        <div
-          style={{
-            width: '12px',
-            height: '12px',
-            backgroundColor: '#ffffff',
-            borderRadius: '50%',
-          }}
-        />
+      <div className="fixed top-2.5 left-1/2 -translate-x-1/2 px-5 py-3 bg-red-500 text-white rounded text-sm flex items-center gap-2.5 z-[1000] shadow-md font-bold">
+        <div className="w-3 h-3 bg-white rounded-full" />
         <span>HTTPS to HTTP connection blocked</span>
 
         <button
           onClick={handleShowHelp}
-          style={{
-            backgroundColor: 'white',
-            color: '#f44336',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            padding: '4px 12px',
-            marginLeft: '5px',
-            fontWeight: 'bold',
-            borderRadius: '4px',
-          }}
+          className="bg-white text-red-500 border-none cursor-pointer text-sm px-3 py-1 ml-1.5 font-bold rounded"
         >
           Show Solution
         </button>
@@ -145,50 +118,23 @@ const ConnectionStatusIndicator: React.FC = () => {
     );
   }
 
-  // Standard indicator for non-Vercel environments
+  // Base container classes
+  const containerClasses =
+    variant === 'fixed'
+      ? 'fixed bottom-2.5 right-2.5 px-3 py-2 bg-slate-900/75 text-white rounded text-xs flex items-center gap-1.5 z-[1000] shadow-sm backdrop-blur-sm'
+      : `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 ${className}`;
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '10px',
-        right: '10px',
-        padding: '8px 12px',
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        color: 'white',
-        borderRadius: '4px',
-        fontSize: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        zIndex: 1000,
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
-      }}
-    >
-      <div
-        style={{
-          width: '10px',
-          height: '10px',
-          backgroundColor: getStatusColor(),
-          borderRadius: '50%',
-        }}
-      />
-      <span>{getStatusText()}</span>
+    <div className={containerClasses}>
+      <div className={`w-2.5 h-2.5 rounded-full ${getStatusColorClass()} animate-pulse`} />
+      <span className="hidden sm:inline-block">{getStatusText()}</span>
 
       {hasMixedContentIssue && isHttps && (
         <button
           onClick={handleShowHelp}
-          style={{
-            backgroundColor: 'transparent',
-            color: '#2196f3',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '12px',
-            padding: '2px 5px',
-            marginLeft: '5px',
-            textDecoration: 'underline',
-          }}
+          className="bg-transparent text-blue-400 border-none cursor-pointer text-xs px-1 hover:underline"
         >
-          Need Help?
+          Help?
         </button>
       )}
     </div>

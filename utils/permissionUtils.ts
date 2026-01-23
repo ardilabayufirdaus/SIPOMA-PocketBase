@@ -1,19 +1,22 @@
-import { PermissionMatrix, PermissionLevel, PlantOperationsPermissions } from '../types';
+import { PermissionMatrix, PermissionLevel } from '../types';
 
 const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   dashboard: 'dashboard',
-  plant_operations: 'plant_operations',
-  inspection: 'inspection',
+  plant_operations: 'cm_plant_operations', // Map legacy to new
+  cm_plant_operations: 'cm_plant_operations',
+  rkc_plant_operations: 'rkc_plant_operations',
   project_management: 'project_management',
+  database: 'database',
 };
 
 export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatrix => {
   // Create default permission matrix
   const matrix: PermissionMatrix = {
     dashboard: 'NONE',
-    plant_operations: {},
-    inspection: 'NONE',
+    cm_plant_operations: 'NONE',
+    rkc_plant_operations: 'NONE',
     project_management: 'NONE',
+    database: 'NONE',
   };
 
   // Jika tidak ada izin, kembalikan matrix default
@@ -64,17 +67,19 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
           const moduleKey = permissionModuleMap[moduleName];
 
           if (moduleKey) {
-            if (
-              moduleKey === 'plant_operations' &&
-              typeof permissionValue === 'object' &&
-              permissionValue !== null
-            ) {
-              // Handle plant operations permissions
-              const plantOps = permissionValue as PlantOperationsPermissions;
-              matrix.plant_operations = plantOps;
-            } else if (typeof permissionValue === 'string') {
+            if (typeof permissionValue === 'string') {
               // Handle simple permission levels
-              matrix[moduleKey] = permissionValue as PermissionLevel;
+              (matrix as any)[moduleKey] = permissionValue as PermissionLevel;
+            } else if (typeof permissionValue === 'object' && permissionValue !== null) {
+              // Legacy object permission, map to READ/WRITE based on existence
+              // If object exists and has keys, assume at least READ.
+              // We could try to scan values for WRITE.
+              let level = 'READ';
+              const str = JSON.stringify(permissionValue);
+              if (str.includes('WRITE') || str.includes('ADMIN')) {
+                level = 'WRITE';
+              }
+              (matrix as any)[moduleKey] = level;
             }
           }
         });
@@ -94,26 +99,12 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
       const moduleKey = permissionModuleMap[moduleNameStr];
 
       if (moduleKey) {
-        if (moduleKey === 'plant_operations') {
-          // Handle plant operations permissions
-          const plantUnits = perm.plant_units;
+        let level = String(perm.permission_level || 'NONE') as PermissionLevel;
+        if (level === 'NONE') level = 'READ'; // Default legacy existence to READ if not NONE? or respect keys.
 
-          if (plantUnits && Array.isArray(plantUnits)) {
-            plantUnits.forEach((unit: Record<string, unknown>) => {
-              const category = String(unit.category || '');
-              const unitName = String(unit.unit || '');
-              const level = String(perm.permission_level || 'NONE') as PermissionLevel;
-
-              if (!matrix.plant_operations[category]) {
-                matrix.plant_operations[category] = {};
-              }
-              matrix.plant_operations[category][unitName] = level;
-            });
-          }
-        } else {
-          const level = String(perm.permission_level || 'NONE') as PermissionLevel;
-          matrix[moduleKey] = level;
-        }
+        // If it was granular plant ops, the existence of this record means partial access.
+        // We'll give it the level specified in the record.
+        (matrix as any)[moduleKey] = level;
       }
     }
   });

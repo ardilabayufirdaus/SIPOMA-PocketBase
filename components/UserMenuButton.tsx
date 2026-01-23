@@ -1,7 +1,7 @@
 import React from 'react';
 import UserIcon from './icons/UserIcon';
 import { User } from '../types';
-import { Page } from '../App';
+import { Page } from '../types';
 
 interface UserMenuButtonProps {
   currentUser: User | null;

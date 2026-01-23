@@ -2,18 +2,21 @@ import { PermissionMatrix, PermissionLevel, PlantOperationsPermissions } from '.
 
 const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   dashboard: 'dashboard',
-  plant_operations: 'plant_operations',
-  inspection: 'inspection',
+  plant_operations: 'cm_plant_operations', // Map legacy to new
+  cm_plant_operations: 'cm_plant_operations',
+  rkc_plant_operations: 'rkc_plant_operations',
   project_management: 'project_management',
+  database: 'database',
 };
 
 export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatrix => {
   // Create default permission matrix
   const matrix: PermissionMatrix = {
     dashboard: 'NONE',
-    plant_operations: {},
-    inspection: 'NONE',
+    cm_plant_operations: {},
+    rkc_plant_operations: {},
     project_management: 'NONE',
+    database: 'NONE',
   };
 
   // Jika tidak ada izin, kembalikan matrix default
@@ -65,16 +68,17 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
 
           if (moduleKey) {
             if (
-              moduleKey === 'plant_operations' &&
+              (moduleKey === 'cm_plant_operations' || moduleKey === 'rkc_plant_operations') &&
               typeof permissionValue === 'object' &&
               permissionValue !== null
             ) {
-              // Handle plant operations permissions
+              // Handle plant operations permissions (CM or RKC)
               const plantOps = permissionValue as PlantOperationsPermissions;
-              matrix.plant_operations = plantOps;
+              // Cast to any to access dynamic key property safely
+              (matrix as any)[moduleKey] = plantOps;
             } else if (typeof permissionValue === 'string') {
               // Handle simple permission levels
-              matrix[moduleKey] = permissionValue as PermissionLevel;
+              (matrix as any)[moduleKey] = permissionValue as PermissionLevel;
             }
           }
         });
@@ -94,25 +98,30 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
       const moduleKey = permissionModuleMap[moduleNameStr];
 
       if (moduleKey) {
-        if (moduleKey === 'plant_operations') {
-          // Handle plant operations permissions
+        if (moduleKey === 'cm_plant_operations') {
+          // Handle OLD plant operations permissions -> map to cm_plant_operations
           const plantUnits = perm.plant_units;
 
           if (plantUnits && Array.isArray(plantUnits)) {
+            const cmOps: PlantOperationsPermissions =
+              matrix.cm_plant_operations as PlantOperationsPermissions;
+
             plantUnits.forEach((unit: Record<string, unknown>) => {
               const category = String(unit.category || '');
               const unitName = String(unit.unit || '');
               const level = String(perm.permission_level || 'NONE') as PermissionLevel;
 
-              if (!matrix.plant_operations[category]) {
-                matrix.plant_operations[category] = {};
+              if (!cmOps[category]) {
+                cmOps[category] = {};
               }
-              matrix.plant_operations[category][unitName] = level;
+              cmOps[category][unitName] = level;
             });
           }
         } else {
           const level = String(perm.permission_level || 'NONE') as PermissionLevel;
-          matrix[moduleKey] = level;
+          // Handle inspection mapping to generic if needed, but for now skip obsolete inspection
+          // Just assign if valid moduleKey.
+          (matrix as any)[moduleKey] = level;
         }
       }
     }

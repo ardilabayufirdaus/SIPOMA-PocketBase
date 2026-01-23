@@ -1,15 +1,43 @@
 import React from 'react';
 import PlaceholderPage from '../components/PlaceholderPage';
-import PlantOperationsMasterData from './plant_operations/PlantOperationsMasterData';
-import CcrDataEntryPage from './plant_operations/CcrDataEntryPage';
-import AutonomousDataEntryPage from './plant_operations/AutonomousDataEntryPage';
-import CopAnalysisPage from './plant_operations/CopAnalysisPage';
-import ReportPage from './plant_operations/ReportPage';
-import WorkInstructionLibraryPage from './plant_operations/WorkInstructionLibraryPage';
-import WhatsAppGroupReportPage from './plant_operations/WhatsAppGroupReportPage';
-import PlantOperationsDashboardPage from './plant_operations/PlantOperationsDashboardPage';
-import MonitoringPage from './plant_operations/MonitoringPage';
-import PeopleChampionPage from './plant_operations/PeopleChampionPage';
+// Use lazy loading for sub-pages to isolate module failures and improve initial load time
+const PlantOperationsMasterData = React.lazy(
+  () => import('./plant_operations/PlantOperationsMasterData')
+);
+const RkcMasterDataPage = React.lazy(() => import('./plant_operations/RkcMasterDataPage'));
+const CcrDataEntryPage = React.lazy(() => import('./plant_operations/CcrDataEntryPage'));
+const RkcCcrDataEntryPage = React.lazy(() => import('./plant_operations/RkcCcrDataEntryPage'));
+const AutonomousDataEntryPage = React.lazy(
+  () => import('./plant_operations/AutonomousDataEntryPage')
+);
+const RkcAutonomousDataEntryPage = React.lazy(
+  () => import('./plant_operations/RkcAutonomousDataEntryPage')
+);
+const CopAnalysisPage = React.lazy(() => import('./plant_operations/CopAnalysisPage'));
+const RkcCopAnalysisPage = React.lazy(() => import('./plant_operations/RkcCopAnalysisPage'));
+const ReportPage = React.lazy(() => import('./plant_operations/ReportPage'));
+const WorkInstructionLibraryPage = React.lazy(
+  () => import('./plant_operations/WorkInstructionLibraryPage')
+);
+const WhatsAppGroupReportPage = React.lazy(
+  () => import('./plant_operations/WhatsAppGroupReportPage')
+);
+const RkcWhatsAppGroupReportPage = React.lazy(
+  () => import('./plant_operations/RkcWhatsAppGroupReportPage')
+);
+const PlantOperationsDashboardPage = React.lazy(
+  () => import('./plant_operations/PlantOperationsDashboardPage')
+);
+const MonitoringPage = React.lazy(() => import('./plant_operations/MonitoringPage'));
+const PeopleChampionPage = React.lazy(() => import('./plant_operations/PeopleChampionPage'));
+
+// Fallback component for suspense
+const PageLoader = () => (
+  <div className="w-full h-96 flex flex-col items-center justify-center">
+    <div className="w-8 h-8 border-4 border-slate-200 border-t-primary-500 rounded-full animate-spin mb-4"></div>
+    <p className="text-slate-500 text-sm">Loading module...</p>
+  </div>
+);
 
 interface PlantData {
   loading: boolean;
@@ -19,27 +47,36 @@ interface PlantOperationsPageProps {
   activePage: string;
   t: Record<string, string>;
   plantData?: PlantData;
+  section?: 'CM' | 'RKC';
 }
 
-const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t }) => {
+const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t, section }) => {
   const renderContent = () => {
     switch (activePage) {
       case 'op_dashboard':
-        return <PlantOperationsDashboardPage t={t} />;
+        return <PlantOperationsDashboardPage t={t} section={section} />;
       case 'op_report':
         return <ReportPage t={t} />;
       case 'op_people_champion':
         return <PeopleChampionPage />;
       case 'op_wag_report':
-        return <WhatsAppGroupReportPage />;
+        return section === 'RKC' ? <RkcWhatsAppGroupReportPage /> : <WhatsAppGroupReportPage />;
       case 'op_master_data':
-        return <PlantOperationsMasterData t={t} />;
+        return section === 'RKC' ? (
+          <RkcMasterDataPage t={t} />
+        ) : (
+          <PlantOperationsMasterData t={t} />
+        );
       case 'op_ccr_data_entry':
-        return <CcrDataEntryPage t={t} />;
+        return section === 'RKC' ? <RkcCcrDataEntryPage t={t} /> : <CcrDataEntryPage t={t} />;
       case 'op_autonomous_data_entry':
-        return <AutonomousDataEntryPage t={t} />;
+        return section === 'RKC' ? (
+          <RkcAutonomousDataEntryPage t={t} />
+        ) : (
+          <AutonomousDataEntryPage t={t} />
+        );
       case 'op_cop_analysis':
-        return <CopAnalysisPage t={t} />;
+        return section === 'RKC' ? <RkcCopAnalysisPage t={t} /> : <CopAnalysisPage t={t} />;
       case 'op_work_instruction_library':
         return <WorkInstructionLibraryPage t={t} />;
       case 'op_monitoring':
@@ -51,7 +88,7 @@ const PlantOperationsPage: React.FC<PlantOperationsPageProps> = ({ activePage, t
     }
   };
 
-  return <>{renderContent()}</>;
+  return <React.Suspense fallback={<PageLoader />}>{renderContent()}</React.Suspense>;
 };
 
 export default PlantOperationsPage;

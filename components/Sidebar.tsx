@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
-import { Page } from '../App';
+import { Page } from '../types';
 import { useIsMobile } from '../hooks/useIsMobile';
 import HomeIcon from './icons/HomeIcon';
 import UserGroupIcon from './icons/UserGroupIcon';
@@ -14,17 +14,15 @@ import CurrencyDollarIcon from './icons/CurrencyDollarIcon';
 import BuildingLibraryIcon from './icons/BuildingLibraryIcon';
 import ArchiveBoxIcon from './icons/ArchiveBoxIcon';
 import ChartPieIcon from './icons/ChartPieIcon';
+import CircleStackIcon from './icons/CircleStackIcon';
+import FireIcon from './icons/FireIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import BellIcon from './icons/BellIcon';
 import ClockIcon from './icons/ClockIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
 import NotificationCreator from './NotificationCreator';
-
-// Import permission utilities
 import { usePermissions } from '../utils/permissions';
 import { User } from '../types';
-
-// Import modular components
 import { NavigationItem, FloatingDropdown } from './NavigationItem';
 import { SidebarHeader } from './SidebarHeader';
 
@@ -98,19 +96,49 @@ const Sidebar: React.FC<SidebarProps> = ({
           icon: <ArchiveBoxIcon className={iconClass} />,
         },
       ],
-      inspectionPages: [
-        { key: 'insp_dashboard', icon: <ClipboardCheckIcon className={iconClass} /> },
-        { key: 'insp_form', icon: <EditIcon className={iconClass} /> },
-        { key: 'insp_details', icon: <ChartBarIcon className={iconClass} /> },
-        { key: 'insp_reports', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+      rkcPlantOperationPages: [
+        { key: 'op_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+        {
+          key: 'op_people_champion',
+          icon: <UserGroupIcon className={iconClass} />,
+        },
+        {
+          key: 'op_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
+        {
+          key: 'op_wag_report',
+          icon: <ClipboardDocumentListIcon className={iconClass} />,
+        },
+        { key: 'op_ccr_data_entry', icon: <EditIcon className={iconClass} /> },
+        {
+          key: 'op_autonomous_data_entry',
+          icon: <EditIcon className={iconClass} />,
+        },
+        {
+          key: 'op_monitoring',
+          icon: <PresentationChartLineIcon className={iconClass} />,
+        },
+        {
+          key: 'op_cop_analysis',
+          icon: <CurrencyDollarIcon className={iconClass} />,
+        },
+        {
+          key: 'op_work_instruction_library',
+          icon: <BuildingLibraryIcon className={iconClass} />,
+        },
+        {
+          key: 'op_master_data', // Shared key, content handled by section prop
+          icon: <CircleStackIcon className={iconClass} />,
+        },
       ],
       projectPages: [
         { key: 'proj_dashboard', icon: <ChartPieIcon className={iconClass} /> },
         { key: 'proj_list', icon: <Bars4Icon className={iconClass} /> },
       ],
-      userManagementPages: [
-        { key: 'user_list', icon: <UserGroupIcon className={iconClass} /> },
-        { key: 'user_activity', icon: <ClockIcon className={iconClass} /> },
+
+      databasePages: [
+        { key: 'database_dashboard', icon: <CircleStackIcon className={iconClass} /> },
       ],
     }),
     [iconClass]
@@ -118,11 +146,11 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Handle dropdown toggle
   const handleDropdownToggle = useCallback(
-    (moduleKey: string, buttonRef: React.RefObject<HTMLButtonElement>) => {
+    (moduleKey: string, buttonRef: React.RefObject<HTMLButtonElement> | null) => {
       if (activeDropdown === moduleKey) {
         setActiveDropdown(null);
       } else {
-        if (buttonRef.current) {
+        if (buttonRef && buttonRef.current) {
           const rect = buttonRef.current.getBoundingClientRect();
           setDropdownPosition({ top: rect.top, left: rect.right + 8 });
         }
@@ -142,30 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       const isAdminOrSuperAdmin = isAdminRole(currentUser?.role);
 
       switch (module) {
-        case 'inspection':
-          return navigationData.inspectionPages
-            .filter(() => {
-              // Use inspection permission for sub-menus
-              return permissionChecker.hasPermission('inspection', 'READ');
-            })
-            .filter((page) => {
-              // For Guest users, hide New Inspection (insp_form)
-              if (currentUser?.role === 'Guest' && page.key === 'insp_form') {
-                return false;
-              }
-              return true;
-            })
-            .map((page) => ({
-              key: page.key,
-              label:
-                t[page.key as keyof typeof t] ||
-                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              icon: page.icon,
-            }));
         case 'operations':
           return navigationData.plantOperationPages
             .filter((page) => {
-              // For Guest users, only allow specific pages
               if (currentUser?.role === 'Guest') {
                 const allowedGuestPages = [
                   'op_dashboard',
@@ -176,8 +183,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 ];
                 return allowedGuestPages.includes(page.key);
               }
-
-              // Hide Master Data for non-admin users and non-Autonomous users
               if (
                 page.key === 'op_master_data' &&
                 !isAdminOrSuperAdmin &&
@@ -185,24 +190,49 @@ const Sidebar: React.FC<SidebarProps> = ({
               ) {
                 return false;
               }
-              // For now, use main plant_operations permission
-              // TODO: Implement granular permissions for each sub-menu
-              return permissionChecker.hasPermission('plant_operations', 'READ');
+              return permissionChecker.hasPermission('cm_plant_operations', 'READ');
             })
             .map((page) => ({
               key: page.key,
               label: t[page.key as keyof typeof t] || page.key,
               icon: page.icon,
             }));
+
+        case 'rkc_operations': // RKC Case
+          return navigationData.rkcPlantOperationPages
+            .filter((page) => {
+              if (currentUser?.role === 'Guest') {
+                // Guest logic same as operations? Assuming yes for now.
+                const allowedGuestPages = [
+                  'op_dashboard',
+                  'op_report',
+                  'op_wag_report',
+                  'op_monitoring',
+                  'op_cop_analysis',
+                ];
+                return allowedGuestPages.includes(page.key);
+              }
+              if (
+                page.key === 'op_master_data' &&
+                !isAdminOrSuperAdmin &&
+                currentUser?.role !== 'Autonomous'
+              ) {
+                return false;
+              }
+              return permissionChecker.hasPermission('rkc_plant_operations', 'READ');
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
+
         case 'projects':
           return navigationData.projectPages
             .filter((page) => {
-              // Hide Project List for non-admin users
               if (page.key === 'proj_list' && !isAdminOrSuperAdmin) {
                 return false;
               }
-              // For now, use main project_management permission
-              // TODO: Implement granular permissions for each sub-menu
               return permissionChecker.hasPermission('project_management', 'READ');
             })
             .map((page) => ({
@@ -210,19 +240,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               label: t[page.key as keyof typeof t] || page.key,
               icon: page.icon,
             }));
-        case 'users':
-          return navigationData.userManagementPages
-            .filter(() => {
-              // User management is only accessible to Super Admin
-              return isSuperAdmin(currentUser?.role);
-            })
-            .map((page) => ({
-              key: page.key,
-              label:
-                t[page.key as keyof typeof t] ||
-                page.key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-              icon: page.icon,
-            }));
+
         default:
           return [];
       }
@@ -243,18 +261,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Create refs for dropdown positioning
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const operationsButtonRef = useRef<HTMLButtonElement>(null);
-  const inspectionButtonRef = useRef<HTMLButtonElement>(null);
+  const rkcOperationsButtonRef = useRef<HTMLButtonElement>(null); // New ref for RKC
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
   const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
+  const databaseButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleMouseEnter = useCallback(() => {
-    // Tooltip will be handled by individual buttons
-  }, []);
+  const handleMouseEnter = useCallback(() => {}, []);
 
-  const handleMouseLeave = useCallback(() => {
-    // Tooltip will be handled by individual buttons
-  }, []);
+  const handleMouseLeave = useCallback(() => {}, []);
 
   // ESC key handler for mobile
   useEffect(() => {
@@ -279,7 +294,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       const dir = xDir < 0 ? -1 : 1;
 
       if (!down && trigger && dir === -1) {
-        // Swipe left to close
         onClose?.();
       }
     },
@@ -292,7 +306,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Mobile Overlay */}
       {isMobile && isOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
@@ -303,7 +316,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         {...bind()}
-        style={{ touchAction: 'none' }} /* Fix for @use-gesture warning */
+        style={{ touchAction: 'none' }}
         className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ${
           isExpanded ? 'w-64' : 'w-24'
         } ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}`}
@@ -312,15 +325,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         role="navigation"
         aria-label="Main navigation"
       >
-        {/* Glass Background with Blur */}
         <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl border-r border-white/5 shadow-2xl transition-all duration-300" />
 
-        {/* Content Container */}
         <div className="relative z-10 flex flex-col h-full">
-          {/* Header */}
           <SidebarHeader isMobile={isMobile} onClose={onClose} isExpanded={isExpanded} />
 
-          {/* Floating Toggle Button (Desktop Only) */}
           {!isMobile && onToggleExpand && (
             <button
               onClick={onToggleExpand}
@@ -345,9 +354,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </button>
           )}
 
-          {/* Navigation */}
           <nav className="flex-1 px-3 py-6 flex flex-col items-center space-y-3 overflow-y-auto scrollbar-hide">
-            {/* Dashboard - Check permission */}
             {permissionChecker.hasPermission('dashboard', 'READ') && (
               <NavigationItem
                 ref={dashboardButtonRef}
@@ -359,8 +366,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             )}
 
-            {/* Plant Operations - Check permission */}
-            {permissionChecker.hasPermission('plant_operations', 'READ') && (
+            {permissionChecker.hasPermission('cm_plant_operations', 'READ') && (
               <NavigationItem
                 ref={operationsButtonRef}
                 icon={<FactoryIcon className={iconClass} />}
@@ -373,21 +379,20 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             )}
 
-            {/* Inspection Module - Check permission */}
-            {permissionChecker.hasPermission('inspection', 'READ') && (
+            {/* RKC Plant Operations */}
+            {permissionChecker.hasPermission('rkc_plant_operations', 'READ') && (
               <NavigationItem
-                ref={inspectionButtonRef}
-                icon={<ClipboardCheckIcon className={iconClass} />}
-                label={t.inspection || 'Inspection'}
-                isActive={currentPage === 'inspection'}
-                onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
+                ref={rkcOperationsButtonRef}
+                icon={<FireIcon className={iconClass} />}
+                label={t.rkcPlantOperations}
+                isActive={currentPage === 'rkc_operations'}
+                onClick={() => handleDropdownToggle('rkc_operations', rkcOperationsButtonRef)}
                 hasDropdown={!isExpanded}
-                isExpanded={activeDropdown === 'inspection'}
+                isExpanded={activeDropdown === 'rkc_operations'}
                 isSidebarExpanded={isExpanded}
               />
             )}
 
-            {/* Project Management - Check permission */}
             {permissionChecker.hasPermission('project_management', 'READ') && (
               <NavigationItem
                 ref={projectsButtonRef}
@@ -401,21 +406,28 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             )}
 
-            {/* User Management - Only for Super Admin */}
+            {(isAdminRole(currentUser?.role) || isSuperAdmin(currentUser?.role)) && (
+              <NavigationItem
+                ref={databaseButtonRef}
+                icon={<CircleStackIcon className={iconClass} />}
+                label={t.database || 'Database'}
+                isActive={currentPage === 'database'}
+                onClick={() => handleNavigate('database')}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+
             {currentUser?.role === 'Super Admin' && (
               <NavigationItem
                 ref={usersButtonRef}
                 icon={<UserGroupIcon className={iconClass} />}
                 label={t.userManagement || 'User Management'}
                 isActive={currentPage === 'users'}
-                onClick={() => handleDropdownToggle('users', usersButtonRef)}
-                hasDropdown={!isExpanded}
-                isExpanded={activeDropdown === 'users'}
+                onClick={() => handleNavigate('users', 'user_list')}
                 isSidebarExpanded={isExpanded}
               />
             )}
 
-            {/* Notification Creator - Only for Super Admin */}
             {currentUser?.role === 'Super Admin' && (
               <NavigationItem
                 ref={notificationCreatorButtonRef}
@@ -428,7 +440,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </nav>
 
-          {/* Footer */}
           <div className="px-6 py-6 border-t border-white/5 bg-slate-900/30">
             <div className="text-center">
               <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">
@@ -439,7 +450,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* Floating Dropdown */}
       {activeDropdown && dropdownPosition && (
         <FloatingDropdown
           items={getDropdownItems(activeDropdown)}
@@ -449,7 +459,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Notification Creator Modal */}
       {isNotificationCreatorOpen && (
         <NotificationCreator
           t={t}

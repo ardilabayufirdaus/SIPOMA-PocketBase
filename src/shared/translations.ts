@@ -39,7 +39,7 @@ export const translations = {
     header_welcome: 'Welcome',
     mainDashboard: 'Main Dashboard',
     plantOperations: 'Plant Operations',
-    inspection: 'Inspection',
+
     projectManagement: 'Project Management',
     userManagement: 'User Management',
     permissions: 'Permissions',
@@ -69,44 +69,6 @@ export const translations = {
     tooltip_sign_out: 'Sign out from application',
     tooltip_open_user_menu: '{name} profile & settings',
     tooltip_close_user_menu: 'Close user menu',
-
-    // Inspection Module
-    insp_dashboard: 'Dashboard',
-    insp_form: 'New Inspection',
-    insp_details: 'Inspection Details',
-    insp_reports: 'Reports',
-
-    // Inspection Tabs
-    insp_tab_general: 'General Inspection',
-    insp_tab_hose_valve_blasting: 'Hose & Valve Blasting MBF',
-    insp_tab_safety: 'Safety Checklist',
-    insp_tab_documentation: 'Documentation',
-
-    // Hose & Valve Blasting MBF Form
-    hose_valve_blasting_title: 'Hose & Valve Blasting MBF Inspection',
-    hose_valve_blasting_description:
-      'Complete inspection form for hose and valve blasting equipment',
-    equipment_information: 'Equipment Information',
-    test_parameters: 'Test Parameters',
-    additional_notes: 'Additional Notes',
-    equipment_id: 'Equipment ID',
-    pressure_rating: 'Pressure Rating (PSI)',
-    hose_condition: 'Hose Condition',
-    valve_condition: 'Valve Condition',
-    blast_pressure: 'Blast Pressure (PSI)',
-    temperature: 'Temperature (°C)',
-    inspection_date: 'Inspection Date',
-    inspector_name: 'Inspector Name',
-    certification_number: 'Certification Number',
-    remarks: 'Remarks',
-    select_condition: 'Select condition',
-    condition_excellent: 'Excellent',
-    condition_good: 'Good',
-    condition_fair: 'Fair',
-    condition_poor: 'Poor',
-    save_inspection: 'Save Inspection',
-    reset_form: 'Reset Form',
-    inspection_saved: 'Inspection data saved!',
 
     // Notifications
     notifications_title: 'Notifications',
@@ -719,7 +681,7 @@ export const translations = {
     header_welcome: 'Selamat Datang',
     mainDashboard: 'Dasbor Utama',
     plantOperations: 'Operasi Pabrik',
-    inspection: 'Inspeksi',
+
     projectManagement: 'Manajemen Proyek',
     userManagement: 'Manajemen Pengguna',
     permissions: 'Hak Akses',
@@ -749,44 +711,6 @@ export const translations = {
     tooltip_sign_out: 'Keluar dari aplikasi',
     tooltip_open_user_menu: 'Profil & pengaturan {name}',
     tooltip_close_user_menu: 'Tutup menu pengguna',
-
-    // Inspection Module
-    insp_dashboard: 'Dasbor',
-    insp_form: 'Inspeksi Baru',
-    insp_details: 'Detail Inspeksi',
-    insp_reports: 'Laporan',
-
-    // Inspection Tabs
-    insp_tab_general: 'Inspeksi Umum',
-    insp_tab_hose_valve_blasting: 'Hose & Valve Blasting MBF',
-    insp_tab_safety: 'Checklist Keselamatan',
-    insp_tab_documentation: 'Dokumentasi',
-
-    // Hose & Valve Blasting MBF Form
-    hose_valve_blasting_title: 'Inspeksi Hose & Valve Blasting MBF',
-    hose_valve_blasting_description:
-      'Lengkapi formulir inspeksi untuk peralatan hose dan valve blasting',
-    equipment_information: 'Informasi Peralatan',
-    test_parameters: 'Parameter Uji',
-    additional_notes: 'Catatan Tambahan',
-    equipment_id: 'ID Peralatan',
-    pressure_rating: 'Rating Tekanan (PSI)',
-    hose_condition: 'Kondisi Hose',
-    valve_condition: 'Kondisi Valve',
-    blast_pressure: 'Tekanan Blast (PSI)',
-    temperature: 'Suhu (°C)',
-    inspection_date: 'Tanggal Inspeksi',
-    inspector_name: 'Nama Inspector',
-    certification_number: 'Nomor Sertifikat',
-    remarks: 'Keterangan',
-    select_condition: 'Pilih kondisi',
-    condition_excellent: 'Sangat Baik',
-    condition_good: 'Baik',
-    condition_fair: 'Cukup',
-    condition_poor: 'Buruk',
-    save_inspection: 'Simpan Inspeksi',
-    reset_form: 'Reset Formulir',
-    inspection_saved: 'Data inspeksi disimpan!',
 
     // Notifications
     notifications_title: 'Notifikasi',
