@@ -18,9 +18,16 @@ interface FormProps {
   onSave: (instruction: WorkInstruction | Omit<WorkInstruction, 'id'>) => void;
   onCancel: () => void;
   t: any;
+  readOnly?: boolean;
 }
 
-const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, onCancel, t }) => {
+const WorkInstructionForm: React.FC<FormProps> = ({
+  instructionToEdit,
+  onSave,
+  onCancel,
+  t,
+  readOnly = false,
+}) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
   const isHighContrast = useHighContrast();
@@ -97,6 +104,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
             onChange={handleChange}
             required
             className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            disabled={readOnly}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -113,6 +121,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
               onChange={handleChange}
               required
               className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              disabled={readOnly}
             />
           </div>
           <div>
@@ -128,6 +137,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
               onChange={handleChange}
               required
               className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              disabled={readOnly}
             />
           </div>
         </div>
@@ -143,6 +153,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
             rows={3}
             required
             className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            disabled={readOnly}
           />
         </div>
         <div>
@@ -158,6 +169,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
             placeholder="https://example.com/doc"
             required
             className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            disabled={readOnly}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -172,6 +184,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
               onChange={handleChange}
               required
               className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              disabled={readOnly}
             >
               <option value="">Select Category</option>
               {[...new Set(plantUnits.map((unit) => unit.category))].map((category) => (
@@ -192,6 +205,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
               onChange={handleChange}
               required
               className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              disabled={readOnly}
             >
               <option value="">Select Unit</option>
               {plantUnits
@@ -208,14 +222,16 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
         </div>
       </div>
       <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
-        <EnhancedButton
-          type="submit"
-          variant="primary"
-          className="sm:ml-3 sm:w-auto"
-          aria-label={t.save_button || 'Save work instruction'}
-        >
-          {t.save_button}
-        </EnhancedButton>
+        {!readOnly && (
+          <EnhancedButton
+            type="submit"
+            variant="primary"
+            className="sm:ml-3 sm:w-auto"
+            aria-label={t.save_button || 'Save work instruction'}
+          >
+            {t.save_button}
+          </EnhancedButton>
+        )}
         <EnhancedButton
           type="button"
           variant="secondary"
@@ -231,6 +247,3 @@ const WorkInstructionForm: React.FC<FormProps> = ({ instructionToEdit, onSave, o
 };
 
 export default WorkInstructionForm;
-
-
-

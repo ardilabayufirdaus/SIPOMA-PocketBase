@@ -21,6 +21,7 @@ import {
   useRkcCcrParameterDataFlat as useCcrParameterDataFlat,
   CcrParameterDataFlat,
 } from '../../hooks/useRkcCcrParameterDataFlat';
+import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 import useCcrDowntimeData from '../../hooks/useRkcCcrDowntimeData';
 import { useUsers } from '../../hooks/useUsers';
 import {
@@ -127,6 +128,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
+  const { canWrite } = usePlantOperationsAccess();
   const hasPermission = (
     feature: Parameters<typeof permissionChecker.hasPermission>[0],
     level?: Parameters<typeof permissionChecker.hasPermission>[1]
@@ -4403,6 +4405,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       className="w-full px-2 py-1 text-xs border border-neutral-300 rounded focus:ring-2 focus:ring-error-400 focus:border-error-400 bg-white hover:bg-neutral-50 text-neutral-800 transition-all duration-150"
                                       placeholder="Enter user name"
                                       title={`Edit user name for hour ${hour}`}
+                                      disabled={!canWrite}
                                     />
                                   );
                                 } else {
@@ -4509,7 +4512,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
-                                      disabled={false}
+                                      disabled={!canWrite}
                                       className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
                                         isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                       }`}
@@ -4580,7 +4583,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
-                                      disabled={false} // Removed loading state for immediate saving
+                                      disabled={!canWrite} // Removed loading state for immediate saving
                                       className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
                                         isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                       }`}
@@ -4802,6 +4805,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
                                       className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400"
                                       aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
+                                      disabled={!canWrite}
                                       title={`Isi ruang kosong untuk ${
                                         masterSilo.silo_name
                                       } shift ${i + 1}`}
@@ -4837,6 +4841,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       }
                                       className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400"
                                       aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
+                                      disabled={!canWrite}
                                       title={`Isi konten untuk ${
                                         masterSilo.silo_name
                                       } shift ${i + 1} (Max: ${masterSilo.capacity})`}
@@ -4911,7 +4916,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                 selectedDate={selectedDate}
                 selectedUnit={selectedUnit}
                 selectedCategory={selectedCategory}
-                disabled={!selectedCategory || !selectedUnit}
+                disabled={!selectedCategory || !selectedUnit || !canWrite}
                 t={t}
               />
             </EnhancedCard>
@@ -4957,7 +4962,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     rows={8}
                     value={informationText}
                     onChange={(e) => handleInformationChange(e.target.value)}
-                    disabled={!selectedCategory || !selectedUnit}
+                    disabled={!selectedCategory || !selectedUnit || !canWrite}
                     className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder={t.information_placeholder}
                   />
@@ -5025,7 +5030,8 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                     disabled={
                       !hasPermission('rkc_plant_operations', 'WRITE') ||
                       !selectedCategory ||
-                      !selectedUnit
+                      !selectedUnit ||
+                      !canWrite
                     }
                     aria-label={t.add_downtime_button || 'Add new downtime'}
                     className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-500 hover:to-secondary-500 shadow-md transition-all"
@@ -5168,6 +5174,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             t={t}
             plantUnits={plantUnits.map((u) => u.unit)}
             selectedUnit={selectedUnit}
+            readOnly={!canWrite}
           />
         </Modal>
 

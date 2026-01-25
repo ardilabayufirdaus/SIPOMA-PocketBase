@@ -16,7 +16,9 @@ import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 // Import permissions
 import { usePermissions } from '../../utils/permissions';
+
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 
 const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const { records: plantUnits } = usePlantUnits();
@@ -24,6 +26,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
   // Permission checker
   const { currentUser: loggedInUser } = useCurrentUser();
   const permissionChecker = usePermissions(loggedInUser);
+  const { canWrite } = usePlantOperationsAccess();
 
   // Accessibility hooks - initializing context
 
@@ -514,16 +517,18 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                 </div>
                 <h2 className="text-lg font-bold text-white">{t.autonomous_risk_management}</h2>
               </div>
-              <EnhancedButton
-                variant="primary"
-                size="sm"
-                onClick={handleOpenAddRisk}
-                aria-label={t.add_risk_button || 'Add new risk'}
-                className="bg-white/20 hover:bg-white/30 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm"
-              >
-                <PlusIcon className="w-4 h-4 mr-2" />
-                {t.add_risk_button}
-              </EnhancedButton>
+              {canWrite && (
+                <EnhancedButton
+                  variant="primary"
+                  size="sm"
+                  onClick={handleOpenAddRisk}
+                  aria-label={t.add_risk_button || 'Add new risk'}
+                  className="bg-white/20 hover:bg-white/30 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm"
+                >
+                  <PlusIcon className="w-4 h-4 mr-2" />
+                  {t.add_risk_button}
+                </EnhancedButton>
+              )}
             </div>
           </div>
 
@@ -596,15 +601,17 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                         >
                           <EditIcon />
                         </EnhancedButton>
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleOpenDeleteRisk(risk.id)}
-                          aria-label={`Delete risk for ${risk.unit}`}
-                          className="hover:bg-red-50 text-slate-500 hover:text-red-600"
-                        >
-                          <TrashIcon />
-                        </EnhancedButton>
+                        {canWrite && (
+                          <EnhancedButton
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleOpenDeleteRisk(risk.id)}
+                            aria-label={`Delete risk for ${risk.unit}`}
+                            className="hover:bg-red-50 text-slate-500 hover:text-red-600"
+                          >
+                            <TrashIcon />
+                          </EnhancedButton>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -632,6 +639,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             onSave={handleSaveDowntime}
             onCancel={() => setDowntimeModalOpen(false)}
             t={t}
+            readOnly={!canWrite}
           />
         </Modal>
         <Modal
@@ -645,6 +653,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             onCancel={() => setRiskModalOpen(false)}
             t={t}
             plantUnits={plantUnits.map((u) => u.unit)}
+            readOnly={!canWrite}
           />
         </Modal>
         <Modal

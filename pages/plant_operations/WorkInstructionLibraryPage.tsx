@@ -2,6 +2,9 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useWorkInstructions } from '../../hooks/useWorkInstructions';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { usePermissions } from '../../utils/permissions';
+import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 import { WorkInstruction } from '../../types';
 import Modal from '../../components/Modal';
 import WorkInstructionForm from './WorkInstructionForm';
@@ -15,6 +18,10 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
   const { instructions, loading, error, addInstruction, updateInstruction, deleteInstruction } =
     useWorkInstructions();
   const { records: plantUnits } = usePlantUnits();
+
+  const { currentUser: loggedInUser } = useCurrentUser();
+  const permissionChecker = usePermissions(loggedInUser);
+  const { canWrite } = usePlantOperationsAccess();
 
   const [isFormModalOpen, setFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -177,15 +184,17 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                 </p>
               </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleOpenAddModal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-sm hover:bg-indigo-400 ring-1 ring-indigo-400/50 transition-all duration-200 min-h-[44px]"
-            >
-              <PlusIcon className="w-5 h-5" />
-              {t.add_data_button}
-            </motion.button>
+            {canWrite && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleOpenAddModal}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-sm hover:bg-indigo-400 ring-1 ring-indigo-400/50 transition-all duration-200 min-h-[44px]"
+              >
+                <PlusIcon className="w-5 h-5" />
+                {t.add_data_button}
+              </motion.button>
+            )}
           </div>
         </motion.div>
 
@@ -412,23 +421,25 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
                               >
                                 <EditIcon />
                               </motion.button>
-                              <motion.button
-                                onClick={() => handleOpenDeleteModal(instruction.id)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    handleOpenDeleteModal(instruction.id);
-                                  }
-                                }}
-                                className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                aria-label={`Delete ${instruction.doc_title}`}
-                                tabIndex={0}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                              >
-                                <TrashIcon />
-                              </motion.button>
+                              {canWrite && (
+                                <motion.button
+                                  onClick={() => handleOpenDeleteModal(instruction.id)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      handleOpenDeleteModal(instruction.id);
+                                    }
+                                  }}
+                                  className="p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                  aria-label={`Delete ${instruction.doc_title}`}
+                                  tabIndex={0}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                                >
+                                  <TrashIcon />
+                                </motion.button>
+                              )}
                             </div>
                           </td>
                         </motion.tr>
@@ -461,6 +472,7 @@ const WorkInstructionLibraryPage: React.FC<{ t: any }> = ({ t }) => {
             onSave={handleSave}
             onCancel={handleCloseModals}
             t={t}
+            readOnly={!canWrite}
           />
         </Modal>
 

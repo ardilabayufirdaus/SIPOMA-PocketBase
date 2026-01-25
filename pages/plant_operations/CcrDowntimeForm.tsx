@@ -13,6 +13,7 @@ interface FormProps {
   t: Record<string, string>;
   plantUnits: string[];
   selectedUnit: string;
+  readOnly?: boolean;
 }
 
 const CcrDowntimeForm: React.FC<FormProps> = ({
@@ -22,6 +23,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
   t,
   plantUnits,
   selectedUnit,
+  readOnly = false,
 }) => {
   const { records: picSettings } = usePicSettings();
 
@@ -292,6 +294,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
               onChange={(val) => handleInputChange('start_time', val)}
               error={isFieldInvalid('start_time') ? errors.start_time : undefined}
               className="bg-white/50"
+              readOnly={readOnly}
             />
 
             <EnhancedInput
@@ -302,6 +305,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
               onChange={(val) => handleInputChange('end_time', val)}
               error={isFieldInvalid('end_time') ? errors.end_time : undefined}
               className="bg-white/50"
+              readOnly={readOnly}
             />
           </div>
         </div>
@@ -321,7 +325,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
               label={t.unit}
               required
               value={formData.unit}
-              readOnly
+              readOnly={true}
               onChange={() => {}} // ReadOnly
               className="bg-slate-100/50"
             />
@@ -343,7 +347,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400'
                   }`}
-                  disabled={picSettings.length === 0}
+                  disabled={picSettings.length === 0 || readOnly}
                 >
                   {picSettings.length === 0 ? (
                     <option value="">No PIC available</option>
@@ -411,6 +415,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
                       : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400'
                   }`}
+                  disabled={readOnly}
                 />
                 {isFieldInvalid('problem') && (
                   <div className="absolute -bottom-6 left-0 text-blue-600 text-xs">
@@ -435,6 +440,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                         : `[AI Analysis]\n${analysis}`;
                       handleInputChange('action', newAction);
                     }}
+                    disabled={readOnly}
                   />
                 </div>
               </div>
@@ -446,6 +452,7 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                 rows={6}
                 placeholder="Describe the actions taken or click 'AI RCA' for suggestions..."
                 className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400 resize-none transition-all duration-200 font-mono text-sm"
+                disabled={readOnly}
               />
             </div>
           </div>
@@ -464,16 +471,18 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
           >
             {t.cancel_button}
           </EnhancedButton>
-          <EnhancedButton
-            type="submit"
-            variant="primary"
-            className="w-28 px-6 py-2.5 flex items-center justify-center"
-            rounded="xl"
-            elevation="sm"
-            aria-label={t.save_button || 'Save downtime record'}
-          >
-            {t.save_button}
-          </EnhancedButton>
+          {!readOnly && (
+            <EnhancedButton
+              type="submit"
+              variant="primary"
+              className="w-28 px-6 py-2.5 flex items-center justify-center"
+              rounded="xl"
+              elevation="sm"
+              aria-label={t.save_button || 'Save downtime record'}
+            >
+              {t.save_button}
+            </EnhancedButton>
+          )}
         </div>
       </form>
     </div>

@@ -9,7 +9,9 @@ interface FormProps {
   onSave: (record: AutonomousRiskData | Omit<AutonomousRiskData, 'id'>) => void;
   onCancel: () => void;
   t: Record<string, string>;
+
   plantUnits: string[];
+  readOnly?: boolean;
 }
 
 const AutonomousRiskForm: React.FC<FormProps> = ({
@@ -18,6 +20,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
   onCancel,
   t,
   plantUnits,
+  readOnly = false,
 }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -94,6 +97,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium"
+                  disabled={readOnly}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
@@ -114,6 +118,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
+                  disabled={readOnly}
                 >
                   {plantUnits.map((unit) => (
                     <option key={unit} value={unit} className="bg-white">
@@ -162,6 +167,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   placeholder={
                     t.potential_disruption_placeholder || 'Describe the potential disruption...'
                   }
+                  disabled={readOnly}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
@@ -184,6 +190,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   required
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={t.preventive_action_placeholder || 'Describe preventive actions...'}
+                  disabled={readOnly}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
@@ -206,6 +213,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   required
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium resize-none"
                   placeholder={t.mitigation_plan_placeholder || 'Describe mitigation plan...'}
+                  disabled={readOnly}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-fire opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
               </div>
@@ -226,6 +234,7 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 hover:bg-white/70 text-slate-800 font-medium appearance-none"
+                  disabled={readOnly}
                 >
                   {Object.values(RiskStatus).map((s) => (
                     <option key={s} value={s} className="bg-white">
@@ -268,15 +277,18 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
           >
             {t.cancel_button}
           </EnhancedButton>
-          <EnhancedButton
-            variant="primary"
-            size="md"
-            type="submit"
-            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            aria-label={t.save_button || 'Save risk record'}
-          >
-            {t.save_button}
-          </EnhancedButton>
+
+          {!readOnly && (
+            <EnhancedButton
+              variant="primary"
+              size="md"
+              type="submit"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              aria-label={t.save_button || 'Save risk record'}
+            >
+              {t.save_button}
+            </EnhancedButton>
+          )}
         </div>
       </div>
     </form>
@@ -284,5 +296,3 @@ const AutonomousRiskForm: React.FC<FormProps> = ({
 };
 
 export default AutonomousRiskForm;
-
-

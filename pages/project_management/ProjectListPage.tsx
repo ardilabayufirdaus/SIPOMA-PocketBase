@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useProjects } from '../../hooks/useProjects';
+import { useProjectManagementAccess } from '../../hooks/useProjectManagementAccess';
 import { formatDate, formatBudgetCompact } from '../../utils/formatters';
 import { usePagination } from '../../hooks/usePagination';
 import Pagination from '../../components/Pagination';
@@ -31,6 +32,7 @@ interface ProjectListPageProps {
 }
 
 const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail }) => {
+  const { canWrite } = useProjectManagementAccess();
   const { projects, tasks, loading, addProject, updateProject, deleteProject } = useProjects();
   const [isProjectFormModalOpen, setProjectFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -173,15 +175,17 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
       <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-slate-800">{t.proj_list}</h2>
-          <EnhancedButton
-            variant="primary"
-            size="sm"
-            onClick={handleAddProject}
-            aria-label={t.add_project || 'Add new project'}
-          >
-            <PlusIcon className="w-4 h-4 mr-2" />
-            {t.add_project || 'Add Project'}
-          </EnhancedButton>
+          {canWrite && (
+            <EnhancedButton
+              variant="primary"
+              size="sm"
+              onClick={handleAddProject}
+              aria-label={t.add_project || 'Add new project'}
+            >
+              <PlusIcon className="w-4 h-4 mr-2" />
+              {t.add_project || 'Add Project'}
+            </EnhancedButton>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200">
@@ -241,14 +245,16 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      <EnhancedButton
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditProject(p)}
-                        aria-label={`${t.edit || 'Edit'} ${p.title}`}
-                      >
-                        <EditIcon className="w-4 h-4" />
-                      </EnhancedButton>
+                      {canWrite && (
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleEditProject(p)}
+                          aria-label={`${t.edit || 'Edit'} ${p.title}`}
+                        >
+                          <EditIcon className="w-4 h-4" />
+                        </EnhancedButton>
+                      )}
                       <EnhancedButton
                         variant="ghost"
                         size="xs"
@@ -257,14 +263,16 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
                       >
                         {t.view_details_button}
                       </EnhancedButton>
-                      <EnhancedButton
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleOpenDeleteModal(p.id)}
-                        aria-label={`${t.delete || 'Delete'} ${p.title}`}
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </EnhancedButton>
+                      {canWrite && (
+                        <EnhancedButton
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleOpenDeleteModal(p.id)}
+                          aria-label={`${t.delete || 'Delete'} ${p.title}`}
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </EnhancedButton>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -333,5 +341,3 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 };
 
 export default ProjectListPage;
-
-

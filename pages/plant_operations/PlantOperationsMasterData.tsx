@@ -37,6 +37,7 @@ import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useReportSettings } from '../../hooks/useReportSettings';
 import { useSimpleReportSettings } from '../../hooks/useSimpleReportSettings';
 import { usePicSettings } from '../../hooks/usePicSettings';
+import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 
 // Types
 import {
@@ -80,6 +81,7 @@ type ModalType =
   | null;
 
 const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t }) => {
+  const { canWrite } = usePlantOperationsAccess('CM');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Plant Units State
@@ -1082,16 +1084,18 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   accept=".xlsx, .xls"
                   className="hidden"
                 />
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isImporting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  <DocumentArrowUpIcon className="w-5 h-5" />
-                  {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isImporting}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    <DocumentArrowUpIcon className="w-5 h-5" />
+                    {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
+                  </motion.button>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -1129,15 +1133,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['plant_unit_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('plantUnit')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('plantUnit')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
             <div className="p-6">
@@ -1151,9 +1157,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['plant_category']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1184,26 +1192,31 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {unit.category}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50"
-                              >
-                                <EditIcon className="w-4 h-4" />
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                              >
-                                <TrashIcon className="w-4 h-4" />
-                              </motion.button>
-                            </div>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {unit.category}
                           </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleOpenEditModal('plantUnit', unit)}
+                                  className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50"
+                                >
+                                  <EditIcon className="w-4 h-4" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -1240,15 +1253,18 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['pic_setting_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('picSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('picSetting')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
             <div className="p-6">
@@ -1259,9 +1275,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['pic']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1273,26 +1291,29 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                           {pic.pic}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-1">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleOpenEditModal('picSetting', pic)}
-                              className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
-                            >
-                              <EditIcon className="h-4 w-4" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </motion.button>
-                          </div>
-                        </td>
+
+                        {canWrite && (
+                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-1">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleOpenEditModal('picSetting', pic)}
+                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
+                              >
+                                <EditIcon className="h-4 w-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </motion.button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -1328,15 +1349,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['parameter_settings_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('parameterSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('parameterSetting')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
 
@@ -1473,9 +1496,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                       {t['pcc_max']}
                     </th>
-                    <th className="relative px-6 py-3">
-                      <span className="sr-only">{t['actions']}</span>
-                    </th>
+                    {canWrite && (
+                      <th className="relative px-6 py-3">
+                        <span className="sr-only">{t['actions']}</span>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-200">
@@ -1526,22 +1551,24 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           ? (param.pcc_max_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          <button
-                            onClick={() => handleOpenEditModal('parameterSetting', param)}
-                            className="p-2 text-slate-400 hover:text-indigo-600"
-                          >
-                            <EditIcon />
-                          </button>
-                          <button
-                            onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
-                            className="p-2 text-slate-400 hover:text-red-600"
-                          >
-                            <TrashIcon />
-                          </button>
-                        </div>
-                      </td>
+                      {canWrite && (
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={() => handleOpenEditModal('parameterSetting', param)}
+                              className="p-2 text-slate-400 hover:text-indigo-600"
+                            >
+                              <EditIcon />
+                            </button>
+                            <button
+                              onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
+                              className="p-2 text-slate-400 hover:text-red-600"
+                            >
+                              <TrashIcon />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {filteredParameterSettings.length === 0 && (
@@ -1581,15 +1608,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['silo_capacity_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('siloCapacity')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('siloCapacity')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
 
@@ -1676,9 +1705,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['silo_lifestock']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1723,26 +1754,28 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-800 font-semibold">
                               {formatNumber(lifestock)}
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-1">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                                >
-                                  <EditIcon className="w-4 h-4" />
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                                >
-                                  <TrashIcon className="w-4 h-4" />
-                                </motion.button>
-                              </div>
-                            </td>
+                            {canWrite && (
+                              <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-1">
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => handleOpenEditModal('siloCapacity', silo)}
+                                    className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                  >
+                                    <EditIcon className="w-4 h-4" />
+                                  </motion.button>
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
+                                    className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                  >
+                                    <TrashIcon className="w-4 h-4" />
+                                  </motion.button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         );
                       })
@@ -1780,15 +1813,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['cop_parameters_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleOpenCopModal}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleOpenCopModal}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
 
@@ -1866,9 +1901,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['category']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1902,18 +1939,20 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {param.category}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleRemoveCopParameter(param.id)}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                              >
-                                <TrashIcon className="w-4 h-4" />
-                              </motion.button>
-                            </div>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleRemoveCopParameter(param.id)}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -1950,15 +1989,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     </p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleOpenCopFooterModal}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleOpenCopFooterModal}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -2048,9 +2089,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         Category
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -2084,18 +2127,20 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {param.category}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleRemoveCopFooterParameter(param.id)}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                              >
-                                <TrashIcon className="w-4 h-4" />
-                              </motion.button>
-                            </div>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleRemoveCopFooterParameter(param.id)}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -2132,15 +2177,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['report_settings_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('reportSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('reportSetting')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
 
@@ -2231,9 +2278,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                           {t['category']}
                         </th>
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
+                        {canWrite && (
+                          <th className="relative px-4 py-3 w-20">
+                            <span className="sr-only">{t['actions']}</span>
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <Droppable droppableId="report-settings">
@@ -2278,30 +2327,32 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                                       {setting.category}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                      <div className="flex items-center justify-end space-x-1">
-                                        <motion.button
-                                          whileHover={{ scale: 1.1 }}
-                                          whileTap={{ scale: 0.9 }}
-                                          onClick={() =>
-                                            handleOpenEditModal('reportSetting', setting)
-                                          }
-                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                                        >
-                                          <EditIcon className="w-4 h-4" />
-                                        </motion.button>
-                                        <motion.button
-                                          whileHover={{ scale: 1.1 }}
-                                          whileTap={{ scale: 0.9 }}
-                                          onClick={() =>
-                                            handleOpenDeleteModal(setting.id, 'reportSetting')
-                                          }
-                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                                        >
-                                          <TrashIcon className="w-4 h-4" />
-                                        </motion.button>
-                                      </div>
-                                    </td>
+                                    {canWrite && (
+                                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div className="flex items-center justify-end space-x-1">
+                                          <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() =>
+                                              handleOpenEditModal('reportSetting', setting)
+                                            }
+                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                          >
+                                            <EditIcon className="w-4 h-4" />
+                                          </motion.button>
+                                          <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() =>
+                                              handleOpenDeleteModal(setting.id, 'reportSetting')
+                                            }
+                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                          >
+                                            <TrashIcon className="w-4 h-4" />
+                                          </motion.button>
+                                        </div>
+                                      </td>
+                                    )}
                                   </tr>
                                 )}
                               </Draggable>
@@ -2344,15 +2395,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     <p className="text-sm text-slate-600">{t['simple_report_settings_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('simpleReportSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('simpleReportSetting')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
 
@@ -2446,9 +2499,11 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                           Active
                         </th>
-                        <th className="relative px-4 py-3 w-20">
-                          <span className="sr-only">{t['actions']}</span>
-                        </th>
+                        {canWrite && (
+                          <th className="relative px-4 py-3 w-20">
+                            <span className="sr-only">{t['actions']}</span>
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <Droppable droppableId="simple-report-settings">
@@ -2496,30 +2551,35 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                     <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                                       {setting.is_active ? 'Yes' : 'No'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                      <div className="flex items-center justify-end space-x-1">
-                                        <motion.button
-                                          whileHover={{ scale: 1.1 }}
-                                          whileTap={{ scale: 0.9 }}
-                                          onClick={() =>
-                                            handleOpenEditModal('simpleReportSetting', setting)
-                                          }
-                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                                        >
-                                          <EditIcon className="w-4 h-4" />
-                                        </motion.button>
-                                        <motion.button
-                                          whileHover={{ scale: 1.1 }}
-                                          whileTap={{ scale: 0.9 }}
-                                          onClick={() =>
-                                            handleOpenDeleteModal(setting.id, 'simpleReportSetting')
-                                          }
-                                          className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                                        >
-                                          <TrashIcon className="w-4 h-4" />
-                                        </motion.button>
-                                      </div>
-                                    </td>
+                                    {canWrite && (
+                                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div className="flex items-center justify-end space-x-1">
+                                          <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() =>
+                                              handleOpenEditModal('simpleReportSetting', setting)
+                                            }
+                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                          >
+                                            <EditIcon className="w-4 h-4" />
+                                          </motion.button>
+                                          <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() =>
+                                              handleOpenDeleteModal(
+                                                setting.id,
+                                                'simpleReportSetting'
+                                              )
+                                            }
+                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                          >
+                                            <TrashIcon className="w-4 h-4" />
+                                          </motion.button>
+                                        </div>
+                                      </td>
+                                    )}
                                   </tr>
                                 )}
                               </Draggable>

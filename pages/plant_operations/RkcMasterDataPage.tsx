@@ -32,6 +32,9 @@ import { useRkcPicSettings } from '../../hooks/useRkcPicSettings';
 import { useRkcCopParameters } from '../../hooks/useRkcCopParameters';
 import { useRkcReportSettings } from '../../hooks/useRkcReportSettings';
 import { useRkcCopFooterParameters } from '../../hooks/useRkcCopFooterParameters';
+import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
+import { usePermissions } from '../../utils/permissions';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 // Types
 import {
@@ -71,6 +74,7 @@ type ModalType =
   | null;
 
 const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
+  const { canWrite } = usePlantOperationsAccess();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Plant Units State
@@ -406,6 +410,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   const handleDeleteConfirm = useCallback(() => {
+    if (!canWrite) return;
     if (deletingRecord) {
       if (deletingRecord.type === 'plantUnit') deletePlantUnit(deletingRecord.id);
       if (deletingRecord.type === 'parameterSetting') deleteParameter(deletingRecord.id);
@@ -414,9 +419,10 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       if (deletingRecord.type === 'reportSetting') deleteReportSetting(deletingRecord.id);
     }
     handleCloseModals();
-  }, [deletingRecord, deletePlantUnit, deleteParameter, deleteSilo, deletePicSetting]);
+  }, [deletingRecord, deletePlantUnit, deleteParameter, deleteSilo, deletePicSetting, canWrite]);
 
   const handleSave = (type: ModalType, record: MasterDataRecord) => {
+    if (!canWrite) return;
     if (type === 'plantUnit') {
       if ('id' in record) updatePlantUnit(record as PlantUnit);
       else addPlantUnit(record as PlantUnit);
@@ -565,7 +571,7 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isImporting}
+                  disabled={isImporting || !canWrite}
                   className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <DocumentArrowUpIcon className="w-5 h-5" />
@@ -608,15 +614,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <p className="text-sm text-slate-600">{t['plant_unit_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('plantUnit')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('plantUnit')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
             <div className="p-6">
@@ -630,9 +638,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['plant_category']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -663,26 +673,28 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {unit.category}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50"
-                              >
-                                <EditIcon className="w-4 h-4" />
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
-                              >
-                                <TrashIcon className="w-4 h-4" />
-                              </motion.button>
-                            </div>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleOpenEditModal('plantUnit', unit)}
+                                  className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50"
+                                >
+                                  <EditIcon className="w-4 h-4" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -719,15 +731,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <p className="text-sm text-slate-600">{t['pic_setting_subtitle']}</p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleOpenAddModal('picSetting')}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  {t['add_data_button']}
-                </motion.button>
+                {canWrite && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleOpenAddModal('picSetting')}
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    {t['add_data_button']}
+                  </motion.button>
+                )}
               </div>
             </div>
             <div className="p-6">
@@ -752,26 +766,28 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                           {pic.pic}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-1">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleOpenEditModal('picSetting', pic)}
-                              className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
-                            >
-                              <EditIcon className="h-4 w-4" />
-                            </motion.button>
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </motion.button>
-                          </div>
-                        </td>
+                        {canWrite && (
+                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end space-x-1">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleOpenEditModal('picSetting', pic)}
+                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
+                              >
+                                <EditIcon className="h-4 w-4" />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </motion.button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -808,15 +824,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleOpenAddModal('parameterSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    {t['add_data_button']}
-                  </motion.button>
+                  {canWrite && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleOpenAddModal('parameterSetting')}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                      {t['add_data_button']}
+                    </motion.button>
+                  )}
                 </div>
               </div>
 
@@ -957,26 +975,30 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               ? formatNumber(param.max_value)
                               : '-'}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleOpenEditModal('parameterSetting', param)}
-                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
-                              >
-                                <EditIcon className="h-4 w-4" />
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </motion.button>
-                            </div>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleOpenEditModal('parameterSetting', param)}
+                                  className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
+                                >
+                                  <EditIcon className="h-4 w-4" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() =>
+                                    handleOpenDeleteModal(param.id, 'parameterSetting')
+                                  }
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -1014,15 +1036,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleOpenAddModal('siloCapacity')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    {t['add_data_button']}
-                  </motion.button>
+                  {canWrite && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleOpenAddModal('siloCapacity')}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                      {t['add_data_button']}
+                    </motion.button>
+                  )}
                 </div>
               </div>
 
@@ -1077,9 +1101,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['capacity']} (Ton) // Was max_capacity
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1113,26 +1139,28 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">
                             {formatNumber(silo.capacity)} // Was max_capacity
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-1">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
-                              >
-                                <EditIcon className="h-4 w-4" />
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </motion.button>
-                            </div>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1">
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleOpenEditModal('siloCapacity', silo)}
+                                  className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
+                                >
+                                  <EditIcon className="h-4 w-4" />
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
+                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </motion.button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -1170,15 +1198,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleOpenCopModal}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
-                  >
-                    <EditIcon className="w-4 h-4" />
-                    {t['edit_parameters']}
-                  </motion.button>
+                  {canWrite && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleOpenCopModal}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    >
+                      <EditIcon className="w-4 h-4" />
+                      {t['edit_parameters']}
+                    </motion.button>
+                  )}
                 </div>
               </div>
 
@@ -1230,9 +1260,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1263,17 +1295,19 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {param.unit}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleRemoveCopParameter(param.id)}
-                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                              title="Remove from COP"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </motion.button>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleRemoveCopParameter(param.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                                title="Remove from COP"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </motion.button>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -1313,15 +1347,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleOpenAddModal('reportSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-green-600 rounded-xl shadow-sm hover:bg-green-700 transition-all duration-200"
-                  >
-                    <PlusIcon className="w-4 h-4" />
-                    {t['add_data_button']}
-                  </motion.button>
+                  {canWrite && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleOpenAddModal('reportSetting')}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-green-600 rounded-xl shadow-sm hover:bg-green-700 transition-all duration-200"
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                      {t['add_data_button']}
+                    </motion.button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1340,9 +1376,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['category'] || 'Category'}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1374,26 +1412,30 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 {setting.category}
                               </span>
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end space-x-1">
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleOpenEditModal('reportSetting', setting)}
-                                  className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
-                                >
-                                  <EditIcon className="h-4 w-4" />
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleOpenDeleteModal(setting.id, 'reportSetting')}
-                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                                >
-                                  <TrashIcon className="h-4 w-4" />
-                                </motion.button>
-                              </div>
-                            </td>
+                            {canWrite && (
+                              <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-1">
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleOpenEditModal('reportSetting', setting)}
+                                    className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
+                                  >
+                                    <EditIcon className="h-4 w-4" />
+                                  </motion.button>
+                                  <motion.button
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() =>
+                                      handleOpenDeleteModal(setting.id, 'reportSetting')
+                                    }
+                                    className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                                  >
+                                    <TrashIcon className="h-4 w-4" />
+                                  </motion.button>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         );
                       })
@@ -1435,15 +1477,17 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleOpenCopFooterModal}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl shadow-sm hover:bg-blue-700 transition-all duration-200"
-                  >
-                    <EditIcon className="w-4 h-4" />
-                    {t['edit_parameters']}
-                  </motion.button>
+                  {canWrite && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleOpenCopFooterModal}
+                      className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl shadow-sm hover:bg-blue-700 transition-all duration-200"
+                    >
+                      <EditIcon className="w-4 h-4" />
+                      {t['edit_parameters']}
+                    </motion.button>
+                  )}
                 </div>
               </div>
 
@@ -1495,9 +1539,11 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                         {t['measurement_unit']}
                       </th>
-                      <th className="relative px-4 py-3 w-20">
-                        <span className="sr-only">{t['actions']}</span>
-                      </th>
+                      {canWrite && (
+                        <th className="relative px-4 py-3 w-20">
+                          <span className="sr-only">{t['actions']}</span>
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-200">
@@ -1528,17 +1574,19 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
                             {param.unit}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <motion.button
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => handleRemoveCopFooterParameter(param.id)}
-                              className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
-                              title="Remove from Footer"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </motion.button>
-                          </td>
+                          {canWrite && (
+                            <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleRemoveCopFooterParameter(param.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                                title="Remove from Footer"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </motion.button>
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}

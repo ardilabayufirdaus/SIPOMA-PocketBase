@@ -50,6 +50,7 @@ import { useCcrMaterialUsage } from '../../hooks/useCcrMaterialUsage';
 import { usePermissions } from '../../utils/permissions';
 import { isSuperAdmin } from '../../utils/roleHelpers';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 
 // Import PocketBase client and hooks
 import { pb } from '../../utils/pocketbase-simple';
@@ -98,6 +99,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [profileToDelete, setProfileToDelete] = useState<ParameterProfile | null>(null);
   const [profileName, setProfileName] = useState('');
   const [profileDescription, setProfileDescription] = useState('');
+
+  // Access control
+  const { canWrite } = usePlantOperationsAccess();
   const [, setSelectedProfile] = useState<ParameterProfile | null>(null);
 
   // New state for undo stack
@@ -2190,6 +2194,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   );
 
   const handleOpenAddDowntimeModal = () => {
+    if (!canWrite) return; // Prevent opening if no permission
+
     if (!selectedUnit) {
       showToast(t.select_unit_first);
       return;
@@ -4400,6 +4406,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       className="w-full px-2 py-1 text-xs border border-neutral-300 rounded focus:ring-2 focus:ring-error-400 focus:border-error-400 bg-white hover:bg-neutral-50 text-neutral-800 transition-all duration-150"
                                       placeholder="Enter user name"
                                       title={`Edit user name for hour ${hour}`}
+                                      disabled={!canWrite}
                                     />
                                   );
                                 } else {
@@ -4503,10 +4510,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         // Simpan ke database saat berpindah sel
                                         saveParameterChange(param.id, hour, e.target.value);
                                       }}
-                                      onKeyDown={(e) =>
-                                        handleKeyDown(e, 'parameter', hour - 1, paramIndex)
-                                      }
-                                      disabled={false}
+                                      onKeyDown={(e) => {
+                                        const { key } = e;
+                                        if (key === 'Enter') {
+                                          e.preventDefault();
+                                          e.currentTarget.blur();
+                                          handleKeyDown(e, 'parameter', hour - 1, paramIndex);
+                                        } else {
+                                          handleKeyDown(e, 'parameter', hour - 1, paramIndex);
+                                        }
+                                      }}
+                                      disabled={!canWrite}
                                       className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
                                         isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
                                       }`}
@@ -4518,9 +4532,12 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       aria-label={`Parameter ${param.parameter} jam ${hour}`}
                                       title={`Pilih tipe produk untuk jam ${hour}`}
                                     >
-                                      <option value="">Pilih Tipe</option>
-                                      <option value="OPC">OPC</option>
-                                      <option value="PCC">PCC</option>
+                                      <option value="">-</option>
+                                      {['OPC', 'PPC', ' PCC'].map((option) => (
+                                        <option key={option} value={option}>
+                                          {option}
+                                        </option>
+                                      ))}
                                     </select>
                                   ) : (
                                     <input
@@ -4530,18 +4547,19 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                           hour - 1,
                                           paramIndex
                                         );
-                                        setInputRef(refKey, el);
+                                        if (el) {
+                                          inputRefs.current.set(refKey, el);
+                                        } else {
+                                          inputRefs.current.delete(refKey);
+                                        }
                                       }}
-                                      type={
-                                        param.data_type === ParameterDataType.NUMBER
-                                          ? 'text'
-                                          : 'text'
-                                      }
-                                      defaultValue={
-                                        param.data_type === ParameterDataType.NUMBER
-                                          ? formatInputValue(value, getPrecisionForUnit(param.unit))
-                                          : value
-                                      }
+                                      type="text"
+                                      className={`w-full h-full bg-transparent px-1 py-0.5 text-center text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 rounded-none transition-colors ${cellTextClass} border ${
+                                        cellBorderClass !== 'border-neutral-300'
+                                          ? cellBorderClass
+                                          : 'border-transparent'
+                                      }`}
+                                      value={value}
                                       onChange={(e) => {
                                         // Hanya update state lokal saat input diubah
                                         const parsed = parseInputValue(e.target.value);
@@ -4577,10 +4595,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
-                                      disabled={false} // Removed loading state for immediate saving
-                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
-                                        isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
-                                      }`}
+                                      disabled={!canWrite}
+                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150`}
                                       style={{
                                         fontSize: '12px',
                                         minHeight: '32px',
@@ -4797,7 +4813,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
                                       }}
                                       onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
-                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400"
+                                      disabled={!canWrite}
+                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                                       aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
                                       title={`Isi ruang kosong untuk ${
                                         masterSilo.silo_name
@@ -4832,7 +4849,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       onKeyDown={(e) =>
                                         handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
                                       }
-                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400"
+                                      disabled={!canWrite}
+                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
                                       aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
                                       title={`Isi konten untuk ${
                                         masterSilo.silo_name
@@ -4954,7 +4972,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     rows={8}
                     value={informationText}
                     onChange={(e) => handleInformationChange(e.target.value)}
-                    disabled={!selectedCategory || !selectedUnit}
+                    disabled={!canWrite || !selectedCategory || !selectedUnit}
                     className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder={t.information_placeholder}
                   />
@@ -5165,6 +5183,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             t={t}
             plantUnits={plantUnits.map((u) => u.unit)}
             selectedUnit={selectedUnit}
+            readOnly={!canWrite}
           />
         </Modal>
 
