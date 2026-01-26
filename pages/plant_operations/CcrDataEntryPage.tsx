@@ -1495,17 +1495,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   const parseInputValue = (formattedValue: string): number | null => {
     if (!formattedValue || formattedValue.trim() === '') return null;
-    // Handle both comma and dot as decimal separators
-    // If contains comma, treat comma as decimal separator (Indonesian format)
-    // If no comma, treat dot as decimal separator (standard format)
-    let normalized: string;
-    if (formattedValue.includes(',')) {
-      // Indonesian format: remove dots (thousands separator) and replace comma with dot
-      normalized = formattedValue.replace(/\./g, '').replace(',', '.');
-    } else {
-      // Standard format: dot is already decimal separator
-      normalized = formattedValue;
-    }
+
+    // Strict Indonesian Format Enforcement:
+    // 1. (.) is ALWAYS a thousand separator -> Remove it
+    // 2. (,) is the ONLY decimal separator -> Replace with dot for parsing
+
+    // Remove all thousand separators (.)
+    let normalized = formattedValue.replace(/\./g, '');
+
+    // Replace decimal separator (,) with dot (.) for JS parsing
+    normalized = normalized.replace(',', '.');
+
     const parsed = parseFloat(normalized);
     return isNaN(parsed) ? null : parsed;
   };
@@ -4561,19 +4561,43 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       }`}
                                       value={value}
                                       onChange={(e) => {
-                                        // Hanya update state lokal saat input diubah
-                                        const parsed = parseInputValue(e.target.value);
-                                        handleParameterDataChange(
-                                          param.id,
-                                          hour,
-                                          parsed !== null ? parsed.toString() : ''
-                                        );
+                                        // 1. Support input (.) as decimal separator -> auto convert to (,)
+                                        let newValue = e.target.value;
+
+                                        // Cek jika input terakhir adalah titik, ubah jadi koma
+                                        if (newValue.endsWith('.')) {
+                                          newValue = newValue.slice(0, -1) + ',';
+                                        }
+
+                                        // 2. Auto-format ribuan (1.000) saat mengetik
+                                        // Hapus semua titik yang ada (untuk membersihkan format sebelumnya)
+                                        // KECUALI jika input hanya "-" (negatif)
+                                        if (newValue !== '-' && newValue !== '') {
+                                          // Pisahkan bagian integer dan desimal
+                                          const parts = newValue.split(',');
+                                          let integerPart = parts[0].replace(/\./g, '');
+                                          const decimalPart =
+                                            parts.length > 1 ? ',' + parts[1] : '';
+
+                                          // Cek apakah integerPart adalah angka valid
+                                          if (!isNaN(Number(integerPart)) && integerPart !== '') {
+                                            // Format integer part dengan titik sebagai pemisah ribuan
+                                            integerPart = integerPart.replace(
+                                              /\B(?=(\d{3})+(?!\d))/g,
+                                              '.'
+                                            );
+                                            newValue = integerPart + decimalPart;
+                                          }
+                                        }
+
+                                        handleParameterDataChange(param.id, hour, newValue);
                                       }}
                                       onBlur={async (e) => {
                                         // Reformat nilai numerik dan simpan ke database saat berpindah sel
                                         if (param.data_type === ParameterDataType.NUMBER) {
                                           const parsed = parseInputValue(e.target.value);
                                           if (parsed !== null) {
+                                            // Format tampilan kembali ke standar Indonesia (1.000,0)
                                             e.target.value = formatInputValue(
                                               parsed,
                                               getPrecisionForUnit(param.unit)
@@ -4596,7 +4620,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         handleKeyDown(e, 'parameter', hour - 1, paramIndex)
                                       }
                                       disabled={!canWrite}
-                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150`}
                                       style={{
                                         fontSize: '12px',
                                         minHeight: '32px',
