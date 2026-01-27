@@ -62,9 +62,18 @@ export const useRkcParameterSettings = () => {
             if (!isSubscribed) return;
             cacheManager.delete(CACHE_KEY);
 
-            if (e.action === 'create' || e.action === 'update') {
-              // Re-fetch since sorting/fields might be complex
-              fetchRecords();
+            if (e.action === 'create' && e.record) {
+              setRecords((prev) =>
+                [...prev, e.record as unknown as ParameterSetting].sort((a, b) =>
+                  a.parameter.localeCompare(b.parameter)
+                )
+              );
+            } else if (e.action === 'update' && e.record) {
+              setRecords((prev) =>
+                prev.map((r) =>
+                  r.id === e.record.id ? (e.record as unknown as ParameterSetting) : r
+                )
+              );
             } else if (e.action === 'delete') {
               setRecords((prev) => prev.filter((r) => r.id !== e.record.id));
             }
@@ -107,6 +116,7 @@ export const useRkcParameterSettings = () => {
 
       try {
         await pb.collection('rkc_parameter_settings').create(cleanedRecord);
+        cacheManager.delete(CACHE_KEY);
         fetchRecords();
       } catch {}
     },

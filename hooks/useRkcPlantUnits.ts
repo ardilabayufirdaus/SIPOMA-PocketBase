@@ -4,7 +4,6 @@ import { pb } from '../utils/pocketbase-simple';
 import { cacheManager } from '../utils/cacheManager';
 import { CacheKeys } from '../utils/cacheKeys';
 import { safeApiCall } from '../utils/connectionCheck';
-import { getFullListOptimized } from '../utils/optimizationAdapter';
 
 const CACHE_KEY = CacheKeys.RKC_PLANT_UNITS;
 const CACHE_TIME = 10; // Minutes
@@ -27,9 +26,8 @@ export const useRkcPlantUnits = () => {
     try {
       // Gunakan fungsi optimasi untuk getFullList
       const result = await safeApiCall(() =>
-        getFullListOptimized('rkc_plant_units', {
+        pb.collection('rkc_plant_units').getFullList({
           sort: 'category,unit',
-          limit: 500,
         })
       );
 

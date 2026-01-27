@@ -1634,6 +1634,9 @@ const RkcMasterDataPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               onSave={(record) => handleSave('parameterSetting', record)}
               onCancel={handleCloseModals}
               t={t}
+              plantUnits={plantUnits}
+              loading={plantUnitsLoading}
+              hideCementSettings={true}
             />
           </Modal>
         )}

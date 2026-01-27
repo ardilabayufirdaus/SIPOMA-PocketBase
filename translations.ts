@@ -40,6 +40,7 @@ export const translations = {
     mainDashboard: 'Main Dashboard',
     plantOperations: 'CM Plant Operations', // Renamed
     rkcPlantOperations: 'RKC Plant Operations', // New
+    inspection_module: 'Inspection',
     projectManagement: 'Project Management',
     database: 'Database',
     database_description: 'Manage your database and collections',
@@ -79,6 +80,18 @@ export const translations = {
     insp_reports: 'Reports',
 
     // Inspection Tabs
+    insp_unit_derivative: 'Unit of Derivative Product & Supporting',
+    insp_unit_clinker: 'Unit of Clinker Production',
+    insp_unit_cement: 'Unit of Cement Production',
+
+    // Inspection Sections
+    insp_sec_derivative_2_3: 'Section of Derivative Prod. & Opr. 2/3',
+    insp_sec_rkc_4: 'Section of Line 4 RKC Operation',
+    insp_sec_rkc_5: 'Section of Line 5 RKC Operation',
+    insp_sec_fm_2_3: 'Section of Line 2/3 FM Operation',
+    insp_sec_fm_4: 'Section of Line 4 Finish Mill Operation',
+    insp_sec_fm_5: 'Section of Line 5 Finish Mill Operation',
+
     insp_tab_general: 'General Inspection',
     insp_tab_hose_valve_blasting: 'Hose & Valve Blasting MBF',
     insp_tab_safety: 'Safety Checklist',

@@ -41,6 +41,7 @@ import {
   DatabasePage,
   UserListPage,
   WhatsAppReportsPage,
+  InspectionPage,
 } from './src/config/lazyComponents';
 
 import { logSystemStatus } from './utils/systemStatus';
@@ -88,6 +89,7 @@ const App: React.FC = () => {
     projects: 'proj_dashboard',
     users: 'user_list',
     rkc_operations: 'op_dashboard',
+    inspection: 'insp_dashboard',
   });
 
   // Log system status on app load and start connection monitor
@@ -202,6 +204,8 @@ const App: React.FC = () => {
         return t[activeSubPages.projects as keyof typeof t] || t.projectManagement;
       case 'database':
         return t.database;
+      case 'inspection':
+        return t[activeSubPages.inspection as keyof typeof t] || 'Inspection';
       default:
         return 'SIPOMA';
     }
@@ -430,6 +434,18 @@ const App: React.FC = () => {
 
                   {/* Database Module */}
                   {currentPage === 'database' && <DatabasePage />}
+
+                  {/* Inspection Module */}
+                  <PermissionGuard
+                    user={currentUser}
+                    feature="inspection"
+                    requiredLevel="READ"
+                    fallback={null}
+                  >
+                    {currentPage === 'inspection' && (
+                      <InspectionPage activePage={activeSubPages.inspection} t={t} />
+                    )}
+                  </PermissionGuard>
                 </LazyContainer>
               </div>
             </main>

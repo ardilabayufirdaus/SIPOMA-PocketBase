@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlantUnits } from '../../hooks/usePlantUnits';
-import { ParameterSetting, ParameterDataType } from '../../types';
+import { PlantUnit, ParameterSetting, ParameterDataType } from '../../types';
 import { Settings, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
 
 // Import Enhanced Components
@@ -16,9 +16,20 @@ interface FormProps {
   onSave: (record: ParameterSetting | Omit<ParameterSetting, 'id'>) => void;
   onCancel: () => void;
   t: Record<string, string>;
+  plantUnits?: PlantUnit[];
+  loading?: boolean;
+  hideCementSettings?: boolean;
 }
 
-const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCancel, t }) => {
+const ParameterSettingForm: React.FC<FormProps> = ({
+  recordToEdit,
+  onSave,
+  onCancel,
+  t,
+  plantUnits: providedPlantUnits,
+  loading: providedLoading,
+  hideCementSettings = false,
+}) => {
   // Enhanced accessibility hooks
   const announceToScreenReader = useAccessibility();
   const prefersReducedMotion = useReducedMotion();
@@ -78,6 +89,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
           return 'Max tidak boleh kurang dari Min';
         return '';
       case 'opc_min_value':
+        if (hideCementSettings) return ''; // Skip validation if hidden
         // Allow empty values (undefined/null), only validate if both values exist
         if (
           value !== undefined &&
@@ -90,6 +102,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
           return 'OPC Min tidak boleh lebih dari OPC Max';
         return '';
       case 'opc_max_value':
+        if (hideCementSettings) return ''; // Skip validation if hidden
         // Allow empty values (undefined/null), only validate if both values exist
         if (
           value !== undefined &&
@@ -102,6 +115,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
           return 'OPC Max tidak boleh kurang dari OPC Min';
         return '';
       case 'pcc_min_value':
+        if (hideCementSettings) return ''; // Skip validation if hidden
         // Allow empty values (undefined/null), only validate if both values exist
         if (
           value !== undefined &&
@@ -114,6 +128,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
           return 'PCC Min tidak boleh lebih dari PCC Max';
         return '';
       case 'pcc_max_value':
+        if (hideCementSettings) return ''; // Skip validation if hidden
         // Allow empty values (undefined/null), only validate if both values exist
         if (
           value !== undefined &&
@@ -129,7 +144,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
         return '';
     }
   };
-
   // Validasi sebelum submit
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -210,7 +224,11 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
     }
   }, [recordToEdit]);
 
-  const { records: plantUnits, loading: plantUnitsLoading } = usePlantUnits();
+  // Use props if available, otherwise use hook (legacy behavior for CM)
+  const { records: hookPlantUnits, loading: hookPlantUnitsLoading } = usePlantUnits();
+
+  const plantUnits = providedPlantUnits || hookPlantUnits;
+  const plantUnitsLoading = providedLoading !== undefined ? providedLoading : hookPlantUnitsLoading;
 
   // Get unique units and categories from plantUnits
   const unitOptions = Array.from(new Set(plantUnits.map((u) => u.unit)));
@@ -540,170 +558,174 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
                 </motion.div>
 
                 {/* OPC Cement Settings */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.3 }}
-                  className="bg-blue-50 rounded-lg p-4"
-                >
-                  <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
-                    <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
-                    OPC Cement Settings
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="opc_min_value"
-                        className="block text-sm font-medium text-slate-700"
-                      >
-                        OPC Min Value
-                      </label>
-                      <motion.input
-                        whileFocus={{ scale: 1.02 }}
-                        type="number"
-                        name="opc_min_value"
-                        id="opc_min_value"
-                        value={formData.opc_min_value?.toString() || ''}
-                        onChange={handleChange}
-                        placeholder="0"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                          errors.opc_min_value ? 'border-red-500' : 'border-slate-300'
-                        }`}
-                      />
-                      <AnimatePresence>
-                        {errors.opc_min_value && touched.opc_min_value && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-blue-600 flex items-center"
-                            role="alert"
-                          >
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            {errors.opc_min_value}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
+                {!hideCementSettings && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.3 }}
+                    className="bg-blue-50 rounded-lg p-4"
+                  >
+                    <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+                      OPC Cement Settings
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="opc_min_value"
+                          className="block text-sm font-medium text-slate-700"
+                        >
+                          OPC Min Value
+                        </label>
+                        <motion.input
+                          whileFocus={{ scale: 1.02 }}
+                          type="number"
+                          name="opc_min_value"
+                          id="opc_min_value"
+                          value={formData.opc_min_value?.toString() || ''}
+                          onChange={handleChange}
+                          placeholder="0"
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
+                            errors.opc_min_value ? 'border-red-500' : 'border-slate-300'
+                          }`}
+                        />
+                        <AnimatePresence>
+                          {errors.opc_min_value && touched.opc_min_value && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="text-sm text-blue-600 flex items-center"
+                              role="alert"
+                            >
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              {errors.opc_min_value}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="opc_max_value"
+                          className="block text-sm font-medium text-slate-700"
+                        >
+                          OPC Max Value
+                        </label>
+                        <motion.input
+                          whileFocus={{ scale: 1.02 }}
+                          type="number"
+                          name="opc_max_value"
+                          id="opc_max_value"
+                          value={formData.opc_max_value?.toString() || ''}
+                          onChange={handleChange}
+                          placeholder="100"
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
+                            errors.opc_max_value ? 'border-red-500' : 'border-slate-300'
+                          }`}
+                        />
+                        <AnimatePresence>
+                          {errors.opc_max_value && touched.opc_max_value && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="text-sm text-blue-600 flex items-center"
+                              role="alert"
+                            >
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              {errors.opc_max_value}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="opc_max_value"
-                        className="block text-sm font-medium text-slate-700"
-                      >
-                        OPC Max Value
-                      </label>
-                      <motion.input
-                        whileFocus={{ scale: 1.02 }}
-                        type="number"
-                        name="opc_max_value"
-                        id="opc_max_value"
-                        value={formData.opc_max_value?.toString() || ''}
-                        onChange={handleChange}
-                        placeholder="100"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                          errors.opc_max_value ? 'border-red-500' : 'border-slate-300'
-                        }`}
-                      />
-                      <AnimatePresence>
-                        {errors.opc_max_value && touched.opc_max_value && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-blue-600 flex items-center"
-                            role="alert"
-                          >
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            {errors.opc_max_value}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                )}
 
                 {/* PCC Cement Settings */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9, duration: 0.3 }}
-                  className="bg-green-50 rounded-lg p-4"
-                >
-                  <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
-                    <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
-                    PCC Cement Settings
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="pcc_min_value"
-                        className="block text-sm font-medium text-slate-700"
-                      >
-                        PCC Min Value
-                      </label>
-                      <motion.input
-                        whileFocus={{ scale: 1.02 }}
-                        type="number"
-                        name="pcc_min_value"
-                        id="pcc_min_value"
-                        value={formData.pcc_min_value?.toString() || ''}
-                        onChange={handleChange}
-                        placeholder="0"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                          errors.pcc_min_value ? 'border-red-500' : 'border-slate-300'
-                        }`}
-                      />
-                      <AnimatePresence>
-                        {errors.pcc_min_value && touched.pcc_min_value && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-blue-600 flex items-center"
-                            role="alert"
-                          >
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            {errors.pcc_min_value}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
+                {!hideCementSettings && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.9, duration: 0.3 }}
+                    className="bg-green-50 rounded-lg p-4"
+                  >
+                    <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
+                      PCC Cement Settings
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="pcc_min_value"
+                          className="block text-sm font-medium text-slate-700"
+                        >
+                          PCC Min Value
+                        </label>
+                        <motion.input
+                          whileFocus={{ scale: 1.02 }}
+                          type="number"
+                          name="pcc_min_value"
+                          id="pcc_min_value"
+                          value={formData.pcc_min_value?.toString() || ''}
+                          onChange={handleChange}
+                          placeholder="0"
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
+                            errors.pcc_min_value ? 'border-red-500' : 'border-slate-300'
+                          }`}
+                        />
+                        <AnimatePresence>
+                          {errors.pcc_min_value && touched.pcc_min_value && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="text-sm text-blue-600 flex items-center"
+                              role="alert"
+                            >
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              {errors.pcc_min_value}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="pcc_max_value"
+                          className="block text-sm font-medium text-slate-700"
+                        >
+                          PCC Max Value
+                        </label>
+                        <motion.input
+                          whileFocus={{ scale: 1.02 }}
+                          type="number"
+                          name="pcc_max_value"
+                          id="pcc_max_value"
+                          value={formData.pcc_max_value?.toString() || ''}
+                          onChange={handleChange}
+                          placeholder="100"
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
+                            errors.pcc_max_value ? 'border-red-500' : 'border-slate-300'
+                          }`}
+                        />
+                        <AnimatePresence>
+                          {errors.pcc_max_value && touched.pcc_max_value && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="text-sm text-blue-600 flex items-center"
+                              role="alert"
+                            >
+                              <AlertCircle className="h-4 w-4 mr-1" />
+                              {errors.pcc_max_value}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="pcc_max_value"
-                        className="block text-sm font-medium text-slate-700"
-                      >
-                        PCC Max Value
-                      </label>
-                      <motion.input
-                        whileFocus={{ scale: 1.02 }}
-                        type="number"
-                        name="pcc_max_value"
-                        id="pcc_max_value"
-                        value={formData.pcc_max_value?.toString() || ''}
-                        onChange={handleChange}
-                        placeholder="100"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                          errors.pcc_max_value ? 'border-red-500' : 'border-slate-300'
-                        }`}
-                      />
-                      <AnimatePresence>
-                        {errors.pcc_max_value && touched.pcc_max_value && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-blue-600 flex items-center"
-                            role="alert"
-                          >
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            {errors.pcc_max_value}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -737,7 +759,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({ recordToEdit, onSave, onCan
           <div className="flex space-x-3">
             <EnhancedButton
               type="button"
-              variant="secondary"
+              variant="error"
               onClick={onCancel}
               disabled={isSubmitting}
               className="px-6 py-2"

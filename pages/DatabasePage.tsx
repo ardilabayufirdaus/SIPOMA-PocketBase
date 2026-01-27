@@ -52,10 +52,15 @@ const DatabasePage: React.FC = () => {
 
       logger.debug(`Downloading CM data for period: ${startDate} to ${endDate}`);
 
-      // 1. Fetch Plant Units to create sheets
-      const plantUnits = await pb.collection('plant_units').getFullList({
-        sort: 'category,unit',
-      });
+      // 1. Fetch Plant Units to create sheets (and silo defs)
+      const [plantUnits, siloDefs] = await Promise.all([
+        pb.collection('plant_units').getFullList({
+          sort: 'category,unit',
+        }),
+        pb.collection('silo_capacities').getFullList({
+          sort: 'silo_name',
+        }),
+      ]);
 
       // 2. Fetch all data for the month (optimized: fetch once, filter in memory)
       const [materialData, downtimeData, siloData, infoData] = await Promise.all([
@@ -78,11 +83,14 @@ const DatabasePage: React.FC = () => {
         const unitDowntime = downtimeData.filter((d) => d.plant_unit === unit.unit);
         // Silo data linked by unit_id in silo definition or directly (schema varies, checking logic)
         // Based on useCcrSiloData, silo_id is expanded. We need to match unit name.
-        const unitSilo = siloData.filter((d) => {
+        const unitSiloData = siloData.filter((d) => {
           const expanded = d.expand?.silo_id as any;
           return expanded?.unit === unit.unit;
         });
         const unitInfo = infoData.filter((d) => d.plant_unit === unit.unit);
+
+        // Filter silo definitions for this unit
+        const unitSiloDefs = siloDefs.filter((def) => def.unit === unit.unit);
 
         // --- Header ---
         worksheet.addRow([`CM Plant Operations Data - ${unit.unit}`]);
@@ -207,22 +215,53 @@ const DatabasePage: React.FC = () => {
         ];
         worksheet.addRow(siloHeader);
 
-        if (unitSilo.length > 0) {
-          unitSilo.forEach((item) => {
-            const siloName = (item.expand?.silo_id as any)?.silo_name || 'Unknown Silo';
-            worksheet.addRow([
-              item.date,
-              siloName,
-              item.shift1_empty_space,
-              item.shift1_content,
-              item.shift2_empty_space,
-              item.shift2_content,
-              item.shift3_empty_space,
-              item.shift3_content,
-            ]);
+        // Generate all dates for the selected month to ensure continuous timeline, for EACH silo
+        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+        const allDates = Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          return `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        });
+
+        // Loop: All Dates -> All Silos for this Unit
+        if (allDates.length > 0 && unitSiloDefs.length > 0) {
+          allDates.forEach((dateStr) => {
+            unitSiloDefs.forEach((siloDef) => {
+              // Find matching record for this date and silo
+              const record = unitSiloData.find((d) => {
+                const dDate = d.date.split('T')[0];
+                return dDate === dateStr && d.silo_id === siloDef.id;
+              });
+
+              if (record) {
+                worksheet.addRow([
+                  dateStr,
+                  siloDef.silo_name,
+                  record.shift1_empty_space,
+                  record.shift1_content,
+                  record.shift2_empty_space,
+                  record.shift2_content,
+                  record.shift3_empty_space,
+                  record.shift3_content,
+                ]);
+              } else {
+                // Empty row for this specific silo on this date
+                worksheet.addRow([
+                  dateStr,
+                  siloDef.silo_name,
+                  '-', // shift1_empty
+                  '-', // shift1_content
+                  '-', // shift2_empty
+                  '-', // shift2_content
+                  '-', // shift3_empty
+                  '-', // shift3_content
+                ]);
+              }
+            });
           });
+        } else if (allDates.length > 0 && unitSiloDefs.length === 0) {
+          worksheet.addRow(['No Silos Configured for this Unit']);
         } else {
-          worksheet.addRow(['No Data Available']);
+          worksheet.addRow(['No Dates Generated']);
         }
         worksheet.addRow([]);
 

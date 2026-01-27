@@ -140,6 +140,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       databasePages: [
         { key: 'database_dashboard', icon: <CircleStackIcon className={iconClass} /> },
       ],
+      inspectionPages: [
+        { key: 'insp_dashboard', icon: <ChartBarIcon className={iconClass} /> },
+        { key: 'insp_form', icon: <EditIcon className={iconClass} /> },
+        { key: 'insp_reports', icon: <ClipboardDocumentListIcon className={iconClass} /> },
+      ],
     }),
     [iconClass]
   );
@@ -227,6 +232,23 @@ const Sidebar: React.FC<SidebarProps> = ({
               icon: page.icon,
             }));
 
+        case 'inspection':
+          return navigationData.inspectionPages
+            .filter((page) => {
+              // Guest check if needed
+              if (currentUser?.role === 'Guest') {
+                // Guest usually can only see dashboards/reports
+                const allowed = ['insp_dashboard', 'insp_reports'];
+                return allowed.includes(page.key);
+              }
+              return permissionChecker.hasPermission('inspection', 'READ');
+            })
+            .map((page) => ({
+              key: page.key,
+              label: t[page.key as keyof typeof t] || page.key,
+              icon: page.icon,
+            }));
+
         case 'projects':
           return navigationData.projectPages
             .filter((page) => {
@@ -262,6 +284,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const operationsButtonRef = useRef<HTMLButtonElement>(null);
   const rkcOperationsButtonRef = useRef<HTMLButtonElement>(null); // New ref for RKC
+  const inspectionButtonRef = useRef<HTMLButtonElement>(null);
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
   const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
@@ -389,6 +412,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => handleDropdownToggle('rkc_operations', rkcOperationsButtonRef)}
                 hasDropdown={!isExpanded}
                 isExpanded={activeDropdown === 'rkc_operations'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+
+            {/* Inspection Module */}
+            {permissionChecker.hasPermission('inspection', 'READ') && (
+              <NavigationItem
+                ref={inspectionButtonRef}
+                icon={<ClipboardCheckIcon className={iconClass} />}
+                label={t.inspection_module || 'Inspection'}
+                isActive={currentPage === 'inspection'}
+                onClick={() => handleDropdownToggle('inspection', inspectionButtonRef)}
+                hasDropdown={!isExpanded}
+                isExpanded={activeDropdown === 'inspection'}
                 isSidebarExpanded={isExpanded}
               />
             )}

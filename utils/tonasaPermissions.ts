@@ -13,6 +13,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
+    inspection: 'WRITE',
   },
   Admin: {
     dashboard: 'WRITE',
@@ -20,6 +21,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
+    inspection: 'WRITE',
   },
   Manager: {
     dashboard: 'WRITE',
@@ -27,6 +29,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'READ',
+    inspection: 'WRITE',
   },
   Operator: {
     dashboard: 'READ',
@@ -34,6 +37,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   },
   Outsourcing: {
     dashboard: 'READ',
@@ -41,6 +45,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'READ',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   },
   Autonomous: {
     dashboard: 'READ',
@@ -48,6 +53,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'READ',
     database: 'NONE',
+    inspection: 'NONE',
   },
   Guest: {
     dashboard: 'NONE',
@@ -55,6 +61,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'NONE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   },
 };
 

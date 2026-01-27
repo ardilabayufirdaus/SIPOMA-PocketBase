@@ -96,3 +96,12 @@ export const DatabasePage = createLazyComponent(() => import('../../pages/Databa
   loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
   errorFallback: <DefaultErrorFallback name="Database" />,
 });
+
+/**
+ * Inspection Pages
+ */
+export const InspectionPage = createLazyComponent(() => import('../../pages/InspectionPage'), {
+  displayName: 'InspectionPage',
+  loadingFallback: <LoadingSkeleton variant="rectangular" height={200} width="100%" />,
+  errorFallback: <DefaultErrorFallback name="Inspection" />,
+});
