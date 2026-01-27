@@ -3,6 +3,7 @@ import { useCcrMaterialUsage } from '../../../hooks/useCcrMaterialUsage';
 import { useCcrFooterData } from '../../../hooks/useCcrFooterData';
 import { useParameterSettings } from '../../../hooks/useParameterSettings';
 import { formatNumber, formatNumberWithPrecision } from '../../../utils/formatters';
+import { pb } from '../../../utils/pocketbase-simple';
 
 interface MaterialUsageEntryProps {
   selectedDate: string;
@@ -44,38 +45,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   const [materialData, setMaterialData] = useState<Record<string, MaterialUsageData>>({});
   const materialUpdateInProgress = useRef(new Set<string>());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      // Clear any pending updates and auto-save timeouts
-      materialUpdateInProgress.current.clear();
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Auto-save function with debouncing
-  const autoSaveMaterialUsage = useCallback(
-    async (data: Record<string, MaterialUsageData>) => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-
-      autoSaveTimeoutRef.current = setTimeout(async () => {
-        try {
-          const savePromises = Object.values(data).map((materialData) =>
-            saveMaterialUsageSilent(materialData)
-          );
-          await Promise.all(savePromises);
-        } catch {
-          // Silent error handling for auto-save
-        }
-      }, 2000); // Debounce for 2 seconds
-    },
-    [saveMaterialUsageSilent]
-  );
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Mapping from material key to counter feeder parameter name
   const materialToParameterMap: Record<string, string> = {
@@ -130,62 +100,15 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
       materialUsage.total_production = totalProduction;
       return materialUsage;
     },
-    [selectedDate, selectedUnit, selectedCategory]
+    [
+      selectedDate,
+      selectedUnit,
+      selectedCategory,
+      parameterSettings,
+      materialToParameterMap,
+      shiftToCounterFieldMap,
+    ]
   );
-
-  // Load data when date or unit changes
-  useEffect(() => {
-    const loadData = async () => {
-      if (!selectedDate || !selectedUnit || !selectedCategory) {
-        setMaterialData({});
-        return;
-      }
-
-      try {
-        // Always calculate from footer data for real-time display
-        // Only use parameter settings if available
-        if (parameterSettings.length === 0) {
-          setMaterialData({});
-          return;
-        }
-
-        // Get footer data for counter feeders - use category as plant_unit since footer data is stored by category
-        const footerData = await getFooterDataForDate(selectedDate, selectedCategory);
-
-        // If footer data is empty, show empty form
-        if (!footerData || footerData.length === 0) {
-          setMaterialData({});
-          return;
-        }
-
-        // Calculate material usage from counters for each shift (real-time)
-        const dataMap: Record<string, MaterialUsageData> = {};
-
-        shifts.forEach((shift) => {
-          const materialUsage = calculateMaterialUsageFromCounters(footerData, shift.key);
-          dataMap[shift.key] = materialUsage;
-        });
-
-        setMaterialData(dataMap);
-
-        // Auto-save the calculated data
-        autoSaveMaterialUsage(dataMap);
-      } catch {
-        // Error loading material usage data
-        setMaterialData({});
-      }
-    };
-
-    loadData();
-  }, [
-    selectedDate,
-    selectedUnit,
-    selectedCategory,
-    parameterSettings,
-    getFooterDataForDate,
-    calculateMaterialUsageFromCounters,
-    autoSaveMaterialUsage,
-  ]);
 
   const shifts = [
     { key: 'shift3_cont', label: t.shift_3_cont || 'Shift 3 (Cont.)' },
@@ -193,6 +116,96 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     { key: 'shift2', label: t.shift_2 || 'Shift 2' },
     { key: 'shift3', label: t.shift_3 || 'Shift 3' },
   ];
+
+  // Sync function to manually/automatically recalculate data from counters
+  const syncWithFooterData = useCallback(async () => {
+    if (!selectedDate || !selectedUnit || !selectedCategory) return;
+
+    // Check if we have parameter settings loaded
+    if (parameterSettings.length === 0) return;
+
+    setIsSyncing(true);
+    try {
+      // 1. Fetch fresh footer data
+      const footerData = await getFooterDataForDate(selectedDate, selectedCategory);
+
+      if (!footerData || footerData.length === 0) {
+        setMaterialData({}); // Clear data if no footer data found
+        setIsSyncing(false);
+        return;
+      }
+
+      // 2. Recalculate based on fresh data
+      const dataMap: Record<string, MaterialUsageData> = {};
+      shifts.forEach((shift) => {
+        const materialUsage = calculateMaterialUsageFromCounters(footerData as any[], shift.key);
+        dataMap[shift.key] = materialUsage;
+      });
+
+      // 3. Update local state
+      setMaterialData(dataMap);
+
+      // 4. Force save to database
+      const savePromises = Object.values(dataMap).map((materialData) =>
+        saveMaterialUsageSilent(materialData)
+      );
+      await Promise.all(savePromises);
+
+      console.log('Material Usage synced with Footer Data');
+    } catch (err) {
+      console.error('Auto-sync error:', err);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [
+    selectedDate,
+    selectedUnit,
+    selectedCategory,
+    getFooterDataForDate,
+    calculateMaterialUsageFromCounters,
+    shifts,
+    saveMaterialUsageSilent,
+    parameterSettings,
+  ]);
+
+  // Real-time subscription to Footer Data
+  useEffect(() => {
+    let unsubscribe: () => void;
+
+    const subscribe = async () => {
+      unsubscribe = await pb.collection('ccr_footer_data').subscribe('*', (e) => {
+        // Check if the change is relevant to our current date
+        if (e.record.date === selectedDate) {
+          // Debounce logic could be refined, but direct call is okay for now if updates aren't spammy
+          syncWithFooterData();
+        }
+      });
+    };
+
+    subscribe();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [selectedDate, syncWithFooterData]);
+
+  // Initial Data Load
+  useEffect(() => {
+    syncWithFooterData();
+  }, [syncWithFooterData]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      // Clear any pending updates and auto-save timeouts
+      materialUpdateInProgress.current.clear();
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const materialFields = [
     { key: 'clinker', label: 'Clinker (ton)' },
@@ -219,7 +232,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     }
   }, []);
 
-  if (loading) {
+  if (loading && !Object.keys(materialData).length) {
+    // Only show loading if we have no data yet
     return (
       <div className="flex items-center justify-center py-16">
         <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
@@ -242,7 +256,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   return (
     <div className="space-y-4">
       {/* Real-time Info */}
-      <div className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 rounded-xl p-4 shadow-sm">
+      <div className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200/50 rounded-xl p-4 shadow-sm flex justify-between items-center">
         <div className="flex items-center">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
@@ -257,10 +271,16 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
             <p className="text-sm text-emerald-800 font-medium">
               <strong>{t.ccr_realTimeAutoSave || 'Real-time Auto-Save'}:</strong>{' '}
               {t.ccr_materialUsageAutoSaveMsg ||
-                'Material usage dihitung dari counter feeder data dan otomatis tersimpan setiap 2 detik ketika ada perubahan.'}
+                'Material usage dihitung dari counter feeder data dan otomatis tersimpan/update ketika data counter berubah.'}
             </p>
           </div>
         </div>
+        {isSyncing && (
+          <div className="flex items-center">
+            <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+            <span className="text-xs text-emerald-600 font-semibold animate-pulse">Syncing...</span>
+          </div>
+        )}
       </div>
 
       {/* Material Usage Table */}
