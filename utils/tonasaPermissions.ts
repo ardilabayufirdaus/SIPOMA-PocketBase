@@ -1,9 +1,8 @@
 import { UserRole, PermissionMatrix } from '../types';
-import { getDefaultPermissionsFromDB } from '../services/defaultPermissionsService';
 
 /**
- * Default permission configurations for Tonasa roles (fallback)
- * Used when database doesn't have custom default permissions
+ * Default permission configurations for Tonasa roles (template for new users)
+ * Now the single source of truth for role-based defaults.
  * UPDATED: Simplified model (NONE, READ, WRITE)
  */
 export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
@@ -57,26 +56,12 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     database: 'NONE',
   },
 };
-
 /**
  * Get default permissions for a specific role
- * First tries to load from database, falls back to hardcoded defaults
+ * Returns hardcoded defaults (single source of truth for new users)
  */
 export const getDefaultPermissionsForRole = async (role: UserRole): Promise<PermissionMatrix> => {
-  try {
-    // Try to get from database first
-    const dbPermissions = await getDefaultPermissionsFromDB(role);
-    if (dbPermissions) {
-      return dbPermissions;
-    }
-  } catch (error) {
-    console.warn(
-      `Failed to load default permissions for ${role} from database, using fallback:`,
-      error
-    );
-  }
-
-  // Fallback to hardcoded defaults
+  // Return hardcoded defaults
   return DEFAULT_TONASA_PERMISSIONS[role] || DEFAULT_TONASA_PERMISSIONS['Guest'];
 };
 

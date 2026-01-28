@@ -4,7 +4,9 @@ import { useRkcPlantUnits } from './useRkcPlantUnits';
 import { useAutonomousRiskData } from './useAutonomousRiskData';
 import { useRkcAutonomousRiskData } from './useRkcAutonomousRiskData';
 import { useParameterSettings } from './useParameterSettings';
+import { useRkcParameterSettings } from './useRkcParameterSettings';
 import { useCcrParameterData } from './useCcrParameterData';
+import { useRkcCcrParameterDataFlat } from './useRkcCcrParameterDataFlat';
 import { pb } from '../utils/pocketbase-simple';
 
 export interface DashboardMetrics {
@@ -33,34 +35,41 @@ export const useDashboardData = () => {
   const { records: parameters } = useParameterSettings();
   const { getDataForDate } = useCcrParameterData();
   const [cmFeedData, setCmFeedData] = useState<Map<string, number>>(new Map()); // Map<UnitName, FeedValue>
+
+  // RKC Feed Data Logic
+  const { records: rkcParameters } = useRkcParameterSettings();
+  const { getDataForDate: getRkcDataForDate } = useRkcCcrParameterDataFlat();
+  const [rkcFeedData, setRkcFeedData] = useState<Map<string, number>>(new Map());
+
   const [isFeedLoading, setIsFeedLoading] = useState(true);
 
   // RKC Data
   const { records: rkcUnits, loading: rkcUnitsLoading } = useRkcPlantUnits();
   const { records: rkcRisks, loading: rkcRisksLoading } = useRkcAutonomousRiskData();
 
-  // Fetch CM Feed Data
+  // Fetch CM & RKC Feed Data
   useEffect(() => {
     const fetchFeedData = async () => {
-      if (!parameters.length || !cmUnits.length) return;
+      if (!parameters.length || !cmUnits.length || !rkcParameters.length || !rkcUnits.length)
+        return;
 
       setIsFeedLoading(true);
       const today = new Date().toISOString().split('T')[0];
 
-      // Get all parameters that are "Feed" related (assuming "Feed (tph)" or similar)
-      // Robust way: check if parameter name contains 'Feed' (case insensitive) and unit matches
-      const feedParams = parameters.filter(
-        (p) => p.parameter.toLowerCase().includes('feed') && p.unit // ensure unit is valid
-      );
-
       try {
-        // Fetch data for today
-        const ccrData = await getDataForDate(today);
+        // Parallel fetch for CM and RKC data
+        const [ccrData, rkcCcrData] = await Promise.all([
+          getDataForDate(today),
+          getRkcDataForDate(today),
+        ]);
 
         const feedMap = new Map<string, number>();
+        const rkcFeedMap = new Map<string, number>();
+
+        // Process CM Feed Data
+        const feedParams = parameters.filter((p) => p.parameter.toLowerCase().includes('feed'));
 
         cmUnits.forEach((unit) => {
-          // Find the "Feed" parameter for this unit
           const unitFeedParam = feedParams.find(
             (p) => p.unit === unit.unit && p.parameter.includes('Feed')
           );
@@ -68,17 +77,14 @@ export const useDashboardData = () => {
           if (unitFeedParam) {
             const dataRecord = ccrData.find((d) => d.parameter_id === unitFeedParam.id);
             if (dataRecord && dataRecord.hourly_values) {
-              // Find latest non-empty value
-              // We need to iterate backwards from hour 24 to 1
               let latestValue = 0;
               for (let h = 24; h >= 1; h--) {
                 const val = dataRecord.hourly_values[h];
                 if (val) {
-                  // valid value object or primitive
                   const numVal = typeof val === 'object' ? Number(val.value) : Number(val);
                   if (!isNaN(numVal)) {
                     latestValue = numVal;
-                    break; // Found latest
+                    break;
                   }
                 }
               }
@@ -87,7 +93,38 @@ export const useDashboardData = () => {
           }
         });
 
+        // Process RKC Feed Data
+        const rkcFeedParams = rkcParameters.filter((p) =>
+          p.parameter.toLowerCase().includes('feed')
+        );
+
+        rkcUnits.forEach((unit) => {
+          const unitFeedParam = rkcFeedParams.find(
+            (p) => p.unit === unit.unit && p.parameter.toLowerCase().includes('feed')
+          );
+
+          if (unitFeedParam) {
+            const dataRecord = rkcCcrData.find((d) => d.parameter_id === unitFeedParam.id);
+            if (dataRecord) {
+              let latestValue = 0;
+              for (let h = 24; h >= 1; h--) {
+                const hourField = `hour${h}` as any;
+                const val = (dataRecord as any)[hourField];
+                if (val !== undefined && val !== null && val !== '') {
+                  const numVal = Number(val);
+                  if (!isNaN(numVal)) {
+                    latestValue = numVal;
+                    break;
+                  }
+                }
+              }
+              rkcFeedMap.set(unit.unit, latestValue);
+            }
+          }
+        });
+
         setCmFeedData(feedMap);
+        setRkcFeedData(rkcFeedMap);
       } catch (err) {
         console.error('Failed to fetch dashboard feed data', err);
       } finally {
@@ -96,7 +133,7 @@ export const useDashboardData = () => {
     };
 
     fetchFeedData();
-  }, [cmUnits, parameters, getDataForDate]);
+  }, [cmUnits, rkcUnits, parameters, rkcParameters, getDataForDate, getRkcDataForDate]);
 
   // Total Cement Production Logic
 
@@ -212,16 +249,29 @@ export const useDashboardData = () => {
       });
     });
 
-    // Process RKC Units (Keep original logic or update later if requested)
+    // Process RKC Units (Logic: Feed > 0 = ON, else OFF/DOWN)
     rkcUnits.forEach((unit) => {
       const activeRisk = activeRkcRisks.find((r) => r.unit === unit.unit);
+
+      // Check Feed Status
+      const feedValue = rkcFeedData.get(unit.unit) || 0;
+      const isFeedOn = feedValue > 0;
+
+      let status: 'running' | 'down' | 'warning' = 'down';
+
+      if (isFeedOn) {
+        status = 'running';
+      } else {
+        status = 'down';
+      }
+
       allUnitStatuses.push({
         id: unit.id,
         unit: unit.unit,
         category: unit.category,
         isRkc: true,
-        status: activeRisk ? 'down' : 'running',
-        issue: activeRisk?.potential_disruption,
+        status: status,
+        issue: isFeedOn ? undefined : activeRisk?.potential_disruption || 'Stopped (No Feed)',
       });
     });
 
@@ -249,16 +299,25 @@ export const useDashboardData = () => {
 
     return {
       metrics: {
-        totalProduction: totalCementProduction, // Real data
+        totalProduction: totalCementProduction,
         productionTarget: 100,
         availability: Math.round(availability),
         criticalDowntime: totalDowntimeCount,
-        pendingProjects: 4, // Mock for now as requested we focus on Operations data first
+        pendingProjects: 4,
       },
       unitStatuses: allUnitStatuses,
       topDowntimes,
     };
-  }, [cmUnits, rkcUnits, cmRisks, rkcRisks, isLoading, cmFeedData]); // Added cmFeedData dependency
+  }, [
+    cmUnits,
+    rkcUnits,
+    cmRisks,
+    rkcRisks,
+    isLoading,
+    cmFeedData,
+    rkcFeedData,
+    totalCementProduction,
+  ]);
 
   return {
     metrics,

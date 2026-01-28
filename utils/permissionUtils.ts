@@ -24,90 +24,39 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
     return matrix;
   }
 
-  // Menangani struktur di mana userPermissions adalah array dari user_permissions
-  // dan sudah bukan objek di user record
+  // If userPermissions is already a matrix object, return it (simple pass-through)
+  if (typeof userPermissions === 'object' && !Array.isArray(userPermissions)) {
+    const p = userPermissions as any;
+    return {
+      dashboard: p.dashboard || 'NONE',
+      cm_plant_operations: p.cm_plant_operations || 'NONE',
+      rkc_plant_operations: p.rkc_plant_operations || 'NONE',
+      project_management: p.project_management || 'NONE',
+      database: p.database || 'NONE',
+    };
+  }
 
   // If userPermissions is a string (role), return default matrix with basic permissions
   if (typeof userPermissions === 'string') {
-    // Set basic permissions based on role
     const role = userPermissions.toLowerCase();
-
-    // Define role-based default permissions
-    if (role.includes('admin')) {
-      matrix.dashboard = 'READ';
-    } else if (role.includes('operator')) {
-      matrix.dashboard = 'READ';
+    if (role.includes('admin') || role.includes('super')) {
+      return {
+        dashboard: 'WRITE',
+        cm_plant_operations: 'WRITE',
+        rkc_plant_operations: 'WRITE',
+        project_management: 'WRITE',
+        database: 'WRITE',
+      };
     }
-
-    return matrix;
+    if (role.includes('operator')) {
+      return {
+        ...matrix,
+        dashboard: 'READ',
+        cm_plant_operations: 'WRITE',
+        rkc_plant_operations: 'WRITE',
+      };
+    }
   }
-
-  // Handle case when userPermissions is null or undefined
-  if (!userPermissions) {
-    return matrix;
-  }
-
-  // Ensure we're working with an array for permission objects
-  const permissionsArray = Array.isArray(userPermissions) ? userPermissions : [userPermissions];
-
-  permissionsArray.forEach((up: unknown) => {
-    // Safe type check for up
-    if (!up || typeof up !== 'object') return;
-
-    const upObj = up as Record<string, unknown>;
-
-    // Handle permissions_data field (JSON string from database)
-    const permissionsData = upObj.permissions_data;
-    if (typeof permissionsData === 'string') {
-      try {
-        const parsedPermissions = JSON.parse(permissionsData) as Record<string, unknown>;
-
-        // Process each module in the parsed permissions
-        Object.entries(parsedPermissions).forEach(([moduleName, permissionValue]) => {
-          const moduleKey = permissionModuleMap[moduleName];
-
-          if (moduleKey) {
-            if (typeof permissionValue === 'string') {
-              // Handle simple permission levels
-              (matrix as any)[moduleKey] = permissionValue as PermissionLevel;
-            } else if (typeof permissionValue === 'object' && permissionValue !== null) {
-              // Legacy object permission, map to READ/WRITE based on existence
-              // If object exists and has keys, assume at least READ.
-              // We could try to scan values for WRITE.
-              let level = 'READ';
-              const str = JSON.stringify(permissionValue);
-              if (str.includes('WRITE') || str.includes('ADMIN')) {
-                level = 'WRITE';
-              }
-              (matrix as any)[moduleKey] = level;
-            }
-          }
-        });
-
-        return; // Skip the old permission structure processing
-      } catch {
-        // Error parsing permissions_data, skip this permission entry
-        return;
-      }
-    }
-
-    // Fallback to old permission structure (for backward compatibility)
-    const perm = upObj.permissions as Record<string, unknown> | undefined;
-
-    if (perm) {
-      const moduleNameStr = String(perm.module_name || '');
-      const moduleKey = permissionModuleMap[moduleNameStr];
-
-      if (moduleKey) {
-        let level = String(perm.permission_level || 'NONE') as PermissionLevel;
-        if (level === 'NONE') level = 'READ'; // Default legacy existence to READ if not NONE? or respect keys.
-
-        // If it was granular plant ops, the existence of this record means partial access.
-        // We'll give it the level specified in the record.
-        (matrix as any)[moduleKey] = level;
-      }
-    }
-  });
 
   return matrix;
 };

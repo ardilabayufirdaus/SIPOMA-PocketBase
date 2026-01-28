@@ -9,7 +9,6 @@ import { debouncer } from '../utils/batchUtils';
 interface UserManagementState {
   users: User[];
   roles: any[];
-  permissions: any[];
   isLoading: boolean;
   error: string | null;
   pagination: {
@@ -22,7 +21,6 @@ interface UserManagementState {
   // Actions
   fetchUsers: (page?: number, limit?: number, includePermissions?: boolean) => Promise<void>;
   fetchRoles: () => Promise<void>;
-  fetchPermissions: () => Promise<void>;
   createUser: (userData: any) => Promise<User>;
   updateUser: (userId: string, userData: any) => Promise<User>;
   deleteUser: (userId: string) => Promise<void>;
@@ -37,7 +35,6 @@ interface UserManagementState {
 export const useUserStore = create<UserManagementState>((set, get) => ({
   users: [],
   roles: [],
-  permissions: [],
   isLoading: false,
   error: null,
   pagination: {
@@ -68,7 +65,13 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
                 is_active: e.record.is_active,
                 created_at: new Date(e.record.created),
                 updated_at: new Date(e.record.updated),
-                permissions: buildPermissionMatrix([]),
+                permissions: {
+                  dashboard: 'NONE',
+                  cm_plant_operations: 'NONE',
+                  rkc_plant_operations: 'NONE',
+                  project_management: 'NONE',
+                  database: 'NONE',
+                },
               };
               updatedUsers.unshift(newUser); // Add to top
               // Invalidate cache on data changes
@@ -135,30 +138,50 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     try {
       const result = await pb.collection('users').getList(page, limit, {
         sort: '-created',
-        expand: includePermissions ? 'user_permissions.permissions' : '',
       });
 
-      const transformedUsers: User[] = result.items.map((user: any) => ({
-        id: user.id,
-        username: user.username,
-        full_name: user.name || undefined, // PocketBase menggunakan field 'name' bukan 'full_name'
-        role: user.role,
-        is_active: user.is_active,
-        created_at: new Date(user.created),
-        updated_at: new Date(user.updated),
-        permissions: includePermissions
-          ? ((user.expand?.user_permissions as any[]) || []).reduce((acc: any, up: any) => {
-              const perm = up.expand?.permissions;
-              if (perm) {
-                acc[perm.module_name] = {
-                  level: perm.permission_level,
-                  plantUnits: perm.plant_units || [],
+      const transformedUsers: User[] = await Promise.all(
+        result.items.map(async (user: any) => {
+          let permissions = {
+            dashboard: 'NONE',
+            cm_plant_operations: 'NONE',
+            rkc_plant_operations: 'NONE',
+            project_management: 'NONE',
+            database: 'NONE',
+          };
+
+          if (includePermissions) {
+            try {
+              const permRecord = await pb.collection('user_management').getList(1, 1, {
+                filter: `user_id = "${user.id}"`,
+              });
+              if (permRecord.items.length > 0) {
+                const p = permRecord.items[0];
+                permissions = {
+                  dashboard: p.dashboard || 'NONE',
+                  cm_plant_operations: p.cm_plant_operations || 'NONE',
+                  rkc_plant_operations: p.rkc_plant_operations || 'NONE',
+                  project_management: p.project_management || 'NONE',
+                  database: p.database || 'NONE',
                 };
               }
-              return acc;
-            }, {}) || {}
-          : {},
-      }));
+            } catch (e) {
+              console.warn(`Failed to fetch permissions for user ${user.id}`, e);
+            }
+          }
+
+          return {
+            id: user.id,
+            username: user.username,
+            full_name: user.name || undefined,
+            role: user.role,
+            is_active: user.is_active,
+            created_at: new Date(user.created),
+            updated_at: new Date(user.updated),
+            permissions: permissions as any,
+          };
+        })
+      );
 
       // Cache the result if not including permissions
       if (!includePermissions) {
@@ -193,17 +216,6 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     }
   },
 
-  fetchPermissions: async () => {
-    try {
-      const result = await pb.collection('permissions').getFullList({
-        sort: 'module_name',
-      });
-      set({ permissions: result });
-    } catch {
-      set({ error: 'Failed to fetch permissions' });
-    }
-  },
-
   createUser: async (userData: any) => {
     set({ isLoading: true, error: null });
     try {
@@ -219,24 +231,37 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
         name: userData.full_name || '', // PocketBase menggunakan field 'name' bukan 'full_name'
         role: userData.role,
         is_active: userData.is_active ?? true,
-        permissions: userData.permissions || buildPermissionMatrix(userData.role),
       });
 
       if (!newUser) {
         throw new Error('Failed to create user');
       }
 
+      // Create permissions record in user_management
+      const perms = userData.permissions || {
+        dashboard: 'NONE',
+        cm_plant_operations: 'NONE',
+        rkc_plant_operations: 'NONE',
+        project_management: 'NONE',
+        database: 'NONE',
+      };
+
+      await pb.collection('user_management').create({
+        user_id: newUser.id,
+        ...perms,
+      });
+
       // Map PocketBase response to our User type
       const mappedUser = {
         id: newUser.id,
         username: newUser.username,
-        full_name: newUser.name, // PocketBase menggunakan field 'name' bukan 'full_name'
+        full_name: newUser.name,
         role: newUser.role,
         is_active: newUser.is_active,
         avatar_url: newUser.avatar ? pb.files.getUrl(newUser, newUser.avatar) : null,
         created_at: new Date(newUser.created),
         updated_at: new Date(newUser.updated),
-        permissions: newUser.permissions || buildPermissionMatrix(newUser.role),
+        permissions: perms as any,
       };
 
       // No need to fetchUsers, realtime will update
@@ -276,17 +301,35 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
       // Manually trigger a refresh for all connected clients
       pb.collection('users').authRefresh();
 
+      // Update permissions in user_management if provided
+      if (userData.permissions) {
+        const permRecord = await pb.collection('user_management').getList(1, 1, {
+          filter: `user_id = "${userId}"`,
+        });
+
+        if (permRecord.items.length > 0) {
+          await pb
+            .collection('user_management')
+            .update(permRecord.items[0].id, userData.permissions);
+        } else {
+          await pb.collection('user_management').create({
+            user_id: userId,
+            ...userData.permissions,
+          });
+        }
+      }
+
       // Map PocketBase response to our User type
       const mappedUser = {
         id: updatedUser.id,
         username: updatedUser.username,
-        full_name: updatedUser.name, // PocketBase menggunakan field 'name' bukan 'full_name'
+        full_name: updatedUser.name,
         role: updatedUser.role,
         is_active: updatedUser.is_active,
         avatar_url: updatedUser.avatar ? pb.files.getUrl(updatedUser, updatedUser.avatar) : null,
         created_at: new Date(updatedUser.created),
         updated_at: new Date(updatedUser.updated),
-        permissions: updatedUser.permissions || buildPermissionMatrix(updatedUser.role),
+        permissions: userData.permissions || {},
       };
 
       // No need to fetchUsers, realtime will update
@@ -314,36 +357,21 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
     }
   },
 
-  assignPermissions: async (userId: string, permissionIds: string[]) => {
+  assignPermissions: async (userId: string, permissions: any) => {
     set({ isLoading: true, error: null });
     try {
-      // Get the user
-      const user = await pb.collection('users').getOne(userId);
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      // Hapus permissions lama dari user_permissions
-      const existingPerms = await pb.collection('user_permissions').getList(1, 100, {
+      // Find existing permission record
+      const permRecord = await pb.collection('user_management').getList(1, 1, {
         filter: `user_id = "${userId}"`,
       });
 
-      // Hapus semua izin yang ada
-      for (const perm of existingPerms.items) {
-        await pb.collection('user_permissions').delete(perm.id);
-      }
-
-      // Tambahkan izin baru di user_permissions
-      for (const permId of permissionIds) {
-        try {
-          await pb.collection('user_permissions').create({
-            user_id: userId,
-            permission_id: permId,
-          });
-        } catch (err) {
-          console.error(`Failed to assign permission ${permId}:`, err);
-        }
+      if (permRecord.items.length > 0) {
+        await pb.collection('user_management').update(permRecord.items[0].id, permissions);
+      } else {
+        await pb.collection('user_management').create({
+          user_id: userId,
+          ...permissions,
+        });
       }
 
       // Refresh users list after updating permissions

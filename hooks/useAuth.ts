@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pb } from '../utils/pocketbase-simple';
-import { User } from '../types';
+import { User, PermissionMatrix, PermissionLevel } from '../types';
 import useErrorHandler from './useErrorHandler';
-import { buildPermissionMatrix } from '../utils/permissionUtils';
+
 import { authCache } from '../utils/authCache';
 import { secureStorage } from '../utils/secureStorage';
 import { rateLimiter } from '../utils/rateLimiter';
@@ -12,20 +12,36 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const { handleError } = useErrorHandler();
 
-  // Lazy load user permissions
+  // Lazy load user permissions from user_management (new collection structure)
   const loadUserPermissions = useCallback(async (userId: string) => {
     const maxRetries = 3;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const result = await pb.collection('user_permissions').getFullList({
+        // Fetch from user_management collection instead of legacy user_permissions
+        const records = await pb.collection('user_management').getList(1, 1, {
           filter: `user_id = '${userId}'`,
-          expand: 'permissions',
         });
-        const data = result;
 
-        const permissionMatrix = buildPermissionMatrix(data || []);
+        if (records.items.length > 0) {
+          const item = records.items[0];
+          // Map the flat fields from user_management to the PermissionMatrix structure
+          const permissionMatrix: PermissionMatrix = {
+            dashboard: (item.dashboard as PermissionLevel) || 'NONE',
+            cm_plant_operations: (item.cm_plant_operations as PermissionLevel) || 'NONE',
+            rkc_plant_operations: (item.rkc_plant_operations as PermissionLevel) || 'NONE',
+            project_management: (item.project_management as PermissionLevel) || 'NONE',
+            database: (item.database as PermissionLevel) || 'NONE',
+          };
+          return permissionMatrix;
+        }
 
-        return permissionMatrix;
+        return {
+          dashboard: 'NONE',
+          cm_plant_operations: 'NONE',
+          rkc_plant_operations: 'NONE',
+          project_management: 'NONE',
+          database: 'NONE',
+        } as PermissionMatrix;
       } catch (error: any) {
         if (
           attempt < maxRetries - 1 &&
@@ -35,11 +51,11 @@ export const useAuth = () => {
           await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)));
           continue;
         }
-        console.warn('Failed to load user permissions:', error);
-        return {}; // Return empty permissions on error
+        console.warn('Failed to load user permissions from user_management:', error);
+        return {} as PermissionMatrix;
       }
     }
-    return {};
+    return {} as PermissionMatrix;
   }, []);
 
   const login = useCallback(

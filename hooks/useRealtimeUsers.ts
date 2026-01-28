@@ -128,16 +128,22 @@ export const useRealtimeUsers = (options: UseRealtimeUsersOptions = {}) => {
             }
           }
 
-          // Fetch permissions from user_permissions collection
+          // Fetch permissions from user_management collection
           let userPermissions: PermissionMatrix;
           try {
-            const permissionRecords = await pb.collection('user_permissions').getFullList({
+            const permissionRecords = await pb.collection('user_management').getList(1, 1, {
               filter: `user_id = '${user.id}'`,
-              fields: 'permissions_data',
             });
 
-            if (permissionRecords.length > 0) {
-              userPermissions = JSON.parse(permissionRecords[0].permissions_data);
+            if (permissionRecords.items.length > 0) {
+              const p = permissionRecords.items[0];
+              userPermissions = {
+                dashboard: p.dashboard || 'NONE',
+                cm_plant_operations: p.cm_plant_operations || 'NONE',
+                rkc_plant_operations: p.rkc_plant_operations || 'NONE',
+                project_management: p.project_management || 'NONE',
+                database: p.database || 'NONE',
+              };
             } else {
               // Use default permissions if no custom permissions found
               userPermissions = await getDefaultPermissionsForRole(user.role);

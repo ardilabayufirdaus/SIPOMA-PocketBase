@@ -33,7 +33,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
             <h1 className="text-xl md:text-3xl font-black tracking-tighter text-slate-800 dark:text-white">
               {greeting},{' '}
               <span className="text-indigo-600 dark:text-indigo-400">
-                {(user?.name || user?.full_name || user?.username || 'Engineer').split(' ')[0]}
+                {user?.name || user?.full_name || user?.username || 'Engineer'}
               </span>
             </h1>
             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800/30">

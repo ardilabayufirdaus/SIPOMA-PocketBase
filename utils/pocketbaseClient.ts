@@ -35,21 +35,18 @@ export const apiClient = {
         const userData = authData.record;
 
         // Format data to match legacy Supabase structure
-        // Get user permissions
-        const userPermissions = await pb.collection('user_permissions').getFullList({
-          filter: `user="${userData.id}"`,
-          expand: 'permissions',
+        // Format data to match legacy structure using user_management
+        // Get user permissions from user_management
+        const userManagement = await pb.collection('user_management').getList(1, 1, {
+          filter: `user_id = "${userData.id}"`,
         });
 
-        // Format permissions to match the old structure
-        const formattedPermissions = userPermissions.map((up) => ({
-          permissions: up.expand?.permissions || {},
-        }));
+        const permissions = userManagement.items.length > 0 ? userManagement.items[0] : null;
 
         // Return data in expected format
         return {
           ...userData,
-          user_permissions: formattedPermissions,
+          permissions: permissions,
         };
       } catch {
         throw new Error('Invalid username or password');
@@ -83,10 +80,17 @@ export const apiClient = {
     // Get user by ID
     async getById(id: string) {
       try {
-        const userData = await pb.collection('users').getOne(id, {
-          expand: 'user_permissions.permissions',
+        const userData = await pb.collection('users').getOne(id);
+
+        // Get permissions
+        const userManagement = await pb.collection('user_management').getList(1, 1, {
+          filter: `user_id = "${id}"`,
         });
-        return userData;
+
+        return {
+          ...userData,
+          permissions: userManagement.items.length > 0 ? userManagement.items[0] : null,
+        };
       } catch {
         throw new Error('User not found');
       }
@@ -118,10 +122,22 @@ export const apiClient = {
     // Get all users
     async getAll() {
       try {
-        const users = await pb.collection('users').getFullList({
-          expand: 'user_permissions.permissions',
-        });
-        return users;
+        const users = await pb.collection('users').getFullList();
+
+        // This is inefficient but maintaining compatibility
+        const usersWithPermissions = await Promise.all(
+          users.map(async (user) => {
+            const userManagement = await pb.collection('user_management').getList(1, 1, {
+              filter: `user_id = "${user.id}"`,
+            });
+            return {
+              ...user,
+              permissions: userManagement.items.length > 0 ? userManagement.items[0] : null,
+            };
+          })
+        );
+
+        return usersWithPermissions;
       } catch (error) {
         const pbError = error as PocketBaseError;
         throw new Error(`Failed to get users: ${pbError.message}`);
@@ -152,14 +168,23 @@ export const apiClient = {
       try {
         const records = await pb.collection('users').getList(1, 1, {
           filter: `email="${email}"`,
-          expand: 'user_permissions.permissions',
         });
 
         if (records.items.length === 0) {
           return null;
         }
 
-        return records.items[0];
+        const userData = records.items[0];
+
+        // Get permissions
+        const userManagement = await pb.collection('user_management').getList(1, 1, {
+          filter: `user_id = "${userData.id}"`,
+        });
+
+        return {
+          ...userData,
+          permissions: userManagement.items.length > 0 ? userManagement.items[0] : null,
+        };
       } catch (error) {
         const pbError = error as PocketBaseError;
         throw new Error(`Failed to get user by email: ${pbError.message}`);
@@ -279,67 +304,6 @@ export const apiClient = {
       } catch (error) {
         const pbError = error as PocketBaseError;
         throw new Error(`Failed to get activity logs: ${pbError.message}`);
-      }
-    },
-  },
-
-  // Permissions management
-  permissions: {
-    // Get all permissions
-    async getAll() {
-      try {
-        const permissions = await pb.collection('permissions').getFullList();
-        return permissions;
-      } catch (error) {
-        const pbError = error as PocketBaseError;
-        throw new Error(`Failed to get permissions: ${pbError.message}`);
-      }
-    },
-
-    // Get permissions by IDs
-    async getByIds(ids: string[]) {
-      try {
-        if (!ids.length) return [];
-
-        // Use filter to get permissions by IDs
-        const permissions = await pb.collection('permissions').getFullList({
-          filter: ids.map((id) => `id="${id}"`).join(' || '),
-        });
-
-        return permissions;
-      } catch (error) {
-        const pbError = error as PocketBaseError;
-        throw new Error(`Failed to get permissions: ${pbError.message}`);
-      }
-    },
-
-    // Save permission for user
-    async saveUserPermissions(userId: string, permissionIds: string[]) {
-      try {
-        // First remove existing permissions
-        const existingPermissions = await pb.collection('user_permissions').getFullList({
-          filter: `user="${userId}"`,
-        });
-
-        // Delete existing permissions
-        for (const perm of existingPermissions) {
-          await pb.collection('user_permissions').delete(perm.id);
-        }
-
-        // Add new permissions
-        const newPermissions = [];
-        for (const permId of permissionIds) {
-          const newPerm = await pb.collection('user_permissions').create({
-            user: userId,
-            permissions: permId,
-          });
-          newPermissions.push(newPerm);
-        }
-
-        return { success: true, permissions: newPermissions };
-      } catch (error) {
-        const pbError = error as PocketBaseError;
-        throw new Error(`Failed to save permissions: ${pbError.message}`);
       }
     },
   },
