@@ -51,10 +51,15 @@ import { registerBackgroundSync } from './utils/syncManager';
 const preloadDashboard = () => import('./pages/MainDashboardPage');
 const preloadPlantOperations = () => import('./pages/PlantOperationsPage');
 
+import { usePresenceTracker } from './hooks/usePresenceTracker';
+
 const App: React.FC = () => {
   const { language, setLanguage, t } = useTranslation();
   const isMobile = useIsMobile();
   useTheme(); // Theme context is initialized
+
+  // Initialize presence tracker globally to keep heartbeat alive
+  usePresenceTracker();
 
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);

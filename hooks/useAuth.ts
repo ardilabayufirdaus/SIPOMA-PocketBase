@@ -167,12 +167,12 @@ export const useAuth = () => {
     // DELETE ONLINE USER RECORD
     try {
       if (pb.authStore.model?.id) {
-        const records = await pb.collection('user_online').getList(1, 1, {
+        const records = await pb.collection('user_online').getFullList({
           filter: `user_id = "${pb.authStore.model.id}"`,
         });
-        if (records.items.length > 0) {
-          await pb.collection('user_online').delete(records.items[0].id);
-        }
+
+        // Delete all found records for this user
+        await Promise.all(records.map((record) => pb.collection('user_online').delete(record.id)));
       }
     } catch (error) {
       console.warn('Failed to delete user_online record:', error);

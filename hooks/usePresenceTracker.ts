@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { pb } from '../utils/pocketbase-simple';
 import { logger } from '../utils/logger';
 
@@ -9,54 +9,108 @@ interface PresenceUser {
   role: string;
   last_seen: Date;
   is_online: boolean;
+  avatarUrl?: string;
 }
 
 export const usePresenceTracker = () => {
   const [onlineUsers, setOnlineUsers] = useState<PresenceUser[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch current online users from user_online collection
   const fetchOnlineUsers = useCallback(async () => {
     try {
-      // Get all records from user_online
+      // Get all records from user_online - cannot expand 'user_id' as it is a text field
+      // We use 'created' because we are now recreating records on heartbeat (so created time is fresh)
+      // Removing time filter to match collection count exactly as per user request
       const onlineRecords = await pb.collection('user_online').getFullList({
         sort: '-created',
       });
 
-      const onlineUsersData: PresenceUser[] = [];
+      // Map to promises for parallel fetching
       const promises = onlineRecords.map(async (record) => {
         try {
-          // user_id is a text field, so we must fetch the user manually
-          // We use getOne with silence error to avoid crashing if user deleted
           if (!record.user_id) return null;
 
-          const user = await pb.collection('users').getOne(record.user_id);
-          return {
-            id: user.id,
-            username: user.username,
-            full_name: user.name,
-            role: user.role,
-            last_seen: new Date(record.created),
-            is_online: true,
-          };
+          let presenceData: PresenceUser;
+
+          try {
+            // Fetch user details manually since user_id is text
+            const user = await pb.collection('users').getOne(record.user_id);
+            presenceData = {
+              id: user.id,
+              username: user.username,
+              full_name: user.name || user.full_name,
+              role: user.role,
+              last_seen: new Date(record.created),
+              is_online: true,
+              avatarUrl: user.avatar ? pb.files.getUrl(user, user.avatar) : undefined,
+            };
+          } catch (fetchErr) {
+            // PERMISSION FALLBACK: If we can't fetch user details, return a placeholder
+            // This ensures the COUNT is correct even if we can't show the name
+            presenceData = {
+              id: record.user_id,
+              username: 'User',
+              full_name: 'Online User',
+              role: 'Unknown',
+              last_seen: new Date(record.created),
+              is_online: true,
+            };
+          }
+
+          return presenceData;
         } catch (e) {
+          // Record itself is invalid?
           return null;
         }
       });
 
       const results = await Promise.all(promises);
 
-      // Filter out nulls (deleted users or failed fetches)
-      results.forEach((user) => {
-        if (user) onlineUsersData.push(user);
-      });
+      // Filter out nulls
+      const onlineUsersData = results.filter((u): u is PresenceUser => u !== null);
 
-      setOnlineUsers(onlineUsersData);
+      // Remove duplicates by user ID
+      const uniqueUsers = onlineUsersData.filter(
+        (user, index, self) => index === self.findIndex((u) => u.id === user.id)
+      );
+
+      setOnlineUsers(uniqueUsers);
       setIsConnected(true);
     } catch (error) {
       logger.warn('Failed to fetch online users:', error);
-      setOnlineUsers([]);
       setIsConnected(false);
+    }
+  }, []);
+
+  // Heartbeat function: Recreate my record to ensure timestamp updates
+  // Since user_online fields (user_id) are static, update() might not change 'updated' timestamp
+  // So we delete and create a new record.
+  const sendHeartbeat = useCallback(async () => {
+    const userId = pb.authStore.model?.id;
+    if (!userId) return;
+
+    try {
+      // Find my record(s)
+      const records = await pb.collection('user_online').getList(1, 10, {
+        filter: `user_id = "${userId}"`,
+      });
+
+      // Delete ALL existing records for this user (cleanup old duplicates if any)
+      if (records.items.length > 0) {
+        await Promise.all(
+          records.items.map((item) => pb.collection('user_online').delete(item.id))
+        );
+      }
+
+      // Create new record
+      await pb.collection('user_online').create({
+        user_id: userId,
+      });
+    } catch (error) {
+      // Silent fail for heartbeat
+      // logger.debug('Heartbeat failed', error);
     }
   }, []);
 
@@ -65,11 +119,19 @@ export const usePresenceTracker = () => {
 
     const initializeTracking = async () => {
       await fetchOnlineUsers();
+      await sendHeartbeat(); // Immediate heartbeat
+
+      // START HEARTBEAT INTERVAL (every 2 minutes)
+      heartbeatIntervalRef.current = setInterval(sendHeartbeat, 2 * 60 * 1000);
 
       // Subscribe to changes in user_online collection
       try {
-        unsubscribe = await pb.collection('user_online').subscribe('*', () => {
-          fetchOnlineUsers();
+        unsubscribe = await pb.collection('user_online').subscribe('*', (e) => {
+          // If CREATE, UPDATE, DELETE happens, refresh the list
+          // We can optimize by modifying state directly but refresh is safer for accuracy
+          if (e.action === 'create' || e.action === 'update' || e.action === 'delete') {
+            fetchOnlineUsers();
+          }
         });
       } catch (error) {
         console.warn('Failed to subscribe to user_online:', error);
@@ -82,15 +144,15 @@ export const usePresenceTracker = () => {
       if (unsubscribe) {
         unsubscribe();
       }
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+      }
     };
-  }, [fetchOnlineUsers]);
+  }, [fetchOnlineUsers, sendHeartbeat]);
 
   return {
     onlineUsers,
     isConnected,
-    // No-op functions to maintain interface compatibility with dashboard
-    markOnline: () => {},
-    markOffline: () => {},
     refreshOnlineUsers: fetchOnlineUsers,
   };
 };

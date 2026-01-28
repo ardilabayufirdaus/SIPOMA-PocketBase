@@ -9,6 +9,8 @@ import { useDashboardData } from '../hooks/useDashboardData';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { pb } from '../utils/pocketbase-simple';
 
+import { usePresenceTracker } from '../hooks/usePresenceTracker';
+
 interface MainDashboardPageProps {
   language: 'en' | 'id';
   onNavigate: (page: Page, subPage?: string) => void;
@@ -18,22 +20,10 @@ interface MainDashboardPageProps {
 const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) => {
   const { metrics, unitStatuses, topDowntimes, isLoading } = useDashboardData();
   const { currentUser } = useCurrentUser();
-  const [onlineUsersCount, setOnlineUsersCount] = useState(1); // Default to at least 1 (self)
 
-  // Fetch online users count
-  useEffect(() => {
-    // Initial fetch
-    pb.collection('user_online')
-      .getList(1, 1, {
-        filter: `updated >= "${new Date(Date.now() - 5 * 60 * 1000).toISOString().replace('T', ' ')}"`, // Active in last 5 mins
-      })
-      .then((res) => {
-        setOnlineUsersCount(res.totalItems || 1);
-      })
-      .catch(() => {
-        // access might be restricted or collection doesn't exist yet, ignore
-      });
-  }, []);
+  // Use centralized presence tracker for real-time online users
+  const { onlineUsers } = usePresenceTracker();
+  const onlineUsersCount = onlineUsers.length > 0 ? onlineUsers.length : 1;
 
   if (isLoading) {
     return (
