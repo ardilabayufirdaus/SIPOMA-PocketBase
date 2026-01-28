@@ -115,7 +115,14 @@ const DatabasePage: React.FC = () => {
         ];
         worksheet.addRow(materialHeader);
 
-        if (unitMaterial.length > 0) {
+        // Generate all dates for the selected month to ensure continuous timeline
+        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+        const allDates = Array.from({ length: daysInMonth }, (_, i) => {
+          const day = i + 1;
+          return `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        });
+
+        if (allDates.length > 0) {
           // Aggregate by date
           const dailyAggregated = unitMaterial.reduce(
             (acc, curr) => {
@@ -146,12 +153,20 @@ const DatabasePage: React.FC = () => {
             {} as Record<string, any>
           );
 
-          // Sort by date
-          const sortedDailyMaterial = Object.values(dailyAggregated).sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-          );
+          // Iterate over all dates in the month
+          allDates.forEach((dateStr) => {
+            const item = dailyAggregated[dateStr] || {
+              date: dateStr,
+              clinker: 0,
+              gypsum: 0,
+              limestone: 0,
+              trass: 0,
+              fly_ash: 0,
+              fine_trass: 0,
+              ckd: 0,
+              total_production: 0,
+            };
 
-          sortedDailyMaterial.forEach((item) => {
             worksheet.addRow([
               item.date,
               item.clinker,
@@ -165,44 +180,12 @@ const DatabasePage: React.FC = () => {
             ]);
           });
         } else {
-          worksheet.addRow(['No Data Available']);
+          worksheet.addRow(['No Dates Generated']);
         }
         worksheet.addRow([]);
 
-        // --- Section 2: Downtime Data ---
-        worksheet.addRow(['SECTION 2: DOWNTIME DATA']);
-        const downtimeHeader = [
-          'Date',
-          'Start Time',
-          'End Time',
-          'Duration (Min)',
-          'Equipment',
-          'Problem',
-          'Action',
-          'Remarks',
-        ];
-        worksheet.addRow(downtimeHeader);
-
-        if (unitDowntime.length > 0) {
-          unitDowntime.forEach((item) => {
-            worksheet.addRow([
-              item.date,
-              item.start_time,
-              item.end_time,
-              item.duration_minutes,
-              item.equipment_tag || item.equipment, // Handle varying field names
-              item.description || item.problem, // Handle varying field names
-              item.action,
-              item.remarks,
-            ]);
-          });
-        } else {
-          worksheet.addRow(['No Data Available']);
-        }
-        worksheet.addRow([]);
-
-        // --- Section 3: Silo Data ---
-        worksheet.addRow(['SECTION 3: SILO DATA']);
+        // --- Section 2: Silo Data ---
+        worksheet.addRow(['SECTION 2: SILO DATA']);
         const siloHeader = [
           'Date',
           'Silo Name',
@@ -215,14 +198,6 @@ const DatabasePage: React.FC = () => {
         ];
         worksheet.addRow(siloHeader);
 
-        // Generate all dates for the selected month to ensure continuous timeline, for EACH silo
-        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-        const allDates = Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1;
-          return `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        });
-
-        // Loop: All Dates -> All Silos for this Unit
         if (allDates.length > 0 && unitSiloDefs.length > 0) {
           allDates.forEach((dateStr) => {
             unitSiloDefs.forEach((siloDef) => {
@@ -262,6 +237,38 @@ const DatabasePage: React.FC = () => {
           worksheet.addRow(['No Silos Configured for this Unit']);
         } else {
           worksheet.addRow(['No Dates Generated']);
+        }
+        worksheet.addRow([]);
+
+        // --- Section 3: Downtime Data ---
+        worksheet.addRow(['SECTION 3: DOWNTIME DATA']);
+        const downtimeHeader = [
+          'Date',
+          'Start Time',
+          'End Time',
+          'Duration (Min)',
+          'Equipment',
+          'Problem',
+          'Action',
+          'Remarks',
+        ];
+        worksheet.addRow(downtimeHeader);
+
+        if (unitDowntime.length > 0) {
+          unitDowntime.forEach((item) => {
+            worksheet.addRow([
+              item.date,
+              item.start_time,
+              item.end_time,
+              item.duration_minutes,
+              item.equipment_tag || item.equipment, // Handle varying field names
+              item.description || item.problem, // Handle varying field names
+              item.action,
+              item.remarks,
+            ]);
+          });
+        } else {
+          worksheet.addRow(['No Data Available']);
         }
         worksheet.addRow([]);
 
