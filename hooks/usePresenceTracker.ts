@@ -84,10 +84,19 @@ export const usePresenceTracker = () => {
     }
   }, []);
 
+  const lastHeartbeatTimeRef = useRef<number>(0);
+
   // Heartbeat function: Recreate my record to ensure timestamp updates
   // Since user_online fields (user_id) are static, update() might not change 'updated' timestamp
   // So we delete and create a new record.
   const sendHeartbeat = useCallback(async () => {
+    const now = Date.now();
+    // Debounce: prevent running too frequently (e.g. strict mode double mount)
+    if (now - lastHeartbeatTimeRef.current < 2000) {
+      return;
+    }
+    lastHeartbeatTimeRef.current = now;
+
     const userId = pb.authStore.model?.id;
     if (!userId) return;
 
@@ -100,7 +109,17 @@ export const usePresenceTracker = () => {
       // Delete ALL existing records for this user (cleanup old duplicates if any)
       if (records.items.length > 0) {
         await Promise.all(
-          records.items.map((item) => pb.collection('user_online').delete(item.id))
+          records.items.map((item) =>
+            pb
+              .collection('user_online')
+              .delete(item.id)
+              .catch((err) => {
+                // Ignore 404 errors (record already deleted), rethrow others
+                if (err.status !== 404) {
+                  // logger.warn('Failed to delete presence record:', err);
+                }
+              })
+          )
         );
       }
 

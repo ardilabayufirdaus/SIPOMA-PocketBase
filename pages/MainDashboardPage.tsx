@@ -10,6 +10,7 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 import { pb } from '../utils/pocketbase-simple';
 
 import { usePresenceTracker } from '../hooks/usePresenceTracker';
+import { useSystemHealth } from '../hooks/useSystemHealth';
 
 interface MainDashboardPageProps {
   language: 'en' | 'id';
@@ -91,66 +92,122 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
               {/* Internal Glow */}
               <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
 
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  System Status
-                </h4>
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                    Live
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex-1 flex flex-col justify-center gap-4 relative z-10">
-                {/* Fake CPU Meter */}
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs font-medium text-slate-500">CPU Load</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      12%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-blue-400 to-indigo-500 h-1.5 rounded-full"
-                      style={{ width: '12%' }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Fake Memory Meter */}
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs font-medium text-slate-500">Memory</span>
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      45%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-purple-400 to-pink-500 h-1.5 rounded-full"
-                      style={{ width: '45%' }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                  <p className="text-[10px] text-slate-400 text-center">
-                    Database Sync Latency:{' '}
-                    <span className="font-mono text-slate-600 dark:text-slate-300">24ms</span>
-                  </p>
-                </div>
-              </div>
+              <SystemStatusWidget t={t} />
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+};
+
+// Extracted for cleaner component code
+const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
+  /* Helper to format uptime */
+  const formatUptime = (seconds: number) => {
+    if (!seconds) return '0m';
+    const d = Math.floor(seconds / (3600 * 24));
+    const h = Math.floor((seconds % (3600 * 24)) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${d > 0 ? d + 'd ' : ''}${h}h ${m}m`;
+  };
+
+  const { cpuLoad, memoryUsage, uptime, latency, isLive } = useSystemHealth();
+
+  // Determine color based on load
+  const getLoadColor = (load: number) => {
+    if (load < 50) return 'from-emerald-400 to-green-500';
+    if (load < 80) return 'from-yellow-400 to-orange-500';
+    return 'from-red-400 to-pink-500';
+  };
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-4 relative z-10 w-full">
+        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          System Status
+        </h4>
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            {isLive && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            )}
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                isLive ? 'bg-emerald-500' : 'bg-rose-500'
+              }`}
+            ></span>
+          </span>
+          <span
+            className={`text-[10px] font-bold ${
+              isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+            }`}
+          >
+            {isLive ? 'Live' : 'Offline'}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col justify-center gap-4 relative z-10 w-full">
+        {/* CPU Meter */}
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-xs font-medium text-slate-500">CPU Load</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{cpuLoad}%</span>
+          </div>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+            <div
+              className={`h-1.5 rounded-full bg-gradient-to-r ${getLoadColor(cpuLoad)} transition-all duration-1000 ease-out`}
+              style={{ width: `${cpuLoad}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Memory Meter */}
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-xs font-medium text-slate-500">Memory</span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {memoryUsage}%
+            </span>
+          </div>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+            <div
+              className={`h-1.5 rounded-full bg-gradient-to-r ${getLoadColor(memoryUsage)} transition-all duration-1000 ease-out`}
+              style={{ width: `${memoryUsage}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Uptime Display */}
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-xs font-medium text-slate-500">Uptime</span>
+            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+              {formatUptime(uptime)}
+            </span>
+          </div>
+        </div>
+
+        {/* Latency Display */}
+        <div className="mt-0 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+          <p className="text-[10px] text-slate-400 text-center">
+            Database Sync Latency:{' '}
+            <span
+              className={`font-mono ${
+                latency < 100
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : latency < 300
+                    ? 'text-yellow-600 dark:text-yellow-400'
+                    : 'text-rose-600 dark:text-rose-400'
+              }`}
+            >
+              {latency}ms
+            </span>
+          </p>
+        </div>
+      </div>
+    </>
   );
 };
 
