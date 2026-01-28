@@ -105,36 +105,53 @@ export const useDashboardData = () => {
   useEffect(() => {
     const fetchMonthlyProduction = async () => {
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-        .toISOString()
-        .split('T')[0];
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        .toISOString()
-        .split('T')[0]; // last day
+      const year = now.getFullYear();
+      const month = now.getMonth(); // 0-indexed
+      const startOfMonth = new Date(year, month, 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
-      const filter = `date >= "${startOfMonth}" && date <= "${endOfMonth}"`;
-      console.log('Fetching Total Cement Production with filter:', filter);
+      // CACHE IMPLEMENTATION
+      // Key format: total_cement_production_YYYY_M
+      const cacheKey = `total_cement_production_${year}_${month}`;
 
-      try {
-        // Parallel fetch - Adjusted to ONLY fetch CM data as per user request (Total Cement Production = CM only)
-        const [cmData] = await Promise.all([
-          pb.collection('ccr_material_usage').getFullList({ filter }),
-          // pb.collection('rkc_ccr_material_usage').getFullList({ filter }), // Excluded RKC as requested
-        ]);
+      // 1. Try to get from cache first
+      import('../utils/cacheManager').then(({ cacheManager }) => {
+        const cachedTotal = cacheManager.get<number>(cacheKey);
 
-        console.log('CM Data fetched:', cmData);
+        if (cachedTotal !== null) {
+          setTotalCementProduction(cachedTotal);
+          return; // Exit if cache hit
+        }
 
-        const cmTotal = cmData.reduce((sum, record) => sum + (record.total_production || 0), 0);
-        // const rkcTotal = rkcData.reduce((sum, record) => sum + (record.total_production || 0), 0);
+        // 2. If no cache, fetch from API
+        const filter = `date >= "${startOfMonth}" && date <= "${endOfMonth}"`;
 
-        setTotalCementProduction(cmTotal);
-      } catch (err) {
-        console.error('Failed to fetch production data', err);
-      }
+        (async () => {
+          try {
+            // Parallel fetch - Adjusted to ONLY fetch CM data as per user request
+            const [cmData] = await Promise.all([
+              pb.collection('ccr_material_usage').getFullList({
+                filter,
+                requestKey: null, // prevent autocancel
+              }),
+            ]);
+
+            const cmTotal = cmData.reduce((sum, record) => sum + (record.total_production || 0), 0);
+
+            // 3. Set state
+            setTotalCementProduction(cmTotal);
+
+            // 4. Save to cache (60 minutes TTL)
+            cacheManager.set(cacheKey, cmTotal, 60);
+          } catch (err) {
+            console.error('Failed to fetch production data', err);
+          }
+        })();
+      });
     };
 
     fetchMonthlyProduction();
-  }, []); // Run once on mount (or when month changes if we tracked that)
+  }, []); // Run once on mount
 
   const isLoading = cmUnitsLoading || rkcUnitsLoading || cmRisksLoading || rkcRisksLoading; // isFeedLoading optional, maybe don't block whole UI
 

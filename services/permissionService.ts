@@ -38,7 +38,6 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
         rkc_plant_operations: item.rkc_plant_operations || 'NONE',
         project_management: item.project_management || 'NONE',
         database: item.database || 'NONE',
-        inspection: item.inspection || 'NONE',
       };
     } else {
       // Default empty if not found
@@ -48,7 +47,6 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
         rkc_plant_operations: 'NONE',
         project_management: 'NONE',
         database: 'NONE',
-        inspection: 'NONE',
       };
     }
 
@@ -70,7 +68,6 @@ export const fetchUserPermissions = async (userId: string): Promise<PermissionMa
       rkc_plant_operations: 'NONE',
       project_management: 'NONE',
       database: 'NONE',
-      inspection: 'NONE',
     };
   }
 };

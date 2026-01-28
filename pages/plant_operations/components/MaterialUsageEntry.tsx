@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useCcrMaterialUsage } from '../../../hooks/useCcrMaterialUsage';
 import { useCcrFooterData } from '../../../hooks/useCcrFooterData';
 import { useParameterSettings } from '../../../hooks/useParameterSettings';
@@ -48,23 +48,39 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Mapping from material key to counter feeder parameter name
-  const materialToParameterMap: Record<string, string> = {
-    clinker: 'Counter Feeder Clinker (ton)',
-    gypsum: 'Counter Feeder Gypsum (ton)',
-    limestone: 'Counter Feeder Limestone (ton)',
-    trass: 'Counter Feeder Trass (ton)',
-    fly_ash: 'Counter Feeder Flyash (ton)',
-    fine_trass: 'Counter Feeder Fine Trass (ton)',
-    ckd: 'Counter Feeder CKD (ton)',
-  };
+  const materialToParameterMap = useMemo<Record<string, string>>(
+    () => ({
+      clinker: 'Counter Feeder Clinker (ton)',
+      gypsum: 'Counter Feeder Gypsum (ton)',
+      limestone: 'Counter Feeder Limestone (ton)',
+      trass: 'Counter Feeder Trass (ton)',
+      fly_ash: 'Counter Feeder Flyash (ton)',
+      fine_trass: 'Counter Feeder Fine Trass (ton)',
+      ckd: 'Counter Feeder CKD (ton)',
+    }),
+    []
+  );
 
   // Mapping from shift key to counter field name
-  const shiftToCounterFieldMap: Record<string, string> = {
-    shift3_cont: 'shift3_cont_counter',
-    shift1: 'shift1_counter',
-    shift2: 'shift2_counter',
-    shift3: 'shift3_counter',
-  };
+  const shiftToCounterFieldMap = useMemo<Record<string, string>>(
+    () => ({
+      shift3_cont: 'shift3_cont_counter',
+      shift1: 'shift1_counter',
+      shift2: 'shift2_counter',
+      shift3: 'shift3_counter',
+    }),
+    []
+  );
+
+  const shifts = useMemo(
+    () => [
+      { key: 'shift3_cont', label: t.shift_3_cont || 'Shift 3 (Cont.)' },
+      { key: 'shift1', label: t.shift_1 || 'Shift 1' },
+      { key: 'shift2', label: t.shift_2 || 'Shift 2' },
+      { key: 'shift3', label: t.shift_3 || 'Shift 3' },
+    ],
+    [t]
+  );
 
   const calculateMaterialUsageFromCounters = useCallback(
     (footerData: Record<string, unknown>[], shift: string): MaterialUsageData => {
@@ -110,12 +126,10 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     ]
   );
 
-  const shifts = [
-    { key: 'shift3_cont', label: t.shift_3_cont || 'Shift 3 (Cont.)' },
-    { key: 'shift1', label: t.shift_1 || 'Shift 1' },
-    { key: 'shift2', label: t.shift_2 || 'Shift 2' },
-    { key: 'shift3', label: t.shift_3 || 'Shift 3' },
-  ];
+  // Ref to track last saved data to prevent redundant saves
+  const lastSavedData = useRef<string>('');
+  // Ref to prevent re-entry/parallel executions
+  const syncLock = useRef(false);
 
   // Sync function to manually/automatically recalculate data from counters
   const syncWithFooterData = useCallback(async () => {
@@ -124,13 +138,24 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     // Check if we have parameter settings loaded
     if (parameterSettings.length === 0) return;
 
-    setIsSyncing(true);
+    // Prevent re-entrancy
+    if (syncLock.current) {
+      return;
+    }
+
     try {
+      syncLock.current = true;
+      setIsSyncing(true);
+
       // 1. Fetch fresh footer data
       const footerData = await getFooterDataForDate(selectedDate, selectedCategory);
 
       if (!footerData || footerData.length === 0) {
-        setMaterialData({}); // Clear data if no footer data found
+        // Only update if we previously had data
+        if (lastSavedData.current !== '{}') {
+          setMaterialData({});
+          lastSavedData.current = '{}';
+        }
         setIsSyncing(false);
         return;
       }
@@ -142,42 +167,56 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
         dataMap[shift.key] = materialUsage;
       });
 
-      // 3. Update local state
-      setMaterialData(dataMap);
+      // 3. Check for changes before saving
+      const currentDataString = JSON.stringify(dataMap);
 
-      // 4. Force save to database
+      if (currentDataString === lastSavedData.current) {
+        setIsSyncing(false);
+        return;
+      }
+
+      // 4. Update local state and reference
+      setMaterialData(dataMap);
+      lastSavedData.current = currentDataString;
+
+      // 5. Force save to database
       const savePromises = Object.values(dataMap).map((materialData) =>
         saveMaterialUsageSilent(materialData)
       );
       await Promise.all(savePromises);
-
-      console.log('Material Usage synced with Footer Data');
     } catch (err) {
       console.error('Auto-sync error:', err);
     } finally {
       setIsSyncing(false);
+      syncLock.current = false;
     }
   }, [
     selectedDate,
     selectedUnit,
     selectedCategory,
     getFooterDataForDate,
-    calculateMaterialUsageFromCounters,
-    shifts,
     saveMaterialUsageSilent,
     parameterSettings,
+    shifts,
+    calculateMaterialUsageFromCounters,
   ]);
 
   // Real-time subscription to Footer Data
   useEffect(() => {
     let unsubscribe: () => void;
+    let debounceTimer: NodeJS.Timeout;
 
     const subscribe = async () => {
       unsubscribe = await pb.collection('ccr_footer_data').subscribe('*', (e) => {
         // Check if the change is relevant to our current date
         if (e.record.date === selectedDate) {
-          // Debounce logic could be refined, but direct call is okay for now if updates aren't spammy
-          syncWithFooterData();
+          // Debounce the sync to avoid overload
+          if (debounceTimer) clearTimeout(debounceTimer);
+
+          debounceTimer = setTimeout(() => {
+            console.log('Triggering sync after debounce...');
+            syncWithFooterData();
+          }, 2000); // 2 second debounce
         }
       });
     };
@@ -187,6 +226,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     return () => {
       if (unsubscribe) {
         unsubscribe();
+      }
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
       }
     };
   }, [selectedDate, syncWithFooterData]);

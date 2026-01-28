@@ -11,7 +11,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersCount = 1 }) => {
   const [greeting, setGreeting] = useState('');
-  const [systemStatus, setSystemStatus] = useState<'operational' | 'issues'>('operational');
+  // const [systemStatus, setSystemStatus] = useState<'operational' | 'issues'>('operational'); // Simplified: removed redundant state if not used dynamically
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -21,48 +21,36 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 py-1 relative z-20">
       <div>
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
+          className="flex flex-col"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-3xl font-black tracking-tighter text-slate-800 dark:text-white">
               {greeting},{' '}
-              {(user?.name || user?.full_name || user?.username || 'Engineer').split(' ')[0]}
+              <span className="text-indigo-600 dark:text-indigo-400">
+                {(user?.name || user?.full_name || user?.username || 'Engineer').split(' ')[0]}
+              </span>
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700/50">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800/30">
               {user?.role || 'Guest'}
             </span>
           </div>
-          <p className="text-slate-500 dark:text-slate-400">
-            {t.dashboard_welcome_message || 'Here is your daily production overview'}
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+            {t.dashboard_welcome_message || 'SYSTEMS OPERATIONAL • READY FOR PRODUCTION'}
           </p>
         </motion.div>
       </div>
 
       <div className="flex items-center gap-3">
-        {/* System Status Ticker */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="relative flex h-2.5 w-2.5">
-            <span
-              className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${systemStatus === 'operational' ? 'bg-emerald-400' : 'bg-red-400'}`}
-            ></span>
-            <span
-              className={`relative inline-flex rounded-full h-2.5 w-2.5 ${systemStatus === 'operational' ? 'bg-emerald-500' : 'bg-red-500'}`}
-            ></span>
-          </div>
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-            System Operational
-          </span>
-        </div>
-
-        {/* Online Users */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50">
+        {/* Date Display - Frosted */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-white/50 dark:border-slate-700/50 shadow-sm">
           <svg
-            className="w-4 h-4 text-indigo-500"
+            className="w-3.5 h-3.5 text-slate-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -71,9 +59,24 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ user, t, onlineUsersC
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
+          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            {new Date().toLocaleDateString('id-ID', {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            })}
+          </span>
+        </div>
+
+        {/* Online Users - Enhanced Glow */}
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/80 dark:bg-indigo-900/40 rounded-xl border border-indigo-100 dark:border-indigo-800/50 shadow-[0_0_10px_rgba(99,102,241,0.1)]">
+          <div className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_5px_#10b981]"></span>
+          </div>
           <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
             {onlineUsersCount} Online
           </span>

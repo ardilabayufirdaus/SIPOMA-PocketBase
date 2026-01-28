@@ -71,7 +71,6 @@ export const useAuth = () => {
             rkc_plant_operations: 'NONE',
             project_management: 'NONE',
             database: 'NONE',
-            inspection: 'NONE',
           },
         };
 
@@ -140,7 +139,6 @@ export const useAuth = () => {
           rkc_plant_operations: 'NONE',
           project_management: 'NONE',
           database: 'NONE',
-          inspection: 'NONE',
         },
       });
     }
@@ -160,7 +158,6 @@ export const useAuth = () => {
             rkc_plant_operations: 'NONE',
             project_management: 'NONE',
             database: 'NONE',
-            inspection: 'NONE',
           },
         });
       } else {

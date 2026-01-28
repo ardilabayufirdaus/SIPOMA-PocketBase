@@ -4,6 +4,17 @@ import { saveAs } from 'file-saver';
 import { useTranslation } from '../hooks/useTranslation';
 import { pb } from '../utils/pocketbase-simple';
 import { logger } from '../utils/logger';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Database,
+  Download,
+  Calendar,
+  Layers,
+  Server,
+  FileSpreadsheet,
+  Loader2,
+  ChevronDown,
+} from 'lucide-react';
 
 type TabId = 'cm' | 'rkc';
 
@@ -311,189 +322,202 @@ const DatabasePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8 w-full px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6"
+      >
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            {t.database || 'Database'}
+          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 flex items-center gap-3">
+            <Database className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            {t.database || 'Database Management'}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            {t.database_description || 'Manage your database and collections'}
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg max-w-2xl">
+            {t.database_description ||
+              'Centralized hub for managing operational data, generating reports, and accessing system archives.'}
           </p>
+        </div>
+      </motion.div>
+
+      {/* Tabs Navigation */}
+      <div className="flex justify-center">
+        <div className="bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-2xl inline-flex space-x-2 border border-slate-200 dark:border-slate-800">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  relative px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2.5 z-0
+                  ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}
+                `}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabBg"
+                    className="absolute inset-0 bg-indigo-600 rounded-xl -z-10 shadow-lg shadow-indigo-500/30"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                {tab.id === 'cm' ? <Layers className="w-4 h-4" /> : <Server className="w-4 h-4" />}
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-slate-200 dark:border-slate-700">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200
-                ${
-                  activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:hover:border-slate-600'
-                }
-              `}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      <div className="mt-6">
+      {/* Content Area */}
+      <AnimatePresence mode="wait">
         {activeTab === 'cm' && (
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-8 border border-slate-200 dark:border-slate-700">
-            <div className="text-center mb-8">
-              <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4">
-                <svg
-                  className="w-8 h-8 text-slate-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
-                CM Plant Operations Database
-              </h3>
-              <p className="mt-2 text-slate-500 dark:text-slate-400">
-                Select a collection to manage master data or download reports.
-              </p>
-            </div>
+          <motion.div
+            key="cm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="w-full mx-auto"
+          >
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 shadow-2xl shadow-indigo-500/5 relative overflow-hidden group">
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -mr-48 -mt-48 transition-opacity duration-1000 group-hover:opacity-75" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl -ml-32 -mb-32 transition-opacity duration-1000 group-hover:opacity-75" />
 
-            {/* Filter & Download Section */}
-            <div className="max-w-xl mx-auto space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Month
-                  </label>
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                    className="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    {months.map((m) => (
-                      <option key={m.value} value={m.value}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
+              <div className="relative z-10">
+                <div className="flex flex-col items-center text-center mb-12">
+                  <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 rounded-3xl flex items-center justify-center mb-6 shadow-inner ring-1 ring-inset ring-indigo-500/10">
+                    <FileSpreadsheet className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                    CM Plant Operations Report
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto leading-relaxed">
+                    Generate comprehensive Excel reports covering material usage, silo statistics,
+                    downtime logs, and shift information.
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Year
-                  </label>
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(Number(e.target.value))}
-                    className="block w-full rounded-md border-slate-300 dark:border-slate-600 dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    {years.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
 
-              <div className="pt-2">
-                <button
-                  onClick={handleDownloadExcel}
-                  disabled={isDownloading}
-                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isDownloading ? 'opacity-70 cursor-not-allowed' : ''}`}
-                >
-                  {isDownloading ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Downloading...
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="-ml-1 mr-2 h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                        />
-                      </svg>
-                      Download CM Data (Excel)
-                    </>
-                  )}
-                </button>
-                <p className="text-xs text-center text-slate-500 mt-2">
-                  Downloads data for all plant units for the selected month.
-                </p>
+                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700/50 backdrop-blur-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    {/* Month Selection */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 pl-1">
+                        <Calendar className="w-4 h-4 text-indigo-500" />
+                        Select Month
+                      </label>
+                      <div className="relative group/select">
+                        <select
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                          className="w-full pl-5 pr-12 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-700 dark:text-slate-200 appearance-none shadow-sm group-hover/select:border-indigo-400 cursor-pointer"
+                        >
+                          {months.map((m) => (
+                            <option key={m.value} value={m.value}>
+                              {m.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-hover/select:text-indigo-500 transition-colors">
+                          <ChevronDown className="w-5 h-5" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Year Selection */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 pl-1">
+                        <Calendar className="w-4 h-4 text-indigo-500" />
+                        Select Year
+                      </label>
+                      <div className="relative group/select">
+                        <select
+                          value={selectedYear}
+                          onChange={(e) => setSelectedYear(Number(e.target.value))}
+                          className="w-full pl-5 pr-12 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-700 dark:text-slate-200 appearance-none shadow-sm group-hover/select:border-indigo-400 cursor-pointer"
+                        >
+                          {years.map((y) => (
+                            <option key={y} value={y}>
+                              {y}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-hover/select:text-indigo-500 transition-colors">
+                          <ChevronDown className="w-5 h-5" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileHover={!isDownloading ? { scale: 1.02, translateY: -2 } : {}}
+                    whileTap={!isDownloading ? { scale: 0.98 } : {}}
+                    onClick={handleDownloadExcel}
+                    disabled={isDownloading}
+                    className={`
+                      w-full relative overflow-hidden group/btn flex items-center justify-center py-5 px-8 rounded-xl text-white font-bold text-lg
+                      bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500
+                      focus:outline-none focus:ring-4 focus:ring-indigo-500/30
+                      transition-all duration-300 shadow-xl shadow-indigo-500/20
+                      disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none
+                    `}
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
+
+                    {isDownloading ? (
+                      <>
+                        <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6" />
+                        <span>Processing Data...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-3 h-6 w-6 group-hover/btn:scale-110 transition-transform duration-300" />
+                        <span>Download Excel Report</span>
+                      </>
+                    )}
+                  </motion.button>
+
+                  <p className="text-center text-slate-400 dark:text-slate-500 text-sm mt-4">
+                    Securely generates & downloads .xlsx file to your device
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {activeTab === 'rkc' && (
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-8 text-center border border-slate-200 dark:border-slate-700">
-            <div className="mx-auto w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4">
-              <svg
-                className="w-8 h-8 text-slate-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
-                />
-              </svg>
+          <motion.div
+            key="rkc"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+            className="w-full mx-auto"
+          >
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-500 to-orange-600" />
+
+              <div className="w-24 h-24 mx-auto bg-orange-50 dark:bg-orange-900/20 rounded-3xl flex items-center justify-center mb-8 ring-1 ring-orange-500/10">
+                <Server className="w-12 h-12 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
+                RKC Plant Operations Database
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8">
+                Data management and reporting modules for RKC operations are currently being
+                configured.
+              </p>
+              <div className="inline-flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg text-slate-500 dark:text-slate-400 text-sm font-medium">
+                Coming Soon
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">
-              RKC Plant Operations Database
-            </h3>
-            <p className="mt-2 text-slate-500 dark:text-slate-400">
-              Select a collection to manage master data.
-            </p>
-            {/* Logic for RKC download can be added here later */}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };

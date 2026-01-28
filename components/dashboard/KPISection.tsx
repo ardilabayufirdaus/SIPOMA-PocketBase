@@ -10,7 +10,7 @@ interface KPISectionProps {
 
 const KPISection: React.FC<KPISectionProps> = ({ metrics, t }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
       {/* Total Production (Placeholders for now) */}
       <MetricCard
         title={t.dashboard_total_production || 'Total Cement Production'}
