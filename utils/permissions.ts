@@ -185,6 +185,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
+    inspection: 'WRITE',
   },
   Admin: {
     dashboard: 'WRITE',
@@ -192,6 +193,15 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
+    inspection: 'WRITE',
+  },
+  Supervisor: {
+    dashboard: 'WRITE',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
+    project_management: 'WRITE',
+    database: 'READ',
+    inspection: 'WRITE',
   },
   Operator: {
     dashboard: 'READ',
@@ -199,6 +209,15 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'WRITE',
+  },
+  Associate: {
+    dashboard: 'READ',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
+    project_management: 'NONE',
+    database: 'NONE',
+    inspection: 'WRITE',
   },
   Guest: {
     dashboard: 'NONE',
@@ -206,6 +225,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionMatrix> = {
     rkc_plant_operations: 'NONE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   },
 };
 

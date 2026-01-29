@@ -170,11 +170,9 @@ export class PermissionChecker {
   }
 
   /**
-   * Check if user can access inspection module
-   */
-  /**
    * Check if user can access database module
    */
+
   canAccessDatabase(): boolean {
     return this.hasPermission('database', 'READ');
   }

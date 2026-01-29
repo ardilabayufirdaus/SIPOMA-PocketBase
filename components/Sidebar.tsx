@@ -262,6 +262,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const dashboardButtonRef = useRef<HTMLButtonElement>(null);
   const operationsButtonRef = useRef<HTMLButtonElement>(null);
   const rkcOperationsButtonRef = useRef<HTMLButtonElement>(null); // New ref for RKC
+  const inspectionButtonRef = useRef<HTMLButtonElement>(null);
 
   const projectsButtonRef = useRef<HTMLButtonElement>(null);
   const usersButtonRef = useRef<HTMLButtonElement>(null);
@@ -403,6 +404,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => handleDropdownToggle('projects', projectsButtonRef)}
                 hasDropdown={!isExpanded}
                 isExpanded={activeDropdown === 'projects'}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+
+            {permissionChecker.hasPermission('inspection', 'READ') && (
+              <NavigationItem
+                ref={inspectionButtonRef}
+                icon={<ClipboardCheckIcon className={iconClass} />}
+                label={t.inspection || 'Inspection'}
+                isActive={currentPage === 'inspection'}
+                onClick={() => handleNavigate('inspection')}
                 isSidebarExpanded={isExpanded}
               />
             )}

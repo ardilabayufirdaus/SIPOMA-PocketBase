@@ -22,6 +22,7 @@ const DEFAULT_PERMISSIONS: UserPermission = {
   rkc_plant_operations: 'NONE',
   project_management: 'NONE',
   database: 'NONE',
+  inspection: 'NONE',
 };
 
 export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => {
@@ -164,6 +165,8 @@ export const UserForm: React.FC<UserFormProps> = ({ user, isOpen, onClose }) => 
                   <option value="Super Admin">Super Admin</option>
                   <option value="Admin">Admin</option>
                   <option value="Manager">Manager</option>
+                  <option value="Supervisor">Supervisor</option>
+                  <option value="Associate">Associate</option>
                   <option value="Operator">Operator</option>
                   <option value="Outsourcing">Outsourcing</option>
                   <option value="Autonomous">Autonomous</option>

@@ -12,6 +12,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
+    inspection: 'WRITE',
   },
   Admin: {
     dashboard: 'WRITE',
@@ -19,6 +20,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'WRITE',
+    inspection: 'WRITE',
   },
   Manager: {
     dashboard: 'WRITE',
@@ -26,6 +28,23 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'WRITE',
     database: 'READ',
+    inspection: 'WRITE',
+  },
+  Supervisor: {
+    dashboard: 'WRITE',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
+    project_management: 'WRITE',
+    database: 'READ',
+    inspection: 'WRITE',
+  },
+  Associate: {
+    dashboard: 'READ',
+    cm_plant_operations: 'WRITE',
+    rkc_plant_operations: 'WRITE',
+    project_management: 'NONE',
+    database: 'NONE',
+    inspection: 'WRITE',
   },
   Operator: {
     dashboard: 'READ',
@@ -33,6 +52,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'WRITE',
   },
   Outsourcing: {
     dashboard: 'READ',
@@ -40,6 +60,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'READ',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'READ',
   },
   Autonomous: {
     dashboard: 'READ',
@@ -47,6 +68,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'WRITE',
     project_management: 'READ',
     database: 'NONE',
+    inspection: 'WRITE',
   },
   Guest: {
     dashboard: 'NONE',
@@ -54,6 +76,7 @@ export const DEFAULT_TONASA_PERMISSIONS: Record<UserRole, PermissionMatrix> = {
     rkc_plant_operations: 'NONE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   },
 };
 /**

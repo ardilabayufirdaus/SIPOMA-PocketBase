@@ -71,6 +71,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
                   rkc_plant_operations: 'NONE',
                   project_management: 'NONE',
                   database: 'NONE',
+                  inspection: 'NONE',
                 },
               };
               updatedUsers.unshift(newUser); // Add to top
@@ -148,6 +149,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
             rkc_plant_operations: 'NONE',
             project_management: 'NONE',
             database: 'NONE',
+            inspection: 'NONE',
           };
 
           if (includePermissions) {
@@ -163,6 +165,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
                   rkc_plant_operations: p.rkc_plant_operations || 'NONE',
                   project_management: p.project_management || 'NONE',
                   database: p.database || 'NONE',
+                  inspection: p.inspection || 'NONE',
                 };
               }
             } catch (e) {
@@ -244,6 +247,7 @@ export const useUserStore = create<UserManagementState>((set, get) => ({
         rkc_plant_operations: 'NONE',
         project_management: 'NONE',
         database: 'NONE',
+        inspection: 'NONE',
       };
 
       await pb.collection('user_management').create({

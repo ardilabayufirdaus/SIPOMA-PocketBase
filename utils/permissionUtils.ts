@@ -7,6 +7,7 @@ const permissionModuleMap: Record<string, keyof PermissionMatrix> = {
   rkc_plant_operations: 'rkc_plant_operations',
   project_management: 'project_management',
   database: 'database',
+  inspection: 'inspection',
 };
 
 export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatrix => {
@@ -17,6 +18,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
     rkc_plant_operations: 'NONE',
     project_management: 'NONE',
     database: 'NONE',
+    inspection: 'NONE',
   };
 
   // Jika tidak ada izin, kembalikan matrix default
@@ -33,6 +35,7 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
       rkc_plant_operations: p.rkc_plant_operations || 'NONE',
       project_management: p.project_management || 'NONE',
       database: p.database || 'NONE',
+      inspection: p.inspection || 'NONE',
     };
   }
 
@@ -46,14 +49,26 @@ export const buildPermissionMatrix = (userPermissions: unknown): PermissionMatri
         rkc_plant_operations: 'WRITE',
         project_management: 'WRITE',
         database: 'WRITE',
+        inspection: 'WRITE',
       };
     }
-    if (role.includes('operator')) {
+    if (role.includes('supervisor')) {
+      return {
+        dashboard: 'WRITE',
+        cm_plant_operations: 'WRITE',
+        rkc_plant_operations: 'WRITE',
+        project_management: 'WRITE',
+        database: 'READ',
+        inspection: 'WRITE',
+      };
+    }
+    if (role.includes('operator') || role.includes('associate')) {
       return {
         ...matrix,
         dashboard: 'READ',
         cm_plant_operations: 'WRITE',
         rkc_plant_operations: 'WRITE',
+        inspection: 'WRITE',
       };
     }
   }

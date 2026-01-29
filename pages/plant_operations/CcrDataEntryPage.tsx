@@ -2446,10 +2446,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       if (filteredParameterSettings.length > 0) {
         const worksheetParam = workbook.addWorksheet('Parameter Data');
 
-        // Create headers with user tracking columns
+        // Create headers
         const paramHeaders = filteredParameterSettings.map((p) => p.parameter);
-        const userHeaders = filteredParameterSettings.map((p) => `${p.parameter}_User`);
-        const headers = ['Date', 'Hour', 'Shift', 'Unit', ...paramHeaders, ...userHeaders];
+        const headers = ['Date', 'Hour', 'Shift', 'Unit', ...paramHeaders];
         worksheetParam.addRow(headers);
 
         // Create rows for each hour (1-24)
@@ -2461,7 +2460,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           else shift = t.shift_3;
           const rowData = [selectedDate, hour, shift, selectedUnit];
 
-          // Add parameter values and user tracking for this hour
+          // Add parameter values for this hour
           filteredParameterSettings.forEach((param) => {
             const paramData = parameterDataMap.get(param.id);
 
@@ -2490,61 +2489,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               }
             }
 
-            // Get value and user for current hour
+            // Get value for current hour
             const hourValue = hourlyValues[hour.toString()];
             let paramValue = '';
-            // let userName = '';
 
-            if (
-              typeof hourValue === 'object' &&
-              hourValue !== null &&
-              'value' in hourValue &&
-              'user_name' in hourValue
-            ) {
+            if (typeof hourValue === 'object' && hourValue !== null && 'value' in hourValue) {
               paramValue = String(hourValue.value);
-              // userName = hourValue.user_name;
             } else if (typeof hourValue === 'string' || typeof hourValue === 'number') {
               paramValue = String(hourValue);
             }
 
             rowData.push(paramValue);
-          });
-
-          // Add user tracking data
-          filteredParameterSettings.forEach((param) => {
-            const paramData = parameterDataMap.get(param.id);
-            const hourlyValues: Record<
-              string,
-              string | number | { value: string | number; user_name: string }
-            > = {};
-
-            // Build hourly_values from flat data
-            for (let h = 1; h <= 24; h++) {
-              const hourKey = `hour${h}` as keyof CcrParameterDataFlat;
-              const userKey = `hour${h}_user` as keyof CcrParameterDataFlat;
-              const value = paramData?.[hourKey];
-              const userName = paramData?.[userKey] as string | undefined;
-
-              if (value !== null && value !== undefined) {
-                if (userName) {
-                  hourlyValues[h.toString()] = {
-                    value: value as string | number,
-                    user_name: userName,
-                  };
-                } else {
-                  hourlyValues[h.toString()] = value as string | number;
-                }
-              }
-            }
-
-            const hourValue = hourlyValues[hour.toString()];
-            let userName = '';
-
-            if (typeof hourValue === 'object' && hourValue !== null && 'user_name' in hourValue) {
-              userName = hourValue.user_name;
-            }
-
-            rowData.push(userName);
           });
 
           worksheetParam.addRow(rowData);
@@ -2833,10 +2788,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       // Parameter Data Template
       const worksheetParam = workbook.addWorksheet('Parameter Data');
 
-      // Create headers with user tracking columns
+      // Create headers
       const paramHeaders = filteredParameterSettings.map((p) => p.parameter);
-      const userHeaders = filteredParameterSettings.map((p) => `${p.parameter}_User`);
-      const headers = ['Date', 'Hour', 'Shift', 'Unit', ...paramHeaders, ...userHeaders];
+      const headers = ['Date', 'Hour', 'Shift', 'Unit', ...paramHeaders];
       worksheetParam.addRow(headers);
 
       // Add rows for each hour (1-24) with shift information
@@ -2854,11 +2808,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           rowData.push(''); // Empty value for parameter
         });
 
-        // Add empty cells for user tracking
-        filteredParameterSettings.forEach(() => {
-          rowData.push(''); // Empty user name
-        });
-
         worksheetParam.addRow(rowData);
       }
 
@@ -2868,7 +2817,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       worksheetParam.addRow(['- Date format: YYYY-MM-DD']);
       worksheetParam.addRow(['- Hour: 1-24']);
       worksheetParam.addRow(['- Unit: Must match selected unit']);
-      worksheetParam.addRow(['- User columns are optional (leave empty to use current user)']);
 
       // Footer Data Template
       const worksheetFooter = workbook.addWorksheet('Footer Data');

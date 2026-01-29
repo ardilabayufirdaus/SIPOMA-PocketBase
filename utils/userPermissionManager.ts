@@ -26,6 +26,7 @@ export const initializeUserPermissions = async (userId: string, role: UserRole):
     rkc_plant_operations: defaultPermissions.rkc_plant_operations,
     project_management: defaultPermissions.project_management,
     database: defaultPermissions.database,
+    inspection: defaultPermissions.inspection,
   };
 
   if (existing.items.length > 0) {
@@ -58,6 +59,7 @@ export const getUserPermissions = async (userId: string): Promise<PermissionMatr
       rkc_plant_operations: item.rkc_plant_operations || 'NONE',
       project_management: item.project_management || 'NONE',
       database: item.database || 'NONE',
+      inspection: item.inspection || 'NONE',
     };
   }
 
@@ -84,6 +86,7 @@ export const saveUserPermissions = async (
     rkc_plant_operations: permissions.rkc_plant_operations,
     project_management: permissions.project_management,
     database: permissions.database,
+    inspection: permissions.inspection,
   };
 
   if (existing.items.length > 0) {
@@ -130,6 +133,7 @@ export const resetUserPermissionsToDefault = async (
     rkc_plant_operations: defaultPermissions.rkc_plant_operations,
     project_management: defaultPermissions.project_management,
     database: defaultPermissions.database,
+    inspection: defaultPermissions.inspection,
   };
 
   if (existing.items.length > 0) {
@@ -211,7 +215,7 @@ export const getPermissionDescription = (role: UserRole): string => {
     case 'Operator':
       return 'Operational access to plant operations and basic features';
     case 'Autonomous':
-      return 'Autonomous operational access with inspection and project management capabilities';
+      return 'Autonomous operational access and project management capabilities';
     case 'Guest':
       return 'Limited read-only access to basic features';
     default:

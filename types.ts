@@ -2,6 +2,8 @@ export type UserRole =
   | 'Super Admin'
   | 'Admin'
   | 'Manager'
+  | 'Supervisor'
+  | 'Associate'
   | 'Operator'
   | 'Outsourcing'
   | 'Autonomous'
@@ -15,6 +17,7 @@ export interface UserPermission {
   rkc_plant_operations: PermissionLevel;
   project_management: PermissionLevel;
   database: PermissionLevel;
+  inspection: PermissionLevel;
 }
 
 // Alias for compatibility if needed, or replace usages
@@ -287,7 +290,8 @@ export type Page =
   | 'settings'
   | 'database'
   | 'rkc_operations'
-  | 'whatsapp-reports';
+  | 'whatsapp-reports'
+  | 'inspection';
 
 export type Language = 'en' | 'id';
 export type Theme = 'light';

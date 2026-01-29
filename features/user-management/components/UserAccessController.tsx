@@ -26,6 +26,11 @@ const MODULES: { key: keyof UserPermission; label: string; description: string }
     description: 'Manage projects and tasks.',
   },
   { key: 'database', label: 'Database', description: 'Access system database records.' },
+  {
+    key: 'inspection',
+    label: 'Inspection',
+    description: 'Manage and track equipment inspections.',
+  },
 ];
 
 const PermissionOption: React.FC<{

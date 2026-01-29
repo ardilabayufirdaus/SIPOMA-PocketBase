@@ -15,6 +15,7 @@ export interface CreateUserDTO {
     rkc_plant_operations: string;
     project_management: string;
     database: string;
+    inspection: string;
   };
 }
 
@@ -32,6 +33,7 @@ export interface UpdateUserDTO {
     rkc_plant_operations: string;
     project_management: string;
     database: string;
+    inspection: string;
   };
 }
 

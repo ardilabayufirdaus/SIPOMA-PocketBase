@@ -143,6 +143,7 @@ export const useRealtimeUsers = (options: UseRealtimeUsersOptions = {}) => {
                 rkc_plant_operations: p.rkc_plant_operations || 'NONE',
                 project_management: p.project_management || 'NONE',
                 database: p.database || 'NONE',
+                inspection: p.inspection || 'NONE',
               };
             } else {
               // Use default permissions if no custom permissions found

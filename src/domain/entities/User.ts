@@ -17,6 +17,7 @@ export interface UserPermission {
   rkc_plant_operations: PermissionLevel;
   project_management: PermissionLevel;
   database: PermissionLevel;
+  inspection: PermissionLevel;
 }
 
 export interface User {

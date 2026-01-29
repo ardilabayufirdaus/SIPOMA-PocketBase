@@ -85,6 +85,7 @@ export class PocketBaseUserRepository implements IUserRepository {
       rkc_plant_operations: data.permissions.rkc_plant_operations,
       project_management: data.permissions.project_management,
       database: data.permissions.database,
+      inspection: data.permissions.inspection,
     });
 
     return this.getUserById(userRecord.id);
@@ -120,6 +121,7 @@ export class PocketBaseUserRepository implements IUserRepository {
         rkc_plant_operations: data.permissions.rkc_plant_operations,
         project_management: data.permissions.project_management,
         database: data.permissions.database,
+        inspection: data.permissions.inspection,
       };
 
       if (permRecord) {
@@ -163,6 +165,7 @@ export class PocketBaseUserRepository implements IUserRepository {
           rkc_plant_operations: item.rkc_plant_operations || 'NONE',
           project_management: item.project_management || 'NONE',
           database: item.database || 'NONE',
+          inspection: item.inspection || 'NONE',
         };
       }
     } catch (e) {
@@ -176,6 +179,7 @@ export class PocketBaseUserRepository implements IUserRepository {
       rkc_plant_operations: 'NONE',
       project_management: 'NONE',
       database: 'NONE',
+      inspection: 'NONE',
     };
   }
 

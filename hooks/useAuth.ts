@@ -31,6 +31,7 @@ export const useAuth = () => {
             rkc_plant_operations: (item.rkc_plant_operations as PermissionLevel) || 'NONE',
             project_management: (item.project_management as PermissionLevel) || 'NONE',
             database: (item.database as PermissionLevel) || 'NONE',
+            inspection: (item.inspection as PermissionLevel) || 'NONE',
           };
           return permissionMatrix;
         }
@@ -41,6 +42,7 @@ export const useAuth = () => {
           rkc_plant_operations: 'NONE',
           project_management: 'NONE',
           database: 'NONE',
+          inspection: 'NONE',
         } as PermissionMatrix;
       } catch (error: any) {
         if (

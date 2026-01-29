@@ -43,6 +43,7 @@ export const Collections = {
   USER_PERMISSIONS: 'user_permissions',
   USER_SESSIONS: 'user_sessions',
   WORK_INSTRUCTIONS: 'work_instructions',
+  INSPECTIONS: 'inspections',
 };
 
 /**
@@ -176,6 +177,21 @@ export interface CCRSiloData {
 export interface CementType {
   id?: string;
   cement_type: string;
+}
+
+/**
+ * Interface untuk Inspections
+ */
+export interface Inspection {
+  id?: string;
+  date: string;
+  title: string;
+  equipment: string;
+  status: 'pending' | 'completed' | 'critical';
+  findings?: string;
+  inspector_id?: string;
+  created?: string;
+  updated?: string;
 }
 
 /**
