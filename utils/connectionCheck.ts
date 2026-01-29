@@ -186,7 +186,8 @@ export const safeApiCall = async <T>(
       else if (
         error.message?.includes('autocancelled') ||
         error.message?.includes('network') ||
-        error.message?.includes('connection')
+        error.message?.includes('connection') ||
+        error.status === 0 // PocketBase status 0 means client-side cancellation or network failure
       ) {
         // Jika masih ada retry, tunggu sebentar dan coba lagi
         if (attempts <= retries) {

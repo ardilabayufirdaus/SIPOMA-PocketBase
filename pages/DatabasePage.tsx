@@ -15,6 +15,7 @@ import {
   Loader2,
   ChevronDown,
 } from 'lucide-react';
+import { syncOperationalDataForMonth } from '../utils/operationalSyncUtils';
 
 type TabId = 'cm' | 'rkc';
 
@@ -26,6 +27,7 @@ const DatabasePage: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [isDownloading, setIsDownloading] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string>('');
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'cm', label: t.plantOperations || 'CM Plant Operations' },
@@ -52,6 +54,13 @@ const DatabasePage: React.FC = () => {
   const handleDownloadExcel = async () => {
     setIsDownloading(true);
     try {
+      // 0. Sinkronisasi & Kalkulasi Otomatis sebelum download
+      setSyncStatus('Sinkronisasi & Update Kalkulasi...');
+      await syncOperationalDataForMonth(selectedMonth, selectedYear, (current, total) => {
+        setSyncStatus(`Sinkronisasi Data... ${Math.round((current / total) * 100)}%`);
+      });
+      setSyncStatus('Menyiapkan Laporan...');
+
       const workbook = new ExcelJS.Workbook();
 
       // Calculate start and end date for the selected period
@@ -318,6 +327,7 @@ const DatabasePage: React.FC = () => {
       alert('Failed to download Excel. Please check console for details.');
     } finally {
       setIsDownloading(false);
+      setSyncStatus('');
     }
   };
 
@@ -470,7 +480,7 @@ const DatabasePage: React.FC = () => {
                     {isDownloading ? (
                       <>
                         <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6" />
-                        <span>Processing Data...</span>
+                        <span>{syncStatus || 'Processing Data...'}</span>
                       </>
                     ) : (
                       <>
