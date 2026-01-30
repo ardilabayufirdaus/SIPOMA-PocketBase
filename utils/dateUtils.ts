@@ -160,6 +160,8 @@ export function formatDate(date: Date, format: string): string {
       return `${year}-${month}-${day}`;
     case 'dd/MM/yyyy':
       return `${day}/${month}/${year}`;
+    case 'MM/dd/yyyy':
+      return `${month}/${day}/${year}`;
     case 'yyyy-MM-dd HH:mm:ss':
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     case 'dd/MM/yyyy HH:mm:ss':

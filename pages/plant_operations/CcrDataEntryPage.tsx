@@ -41,7 +41,11 @@ import CcrNavigationHelp from '../../components/ccr/CcrNavigationHelp';
 import PlusIcon from '../../components/icons/PlusIcon';
 import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
-import { formatNumber, formatNumberWithPrecision } from '../../utils/formatters';
+import {
+  formatNumber,
+  formatNumberWithPrecision,
+  formatNumberIndonesian,
+} from '../../utils/formatters';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useCcrFooterData } from '../../hooks/useCcrFooterData';
@@ -55,7 +59,7 @@ import { usePlantOperationsAccess } from '../../hooks/usePlantOperationsAccess';
 // Import PocketBase client and hooks
 import { pb } from '../../utils/pocketbase-simple';
 import { useUserParameterOrder } from '../../hooks/useUserParameterOrder';
-import { formatDateToISO8601, formatToWITA } from '../../utils/dateUtils';
+import { formatDateToISO8601, formatToWITA, formatDate } from '../../utils/dateUtils';
 
 // Import Enhanced Components
 import {
@@ -77,7 +81,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [showNavigationHelp, setShowNavigationHelp] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [isDownloadingTemplate, setIsDownloadingTemplate] = useState(false);
+
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDeletingAllNames, setIsDeletingAllNames] = useState(false);
@@ -2386,6 +2390,39 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       const workbook = new ExcelJS.Workbook();
 
+      // Helper function for header styling
+      const applyHeaderStyle = (row: ExcelJS.Row) => {
+        // Force commit of the row data so cells exist
+        // Iterate over cells explicitly to ensure styles are applied
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.font = { bold: true, size: 12 };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFE0E0E0' },
+          };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+        });
+      };
+
+      // Helper function for data cell borders
+      const applyDataBorderStyle = (row: ExcelJS.Row) => {
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+        });
+      };
+
       // Get downtime data directly from database
       console.log('Fetching downtime data...');
       const downtimeData = await pb
@@ -2449,7 +2486,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         // Create headers
         const paramHeaders = filteredParameterSettings.map((p) => p.parameter);
         const headers = ['Date', 'Hour', 'Shift', 'Unit', ...paramHeaders];
-        worksheetParam.addRow(headers);
+        const headerRow = worksheetParam.addRow(headers);
+        applyHeaderStyle(headerRow);
 
         // Create rows for each hour (1-24)
         for (let hour = 1; hour <= 24; hour++) {
@@ -2494,16 +2532,31 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             let paramValue = '';
 
             if (typeof hourValue === 'object' && hourValue !== null && 'value' in hourValue) {
-              paramValue = String(hourValue.value);
+              const rawVal = hourValue.value;
+              const numVal = typeof rawVal === 'string' ? parseInputValue(rawVal) : rawVal;
+              paramValue =
+                param.data_type === ParameterDataType.NUMBER && numVal !== null
+                  ? formatNumberWithPrecision(numVal, getPrecisionForUnit(param.unit))
+                  : String(rawVal);
             } else if (typeof hourValue === 'string' || typeof hourValue === 'number') {
-              paramValue = String(hourValue);
+              const numVal = typeof hourValue === 'string' ? parseInputValue(hourValue) : hourValue;
+              paramValue =
+                param.data_type === ParameterDataType.NUMBER && numVal !== null
+                  ? formatNumberWithPrecision(numVal, getPrecisionForUnit(param.unit))
+                  : String(hourValue);
             }
 
             rowData.push(paramValue);
           });
 
-          worksheetParam.addRow(rowData);
+          const dataRow = worksheetParam.addRow(rowData);
+          applyDataBorderStyle(dataRow);
         }
+
+        // Adjust column widths
+        worksheetParam.columns.forEach((column) => {
+          if (column) column.width = 15;
+        });
       }
 
       // Get all parameter settings for footer data lookup
@@ -2534,7 +2587,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           'Shift2_Total',
           'Shift3_Total',
         ];
-        worksheetFooter.addRow(footerHeaders);
+        const headerRow = worksheetFooter.addRow(footerHeaders);
+        applyHeaderStyle(headerRow);
 
         // Transform footer data to export format and add rows
         const footerExportData = footerData.map((row) => {
@@ -2546,18 +2600,35 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             row.date,
             parameterName,
             row.plant_unit || '',
-            row.total || '',
-            row.average || '',
-            row.minimum || '',
-            row.maximum || '',
-            row.shift1_total || '',
-            row.shift2_total || '',
-            row.shift3_total || '',
+            row.total !== undefined ? formatNumber(row.total) : '',
+            row.average !== undefined ? formatNumber(row.average) : '',
+            row.minimum !== undefined ? formatNumber(row.minimum) : '',
+            row.maximum !== undefined ? formatNumber(row.maximum) : '',
+            row.shift1_total !== undefined ? formatNumber(row.shift1_total) : '',
+            row.shift2_total !== undefined ? formatNumber(row.shift2_total) : '',
+            row.shift3_total !== undefined ? formatNumber(row.shift3_total) : '',
           ];
         });
 
         // Add data rows
-        footerExportData.forEach((row) => worksheetFooter.addRow(row));
+        footerExportData.forEach((row) => {
+          const dataRow = worksheetFooter.addRow(row);
+          applyDataBorderStyle(dataRow);
+        });
+
+        // Adjust column widths
+        const columnCount = worksheetFooter.columnCount;
+        for (let i = 1; i <= columnCount; i++) {
+          const column = worksheetFooter.getColumn(i);
+          let maxLength = 0;
+          column.eachCell({ includeEmpty: true }, (cell) => {
+            const columnLength = cell.value ? cell.value.toString().length : 10;
+            if (columnLength > maxLength) {
+              maxLength = columnLength;
+            }
+          });
+          column.width = maxLength < 10 ? 10 : maxLength + 2;
+        }
       }
 
       // Export Downtime Data
@@ -2567,7 +2638,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         // Add headers
         const downtimeHeaders = ['Date', 'Start_Time', 'End_Time', 'Unit', 'PIC', 'Problem'];
-        worksheetDowntime.addRow(downtimeHeaders);
+        const headerRow = worksheetDowntime.addRow(downtimeHeaders);
+        applyHeaderStyle(headerRow);
 
         // Transform downtime data to export format and add rows
         const downtimeExportData = downtimeData.map((row) => [
@@ -2580,7 +2652,24 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         ]);
 
         // Add data rows
-        downtimeExportData.forEach((row) => worksheetDowntime.addRow(row));
+        downtimeExportData.forEach((row) => {
+          const dataRow = worksheetDowntime.addRow(row);
+          applyDataBorderStyle(dataRow);
+        });
+
+        // Adjust column widths
+        const columnCount = worksheetDowntime.columnCount;
+        for (let i = 1; i <= columnCount; i++) {
+          const column = worksheetDowntime.getColumn(i);
+          let maxLength = 0;
+          column.eachCell({ includeEmpty: true }, (cell) => {
+            const columnLength = cell.value ? cell.value.toString().length : 10;
+            if (columnLength > maxLength) {
+              maxLength = columnLength;
+            }
+          });
+          column.width = maxLength < 10 ? 10 : maxLength + 2;
+        }
       }
 
       // Export Silo Data
@@ -2621,7 +2710,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             'Shift3_EmptySpace',
             'Shift3_Content',
           ];
-          worksheetSilo.addRow(siloHeaders);
+          const headerRow = worksheetSilo.addRow(siloHeaders);
+          applyHeaderStyle(headerRow);
 
           // Transform silo data to export format and add rows
           const siloExportData = filteredSiloData.map((row) => {
@@ -2634,17 +2724,34 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             return [
               row.date,
               siloName,
-              row.shift1_empty_space ?? '',
-              row.shift1_content ?? '',
-              row.shift2_empty_space ?? '',
-              row.shift2_content ?? '',
-              row.shift3_empty_space ?? '',
-              row.shift3_content ?? '',
+              row.shift1_empty_space !== undefined ? formatNumber(row.shift1_empty_space) : '',
+              row.shift1_content !== undefined ? formatNumber(row.shift1_content) : '',
+              row.shift2_empty_space !== undefined ? formatNumber(row.shift2_empty_space) : '',
+              row.shift2_content !== undefined ? formatNumber(row.shift2_content) : '',
+              row.shift3_empty_space !== undefined ? formatNumber(row.shift3_empty_space) : '',
+              row.shift3_content !== undefined ? formatNumber(row.shift3_content) : '',
             ];
           });
 
           // Add data rows
-          siloExportData.forEach((row) => worksheetSilo.addRow(row));
+          siloExportData.forEach((row) => {
+            const dataRow = worksheetSilo.addRow(row);
+            applyDataBorderStyle(dataRow);
+          });
+
+          // Adjust column widths
+          const columnCount = worksheetSilo.columnCount;
+          for (let i = 1; i <= columnCount; i++) {
+            const column = worksheetSilo.getColumn(i);
+            let maxLength = 0;
+            column.eachCell({ includeEmpty: true }, (cell) => {
+              const columnLength = cell.value ? cell.value.toString().length : 10;
+              if (columnLength > maxLength) {
+                maxLength = columnLength;
+              }
+            });
+            column.width = maxLength < 10 ? 10 : maxLength + 2;
+          }
         }
       }
 
@@ -2678,25 +2785,29 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           'CKD',
           'Total Production',
         ];
-        worksheetMaterial.addRow(materialHeaders);
+        const headerRow = worksheetMaterial.addRow(materialHeaders);
+        applyHeaderStyle(headerRow);
 
         // Transform data
         const materialExportData = materialUsageData.map((row) => [
           row.date,
           row.plant_unit,
           row.shift,
-          row.clinker || 0,
-          row.gypsum || 0,
-          row.limestone || 0,
-          row.trass || 0,
-          row.fly_ash || 0,
-          row.fine_trass || 0,
-          row.ckd || 0,
-          row.total_production || 0,
+          row.clinker !== undefined ? formatNumber(row.clinker) : '0',
+          row.gypsum !== undefined ? formatNumber(row.gypsum) : '0',
+          row.limestone !== undefined ? formatNumber(row.limestone) : '0',
+          row.trass !== undefined ? formatNumber(row.trass) : '0',
+          row.fly_ash !== undefined ? formatNumber(row.fly_ash) : '0',
+          row.fine_trass !== undefined ? formatNumber(row.fine_trass) : '0',
+          row.ckd !== undefined ? formatNumber(row.ckd) : '0',
+          row.total_production !== undefined ? formatNumber(row.total_production) : '0',
         ]);
 
         // Add rows
-        materialExportData.forEach((row) => worksheetMaterial.addRow(row));
+        materialExportData.forEach((row) => {
+          const dataRow = worksheetMaterial.addRow(row);
+          applyDataBorderStyle(dataRow);
+        });
 
         // Calculate Totals
         const totalRow = {
@@ -2727,27 +2838,47 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           'TOTAL',
           '',
           '',
-          totalRow.clinker,
-          totalRow.gypsum,
-          totalRow.limestone,
-          totalRow.trass,
-          totalRow.fly_ash,
-          totalRow.fine_trass,
-          totalRow.ckd,
-          totalRow.total_production,
+          formatNumber(totalRow.clinker),
+          formatNumber(totalRow.gypsum),
+          formatNumber(totalRow.limestone),
+          formatNumber(totalRow.trass),
+          formatNumber(totalRow.fly_ash),
+          formatNumber(totalRow.fine_trass),
+          formatNumber(totalRow.ckd),
+          formatNumber(totalRow.total_production),
         ]);
 
         // Style the footer row
         footerRow.font = { bold: true };
         footerRow.getCell(1).alignment = { horizontal: 'left' };
+
+        applyDataBorderStyle(footerRow);
+
+        // Adjust column widths
+        const columnCount = worksheetMaterial.columnCount;
+        for (let i = 1; i <= columnCount; i++) {
+          const column = worksheetMaterial.getColumn(i);
+          let maxLength = 0;
+          column.eachCell({ includeEmpty: true }, (cell) => {
+            const columnLength = cell.value ? cell.value.toString().length : 10;
+            if (columnLength > maxLength) {
+              maxLength = columnLength;
+            }
+          });
+          column.width = maxLength < 10 ? 10 : maxLength + 2;
+        }
       }
 
       // Export Information Data
       const worksheetInfo = workbook.addWorksheet('Information');
-      worksheetInfo.addRow(['Date', 'Unit', 'Information']);
-      worksheetInfo.addRow([selectedDate, selectedUnit, informationText || '']);
+      const infoHeaders = ['Date', 'Unit', 'Information'];
+      const infoHeaderRow = worksheetInfo.addRow(infoHeaders);
+      applyHeaderStyle(infoHeaderRow);
 
-      // Generate filename with category, unit, and date
+      const infoDataRow = worksheetInfo.addRow([selectedDate, selectedUnit, informationText || '']);
+      applyDataBorderStyle(infoDataRow);
+
+      worksheetInfo.columns = [{ width: 15 }, { width: 15 }, { width: 50 }]; // Generate filename with category, unit, and date
       const safeSelectedDate = selectedDate || new Date().toISOString().split('T')[0];
       const filename = `CCR_Data_${selectedCategory}_${selectedUnit}_${safeSelectedDate}.xlsx`;
 
@@ -2769,137 +2900,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       alert(`An error occurerror while exporting data: ${errorMessage}. Please try again.`);
     } finally {
       setIsExporting(false);
-    }
-  };
-
-  // Download Excel Template functionality
-  const handleDownloadTemplate = async () => {
-    if (!selectedCategory || !selectedUnit || filteredParameterSettings.length === 0) {
-      alert(
-        'Please select a plant category and unit with available parameters before downloading template.'
-      );
-      return;
-    }
-
-    setIsDownloadingTemplate(true);
-    try {
-      const workbook = new ExcelJS.Workbook();
-
-      // Parameter Data Template
-      const worksheetParam = workbook.addWorksheet('Parameter Data');
-
-      // Create headers
-      const paramHeaders = filteredParameterSettings.map((p) => p.parameter);
-      const headers = ['Date', 'Hour', 'Shift', 'Unit', ...paramHeaders];
-      worksheetParam.addRow(headers);
-
-      // Add rows for each hour (1-24) with shift information
-      for (let hour = 1; hour <= 24; hour++) {
-        let shift = '';
-        if (hour >= 1 && hour <= 7) shift = 'Shift 3 (Shift 3 Cont)';
-        else if (hour >= 8 && hour <= 15) shift = 'Shift 1';
-        else if (hour >= 16 && hour <= 22) shift = 'Shift 2';
-        else shift = 'Shift 3';
-
-        const rowData = [new Date().toISOString().split('T')[0], hour, shift, selectedUnit];
-
-        // Add empty cells for parameters
-        filteredParameterSettings.forEach(() => {
-          rowData.push(''); // Empty value for parameter
-        });
-
-        worksheetParam.addRow(rowData);
-      }
-
-      // Add note about date format
-      worksheetParam.addRow([]);
-      worksheetParam.addRow(['Note:']);
-      worksheetParam.addRow(['- Date format: YYYY-MM-DD']);
-      worksheetParam.addRow(['- Hour: 1-24']);
-      worksheetParam.addRow(['- Unit: Must match selected unit']);
-
-      // Footer Data Template
-      const worksheetFooter = workbook.addWorksheet('Footer Data');
-      worksheetFooter.addRow([
-        'Date',
-        'Unit',
-        'Target_Production',
-        'Next_Shift_PIC',
-        'Handover_Notes',
-      ]);
-      worksheetFooter.addRow([new Date().toISOString().split('T')[0], selectedUnit, '', '', '']);
-
-      // Downtime Data Template
-      const worksheetDowntime = workbook.addWorksheet('Downtime Data');
-      worksheetDowntime.addRow([
-        'Date',
-        'Start_Time',
-        'End_Time',
-        'Unit',
-        'PIC',
-        'Problem',
-        'Action',
-        'Corrective_Action',
-        'Status',
-      ]);
-      worksheetDowntime.addRow([
-        new Date().toISOString().split('T')[0],
-        '08:00',
-        '09:00',
-        selectedUnit,
-        '',
-        'Example problem',
-        '',
-        '',
-        'Open',
-      ]);
-
-      // Silo Data Template
-      const worksheetSilo = workbook.addWorksheet('Silo Data');
-      worksheetSilo.addRow([
-        'Date',
-        'Silo_ID',
-        'Shift1_EmptySpace',
-        'Shift1_Content',
-        'Shift2_EmptySpace',
-        'Shift2_Content',
-        'Shift3_EmptySpace',
-        'Shift3_Content',
-      ]);
-      worksheetSilo.addRow([
-        new Date().toISOString().split('T')[0],
-        'SILO-001',
-        '',
-        '',
-        '',
-        '',
-        '',
-        '',
-      ]);
-
-      // Generate filename
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `CCR_Template_${selectedUnit}_${timestamp}.xlsx`;
-
-      // Write file
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      showToast('Template downloaded successfully');
-    } catch {
-      // Error logging removed for production
-      showToast('Error creating Excel template');
-      alert('An error occurerror while creating the template. Please try again.');
-    } finally {
-      setIsDownloadingTemplate(false);
     }
   };
 
@@ -3801,13 +3801,35 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </svg>
                   {t.select_date}
                 </label>
-                <input
-                  type="date"
-                  id="ccr-date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
-                />
+                <div className="relative group/date">
+                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium flex items-center justify-between group-hover/date:border-slate-300 transition-all duration-200">
+                    <span>
+                      {selectedDate
+                        ? formatDate(new Date(selectedDate), 'dd/MM/yyyy')
+                        : '--/--/----'}
+                    </span>
+                    <svg
+                      className="w-4 h-4 text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    type="date"
+                    id="ccr-date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer zi-10"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -3998,24 +4020,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </Button>
                       </>
                     )}
-
-                    {/* Template */}
-                    <Button
-                      size="sm"
-                      onClick={handleDownloadTemplate}
-                      disabled={
-                        isDownloadingTemplate ||
-                        !selectedCategory ||
-                        !selectedUnit ||
-                        filteredParameterSettings.length === 0
-                      }
-                      variant="ghost"
-                      className="h-8 px-3 rounded-none border-r border-neutral-100 text-neutral-600 hover:text-blue-700 hover:bg-blue-50"
-                      title="Download Template"
-                    >
-                      <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                      <span className="text-xs font-medium">Template</span>
-                    </Button>
 
                     {/* Export */}
                     <Button
@@ -4256,10 +4260,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         >
                           <div className="text-center space-y-1">
                             <div className="text-[6px] leading-tight text-primary-600 font-medium">
-                              {param.min_value !== undefined ? `Min: ${param.min_value}` : '-'}
+                              {param.min_value !== undefined
+                                ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
+                                : '-'}
                             </div>
                             <div className="text-[6px] leading-tight text-primary-600 font-medium">
-                              {param.max_value !== undefined ? `Max: ${param.max_value}` : '-'}
+                              {param.max_value !== undefined
+                                ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
+                                : '-'}
                             </div>
                           </div>
                         </th>
@@ -4386,7 +4394,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
                             // Simply convert the value if it exists
                             if (hourValue !== undefined && hourValue !== null) {
-                              value = String(hourValue);
+                              // Use formatInputValue for numbers to show Indonesian locale (dots for thousands, commas for decimal)
+                              value =
+                                param.data_type === ParameterDataType.NUMBER
+                                  ? formatInputValue(hourValue, getPrecisionForUnit(param.unit))
+                                  : String(hourValue);
                             }
 
                             const isProductTypeParameter = param.parameter
@@ -4403,9 +4415,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               value &&
                               !isProductTypeParameter
                             ) {
-                              // Parse value - handle both comma and dot as decimal separators
-                              const numValue = parseFloat(value.replace(/,/g, '.'));
-                              if (!isNaN(numValue)) {
+                              // Parse value - handle Indonesian local format correctly
+                              const numValue = parseInputValue(value);
+                              if (numValue !== null) {
                                 const isBelowMin =
                                   param.min_value !== undefined && numValue < param.min_value;
                                 const isAboveMax =

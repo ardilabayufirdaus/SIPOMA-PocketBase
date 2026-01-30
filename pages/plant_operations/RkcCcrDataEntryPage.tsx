@@ -42,7 +42,11 @@ import CcrNavigationHelp from '../../components/ccr/CcrNavigationHelp';
 import PlusIcon from '../../components/icons/PlusIcon';
 import EditIcon from '../../components/icons/EditIcon';
 import TrashIcon from '../../components/icons/TrashIcon';
-import { formatNumber, formatNumberWithPrecision } from '../../utils/formatters';
+import {
+  formatNumber,
+  formatNumberWithPrecision,
+  formatNumberIndonesian,
+} from '../../utils/formatters';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useFooterCalculations } from '../../hooks/useFooterCalculations';
 import { useRkcCcrFooterData as useCcrFooterData } from '../../hooks/useRkcCcrFooterData';
@@ -55,7 +59,7 @@ import { useCurrentUser } from '../../hooks/useCurrentUser';
 // Import PocketBase client and hooks
 import { pb } from '../../utils/pocketbase-simple';
 import { useRkcUserParameterOrder as useUserParameterOrder } from '../../hooks/useRkcUserParameterOrder';
-import { formatDateToISO8601, formatToWITA } from '../../utils/dateUtils';
+import { formatDateToISO8601, formatToWITA, formatDate } from '../../utils/dateUtils';
 
 // Import Enhanced Components
 import {
@@ -1496,17 +1500,17 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
   const parseInputValue = (formattedValue: string): number | null => {
     if (!formattedValue || formattedValue.trim() === '') return null;
-    // Handle both comma and dot as decimal separators
-    // If contains comma, treat comma as decimal separator (Indonesian format)
-    // If no comma, treat dot as decimal separator (standard format)
-    let normalized: string;
-    if (formattedValue.includes(',')) {
-      // Indonesian format: remove dots (thousands separator) and replace comma with dot
-      normalized = formattedValue.replace(/\./g, '').replace(',', '.');
-    } else {
-      // Standard format: dot is already decimal separator
-      normalized = formattedValue;
-    }
+
+    // Strict Indonesian Format Enforcement:
+    // 1. (.) is ALWAYS a thousand separator -> Remove it
+    // 2. (,) is the ONLY decimal separator -> Replace with dot for parsing
+
+    // Remove all thousand separators (.)
+    let normalized = formattedValue.replace(/\./g, '');
+
+    // Replace decimal separator (,) with dot (.) for JS parsing
+    normalized = normalized.replace(',', '.');
+
     const parsed = parseFloat(normalized);
     return isNaN(parsed) ? null : parsed;
   };
@@ -2493,9 +2497,18 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             let paramValue = '';
 
             if (typeof hourValue === 'object' && hourValue !== null && 'value' in hourValue) {
-              paramValue = String(hourValue.value);
+              const rawVal = hourValue.value;
+              const numVal = typeof rawVal === 'string' ? parseInputValue(rawVal) : rawVal;
+              paramValue =
+                param.data_type === ParameterDataType.NUMBER && numVal !== null
+                  ? formatNumberWithPrecision(numVal, getPrecisionForUnit(param.unit))
+                  : String(rawVal);
             } else if (typeof hourValue === 'string' || typeof hourValue === 'number') {
-              paramValue = String(hourValue);
+              const numVal = typeof hourValue === 'string' ? parseInputValue(hourValue) : hourValue;
+              paramValue =
+                param.data_type === ParameterDataType.NUMBER && numVal !== null
+                  ? formatNumberWithPrecision(numVal, getPrecisionForUnit(param.unit))
+                  : String(hourValue);
             }
 
             rowData.push(paramValue);
@@ -2545,13 +2558,13 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             row.date,
             parameterName,
             row.plant_unit || '',
-            row.total || '',
-            row.average || '',
-            row.minimum || '',
-            row.maximum || '',
-            row.shift1_total || '',
-            row.shift2_total || '',
-            row.shift3_total || '',
+            row.total !== undefined ? formatNumber(row.total) : '',
+            row.average !== undefined ? formatNumber(row.average) : '',
+            row.minimum !== undefined ? formatNumber(row.minimum) : '',
+            row.maximum !== undefined ? formatNumber(row.maximum) : '',
+            row.shift1_total !== undefined ? formatNumber(row.shift1_total) : '',
+            row.shift2_total !== undefined ? formatNumber(row.shift2_total) : '',
+            row.shift3_total !== undefined ? formatNumber(row.shift3_total) : '',
           ];
         });
 
@@ -2633,12 +2646,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
             return [
               row.date,
               siloName,
-              row.shift1_empty_space ?? '',
-              row.shift1_content ?? '',
-              row.shift2_empty_space ?? '',
-              row.shift2_content ?? '',
-              row.shift3_empty_space ?? '',
-              row.shift3_content ?? '',
+              row.shift1_empty_space !== undefined ? formatNumber(row.shift1_empty_space) : '',
+              row.shift1_content !== undefined ? formatNumber(row.shift1_content) : '',
+              row.shift2_empty_space !== undefined ? formatNumber(row.shift2_empty_space) : '',
+              row.shift2_content !== undefined ? formatNumber(row.shift2_content) : '',
+              row.shift3_empty_space !== undefined ? formatNumber(row.shift3_empty_space) : '',
+              row.shift3_content !== undefined ? formatNumber(row.shift3_content) : '',
             ];
           });
 
@@ -2684,14 +2697,14 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
           row.date,
           row.plant_unit,
           row.shift,
-          row.clinker || 0,
-          row.gypsum || 0,
-          row.limestone || 0,
-          row.trass || 0,
-          row.fly_ash || 0,
-          row.fine_trass || 0,
-          row.ckd || 0,
-          row.total_production || 0,
+          row.clinker !== undefined ? formatNumber(row.clinker) : '0',
+          row.gypsum !== undefined ? formatNumber(row.gypsum) : '0',
+          row.limestone !== undefined ? formatNumber(row.limestone) : '0',
+          row.trass !== undefined ? formatNumber(row.trass) : '0',
+          row.fly_ash !== undefined ? formatNumber(row.fly_ash) : '0',
+          row.fine_trass !== undefined ? formatNumber(row.fine_trass) : '0',
+          row.ckd !== undefined ? formatNumber(row.ckd) : '0',
+          row.total_production !== undefined ? formatNumber(row.total_production) : '0',
         ]);
 
         // Add rows
@@ -2726,14 +2739,14 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
           'TOTAL',
           '',
           '',
-          totalRow.clinker,
-          totalRow.gypsum,
-          totalRow.limestone,
-          totalRow.trass,
-          totalRow.fly_ash,
-          totalRow.fine_trass,
-          totalRow.ckd,
-          totalRow.total_production,
+          formatNumber(totalRow.clinker),
+          formatNumber(totalRow.gypsum),
+          formatNumber(totalRow.limestone),
+          formatNumber(totalRow.trass),
+          formatNumber(totalRow.fly_ash),
+          formatNumber(totalRow.fine_trass),
+          formatNumber(totalRow.ckd),
+          formatNumber(totalRow.total_production),
         ]);
 
         // Style the footer row
@@ -3800,13 +3813,35 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                   </svg>
                   {t.select_date}
                 </label>
-                <input
-                  type="date"
-                  id="ccr-date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
-                />
+                <div className="relative group/rkc-date">
+                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium flex items-center justify-between group-hover/rkc-date:border-slate-300 transition-all duration-200">
+                    <span>
+                      {selectedDate
+                        ? formatDate(new Date(selectedDate), 'dd/MM/yyyy')
+                        : '--/--/----'}
+                    </span>
+                    <svg
+                      className="w-4 h-4 text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <input
+                    type="date"
+                    id="ccr-date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer zi-10"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -4255,10 +4290,14 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                         >
                           <div className="text-center space-y-1">
                             <div className="text-[6px] leading-tight text-primary-600 font-medium">
-                              {param.min_value !== undefined ? `Min: ${param.min_value}` : '-'}
+                              {param.min_value !== undefined
+                                ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
+                                : '-'}
                             </div>
                             <div className="text-[6px] leading-tight text-primary-600 font-medium">
-                              {param.max_value !== undefined ? `Max: ${param.max_value}` : '-'}
+                              {param.max_value !== undefined
+                                ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
+                                : '-'}
                             </div>
                           </div>
                         </th>
@@ -4385,7 +4424,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
                             // Simply convert the value if it exists
                             if (hourValue !== undefined && hourValue !== null) {
-                              value = String(hourValue);
+                              // Use formatInputValue for numbers to show Indonesian locale (dots for thousands, commas for decimal)
+                              value =
+                                param.data_type === ParameterDataType.NUMBER
+                                  ? formatInputValue(hourValue, getPrecisionForUnit(param.unit))
+                                  : String(hourValue);
                             }
 
                             const isProductTypeParameter = param.parameter
@@ -4402,9 +4445,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                               value &&
                               !isProductTypeParameter
                             ) {
-                              // Parse value - handle both comma and dot as decimal separators
-                              const numValue = parseFloat(value.replace(/,/g, '.'));
-                              if (!isNaN(numValue)) {
+                              // Parse value - handle Indonesian local format correctly
+                              const numValue = parseInputValue(value);
+                              if (numValue !== null) {
                                 const isBelowMin =
                                   param.min_value !== undefined && numValue < param.min_value;
                                 const isAboveMax =
