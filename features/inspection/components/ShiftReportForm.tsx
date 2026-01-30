@@ -5,6 +5,7 @@ import ClipboardCheckIcon from '../../../components/icons/ClipboardCheckIcon';
 import { useAuth } from '../../../hooks/useAuth';
 import { useUserStore } from '../../../stores/userStore';
 import { useEffect } from 'react';
+import { InspectionArea } from '../../../services/pocketbase';
 
 interface CheckPoint {
   id: string;
@@ -27,6 +28,7 @@ interface DailyReport {
   id: string;
   date: string;
   unit: string;
+  areaId?: string;
   status: 'pending' | 'completed' | 'critical';
   data: Record<string, { s1: string; s2: string; s3: string; note: string }>;
   personnel: {
@@ -43,6 +45,8 @@ interface DailyReport {
 
 interface ShiftReportFormProps {
   unit: string;
+  unitId?: string;
+  areas: InspectionArea[];
   groups: Group[];
   existingReports: DailyReport[];
   onClose: () => void;
@@ -51,6 +55,8 @@ interface ShiftReportFormProps {
 
 const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
   unit,
+  unitId,
+  areas,
   groups,
   existingReports,
   onClose,
@@ -61,6 +67,7 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
 
   const [reportData, setReportData] = useState<Record<string, any>>({});
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedAreaId, setSelectedAreaId] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [personnel, setPersonnel] = useState({
     s1: { tender: '', karu: '' },
@@ -72,6 +79,7 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
     fetchUsers(1, 100);
   }, []);
 
+  const filteredAreas = areas.filter((a) => a.unit === unitId);
   const supervisors = users.filter((u) => u.role === 'Supervisor');
 
   const handleInputChange = (cpId: string, shift: 's1' | 's2' | 's3' | 'note', value: string) => {
@@ -113,6 +121,11 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
         return;
       }
 
+      if (!selectedAreaId) {
+        setError('Silakan pilih Area kerja terlebih dahulu.');
+        return;
+      }
+
       // Check for conflicts
       const conflictingShifts = submittedShifts.filter((s) => existingReport.personnel[s].tender);
 
@@ -129,6 +142,7 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
       id: Math.random().toString(36).substr(2, 9),
       date: new Date(reportDate).toISOString(),
       unit,
+      areaId: selectedAreaId,
       status: Object.values(reportData).some((d) => d.note) ? 'critical' : 'completed',
       data: reportData,
       personnel: personnel,
@@ -151,6 +165,26 @@ const ShiftReportForm: React.FC<ShiftReportFormProps> = ({
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
               Unit: {unit}
             </p>
+          </div>
+
+          <div className="ml-6 flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 px-5 py-2 rounded-2xl border border-indigo-200/50 dark:border-indigo-500/20 shadow-sm backdrop-blur-sm">
+            <label className="text-[10px] font-black text-indigo-500 uppercase tracking-wider">
+              Work Area
+            </label>
+            <div className="h-4 w-px bg-slate-200 dark:bg-white/10 mx-1"></div>
+            <select
+              required
+              value={selectedAreaId}
+              onChange={(e) => setSelectedAreaId(e.target.value)}
+              className="bg-transparent border-none text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-0 outline-none cursor-pointer p-0 pr-8"
+            >
+              <option value="">Select Area...</option>
+              {filteredAreas.map((a) => (
+                <option key={a.id} value={a.id} className="bg-white dark:bg-slate-900">
+                  {a.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="ml-6 hidden sm:flex items-center gap-3 bg-white/50 dark:bg-slate-800/50 px-4 py-2 rounded-2xl border border-slate-200/50 dark:border-white/10 shadow-sm backdrop-blur-sm">
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">

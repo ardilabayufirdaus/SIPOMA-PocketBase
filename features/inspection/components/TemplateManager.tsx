@@ -5,29 +5,39 @@ import TrashIcon from '../../../components/icons/TrashIcon'; // Make sure this e
 import PencilIcon from '../../../components/icons/PencilIcon'; // Make sure this exists or use a local one
 import ChevronDownIcon from '../../../components/icons/ChevronDownIcon'; // Use a local icon
 
-interface CheckPoint {
-  id: string;
-  name: string;
-}
-
-interface Equipment {
-  id: string;
-  name: string;
-  checkPoints: CheckPoint[];
-}
-
-interface Group {
-  id: string;
-  name: string;
-  equipments: Equipment[];
-}
+import {
+  InspectionGroup,
+  InspectionEquipment,
+  InspectionCheckpoint,
+} from '../../../services/pocketbase';
 
 interface TemplateManagerProps {
-  groups: Group[];
-  onUpdate: (updatedGroups: Group[]) => void;
+  groups: (InspectionGroup & {
+    equipments: (InspectionEquipment & { checkPoints: InspectionCheckpoint[] })[];
+  })[];
+  onAddGroup: () => void;
+  onUpdateGroup: (id: string, name: string) => void;
+  onDeleteGroup: (id: string) => void;
+  onAddEquipment: (groupId: string) => void;
+  onUpdateEquipment: (id: string, name: string) => void;
+  onDeleteEquipment: (id: string) => void;
+  onAddCheckpoint: (equipmentId: string) => void;
+  onUpdateCheckpoint: (id: string, name: string) => void;
+  onDeleteCheckpoint: (id: string) => void;
 }
 
-const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) => {
+const TemplateManager: React.FC<TemplateManagerProps> = ({
+  groups,
+  onAddGroup,
+  onUpdateGroup,
+  onDeleteGroup,
+  onAddEquipment,
+  onUpdateEquipment,
+  onDeleteEquipment,
+  onAddCheckpoint,
+  onUpdateCheckpoint,
+  onDeleteCheckpoint,
+}) => {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [expandedEquipments, setExpandedEquipments] = useState<Record<string, boolean>>({});
 
@@ -37,100 +47,6 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
 
   const toggleEquipment = (id: string) => {
     setExpandedEquipments((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  // Logic for Add/Edit/Delete
-  const addGroup = () => {
-    const newGroup: Group = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: 'New Group Category',
-      equipments: [],
-    };
-    onUpdate([...groups, newGroup]);
-  };
-
-  const deleteGroup = (id: string) => {
-    onUpdate(groups.filter((g) => g.id !== id));
-  };
-
-  const addEquipment = (groupId: string) => {
-    const updated = groups.map((g) => {
-      if (g.id === groupId) {
-        return {
-          ...g,
-          equipments: [
-            ...g.equipments,
-            {
-              id: Math.random().toString(36).substr(2, 9),
-              name: 'New Equipment',
-              checkPoints: [],
-            },
-          ],
-        };
-      }
-      return g;
-    });
-    onUpdate(updated);
-  };
-
-  const addCheckPoint = (groupId: string, equipmentId: string) => {
-    const updated = groups.map((g) => {
-      if (g.id === groupId) {
-        return {
-          ...g,
-          equipments: g.equipments.map((e) => {
-            if (e.id === equipmentId) {
-              return {
-                ...e,
-                checkPoints: [
-                  ...e.checkPoints,
-                  {
-                    id: Math.random().toString(36).substr(2, 9),
-                    name: 'New Check Point',
-                  },
-                ],
-              };
-            }
-            return e;
-          }),
-        };
-      }
-      return g;
-    });
-    onUpdate(updated);
-  };
-
-  const updateItemName = (
-    type: 'group' | 'equipment' | 'checkpoint',
-    id: string,
-    newName: string,
-    parentIds?: { groupId?: string; equipmentId?: string }
-  ) => {
-    const updated = groups.map((g) => {
-      if (type === 'group' && g.id === id) return { ...g, name: newName };
-
-      if (parentIds?.groupId === g.id || type === 'equipment' || type === 'checkpoint') {
-        return {
-          ...g,
-          equipments: g.equipments.map((e) => {
-            if (type === 'equipment' && e.id === id) return { ...e, name: newName };
-
-            if (parentIds?.equipmentId === e.id || type === 'checkpoint') {
-              return {
-                ...e,
-                checkPoints: e.checkPoints.map((cp) => {
-                  if (type === 'checkpoint' && cp.id === id) return { ...cp, name: newName };
-                  return cp;
-                }),
-              };
-            }
-            return e;
-          }),
-        };
-      }
-      return g;
-    });
-    onUpdate(updated);
   };
 
   return (
@@ -145,7 +61,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
           </p>
         </div>
         <button
-          onClick={addGroup}
+          onClick={onAddGroup}
           className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-2xl text-sm font-black shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all active:scale-95"
         >
           <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
@@ -172,7 +88,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
                 <div className="flex-1 relative group/input">
                   <input
                     value={group.name}
-                    onChange={(e) => updateItemName('group', group.id, e.target.value)}
+                    onChange={(e) => onUpdateGroup(group.id, e.target.value)}
                     className="bg-transparent font-black text-indigo-600 dark:text-indigo-400 outline-none w-full italic text-lg tracking-tight focus:ring-2 ring-indigo-500/10 rounded-xl px-2 transition-all"
                   />
                   <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-500/0 group-focus-within/input:bg-indigo-500/50 transition-all rounded-full"></div>
@@ -180,14 +96,14 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => addEquipment(group.id)}
+                  onClick={() => onAddEquipment(group.id)}
                   className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-xl transition-all"
                   title="Add Equipment"
                 >
                   <PlusIcon className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => deleteGroup(group.id)}
+                  onClick={() => onDeleteGroup(group.id)}
                   className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
                 >
                   <TrashIcon className="w-5 h-5" />
@@ -221,16 +137,24 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
                             </button>
                             <input
                               value={eq.name}
-                              onChange={(e) => updateItemName('equipment', eq.id, e.target.value)}
+                              onChange={(e) => onUpdateEquipment(eq.id, e.target.value)}
                               className="bg-transparent font-extrabold text-slate-900 dark:text-white outline-none w-full focus:ring-2 ring-slate-500/10 rounded-lg px-2 text-sm transition-all"
                             />
                           </div>
-                          <button
-                            onClick={() => addCheckPoint(group.id, eq.id)}
-                            className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-all"
-                          >
-                            <PlusIcon className="w-5 h-5" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => onAddCheckpoint(eq.id)}
+                              className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-all"
+                            >
+                              <PlusIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => onDeleteEquipment(eq.id)}
+                              className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
 
                         <AnimatePresence>
@@ -249,14 +173,15 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
                                   <div className="w-2 h-2 rounded-full bg-indigo-500/30 group-hover/row:bg-indigo-500 group-hover/row:scale-125 transition-all shadow-sm" />
                                   <input
                                     value={cp.name}
-                                    onChange={(e) =>
-                                      updateItemName('checkpoint', cp.id, e.target.value, {
-                                        groupId: group.id,
-                                        equipmentId: eq.id,
-                                      })
-                                    }
+                                    onChange={(e) => onUpdateCheckpoint(cp.id, e.target.value)}
                                     className="bg-transparent text-sm font-bold text-slate-600 dark:text-slate-400 outline-none flex-1 focus:ring-2 ring-indigo-500/10 rounded-lg px-2 group-hover/row:text-slate-900 dark:group-hover/row:text-white transition-all"
                                   />
+                                  <button
+                                    onClick={() => onDeleteCheckpoint(cp.id)}
+                                    className="opacity-0 group-hover/row:opacity-100 p-1.5 text-slate-400 hover:text-rose-500 transition-all"
+                                  >
+                                    <TrashIcon className="w-4 h-4" />
+                                  </button>
                                 </div>
                               ))}
                               {eq.checkPoints.length === 0 && (

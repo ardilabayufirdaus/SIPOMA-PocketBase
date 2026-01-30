@@ -44,6 +44,13 @@ export const Collections = {
   USER_SESSIONS: 'user_sessions',
   WORK_INSTRUCTIONS: 'work_instructions',
   INSPECTIONS: 'inspections',
+  INSPECTION_UNITS: 'inspection_units',
+  INSPECTION_GROUPS: 'inspection_groups',
+  INSPECTION_EQUIPMENTS: 'inspection_equipments',
+  INSPECTION_CHECKPOINTS: 'inspection_checkpoints',
+  INSPECTION_REPORTS: 'inspection_reports',
+  INSPECTION_REPORT_DETAILS: 'inspection_report_details',
+  INSPECTION_AREAS: 'inspection_areas',
 };
 
 /**
@@ -180,7 +187,7 @@ export interface CementType {
 }
 
 /**
- * Interface untuk Inspections
+ * Interface untuk Inspections (Legacy/Simple)
  */
 export interface Inspection {
   id?: string;
@@ -192,6 +199,78 @@ export interface Inspection {
   inspector_id?: string;
   created?: string;
   updated?: string;
+}
+
+/**
+ * Interface untuk Inspection Master Data
+ */
+export interface InspectionUnit {
+  id: string;
+  name: string;
+  parent_id?: string; // Relation ke inspection_units (optional)
+  sort_order?: number;
+}
+
+export interface InspectionGroup {
+  id: string;
+  unit?: string; // Relation to InspectionUnit (Legacy)
+  areaId?: string; // Relation to InspectionArea (New)
+  name: string;
+  sort_order: number;
+}
+
+export interface InspectionEquipment {
+  id: string;
+  group: string; // Relation to InspectionGroup
+  name: string;
+  sort_order: number;
+}
+
+export interface InspectionCheckpoint {
+  id: string;
+  equipment: string; // Relation to InspectionEquipment
+  name: string;
+  sort_order: number;
+}
+
+export interface InspectionArea {
+  id: string;
+  unit: string; // Relation to InspectionUnit
+  name: string;
+  sort_order?: number;
+}
+
+/**
+ * Interface untuk Inspection Transactions (Daily Report)
+ */
+export interface InspectionReport {
+  id: string;
+  date: string;
+  unit: string; // Relation to InspectionUnit
+  area?: string; // Relation to InspectionArea
+  status: 'pending' | 'completed' | 'critical';
+  s1_tender?: string;
+  s1_karu?: string;
+  s1_approved: boolean;
+  s2_tender?: string;
+  s2_karu?: string;
+  s2_approved: boolean;
+  s3_tender?: string;
+  s3_karu?: string;
+  s3_approved: boolean;
+  data: any; // JSON data for checkpoints
+  created?: string;
+  updated?: string;
+}
+
+export interface InspectionReportDetail {
+  id: string;
+  report: string; // Relation to InspectionReport
+  checkpoint: string; // Relation to InspectionCheckpoint
+  s1_value?: string;
+  s2_value?: string;
+  s3_value?: string;
+  note?: string;
 }
 
 /**

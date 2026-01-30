@@ -10,6 +10,12 @@ import TemplateManager from '../features/inspection/components/TemplateManager';
 import ShiftReportForm from '../features/inspection/components/ShiftReportForm';
 import CheckBadgeIcon from '../components/icons/CheckBadgeIcon';
 import { useAuth } from '../hooks/useAuth';
+import { useInspectionData } from '../hooks/useInspectionData';
+import UnitManager from '../features/inspection/components/UnitManager';
+import CogIcon from '../components/icons/CogIcon';
+import ChevronDownIcon from '../components/icons/ChevronDownIcon';
+import { useEffect } from 'react';
+import { InspectionReport } from '../services/pocketbase';
 
 // Local Interface for UI development
 // --- Dynamic Template Interfaces ---
@@ -34,6 +40,7 @@ interface DailyReport {
   id: string;
   date: string;
   unit: string;
+  areaId?: string;
   status: 'pending' | 'completed' | 'critical';
   data: Record<string, { s1: string; s2: string; s3: string; note: string }>;
   personnel: {
@@ -77,37 +84,136 @@ const INITIAL_TEMPLATE: Record<string, Group[]> = {
   ],
 };
 
-const SAMPLE_REPORTS: DailyReport[] = [
-  {
-    id: 'rep1',
-    date: new Date().toISOString(),
-    unit: 'Unit of Clinker Production',
-    status: 'completed',
-    data: {
-      cp1: { s1: 'OK', s2: 'OK', s3: 'OK', note: '' },
-      cp2: { s1: 'OK', s2: 'OK', s3: 'OK', note: '' },
-    },
-    personnel: {
-      s1: { tender: 'Ardilaba Yufridaus', karu: 'Supervisor A' },
-      s2: { tender: 'Tender B', karu: 'Supervisor B' },
-      s3: { tender: 'Tender C', karu: 'Supervisor C' },
-    },
-    approvals: { s1: true, s2: false, s3: false },
-  },
-];
-
-const UNITS = [
-  'Unit of Derivative Product & Supporting',
-  'Unit of Cement Production',
-  'Unit of Clinker Production',
-];
+// SAMPLE_REPORTS removed - using DB only
 
 const InspectionPage: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const [activeUnit, setActiveUnit] = useState(UNITS[2]);
+  const {
+    inspections: reportsFromDb,
+    units,
+    areas,
+    groups,
+    equipments,
+    checkpoints,
+    loading: isLoading,
+    refetch: refreshInspections,
+    addUnit,
+    updateUnit,
+    deleteUnit,
+    addArea,
+    updateArea,
+    deleteArea,
+    addGroup,
+    updateGroup,
+    deleteGroup,
+    addEquipment,
+    updateEquipment,
+    deleteEquipment,
+    addCheckpoint,
+    updateCheckpoint,
+    deleteCheckpoint,
+    addInspection,
+    updateInspection,
+    deleteInspection,
+  } = useInspectionData();
+
+  const [activeUnitId, setActiveUnitId] = useState<string>('');
+  const [activeSubUnitId, setActiveSubUnitId] = useState<string>('');
+  const [activeAreaId, setActiveAreaId] = useState<string>('');
   const [viewMode, setViewMode] = useState<'reports' | 'templates'>('reports');
   const [templates, setTemplates] = useState(INITIAL_TEMPLATE);
-  const [reports, setReports] = useState<DailyReport[]>(SAMPLE_REPORTS);
+
+  // Map flat InspectionReport from PB to nested DailyReport for UI
+  const reports = useMemo(() => {
+    return reportsFromDb.map(
+      (row) =>
+        ({
+          id: row.id,
+          date: row.date,
+          unit: row.unit,
+          areaId: row.area,
+          status: row.status,
+          data: row.data || {},
+          personnel: {
+            s1: { tender: row.s1_tender || '', karu: row.s1_karu || '' },
+            s2: { tender: row.s2_tender || '', karu: row.s2_karu || '' },
+            s3: { tender: row.s3_tender || '', karu: row.s3_karu || '' },
+          },
+          approvals: {
+            s1: row.s1_approved,
+            s2: row.s2_approved,
+            s3: row.s3_approved,
+          },
+        }) as DailyReport
+    );
+  }, [reportsFromDb]);
+
+  const isSuperAdmin =
+    (currentUser?.role as string) === 'super_admin' ||
+    (currentUser?.role as string) === 'Super Admin';
+  const [isUnitManagerOpen, setIsUnitManagerOpen] = useState(false);
+
+  // Derive Unit lists from dynamic units data
+  const mainUnits = useMemo(() => units.filter((u) => !u.parent_id), [units]);
+  const subUnitsOfActive = useMemo(
+    () => units.filter((u) => u.parent_id === activeUnitId),
+    [units, activeUnitId]
+  );
+
+  // Set initial unit if not set
+  useEffect(() => {
+    if (mainUnits.length > 0 && !activeUnitId) {
+      setActiveUnitId(mainUnits[0].id);
+    }
+  }, [mainUnits, activeUnitId]);
+
+  const activeUnit = useMemo(
+    () => mainUnits.find((u) => u.id === activeUnitId)?.name || '',
+    [mainUnits, activeUnitId]
+  );
+  const activeSubUnit = useMemo(
+    () => subUnitsOfActive.find((u) => u.id === activeSubUnitId)?.name || null,
+    [subUnitsOfActive, activeSubUnitId]
+  );
+
+  // Effective unit name for data filtering and saving (Unit or Sub-unit)
+  const currentContextName = useMemo(
+    () => activeSubUnit || activeUnit,
+    [activeUnitId, activeSubUnitId, units]
+  );
+
+  // Derive dynamic template for the active context (context-wide or specific area)
+  const currentAreaTemplate = useMemo(() => {
+    // If we have an activeAreaId (e.g. from the selector), use its specific template
+    // Note: Template management happens per-area now
+    const targetAreaId = activeAreaId;
+
+    if (!targetAreaId) {
+      // If no area selected, we skip dynamic template for now or use static fallback
+      return INITIAL_TEMPLATE[currentContextName] || [];
+    }
+
+    const dynamicTemplate = groups
+      .filter((g) => g.areaId === targetAreaId)
+      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+      .map((g) => ({
+        ...g,
+        equipments: equipments
+          .filter((e) => e.group === g.id)
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+          .map((e) => ({
+            ...e,
+            checkPoints: checkpoints
+              .filter((cp) => cp.equipment === e.id)
+              .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)),
+          })),
+      }));
+
+    // Fallback to static if dynamic is empty for this area
+    return dynamicTemplate.length > 0
+      ? dynamicTemplate
+      : INITIAL_TEMPLATE[currentContextName] || [];
+  }, [activeAreaId, currentContextName, groups, equipments, checkpoints]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All Status');
@@ -115,127 +221,116 @@ const InspectionPage: React.FC = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Handlers
-  const handleSaveReport = (newReport: DailyReport) => {
-    const existingIndex = reports.findIndex((rep) => {
-      const repDate = new Date(rep.date).toISOString().split('T')[0];
-      const newDate = new Date(newReport.date).toISOString().split('T')[0];
-      return rep.unit === newReport.unit && repDate === newDate;
+  const handleSaveReport = async (newReportData: DailyReport) => {
+    const reportDate = new Date(newReportData.date).toISOString().split('T')[0];
+
+    // Find if report already exists for this unit and date in DB records
+    const existing = reportsFromDb.find((r) => {
+      const rDate = new Date(r.date).toISOString().split('T')[0];
+      return r.unit === newReportData.unit && rDate === reportDate;
     });
 
-    if (existingIndex !== -1) {
-      // Merge logic: Combine new shift data into existing record
-      const updatedReports = [...reports];
-      const existing = { ...updatedReports[existingIndex] };
+    // Map UI structure (DailyReport) to PB structure (InspectionReport)
+    const pbData = {
+      date: newReportData.date,
+      unit: newReportData.unit,
+      area: newReportData.areaId,
+      status: newReportData.status,
+      s1_tender: newReportData.personnel.s1.tender,
+      s1_karu: newReportData.personnel.s1.karu,
+      s1_approved: newReportData.approvals.s1,
+      s2_tender: newReportData.personnel.s2.tender,
+      s2_karu: newReportData.personnel.s2.karu,
+      s2_approved: newReportData.approvals.s2,
+      s3_tender: newReportData.personnel.s3.tender,
+      s3_karu: newReportData.personnel.s3.karu,
+      s3_approved: newReportData.approvals.s3,
+      data: newReportData.data,
+    };
 
-      // Deep copy to avoid reference issues
-      existing.personnel = { ...existing.personnel };
-      existing.data = { ...existing.data };
-
-      // Ensure approvals object exists and preserve it
-      existing.approvals = existing.approvals
-        ? { ...existing.approvals }
-        : { s1: false, s2: false, s3: false };
-
-      // Identify which shifts are provided in the new submission
-      const newShifts = (['s1', 's2', 's3'] as const).filter((s) => newReport.personnel[s].tender);
-
-      newShifts.forEach((s) => {
-        // Update personnel for the specific shift
-        existing.personnel[s] = newReport.personnel[s];
-
-        // Merge measurement data for the specific shift
-        Object.keys(newReport.data).forEach((cpId) => {
-          if (!existing.data[cpId]) {
-            existing.data[cpId] = { s1: '', s2: '', s3: '', note: '' };
-          } else {
-            existing.data[cpId] = { ...existing.data[cpId] };
-          }
-
-          existing.data[cpId][s] = newReport.data[cpId][s];
-
-          // If this shift adds an abnormality note, preserve/update it
-          if (newReport.data[cpId].note) {
-            existing.data[cpId].note = newReport.data[cpId].note;
-          }
-        });
-      });
-
-      // Recalculate status (if any checkpoint has a note, it's critical)
-      const isCritical = Object.values(existing.data).some((d) => d.note);
-      existing.status = isCritical ? 'critical' : 'completed';
-
-      updatedReports[existingIndex] = existing;
-      setReports(updatedReports);
-    } else {
-      // New record
-      setReports([newReport, ...reports]);
+    try {
+      if (existing) {
+        // MERGE LOGIC (similar to previous, but operating on flat PB object)
+        const updatedPbData = {
+          ...existing,
+          ...pbData,
+          // Special merge for checkpoints data
+          data: {
+            ...(existing.data || {}),
+            ...newReportData.data,
+          },
+        };
+        await updateInspection(existing.id, updatedPbData as any);
+      } else {
+        await addInspection(pbData as any);
+      }
+      refreshInspections();
+    } catch (err) {
+      console.error('Save failed:', err);
     }
+
     setIsFormOpen(false);
   };
 
-  const handleApproveShift = (reportId: string, shift: 's1' | 's2' | 's3') => {
-    setReports((prev) =>
-      prev.map((rep) => {
-        if (rep.id === reportId) {
-          return {
-            ...rep,
-            approvals: {
-              ...rep.approvals,
-              [shift]: true,
-            },
-          };
-        }
-        return rep;
-      })
-    );
+  const handleApproveShift = async (reportId: string, shift: 's1' | 's2' | 's3') => {
+    try {
+      const fieldName = `${shift}_approved`;
+      await updateInspection(reportId, { [fieldName]: true } as any);
+      refreshInspections();
 
-    // Update selected report if it's the one being approved
-    if (selectedReport && selectedReport.id === reportId) {
-      setSelectedReport((prev: any) => ({
-        ...prev,
-        approvals: {
-          ...prev.approvals,
-          [shift]: true,
-        },
-      }));
+      // Update selected report if it's the one being approved
+      if (selectedReport && selectedReport.id === reportId) {
+        setSelectedReport({
+          ...selectedReport,
+          approvals: {
+            ...selectedReport.approvals,
+            [shift]: true,
+          },
+        });
+      }
+    } catch (err) {
+      console.error('Approval failed:', err);
     }
   };
 
   // Filter logic for reports
   const filteredReports = useMemo(() => {
-    return reports.filter((item) => {
-      const matchesUnit = item.unit === activeUnit;
+    return reports.filter((report) => {
+      const reportDateLabel = new Date(report.date).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
       const matchesSearch =
-        Object.values(item.personnel).some(
-          (p) =>
-            p.tender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.karu.toLowerCase().includes(searchTerm.toLowerCase())
-        ) || new Date(item.date).toLocaleDateString().includes(searchTerm);
+        report.unit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reportDateLabel.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesStatus =
-        filterStatus === 'All Status' || item.status === filterStatus.toLowerCase();
-      return matchesUnit && matchesSearch && matchesStatus;
+        filterStatus === 'All Status' || report.status === filterStatus.toLowerCase();
+      const matchesUnit = report.unit === currentContextName;
+      const matchesArea = !activeAreaId || report.areaId === activeAreaId;
+
+      return matchesSearch && matchesStatus && matchesUnit && matchesArea;
     });
-  }, [reports, searchTerm, filterStatus, activeUnit]);
+  }, [reports, searchTerm, filterStatus, currentContextName, activeAreaId]);
 
   const stats = useMemo(() => {
-    const unitData = reports.filter((i) => i.unit === activeUnit);
     return [
       {
         label: 'Daily Reports',
-        value: unitData.length.toString(),
+        value: filteredReports.length.toString(),
         icon: ClipboardCheckIcon,
         color: 'text-blue-500',
         bg: 'bg-blue-500/10',
       },
       {
         label: 'Critical Findings',
-        value: unitData.filter((i) => i.status === 'critical').length.toString(),
-        icon: ClipboardCheckIcon, // Use appropriate icon if available
+        value: filteredReports.filter((i) => i.status === 'critical').length.toString(),
+        icon: ClipboardCheckIcon,
         color: 'text-red-500',
         bg: 'bg-red-500/10',
       },
     ];
-  }, [reports, activeUnit]);
+  }, [filteredReports]);
 
   return (
     <div className="min-h-full flex flex-col gap-6 relative">
@@ -285,6 +380,16 @@ const InspectionPage: React.FC = () => {
             {viewMode === 'reports' ? 'Template Settings' : 'Back to Reports'}
           </button>
 
+          {isSuperAdmin && (
+            <button
+              onClick={() => setIsUnitManagerOpen(true)}
+              className="group flex items-center gap-2.5 px-6 py-3 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 rounded-2xl text-sm font-bold shadow-sm hover:bg-white dark:hover:bg-slate-700 transition-all"
+            >
+              <CogIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
+              Manage Units
+            </button>
+          )}
+
           {viewMode === 'reports' && (
             <button
               onClick={() => setIsFormOpen(true)}
@@ -298,27 +403,123 @@ const InspectionPage: React.FC = () => {
       </div>
 
       {/* Unit Selector Tabs */}
-      <div className="flex bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1.5 rounded-[1.5rem] border border-slate-200/50 dark:border-white/10 shadow-sm overflow-hidden w-fit">
-        {UNITS.map((unit) => (
-          <button
-            key={unit}
-            onClick={() => setActiveUnit(unit)}
-            className={`px-8 py-3 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap rounded-2xl ${
-              activeUnit === unit
-                ? 'text-white'
-                : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
-            }`}
+      <div className="flex flex-col gap-4">
+        <div className="flex bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1.5 rounded-[1.5rem] border border-slate-200/50 dark:border-white/10 shadow-sm overflow-x-auto no-scrollbar w-fit max-w-full">
+          {mainUnits.map((unit) => (
+            <button
+              key={unit.id}
+              onClick={() => {
+                setActiveUnitId(unit.id);
+                setActiveSubUnitId(null); // Reset sub-unit when changing main unit
+              }}
+              className={`px-8 py-3 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap rounded-2xl ${
+                activeUnitId === unit.id
+                  ? 'text-white'
+                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+              }`}
+            >
+              <span className="relative z-10">{unit.name}</span>
+              {activeUnitId === unit.id && (
+                <motion.div
+                  layoutId="activeUnitTab"
+                  className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 shadow-lg shadow-indigo-500/40 rounded-2xl"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Sub-Unit Selector Tabs (Dynamic) */}
+        {subUnitsOfActive.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 ml-4"
           >
-            <span className="relative z-10">{unit}</span>
-            {activeUnit === unit && (
-              <motion.div
-                layoutId="activeUnitTab"
-                className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 shadow-lg shadow-indigo-500/40 rounded-2xl"
-                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-              />
-            )}
-          </button>
-        ))}
+            <div className="flex bg-white/30 dark:bg-slate-900/30 backdrop-blur-md p-1 rounded-2xl border border-slate-200/40 dark:border-white/5 shadow-inner overflow-x-auto no-scrollbar">
+              <button
+                onClick={() => setActiveSubUnitId(null)}
+                className={`px-5 py-2 text-[10px] font-black uppercase tracking-wider transition-all relative rounded-xl whitespace-nowrap ${
+                  activeSubUnitId === null
+                    ? 'text-white'
+                    : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}
+              >
+                <span className="relative z-10">Main Overview</span>
+                {activeSubUnitId === null && (
+                  <motion.div
+                    layoutId="activeSubTab"
+                    className="absolute inset-0 bg-slate-500 dark:bg-slate-600 rounded-xl shadow-md"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                  />
+                )}
+              </button>
+
+              {subUnitsOfActive.map((sub) => (
+                <button
+                  key={sub.id}
+                  onClick={() => setActiveSubUnitId(sub.id)}
+                  className={`px-5 py-2 text-[10px] font-black uppercase tracking-wider transition-all relative rounded-xl whitespace-nowrap ${
+                    activeSubUnitId === sub.id
+                      ? 'text-white'
+                      : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                  }`}
+                >
+                  <span className="relative z-10">{sub.name}</span>
+                  {activeSubUnitId === sub.id && (
+                    <motion.div
+                      layoutId="activeSubTab"
+                      className="absolute inset-0 bg-indigo-500 rounded-xl shadow-md"
+                      transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Work Area Selector (Optional Filter) */}
+        {viewMode === 'reports' &&
+          areas.filter((a) => a.unit === (activeSubUnitId || activeUnitId)).length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3 px-2"
+            >
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                Filter Area:
+              </span>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button
+                  onClick={() => setActiveAreaId('')}
+                  className={`px-4 py-1.5 rounded-full text-[10px] font-black transition-all ${
+                    !activeAreaId
+                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                      : 'bg-white/50 dark:bg-slate-800/50 text-slate-400 hover:text-slate-600'
+                  }`}
+                >
+                  SEMUA AREA
+                </button>
+                {areas
+                  .filter((a) => a.unit === (activeSubUnitId || activeUnitId))
+                  .map((area) => (
+                    <button
+                      key={area.id}
+                      onClick={() => setActiveAreaId(area.id)}
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-black transition-all whitespace-nowrap ${
+                        activeAreaId === area.id
+                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                          : 'bg-white/50 dark:bg-slate-800/50 text-slate-400 hover:text-slate-600'
+                      }`}
+                    >
+                      {area.name.toUpperCase()}
+                    </button>
+                  ))}
+              </div>
+            </motion.div>
+          )}
       </div>
 
       {viewMode === 'reports' ? (
@@ -422,13 +623,20 @@ const InspectionPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-8 py-6">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 text-indigo-500 flex items-center justify-center font-black text-xs shadow-inner">
-                              {report.personnel.s1.tender.charAt(0)}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 text-indigo-500 flex items-center justify-center font-black text-xs shadow-inner">
+                                {report.personnel.s1.tender.charAt(0)}
+                              </div>
+                              <span className="font-bold text-slate-700 dark:text-slate-200">
+                                {report.personnel.s1.tender}
+                              </span>
                             </div>
-                            <span className="font-bold text-slate-700 dark:text-slate-200">
-                              {report.personnel.s1.tender}
-                            </span>
+                            {report.areaId && (
+                              <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400/70 border border-indigo-500/20 w-fit px-2 py-0.5 rounded-md ml-14 bg-indigo-500/5">
+                                {areas.find((a) => a.id === report.areaId)?.name || 'Unknown Area'}
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-8 py-6 text-center">
@@ -462,7 +670,7 @@ const InspectionPage: React.FC = () => {
                     No Reports Found
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                    Start by creating a new shift report.
+                    {currentContextName} has no reports yet.
                   </p>
                 </div>
               )}
@@ -476,10 +684,30 @@ const InspectionPage: React.FC = () => {
           className="flex-1 bg-white dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl shadow-sm p-8 flex flex-col"
         >
           <TemplateManager
-            groups={templates[activeUnit] || []}
-            onUpdate={(updatedGroups) =>
-              setTemplates({ ...templates, [activeUnit]: updatedGroups })
+            groups={currentAreaTemplate as any}
+            onAddGroup={() =>
+              addGroup({ areaId: activeAreaId, name: 'New Group', sort_order: groups.length + 1 })
             }
+            onUpdateGroup={(id, name) => updateGroup(id, { name })}
+            onDeleteGroup={deleteGroup}
+            onAddEquipment={(groupId) =>
+              addEquipment({
+                group: groupId,
+                name: 'New Equipment',
+                sort_order: equipments.length + 1,
+              })
+            }
+            onUpdateEquipment={(id, name) => updateEquipment(id, { name })}
+            onDeleteEquipment={deleteEquipment}
+            onAddCheckpoint={(equipmentId) =>
+              addCheckpoint({
+                equipment: equipmentId,
+                name: 'New Checkpoint',
+                sort_order: checkpoints.length + 1,
+              })
+            }
+            onUpdateCheckpoint={(id, name) => updateCheckpoint(id, { name })}
+            onDeleteCheckpoint={deleteCheckpoint}
           />
         </motion.div>
       )}
@@ -513,7 +741,7 @@ const InspectionPage: React.FC = () => {
                     </h3>
                     <p className="text-[11px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                      {activeUnit} •{' '}
+                      {currentContextName} •{' '}
                       {new Date(selectedReport.date).toLocaleDateString(undefined, {
                         weekday: 'long',
                         year: 'numeric',
@@ -546,7 +774,7 @@ const InspectionPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100/50 dark:divide-white/5">
-                      {templates[activeUnit]?.map((group, gIdx) => (
+                      {templates[currentContextName]?.map((group, gIdx) => (
                         <React.Fragment key={group.id}>
                           <tr className="bg-gradient-to-r from-indigo-500/10 via-transparent to-transparent">
                             <td
@@ -712,11 +940,56 @@ const InspectionPage: React.FC = () => {
               className="fixed right-0 top-0 h-full w-full max-w-7xl bg-slate-50/30 dark:bg-slate-950/30 backdrop-blur-2xl shadow-2xl z-[101] flex flex-col border-l border-white/10"
             >
               <ShiftReportForm
-                unit={activeUnit}
-                groups={templates[activeUnit] || []}
+                unit={currentContextName}
+                unitId={activeSubUnitId || activeUnitId}
+                areas={areas}
+                groups={currentAreaTemplate as any}
                 existingReports={reports}
                 onClose={() => setIsFormOpen(false)}
                 onSave={handleSaveReport}
+              />
+            </motion.div>
+          </>
+        )}
+        {/* New Unit Manager Slide-over */}
+        {isUnitManagerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsUnitManagerOpen(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100]"
+            />
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed right-0 top-0 h-full w-full max-w-2xl bg-slate-50/30 dark:bg-slate-950/30 backdrop-blur-2xl shadow-2xl z-[101] flex flex-col border-l border-white/10"
+            >
+              <UnitManager
+                units={units}
+                areas={areas}
+                groups={groups}
+                equipments={equipments}
+                checkpoints={checkpoints}
+                onAdd={addUnit}
+                onUpdate={updateUnit}
+                onDelete={deleteUnit}
+                onAddArea={addArea}
+                onUpdateArea={updateArea}
+                onDeleteArea={deleteArea}
+                onAddGroup={addGroup}
+                onUpdateGroup={(id, name) => updateGroup(id, { name })}
+                onDeleteGroup={deleteGroup}
+                onAddEquipment={addEquipment}
+                onUpdateEquipment={(id, name) => updateEquipment(id, { name })}
+                onDeleteEquipment={deleteEquipment}
+                onAddCheckpoint={addCheckpoint}
+                onUpdateCheckpoint={(id, name) => updateCheckpoint(id, { name })}
+                onDeleteCheckpoint={deleteCheckpoint}
+                onClose={() => setIsUnitManagerOpen(false)}
               />
             </motion.div>
           </>

@@ -1526,15 +1526,31 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const parseInputValue = (formattedValue: string): number | null => {
     if (!formattedValue || formattedValue.trim() === '') return null;
 
-    // Strict Indonesian Format Enforcement:
-    // 1. (.) is ALWAYS a thousand separator -> Remove it
-    // 2. (,) is the ONLY decimal separator -> Replace with dot for parsing
+    let normalized = formattedValue.trim();
 
-    // Remove all thousand separators (.)
-    let normalized = formattedValue.replace(/\./g, '');
-
-    // Replace decimal separator (,) with dot (.) for JS parsing
-    normalized = normalized.replace(',', '.');
+    // Jika ada koma, maka dipastikan format Indonesia: titik=ribuan, koma=desimal
+    if (normalized.includes(',')) {
+      normalized = normalized.replace(/\./g, ''); // Hapus semua titik ribuan
+      normalized = normalized.replace(',', '.'); // Ganti koma dengan titik desimal
+    } else {
+      // Jika tidak ada koma, namun ada titik:
+      // Kita harus hati-hati apakah titik ini ribuan (1.000) atau desimal (255.2)
+      const dotCount = (normalized.match(/\./g) || []).length;
+      if (dotCount > 1) {
+        // Lebih dari satu titik pasti ribuan (misal 1.000.000)
+        normalized = normalized.replace(/\./g, '');
+      } else if (dotCount === 1) {
+        const parts = normalized.split('.');
+        // Jika bagian setelah titik bukan 3 digit, atau jika string sangat pendek,
+        // kemungkinan besar itu adalah titik desimal (misal 255.2 atau 1.2)
+        if (parts[1].length !== 3) {
+          // Biarkan titiknya sebagai desimal (format JS/International)
+        } else {
+          // Jika tepat 3 digit (misal 1.000), anggap sebagai ribuan sesuai standar Indonesia
+          normalized = normalized.replace(/\./g, '');
+        }
+      }
+    }
 
     const parsed = parseFloat(normalized);
     return isNaN(parsed) ? null : parsed;
@@ -4554,25 +4570,42 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         // 1. Support input (.) as decimal separator -> auto convert to (,)
                                         let newValue = e.target.value;
 
-                                        // Cek jika input terakhir adalah titik, ubah jadi koma
-                                        if (newValue.endsWith('.')) {
+                                        // Konversi titik ke koma (standar desimal Indonesia)
+                                        // Cek jika ada titik yang bukan pemisah ribuan
+                                        if (newValue.includes('.') && !newValue.includes(',')) {
+                                          const parts = newValue.split('.');
+                                          if (parts.length === 2 && parts[1].length !== 3) {
+                                            // Terdeteksi titik desimal (misal 255.2), ubah jadi koma
+                                            newValue = newValue.replace('.', ',');
+                                          }
+                                        } else if (newValue.endsWith('.')) {
                                           newValue = newValue.slice(0, -1) + ',';
                                         }
 
                                         // 2. Auto-format ribuan (1.000) saat mengetik
-                                        // Hapus semua titik yang ada (untuk membersihkan format sebelumnya)
-                                        // KECUALI jika input hanya "-" (negatif)
                                         if (newValue !== '-' && newValue !== '') {
-                                          // Pisahkan bagian integer dan desimal
                                           const parts = newValue.split(',');
-                                          let integerPart = parts[0].replace(/\./g, '');
+                                          // Hanya hapus titik jika kita yakin itu pemisah ribuan (ada koma desimal atau titik dikuti 3 angka)
+                                          let integerPart = parts[0];
+                                          const dotCount = (integerPart.match(/\./g) || []).length;
+
+                                          if (dotCount > 0) {
+                                            if (
+                                              parts.length > 1 ||
+                                              dotCount > 1 ||
+                                              integerPart.split('.')[1].length === 3
+                                            ) {
+                                              integerPart = integerPart.replace(/\./g, '');
+                                            }
+                                          }
+
                                           const decimalPart =
                                             parts.length > 1 ? ',' + parts[1] : '';
 
-                                          // Cek apakah integerPart adalah angka valid
-                                          if (!isNaN(Number(integerPart)) && integerPart !== '') {
-                                            // Format integer part dengan titik sebagai pemisah ribuan
-                                            integerPart = integerPart.replace(
+                                          // Formating ulang bagian integer jika itu angka valid
+                                          const cleanInt = integerPart.replace(/\./g, '');
+                                          if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
+                                            integerPart = cleanInt.replace(
                                               /\B(?=(\d{3})+(?!\d))/g,
                                               '.'
                                             );
