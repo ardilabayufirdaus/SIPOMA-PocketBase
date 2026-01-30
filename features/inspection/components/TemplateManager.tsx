@@ -134,14 +134,21 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Structure Editor</h3>
+    <div className="space-y-8 p-4">
+      <div className="flex items-center justify-between mb-10 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-6 rounded-[2rem] border border-slate-200/50 dark:border-white/10 shadow-xl shadow-slate-200/5">
+        <div>
+          <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Structure Editor
+          </h3>
+          <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+            Manage groups, equipment, and checkpoints
+          </p>
+        </div>
         <button
           onClick={addGroup}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-500/20"
+          className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-2xl text-sm font-black shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all active:scale-95"
         >
-          <PlusIcon className="w-4 h-4" />
+          <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
           Add Group
         </button>
       </div>
@@ -150,37 +157,40 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
         {groups.map((group) => (
           <div
             key={group.id}
-            className="bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden"
+            className="group/groupItem bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] border border-slate-200/50 dark:border-white/10 shadow-xl shadow-slate-200/5 overflow-hidden transition-all duration-300"
           >
-            <div className="p-4 flex items-center justify-between bg-white dark:bg-slate-800/50">
-              <div className="flex items-center gap-4 flex-1">
+            <div className="p-6 flex items-center justify-between bg-white/20 dark:bg-slate-800/20">
+              <div className="flex items-center gap-5 flex-1">
                 <button
                   onClick={() => toggleGroup(group.id)}
-                  className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-white/10"
                 >
                   <ChevronDownIcon
-                    className={`w-5 h-5 text-slate-400 transition-transform ${expandedGroups[group.id] ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${expandedGroups[group.id] ? 'rotate-180' : ''}`}
                   />
                 </button>
-                <input
-                  value={group.name}
-                  onChange={(e) => updateItemName('group', group.id, e.target.value)}
-                  className="bg-transparent font-bold text-indigo-600 dark:text-indigo-400 outline-none focus:ring-1 ring-indigo-500/30 rounded px-2 w-full italic"
-                />
+                <div className="flex-1 relative group/input">
+                  <input
+                    value={group.name}
+                    onChange={(e) => updateItemName('group', group.id, e.target.value)}
+                    className="bg-transparent font-black text-indigo-600 dark:text-indigo-400 outline-none w-full italic text-lg tracking-tight focus:ring-2 ring-indigo-500/10 rounded-xl px-2 transition-all"
+                  />
+                  <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-500/0 group-focus-within/input:bg-indigo-500/50 transition-all rounded-full"></div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => addEquipment(group.id)}
-                  className="p-2 text-slate-400 hover:text-indigo-500 transition-colors"
+                  className="p-2.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-xl transition-all"
                   title="Add Equipment"
                 >
-                  <PlusIcon className="w-4 h-4" />
+                  <PlusIcon className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => deleteGroup(group.id)}
-                  className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                  className="p-2.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
                 >
-                  <TrashIcon className="w-4 h-4" />
+                  <TrashIcon className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -193,30 +203,33 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="p-4 pl-12 space-y-3">
+                  <div className="p-6 pl-12 space-y-4">
                     {group.equipments.map((eq) => (
                       <div
                         key={eq.id}
-                        className="bg-white dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm"
+                        className="bg-white/50 dark:bg-slate-800/30 rounded-3xl border border-slate-200/50 dark:border-white/10 overflow-hidden shadow-lg shadow-slate-200/5"
                       >
-                        <div className="p-3 flex items-center justify-between">
-                          <div className="flex items-center gap-3 flex-1">
-                            <button onClick={() => toggleEquipment(eq.id)} className="p-1">
+                        <div className="p-4 flex items-center justify-between bg-white/30 dark:bg-slate-900/20">
+                          <div className="flex items-center gap-4 flex-1">
+                            <button
+                              onClick={() => toggleEquipment(eq.id)}
+                              className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
+                            >
                               <ChevronDownIcon
-                                className={`w-4 h-4 text-slate-400 ${expandedEquipments[eq.id] ? 'rotate-180' : ''}`}
+                                className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${expandedEquipments[eq.id] ? 'rotate-180' : ''}`}
                               />
                             </button>
                             <input
                               value={eq.name}
                               onChange={(e) => updateItemName('equipment', eq.id, e.target.value)}
-                              className="bg-transparent font-bold text-slate-900 dark:text-white outline-none focus:ring-1 ring-slate-500/30 rounded px-2 w-full"
+                              className="bg-transparent font-extrabold text-slate-900 dark:text-white outline-none w-full focus:ring-2 ring-slate-500/10 rounded-lg px-2 text-sm transition-all"
                             />
                           </div>
                           <button
                             onClick={() => addCheckPoint(group.id, eq.id)}
-                            className="p-2 text-slate-400 hover:text-indigo-500 transition-colors"
+                            className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10 rounded-lg transition-all"
                           >
-                            <PlusIcon className="w-4 h-4" />
+                            <PlusIcon className="w-5 h-5" />
                           </button>
                         </div>
 
@@ -226,11 +239,14 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
-                              className="p-3 pl-10 space-y-2 bg-slate-50/50 dark:bg-black/10"
+                              className="p-4 pl-12 space-y-3 bg-slate-50/30 dark:bg-black/20"
                             >
                               {eq.checkPoints.map((cp) => (
-                                <div key={cp.id} className="flex items-center gap-3 group">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                                <div
+                                  key={cp.id}
+                                  className="flex items-center gap-4 group/row transition-all duration-200"
+                                >
+                                  <div className="w-2 h-2 rounded-full bg-indigo-500/30 group-hover/row:bg-indigo-500 group-hover/row:scale-125 transition-all shadow-sm" />
                                   <input
                                     value={cp.name}
                                     onChange={(e) =>
@@ -239,7 +255,7 @@ const TemplateManager: React.FC<TemplateManagerProps> = ({ groups, onUpdate }) =
                                         equipmentId: eq.id,
                                       })
                                     }
-                                    className="bg-transparent text-sm text-slate-600 dark:text-slate-400 outline-none flex-1 focus:ring-1 ring-slate-500/30 rounded px-2"
+                                    className="bg-transparent text-sm font-bold text-slate-600 dark:text-slate-400 outline-none flex-1 focus:ring-2 ring-indigo-500/10 rounded-lg px-2 group-hover/row:text-slate-900 dark:group-hover/row:text-white transition-all"
                                   />
                                 </div>
                               ))}

@@ -1487,13 +1487,39 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Helper functions for input value formatting
   const formatInputValue = (
     value: number | string | null | undefined,
-    precision: number = 1
+    precision: number = 1,
+    forcePrecision: boolean = true
   ): string => {
     if (value === null || value === undefined || value === '') {
       return '';
     }
-    const numValue = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(numValue)) return '';
+
+    // Use parseInputValue to handle Indonesian format if it's a string
+    const numValue = typeof value === 'string' ? parseInputValue(value) : value;
+    if (numValue === null || isNaN(numValue)) {
+      // If parsing fails but it's a string, return as-is for typing support
+      return typeof value === 'string' ? value : '';
+    }
+
+    if (!forcePrecision) {
+      // For on-typing format, only use dot as thousand separator without forcing decimals
+      const parts = numValue.toString().split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      let result = parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0];
+
+      // Important: Preserve trailing comma or dot during typing to allow numpad dot to work
+      // and prevent the separator from disappearing on next render
+      if (
+        typeof value === 'string' &&
+        (value.endsWith(',') || value.endsWith('.')) &&
+        !result.includes(',')
+      ) {
+        result += ',';
+      }
+
+      return result;
+    }
+
     return formatNumberWithPrecision(numValue, precision);
   };
 
@@ -4397,7 +4423,11 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               // Use formatInputValue for numbers to show Indonesian locale (dots for thousands, commas for decimal)
                               value =
                                 param.data_type === ParameterDataType.NUMBER
-                                  ? formatInputValue(hourValue, getPrecisionForUnit(param.unit))
+                                  ? formatInputValue(
+                                      hourValue,
+                                      getPrecisionForUnit(param.unit),
+                                      false // Don't force precision while rendering for input to prevent jumping
+                                    )
                                   : String(hourValue);
                             }
 
