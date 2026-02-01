@@ -89,7 +89,7 @@ const useCcrDowntimeData = (date?: string) => {
             records = await pb.collection('ccr_downtime_data').getFullList({
               filter: `date = "${normalizedDate}"`,
               sort: '-created',
-              requestKey: `downtime-exact-${normalizedDate}-${Date.now()}`,
+              requestKey: `downtime-exact-${normalizedDate}`,
               signal: abortController.signal,
             });
 
@@ -100,7 +100,7 @@ const useCcrDowntimeData = (date?: string) => {
               records = await pb.collection('ccr_downtime_data').getFullList({
                 filter: `date ~ "${normalizedDate}"`, // LIKE query instead of exact match
                 sort: '-created',
-                requestKey: `downtime-flex-${normalizedDate}-${Date.now()}`,
+                requestKey: `downtime-flex-${normalizedDate}`,
                 signal: abortController.signal,
               });
             }
@@ -112,7 +112,7 @@ const useCcrDowntimeData = (date?: string) => {
               records = await pb.collection('ccr_downtime_data').getFullList({
                 filter: `date ~ "${normalizedDate}"`,
                 sort: '-created',
-                requestKey: `downtime-flexible-${normalizedDate}-${Date.now()}`,
+                requestKey: `downtime-flexible-${normalizedDate}`,
                 signal: abortController.signal,
               });
             }
@@ -125,7 +125,7 @@ const useCcrDowntimeData = (date?: string) => {
               const allRecords = await pb.collection('ccr_downtime_data').getFullList({
                 sort: '-created',
                 perPage: 100, // Batasi jumlah untuk performa
-                requestKey: `downtime-all-${Date.now()}`,
+                requestKey: `downtime-all`,
                 signal: abortController.signal,
               });
 

@@ -1116,7 +1116,7 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
   });
 
   // Use custom hook for footer data persistence
-  const { saveFooterData, getFooterDataForDate } = useCcrFooterData();
+  const { saveFooterData, batchSaveFooterData, getFooterDataForDate } = useCcrFooterData();
   const { saveMaterialUsageSilent } = useCcrMaterialUsage();
 
   // Material usage calculation mappings
@@ -1204,9 +1204,14 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
     fetchParameterData,
   ]);
 
-  // Auto-save footer data when it changes - immediate save for data integrity
+  // Auto-save footer data when it changes - debounced to prevent network overload
   useEffect(() => {
-    const saveFooterDataAsync = async () => {
+    // Skip if not ready
+    if (filteredParameterSettings.length === 0 || !selectedDate) {
+      return;
+    }
+
+    const timer = setTimeout(async () => {
       // Prevent concurrent saves
       if (footerSaveInProgress.current) {
         return;
@@ -1224,57 +1229,60 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
       footerSaveInProgress.current = true;
 
       try {
-        // Save footer data for each parameter
-        const savePromises = filteredParameterSettings.map(async (param) => {
-          const footerData = parameterFooterData[param.id];
-          const shiftData = parameterShiftFooterData;
-          const averageData = parameterShiftAverageData;
-          const counterData = parameterShiftCounterData;
+        // Collect all footer data to be saved
+        const allFooterDataToSave = filteredParameterSettings
+          .map((param) => {
+            const footerData = parameterFooterData[param.id];
+            const shiftData = parameterShiftFooterData;
+            const averageData = parameterShiftAverageData;
+            const counterData = parameterShiftCounterData;
 
-          if (footerData) {
-            return saveFooterData({
-              date: selectedDate,
-              parameter_id: param.id,
-              plant_unit: selectedCategory || 'CCR',
-              total: footerData.total,
-              average: footerData.avg,
-              minimum: footerData.min,
-              maximum: footerData.max,
-              shift1_total: shiftData.shift1[param.id] || 0,
-              shift2_total: shiftData.shift2[param.id] || 0,
-              shift3_total: shiftData.shift3[param.id] || 0,
-              shift3_cont_total: shiftData.shift3Cont[param.id] || 0,
-              shift1_average: averageData.shift1[param.id] || 0,
-              shift2_average: averageData.shift2[param.id] || 0,
-              shift3_average: averageData.shift3[param.id] || 0,
-              shift3_cont_average: averageData.shift3Cont[param.id] || 0,
-              shift1_counter: counterData.shift1[param.id] || 0,
-              shift2_counter: counterData.shift2[param.id] || 0,
-              shift3_counter: counterData.shift3[param.id] || 0,
-              shift3_cont_counter: counterData.shift3Cont[param.id] || 0,
-              operator_id: loggedInUser?.id,
-            });
-          }
-        });
+            if (footerData) {
+              return {
+                date: selectedDate,
+                parameter_id: param.id,
+                plant_unit: selectedCategory || 'CCR',
+                total: footerData.total,
+                average: footerData.avg,
+                minimum: footerData.min,
+                maximum: footerData.max,
+                shift1_total: shiftData.shift1[param.id] || 0,
+                shift2_total: shiftData.shift2[param.id] || 0,
+                shift3_total: shiftData.shift3[param.id] || 0,
+                shift3_cont_total: shiftData.shift3Cont[param.id] || 0,
+                shift1_average: averageData.shift1[param.id] || 0,
+                shift2_average: averageData.shift2[param.id] || 0,
+                shift3_average: averageData.shift3[param.id] || 0,
+                shift3_cont_average: averageData.shift3Cont[param.id] || 0,
+                shift1_counter: counterData.shift1[param.id] || 0,
+                shift2_counter: counterData.shift2[param.id] || 0,
+                shift3_counter: counterData.shift3[param.id] || 0,
+                shift3_cont_counter: counterData.shift3Cont[param.id] || 0,
+                operator_id: loggedInUser?.id,
+              };
+            }
+            return null;
+          })
+          .filter((f): f is any => f !== null);
 
-        await Promise.all(savePromises.filter(Boolean));
+        if (allFooterDataToSave.length > 0) {
+          // Use batch save for efficiency and to prevent parallel request flood
+          await batchSaveFooterData(allFooterDataToSave);
+        }
 
         // Auto-save material usage data when footer data is saved
         if (selectedCategory && selectedUnit) {
           await saveMaterialUsageFromFooterData();
         }
-      } catch {
-        // Don't show error to user as this is background save
-        // Footer data will be recalculated and saved again on next change
+      } catch (err) {
+        // Silent error for background save
+        console.error('Background footer save error:', err);
       } finally {
         footerSaveInProgress.current = false;
       }
-    };
+    }, 2000); // 2 second debounce
 
-    // Save immediately when footer data changes (no debounce for data integrity)
-    if (filteredParameterSettings.length > 0 && selectedDate) {
-      saveFooterDataAsync();
-    }
+    return () => clearTimeout(timer);
   }, [
     parameterFooterData,
     parameterShiftFooterData,
@@ -1284,8 +1292,9 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
     selectedDate,
     selectedCategory,
     selectedUnit,
-    saveFooterData,
+    batchSaveFooterData,
     saveMaterialUsageFromFooterData,
+    loggedInUser?.id,
   ]);
 
   // Table dimension functions for keyboard navigation
@@ -1529,12 +1538,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
 
     let normalized = formattedValue.trim();
 
-    // Jika ada koma, maka dipastikan format Indonesia: titik=ribuan, koma=desimal
+    // 1. Jika ada koma, maka dipastikan format Indonesia: titik=ribuan, koma=desimal
     if (normalized.includes(',')) {
       normalized = normalized.replace(/\./g, ''); // Hapus semua titik ribuan
       normalized = normalized.replace(',', '.'); // Ganti koma dengan titik desimal
     } else {
-      // Jika tidak ada koma, namun ada titik:
+      // 2. Jika tidak ada koma, namun ada titik:
       // Kita harus hati-hati apakah titik ini ribuan (1.000) atau desimal (255.2)
       const dotCount = (normalized.match(/\./g) || []).length;
       if (dotCount > 1) {
@@ -1542,13 +1551,12 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
         normalized = normalized.replace(/\./g, '');
       } else if (dotCount === 1) {
         const parts = normalized.split('.');
-        // Jika bagian setelah titik bukan 3 digit, atau jika string sangat pendek,
-        // kemungkinan besar itu adalah titik desimal (misal 255.2 atau 1.2)
-        if (parts[1].length !== 3) {
-          // Biarkan titiknya sebagai desimal (format JS/International)
-        } else {
-          // Jika tepat 3 digit (misal 1.000), anggap sebagai ribuan sesuai standar Indonesia
+        // Jika bagian setelah titik tepat 3 digit dan bagian sebelum titik bukan '0',
+        // kemungkinan besar itu adalah titik ribuan (misal 1.000)
+        if (parts[1].length === 3 && parts[0] !== '0' && parts[0] !== '') {
           normalized = normalized.replace(/\./g, '');
+        } else {
+          // Biarkan titiknya sebagai desimal (format JS/International atau 0.xxx)
         }
       }
     }
@@ -4582,16 +4590,11 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                       }
                                       value={value}
                                       onChange={(e) => {
-                                        // 1. Support input (.) as decimal separator -> auto convert to (,)
+                                        // 1. Support input (.) as decimal separator -> auto convert to (,) only at the end
                                         let newValue = e.target.value;
 
-                                        // Konversi titik ke koma (standar desimal Indonesia)
-                                        if (newValue.includes('.') && !newValue.includes(',')) {
-                                          const parts = newValue.split('.');
-                                          if (parts.length === 2 && parts[1].length !== 3) {
-                                            newValue = newValue.replace('.', ',');
-                                          }
-                                        } else if (newValue.endsWith('.')) {
+                                        // Konversi titik ke koma (standar desimal Indonesia) hanya untuk numpad support di akhir input
+                                        if (newValue.endsWith('.')) {
                                           newValue = newValue.slice(0, -1) + ',';
                                         }
 
@@ -4599,28 +4602,42 @@ const RkcCcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => 
                                         if (newValue !== '-' && newValue !== '') {
                                           const parts = newValue.split(',');
                                           let integerPart = parts[0];
-                                          const dotCount = (integerPart.match(/\./g) || []).length;
+                                          const decimalPart =
+                                            parts.length > 1 ? ',' + parts[1] : '';
 
+                                          // Bersihkan ribuan hanya jika kita yakin itu ribuan
+                                          const dotCount = (integerPart.match(/\./g) || []).length;
                                           if (dotCount > 0) {
+                                            const lastDotIndex = integerPart.lastIndexOf('.');
+                                            const charsAfterDot =
+                                              integerPart.length - lastDotIndex - 1;
+
+                                            // Jika multiple dots, atau satu titik di posisi ribuan (3 digit) dan diikuti koma desimal,
+                                            // atau tepat 3 digit di akhir integer part.
                                             if (
-                                              parts.length > 1 ||
                                               dotCount > 1 ||
-                                              integerPart.split('.')[1].length === 3
+                                              charsAfterDot === 3 ||
+                                              decimalPart !== ''
                                             ) {
                                               integerPart = integerPart.replace(/\./g, '');
                                             }
                                           }
 
-                                          const decimalPart =
-                                            parts.length > 1 ? ',' + parts[1] : '';
-
+                                          // Formating ulang bagian integer jika itu angka valid
                                           const cleanInt = integerPart.replace(/\./g, '');
                                           if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
-                                            integerPart = cleanInt.replace(
-                                              /\B(?=(\d{3})+(?!\d))/g,
-                                              '.'
-                                            );
-                                            newValue = integerPart + decimalPart;
+                                            // Jika cleanInt mengandung titik, berarti itu desimal yang belum diconvert
+                                            if (cleanInt.includes('.')) {
+                                              newValue =
+                                                cleanInt.replace('.', ',') +
+                                                decimalPart.replace(',', '');
+                                            } else {
+                                              integerPart = cleanInt.replace(
+                                                /\B(?=(\d{3})+(?!\d))/g,
+                                                '.'
+                                              );
+                                              newValue = integerPart + decimalPart;
+                                            }
                                           }
                                         }
 

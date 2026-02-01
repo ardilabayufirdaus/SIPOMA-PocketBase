@@ -214,9 +214,8 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
           if (debounceTimer) clearTimeout(debounceTimer);
 
           debounceTimer = setTimeout(() => {
-            console.log('Triggering sync after debounce...');
             syncWithFooterData();
-          }, 2000); // 2 second debounce
+          }, 5000); // 5 second debounce - optimized polling interval
         }
       });
     };
