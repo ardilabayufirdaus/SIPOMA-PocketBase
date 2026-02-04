@@ -68,7 +68,9 @@ const WhatsAppReports: React.FC<WhatsAppReportsProps> = ({ groupId = 'default' }
       <div className="mt-6">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          onClick={() => console.log('Generate report for', groupId)}
+          onClick={() => {
+            /* Placeholder logic */
+          }}
         >
           Generate Report
         </button>
@@ -78,5 +80,3 @@ const WhatsAppReports: React.FC<WhatsAppReportsProps> = ({ groupId = 'default' }
 };
 
 export default WhatsAppReports;
-
-

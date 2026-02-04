@@ -9,8 +9,9 @@ import { useParameterSettings } from '../../hooks/useParameterSettings';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useAuth } from '../../hooks/useAuth';
 import { useCcrInformationData } from '../../hooks/useCcrInformationData';
-import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
+import { syncOperationalDataForDate } from '../../utils/operationalSyncUtils';
 
+import { CcrDowntimeData, CcrParameterDataWithName } from '../../types';
 import { Card } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 
@@ -243,6 +244,9 @@ const WhatsAppGroupReportPage: React.FC = () => {
     setIsGenerating(true);
     try {
       const { date } = { date: selectedDate };
+
+      // Sync data before generating report
+      await syncOperationalDataForDate(date);
 
       // Fetch data for all selected units in parallel
       const dataPromises = selectedPlantUnits.map(async (unit) => ({
@@ -633,6 +637,9 @@ const WhatsAppGroupReportPage: React.FC = () => {
     try {
       const { date } = { date: selectedDate };
 
+      // Sync data before generating report
+      await syncOperationalDataForDate(date);
+
       // Fetch data for all selected units in parallel
       const dataPromises = selectedPlantUnits.map(async (unit) => ({
         unit,
@@ -988,6 +995,9 @@ const WhatsAppGroupReportPage: React.FC = () => {
     try {
       const { date } = { date: selectedDate };
 
+      // Sync data before generating report
+      await syncOperationalDataForDate(date);
+
       // Fetch data for all selected units in parallel
       const dataPromises = selectedPlantUnits.map(async (unit) => ({
         unit,
@@ -1340,6 +1350,9 @@ const WhatsAppGroupReportPage: React.FC = () => {
     setIsGenerating(true);
     try {
       const { date } = { date: selectedDate };
+
+      // Sync data before generating report
+      await syncOperationalDataForDate(date);
 
       // Hitung tanggal berikutnya untuk shift3_cont
       const currentDate = new Date(date);
@@ -1828,265 +1841,203 @@ const WhatsAppGroupReportPage: React.FC = () => {
     }
   }, [generatedReport]);
 
-  // Function to render formatted report content
+  // Function to render formatted report content with WhatsApp-like bubbles
   const renderFormattedReport = (content: string) => {
     return content.split('\n').map((line, index) => {
       // Handle bold text (*text*)
-      if (line.includes('*')) {
-        const parts = line.split('*');
-        return (
-          <div key={index} className="mb-1">
-            {parts.map((part, partIndex) => {
-              if (partIndex % 2 === 1) {
-                return (
-                  <strong key={partIndex} className="font-bold text-gray-900">
-                    {part}
-                  </strong>
-                );
-              }
-              return part;
-            })}
-          </div>
-        );
+      const renderLine = (text: string) => {
+        if (text.includes('*')) {
+          const parts = text.split('*');
+          return parts.map((part, partIndex) =>
+            partIndex % 2 === 1 ? (
+              <strong key={partIndex} className="font-bold text-slate-900">
+                {part}
+              </strong>
+            ) : (
+              part
+            )
+          );
+        }
+        return text;
+      };
+
+      // Handle section separators
+      if (line.includes('===') || line.includes('━━━')) {
+        return <div key={index} className="h-px bg-slate-200 my-3 opacity-50" />;
       }
 
-      // Handle list items (- item)
-      if (line.startsWith('- ')) {
-        return (
-          <div key={index} className="mb-1 ml-4 flex items-start">
-            <span className="text-blue-500 mr-2 mt-1">�</span>
-            <span>{line.substring(2)}</span>
-          </div>
-        );
-      }
+      // Handle emoji/headers
+      const isHeader = /^[A-Z\s]+$/.test(line.replace(/[^A-Z\s]/g, '').trim()) && line.length > 3;
 
-      // Handle section headers
-      if (line.includes('===') || line.trim() === '') {
-        return <div key={index} className="mb-2 h-2"></div>;
-      }
-
-      // Regular text
       return (
-        <div key={index} className="mb-1">
-          {line}
+        <div
+          key={index}
+          className={`mb-1 ${isHeader ? 'text-slate-900 font-bold mt-4 mb-2' : 'text-slate-700'}`}
+        >
+          {renderLine(line)}
         </div>
       );
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="w-full mx-auto py-8 px-6">
-        {/* Header - Indigo/Slate Theme */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6 mb-8">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
-
-          <div className="relative flex items-center gap-5">
-            <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-lg">
-              <svg
-                className="w-9 h-9 text-indigo-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                WhatsApp Group Report
-              </h1>
-              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
-                Generate daily production reports for plant operations
-              </p>
-            </div>
+    <div className="min-h-screen bg-[#FDFDFD] selection:bg-indigo-100">
+      <div className="mx-auto py-8 md:py-12 px-4 sm:px-8 lg:px-12 xl:px-16 w-full">
+        {/* Modern Header Section */}
+        <div className="text-center mb-10 md:mb-12">
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-5xl">
+            WhatsApp Group{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+              Report
+            </span>
+          </h1>
+          <p className="mt-4 text-base md:text-lg text-slate-500 max-w-2xl mx-auto font-medium px-4">
+            Generate and streamline your plant production reports with a single click.
+          </p>
+          <div className="mt-4 flex justify-center items-center gap-2">
+            <div className="h-1 w-12 bg-indigo-600 rounded-full"></div>
+            <div className="h-1 w-2 bg-slate-200 rounded-full"></div>
+            <div className="h-1 w-2 bg-slate-200 rounded-full"></div>
           </div>
         </div>
 
-        {/* Controls Section */}
-        <Card variant="glass" padding="lg" className="mb-8 backdrop-blur-xl bg-white/90">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Controls Section - Clean White Style */}
+        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-5 md:p-8 mb-8 md:mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
             {/* Date Selection */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <label
                 htmlFor="date-select"
-                className="block text-sm font-semibold text-slate-700 flex items-center"
+                className="block text-sm font-bold text-slate-800 uppercase tracking-wider"
               >
-                <svg
-                  className="w-5 h-5 mr-3 text-blue-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
                 Report Date
               </label>
-              <input
-                id="date-select"
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white text-slate-900 shadow-sm hover:shadow-md"
-              />
-            </div>{' '}
-            {/* Plant Category Selection */}
-            <div className="space-y-2">
+              <div className="relative group">
+                <input
+                  id="date-select"
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full pl-4 pr-10 py-4 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all duration-300 bg-slate-50/30 font-medium text-slate-900"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Plant Category */}
+            <div className="space-y-4">
               <label
                 htmlFor="category-select"
-                className="block text-sm font-semibold text-gray-700 flex items-center"
+                className="block text-sm font-bold text-slate-800 uppercase tracking-wider"
               >
-                <svg
-                  className="w-4 h-4 mr-2 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
                 Plant Category
               </label>
-              <select
-                id="category-select"
-                value={selectedPlantCategory}
-                onChange={(e) => setSelectedPlantCategory(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white shadow-sm hover:shadow-md"
-              >
-                {plantCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* Plant Unit Multi-Select */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-700 flex items-center">
-                <svg
-                  className="w-4 h-4 mr-2 text-primary-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className="relative">
+                <select
+                  id="category-select"
+                  value={selectedPlantCategory}
+                  onChange={(e) => setSelectedPlantCategory(e.target.value)}
+                  className="w-full px-5 py-4 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all duration-300 bg-slate-50/30 font-medium appearance-none text-slate-900"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H7a2 2 0 00-2 2v2M7 7h10"
-                  />
-                </svg>
-                Plant Units ({selectedPlantUnits.length} selected)
+                  {plantCategories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Plant Units */}
+            <div className="space-y-4">
+              <label className="block text-sm font-bold text-slate-800 uppercase tracking-wider">
+                Plant Units ({selectedPlantUnits.length})
               </label>
               <div className="relative unit-dropdown-container">
                 <div
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white shadow-sm hover:shadow-md cursor-pointer transition-all duration-200"
+                  className="w-full px-5 py-4 border border-slate-200 rounded-2xl bg-slate-50/30 cursor-pointer hover:border-indigo-300 transition-all duration-300"
                   onClick={() => setIsUnitDropdownOpen(!isUnitDropdownOpen)}
                 >
-                  <div className="flex flex-wrap gap-2 min-h-[2.75rem] items-center">
-                    {selectedPlantUnits.length === 0 ? (
-                      <span className="text-gray-500">Select plant units...</span>
-                    ) : (
-                      selectedPlantUnits.map((unit) => (
-                        <span
-                          key={unit}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200"
-                        >
-                          Unit {unit}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedPlantUnits((prev) => prev.filter((u) => u !== unit));
-                            }}
-                            className="ml-2 text-blue-600 hover:text-blue-800"
-                          >
-                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path
-                                fillRule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
-                        </span>
-                      ))
-                    )}
-                    <div className="ml-auto">
-                      <svg
-                        className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-                          isUnitDropdownOpen ? 'rotate-180' : ''
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`font-medium ${selectedPlantUnits.length ? 'text-slate-900' : 'text-slate-400'}`}
+                    >
+                      {selectedPlantUnits.length === 0
+                        ? 'Select units...'
+                        : `${selectedPlantUnits.length} Units Selected`}
+                    </span>
+                    <svg
+                      className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isUnitDropdownOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
                   </div>
                 </div>
 
-                {/* Dropdown for unit selection */}
                 {isUnitDropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                    <div className="p-2">
-                      <div className="flex items-center justify-between p-2 border-b border-gray-200">
-                        <button
-                          onClick={() => setSelectedPlantUnits(filteredUnits.map((u) => u.unit))}
-                          className="text-sm text-blue-600 hover:text-blue-800"
-                        >
-                          Select All
-                        </button>
-                        <button
-                          onClick={() => setSelectedPlantUnits([])}
-                          className="text-sm text-gray-600 hover:text-gray-800"
-                        >
-                          Clear All
-                        </button>
-                      </div>
+                  <div className="absolute z-20 w-full mt-3 bg-white border border-slate-100 rounded-2xl shadow-2xl p-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="flex items-center justify-between px-3 py-2 mb-2 bg-slate-50 rounded-xl">
+                      <button
+                        onClick={() => setSelectedPlantUnits(filteredUnits.map((u) => u.unit))}
+                        className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                      >
+                        SELECT ALL
+                      </button>
+                      <button
+                        onClick={() => setSelectedPlantUnits([])}
+                        className="text-xs font-bold text-slate-400 hover:text-slate-600"
+                      >
+                        CLEAR ALL
+                      </button>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto custom-scrollbar">
                       {filteredUnits.map((unit) => (
                         <label
                           key={unit.id}
-                          className="flex items-center p-2 hover:bg-gray-50 cursor-pointer"
+                          className="flex items-center p-3 hover:bg-indigo-50/50 rounded-xl cursor-pointer transition-colors group"
                         >
                           <input
                             type="checkbox"
                             checked={selectedPlantUnits.includes(unit.unit)}
                             onChange={(e) => {
-                              if (e.target.checked) {
+                              if (e.target.checked)
                                 setSelectedPlantUnits((prev) => [...prev, unit.unit]);
-                              } else {
+                              else
                                 setSelectedPlantUnits((prev) =>
                                   prev.filter((u) => u !== unit.unit)
                                 );
-                              }
                             }}
-                            className="mr-3 text-blue-600 focus:ring-red-500"
+                            className="w-5 h-5 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all"
                           />
-                          <span className="text-sm text-gray-700">
-                            Unit {unit.unit} - {unit.description || 'No description'}
+                          <span className="ml-3 text-sm font-medium text-slate-700 group-hover:text-indigo-900">
+                            Unit {unit.unit}
                           </span>
                         </label>
                       ))}
@@ -2097,257 +2048,137 @@ const WhatsAppGroupReportPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Generate Button */}
-          <div className="flex justify-center space-x-4">
-            <Button
-              variant="primary"
-              size="lg"
+          {/* Action Buttons Area */}
+          <div className="mt-12 pt-10 border-t border-slate-100 flex flex-wrap justify-center gap-4">
+            <button
               onClick={handleGenerateReport}
               disabled={isGenerating}
-              className={`transition-all duration-300 ${
+              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
                 isGenerating
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-slate-900 text-white shadow-xl shadow-slate-200 hover:shadow-indigo-100 hover:-translate-y-1'
               }`}
             >
-              <div className="flex items-center space-x-3">
+              <div className="relative flex items-center gap-3">
                 {isGenerating ? (
-                  <>
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Generating Report...</span>
-                  </>
+                  <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <span>Generate Daily Report</span>
-                  </>
+                  <svg
+                    className="w-5 h-5 text-indigo-400 group-hover:rotate-12 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
                 )}
+                <span>DAILY REPORT</span>
               </div>
-            </Button>
+            </button>
 
-            <Button
-              variant="success"
-              size="lg"
+            <button
               onClick={handleGenerateShift1Report}
               disabled={isGenerating}
-              className={`transition-all duration-300 ${
+              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
                 isGenerating
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-emerald-500 hover:text-emerald-600 hover:shadow-lg hover:shadow-emerald-50 hover:-translate-y-1'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                {isGenerating ? (
-                  <>
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Generating Report...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                    <span>Generate Shift 1 Report</span>
-                  </>
-                )}
+              <div className="relative flex items-center gap-3">
+                <svg
+                  className="w-5 h-5 text-emerald-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <span>SHIFT 1</span>
               </div>
-            </Button>
+            </button>
 
-            <Button
-              variant="warning"
-              size="lg"
+            <button
               onClick={handleGenerateShift2Report}
               disabled={isGenerating}
-              className={`transition-all duration-300 ${
+              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
                 isGenerating
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg hover:shadow-xl'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-orange-500 hover:text-orange-600 hover:shadow-lg hover:shadow-orange-50 hover:-translate-y-1'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                {isGenerating ? (
-                  <>
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Generating Report...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                    <span>Generate Shift 2 Report</span>
-                  </>
-                )}
+              <div className="relative flex items-center gap-3">
+                <svg
+                  className="w-5 h-5 text-orange-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <span>SHIFT 2</span>
               </div>
-            </Button>
+            </button>
 
-            <Button
-              variant="secondary"
-              size="lg"
+            <button
               onClick={handleGenerateShift3Report}
               disabled={isGenerating}
-              className={`transition-all duration-300 ${
+              className={`group relative overflow-hidden px-8 py-4 rounded-2xl font-bold transition-all duration-500 ${
                 isGenerating
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-fire hover:bg-gradient-ocean text-white shadow-lg hover:shadow-xl'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:border-indigo-500 hover:text-indigo-600 hover:shadow-lg hover:shadow-indigo-50 hover:-translate-y-1'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                {isGenerating ? (
-                  <>
-                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Generating Report...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
-                    <span>Generate Shift 3 Report</span>
-                  </>
-                )}
+              <div className="relative flex items-center gap-3">
+                <svg
+                  className="w-5 h-5 text-indigo-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <span>SHIFT 3</span>
               </div>
-            </Button>
+            </button>
           </div>
-        </Card>
+        </div>
 
-        {/* Report Output Section */}
+        {/* Report Output Section - WhatsApp Aesthetic */}
         {generatedReport && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className={`transition-all duration-500 bg-gradient-to-br from-green-50 to-emerald-50 ${
-              reportGenerated ? 'ring-2 ring-emerald-400 ring-opacity-50 shadow-glow-emerald' : ''
-            }`}
-          >
-            <div
-              className={`bg-gradient-to-r from-green-600 to-emerald-600 -m-8 mb-8 px-8 py-6 transition-all duration-300 ${
-                reportGenerated ? 'bg-gradient-to-r from-green-500 to-emerald-500' : ''
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div
-                    className={`bg-white/20 p-3 rounded-xl transition-all duration-300 ${
-                      reportGenerated ? 'bg-green-300/30 scale-110' : ''
-                    }`}
-                  >
-                    <svg
-                      className="w-8 h-8 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-white">Generated Report</h2>
-                    <p className="text-green-100 mt-1">
-                      Daily production report ready for WhatsApp
-                    </p>
-                    {reportGenerated && (
-                      <div className="flex items-center mt-2 text-green-200 animate-pulse">
-                        <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Report generated successfully!
-                      </div>
-                    )}
-                  </div>
-                </div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Preview Report</h3>
+              <div className="flex gap-3">
                 <button
                   onClick={handleCopyToClipboard}
-                  className="bg-white/20 hover:bg-white/30 text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg transition-all duration-200 flex items-center space-x-2 min-h-[44px]"
+                  className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all duration-300 ${
+                    copySuccess
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
+                      : 'bg-white text-slate-700 border border-slate-200 shadow-sm hover:shadow-md hover:bg-slate-50'
+                  }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -2355,57 +2186,59 @@ const WhatsAppGroupReportPage: React.FC = () => {
                       d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                     />
                   </svg>
-                  <span>{copySuccess ? 'Copied!' : 'Copy'}</span>
+                  {copySuccess ? 'COPIED!' : 'COPY TEXT'}
                 </button>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-slate-50 rounded-lg p-6 border border-slate-200">
-                <div className="text-sm text-slate-800 leading-relaxed font-mono">
-                  {renderFormattedReport(generatedReport)}
-                </div>
-              </div>
-
-              <div className="flex justify-center space-x-4">
-                <Button
-                  onClick={handleCopyToClipboard}
-                  variant={copySuccess ? 'success' : 'primary'}
-                  size="lg"
-                  leftIcon={
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v-2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
-                  }
-                >
-                  {copySuccess ? 'Copied to Clipboard!' : 'Copy to Clipboard'}
-                </Button>
-
-                <Button
+                <button
                   onClick={() =>
                     window.open(
                       `https://wa.me/?text=${encodeURIComponent(generatedReport)}`,
                       '_blank'
                     )
                   }
-                  variant="success"
-                  size="lg"
-                  leftIcon={
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
-                    </svg>
-                  }
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#25D366] text-white font-bold shadow-lg shadow-green-200 hover:bg-[#20ba59] transition-all duration-300"
                 >
-                  Share on WhatsApp
-                </Button>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                  </svg>
+                  WHATSAPP
+                </button>
               </div>
             </div>
-          </Card>
+
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-100 to-indigo-100 rounded-[2rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-white border border-slate-100 shadow-2xl rounded-[2rem] overflow-hidden">
+                <div className="bg-[#E7FCE3] border-b border-[#D7ECCB] px-8 py-5 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span className="block font-bold text-[#075E54]">SIPOMA Reporting Tool</span>
+                    <span className="block text-[10px] text-[#075E54]/70 uppercase tracking-widest font-bold">
+                      Encrypted Production Report
+                    </span>
+                  </div>
+                </div>
+                <div className="p-4 md:p-8 lg:p-10 bg-[#FFFFFF] bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat">
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 md:p-8 leading-relaxed font-mono text-xs sm:text-sm md:text-base relative">
+                    <div className="absolute top-0 right-0 w-6 md:w-8 h-6 md:h-8 bg-white rotate-45 translate-x-3 md:translate-x-4 -translate-y-3 md:-translate-y-4 border-l border-b border-slate-100"></div>
+                    {renderFormattedReport(generatedReport)}
+                    <div className="mt-6 flex justify-end">
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        {new Date().toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}{' '}
+                        ✓✓
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Footer */}

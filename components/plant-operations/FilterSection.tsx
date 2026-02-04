@@ -79,11 +79,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-5">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-ubuntu-orange to-orange-600 flex items-center justify-center shadow-md">
             <FilterIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">Smart Filters</h3>
+            <h3 className="text-lg font-semibold text-slate-800 font-display">Smart Filters</h3>
             <p className="text-xs text-slate-500">Refine your data view</p>
           </div>
         </div>
@@ -110,7 +110,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                 id="plant-category"
                 value={filters.plantCategory}
                 onChange={(e) => handleFieldChange('plantCategory', e.target.value)}
-                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
               >
                 <option value="">Choose Category</option>
                 {allowedCategories.map((category) => (
@@ -145,7 +145,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                 value={filters.plantUnit}
                 onChange={(e) => handleFieldChange('plantUnit', e.target.value)}
                 disabled={allowedUnits.length === 0}
-                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
               >
                 <option value="">Choose Unit</option>
                 {allowedUnits.map((unit) => (
@@ -179,7 +179,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               id="filter-date"
               value={filters.date}
               onChange={(e) => handleFieldChange('date', e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
             />
           </div>
 
@@ -190,7 +190,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
               size="sm"
               onClick={handleReset}
               disabled={isLoading}
-              className="whitespace-nowrap px-4 py-2.5 h-auto border-slate-300 hover:border-indigo-500 hover:text-indigo-600 transition-all duration-200"
+              className="whitespace-nowrap px-4 py-2.5 h-auto border-slate-300 hover:border-ubuntu-orange hover:text-ubuntu-orange transition-all duration-200"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Reset

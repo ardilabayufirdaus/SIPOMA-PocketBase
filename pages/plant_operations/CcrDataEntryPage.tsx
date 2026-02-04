@@ -518,34 +518,34 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     );
     if (!unitBelongsToCategory) return [];
 
-    let filteerror = parameterSettings.filter(
+    let filtered = parameterSettings.filter(
       (param) => param.category === selectedCategory && param.unit === selectedUnit
     );
 
     // Apply custom order if available
     if (pbParameterOrder.length > 0) {
       const orderMap = new Map(pbParameterOrder.map((id, index) => [id, index]));
-      filteerror = filteerror.sort((a, b) => {
-        const aIndex = orderMap.get(a.id) ?? filteerror.length;
-        const bIndex = orderMap.get(b.id) ?? filteerror.length;
+      filtered = filtered.sort((a, b) => {
+        const aIndex = orderMap.get(a.id) ?? filtered.length;
+        const bIndex = orderMap.get(b.id) ?? filtered.length;
         return aIndex - bIndex;
       });
     } else {
       // Default sort by parameter name
-      filteerror = filteerror.sort((a, b) => a.parameter.localeCompare(b.parameter));
+      filtered = filtered.sort((a, b) => a.parameter.localeCompare(b.parameter));
     }
 
     // Apply column search filter
     if (columnSearchQuery.trim()) {
       const searchTerm = columnSearchQuery.toLowerCase().trim();
-      filteerror = filteerror.filter(
+      filtered = filtered.filter(
         (param) =>
           param.parameter.toLowerCase().includes(searchTerm) ||
           param.unit.toLowerCase().includes(searchTerm)
       );
     }
 
-    return filteerror;
+    return filtered;
   }, [
     parameterSettings,
     selectedCategory,
@@ -837,7 +837,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, [showReorderModal, filteredParameterSettings, moveParameterUp, moveParameterDown]);
 
   // Filter parameters in modal based on search query
-  const filteerrorModalParameters = useMemo(() => {
+  const filteredModalParameters = useMemo(() => {
     if (!modalSearchQuery || modalSearchQuery.trim() === '') {
       return modalParameterOrder;
     }
@@ -1011,7 +1011,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     if (!selectedCategory) return [];
 
     // Get all silos that match the category and unit filters
-    const filteerrorMasterData = siloMasterData.filter((silo) => {
+    const filteredMasterData = siloMasterData.filter((silo) => {
       const categoryMatch = silo.plant_category === selectedCategory;
       const unitMatch = !selectedUnit || silo.unit === selectedUnit;
       return categoryMatch && unitMatch;
@@ -1020,8 +1020,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     // Create a map of existing silo data for quick lookup
     const existingDataMap = new Map(allDailySiloData.map((data) => [data.silo_id, data]));
 
-    // For each filteerror silo, either use existing data or create empty data structure
-    return filteerrorMasterData.map((masterSilo) => {
+    // For each filtered silo, either use existing data or create empty data structure
+    return filteredMasterData.map((masterSilo) => {
       const existingData = existingDataMap.get(masterSilo.id);
 
       if (existingData) {
@@ -3679,22 +3679,16 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       </div>
 
       <div className="relative space-y-6 p-4 lg:p-8">
-        {/* Enhanced Header Section with Indigo/Slate Theme */}
+        {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
           className="space-y-4"
         >
-          {/* Title Card - Indigo Gradient */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-            <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
-
+          <div className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#E95420] rounded-2xl shadow-xl border border-[#772953]/20 p-6">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#E95420]/20 via-transparent to-transparent"></div>
             <div className="relative flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-lg">
+              <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
                 <svg
                   className="w-7 h-7 text-indigo-200"
                   fill="none"
@@ -3710,224 +3704,99 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white tracking-tight">
+                <h2 className="text-2xl font-bold text-white uppercase tracking-tight">
                   {t.op_ccr_data_entry}
                 </h2>
-                <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
-                  {t.ccr_page_description}
-                </p>
+                <p className="text-sm text-white/80 font-medium mt-0.5">{t.ccr_page_description}</p>
               </div>
             </div>
-
-            {/* Error Alert - Inside Title Card */}
             {error && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mt-4 bg-red-50/95 backdrop-blur-md border border-red-300/50 rounded-xl p-4 shadow-lg"
+                className="mt-4 bg-red-50/95 border border-red-200 rounded-xl p-4 shadow text-red-800 text-xs font-medium flex justify-between"
               >
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-red-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-red-800 mb-1">Error</p>
-                    <p className="text-sm text-red-700 leading-relaxed">{error}</p>
-                    <button
-                      onClick={() => setError(null)}
-                      className="mt-2 px-3 py-1.5 text-xs font-medium bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200"
-                    >
-                      Tutup
-                    </button>
-                  </div>
-                </div>
+                <span>{error}</span>
+                <button onClick={() => setError(null)}>Close</button>
               </motion.div>
             )}
           </div>
-
-          {/* Filter Card - White Background */}
-          <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-lg border border-slate-200/60 p-4">
-            <div className="flex flex-wrap items-end gap-4">
-              {/* Plant Category */}
-              <div className="flex-1 min-w-[200px]">
-                <label
-                  htmlFor="ccr-category"
-                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
-                >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
-                  {t.plant_category_label}
-                </label>
-                <div className="relative">
-                  <select
-                    id="ccr-category"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
-                  >
-                    <option value="">-- {t.choose_category} --</option>
-                    {plantCategories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Unit Name */}
-              <div className="flex-1 min-w-[200px]">
-                <label
-                  htmlFor="ccr-unit"
-                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
-                >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                  {t.unit_label}
-                </label>
-                <div className="relative">
-                  <select
-                    id="ccr-unit"
-                    value={selectedUnit}
-                    onChange={(e) => setSelectedUnit(e.target.value)}
-                    disabled={unitsForCategory.length === 0}
-                    className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
-                  >
-                    <option value="">-- {t.choose_unit} --</option>
-                    {unitsForCategory.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Select Date */}
-              <div className="flex-1 min-w-[180px]">
-                <label
-                  htmlFor="ccr-date"
-                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
-                >
-                  <svg
-                    className="w-3.5 h-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  {t.select_date}
-                </label>
-                <div className="relative group/date">
-                  <div className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-sm font-medium flex items-center justify-between group-hover/date:border-slate-300 transition-all duration-200">
-                    <span>
-                      {selectedDate
-                        ? formatDate(new Date(selectedDate), 'dd/MM/yyyy')
-                        : '--/--/----'}
-                    </span>
-                    <svg
-                      className="w-4 h-4 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="date"
-                    id="ccr-date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer zi-10"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="space-y-8"
+        >
+          {/* Filters & Actions Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+            <CcrFilters
+              t={t}
+              plantCategories={plantCategories}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              unitsForCategory={unitsForCategory}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+            />
+            <CcrQuickActions
+              t={t}
+              selectedCategory={selectedCategory}
+              selectedUnit={selectedUnit}
+              selectedDate={selectedDate}
+              canWrite={canWrite}
+              isRefreshing={isRefreshing}
+              isExporting={isExporting}
+              onRefresh={refreshData}
+              onExport={handleExport}
+              onImport={() => fileInputRef.current?.click()}
+              onDeleteAll={deleteAllParameters}
+            />
+          </div>
 
-        {/* Enhanced Parameter Data Table */}
-        <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent truncate">
-                  {t.ccr_parameter_data_entry_title}
-                </h3>
-                <p className="text-sm text-neutral-600 mt-1 truncate">
-                  {t.ccr_parameter_section_description}
-                </p>
-              </div>
-            </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImport}
+            accept=".xlsx, .xls"
+            className="hidden"
+          />
 
-            {/* Enhanced Table Controls */}
-            {/* Controls Toolbar */}
-            <div className="flex flex-col gap-2 w-full lg:w-auto items-end">
-              {/* Primary Actions Row */}
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                {/* Visual Controls Group */}
-                <div className="flex items-center p-1 bg-white/50 rounded-lg border border-neutral-200/50 shadow-sm backdrop-blur-sm">
-                  {/* Refresh Button */}
-                  <div className="relative group/tooltip">
+          {/* Enhanced Parameter Data Table Card */}
+          <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center flex-shrink-0">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-[#772953] to-[#E95420] bg-clip-text text-transparent truncate">
+                    {t.ccr_parameter_data_entry_title}
+                  </h3>
+                  <p className="text-sm text-neutral-600 mt-1 truncate">
+                    {t.ccr_parameter_section_description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Controls Toolbar */}
+              <div className="flex flex-col gap-2 w-full lg:w-auto items-end">
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <div className="flex items-center p-1 bg-white/50 rounded-lg border border-neutral-200/50 shadow-sm backdrop-blur-sm">
                     <Button
                       size="sm"
                       onClick={refreshData}
@@ -3954,1109 +3823,926 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         </svg>
                       </div>
                     </Button>
-                    {/* Last Updated Tooltip */}
-                    {lastRefreshTime && (
-                      <div className="absolute right-0 top-full mt-2 hidden group-hover/tooltip:block z-50 px-2 py-1 text-xs text-white bg-neutral-800 rounded shadow-lg whitespace-nowrap">
-                        Updated:{' '}
-                        {formatToWITA(new Date(lastRefreshTime), {
-                          includeDate: false,
-                          includeTime: true,
-                        })}
-                      </div>
-                    )}
+                    <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsFooterVisible(!isFooterVisible)}
+                      variant="ghost"
+                      className={`h-9 px-3 ${isFooterVisible ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-neutral-600 hover:bg-neutral-100'}`}
+                      title={isFooterVisible ? 'Hide Footer' : 'Show Footer'}
+                    >
+                      <span className="text-sm mr-2">Footer</span>
+                      {isFooterVisible ? (
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 15l7-7 7 7"
+                          />
+                        </svg>
+                      )}
+                    </Button>
+                    <div className="w-px h-4 bg-neutral-300 mx-1"></div>
+                    <Button
+                      size="sm"
+                      onClick={() => setShowReorderModal(true)}
+                      disabled={
+                        !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
+                      }
+                      variant="ghost"
+                      className="h-9 px-3 text-neutral-600 hover:text-violet-600 hover:bg-violet-50"
+                      title="Reorder Parameters"
+                    >
+                      <span className="text-sm mr-2">Reorder</span>
+                      <ArrowsUpDownIcon className="w-4 h-4" />
+                    </Button>
                   </div>
 
-                  <div className="w-px h-4 bg-neutral-300 mx-1"></div>
-
-                  {/* Show/Hide Footer */}
-                  <Button
-                    size="sm"
-                    onClick={() => setIsFooterVisible(!isFooterVisible)}
-                    variant="ghost"
-                    className={`h-9 px-3 ${isFooterVisible ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-neutral-600 hover:bg-neutral-100'}`}
-                    title={isFooterVisible ? 'Hide Footer' : 'Show Footer'}
-                  >
-                    <span className="text-sm mr-2">Footer</span>
-                    {isFooterVisible ? (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 15l7-7 7 7"
-                        />
-                      </svg>
-                    )}
-                  </Button>
-
-                  <div className="w-px h-4 bg-neutral-300 mx-1"></div>
-
-                  {/* Reorder Parameters */}
-                  <Button
-                    size="sm"
-                    onClick={() => setShowReorderModal(true)}
-                    disabled={
-                      !selectedCategory || !selectedUnit || filteredParameterSettings.length === 0
-                    }
-                    variant="ghost"
-                    className="h-9 px-3 text-neutral-600 hover:text-violet-600 hover:bg-violet-50"
-                    title="Reorder Parameters"
-                  >
-                    <span className="text-sm mr-2">Reorder</span>
-                    <ArrowsUpDownIcon className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* AI Features Group */}
-                {hasPermission('cm_plant_operations', 'create') && selectedUnit && (
-                  <div className="flex items-center gap-2">
-                    {/* AI Parameter Optimization */}
-                    <OptimizationAdvisorButton
-                      unit={selectedUnit}
-                      className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 hover:shadow-md"
-                    />
-
-                    {/* AI Shift Report */}
-                    {selectedDate && (
-                      <ShiftHandoverButton
-                        date={selectedDate}
+                  {/* AI Features Group */}
+                  {hasPermission('cm_plant_operations', 'create') && selectedUnit && (
+                    <div className="flex items-center gap-2">
+                      <OptimizationAdvisorButton
                         unit={selectedUnit}
-                        className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:shadow-md"
+                        className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 hover:shadow-md"
                       />
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Secondary Actions Row (Excel & Admin) */}
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                {/* Excel Operations Group */}
-                {hasPermission('cm_plant_operations', 'READ') && (
-                  <div className="flex items-center bg-white rounded-lg border border-neutral-200/50 shadow-sm overflow-hidden">
-                    {/* Import */}
-                    {hasPermission('cm_plant_operations', 'WRITE') && (
-                      <>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleImport}
-                          accept=".xlsx, .xls"
-                          className="hidden"
+                      {selectedDate && (
+                        <ShiftHandoverButton
+                          date={selectedDate}
+                          unit={selectedUnit}
+                          className="h-9 text-sm px-3 shadow-sm bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:shadow-md"
                         />
-                        <Button
-                          size="sm"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={isImporting || !selectedCategory || !selectedUnit}
-                          variant="ghost"
-                          className="h-8 px-3 rounded-none border-r border-neutral-100 text-neutral-600 hover:text-emerald-700 hover:bg-emerald-50"
-                          title="Import Excel"
-                        >
-                          <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
-                          <span className="text-xs font-medium">Import</span>
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Export */}
-                    <Button
-                      size="sm"
-                      onClick={handleExport}
-                      disabled={
-                        isExporting ||
-                        !selectedCategory ||
-                        !selectedUnit ||
-                        filteredParameterSettings.length === 0
-                      }
-                      variant="ghost"
-                      className="h-8 px-3 rounded-none text-neutral-600 hover:text-teal-700 hover:bg-teal-50"
-                      title="Export Excel"
-                    >
-                      <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
-                      <span className="text-xs font-medium">Export</span>
-                    </Button>
-                  </div>
-                )}
-
-                {/* Admin Destructive Actions */}
-                {isSuperAdmin(loggedInUser?.role) && (
-                  <div className="flex items-center gap-2 ml-2 pl-2 border-l border-neutral-200">
-                    <Button
-                      size="sm"
-                      onClick={deleteAllParameters}
-                      disabled={
-                        isDeletingAll ||
-                        !selectedCategory ||
-                        !selectedUnit ||
-                        dailyParameterData.length === 0
-                      }
-                      variant="ghost"
-                      className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded text-xs"
-                      title="Delete All Data"
-                    >
-                      <TrashIcon className="w-4 h-4 mr-1" />
-                      Delete Data
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={deleteAllNames}
-                      disabled={
-                        isDeletingAllNames ||
-                        !selectedCategory ||
-                        !selectedUnit ||
-                        dailyParameterData.length === 0
-                      }
-                      variant="ghost"
-                      className="h-8 px-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded text-xs"
-                      title="Delete All Names"
-                    >
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                      Delete Names
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Parameter Data Table Card */}
-          {/* Column Search Filter */}
-          <div className="flex items-center justify-between gap-3 pb-4 border-b">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-neutral-700">{t.ccr_search_columns}:</span>
-              <div className="relative ccr-column-search">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -tranneutral-y-1/2 w-4 h-4 text-neutral-400 ccr-column-search-icon" />
-                <input
-                  type="text"
-                  value={columnSearchQuery}
-                  onChange={(e) => setColumnSearchQuery(e.target.value)}
-                  placeholder={t.ccr_search_placeholder}
-                  className="pl-10 pr-12 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-150"
-                  style={{ width: '320px' }}
-                  autoComplete="off"
-                  title={t.search_columns_tooltip}
-                />
-                {columnSearchQuery && (
-                  <EnhancedButton
-                    variant="ghost"
-                    size="xs"
-                    onClick={clearColumnSearch}
-                    className="absolute right-3 top-1/2 transform -tranneutral-y-1/2"
-                    aria-label={t.ccr_clear_search || 'Clear search'}
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                  </EnhancedButton>
-                )}
-                <div className="absolute right-2 top-full mt-1 text-xs text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  Ctrl+F to focus
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {isSearchActive && (
-                <div className="ccr-search-results-indicator">
-                  {filteredParameterSettings.length}{' '}
-                  {filteredParameterSettings.length === 1
-                    ? t.ccr_search_results
-                    : t.ccr_search_results_plural}
+
+            {/* Column Search Filter */}
+            <div className="flex items-center justify-between gap-3 pb-4 border-b">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-neutral-700">
+                  {t.ccr_search_columns}:
+                </span>
+                <div className="relative ccr-column-search">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    value={columnSearchQuery}
+                    onChange={(e) => setColumnSearchQuery(e.target.value)}
+                    placeholder={t.ccr_search_placeholder}
+                    className="pl-10 pr-12 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    style={{ width: '320px' }}
+                  />
+                  {columnSearchQuery && (
+                    <button
+                      onClick={clearColumnSearch}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    >
+                      <XMarkIcon className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-              )}
-              {isSearchActive && filteredParameterSettings.length === 0 && (
-                <div className="text-sm text-warning-600 font-medium">{t.ccr_no_columns_match}</div>
-              )}
-              {isSearchActive && (
-                <EnhancedButton
-                  variant="ghost"
-                  size="xs"
-                  onClick={clearColumnSearch}
-                  className="text-primary-600 hover:text-primary-800 transition-colors font-medium"
-                  aria-label="Clear column search filter"
-                >
-                  Clear Filter
-                </EnhancedButton>
-              )}
+              </div>
             </div>
-          </div>
 
-          {loading ? (
-            <CcrTableSkeleton />
-          ) : (
-            <div
-              className="ccr-table-container overflow-x-auto overflow-y-auto max-h-[600px]"
-              role="grid"
-              aria-label="Parameter Data Entry Table"
-            >
-              {/* Scrollable Table Content */}
-              <div className="ccr-table-wrapper min-w-[800px]" ref={tableWrapperRef}>
-                <table
-                  className="ccr-table"
-                  role="grid"
-                  style={{ tableLayout: 'fixed', width: '100%' }}
-                >
-                  <colgroup>
-                    <col style={{ width: '60px' }} />
-                    <col style={{ width: '80px' }} />
-                    <col style={{ width: '180px' }} />
-                    {filteredParameterSettings.map((_, index) => (
-                      <col key={index} style={{ width: '80px' }} />
-                    ))}
-                  </colgroup>
-                  <thead
-                    className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 text-white backdrop-blur-sm text-center sticky top-0 z-20 shadow-xl border-b-2 border-indigo-500/50"
-                    role="rowgroup"
+            {loading ? (
+              <CcrTableSkeleton />
+            ) : (
+              <div
+                className="ccr-table-container overflow-x-auto overflow-y-auto max-h-[600px]"
+                role="grid"
+                aria-label="Parameter Data Entry Table"
+              >
+                <div className="ccr-table-wrapper min-w-[800px]" ref={tableWrapperRef}>
+                  <table
+                    className="ccr-table"
+                    role="grid"
+                    style={{ tableLayout: 'fixed', width: '100%' }}
                   >
-                    <tr className="border-b border-secondary-300/30" role="row">
-                      <th
-                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 sticky left-0 bg-blue-700 z-30 sticky-col-header shadow-lg"
-                        style={{ width: '60px' }}
-                        role="columnheader"
-                        scope="col"
-                      >
-                        {t.hour}
-                      </th>
-                      <th
-                        className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
-                        style={{ width: '80px' }}
-                        role="columnheader"
-                        scope="col"
-                      >
-                        {t.shift}
-                      </th>
-                      <th
-                        className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
-                        style={{ width: '180px', minWidth: '180px' }}
-                        role="columnheader"
-                        scope="col"
-                      >
-                        {t.name}
-                      </th>
-                      {filteredParameterSettings.map((param) => (
+                    <colgroup>
+                      <col style={{ width: '60px' }} />
+                      <col style={{ width: '80px' }} />
+                      <col style={{ width: '180px' }} />
+                      {filteredParameterSettings.map((_, index) => (
+                        <col key={index} style={{ width: '80px' }} />
+                      ))}
+                    </colgroup>
+                    <thead
+                      className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white backdrop-blur-sm text-center sticky top-0 z-20 shadow-xl border-b-2 border-[#772953]/50"
+                      role="rowgroup"
+                    >
+                      <tr className="border-b border-secondary-300/30" role="row">
                         <th
-                          key={param.id}
-                          className={`px-2 py-3 text-xs font-bold border-r border-indigo-500/50 text-center bg-transparent backdrop-blur-sm text-white ${
-                            shouldHighlightColumn(param) ? 'filteerror-column' : ''
-                          }`}
-                          style={{ width: '80px', minWidth: '80px' }}
+                          className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-[#772953]/50 sticky left-0 bg-[#772953] z-30 sticky-col-header shadow-lg"
+                          style={{ width: '60px' }}
                           role="columnheader"
                           scope="col"
                         >
-                          <div className="text-center">
-                            <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90 drop-shadow-sm">
-                              {param.parameter}
-                            </div>
-                          </div>
+                          {t.hour}
                         </th>
-                      ))}
-                    </tr>
-                    <tr className="border-b border-secondary-200/50 bg-neutral-50/80" role="row">
-                      <th
-                        className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50/95 backdrop-blur-sm z-30"
-                        style={{ width: '60px' }}
-                        role="columnheader"
-                        scope="col"
-                      >
-                        {/* Empty for Hour */}
-                      </th>
-                      <th
-                        className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
-                        style={{ width: '80px' }}
-                        role="columnheader"
-                        scope="col"
-                      >
-                        {/* Empty for Shift */}
-                      </th>
-                      <th
-                        className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
-                        style={{ width: '180px', minWidth: '180px' }}
-                        role="columnheader"
-                        scope="col"
-                      >
-                        {/* Empty for Name */}
-                      </th>
-                      {filteredParameterSettings.map((param) => (
                         <th
-                          key={`minmax-${param.id}`}
-                          className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50/95 backdrop-blur-sm text-neutral-600 ${
-                            shouldHighlightColumn(param) ? 'filteerror-column' : ''
-                          }`}
-                          style={{ width: '80px', minWidth: '80px' }}
+                          className="px-2 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
+                          style={{ width: '80px' }}
                           role="columnheader"
                           scope="col"
                         >
-                          <div className="text-center space-y-1">
-                            <div className="text-[6px] leading-tight text-primary-600 font-medium">
-                              {param.min_value !== undefined
-                                ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
-                                : '-'}
-                            </div>
-                            <div className="text-[6px] leading-tight text-primary-600 font-medium">
-                              {param.max_value !== undefined
-                                ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
-                                : '-'}
-                            </div>
-                          </div>
+                          {t.shift}
                         </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white/80 backdrop-blur-sm" role="rowgroup">
-                    {filteredParameterSettings.length > 0 ? (
-                      Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
-                        <tr
-                          key={hour}
-                          className={`border-b border-neutral-200/50 group ${
-                            hour % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                          } hover:bg-gradient-to-r hover:from-primary-50/50 hover:to-secondary-50/50 transition-all duration-150`}
-                          role="row"
+                        <th
+                          className="px-3 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-indigo-500/50 bg-transparent backdrop-blur-sm"
+                          style={{ width: '180px', minWidth: '180px' }}
+                          role="columnheader"
+                          scope="col"
                         >
-                          <td
-                            className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white/90 group-hover:bg-secondary-50/80 z-30 sticky-col backdrop-blur-sm"
-                            style={{ width: '60px' }}
-                            role="gridcell"
+                          {t.name}
+                        </th>
+                        {filteredParameterSettings.map((param) => (
+                          <th
+                            key={param.id}
+                            className={`px-2 py-3 text-xs font-bold border-r border-[#772953]/50 text-center bg-transparent backdrop-blur-sm text-white ${
+                              shouldHighlightColumn(param) ? 'filtered-column' : ''
+                            }`}
+                            style={{ width: '80px', minWidth: '80px' }}
+                            role="columnheader"
+                            scope="col"
                           >
-                            <div className="flex items-center justify-center h-8">
-                              <span className="font-mono font-semibold text-neutral-800">
-                                {String(hour).padStart(2, '0')}:00
-                              </span>
+                            <div className="text-center">
+                              <div className="font-bold text-[8px] leading-tight uppercase tracking-wider text-white/90 drop-shadow-sm">
+                                {param.parameter}
+                              </div>
                             </div>
-                          </td>
-                          <td
-                            className="px-3 py-3 whitespace-nowrap text-xs text-neutral-600 border-r border-neutral-200/50"
-                            style={{ width: '80px' }}
-                            role="gridcell"
+                          </th>
+                        ))}
+                      </tr>
+                      <tr className="border-b border-secondary-200/50 bg-neutral-50/80" role="row">
+                        <th
+                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 sticky left-0 bg-neutral-50/95 backdrop-blur-sm z-30"
+                          style={{ width: '60px' }}
+                          role="columnheader"
+                          scope="col"
+                        >
+                          {/* Empty for Hour */}
+                        </th>
+                        <th
+                          className="px-2 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
+                          style={{ width: '80px' }}
+                          role="columnheader"
+                          scope="col"
+                        >
+                          {/* Empty for Shift */}
+                        </th>
+                        <th
+                          className="px-3 py-1 text-center text-xs font-semibold text-neutral-700 border-r border-secondary-300/30 bg-neutral-50/95 backdrop-blur-sm"
+                          style={{ width: '180px', minWidth: '180px' }}
+                          role="columnheader"
+                          scope="col"
+                        >
+                          {/* Empty for Name */}
+                        </th>
+                        {filteredParameterSettings.map((param) => (
+                          <th
+                            key={`minmax-${param.id}`}
+                            className={`px-2 py-1 text-xs border-r border-secondary-300/30 text-center bg-neutral-50/95 backdrop-blur-sm text-neutral-600 ${
+                              shouldHighlightColumn(param) ? 'filtered-column' : ''
+                            }`}
+                            style={{ width: '80px', minWidth: '80px' }}
+                            role="columnheader"
+                            scope="col"
                           >
-                            <div className="flex items-center h-8">
-                              <span className="px-2 py-1 rounded-md bg-primary-100 text-primary-800 font-medium text-xs">
-                                {getShiftForHour(hour)}
-                              </span>
+                            <div className="text-center space-y-1">
+                              <div className="text-[6px] leading-tight text-[#772953] font-medium">
+                                {param.min_value !== undefined
+                                  ? `Min: ${formatNumberIndonesian(param.min_value, 1)}`
+                                  : '-'}
+                              </div>
+                              <div className="text-[6px] leading-tight text-[#772953] font-medium">
+                                {param.max_value !== undefined
+                                  ? `Max: ${formatNumberIndonesian(param.max_value, 1)}`
+                                  : '-'}
+                              </div>
                             </div>
-                          </td>
-                          <td
-                            className="px-3 py-3 whitespace-nowrap text-xs text-neutral-800 border-r border-neutral-200/50"
-                            style={{ width: '180px', minWidth: '180px' }}
-                            role="gridcell"
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white/80 backdrop-blur-sm" role="rowgroup">
+                      {filteredParameterSettings.length > 0 ? (
+                        Array.from({ length: 24 }, (_, i) => i + 1).map((hour) => (
+                          <tr
+                            key={hour}
+                            className={`border-b border-neutral-200/50 group ${
+                              hour % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
+                            } hover:bg-gradient-to-r hover:from-[#772953]/5 hover:to-[#E95420]/5 transition-all duration-150`}
+                            role="row"
                           >
-                            <div className="flex items-center h-8">
-                              {/* User name display/edit - Super Admin can edit */}
-                              {(() => {
-                                // Cari parameter dengan data di jam ini yang memiliki informasi user
-                                let userName = null;
+                            <td
+                              className="px-3 py-3 whitespace-nowrap text-sm font-medium text-neutral-900 border-r border-neutral-200/50 sticky left-0 bg-white/90 group-hover:bg-secondary-50/80 z-30 sticky-col backdrop-blur-sm"
+                              style={{ width: '60px' }}
+                              role="gridcell"
+                            >
+                              <div className="flex items-center justify-center h-8">
+                                <span className="font-mono font-semibold text-neutral-800">
+                                  {String(hour).padStart(2, '0')}:00
+                                </span>
+                              </div>
+                            </td>
+                            <td
+                              className="px-3 py-3 whitespace-nowrap text-xs text-neutral-600 border-r border-neutral-200/50"
+                              style={{ width: '80px' }}
+                              role="gridcell"
+                            >
+                              <div className="flex items-center h-8">
+                                <span className="px-2 py-1 rounded-md bg-[#772953]/10 text-[#772953] font-medium text-xs">
+                                  {getShiftForHour(hour)}
+                                </span>
+                              </div>
+                            </td>
+                            <td
+                              className="px-3 py-3 whitespace-nowrap text-xs text-neutral-800 border-r border-neutral-200/50"
+                              style={{ width: '180px', minWidth: '180px' }}
+                              role="gridcell"
+                            >
+                              <div className="flex items-center h-8">
+                                {/* User name display/edit - Super Admin can edit */}
+                                {(() => {
+                                  // Cari parameter dengan data di jam ini yang memiliki informasi user
+                                  let userName = null;
 
-                                // Prioritaskan untuk mencari user_name dari field khusus hour{X}_user terlebih dahulu
-                                const userKeyName = `hour${hour}_user`;
+                                  // Prioritaskan untuk mencari user_name dari field khusus hour{X}_user terlebih dahulu
+                                  const userKeyName = `hour${hour}_user`;
 
-                                // Cek semua parameter untuk jam ini
-                                for (const param of filteredParameterSettings) {
-                                  const paramData = parameterDataMap.get(param.id);
-                                  if (!paramData) continue;
+                                  // Cek semua parameter untuk jam ini
+                                  for (const param of filteredParameterSettings) {
+                                    const paramData = parameterDataMap.get(param.id);
+                                    if (!paramData) continue;
 
-                                  // Periksa langsung field hour{X}_user terlebih dahulu
-                                  const userKey = userKeyName as keyof CcrParameterDataFlat;
-                                  if (
-                                    paramData[userKey] !== null &&
-                                    paramData[userKey] !== undefined
-                                  ) {
-                                    userName = String(paramData[userKey]);
-                                    break;
+                                    // Periksa langsung field hour{X}_user terlebih dahulu
+                                    const userKey = userKeyName as keyof CcrParameterDataFlat;
+                                    if (
+                                      paramData[userKey] !== null &&
+                                      paramData[userKey] !== undefined
+                                    ) {
+                                      userName = String(paramData[userKey]);
+                                      break;
+                                    }
+
+                                    // Jika tidak ada di hour{X}_user, periksa apakah parameter memiliki nilai untuk jam ini
+                                    // dan gunakan field name sebagai fallback
+                                    const hourKey = `hour${hour}` as keyof CcrParameterDataFlat;
+                                    const hourValue = paramData[hourKey];
+
+                                    if (
+                                      hourValue !== undefined &&
+                                      hourValue !== null &&
+                                      hourValue !== '' &&
+                                      paramData.name
+                                    ) {
+                                      userName = String(paramData.name);
+                                      break;
+                                    }
                                   }
 
-                                  // Jika tidak ada di hour{X}_user, periksa apakah parameter memiliki nilai untuk jam ini
-                                  // dan gunakan field name sebagai fallback
-                                  const hourKey = `hour${hour}` as keyof CcrParameterDataFlat;
-                                  const hourValue = paramData[hourKey];
-
-                                  if (
-                                    hourValue !== undefined &&
-                                    hourValue !== null &&
-                                    hourValue !== '' &&
-                                    paramData.name
-                                  ) {
-                                    userName = String(paramData.name);
-                                    break;
-                                  }
-                                }
-
-                                // Jika Super Admin, tampilkan input field untuk edit
-                                if (isSuperAdmin(loggedInUser?.role)) {
-                                  return (
-                                    <input
-                                      type="text"
-                                      value={userName || ''}
-                                      onChange={(e) => handleUserNameChange(hour, e.target.value)}
-                                      onBlur={(e) => saveUserNameChange(hour, e.target.value)}
-                                      className="w-full px-2 py-1 text-xs border border-neutral-300 rounded focus:ring-2 focus:ring-error-400 focus:border-error-400 bg-white hover:bg-neutral-50 text-neutral-800 transition-all duration-150"
-                                      placeholder="Enter user name"
-                                      title={`Edit user name for hour ${hour}`}
-                                      disabled={!canWrite}
-                                    />
-                                  );
-                                } else {
-                                  // Tampilkan nama user jika ditemukan
-                                  if (userName) {
+                                  // Jika Super Admin, tampilkan input field untuk edit
+                                  if (isSuperAdmin(loggedInUser?.role)) {
                                     return (
-                                      <span
-                                        className="truncate font-medium text-neutral-700"
-                                        title={userName}
-                                      >
-                                        {userName}
-                                      </span>
+                                      <input
+                                        type="text"
+                                        value={userName || ''}
+                                        onChange={(e) => handleUserNameChange(hour, e.target.value)}
+                                        onBlur={(e) => saveUserNameChange(hour, e.target.value)}
+                                        className="w-full px-2 py-1 text-xs border border-neutral-300 rounded focus:ring-2 focus:ring-error-400 focus:border-error-400 bg-white hover:bg-neutral-50 text-neutral-800 transition-all duration-150"
+                                        placeholder="Enter user name"
+                                        title={`Edit user name for hour ${hour}`}
+                                        disabled={!canWrite}
+                                      />
                                     );
                                   } else {
-                                    return <span className="text-neutral-400 italic">-</span>;
+                                    // Tampilkan nama user jika ditemukan
+                                    if (userName) {
+                                      return (
+                                        <span
+                                          className="truncate font-medium text-neutral-700"
+                                          title={userName}
+                                        >
+                                          {userName}
+                                        </span>
+                                      );
+                                    } else {
+                                      return <span className="text-neutral-400 italic">-</span>;
+                                    }
+                                  }
+                                })()}
+                              </div>
+                            </td>
+                            {filteredParameterSettings.map((param, paramIndex) => {
+                              const paramData = parameterDataMap.get(param.id);
+                              // Use flat structure with hourX field
+                              const hourKey = `hour${hour}` as keyof CcrParameterDataFlat;
+                              const hourValue = paramData?.[hourKey];
+
+                              // Extract value from flat structure
+                              let value = '';
+
+                              // Simply convert the value if it exists
+                              if (hourValue !== undefined && hourValue !== null) {
+                                // Use formatInputValue for numbers to show Indonesian locale (dots for thousands, commas for decimal)
+                                value =
+                                  param.data_type === ParameterDataType.NUMBER
+                                    ? formatInputValue(
+                                        hourValue,
+                                        getPrecisionForUnit(param.unit),
+                                        false // Don't force precision while rendering for input to prevent jumping
+                                      )
+                                    : String(hourValue);
+                              }
+
+                              const isProductTypeParameter = param.parameter
+                                .toLowerCase()
+                                .includes('tipe produk');
+
+                              // Determine cell background and text color based on parameter value vs min/max
+                              let cellBgClass = 'bg-white';
+                              let cellTextClass = 'text-neutral-800';
+                              let cellBorderClass = 'border-neutral-300';
+
+                              if (
+                                param.data_type === ParameterDataType.NUMBER &&
+                                value &&
+                                !isProductTypeParameter
+                              ) {
+                                // Parse value - handle Indonesian local format correctly
+                                const numValue = parseInputValue(value);
+                                if (numValue !== null) {
+                                  const isBelowMin =
+                                    param.min_value !== undefined && numValue < param.min_value;
+                                  const isAboveMax =
+                                    param.max_value !== undefined && numValue > param.max_value;
+                                  const hasMinOrMax =
+                                    param.min_value !== undefined || param.max_value !== undefined;
+
+                                  if (isBelowMin || isAboveMax) {
+                                    // Out of range - RED
+                                    cellBgClass = 'bg-red-200';
+                                    cellTextClass = 'text-red-900 font-bold';
+                                    cellBorderClass = 'border-red-400';
+                                  } else if (hasMinOrMax) {
+                                    // Within range - GREEN
+                                    cellBgClass = 'bg-green-200';
+                                    cellTextClass = 'text-green-900 font-bold';
+                                    cellBorderClass = 'border-green-400';
                                   }
                                 }
-                              })()}
-                            </div>
-                          </td>
-                          {filteredParameterSettings.map((param, paramIndex) => {
-                            const paramData = parameterDataMap.get(param.id);
-                            // Use flat structure with hourX field
-                            const hourKey = `hour${hour}` as keyof CcrParameterDataFlat;
-                            const hourValue = paramData?.[hourKey];
-
-                            // Extract value from flat structure
-                            let value = '';
-
-                            // Simply convert the value if it exists
-                            if (hourValue !== undefined && hourValue !== null) {
-                              // Use formatInputValue for numbers to show Indonesian locale (dots for thousands, commas for decimal)
-                              value =
-                                param.data_type === ParameterDataType.NUMBER
-                                  ? formatInputValue(
-                                      hourValue,
-                                      getPrecisionForUnit(param.unit),
-                                      false // Don't force precision while rendering for input to prevent jumping
-                                    )
-                                  : String(hourValue);
-                            }
-
-                            const isProductTypeParameter = param.parameter
-                              .toLowerCase()
-                              .includes('tipe produk');
-
-                            // Determine cell background and text color based on parameter value vs min/max
-                            let cellBgClass = 'bg-white';
-                            let cellTextClass = 'text-neutral-800';
-                            let cellBorderClass = 'border-neutral-300';
-
-                            if (
-                              param.data_type === ParameterDataType.NUMBER &&
-                              value &&
-                              !isProductTypeParameter
-                            ) {
-                              // Parse value - handle Indonesian local format correctly
-                              const numValue = parseInputValue(value);
-                              if (numValue !== null) {
-                                const isBelowMin =
-                                  param.min_value !== undefined && numValue < param.min_value;
-                                const isAboveMax =
-                                  param.max_value !== undefined && numValue > param.max_value;
-                                const hasMinOrMax =
-                                  param.min_value !== undefined || param.max_value !== undefined;
-
-                                if (isBelowMin || isAboveMax) {
-                                  // Out of range - RED
-                                  cellBgClass = 'bg-red-200';
-                                  cellTextClass = 'text-red-900 font-bold';
-                                  cellBorderClass = 'border-red-400';
-                                } else if (hasMinOrMax) {
-                                  // Within range - GREEN
-                                  cellBgClass = 'bg-green-200';
-                                  cellTextClass = 'text-green-900 font-bold';
-                                  cellBorderClass = 'border-green-400';
-                                }
                               }
-                            }
 
-                            const isCurrentlySaving = false; // Removed loading indicator for immediate saving
+                              const isCurrentlySaving = false; // Removed loading indicator for immediate saving
 
-                            return (
-                              <td
-                                key={param.id}
-                                className={`p-1 border-r ${cellBgClass} relative ${
-                                  shouldHighlightColumn(param) ? 'filteerror-column' : ''
-                                }`}
-                                style={{ width: '80px', minWidth: '80px' }}
-                                role="gridcell"
-                              >
-                                <div className="relative">
-                                  {isProductTypeParameter ? (
-                                    <select
-                                      ref={(el) => {
-                                        const refKey = getInputRef(
-                                          'parameter',
-                                          hour - 1,
-                                          paramIndex
-                                        );
-                                        setInputRef(refKey, el);
-                                      }}
-                                      value={value}
-                                      onChange={(e) => {
-                                        // Hanya update UI tanpa menyimpan ke database
-                                        handleParameterDataChange(param.id, hour, e.target.value);
-                                      }}
-                                      onBlur={(e) => {
-                                        // Simpan ke database saat berpindah sel
-                                        saveParameterChange(param.id, hour, e.target.value);
-                                      }}
-                                      onKeyDown={(e) => {
-                                        const { key } = e;
-                                        if (key === 'Enter') {
-                                          e.preventDefault();
-                                          e.currentTarget.blur();
-                                          handleKeyDown(e, 'parameter', hour - 1, paramIndex);
-                                        } else {
-                                          handleKeyDown(e, 'parameter', hour - 1, paramIndex);
-                                        }
-                                      }}
-                                      disabled={!canWrite}
-                                      className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
-                                        isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
-                                      }`}
-                                      style={{
-                                        fontSize: '12px',
-                                        minHeight: '32px',
-                                        maxWidth: '150px',
-                                      }}
-                                      aria-label={`Parameter ${param.parameter} jam ${hour}`}
-                                      title={`Pilih tipe produk untuk jam ${hour}`}
-                                    >
-                                      <option value="">-</option>
-                                      {['OPC', 'PPC', ' PCC'].map((option) => (
-                                        <option key={option} value={option}>
-                                          {option}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : (
-                                    <input
-                                      ref={(el) => {
-                                        const refKey = getInputRef(
-                                          'parameter',
-                                          hour - 1,
-                                          paramIndex
-                                        );
-                                        if (el) {
-                                          inputRefs.current.set(refKey, el);
-                                        } else {
-                                          inputRefs.current.delete(refKey);
-                                        }
-                                      }}
-                                      type="text"
-                                      className={`w-full h-full bg-transparent px-1 py-0.5 text-center text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 rounded-none transition-colors ${cellTextClass} border ${
-                                        cellBorderClass !== 'border-neutral-300'
-                                          ? cellBorderClass
-                                          : 'border-transparent'
-                                      }`}
-                                      value={value}
-                                      onChange={(e) => {
-                                        // 1. Support input (.) as decimal separator -> auto convert to (,) only at the end
-                                        let newValue = e.target.value;
+                              return (
+                                <td
+                                  key={param.id}
+                                  className={`p-1 border-r ${cellBgClass} relative ${
+                                    shouldHighlightColumn(param) ? 'filtered-column' : ''
+                                  }`}
+                                  style={{ width: '80px', minWidth: '80px' }}
+                                  role="gridcell"
+                                >
+                                  <div className="relative">
+                                    {isProductTypeParameter ? (
+                                      <select
+                                        ref={(el) => {
+                                          const refKey = getInputRef(
+                                            'parameter',
+                                            hour - 1,
+                                            paramIndex
+                                          );
+                                          setInputRef(refKey, el);
+                                        }}
+                                        value={value}
+                                        onChange={(e) => {
+                                          // Hanya update UI tanpa menyimpan ke database
+                                          handleParameterDataChange(param.id, hour, e.target.value);
+                                        }}
+                                        onBlur={(e) => {
+                                          // Simpan ke database saat berpindah sel
+                                          saveParameterChange(param.id, hour, e.target.value);
+                                        }}
+                                        onKeyDown={(e) => {
+                                          const { key } = e;
+                                          if (key === 'Enter') {
+                                            e.preventDefault();
+                                            e.currentTarget.blur();
+                                            handleKeyDown(e, 'parameter', hour - 1, paramIndex);
+                                          } else {
+                                            handleKeyDown(e, 'parameter', hour - 1, paramIndex);
+                                          }
+                                        }}
+                                        disabled={!canWrite}
+                                        className={`w-full text-center text-sm px-2 py-2 border ${cellBorderClass} rounded focus:ring-2 focus:ring-blue-400 focus:border-blue-400 ${cellBgClass} ${cellTextClass} transition-all duration-150 ${
+                                          isCurrentlySaving ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
+                                        style={{
+                                          fontSize: '12px',
+                                          minHeight: '32px',
+                                          maxWidth: '150px',
+                                        }}
+                                        aria-label={`Parameter ${param.parameter} jam ${hour}`}
+                                        title={`Pilih tipe produk untuk jam ${hour}`}
+                                      >
+                                        <option value="">-</option>
+                                        {['OPC', 'PPC', ' PCC'].map((option) => (
+                                          <option key={option} value={option}>
+                                            {option}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : (
+                                      <input
+                                        ref={(el) => {
+                                          const refKey = getInputRef(
+                                            'parameter',
+                                            hour - 1,
+                                            paramIndex
+                                          );
+                                          if (el) {
+                                            inputRefs.current.set(refKey, el);
+                                          } else {
+                                            inputRefs.current.delete(refKey);
+                                          }
+                                        }}
+                                        type="text"
+                                        className={`w-full h-full bg-transparent px-1 py-0.5 text-center text-xs focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 rounded-none transition-colors ${cellTextClass} border ${
+                                          cellBorderClass !== 'border-neutral-300'
+                                            ? cellBorderClass
+                                            : 'border-transparent'
+                                        }`}
+                                        value={value}
+                                        onChange={(e) => {
+                                          // 1. Support input (.) as decimal separator -> auto convert to (,) only at the end
+                                          let newValue = e.target.value;
 
-                                        // Konversi titik ke koma (standar desimal Indonesia) hanya untuk numpad support di akhir input
-                                        if (newValue.endsWith('.')) {
-                                          newValue = newValue.slice(0, -1) + ',';
-                                        }
+                                          // Konversi titik ke koma (standar desimal Indonesia) hanya untuk numpad support di akhir input
+                                          if (newValue.endsWith('.')) {
+                                            newValue = newValue.slice(0, -1) + ',';
+                                          }
 
-                                        // 2. Auto-format ribuan (1.000) saat mengetik
-                                        if (newValue !== '-' && newValue !== '') {
-                                          const parts = newValue.split(',');
-                                          let integerPart = parts[0];
-                                          const decimalPart =
-                                            parts.length > 1 ? ',' + parts[1] : '';
+                                          // 2. Auto-format ribuan (1.000) saat mengetik
+                                          if (newValue !== '-' && newValue !== '') {
+                                            const parts = newValue.split(',');
+                                            let integerPart = parts[0];
+                                            const decimalPart =
+                                              parts.length > 1 ? ',' + parts[1] : '';
 
-                                          // Bersihkan ribuan hanya jika kita yakin itu ribuan
-                                          const dotCount = (integerPart.match(/\./g) || []).length;
-                                          if (dotCount > 0) {
-                                            const lastDotIndex = integerPart.lastIndexOf('.');
-                                            const charsAfterDot =
-                                              integerPart.length - lastDotIndex - 1;
+                                            // Bersihkan ribuan hanya jika kita yakin itu ribuan
+                                            const dotCount = (integerPart.match(/\./g) || [])
+                                              .length;
+                                            if (dotCount > 0) {
+                                              const lastDotIndex = integerPart.lastIndexOf('.');
+                                              const charsAfterDot =
+                                                integerPart.length - lastDotIndex - 1;
 
-                                            // Jika multiple dots, atau satu titik di posisi ribuan (3 digit) dan diikuti koma desimal,
-                                            // atau tepat 3 digit di akhir integer part.
-                                            if (
-                                              dotCount > 1 ||
-                                              charsAfterDot === 3 ||
-                                              decimalPart !== ''
-                                            ) {
-                                              integerPart = integerPart.replace(/\./g, '');
+                                              // Jika multiple dots, atau satu titik di posisi ribuan (3 digit) dan diikuti koma desimal,
+                                              // atau tepat 3 digit di akhir integer part.
+                                              if (
+                                                dotCount > 1 ||
+                                                charsAfterDot === 3 ||
+                                                decimalPart !== ''
+                                              ) {
+                                                integerPart = integerPart.replace(/\./g, '');
+                                              }
+                                            }
+
+                                            // Formating ulang bagian integer jika itu angka valid
+                                            const cleanInt = integerPart.replace(/\./g, '');
+                                            if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
+                                              // Jika cleanInt mengandung titik, berarti itu desimal yang belum diconvert
+                                              if (cleanInt.includes('.')) {
+                                                newValue =
+                                                  cleanInt.replace('.', ',') +
+                                                  decimalPart.replace(',', '');
+                                              } else {
+                                                integerPart = cleanInt.replace(
+                                                  /\B(?=(\d{3})+(?!\d))/g,
+                                                  '.'
+                                                );
+                                                newValue = integerPart + decimalPart;
+                                              }
                                             }
                                           }
 
-                                          // Formating ulang bagian integer jika itu angka valid
-                                          const cleanInt = integerPart.replace(/\./g, '');
-                                          if (!isNaN(Number(cleanInt)) && cleanInt !== '') {
-                                            // Jika cleanInt mengandung titik, berarti itu desimal yang belum diconvert
-                                            if (cleanInt.includes('.')) {
-                                              newValue =
-                                                cleanInt.replace('.', ',') +
-                                                decimalPart.replace(',', '');
-                                            } else {
-                                              integerPart = cleanInt.replace(
-                                                /\B(?=(\d{3})+(?!\d))/g,
-                                                '.'
+                                          handleParameterDataChange(param.id, hour, newValue);
+                                        }}
+                                        onBlur={async (e) => {
+                                          // Reformat nilai numerik dan simpan ke database saat berpindah sel
+                                          if (param.data_type === ParameterDataType.NUMBER) {
+                                            const parsed = parseInputValue(e.target.value);
+                                            if (parsed !== null) {
+                                              // Format tampilan kembali ke standar Indonesia (1.000,0)
+                                              e.target.value = formatInputValue(
+                                                parsed,
+                                                getPrecisionForUnit(param.unit)
                                               );
-                                              newValue = integerPart + decimalPart;
                                             }
                                           }
-                                        }
 
-                                        handleParameterDataChange(param.id, hour, newValue);
-                                      }}
-                                      onBlur={async (e) => {
-                                        // Reformat nilai numerik dan simpan ke database saat berpindah sel
-                                        if (param.data_type === ParameterDataType.NUMBER) {
-                                          const parsed = parseInputValue(e.target.value);
-                                          if (parsed !== null) {
-                                            // Format tampilan kembali ke standar Indonesia (1.000,0)
-                                            e.target.value = formatInputValue(
-                                              parsed,
-                                              getPrecisionForUnit(param.unit)
-                                            );
-                                          }
-                                        }
+                                          // Get final value to save
+                                          const value =
+                                            param.data_type === ParameterDataType.NUMBER
+                                              ? parseInputValue(e.target.value) !== null
+                                                ? parseInputValue(e.target.value)?.toString()
+                                                : ''
+                                              : e.target.value;
 
-                                        // Get final value to save
-                                        const value =
+                                          // Simpan ke database saat berpindah sel
+                                          await saveParameterChange(param.id, hour, value || '');
+                                        }}
+                                        onKeyDown={(e) =>
+                                          handleKeyDown(e, 'parameter', hour - 1, paramIndex)
+                                        }
+                                        disabled={!canWrite}
+                                        style={{
+                                          fontSize: '12px',
+                                          minHeight: '32px',
+                                          maxWidth: '150px',
+                                        }}
+                                        aria-label={`Parameter ${param.parameter} jam ${hour}`}
+                                        title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
+                                        placeholder={
                                           param.data_type === ParameterDataType.NUMBER
-                                            ? parseInputValue(e.target.value) !== null
-                                              ? parseInputValue(e.target.value)?.toString()
-                                              : ''
-                                            : e.target.value;
-
-                                        // Simpan ke database saat berpindah sel
-                                        await saveParameterChange(param.id, hour, value || '');
-                                      }}
-                                      onKeyDown={(e) =>
-                                        handleKeyDown(e, 'parameter', hour - 1, paramIndex)
-                                      }
-                                      disabled={!canWrite}
-                                      style={{
-                                        fontSize: '12px',
-                                        minHeight: '32px',
-                                        maxWidth: '150px',
-                                      }}
-                                      aria-label={`Parameter ${param.parameter} jam ${hour}`}
-                                      title={`Isi data parameter ${param.parameter} untuk jam ${hour}`}
-                                      placeholder={
-                                        param.data_type === ParameterDataType.NUMBER
-                                          ? ''
-                                          : 'Enter text'
-                                      }
-                                    />
-                                  )}
-                                  {/* Removed loading indicator for immediate saving */}
-                                  {/* {isCurrentlySaving && (
+                                            ? ''
+                                            : 'Enter text'
+                                        }
+                                      />
+                                    )}
+                                    {/* Removed loading indicator for immediate saving */}
+                                    {/* {isCurrentlySaving && (
                                   <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded">
                                     <div className="w-4 h-4 border-2 border-error-500 border-t-transparent rounded-full animate-spin"></div>
                                   </div>
                                 )} */}
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan={
-                            3 +
-                            (filteredParameterSettings.length > 0
-                              ? filteredParameterSettings.length
-                              : 0)
-                          }
-                          className="text-center py-10 text-neutral-500"
-                        >
-                          {!selectedCategory || !selectedUnit
-                            ? 'Please select a plant category and unit.'
-                            : t.no_parameter_master_data_found.replace('{unit}', selectedUnit)}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Separate Footer Component - Toggle Visibility */}
-              {isFooterVisible && (
-                <CcrTableFooter
-                  filteredParameterSettings={filteredParameterSettings}
-                  parameterShiftFooterData={parameterShiftFooterData}
-                  parameterShiftAverageData={parameterShiftAverageData}
-                  parameterShiftCounterData={parameterShiftCounterData}
-                  parameterFooterData={parameterFooterData}
-                  formatStatValue={formatStatValue}
-                  t={t}
-                  mainTableScrollElement={tableWrapperRef.current}
-                />
-              )}
-            </div>
-          )}
-        </EnhancedCard>
-
-        {/* Bottom Section: Silo Data, Material Usage, Information, and Downtime Data */}
-        <div className="space-y-6">
-          {/* First Row: CCR Silo Data Entry and CCR Material Usage Entry */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Silo Data Entry */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-slate-600 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent">
-                    CCR Silo Data Entry
-                  </h3>
-                  <p className="text-sm text-neutral-600">{t.ccr_silo_data_description}</p>
-                </div>
-              </div>
-              <div className="overflow-x-auto rounded-xl border border-neutral-200/50 shadow-inner">
-                <table
-                  className="min-w-full divide-y divide-neutral-200 border border-neutral-200"
-                  aria-label="Silo Data Table"
-                >
-                  <thead className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-slate-800 text-white shadow-xl">
-                    <tr>
-                      <th
-                        rowSpan={2}
-                        className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 align-middle"
-                      >
-                        {t.silo_name}
-                      </th>
-                      <th
-                        colSpan={3}
-                        className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 border-b border-slate-600/50"
-                      >
-                        {t.shift_1}
-                      </th>
-                      <th
-                        colSpan={3}
-                        className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 border-b border-slate-600/50"
-                      >
-                        {t.shift_2}
-                      </th>
-                      <th
-                        colSpan={3}
-                        className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-600/50"
-                      >
-                        {t.shift_3}
-                      </th>
-                    </tr>
-                    <tr>
-                      {[...Array(3)].flatMap((_, i) => [
-                        <th
-                          key={`es-${i}`}
-                          className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50"
-                        >
-                          {t.empty_space}
-                        </th>,
-                        <th
-                          key={`c-${i}`}
-                          className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50"
-                        >
-                          {t.content}
-                        </th>,
-                        <th
-                          key={`p-${i}`}
-                          className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
-                            i < 2 ? 'border-r border-slate-600/50' : ''
-                          }`}
-                        >
-                          {t.percentage}
-                        </th>,
-                      ])}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-neutral-200/50">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={10} className="text-center py-16">
-                          <div className="flex items-center justify-center">
-                            <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="ml-3 text-neutral-600 font-medium">
-                              Loading silo data...
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      dailySiloData.map((siloData, siloIndex) => {
-                        const masterSilo = siloMasterMap.get(siloData.silo_id);
-                        if (!masterSilo) return null;
-
-                        const shifts: ('shift1' | 'shift2' | 'shift3')[] = [
-                          'shift1',
-                          'shift2',
-                          'shift3',
-                        ];
-
-                        return (
-                          <tr key={siloData.id} className="hover:bg-neutral-50">
-                            <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-neutral-900 border-r sticky left-0 bg-white z-10">
-                              {masterSilo.silo_name}
-                            </td>
-                            {shifts.map((shift, i) => {
-                              const content = siloData[shift]?.content;
-                              const capacity = masterSilo.capacity;
-                              const percentage =
-                                capacity > 0 && typeof content === 'number'
-                                  ? (content / capacity) * 100
-                                  : 0;
-
-                              return (
-                                <React.Fragment key={shift}>
-                                  <td
-                                    className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                      siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
-                                    } transition-colors duration-150`}
-                                  >
-                                    <input
-                                      ref={(el) => {
-                                        const refKey = getInputRef('silo', siloIndex, i * 2);
-                                        setInputRef(refKey, el);
-                                      }}
-                                      type="text"
-                                      defaultValue={formatInputValue(
-                                        siloData[shift]?.emptySpace,
-                                        1
-                                      )}
-                                      onChange={(e) => {
-                                        const parsed = parseInputValue(e.target.value);
-                                        handleSiloDataChange(
-                                          siloData.silo_id,
-                                          shift,
-                                          'emptySpace',
-                                          parsed !== null ? parsed.toString() : ''
-                                        );
-                                      }}
-                                      onBlur={() => {
-                                        handleSiloDataBlur(siloData.silo_id, shift, 'emptySpace');
-                                      }}
-                                      onKeyDown={(e) => handleKeyDown(e, 'silo', siloIndex, i * 2)}
-                                      disabled={!canWrite}
-                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
-                                      aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
-                                      title={`Isi ruang kosong untuk ${
-                                        masterSilo.silo_name
-                                      } shift ${i + 1}`}
-                                      placeholder="0,0"
-                                    />
-                                  </td>
-                                  <td
-                                    className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
-                                      siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
-                                    } transition-colors duration-150`}
-                                  >
-                                    <input
-                                      ref={(el) => {
-                                        const refKey = getInputRef('silo', siloIndex, i * 2 + 1);
-                                        setInputRef(refKey, el);
-                                      }}
-                                      type="text"
-                                      defaultValue={formatInputValue(content, 1)}
-                                      onChange={(e) => {
-                                        const parsed = parseInputValue(e.target.value);
-                                        handleSiloDataChange(
-                                          siloData.silo_id,
-                                          shift,
-                                          'content',
-                                          parsed !== null ? parsed.toString() : ''
-                                        );
-                                      }}
-                                      onBlur={() => {
-                                        handleSiloDataBlur(siloData.silo_id, shift, 'content');
-                                      }}
-                                      onKeyDown={(e) =>
-                                        handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
-                                      }
-                                      disabled={!canWrite}
-                                      className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
-                                      aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
-                                      title={`Isi konten untuk ${
-                                        masterSilo.silo_name
-                                      } shift ${i + 1} (Max: ${masterSilo.capacity})`}
-                                      placeholder="0,0"
-                                    />
-                                  </td>
-                                  <td
-                                    className={`px-2 py-2 whitespace-nowrap text-sm text-center text-neutral-600 align-middle ${
-                                      i < 2 ? 'border-r' : ''
-                                    }`}
-                                  >
-                                    <div className="relative w-full h-6 bg-neutral-200 rounded-full overflow-hidden">
-                                      <div
-                                        className="absolute top-0 left-0 h-full bg-error-500 transition-all duration-150"
-                                        style={{
-                                          width: `${Math.min(100, percentage)}%`,
-                                        }}
-                                      ></div>
-                                      <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white mix-blend-difference">
-                                        {formatNumber(percentage)}%
-                                      </span>
-                                    </div>
-                                  </td>
-                                </React.Fragment>
+                                  </div>
+                                </td>
                               );
                             })}
                           </tr>
-                        );
-                      })
-                    )}
-                    {dailySiloData.length === 0 && (
-                      <tr>
-                        <td colSpan={10} className="text-center py-6 text-neutral-500">
-                          {!selectedCategory
-                            ? t.no_plant_categories_found
-                            : t.no_silo_master_data_found.replace('{category}', selectedCategory)}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </EnhancedCard>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={
+                              3 +
+                              (filteredParameterSettings.length > 0
+                                ? filteredParameterSettings.length
+                                : 0)
+                            }
+                            className="text-center py-10 text-neutral-500"
+                          >
+                            {!selectedCategory || !selectedUnit
+                              ? 'Please select a plant category and unit.'
+                              : t.no_parameter_master_data_found.replace('{unit}', selectedUnit)}
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
 
-            {/* CCR Material Usage Entry */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-600 to-indigo-500 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent">
-                    {t.ccr_material_usage_entry_title}
-                  </h3>
-                  <p className="text-sm text-neutral-600">{t.ccr_material_usage_description}</p>
-                </div>
-              </div>
-              <MaterialUsageEntry
-                key={materialUsageRefreshTrigger}
-                selectedDate={selectedDate}
-                selectedUnit={selectedUnit}
-                selectedCategory={selectedCategory}
-                disabled={!selectedCategory || !selectedUnit}
-                t={t}
-              />
-            </EnhancedCard>
-          </div>
-
-          {/* Second Row: Information and CCR Downtime Data Entry */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Information */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-500 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent">
-                    Information
-                  </h3>
-                  <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <label
-                  htmlFor="keterangan"
-                  className="block text-sm font-semibold text-neutral-700"
-                >
-                  {t.information_label}
-                </label>
-                <div className="relative">
-                  <textarea
-                    id="keterangan"
-                    rows={8}
-                    value={informationText}
-                    onChange={(e) => handleInformationChange(e.target.value)}
-                    disabled={!canWrite || !selectedCategory || !selectedUnit}
-                    className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                    placeholder={t.information_placeholder}
+                {/* Separate Footer Component - Toggle Visibility */}
+                {isFooterVisible && (
+                  <CcrTableFooter
+                    filteredParameterSettings={filteredParameterSettings}
+                    parameterShiftFooterData={parameterShiftFooterData}
+                    parameterShiftAverageData={parameterShiftAverageData}
+                    parameterShiftCounterData={parameterShiftCounterData}
+                    parameterFooterData={parameterFooterData}
+                    formatStatValue={formatStatValue}
+                    t={t}
+                    mainTableScrollElement={tableWrapperRef.current}
                   />
-                </div>
-                {isSavingInformation && (
-                  <div className="flex justify-end">
-                    <div className="px-4 py-2 text-sm text-success-700 flex items-center space-x-2">
-                      <div className="w-3 h-3 border-2 border-success-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span>Otomatis menyimpan perubahan...</span>
-                    </div>
-                  </div>
                 )}
               </div>
-            </EnhancedCard>
+            )}
+          </EnhancedCard>
 
-            {/* Downtime Data Entry */}
-            <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
-              <div className="flex justify-between items-center">
+          {/* Bottom Section: Silo Data, Material Usage, Information, and Downtime Data */}
+          <div className="space-y-6">
+            {/* First Row: CCR Silo Data Entry and CCR Material Usage Entry */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Silo Data Entry */}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-slate-600/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                <EnhancedCard className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center shadow-lg shadow-[#772953]/30 ring-4 ring-[#772953]/10">
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black tracking-tight text-slate-800">
+                        Inventory & Silo Management
+                      </h3>
+                      <p className="text-sm font-medium text-slate-500">{t.silo_monitoring_desc}</p>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto rounded-xl border border-neutral-200/50 shadow-inner">
+                    <table
+                      className="min-w-full divide-y divide-neutral-200 border border-neutral-200"
+                      aria-label="Silo Data Table"
+                    >
+                      <thead className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white shadow-xl">
+                        <tr>
+                          <th
+                            rowSpan={2}
+                            className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 align-middle"
+                          >
+                            {t.silo_name}
+                          </th>
+                          <th
+                            colSpan={3}
+                            className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 border-b border-slate-600/50"
+                          >
+                            {t.shift_1}
+                          </th>
+                          <th
+                            colSpan={3}
+                            className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50 border-b border-slate-600/50"
+                          >
+                            {t.shift_2}
+                          </th>
+                          <th
+                            colSpan={3}
+                            className="px-4 py-4 text-xs font-bold uppercase tracking-wider border-b border-slate-600/50"
+                          >
+                            {t.shift_3}
+                          </th>
+                        </tr>
+                        <tr>
+                          {[...Array(3)].flatMap((_, i) => [
+                            <th
+                              key={`es-${i}`}
+                              className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50"
+                            >
+                              {t.empty_space}
+                            </th>,
+                            <th
+                              key={`c-${i}`}
+                              className="px-3 py-3 text-xs font-bold uppercase tracking-wider border-r border-slate-600/50"
+                            >
+                              {t.content}
+                            </th>,
+                            <th
+                              key={`p-${i}`}
+                              className={`px-3 py-3 text-xs font-bold uppercase tracking-wider ${
+                                i < 2 ? 'border-r border-slate-600/50' : ''
+                              }`}
+                            >
+                              {t.percentage}
+                            </th>,
+                          ])}
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white/80 backdrop-blur-sm divide-y divide-neutral-200/50">
+                        {loading ? (
+                          <tr>
+                            <td colSpan={10} className="text-center py-16">
+                              <div className="flex items-center justify-center">
+                                <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="ml-3 text-neutral-600 font-medium">
+                                  Loading silo data...
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          dailySiloData.map((siloData, siloIndex) => {
+                            const masterSilo = siloMasterMap.get(siloData.silo_id);
+                            if (!masterSilo) return null;
+
+                            const shifts: ('shift1' | 'shift2' | 'shift3')[] = [
+                              'shift1',
+                              'shift2',
+                              'shift3',
+                            ];
+
+                            return (
+                              <tr key={siloData.id} className="hover:bg-neutral-50">
+                                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-neutral-900 border-r sticky left-0 bg-white z-10">
+                                  {masterSilo.silo_name}
+                                </td>
+                                {shifts.map((shift, i) => {
+                                  const content = siloData[shift]?.content;
+                                  const capacity = masterSilo.capacity;
+                                  const percentage =
+                                    capacity > 0 && typeof content === 'number'
+                                      ? (content / capacity) * 100
+                                      : 0;
+
+                                  return (
+                                    <React.Fragment key={shift}>
+                                      <td
+                                        className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
+                                          siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
+                                        } transition-colors duration-150`}
+                                      >
+                                        <input
+                                          ref={(el) => {
+                                            const refKey = getInputRef('silo', siloIndex, i * 2);
+                                            setInputRef(refKey, el);
+                                          }}
+                                          type="text"
+                                          defaultValue={formatInputValue(
+                                            siloData[shift]?.emptySpace,
+                                            1
+                                          )}
+                                          onChange={(e) => {
+                                            const parsed = parseInputValue(e.target.value);
+                                            handleSiloDataChange(
+                                              siloData.silo_id,
+                                              shift,
+                                              'emptySpace',
+                                              parsed !== null ? parsed.toString() : ''
+                                            );
+                                          }}
+                                          onBlur={() => {
+                                            handleSiloDataBlur(
+                                              siloData.silo_id,
+                                              shift,
+                                              'emptySpace'
+                                            );
+                                          }}
+                                          onKeyDown={(e) =>
+                                            handleKeyDown(e, 'silo', siloIndex, i * 2)
+                                          }
+                                          disabled={!canWrite}
+                                          className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                                          aria-label={`Empty Space for ${masterSilo.silo_name} ${shift}`}
+                                          title={`Isi ruang kosong untuk ${
+                                            masterSilo.silo_name
+                                          } shift ${i + 1}`}
+                                          placeholder="0,0"
+                                        />
+                                      </td>
+                                      <td
+                                        className={`px-1 py-1 whitespace-nowrap text-sm border-r ${
+                                          siloIndex % 2 === 0 ? 'bg-neutral-50' : 'bg-white'
+                                        } transition-colors duration-150`}
+                                      >
+                                        <input
+                                          ref={(el) => {
+                                            const refKey = getInputRef(
+                                              'silo',
+                                              siloIndex,
+                                              i * 2 + 1
+                                            );
+                                            setInputRef(refKey, el);
+                                          }}
+                                          type="text"
+                                          defaultValue={formatInputValue(content, 1)}
+                                          onChange={(e) => {
+                                            const parsed = parseInputValue(e.target.value);
+                                            handleSiloDataChange(
+                                              siloData.silo_id,
+                                              shift,
+                                              'content',
+                                              parsed !== null ? parsed.toString() : ''
+                                            );
+                                          }}
+                                          onBlur={() => {
+                                            handleSiloDataBlur(siloData.silo_id, shift, 'content');
+                                          }}
+                                          onKeyDown={(e) =>
+                                            handleKeyDown(e, 'silo', siloIndex, i * 2 + 1)
+                                          }
+                                          disabled={!canWrite}
+                                          className="w-full text-center px-2 py-1.5 bg-white text-neutral-900 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all duration-150 hover:border-neutral-400 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed"
+                                          aria-label={`Content for ${masterSilo.silo_name} ${shift}`}
+                                          title={`Isi konten untuk ${
+                                            masterSilo.silo_name
+                                          } shift ${i + 1} (Max: ${masterSilo.capacity})`}
+                                          placeholder="0,0"
+                                        />
+                                      </td>
+                                      <td
+                                        className={`px-2 py-2 whitespace-nowrap text-sm text-center text-neutral-600 align-middle ${
+                                          i < 2 ? 'border-r' : ''
+                                        }`}
+                                      >
+                                        <div className="relative w-full h-6 bg-neutral-200 rounded-full overflow-hidden">
+                                          <div
+                                            className="absolute top-0 left-0 h-full bg-error-500 transition-all duration-150"
+                                            style={{
+                                              width: `${Math.min(100, percentage)}%`,
+                                            }}
+                                          ></div>
+                                          <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white mix-blend-difference">
+                                            {formatNumber(percentage)}%
+                                          </span>
+                                        </div>
+                                      </td>
+                                    </React.Fragment>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })
+                        )}
+                        {dailySiloData.length === 0 && (
+                          <tr>
+                            <td colSpan={10} className="text-center py-6 text-neutral-500">
+                              {!selectedCategory
+                                ? t.no_plant_categories_found
+                                : t.no_silo_master_data_found.replace(
+                                    '{category}',
+                                    selectedCategory
+                                  )}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </EnhancedCard>
+              </div>
+
+              {/* CCR Material Usage Entry */}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#772953]/20 to-[#E95420]/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                <EnhancedCard className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center shadow-lg shadow-[#772953]/30 ring-4 ring-[#772953]/10">
+                      <svg
+                        className="w-6 h-6 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black tracking-tight text-slate-800">
+                        {t.ccr_material_usage_entry_title}
+                      </h3>
+                      <p className="text-sm font-medium text-slate-500">
+                        {t.ccr_material_usage_subtitle}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-white/30 backdrop-blur-md rounded-2xl p-4 border border-white/50 shadow-inner">
+                    <MaterialUsageEntry
+                      key={materialUsageRefreshTrigger}
+                      selectedDate={selectedDate}
+                      selectedUnit={selectedUnit}
+                      selectedCategory={selectedCategory}
+                      disabled={!selectedCategory || !selectedUnit}
+                      t={t}
+                    />
+                  </div>
+                </EnhancedCard>
+              </div>
+            </div>
+
+            {/* Second Row: Information and CCR Downtime Data Entry */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Information */}
+              <EnhancedCard className="backdrop-blur-md bg-white/60 border border-white/40 rounded-2xl shadow-2xl p-6 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-slate-700 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-white"
                       fill="none"
@@ -5067,172 +4753,235 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                       />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-indigo-600 bg-clip-text text-transparent">
-                      CCR Downtime Data Entry
+                    <h3 className="text-xl font-bold bg-gradient-to-r from-[#772953] to-[#E95420] bg-clip-text text-transparent">
+                      {t.ccr_information_title}
                     </h3>
-                    <br className="hidden" />
-                    <p className="text-sm text-neutral-600 mt-1">{t.ccr_downtime_description}</p>
+                    <p className="text-sm text-neutral-600 mt-1">{t.ccr_information_description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <RcaAnalysisButton
-                    currentDowntime={
-                      dailyDowntimeData.length > 0
-                        ? {
-                            id: dailyDowntimeData[dailyDowntimeData.length - 1].id,
-                            date: dailyDowntimeData[dailyDowntimeData.length - 1].date,
-                            startTime: dailyDowntimeData[dailyDowntimeData.length - 1].start_time,
-                            endTime: dailyDowntimeData[dailyDowntimeData.length - 1].end_time,
-                            pic: dailyDowntimeData[dailyDowntimeData.length - 1].pic,
-                            problem: dailyDowntimeData[dailyDowntimeData.length - 1].problem,
-                            unit: dailyDowntimeData[dailyDowntimeData.length - 1].unit,
-                            action: dailyDowntimeData[dailyDowntimeData.length - 1].action,
-                          }
-                        : {}
-                    }
-                    disabled={dailyDowntimeData.length === 0}
-                  />
-                  <EnhancedButton
-                    variant="primary"
-                    size="sm"
-                    onClick={handleOpenAddDowntimeModal}
-                    disabled={
-                      !hasPermission('cm_plant_operations', 'WRITE') ||
-                      !selectedCategory ||
-                      !selectedUnit
-                    }
-                    aria-label={t.add_downtime_button || 'Add new downtime'}
-                    className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-500 hover:to-secondary-500 shadow-md transition-all"
+                <div className="space-y-3">
+                  <label
+                    htmlFor="keterangan"
+                    className="block text-sm font-semibold text-neutral-700"
                   >
-                    <PlusIcon className="w-4 h-4 text-white" />
-                    <span className="relative z-10 text-sm font-medium text-white">
-                      {t.add_downtime_button}
-                    </span>
-                  </EnhancedButton>
+                    {t.information_label}
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      id="keterangan"
+                      rows={8}
+                      value={informationText}
+                      onChange={(e) => handleInformationChange(e.target.value)}
+                      disabled={!canWrite || !selectedCategory || !selectedUnit}
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-success-500 focus:border-success-500 resize-vertical transition-all duration-150 bg-white/50 backdrop-blur-sm disabled:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder={t.information_placeholder}
+                    />
+                  </div>
+                  {isSavingInformation && (
+                    <div className="flex justify-end">
+                      <div className="px-4 py-2 text-sm text-success-700 flex items-center space-x-2">
+                        <div className="w-3 h-3 border-2 border-success-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span>{t.ccr_saving_changes}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl">
-                    <tr>
-                      <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
-                        {t.start_time}
-                      </th>
-                      <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
-                        {t.end_time}
-                      </th>
-                      <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
-                        {t.unit}
-                      </th>
-                      <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
-                        {t.pic}
-                      </th>
-                      <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
-                        {t.problem}
-                      </th>
-                      <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
-                        {t.action}
-                      </th>
-                      <th className="relative px-4 py-3 border-b border-slate-700/50">
-                        <span className="sr-only">{t.actions}</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white/80 backdrop-blur-sm">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={7} className="text-center py-12 text-neutral-500">
-                          <div className="flex items-center justify-center space-x-2">
-                            <div className="w-6 h-6 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-sm font-medium">{t.loading_data}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : dailyDowntimeData.length > 0 ? (
-                      dailyDowntimeData.map((downtime, idx) => (
-                        <tr
-                          key={downtime.id}
-                          className={`border-b border-neutral-200/50 group ${
-                            idx % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
-                          } hover:bg-gradient-to-r hover:from-primary-50/50 hover:to-secondary-50/50 transition-all duration-150`}
+              </EnhancedCard>
+
+              {/* Downtime Data Entry */}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[#772953]/20 to-[#E95420]/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                <EnhancedCard className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center shadow-lg shadow-[#772953]/30 ring-4 ring-[#772953]/10">
+                        <svg
+                          className="w-6 h-6 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
                         >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
-                            {downtime.start_time}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
-                            {downtime.end_time}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-700">
-                            <span className="px-2 py-1 rounded-md bg-primary-100 text-primary-800 font-medium text-xs">
-                              {downtime.unit}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-700">
-                            {downtime.pic}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-neutral-700 max-w-sm whitespace-pre-wrap">
-                            {downtime.problem}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-neutral-700 max-w-sm whitespace-pre-wrap">
-                            {downtime.action || '-'}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex items-center justify-end space-x-2">
-                              <EnhancedButton
-                                variant="ghost"
-                                size="xs"
-                                onClick={() => handleOpenEditDowntimeModal(downtime)}
-                                aria-label={`Edit downtime for ${downtime.unit}`}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                              >
-                                <EditIcon />
-                              </EnhancedButton>
-                              <EnhancedButton
-                                variant="ghost"
-                                size="xs"
-                                onClick={() => handleOpenDeleteModal(downtime)}
-                                aria-label={`Delete downtime for ${downtime.unit}`}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                              >
-                                <TrashIcon />
-                              </EnhancedButton>
-                            </div>
-                          </td>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black tracking-tight text-slate-800">
+                          {t.ccr_downtime_title}
+                        </h3>
+                        <p className="text-sm font-medium text-slate-500">
+                          {t.ccr_downtime_subtitle}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <RcaAnalysisButton
+                        currentDowntime={
+                          dailyDowntimeData.length > 0
+                            ? {
+                                id: dailyDowntimeData[dailyDowntimeData.length - 1].id,
+                                date: dailyDowntimeData[dailyDowntimeData.length - 1].date,
+                                startTime:
+                                  dailyDowntimeData[dailyDowntimeData.length - 1].start_time,
+                                endTime: dailyDowntimeData[dailyDowntimeData.length - 1].end_time,
+                                pic: dailyDowntimeData[dailyDowntimeData.length - 1].pic,
+                                problem: dailyDowntimeData[dailyDowntimeData.length - 1].problem,
+                                unit: dailyDowntimeData[dailyDowntimeData.length - 1].unit,
+                                action: dailyDowntimeData[dailyDowntimeData.length - 1].action,
+                              }
+                            : {}
+                        }
+                        disabled={dailyDowntimeData.length === 0}
+                      />
+                      <EnhancedButton
+                        variant="primary"
+                        size="sm"
+                        onClick={handleOpenAddDowntimeModal}
+                        disabled={
+                          !hasPermission('cm_plant_operations', 'WRITE') ||
+                          !selectedCategory ||
+                          !selectedUnit
+                        }
+                        aria-label={t.add_downtime_button || 'Add new downtime'}
+                        className="group relative overflow-hidden flex items-center gap-2 h-9 px-4 bg-gradient-to-r from-[#772953] to-[#E95420] hover:from-[#8a3061] hover:to-[#f06e3b] shadow-md transition-all"
+                      >
+                        <PlusIcon className="w-4 h-4 text-white" />
+                        <span className="relative z-10 text-sm font-medium text-white">
+                          {t.add_downtime_button}
+                        </span>
+                      </EnhancedButton>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white shadow-xl">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
+                            {t.start_time}
+                          </th>
+                          <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
+                            {t.end_time}
+                          </th>
+                          <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
+                            {t.unit}
+                          </th>
+                          <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
+                            {t.pic}
+                          </th>
+                          <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
+                            {t.problem}
+                          </th>
+                          <th className="px-4 py-3 text-left font-bold border-b border-slate-700/50">
+                            {t.action}
+                          </th>
+                          <th className="relative px-4 py-3 border-b border-slate-700/50">
+                            <span className="sr-only">{t.actions}</span>
+                          </th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={7} className="text-center py-12 text-neutral-500">
-                          <div className="flex items-center justify-center space-x-3">
-                            <svg
-                              className="w-8 h-8 text-neutral-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                      </thead>
+                      <tbody className="bg-white/80 backdrop-blur-sm">
+                        {loading ? (
+                          <tr>
+                            <td colSpan={7} className="text-center py-12 text-neutral-500">
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="w-6 h-6 border-2 border-secondary-500 border-t-transparent rounded-full animate-spin"></div>
+                                <span className="text-sm font-medium">{t.loading_data}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : dailyDowntimeData.length > 0 ? (
+                          dailyDowntimeData.map((downtime, idx) => (
+                            <tr
+                              key={downtime.id}
+                              className={`border-b border-neutral-200/50 group ${
+                                idx % 2 === 0 ? 'bg-white/40' : 'bg-neutral-50/30'
+                              } hover:bg-gradient-to-r hover:from-[#772953]/5 hover:to-[#E95420]/5 transition-all duration-150`}
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                            <span className="text-sm font-medium">{t.no_downtime_recorded}</span>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
+                                {downtime.start_time}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-mono font-semibold text-neutral-800">
+                                {downtime.end_time}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-700">
+                                <span className="px-2 py-1 rounded-md bg-[#E95420]/10 text-[#E95420] font-medium text-xs">
+                                  {downtime.unit}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-neutral-700">
+                                {downtime.pic}
+                              </td>
+                              <td className="px-4 py-4 text-sm text-neutral-700 max-w-sm whitespace-pre-wrap">
+                                {downtime.problem}
+                              </td>
+                              <td className="px-4 py-4 text-sm text-neutral-700 max-w-sm whitespace-pre-wrap">
+                                {downtime.action || '-'}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div className="flex items-center justify-end space-x-2">
+                                  <EnhancedButton
+                                    variant="ghost"
+                                    size="xs"
+                                    onClick={() => handleOpenEditDowntimeModal(downtime)}
+                                    aria-label={`Edit downtime for ${downtime.unit}`}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                  >
+                                    <EditIcon />
+                                  </EnhancedButton>
+                                  <EnhancedButton
+                                    variant="ghost"
+                                    size="xs"
+                                    onClick={() => handleOpenDeleteModal(downtime)}
+                                    aria-label={`Delete downtime for ${downtime.unit}`}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                  >
+                                    <TrashIcon />
+                                  </EnhancedButton>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="text-center py-12 text-neutral-500">
+                              <div className="flex items-center justify-center space-x-3">
+                                <svg
+                                  className="w-8 h-8 text-neutral-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="text-sm font-medium">
+                                  {t.no_downtime_recorded}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </EnhancedCard>
               </div>
-            </EnhancedCard>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Modals */}
         <Modal
@@ -5279,34 +5028,34 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                    Hapus Data Downtime
+                    {t.ccr_delete_downtime_confirm_title}
                   </h3>
-                  <p className="text-sm text-neutral-600 mb-4">
-                    Tindakan ini tidak dapat dibatalkan. Data downtime berikut akan dihapus
-                    permanen:
-                  </p>
+                  <p className="text-sm text-neutral-600 mb-4">{t.ccr_delete_downtime_message}</p>
                   {deletingRecord && (
                     <div className="bg-error-50 border border-error-200 rounded-lg p-4 space-y-2">
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-neutral-700">Unit:</span>
+                        <span className="text-sm font-medium text-neutral-700">{t.unit}:</span>
                         <span className="text-sm text-neutral-900 font-semibold">
                           {deletingRecord.unit}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium text-neutral-700">Tanggal:</span>
+                        <span className="text-sm font-medium text-neutral-700">{t.date}:</span>
                         <span className="text-sm text-neutral-900 font-semibold">
-                          {new Date(deletingRecord.date).toLocaleDateString('id-ID', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
+                          {new Date(deletingRecord.date).toLocaleDateString(
+                            t.locale_code || 'id-ID',
+                            {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            }
+                          )}
                         </span>
                       </div>
                       {deletingRecord.problem && (
                         <div className="flex items-start space-x-2">
-                          <span className="text-sm font-medium text-neutral-700">Problem:</span>
+                          <span className="text-sm font-medium text-neutral-700">{t.problem}:</span>
                           <span className="text-sm text-neutral-900 font-semibold">
                             {deletingRecord.problem}
                           </span>
@@ -5314,7 +5063,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       )}
                       {deletingRecord.start_time && deletingRecord.end_time && (
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-neutral-700">Durasi:</span>
+                          <span className="text-sm font-medium text-neutral-700">
+                            {t.duration}:
+                          </span>
                           <span className="text-sm text-neutral-900 font-semibold">
                             {deletingRecord.start_time} - {deletingRecord.end_time}
                           </span>
@@ -5323,7 +5074,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </div>
                   )}
                   <p className="text-sm text-primary-600 mt-4 font-medium">
-                    ⚠️ Pastikan data ini benar-benar perlu dihapus sebelum melanjutkan.
+                    {t.ccr_delete_downtime_warning}
                   </p>
                 </div>
               </div>
@@ -5336,7 +5087,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               className="sm:ml-3 sm:w-auto w-full sm:w-auto"
               rounded="lg"
               elevation="sm"
-              aria-label="Hapus downtime secara permanen"
+              aria-label={t.ccr_delete_permanently}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -5346,7 +5097,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 />
               </svg>
-              Hapus Permanen
+              {t.ccr_delete_permanently}
             </EnhancedButton>
             <EnhancedButton
               variant="outline"
@@ -5354,7 +5105,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto w-full sm:w-auto"
               rounded="lg"
               elevation="sm"
-              aria-label="Batalkan penghapusan"
+              aria-label={t.cancel_button}
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -5364,7 +5115,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-              Batal
+              {t.cancel_button}
             </EnhancedButton>
           </div>
         </Modal>
@@ -5377,49 +5128,49 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         >
           <div className="space-y-4 parameter-reorder-modal">
             <div className="space-y-2">
-              <p className="text-sm text-neutral-600">
-                Ada beberapa cara untuk menyusun ulang parameter:
-              </p>
+              <p className="text-sm text-neutral-600">{t.ccr_reorder_instructions_title}</p>
               <div className="bg-neutral-100 p-2 rounded-md space-y-2">
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">1. Drag and Drop:</p>
-                  <p className="text-xs text-neutral-600 pl-3">
-                    Tarik parameter ke posisi yang diinginkan
+                  <p className="text-xs font-medium text-neutral-700 mb-1">
+                    {t.ccr_reorder_method_drag}
                   </p>
+                  <p className="text-xs text-neutral-600 pl-3">{t.ccr_reorder_method_drag_desc}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">2. Input Nomor:</p>
-                  <p className="text-xs text-neutral-600 pl-3">
-                    Masukkan nomor posisi yang diinginkan pada kotak input
+                  <p className="text-xs font-medium text-neutral-700 mb-1">
+                    {t.ccr_reorder_method_input}
                   </p>
+                  <p className="text-xs text-neutral-600 pl-3">{t.ccr_reorder_method_input_desc}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">3. Tombol ↑/↓:</p>
-                  <p className="text-xs text-neutral-600 pl-3">
-                    Gunakan tombol panah untuk penyesuaian satu per satu
+                  <p className="text-xs font-medium text-neutral-700 mb-1">
+                    {t.ccr_reorder_method_arrow}
                   </p>
+                  <p className="text-xs text-neutral-600 pl-3">{t.ccr_reorder_method_arrow_desc}</p>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">4. Pintasan Keyboard:</p>
+                  <p className="text-xs font-medium text-neutral-700 mb-1">
+                    {t.ccr_reorder_method_keyboard}
+                  </p>
                   <ul className="text-xs text-neutral-600 space-y-1 pl-4 list-disc">
-                    <li>Alt + ↑ : Pindahkan parameter ke atas</li>
-                    <li>Alt + ↓ : Pindahkan parameter ke bawah</li>
+                    <li>{t.ccr_reorder_method_keyboard_up}</li>
+                    <li>{t.ccr_reorder_method_keyboard_down}</li>
                   </ul>
                 </div>
 
                 <div>
-                  <p className="text-xs font-medium text-neutral-700 mb-1">5. Pencarian:</p>
+                  <p className="text-xs font-medium text-neutral-700 mb-1">
+                    {t.ccr_reorder_method_search}
+                  </p>
                   <p className="text-xs text-neutral-600 pl-3">
-                    Gunakan fitur pencarian untuk menemukan parameter dengan cepat
+                    {t.ccr_reorder_method_search_desc}
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-neutral-500 italic">
-                Urutan parameter akan disimpan secara otomatis saat menekan tombol &quot;Done&quot;.
-              </p>
+              <p className="text-xs text-neutral-500 italic">{t.ccr_reorder_auto_save_note}</p>
             </div>
 
             <div className="relative">
@@ -5431,15 +5182,15 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={modalSearchQuery}
                 onChange={(e) => setModalSearchQuery(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md leading-5 bg-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                placeholder="Cari parameter..."
-                aria-label="Cari parameter"
+                placeholder={t.ccr_search_parameter_placeholder}
+                aria-label={t.ccr_search_parameter_placeholder}
               />
               {modalSearchQuery && (
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   onClick={() => setModalSearchQuery('')}
-                  aria-label="Clear search"
+                  aria-label={t.ccr_clear_search}
                 >
                   <XMarkIcon className="h-5 w-5 text-neutral-400 hover:text-neutral-600" />
                 </button>
@@ -5454,8 +5205,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     {...provided.droppableProps}
                     className="max-h-96 overflow-y-auto space-y-2"
                   >
-                    {filteerrorModalParameters.length > 0 ? (
-                      filteerrorModalParameters.map((param) => {
+                    {filteredModalParameters.length > 0 ? (
+                      filteredModalParameters.map((param) => {
                         // Find original index to keep the correct ordering
                         const originalIndex = modalParameterOrder.findIndex(
                           (p) => p.id === param.id
@@ -5471,9 +5222,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       })
                     ) : (
                       <div className="p-4 text-center text-sm text-neutral-500 bg-neutral-50 rounded-md">
-                        {modalSearchQuery
-                          ? 'Tidak ada parameter yang cocok dengan pencarian'
-                          : 'Tidak ada parameter yang tersedia'}
+                        {modalSearchQuery ? t.ccr_no_match_search : t.ccr_no_parameters_available}
                       </div>
                     )}
                     {provided.placeholder}
@@ -5485,111 +5234,6 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             <div className="flex justify-end gap-3 pt-4 border-t flex-wrap">
               <div className="flex gap-2 items-center">
                 <EnhancedButton
-                  variant="secondary"
-                  onClick={exportParameterOrderToExcel}
-                  aria-label="Export to Excel"
-                  className="flex items-center gap-1"
-                >
-                  <DocumentArrowDownIcon className="h-4 w-4" />
-                  Export to Excel
-                </EnhancedButton>
-                <EnhancedButton
-                  variant="secondary"
-                  onClick={() => document.getElementById('import-parameter-order-excel').click()}
-                  aria-label="Import from Excel"
-                  className="flex items-center gap-1"
-                >
-                  <DocumentArrowUpIcon className="h-4 w-4" />
-                  Import from Excel
-                </EnhancedButton>
-                <input
-                  type="file"
-                  id="import-parameter-order-excel"
-                  className="hidden"
-                  accept=".xlsx, .xls"
-                  onChange={handleImportParameterOrderExcel}
-                />
-                <div className="relative group">
-                  <button
-                    type="button"
-                    className="p-1.5 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100"
-                    aria-label="Excel import/export help"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  <div className="absolute z-10 w-72 bg-white p-3 rounded-lg shadow-lg border border-neutral-200 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity left-0 bottom-full mb-2 text-xs">
-                    <h3 className="font-semibold mb-1 text-neutral-900">
-                      Penggunaan Excel untuk Urutan Parameter
-                    </h3>
-                    <ul className="list-disc pl-4 text-neutral-600 space-y-1">
-                      <li>Export: Mengunduh urutan parameter saat ini ke Excel</li>
-                      <li>Import: Menerapkan urutan dari file Excel yang telah diedit</li>
-                      <li>Di Excel: Edit kolom &ldquo;Order&rdquo; untuk mengubah urutan</li>
-                      <li>Jangan mengubah kolom ID di file Excel</li>
-                    </ul>
-                    <div className="mt-2 pt-2 border-t border-neutral-200">
-                      <a
-                        href="/docs/PARAMETER_ORDER_EXCEL_GUIDE.md"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary-500 hover:text-primary-600 flex items-center"
-                      >
-                        <span>Baca panduan lengkap</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3 w-3 ml-1"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-                          <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <EnhancedButton
-                  variant="secondary"
-                  onClick={() => setShowLoadProfileModal(true)}
-                  aria-label="Load profile"
-                >
-                  Load Profile
-                </EnhancedButton>
-                <EnhancedButton
-                  variant="secondary"
-                  onClick={() => setShowSaveProfileModal(true)}
-                  aria-label="Save profile"
-                >
-                  Save Profile
-                </EnhancedButton>
-                <EnhancedButton
-                  variant="secondary"
-                  onClick={() => {
-                    // Reset to default order (sorted by parameter name)
-                    const defaultOrder = [...filteredParameterSettings].sort((a, b) =>
-                      a.parameter.localeCompare(b.parameter)
-                    );
-                    setModalParameterOrder(defaultOrder);
-                  }}
-                  aria-label="Reset to default order"
-                >
-                  Reset to Default
-                </EnhancedButton>
-                <EnhancedButton
                   variant="primary"
                   onClick={() => {
                     const newOrder = modalParameterOrder.map((param) => param.id);
@@ -5597,9 +5241,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     saveParameterOrder(newOrder);
                     setShowReorderModal(false);
                   }}
-                  aria-label="Save parameter order"
+                  aria-label={t.done}
                 >
-                  Done
+                  {t.done}
                 </EnhancedButton>
               </div>
             </div>
@@ -5613,32 +5257,30 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           title={t.save_parameter_order_profile_title}
         >
           <div className="space-y-4">
-            <p className="text-sm text-neutral-600">
-              Save the current parameter order as a profile that can be loaded later.
-            </p>
+            <p className="text-sm text-neutral-600">{t.ccr_save_profile_desc}</p>
 
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Profile Name *
+                  {t.profile_name_label}
                 </label>
                 <input
                   type="text"
                   value={profileName}
                   onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="Enter profile name"
+                  placeholder={t.profile_name_placeholder}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   autoFocus
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Description (optional)
+                  {t.description_optional_label}
                 </label>
                 <textarea
                   value={profileDescription}
                   onChange={(e) => setProfileDescription(e.target.value)}
-                  placeholder="Enter profile description"
+                  placeholder={t.description_optional_placeholder}
                   rows={3}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
@@ -5653,17 +5295,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   setProfileName('');
                   setProfileDescription('');
                 }}
-                aria-label="Cancel save profile"
+                aria-label={t.cancel_button}
               >
-                Cancel
+                {t.cancel_button}
               </EnhancedButton>
               <EnhancedButton
                 variant="primary"
                 onClick={saveProfile}
                 disabled={!profileName.trim()}
-                aria-label="Save profile"
+                aria-label={t.save_parameter_order_profile_title}
               >
-                Save Profile
+                {t.save_parameter_order_profile_title}
               </EnhancedButton>
             </div>
           </div>
@@ -5676,13 +5318,13 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           title={t.load_parameter_order_profile_title}
         >
           <div className="space-y-4">
-            <p className="text-sm text-neutral-600">
-              Select a profile to load the parameter order.
-            </p>
+            <p className="text-sm text-neutral-600">{t.ccr_load_profile_desc}</p>
 
             <div className="max-h-96 overflow-y-auto space-y-2">
               {profiles.length === 0 ? (
-                <p className="text-sm text-neutral-500 text-center py-4">No profiles available</p>
+                <p className="text-sm text-neutral-500 text-center py-4">
+                  {t.no_profiles_available}
+                </p>
               ) : (
                 profiles.map((profile) => (
                   <div
@@ -5693,7 +5335,8 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <div>
                       <div className="font-semibold text-neutral-800">{profile.name}</div>
                       <div className="text-xs text-neutral-500">
-                        Created by {profile.user_id === loggedInUser?.id ? 'You' : 'Another user'} •{' '}
+                        {t.created_by}{' '}
+                        {profile.user_id === loggedInUser?.id ? t.you : t.another_user} •{' '}
                         {new Date(profile.created_at).toLocaleDateString()}
                       </div>
                     </div>
@@ -5705,9 +5348,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           e.stopPropagation();
                           loadProfile(profile);
                         }}
-                        aria-label={`Load profile ${profile.name}`}
+                        aria-label={`${t.load} profile ${profile.name}`}
                       >
-                        Load
+                        {t.load}
                       </EnhancedButton>
                       {(profile.user_id === loggedInUser?.id ||
                         isSuperAdmin(loggedInUser?.role)) && (
@@ -5719,7 +5362,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             setProfileToDelete(profile);
                             setShowDeleteProfileModal(true);
                           }}
-                          aria-label={`Delete profile ${profile.name}`}
+                          aria-label={`${t.delete_profile} ${profile.name}`}
                           className="text-primary-600 hover:text-error-700"
                         >
                           <TrashIcon className="w-4 h-4" />
@@ -5735,9 +5378,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <EnhancedButton
                 variant="secondary"
                 onClick={() => setShowLoadProfileModal(false)}
-                aria-label="Close load profile modal"
+                aria-label={t.close_button}
               >
-                Close
+                {t.close_button || t.close}
               </EnhancedButton>
             </div>
           </div>
@@ -5754,8 +5397,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         >
           <div className="p-6">
             <p className="text-sm text-neutral-600">
-              Are you sure you want to delete the profile &quot;{profileToDelete?.name}&quot;? This
-              action cannot be undone.
+              {t.ccr_delete_profile_confirm_message.replace('{name}', profileToDelete?.name || '')}
             </p>
           </div>
           <div className="bg-neutral-50 px-4 py-2 sm:px-4 sm:flex sm:flex-row-reverse rounded-b-lg">
@@ -5771,9 +5413,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               className="sm:ml-3 sm:w-auto"
               rounded="lg"
               elevation="sm"
-              aria-label="Confirm delete profile"
+              aria-label={t.delete_profile}
             >
-              Delete Profile
+              {t.delete_profile}
             </EnhancedButton>
             <EnhancedButton
               variant="secondary"
@@ -5784,9 +5426,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               className="mt-2 sm:mt-0 sm:ml-3 sm:w-auto"
               rounded="lg"
               elevation="sm"
-              aria-label="Cancel delete"
+              aria-label={t.cancel_button}
             >
-              Cancel
+              {t.cancel_button}
             </EnhancedButton>
           </div>
         </Modal>
@@ -5795,6 +5437,7 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         <CcrNavigationHelp
           isVisible={showNavigationHelp}
           onClose={() => setShowNavigationHelp(false)}
+          t={t}
         />
       </div>
     </div>

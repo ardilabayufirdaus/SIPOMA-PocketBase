@@ -29,22 +29,22 @@ export const ResourceAllocationChart: React.FC<ResourceAllocationChartProps> = (
       {
         label: 'Active',
         data: data.map((item) => item.active),
-        backgroundColor: '#3B82F6', // blue-500
-        borderColor: '#3B82F6',
+        backgroundColor: '#E95420', // Ubuntu Orange
+        borderColor: '#E95420',
         borderWidth: 1,
       },
       {
         label: 'Overdue',
         data: data.map((item) => item.overdue),
-        backgroundColor: '#EF4444', // red-500
-        borderColor: '#EF4444',
+        backgroundColor: '#5E2750', // Ubuntu Aubergine (Lighter)
+        borderColor: '#5E2750',
         borderWidth: 1,
       },
       {
         label: 'Completed',
         data: data.map((item) => item.completed),
-        backgroundColor: '#10B981', // emerald-500
-        borderColor: '#10B981',
+        backgroundColor: '#0E8420', // Ubuntu Green
+        borderColor: '#0E8420',
         borderWidth: 1,
       },
     ],
@@ -126,5 +126,3 @@ export const ResourceAllocationChart: React.FC<ResourceAllocationChartProps> = (
     </div>
   );
 };
-
-

@@ -22,7 +22,7 @@ import {
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
   </div>
 );
 
@@ -153,9 +153,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
   }
 
   const statusColorMap: { [key: string]: string } = {
-    on_track: 'bg-green-100 text-green-800',
-    delayed: 'bg-orange-100 text-orange-800',
-    completed: 'bg-blue-100 text-blue-800',
+    on_track: 'bg-success-50 text-success-700 border border-success-200',
+    delayed: 'bg-primary-50 text-primary-600 border border-primary-200', // Ubuntu Orange
+    completed: 'bg-blue-50 text-blue-700 border border-blue-200',
   };
 
   const tableHeaders = [
@@ -172,170 +172,210 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ t, onNavigateToDetail
 
   return (
     <>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-slate-800">{t.proj_list}</h2>
-          {canWrite && (
-            <EnhancedButton
-              variant="primary"
-              size="sm"
-              onClick={handleAddProject}
-              aria-label={t.add_project || 'Add new project'}
-            >
-              <PlusIcon className="w-4 h-4 mr-2" />
-              {t.add_project || 'Add Project'}
-            </EnhancedButton>
-          )}
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                {tableHeaders.map((header, index) => (
-                  <th
-                    key={index}
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
-              {paginatedProjects.map((p, index) => (
-                <tr key={p.id} className="hover:bg-slate-50 transition-colors duration-150">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                    {(currentPage - 1) * 10 + index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                    {p.title}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-medium">
-                    {formatBudgetCompact(p.budget || 0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        statusColorMap[p.statusKey] || 'bg-slate-100 text-slate-800'
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 bg-slate-200 rounded-full h-2.5">
-                        <div
-                          className="bg-blue-600 h-2.5 rounded-full"
-                          style={{ width: `${p.progress}%` }}
-                        ></div>
-                      </div>
-                      <span className="font-medium text-slate-700">{p.progress.toFixed(0)}%</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                    {p.startDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                    {p.endDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 text-center">
-                    {p.totalTasks}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end gap-2">
-                      {canWrite && (
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleEditProject(p)}
-                          aria-label={`${t.edit || 'Edit'} ${p.title}`}
-                        >
-                          <EditIcon className="w-4 h-4" />
-                        </EnhancedButton>
-                      )}
-                      <EnhancedButton
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onNavigateToDetail(p.id)}
-                        aria-label={`${t.view_details_button} for ${p.title}`}
+      <div className="bg-neutral-50 min-h-screen p-6 sm:p-8 font-sans">
+        <div className="max-w-[1400px] mx-auto space-y-8">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-3xl font-display font-bold text-secondary-900 tracking-tight">
+                {t.proj_list || 'Project Management'}
+              </h2>
+              <p className="text-slate-500 mt-2 text-lg">
+                Manage your projects, track progress, and monitor deadlines effectively.
+              </p>
+            </div>
+            {canWrite && (
+              <EnhancedButton
+                variant="custom"
+                size="lg"
+                onClick={handleAddProject}
+                className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 hover:shadow-primary-600/40 transition-all rounded-xl px-6 py-2.5 flex items-center font-medium"
+                aria-label={t.add_project || 'Add new project'}
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                {t.add_project || 'Add Project'}
+              </EnhancedButton>
+            )}
+          </div>
+
+          {/* Table Container */}
+          <div className="bg-white rounded-2xl shadow-medium border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-100">
+                <thead className="bg-secondary-900">
+                  <tr>
+                    {tableHeaders.map((header, index) => (
+                      <th
+                        key={index}
+                        scope="col"
+                        className="px-6 py-5 text-left text-xs font-bold text-white uppercase tracking-wider last:text-right first:pl-8"
                       >
-                        {t.view_details_button}
-                      </EnhancedButton>
-                      {canWrite && (
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleOpenDeleteModal(p.id)}
-                          aria-label={`${t.delete || 'Delete'} ${p.title}`}
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-100">
+                  {paginatedProjects.map((p, index) => (
+                    <tr
+                      key={p.id}
+                      className="hover:bg-primary-50/30 transition-colors duration-200 group"
+                    >
+                      <td className="px-6 py-5 whitespace-nowrap text-sm text-slate-500 font-medium first:pl-8">
+                        {(currentPage - 1) * 10 + index + 1}
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="text-base font-bold text-secondary-900 group-hover:text-primary-600 transition-colors">
+                          {p.title}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm text-slate-600 font-medium bg-slate-50/50 rounded-lg mx-2 my-1">
+                        {formatBudgetCompact(p.budget || 0)}
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
+                            statusColorMap[p.statusKey] ||
+                            'bg-slate-100 text-slate-800 border border-slate-200'
+                          }`}
                         >
-                          <TrashIcon className="w-4 h-4" />
-                        </EnhancedButton>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm text-slate-500">
+                        <div className="flex items-center gap-3">
+                          <div className="w-24 bg-secondary-100 rounded-full h-2 overflow-hidden shadow-inner">
+                            <div
+                              className={`h-2 rounded-full transition-all duration-500 ${
+                                p.statusKey === 'delayed' ? 'bg-primary-600' : 'bg-success-600'
+                              } shadow-sm`}
+                              style={{ width: `${p.progress}%` }}
+                            ></div>
+                          </div>
+                          <span className="font-bold text-secondary-900 text-xs">
+                            {p.progress.toFixed(0)}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm text-slate-500 font-medium">
+                        {p.startDate}
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm text-slate-500 font-medium">
+                        {p.endDate}
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-sm text-slate-500 text-center font-bold">
+                        {p.totalTasks}
+                      </td>
+                      <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                          {canWrite && (
+                            <EnhancedButton
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditProject(p)}
+                              className="text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg p-2"
+                              aria-label={`${t.edit || 'Edit'} ${p.title}`}
+                            >
+                              <EditIcon className="w-4 h-4" />
+                            </EnhancedButton>
+                          )}
+                          <EnhancedButton
+                            variant="custom"
+                            size="sm"
+                            onClick={() => onNavigateToDetail(p.id)}
+                            className="bg-secondary-50 hover:bg-secondary-100 text-secondary-700 hover:text-secondary-900 font-semibold rounded-lg px-3 py-1"
+                            aria-label={`${t.view_details_button} for ${p.title}`}
+                          >
+                            {t.view_details_button}
+                          </EnhancedButton>
+                          {canWrite && (
+                            <EnhancedButton
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenDeleteModal(p.id)}
+                              className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-2"
+                              aria-label={`${t.delete || 'Delete'} ${p.title}`}
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </EnhancedButton>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-      {/* Project Form Modal */}
-      <Modal
-        isOpen={isProjectFormModalOpen}
-        onClose={() => setProjectFormModalOpen(false)}
-        title={editingProject ? t.edit_project || 'Edit Project' : t.add_project || 'Add Project'}
-      >
-        <ProjectForm
-          t={t}
-          onSave={handleSaveProject}
-          onCancel={() => setProjectFormModalOpen(false)}
-          project={editingProject}
-        />
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        title={t.confirm_delete || 'Confirm Delete'}
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600">
-            {t.confirm_delete_project_message ||
-              'Are you sure you want to delete this project? This action cannot be undone and will also delete all associated tasks.'}
-          </p>
-          <div className="flex justify-end gap-3">
-            <EnhancedButton
-              variant="outline"
-              size="sm"
-              onClick={() => setDeleteModalOpen(false)}
-              rounded="lg"
-              elevation="sm"
-              aria-label={t.cancel || 'Cancel delete'}
-            >
-              {t.cancel || 'Cancel'}
-            </EnhancedButton>
-            <EnhancedButton
-              variant="warning"
-              size="sm"
-              onClick={handleDeleteConfirm}
-              rounded="lg"
-              elevation="sm"
-              aria-label={t.delete || 'Confirm delete'}
-            >
-              {t.delete || 'Delete'}
-            </EnhancedButton>
+            <div className="border-t border-slate-100 bg-slate-50/50 p-4">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
           </div>
         </div>
-      </Modal>
+
+        {/* Project Form Modal - Ubuntu Styled */}
+        <Modal
+          isOpen={isProjectFormModalOpen}
+          onClose={() => setProjectFormModalOpen(false)}
+          title={editingProject ? t.edit_project || 'Edit Project' : t.add_project || 'Add Project'}
+          // Note: Modal component might need its own styling updates, but passing props is limited here.
+        >
+          <div className="p-1">
+            <ProjectForm
+              t={t}
+              onSave={handleSaveProject}
+              onCancel={() => setProjectFormModalOpen(false)}
+              project={editingProject}
+            />
+          </div>
+        </Modal>
+
+        {/* Delete Confirmation Modal - Ubuntu Styled */}
+        <Modal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          title={t.confirm_delete || 'Confirm Delete'}
+        >
+          <div className="space-y-6">
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-red-50 border border-red-100">
+              <div className="p-2 bg-white rounded-full text-red-600 shadow-sm shrink-0">
+                <TrashIcon className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-bold text-red-900 text-lg">{t.warning || 'Warning'}</h4>
+                <p className="text-sm text-red-800/80 leading-relaxed">
+                  {t.confirm_delete_project_message ||
+                    'Are you sure you want to delete this project? This action cannot be undone and will also delete all associated tasks completely from the system.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <EnhancedButton
+                variant="secondary"
+                size="lg"
+                onClick={() => setDeleteModalOpen(false)}
+                className="hover:bg-slate-100 text-slate-700 border-slate-200"
+                aria-label={t.cancel || 'Cancel delete'}
+              >
+                {t.cancel || 'Cancel'}
+              </EnhancedButton>
+              <EnhancedButton
+                variant="error"
+                size="lg"
+                onClick={handleDeleteConfirm}
+                className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20"
+                aria-label={t.delete || 'Confirm delete'}
+              >
+                {t.delete || 'Delete Project'}
+              </EnhancedButton>
+            </div>
+          </div>
+        </Modal>
+      </div>
     </>
   );
 };

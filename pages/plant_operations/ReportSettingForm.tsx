@@ -254,7 +254,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.3 }}
-        className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4"
+        className="bg-gradient-to-r from-[#772953] to-[#2C001E] px-6 py-4"
       >
         <div className="flex items-center space-x-3">
           <FileText className="h-6 w-6 text-white" />
@@ -262,7 +262,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
             {t.report_settings_title || 'Report Settings'}
           </h2>
         </div>
-        <p className="text-green-100 text-sm mt-1">
+        <p className="text-white/80 text-sm mt-1">
           {t.report_settings_description ||
             'Configure report parameter ordering and display settings'}
         </p>
@@ -277,13 +277,13 @@ const ReportSettingForm: React.FC<FormProps> = ({
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+              className="bg-[#F9F9F9] border border-[#AEA79F]/20 rounded-lg p-4 mb-6"
             >
               <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Filter Applied</span>
+                <Filter className="h-4 w-4 text-[#E95420]" />
+                <span className="text-sm font-medium text-[#333333]">Filter Applied</span>
               </div>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm text-[#555555] mt-1">
                 Showing parameters for <strong>{selectedCategory}</strong> -{' '}
                 <strong>{selectedUnit}</strong>
               </p>
@@ -303,9 +303,9 @@ const ReportSettingForm: React.FC<FormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.3 }}
           >
-            <label htmlFor="parameter_id" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="parameter_id" className="block text-sm font-medium text-[#333333] mb-2">
               {t.parameter_select_label}
-              <span className="text-red-500 ml-1">*</span>
+              <span className="text-[#C7162B] ml-1">*</span>
             </label>
             <motion.select
               whileFocus={{ scale: 1.02 }}
@@ -316,8 +316,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
               onBlur={handleBlur}
               required
               disabled={availableParameters.length === 0 || isSubmitting}
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
-                errors.parameter_id ? 'border-red-500' : 'border-slate-300'
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm disabled:bg-[#F2F2F2] disabled:text-[#AEA79F] ${
+                errors.parameter_id ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             >
               <option value="">
@@ -355,7 +355,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-2 text-sm text-blue-600 flex items-center"
+                  className="mt-2 text-sm text-[#C7162B] flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -371,9 +371,9 @@ const ReportSettingForm: React.FC<FormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.3 }}
           >
-            <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="category" className="block text-sm font-medium text-[#333333] mb-2">
               {t.report_category_label}
-              <span className="text-red-500 ml-1">*</span>
+              <span className="text-[#C7162B] ml-1">*</span>
             </label>
             <motion.input
               whileFocus={{ scale: 1.02 }}
@@ -386,8 +386,8 @@ const ReportSettingForm: React.FC<FormProps> = ({
               required
               disabled={isSubmitting}
               placeholder="Enter category name..."
-              className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
-                errors.category ? 'border-red-500' : 'border-slate-300'
+              className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500 ${
+                errors.category ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             />
             <AnimatePresence>
@@ -412,7 +412,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-slate-200"
+          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#AEA79F]/20"
         >
           <AnimatePresence>
             {isSubmitting && (
@@ -420,12 +420,12 @@ const ReportSettingForm: React.FC<FormProps> = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center justify-center space-x-2 text-green-600 bg-green-50 px-4 py-2 rounded-lg"
+                className="flex items-center justify-center space-x-2 text-[#0E8420] bg-[#0E8420]/5 px-4 py-2 rounded-lg"
               >
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full"
+                  className="w-4 h-4 border-2 border-[#0E8420] border-t-transparent rounded-full"
                 />
                 <span className="text-sm font-medium">
                   {recordToEdit ? 'Updating report settings...' : 'Adding parameter...'}
@@ -454,7 +454,7 @@ const ReportSettingForm: React.FC<FormProps> = ({
                   !formData.parameter_id ||
                   !formData.category.trim()
                 }
-                className="px-6 py-2 bg-green-600 hover:bg-green-700"
+                className="px-6 py-2 bg-[#E95420] hover:bg-[#d94612] text-white border-transparent"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {recordToEdit ? t.save_button : 'Add Parameter'}
@@ -468,5 +468,3 @@ const ReportSettingForm: React.FC<FormProps> = ({
 };
 
 export default ReportSettingForm;
-
-

@@ -229,7 +229,8 @@ interface EnhancedButtonProps {
     | 'ghost'
     | 'outline'
     | 'gradient'
-    | 'glass';
+    | 'glass'
+    | 'custom';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   disabled?: boolean;
   loading?: boolean;
@@ -387,6 +388,7 @@ export const EnhancedButton: React.FC<EnhancedButtonProps> = ({
       'focus:ring-primary-500/50 focus:shadow-primary-500/25',
       ''
     ),
+    custom: '',
   };
 
   // Size styles

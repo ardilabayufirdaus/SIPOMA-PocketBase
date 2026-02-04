@@ -93,7 +93,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
     <form onSubmit={handleSubmit}>
       <div className="p-6 space-y-4">
         <div>
-          <label htmlFor="activity" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="activity" className="block text-sm font-bold text-[#333333]">
             {t.activity}
           </label>
           <input
@@ -103,13 +103,13 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             value={formData.activity}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
             disabled={readOnly}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="doc_code" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="doc_code" className="block text-sm font-bold text-[#333333]">
               {t.doc_code}
             </label>
             {/* FIX: Use snake_case for name and value */}
@@ -120,12 +120,12 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.doc_code}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
               disabled={readOnly}
             />
           </div>
           <div>
-            <label htmlFor="doc_title" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="doc_title" className="block text-sm font-bold text-[#333333]">
               {t.doc_title}
             </label>
             {/* FIX: Use snake_case for name and value */}
@@ -136,13 +136,13 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.doc_title}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
               disabled={readOnly}
             />
           </div>
         </div>
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="description" className="block text-sm font-bold text-[#333333]">
             {t.description}
           </label>
           <textarea
@@ -152,12 +152,12 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             onChange={handleChange}
             rows={3}
             required
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
             disabled={readOnly}
           />
         </div>
         <div>
-          <label htmlFor="link" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="link" className="block text-sm font-bold text-[#333333]">
             {t.link}
           </label>
           <input
@@ -168,13 +168,13 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             onChange={handleChange}
             placeholder="https://example.com/doc"
             required
-            className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+            className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
             disabled={readOnly}
           />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="plant_category" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="plant_category" className="block text-sm font-bold text-[#333333]">
               Plant Category
             </label>
             <select
@@ -183,7 +183,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.plant_category}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
               disabled={readOnly}
             >
               <option value="">Select Category</option>
@@ -195,7 +195,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
             </select>
           </div>
           <div>
-            <label htmlFor="plant_unit" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="plant_unit" className="block text-sm font-bold text-[#333333]">
               Plant Unit
             </label>
             <select
@@ -204,7 +204,7 @@ const WorkInstructionForm: React.FC<FormProps> = ({
               value={formData.plant_unit}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+              className="mt-1 block w-full px-3 py-2.5 border border-[#AEA79F] rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm text-[#333333]"
               disabled={readOnly}
             >
               <option value="">Select Unit</option>
@@ -221,26 +221,24 @@ const WorkInstructionForm: React.FC<FormProps> = ({
           </div>
         </div>
       </div>
-      <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg">
+      <div className="bg-[#F9F9F9] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#AEA79F]/20">
         {!readOnly && (
-          <EnhancedButton
+          <button
             type="submit"
-            variant="primary"
-            className="sm:ml-3 sm:w-auto"
+            className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-[#E95420] text-base font-medium text-white hover:bg-[#d94612] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#E95420] sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
             aria-label={t.save_button || 'Save work instruction'}
           >
             {t.save_button}
-          </EnhancedButton>
+          </button>
         )}
-        <EnhancedButton
+        <button
           type="button"
-          variant="secondary"
           onClick={onCancel}
-          className="mt-3 sm:mt-0 sm:ml-3 sm:w-auto"
+          className="mt-3 w-full inline-flex justify-center rounded-lg border border-[#AEA79F] shadow-sm px-4 py-2.5 bg-white text-base font-medium text-[#333333] hover:bg-[#F0F0F0] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm min-h-[44px]"
           aria-label={t.cancel_button || 'Cancel'}
         >
           {t.cancel_button}
-        </EnhancedButton>
+        </button>
       </div>
     </form>
   );

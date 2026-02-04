@@ -338,3 +338,30 @@ export const syncOperationalDataForMonth = async (
 
   logger.info(`Operational data sync completed for ${month}/${year}`);
 };
+
+/**
+ * Sinkronisasi data operasional untuk satu tanggal spesifik.
+ * Digunakan sebelum generate report untuk memastikan data aktual.
+ */
+export const syncOperationalDataForDate = async (dateStr: string) => {
+  const date = new Date(dateStr);
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
+
+  logger.info(`Starting single day operational data sync for ${dateStr}`);
+
+  // 1. Ambil semua parameter settings
+  const parameterSettings = await safeApiCall(() =>
+    pb.collection('parameter_settings').getFullList<ParameterSetting>()
+  );
+
+  if (!parameterSettings) {
+    throw new Error('Failed to fetch parameter settings');
+  }
+
+  // 2. Proses sync untuk hari tersebut
+  await processDaySync(day, month, year, parameterSettings);
+
+  logger.info(`Single day operational data sync completed for ${dateStr}`);
+};

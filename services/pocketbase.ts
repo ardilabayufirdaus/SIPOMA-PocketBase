@@ -38,10 +38,8 @@ export const Collections = {
   PROJECTS: 'projects',
   REPORT_SETTINGS: 'report_settings',
   SILO_CAPACITIES: 'silo_capacities',
-  USER_ACTIONS: 'user_actions',
   USER_PARAMETER_ORDERS: 'user_parameter_orders',
   USER_PERMISSIONS: 'user_permissions',
-  USER_SESSIONS: 'user_sessions',
   WORK_INSTRUCTIONS: 'work_instructions',
   INSPECTIONS: 'inspections',
   INSPECTION_UNITS: 'inspection_units',
@@ -433,34 +431,6 @@ export interface SiloCapacity {
 }
 
 /**
- * Type untuk metadata user action
- */
-export type UserActionMetadata = {
-  browser?: string;
-  device?: string;
-  os?: string;
-  request_params?: Record<string, string | number | boolean>;
-  response_code?: number;
-  duration_ms?: number;
-  affected_records?: string[];
-};
-
-/**
- * Interface untuk User Actions
- */
-export interface UserAction {
-  id?: string;
-  user_id: string;
-  action_type: string;
-  module: string;
-  description: string;
-  ip_address?: string;
-  metadata?: UserActionMetadata;
-  success: boolean;
-  error_message?: string;
-}
-
-/**
  * Interface untuk User Parameter Orders
  */
 export interface UserParameterOrder {
@@ -480,24 +450,6 @@ export interface UserPermission {
   id?: string;
   user_id: string;
   permission_id: string[];
-}
-
-/**
- * Interface untuk User Sessions
- */
-export interface UserSession {
-  id?: string;
-  user_id: string;
-  session_start?: Date;
-  session_end?: Date;
-  ip_address?: string;
-  user_agent?: string;
-  device_type?: string;
-  browser?: string;
-  location?: string;
-  is_active?: boolean;
-  last_activity?: Date;
-  duration_minutes?: number;
 }
 
 /**

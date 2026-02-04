@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PlusIcon from './icons/PlusIcon';
 import Bars3Icon from './icons/Bars3Icon';
 import BellIcon from './icons/BellIcon';
 import BellSlashIcon from './icons/BellSlashIcon';
 import ArrowRightOnRectangleIcon from './icons/ArrowRightOnRectangleIcon';
+import SunIcon from './icons/SunIcon';
+import MoonIcon from './icons/MoonIcon';
 import { Page, Language, User } from '../types';
 import { useNotifications } from '../hooks/useNotifications';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -12,9 +15,6 @@ import './Header.css';
 
 // Import Enhanced Components
 import { EnhancedButton, SkipLinks } from './ui/EnhancedComponents';
-
-// Import micro-interactions hook
-// import { useMicroInteraction } from '../hooks/useMicroInteractions'; // Commented out for now
 
 // Import NotificationModal
 import NotificationModal from './NotificationModal';
@@ -62,162 +62,135 @@ const Header: React.FC<HeaderProps> = React.memo(
         {/* Skip Links for accessibility */}
         <SkipLinks />
 
-        <header className="glass-header" role="banner">
-          <div className="relative z-10 px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16 sm:h-20">
-              <div className="flex items-center gap-4 min-w-0 flex-1">
+        <motion.header
+          className="relative z-40 bg-[#1e1e1e] border-b border-white/5 shadow-md h-[60px] flex items-center font-ubuntu"
+          role="banner"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="w-full px-6">
+            <div className="flex items-center justify-between">
+              {/* Left Section: Menu & Title */}
+              <div className="flex items-center gap-6 min-w-0 flex-1">
                 {/* Mobile Hamburger Menu */}
                 {isMobile && onToggleSidebar && (
-                  <div>
-                    <EnhancedButton
-                      variant="ghost"
-                      size="sm"
-                      onClick={onToggleSidebar}
-                      ariaLabel="Toggle navigation menu"
-                      className="md:hidden flex-shrink-0 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-0"
-                      icon={<Bars3Icon className="w-6 h-6 text-slate-700 dark:text-slate-200" />}
-                    >
-                      <span className="sr-only">Toggle navigation menu</span>
-                    </EnhancedButton>
-                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onToggleSidebar}
+                    aria-label="Toggle navigation menu"
+                    className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors md:hidden"
+                  >
+                    <Bars3Icon className="w-5 h-5" />
+                  </motion.button>
                 )}
 
                 {/* Title Section */}
-                <div className="min-w-0 flex flex-col justify-center">
-                  <h1 className="text-lg sm:text-xl font-display font-bold truncate text-slate-900 dark:text-white leading-tight">
+                <div className="min-w-0 flex flex-col">
+                  <h1 className="text-white text-[15px] font-bold tracking-tight leading-tight uppercase">
                     {pageTitle}
                   </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate hidden sm:block font-medium">
-                    {t.header_welcome},{' '}
-                    <span className="text-primary-600 dark:text-primary-400">
-                      {currentUser?.full_name || 'Admin'}
-                    </span>
-                  </p>
+                  <AnimatePresence mode="wait">
+                    {!isMobile && (
+                      <motion.div
+                        key={currentUser?.id}
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-2 mt-0.5"
+                      >
+                        <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">
+                          Sesi Aktif:
+                        </span>
+                        <span className="text-[10px] text-ubuntu-orange font-bold uppercase tracking-wider">
+                          {currentUser?.full_name || 'Administrator'}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
-              {/* Right Section - Actions */}
-              <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              {/* Right Section: System Tray Style Actions */}
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Add User Button */}
-                {showAddUserButton && (
-                  <div>
-                    <EnhancedButton
-                      variant="primary"
-                      size="sm"
-                      onClick={onAddUser}
-                      ariaLabel={t.add_user_button || 'Add new user'}
-                      icon={<PlusIcon className="w-5 h-5" />}
-                      className="hidden sm:flex bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 border-0 rounded-xl px-4 py-2"
-                    >
-                      {t.add_user_button}
-                    </EnhancedButton>
-                  </div>
+                {showAddUserButton && !isMobile && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onAddUser}
+                    className="flex items-center gap-2 bg-ubuntu-orange hover:bg-ubuntu-orange/90 text-white text-[11px] font-bold px-4 py-2 rounded-lg transition-all shadow-lg shadow-ubuntu-orange/20 mr-2 uppercase tracking-wide"
+                  >
+                    <PlusIcon className="w-3.5 h-3.5" />
+                    <span>{t.add_user_button}</span>
+                  </motion.button>
                 )}
 
-                {/* Notifications */}
-                <div className="flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => setIsNotifMenuOpen(true)}
-                    className="header-icon-btn relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    aria-label={`View notifications. ${
-                      unreadCount > 0
-                        ? `${unreadCount} unread notifications`
-                        : 'No new notifications'
-                    }`}
-                    data-tooltip={t.header_notifications || 'Notifications'}
-                  >
-                    <div className="relative">
+                {/* System Tray Icons */}
+                <div className="flex items-center bg-white/5 rounded-xl p-1 gap-1 border border-white/5">
+                  {/* Notifications */}
+                  <div className="relative">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setIsNotifMenuOpen(true)}
+                      className={`p-2 rounded-lg transition-colors ${unreadCount > 0 ? 'text-ubuntu-orange' : 'text-white/60 hover:text-white'}`}
+                      aria-label="Notifications"
+                    >
                       {settings.browser ? (
-                        <BellIcon className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-primary-600 dark:group-hover:text-primary-400" />
+                        <BellIcon className="w-5 h-5" />
                       ) : (
-                        <BellSlashIcon className="w-6 h-6 text-slate-400 dark:text-slate-500" />
+                        <BellSlashIcon className="w-5 h-5 opacity-40" />
                       )}
                       {unreadCount > 0 && (
-                        <span
-                          className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-slate-900 animate-pulse"
-                          aria-label={`${unreadCount} unread`}
-                        >
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </span>
+                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#1e1e1e]" />
                       )}
+                    </motion.button>
+                  </div>
+
+                  {/* Connection Status Indicator */}
+                  {!isMobile && (
+                    <div className="px-2 border-x border-white/10 h-5 flex items-center">
+                      <ConnectionStatusIndicator variant="inline" />
                     </div>
-                  </button>
-                </div>
+                  )}
 
-                {/* Connection Status - Desktop Only */}
-                <div className="hidden md:flex flex-col items-center justify-center">
-                  <ConnectionStatusIndicator variant="inline" />
-                </div>
-
-                {/* Theme Toggle */}
-                <div className="flex flex-col items-center gap-1">
-                  <button
+                  {/* Theme Toggle */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={toggleTheme}
-                    className="header-icon-btn relative p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                    data-tooltip={
-                      theme === 'light'
-                        ? t.header_dark_mode || 'Dark Mode'
-                        : t.header_light_mode || 'Light Mode'
-                    }
+                    className="p-2 text-white/60 hover:text-white rounded-lg transition-colors"
                   >
-                    <div className="relative">
-                      {theme === 'light' ? (
-                        <svg
-                          className="w-6 h-6 text-slate-600 hover:text-orange-500 transition-colors"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-6 h-6 text-yellow-400 hover:text-yellow-300 transition-colors"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  </button>
-                </div>
+                    {theme === 'light' ? (
+                      <MoonIcon className="w-5 h-5" />
+                    ) : (
+                      <SunIcon className="w-5 h-5 text-yellow-400" />
+                    )}
+                  </motion.button>
 
-                {/* Sign Out Button */}
-                <div className="flex flex-col items-center gap-1">
-                  <button
+                  <div className="w-px h-6 bg-white/10 mx-1" />
+
+                  {/* Sign Out */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={onSignOut}
-                    className="header-icon-btn relative p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-red-500"
-                    aria-label={t.header_sign_out || 'Sign Out'}
-                    data-tooltip={t.header_sign_out || 'Sign Out'}
+                    className="p-2 text-white/40 hover:text-red-400 rounded-lg transition-colors"
+                    aria-label="Sign Out"
                   >
-                    <div className="relative">
-                      <ArrowRightOnRectangleIcon className="w-6 h-6 text-slate-600 dark:text-slate-300 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors" />
-                    </div>
-                  </button>
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                  </motion.button>
                 </div>
 
-                {/* Vertical Divider */}
-                <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden sm:block" />
-
-                {/* User Profile Dropdown */}
-                <UserMenuButton currentUser={currentUser} onNavigate={onNavigate} t={t} />
+                {/* User Profile */}
+                <div className="pl-2 border-l border-white/5 ml-2">
+                  <UserMenuButton currentUser={currentUser} onNavigate={onNavigate} />
+                </div>
               </div>
             </div>
           </div>
-        </header>
+        </motion.header>
 
         {/* Notifications Floating Window */}
         <NotificationModal

@@ -29,53 +29,56 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-lime-50 via-white to-green-50 rounded-2xl shadow-2xl overflow-hidden border-2 border-lime-200/50 mt-4">
-      <div className="p-3 border-b-2 border-lime-300/50 bg-gradient-to-r from-lime-500/10 via-green-500/10 to-emerald-500/10">
-        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-lime-500 to-green-500 rounded-full"></div>
-          {t.silo_stock_report_title || 'Silo Stock Report'}
+    <div className="bg-white overflow-hidden">
+      <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
+        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+          {t.silo_stock_report_title || 'SILO STOCK REPORT'}
         </h3>
       </div>
 
       <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-sm table-auto">
+        <table className="w-full text-sm table-auto border-collapse">
           <thead>
             {/* Main Header */}
-            <tr className="bg-gradient-to-r from-lime-400 via-green-400 to-emerald-400 text-white">
+            <tr className="bg-[#772953] text-white">
               <th
                 rowSpan={2}
-                className="px-3 py-3 text-left font-bold border-r-2 border-white/30 sticky left-0 bg-inherit z-10 min-w-32 align-middle"
+                className="px-3 py-3 text-left font-bold border-r border-white/20 sticky left-0 bg-[#772953] z-10 min-w-32 align-middle text-xs uppercase"
               >
-                {t.silo_name || 'Silo Name'}
+                {t.silo_name || 'SILO NAME'}
               </th>
               <th
                 colSpan={3}
-                className="px-3 py-3 text-center font-semibold border-r-2 border-white/30 align-middle"
+                className="px-3 py-2 text-center font-bold border-r border-white/20 align-middle text-xs uppercase"
               >
-                {t.shift_1 || 'Shift 1'}
+                {t.shift_1 || 'SHIFT 1'}
               </th>
               <th
                 colSpan={3}
-                className="px-3 py-3 text-center font-semibold border-r-2 border-white/30 align-middle"
+                className="px-3 py-2 text-center font-bold border-r border-white/20 align-middle text-xs uppercase"
               >
-                {t.shift_2 || 'Shift 2'}
+                {t.shift_2 || 'SHIFT 2'}
               </th>
-              <th colSpan={3} className="px-3 py-3 text-center font-semibold align-middle">
-                {t.shift_3 || 'Shift 3'}
+              <th
+                colSpan={3}
+                className="px-3 py-2 text-center font-bold align-middle text-xs uppercase"
+              >
+                {t.shift_3 || 'SHIFT 3'}
               </th>
             </tr>
             {/* Sub Header */}
-            <tr className="bg-gradient-to-r from-lime-300 via-green-300 to-emerald-300 text-white">
+            <tr className="bg-[#8A3B66] text-white">
               {['shift1', 'shift2', 'shift3'].map((shiftKey) => (
                 <React.Fragment key={shiftKey}>
-                  <th className="px-3 py-2 text-center font-medium border-r-2 border-white/30 align-middle">
-                    <div className="leading-tight">{t.empty_space || 'Empty Space'}</div>
+                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
+                    <div className="leading-tight">{t.empty_space || 'EMPTY SPACE'}</div>
                   </th>
-                  <th className="px-3 py-2 text-center font-medium border-r-2 border-white/30 align-middle">
-                    <div className="leading-tight">{t.content || 'Content'}</div>
+                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 align-middle text-[10px] uppercase">
+                    <div className="leading-tight">{t.content || 'CONTENT'}</div>
                   </th>
-                  <th className="px-3 py-2 text-center font-medium border-r-2 border-white/30 last:border-r-0 align-middle">
-                    <div className="leading-tight">{t.percentage || '%'}</div>
+                  <th className="px-3 py-2 text-center font-semibold border-r border-white/20 last:border-r-0 align-middle text-[10px] uppercase">
+                    <div className="leading-tight">%</div>
                   </th>
                 </React.Fragment>
               ))}
@@ -86,12 +89,10 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
               <tr
                 key={silo.master.silo_name}
                 className={`${
-                  index % 2 === 0
-                    ? 'bg-gradient-to-r from-white to-lime-50/30'
-                    : 'bg-gradient-to-r from-green-50/50 to-emerald-50/30'
-                }`}
+                  index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                } hover:bg-orange-50/50 transition-colors border-b border-slate-100 last:border-0`}
               >
-                <td className="px-3 py-3 font-medium text-slate-900 border-r-2 border-lime-200/50 sticky left-0 bg-inherit z-10 align-middle">
+                <td className="px-3 py-3 font-bold text-slate-800 border-r border-slate-200 sticky left-0 bg-inherit z-10 align-middle text-xs">
                   {silo.master.silo_name}
                 </td>
 
@@ -107,16 +108,16 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
 
                   return (
                     <React.Fragment key={shiftKey}>
-                      <td className="px-3 py-3 text-center text-slate-800 border-r-2 border-lime-200/50 align-middle font-medium">
+                      <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
                         {formatNumberIndonesian(shiftData?.emptySpace) || '-'}
                       </td>
-                      <td className="px-3 py-3 text-center text-slate-800 border-r-2 border-lime-200/50 align-middle font-medium">
+                      <td className="px-3 py-3 text-center text-slate-700 border-r border-slate-200 align-middle font-medium text-xs">
                         {formatNumberIndonesian(content) || '-'}
                       </td>
                       <td
-                        className={`px-3 py-3 text-center text-slate-800 align-middle font-medium ${
-                          shiftIndex === 2 ? '' : 'border-r-2 border-lime-200/50'
-                        }`}
+                        className={`px-3 py-3 text-center align-middle font-bold text-xs ${
+                          shiftIndex === 2 ? '' : 'border-r border-slate-200'
+                        } ${percentage > 90 ? 'text-[#E95420]' : 'text-[#772953]'}`}
                       >
                         {percentage > 0 ? `${percentage.toFixed(1)}%` : '-'}
                       </td>
@@ -131,5 +132,3 @@ export const SiloTable: React.FC<SiloTableProps> = ({ siloData, t }) => {
     </div>
   );
 };
-
-

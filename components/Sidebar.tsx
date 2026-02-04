@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDrag } from '@use-gesture/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Page } from '../types';
 import { useIsMobile } from '../hooks/useIsMobile';
 import HomeIcon from './icons/HomeIcon';
@@ -55,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Permission checker
   const permissionChecker = usePermissions(currentUser);
 
-  const iconClass = 'w-6 h-6';
+  const iconClass = 'w-5 h-5';
 
   // Memoized navigation data
   const navigationData = useMemo(
@@ -152,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       } else {
         if (buttonRef && buttonRef.current) {
           const rect = buttonRef.current.getBoundingClientRect();
-          setDropdownPosition({ top: rect.top, left: rect.right + 8 });
+          setDropdownPosition({ top: rect.top, left: rect.right + 12 });
         }
         setActiveDropdown(moduleKey);
       }
@@ -202,7 +203,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           return navigationData.rkcPlantOperationPages
             .filter((page) => {
               if (currentUser?.role === 'Guest') {
-                // Guest logic same as operations? Assuming yes for now.
                 const allowedGuestPages = [
                   'op_dashboard',
                   'op_report',
@@ -269,10 +269,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
   const databaseButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleMouseEnter = useCallback(() => {}, []);
-
-  const handleMouseLeave = useCallback(() => {}, []);
-
   // ESC key handler for mobile
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -292,7 +288,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     ({ down, movement: [mx], direction: [xDir], velocity }) => {
       if (!isMobile || !isOpen) return;
 
-      const trigger = Math.abs(mx) > 100 || (Math.abs(mx) > 50 && velocity[0] > 0.5);
+      const trigger =
+        Math.abs(mx) > 100 || (Math.abs(mx) > 50 && (velocity as [number, number])[0] > 0.5);
       const dir = xDir < 0 ? -1 : 1;
 
       if (!down && trigger && dir === -1) {
@@ -308,55 +305,65 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
+      <AnimatePresence>
+        {isMobile && isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            onClick={onClose}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
       <aside
         {...bind()}
         style={{ touchAction: 'none' }}
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-300 ${
-          isExpanded ? 'w-64' : 'w-24'
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col transition-all duration-500 ease-in-out ${
+          isExpanded ? 'w-[280px]' : 'w-[70px]'
         } ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-xl border-r border-white/5 shadow-2xl transition-all duration-300" />
+        {/* Ubuntu Aubergine Background - High End Style */}
+        <div className="absolute inset-0 bg-[#300a24] shadow-[4px_0_24px_rgba(0,0,0,0.4)] transition-all duration-500" />
 
-        <div className="relative z-10 flex flex-col h-full">
+        {/* Subtle Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col h-full font-ubuntu">
           <SidebarHeader isMobile={isMobile} onClose={onClose} isExpanded={isExpanded} />
 
           {!isMobile && onToggleExpand && (
-            <button
+            <motion.button
               onClick={onToggleExpand}
-              className={`absolute -right-3 top-9 z-50 rounded-full p-1 border border-white/20 shadow-lg cursor-pointer hover:bg-slate-700 transition-all duration-300 bg-slate-800 text-slate-200`}
+              className="absolute -right-3 top-[70px] z-50 w-6 h-6 rounded-full border border-white/10 shadow-xl cursor-pointer flex items-center justify-center hover:bg-white/10 hover:border-white/20 hover:text-ubuntu-orange transition-all duration-300 bg-[#300a24] text-white/40 group"
               aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+              initial={false}
+              animate={{ rotate: isExpanded ? 0 : 180 }}
             >
-              <svg
-                className={`w-4 h-4 transition-transform duration-300 ${
-                  isExpanded ? 'rotate-180' : ''
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
+                  strokeWidth={3}
+                  d="M15 19l-7-7 7-7"
                 />
               </svg>
-            </button>
+            </motion.button>
           )}
 
-          <nav className="flex-1 px-3 py-6 flex flex-col items-center space-y-3 overflow-y-auto scrollbar-hide">
+          <nav className="flex-1 pt-6 flex flex-col space-y-1 overflow-y-auto scrollbar-hide">
+            <div className="px-6 mb-2">
+              <p
+                className={`text-[9px] font-bold text-white/30 uppercase tracking-[0.25em] transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}
+              >
+                APLIKASI UTAMA
+              </p>
+            </div>
+
             {permissionChecker.hasPermission('dashboard', 'READ') && (
               <NavigationItem
                 ref={dashboardButtonRef}
@@ -419,6 +426,14 @@ const Sidebar: React.FC<SidebarProps> = ({
               />
             )}
 
+            <div className="px-6 pt-5 pb-1">
+              <p
+                className={`text-[9px] font-bold text-white/30 uppercase tracking-[0.25em] transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}
+              >
+                KONFIGURASI
+              </p>
+            </div>
+
             {(isAdminRole(currentUser?.role) || isSuperAdmin(currentUser?.role)) && (
               <NavigationItem
                 ref={databaseButtonRef}
@@ -445,7 +460,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <NavigationItem
                 ref={notificationCreatorButtonRef}
                 icon={<BellIcon className={iconClass} />}
-                label="Broadcast Notification"
+                label="Broadcast Alert"
                 isActive={false}
                 onClick={() => setIsNotificationCreatorOpen(true)}
                 isSidebarExpanded={isExpanded}
@@ -453,10 +468,30 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
           </nav>
 
-          <div className="px-6 py-6 border-t border-white/5 bg-slate-900/30">
-            <div className="text-center">
-              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-medium">
-                © 2025 SIPOMA
+          <div
+            className={`${isExpanded ? 'p-5' : 'p-3'} border-t border-white/5 bg-black/10 transition-all duration-500`}
+          >
+            <div
+              className={`transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 scale-95 translate-y-2 h-0 overflow-hidden'}`}
+            >
+              <div className="bg-white/5 rounded-xl p-3 flex items-center gap-3 border border-white/5">
+                <div className="w-9 h-9 rounded-lg bg-ubuntu-orange/10 flex items-center justify-center text-ubuntu-orange">
+                  <ClockIcon className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">
+                    SYSTEM STATUS
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5 translate-y-[-1px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    ONLINE
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 text-center">
+              <p className="text-[9px] uppercase tracking-[0.3em] text-white/20 font-bold">
+                SIPOMA v2.2.0
               </p>
             </div>
           </div>
@@ -472,13 +507,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {isNotificationCreatorOpen && (
-        <NotificationCreator
-          t={t}
-          isOpen={isNotificationCreatorOpen}
-          onClose={() => setIsNotificationCreatorOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {isNotificationCreatorOpen && (
+          <NotificationCreator
+            t={t}
+            isOpen={isNotificationCreatorOpen}
+            onClose={() => setIsNotificationCreatorOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

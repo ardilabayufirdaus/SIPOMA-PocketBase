@@ -63,84 +63,90 @@ const CcrQuickActions: React.FC<CcrQuickActionsProps> = memo(
     }, [isDisabled, canWrite, onDeleteAll]);
 
     return (
-      <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl shadow-2xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
+      <div className="relative group h-full">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#772953]/20 to-[#E95420]/20 rounded-2xl blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+        <div className="relative backdrop-blur-xl bg-white/40 border border-white/60 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] p-6 transition-all duration-300 h-full">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#772953] to-[#E95420] flex items-center justify-center shadow-lg shadow-[#772953]/30 ring-4 ring-[#772953]/10">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-2xl font-black tracking-tight text-slate-800">
+                {t.quick_actions}
+              </h3>
+              <p className="text-sm font-medium text-slate-500">{t.quick_actions_desc}</p>
+            </div>
           </div>
-          <h3 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-            {t.quick_actions || 'Quick Actions'}
-          </h3>
-        </div>
 
-        <div className="flex flex-wrap gap-3">
-          {/* Refresh Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleRefresh}
-            disabled={isDisabled || isRefreshing}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            title={t.refresh_data || 'Refresh Data'}
-          >
-            <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="font-medium">{t.refresh || 'Refresh'}</span>
-          </motion.button>
-
-          {/* Export Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleExport}
-            disabled={isDisabled || isExporting}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            title={t.export_to_excel || 'Export to Excel'}
-          >
-            <DocumentArrowDownIcon className="w-5 h-5" />
-            <span className="font-medium">{t.export || 'Export'}</span>
-          </motion.button>
-
-          {/* Import Button - Only if can write */}
-          {canWrite && (
+          <div className="flex flex-wrap gap-4">
+            {/* Refresh Button */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleImport}
-              disabled={isDisabled}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              title={t.import_from_excel || 'Import from Excel'}
+              whileHover={{ scale: 1.05, translateY: -2 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRefresh}
+              disabled={isDisabled || isRefreshing}
+              className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-xl hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              title={t.refresh_data || 'Refresh Data'}
             >
-              <DocumentArrowUpIcon className="w-5 h-5" />
-              <span className="font-medium">{t.import || 'Import'}</span>
+              <ArrowPathIcon className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="font-bold tracking-wide">{t.refresh || 'Refresh'}</span>
             </motion.button>
-          )}
 
-          {/* Delete All Button - Only if can write */}
-          {canWrite && (
+            {/* Export Button */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleDeleteAll}
-              disabled={isDisabled}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl hover:from-red-600 hover:to-rose-600 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              title={t.delete_all_data || 'Delete All Data'}
+              whileHover={{ scale: 1.05, translateY: -2 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleExport}
+              disabled={isDisabled || isExporting}
+              className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              title={t.export_to_excel || 'Export ke Excel'}
             >
-              <TrashIcon className="w-5 h-5" />
-              <span className="font-medium">{t.delete_all || 'Delete All'}</span>
+              <DocumentArrowDownIcon className="w-5 h-5" />
+              <span className="font-bold tracking-wide">{t.export || 'Export'}</span>
             </motion.button>
-          )}
+
+            {/* Import Button - Only if can write */}
+            {canWrite && (
+              <motion.button
+                whileHover={{ scale: 1.05, translateY: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleImport}
+                disabled={isDisabled}
+                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-xl hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                title={t.import_from_excel || 'Import dari Excel'}
+              >
+                <DocumentArrowUpIcon className="w-5 h-5" />
+                <span className="font-bold tracking-wide">{t.import || 'Import'}</span>
+              </motion.button>
+            )}
+
+            {/* Delete All Button - Only if can write */}
+            {canWrite && (
+              <motion.button
+                whileHover={{ scale: 1.05, translateY: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDeleteAll}
+                disabled={isDisabled}
+                className="flex items-center gap-2.5 px-5 py-3 bg-gradient-to-br from-rose-500 to-red-600 text-white rounded-xl hover:shadow-xl hover:shadow-rose-500/30 transition-all duration-300 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                title={t.delete_all_data || 'Hapus Semua Data'}
+              >
+                <TrashIcon className="w-5 h-5" />
+                <span className="font-bold tracking-wide">{t.delete_all || 'Reset'}</span>
+              </motion.button>
+            )}
+          </div>
         </div>
       </div>
     );

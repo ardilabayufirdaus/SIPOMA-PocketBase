@@ -46,7 +46,15 @@ export const usePresenceTracker = () => {
               is_online: true,
               avatarUrl: user.avatar ? pb.files.getUrl(user, user.avatar) : undefined,
             };
-          } catch (fetchErr) {
+          } catch (fetchErr: any) {
+            // Jika user tidak ditemukan (404), hapus record presence yang usang
+            if (fetchErr && fetchErr.status === 404) {
+              logger.debug(`Cleaning up stale presence record for deleted user: ${record.user_id}`);
+              pb.collection('user_online')
+                .delete(record.id)
+                .catch(() => {});
+            }
+
             // PERMISSION FALLBACK: If we can't fetch user details, return a placeholder
             // This ensures the COUNT is correct even if we can't show the name
             presenceData = {

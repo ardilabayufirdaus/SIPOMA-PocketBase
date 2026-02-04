@@ -60,16 +60,18 @@ const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
       className="w-full mb-8"
     >
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-emerald-50 to-teal-50 flex justify-between items-center">
+        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-midAubergine flex justify-between items-center">
           <div>
-            <h3 className="text-xl font-bold text-slate-900 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold text-white font-display">
               Kapasitas (Capacity) - {plantUnit}
             </h3>
-            <p className="text-sm text-slate-600 mt-2">Total Produksi Semen ({filters.date})</p>
+            <p className="text-sm text-ubuntu-warmGrey mt-2">
+              Total Produksi Semen ({filters.date})
+            </p>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 text-ubuntu-orange rounded-full text-xs font-medium border border-white/20">
               <CheckCircleIcon className="w-3.5 h-3.5" />
               <span>Auto-Sync Active</span>
             </div>
@@ -106,7 +108,7 @@ const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
                     Total Produksi Semen
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ubuntu-orange">
                     {isLoading ? (
                       <span className="inline-block w-20 h-5 bg-slate-200 animate-pulse rounded"></span>
                     ) : totalProduction !== null ? (
@@ -115,7 +117,7 @@ const ProductionCapacityTable: React.FC<ProductionCapacityTableProps> = ({
                       '-'
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ubuntu-darkAubergine">
                     {isLoading ? (
                       <span className="inline-block w-20 h-5 bg-slate-200 animate-pulse rounded"></span>
                     ) : dryProduction !== null ? (

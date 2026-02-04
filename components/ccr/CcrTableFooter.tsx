@@ -208,7 +208,7 @@ const CcrTableFooter: React.FC<CcrTableFooterProps> = ({
   return (
     <>
       {/* Footer Header - Matching main table header style */}
-      <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-indigo-900 rounded-t-xl shadow-lg px-4 py-3 mt-4 border-b-2 border-indigo-500/50">
+      <div className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] rounded-t-xl shadow-lg px-4 py-3 mt-4 border-b-2 border-[#772953]/50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
             <svg

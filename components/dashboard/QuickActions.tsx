@@ -86,36 +86,33 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, t }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 h-full content-start">
+    <div className="grid grid-cols-2 gap-4 h-full content-start">
       {actions.map((action, index) => (
         <motion.button
           key={action.label}
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 + index * 0.1 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          transition={{ delay: 0.2 + index * 0.05 }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.98 }}
           onClick={action.onClick}
           className={`
-            relative flex flex-col items-center justify-center gap-2 p-3 rounded-2xl 
-            bg-white/60 dark:bg-slate-800/60 backdrop-blur-md
-            border border-white/50 dark:border-slate-700/50
-            hover:border-indigo-300 dark:hover:border-indigo-500/50
-            shadow-sm hover:shadow-xl transition-all duration-300 text-center group h-auto min-h-[90px] overflow-hidden
+            relative flex flex-col items-center justify-center gap-3 p-4 rounded-lg 
+            bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
+            hover:border-[#E95420] dark:hover:border-[#E95420]/50
+            shadow-sm hover:shadow-md transition-all duration-200 text-center group h-auto min-h-[110px] overflow-hidden
           `}
         >
-          {/* Hover Gradient Background */}
-          <div
-            className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br ${action.color.includes('amber') ? 'from-amber-500/10 to-orange-500/5' : action.color.includes('orange') ? 'from-orange-500/10 to-red-500/5' : action.color.includes('emerald') ? 'from-emerald-500/10 to-teal-500/5' : 'from-blue-500/10 to-indigo-500/5'}`}
-          ></div>
+          {/* Subtle Indicator */}
+          <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-[#E95420] transition-all duration-200"></div>
 
           <div
-            className={`relative z-10 p-2.5 rounded-xl ${action.color} transition-colors ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 duration-300`}
+            className={`relative z-10 p-2.5 rounded ${action.color.includes('amber') || action.color.includes('orange') ? 'bg-[#E95420] text-white' : 'bg-[#772953] text-white'} transition-transform group-hover:scale-110 duration-200`}
           >
             {action.icon}
           </div>
           <div className="relative z-10">
-            <span className="block font-bold text-slate-700 dark:text-slate-200 text-xs leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            <span className="block font-bold text-[#333333] dark:text-slate-200 text-[11px] leading-tight uppercase tracking-wider group-hover:text-[#E95420] transition-colors">
               {action.label}
             </span>
           </div>

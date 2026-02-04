@@ -262,7 +262,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.3 }}
-        className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4"
+        className="bg-gradient-to-r from-[#772953] to-[#2C001E] px-6 py-4"
       >
         <div className="flex items-center space-x-3">
           <BarChart3 className="h-6 w-6 text-white" />
@@ -270,7 +270,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             {t.parameter_setting_title || 'Parameter Setting'}
           </h2>
         </div>
-        <p className="text-red-100 text-sm mt-1">
+        <p className="text-white/80 text-sm mt-1">
           {t.parameter_setting_description || 'Configure parameter settings for plant operations'}
         </p>
       </motion.div>
@@ -295,7 +295,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             className="sm:col-span-2"
           >
             <div className="space-y-2">
-              <label htmlFor="parameter" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="parameter" className="block text-sm font-medium text-[#333333]">
                 {t.parameter_label}
               </label>
               <motion.input
@@ -309,8 +309,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 aria-invalid={!!errors.parameter}
                 aria-describedby={errors.parameter ? 'parameter-error' : undefined}
                 placeholder={t.parameter_placeholder || 'Enter parameter name'}
-                className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                  errors.parameter ? 'border-red-500' : 'border-slate-300'
+                className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
+                  errors.parameter ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                 }`}
               />
               <AnimatePresence>
@@ -320,7 +320,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     id="parameter-error"
-                    className="text-sm text-blue-600 flex items-center"
+                    className="text-sm text-[#C7162B] flex items-center"
                     role="alert"
                   >
                     <AlertCircle className="h-4 w-4 mr-1" />
@@ -337,7 +337,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4, duration: 0.3 }}
           >
-            <label htmlFor="data_type" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="data_type" className="block text-sm font-medium text-[#333333] mb-2">
               {t.data_type_label}
             </label>
             <motion.select
@@ -346,7 +346,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               id="data_type"
               value={formData.data_type}
               onChange={handleChange}
-              className="block w-full pl-3 pr-10 py-3 bg-white border border-slate-300 rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm"
+              className="block w-full pl-3 pr-10 py-3 bg-white border border-[#AEA79F]/50 rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm"
             >
               {Object.values(ParameterDataType).map((type) => (
                 <motion.option
@@ -367,7 +367,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5, duration: 0.3 }}
           >
-            <label htmlFor="unit" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="unit" className="block text-sm font-medium text-[#333333] mb-2">
               {t.unit_label_param}
             </label>
             <motion.select
@@ -377,8 +377,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               value={formData.unit}
               onChange={handleChange}
               required
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                errors.unit ? 'border-red-500' : 'border-slate-300'
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
+                errors.unit ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             >
               <option value="" disabled>
@@ -402,7 +402,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   id="unit-error"
-                  className="mt-2 text-sm text-blue-600 flex items-center"
+                  className="mt-2 text-sm text-[#C7162B] flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -419,7 +419,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
             transition={{ delay: 0.6, duration: 0.3 }}
             className="sm:col-span-2"
           >
-            <label htmlFor="category" className="block text-sm font-medium text-slate-700 mb-2">
+            <label htmlFor="category" className="block text-sm font-medium text-[#333333] mb-2">
               {t.category_label}
             </label>
             <motion.select
@@ -429,8 +429,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               value={formData.category}
               onChange={handleChange}
               required
-              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                errors.category ? 'border-red-500' : 'border-slate-300'
+              className={`block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
+                errors.category ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             >
               <option value="" disabled>
@@ -454,7 +454,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   id="category-error"
-                  className="mt-2 text-sm text-blue-600 flex items-center"
+                  className="mt-2 text-sm text-[#C7162B] flex items-center"
                   role="alert"
                 >
                   <AlertCircle className="h-4 w-4 mr-1" />
@@ -479,17 +479,17 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7, duration: 0.3 }}
-                  className="bg-slate-50 rounded-lg p-4"
+                  className="bg-[#F9F9F9] rounded-lg p-4 border border-[#AEA79F]/20"
                 >
-                  <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
-                    <Settings className="h-5 w-5 mr-2 text-blue-600" />
+                  <h4 className="text-lg font-medium text-[#772953] mb-4 flex items-center">
+                    <Settings className="h-5 w-5 mr-2 text-[#E95420]" />
                     {t.basic_range_title || 'Basic Range Settings'}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label
                         htmlFor="min_value"
-                        className="block text-sm font-medium text-slate-700"
+                        className="block text-sm font-medium text-[#333333]"
                       >
                         {t.min_value_label}
                       </label>
@@ -501,8 +501,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                         value={formData.min_value?.toString() || ''}
                         onChange={handleChange}
                         placeholder="0"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                          errors.min_value ? 'border-red-500' : 'border-slate-300'
+                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
+                          errors.min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                         }`}
                       />
                       <AnimatePresence>
@@ -511,7 +511,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-blue-600 flex items-center"
+                            className="text-sm text-[#C7162B] flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -523,7 +523,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                     <div className="space-y-2">
                       <label
                         htmlFor="max_value"
-                        className="block text-sm font-medium text-slate-700"
+                        className="block text-sm font-medium text-[#333333]"
                       >
                         {t.max_value_label}
                       </label>
@@ -535,8 +535,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                         value={formData.max_value?.toString() || ''}
                         onChange={handleChange}
                         placeholder="100"
-                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                          errors.max_value ? 'border-red-500' : 'border-slate-300'
+                        className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
+                          errors.max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                         }`}
                       />
                       <AnimatePresence>
@@ -545,7 +545,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-blue-600 flex items-center"
+                            className="text-sm text-[#C7162B] flex items-center"
                             role="alert"
                           >
                             <AlertCircle className="h-4 w-4 mr-1" />
@@ -563,17 +563,17 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8, duration: 0.3 }}
-                    className="bg-blue-50 rounded-lg p-4"
+                    className="bg-[#E95420]/5 rounded-lg p-4"
                   >
-                    <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+                    <h4 className="text-lg font-medium text-[#333333] mb-4 flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-[#E95420]" />
                       OPC Cement Settings
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label
                           htmlFor="opc_min_value"
-                          className="block text-sm font-medium text-slate-700"
+                          className="block text-sm font-medium text-[#333333]"
                         >
                           OPC Min Value
                         </label>
@@ -585,8 +585,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           value={formData.opc_min_value?.toString() || ''}
                           onChange={handleChange}
                           placeholder="0"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                            errors.opc_min_value ? 'border-red-500' : 'border-slate-300'
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
+                            errors.opc_min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                           }`}
                         />
                         <AnimatePresence>
@@ -595,7 +595,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-blue-600 flex items-center"
+                              className="text-sm text-[#C7162B] flex items-center"
                               role="alert"
                             >
                               <AlertCircle className="h-4 w-4 mr-1" />
@@ -607,7 +607,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                       <div className="space-y-2">
                         <label
                           htmlFor="opc_max_value"
-                          className="block text-sm font-medium text-slate-700"
+                          className="block text-sm font-medium text-[#333333]"
                         >
                           OPC Max Value
                         </label>
@@ -619,8 +619,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           value={formData.opc_max_value?.toString() || ''}
                           onChange={handleChange}
                           placeholder="100"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                            errors.opc_max_value ? 'border-red-500' : 'border-slate-300'
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
+                            errors.opc_max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                           }`}
                         />
                         <AnimatePresence>
@@ -629,7 +629,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-blue-600 flex items-center"
+                              className="text-sm text-[#C7162B] flex items-center"
                               role="alert"
                             >
                               <AlertCircle className="h-4 w-4 mr-1" />
@@ -648,17 +648,17 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.9, duration: 0.3 }}
-                    className="bg-green-50 rounded-lg p-4"
+                    className="bg-[#0E8420]/5 rounded-lg p-4"
                   >
-                    <h4 className="text-lg font-medium text-slate-900 mb-4 flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-green-600" />
+                    <h4 className="text-lg font-medium text-[#333333] mb-4 flex items-center">
+                      <BarChart3 className="h-5 w-5 mr-2 text-[#0E8420]" />
                       PCC Cement Settings
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label
                           htmlFor="pcc_min_value"
-                          className="block text-sm font-medium text-slate-700"
+                          className="block text-sm font-medium text-[#333333]"
                         >
                           PCC Min Value
                         </label>
@@ -670,8 +670,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           value={formData.pcc_min_value?.toString() || ''}
                           onChange={handleChange}
                           placeholder="0"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                            errors.pcc_min_value ? 'border-red-500' : 'border-slate-300'
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
+                            errors.pcc_min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                           }`}
                         />
                         <AnimatePresence>
@@ -680,7 +680,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-blue-600 flex items-center"
+                              className="text-sm text-[#C7162B] flex items-center"
                               role="alert"
                             >
                               <AlertCircle className="h-4 w-4 mr-1" />
@@ -692,7 +692,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                       <div className="space-y-2">
                         <label
                           htmlFor="pcc_max_value"
-                          className="block text-sm font-medium text-slate-700"
+                          className="block text-sm font-medium text-[#333333]"
                         >
                           PCC Max Value
                         </label>
@@ -704,8 +704,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           value={formData.pcc_max_value?.toString() || ''}
                           onChange={handleChange}
                           placeholder="100"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 sm:text-sm ${
-                            errors.pcc_max_value ? 'border-red-500' : 'border-slate-300'
+                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
+                            errors.pcc_max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                           }`}
                         />
                         <AnimatePresence>
@@ -714,7 +714,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-blue-600 flex items-center"
+                              className="text-sm text-[#C7162B] flex items-center"
                               role="alert"
                             >
                               <AlertCircle className="h-4 w-4 mr-1" />
@@ -736,7 +736,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0, duration: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-slate-200"
+          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#AEA79F]/20"
         >
           <AnimatePresence>
             {isSubmitting && (
@@ -744,12 +744,12 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center justify-center space-x-2 text-blue-600 bg-red-50 px-4 py-2 rounded-lg"
+                className="flex items-center justify-center space-x-2 text-[#E95420] bg-[#E95420]/10 px-4 py-2 rounded-lg"
               >
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"
+                  className="w-4 h-4 border-2 border-[#E95420] border-t-transparent rounded-full"
                 />
                 <span className="text-sm font-medium">Saving parameter settings...</span>
               </motion.div>
@@ -771,7 +771,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 type="submit"
                 variant="primary"
                 disabled={isSubmitting}
-                className="px-6 py-2 bg-blue-600 hover:bg-green-700"
+                className="px-6 py-2 bg-[#E95420] hover:bg-[#d94612] text-white border-transparent"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 {t.save_button}

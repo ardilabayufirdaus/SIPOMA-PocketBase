@@ -13,39 +13,54 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Deep Indigo/Violet as Primary (More Premium than standard Blue)
+        // Ubuntu Orange as Primary (Action Color)
         primary: {
-          50: '#eff6ff', // Softest blue-white
-          100: '#e0e7ff', // Very light indigo
-          200: '#c7d2fe', // Light indigo
-          300: '#a5b4fc', // Soft indigo
-          400: '#818cf8', // Medium indigo
-          500: '#6366f1', // Standard indigo
-          600: '#4f46e5', // Deep indigo (Primary Action)
-          700: '#4338ca', // Darker indigo
-          800: '#3730a3', // Dark intense indigo
-          900: '#312e81', // Very dark indigo
-          950: '#1e1b4b', // Almost black indigo
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316',
+          600: '#E95420', // ubuntu.orange
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+          950: '#431407',
         },
-        // Refined Slate for Neutrals (Better for technical apps)
+        // Ubuntu Aubergine as Secondary (Brand/Header Color)
+        secondary: {
+          50: '#fdf4f9',
+          100: '#fbe8f3',
+          200: '#f8d0e7',
+          300: '#f2a8d1',
+          400: '#e871b0',
+          500: '#d53f8c',
+          600: '#b83280',
+          700: '#772953', // ubuntu.midAubergine
+          800: '#5e2750', // ubuntu.darkAubergine
+          900: '#300a24', // ubuntu.aubergine
+          950: '#1a0513',
+        },
+        // Ubuntu Warm/Cool Greys for Neutrals
         neutral: {
           0: '#ffffff',
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0', // Borders
-          300: '#cbd5e1', // Disabled/Placeholder
-          400: '#94a3b8', // Secondary Text
-          500: '#64748b', // Primary Text Light
-          600: '#475569', // Primary Text Dark
-          700: '#334155', // Headings
-          800: '#1e293b', // Dark backgrounds
-          900: '#0f172a', // Very dark backgrounds
-          950: '#020617', // Black
+          50: '#F7F7F7', // ubuntu light bg
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#AEA79F', // ubuntu.warmGrey
+          500: '#6b7280',
+          600: '#555555', // ubuntu mid text
+          700: '#333333', // ubuntu.coolGrey (Primary text)
+          800: '#1f2937',
+          900: '#111827',
+          950: '#030712',
         },
-        // Semantic Colors
+        // Ubuntu Semantic Colors
         success: {
           50: '#f0fdf4',
-          500: '#22c55e',
+          500: '#0E8420', // Ubuntu Green
+          600: '#0E8420',
           700: '#15803d',
         },
         warning: {
@@ -55,26 +70,43 @@ export default {
         },
         error: {
           50: '#fff1f2',
-          100: '#ffe4e6',
-          200: '#fecdd3',
-          300: '#fda4af',
-          400: '#fb7185',
-          500: '#f43f5e',
-          600: '#e11d48',
+          500: '#C7162B', // Ubuntu Red
+          600: '#C7162B',
           700: '#be123c',
-          800: '#9f1239',
-          900: '#881337',
         },
         info: {
           50: '#eff6ff',
           500: '#3b82f6',
           700: '#1d4ed8',
         },
+        // New Inspection Color Palette
+        inspection: {
+          50: '#EBF4F6',
+          100: '#E1F0F3',
+          200: '#C5DFE5',
+          300: '#A9CDD7',
+          400: '#7AB2B2',
+          500: '#088395',
+          600: '#077686',
+          700: '#09637E',
+          800: '#064F65',
+          900: '#043B4B',
+          950: '#02212B',
+        },
+        // Ubuntu Desktop Theme Colors
+        ubuntu: {
+          aubergine: '#300a24',
+          darkAubergine: '#5e2750',
+          midAubergine: '#772953',
+          orange: '#E95420',
+          warmGrey: '#AEA79F',
+          coolGrey: '#333333',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'Outfit', 'system-ui', 'sans-serif'],
+        sans: ['Ubuntu', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
-        display: ['Outfit', 'Inter', 'sans-serif'], // For Headings
+        display: ['Ubuntu', 'Outfit', 'sans-serif'], // For Headings
       },
       fontSize: {
         xs: ['0.75rem', { lineHeight: '1rem' }],

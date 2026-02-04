@@ -50,90 +50,96 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
   );
 
   return (
-    <div className="flex flex-col h-full gap-3 lg:gap-5 overflow-hidden">
+    <div className="flex flex-col h-full gap-4 lg:gap-6 overflow-hidden">
       {/* Top Section: Unit Statuses */}
-      <div className="flex-shrink-0 grid grid-cols-2 gap-3 lg:gap-5 h-[160px]">
+      <div className="flex-shrink-0 grid grid-cols-2 gap-4 lg:gap-6 h-[170px]">
         {/* CM Operations */}
-        <div className="flex flex-col bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
-          <div className="px-4 py-2 border-b border-slate-100/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/30">
-            <h3 className="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> CM
+        <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+          <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
+            <h3 className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#772953] rounded-full"></span> Operasional CM
             </h3>
             <button
               onClick={() => onNavigate('operations', 'op_dashboard')}
-              className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-[10px] font-bold text-[#E95420] hover:underline uppercase tracking-tight"
             >
-              VIEW
+              LIHAT SEMUA
             </button>
           </div>
-          <div className="p-3 overflow-y-auto custom-scrollbar">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="p-3.5 overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-2 gap-2.5">
               {cmUnits.slice(0, 8).map((unit) => (
                 <StatusPill key={unit.id} unit={unit} />
               ))}
             </div>
             {cmUnits.length === 0 && (
-              <p className="text-xs text-slate-400 italic text-center py-4">No CM units found</p>
+              <p className="text-xs text-[#AEA79F] italic text-center py-5">
+                Unit CM tidak ditemukan
+              </p>
             )}
           </div>
         </div>
 
         {/* RKC Operations */}
-        <div className="flex flex-col bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
-          <div className="px-4 py-2 border-b border-slate-100/50 dark:border-slate-700/50 flex justify-between items-center bg-slate-50/30 dark:bg-slate-800/30">
-            <h3 className="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span> RKC
+        <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
+          <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
+            <h3 className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#E95420] rounded-full"></span> Operasional RKC
             </h3>
             <button
               onClick={() => onNavigate('rkc_operations', 'op_dashboard')}
-              className="text-[10px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
+              className="text-[10px] font-bold text-[#E95420] hover:underline uppercase tracking-tight"
             >
-              VIEW
+              LIHAT SEMUA
             </button>
           </div>
-          <div className="p-3 overflow-y-auto custom-scrollbar">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="p-3.5 overflow-y-auto custom-scrollbar">
+            <div className="grid grid-cols-2 gap-2.5">
               {rkcUnits.slice(0, 8).map((unit) => (
                 <StatusPill key={unit.id} unit={unit} />
               ))}
             </div>
             {rkcUnits.length === 0 && (
-              <p className="text-xs text-slate-400 italic text-center py-4">No RKC units found</p>
+              <p className="text-xs text-[#AEA79F] italic text-center py-5">
+                Unit RKC tidak ditemukan
+              </p>
             )}
           </div>
         </div>
       </div>
 
       {/* Bottom Section: Alerts List */}
-      <div className="flex-1 min-h-0 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-sm flex flex-col overflow-hidden relative">
-        <div className="px-4 py-3 border-b border-slate-100/50 dark:border-slate-700/50 bg-slate-50/30 dark:bg-slate-800/30 sticky top-0 z-10 flex justify-between items-center">
-          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
-            Recent Issues
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden relative">
+        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-[#F7F7F7] dark:bg-slate-900/50 sticky top-0 z-10 flex justify-between items-center">
+          <h4 className="text-xs font-bold text-[#333333] dark:text-slate-200 uppercase tracking-widest">
+            Isu Terbaru
           </h4>
-          <span className="bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+          <span className="bg-[#EF2D56] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-[0.1em]">
             Live Feed
           </span>
         </div>
 
         <div className="flex-1 overflow-y-auto p-0">
           {topDowntimes.length > 0 ? (
-            <div className="divide-y divide-slate-50 dark:divide-slate-700/30">
+            <div className="divide-y divide-slate-50 dark:divide-slate-800">
               {topDowntimes.map((downtime, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 p-3 hover:bg-white/80 dark:hover:bg-slate-700/40 transition-colors group cursor-default"
+                  className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-default"
                 >
                   <div
-                    className={`w-1.5 h-full self-stretch rounded-full flex-shrink-0 ${downtime.isRkc ? 'bg-orange-400' : 'bg-blue-400'} opacity-50 group-hover:opacity-100 transition-opacity`}
+                    className={`w-1 h-8 rounded-full flex-shrink-0 ${downtime.isRkc ? 'bg-[#E95420]' : 'bg-[#772953]'} opacity-40 group-hover:opacity-100 transition-opacity`}
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-0.5">
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="text-xs font-bold text-[#333333] dark:text-slate-200 uppercase tracking-tight">
                         {downtime.unit}
                       </span>
-                      <span className="text-[9px] font-medium text-slate-400">TODAY</span>
+                      <span className="text-[10px] font-bold text-[#AEA79F] uppercase">
+                        Hari Ini
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">
+                    <p className="text-xs text-[#808080] dark:text-slate-400 truncate group-hover:text-[#333333] dark:group-hover:text-slate-200 transition-colors font-medium">
                       {downtime.issue}
                     </p>
                   </div>
@@ -141,10 +147,10 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-slate-400 p-8 gap-2">
-              <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center h-full text-[#AEA79F] p-10 gap-3">
+              <div className="w-12 h-12 rounded-full bg-[#F7F7F7] dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
                 <svg
-                  className="w-5 h-5 opacity-40"
+                  className="w-6 h-6 opacity-40"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -157,7 +163,9 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
                   />
                 </svg>
               </div>
-              <span className="text-xs opacity-70">No active issues reported.</span>
+              <span className="text-[11px] font-bold uppercase tracking-widest">
+                Tidak ada isu aktif yang dilaporkan.
+              </span>
             </div>
           )}
         </div>

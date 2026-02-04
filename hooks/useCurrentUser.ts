@@ -75,6 +75,8 @@ export const useCurrentUser = () => {
         pb.authStore.clear();
         secureStorage.removeItem('currentUser');
         setCurrentUser(null);
+        // PENTING: Beritahu RootRouter untuk redirect ke login
+        window.dispatchEvent(new CustomEvent('authStateChanged'));
         return;
       }
 
@@ -164,6 +166,8 @@ export const useCurrentUser = () => {
         pb.authStore.clear();
         secureStorage.removeItem('currentUser');
         setCurrentUser(null);
+        // PENTING: Beritahu RootRouter untuk redirect ke login
+        window.dispatchEvent(new CustomEvent('authStateChanged'));
         return;
       }
 
@@ -239,6 +243,8 @@ export const useCurrentUser = () => {
         secureStorage.removeItem('currentUser');
         setCurrentUser(null);
         setError('User account not found');
+        // PENTING: Beritahu RootRouter untuk redirect ke login
+        window.dispatchEvent(new CustomEvent('authStateChanged'));
         return;
       }
 

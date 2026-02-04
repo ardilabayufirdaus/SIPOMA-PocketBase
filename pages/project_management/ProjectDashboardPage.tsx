@@ -31,8 +31,8 @@ import ArrowPathRoundedSquareIcon from '../../components/icons/ArrowPathRoundedS
 
 // Import Chart Components
 import { DonutChart } from '../../components/charts/DonutChart';
-import { ProgressTrendChart } from '../../components/charts/ProgressTrendChart';
 import { ResourceAllocationChart } from '../../components/charts/ResourceAllocationChart';
+import { addMonths, format, isBefore, startOfMonth, startOfDay } from 'date-fns';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-64">
@@ -76,13 +76,13 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const getColorClasses = () => {
     switch (colorScheme) {
       case 'success':
-        return 'bg-emerald-50 text-emerald-600';
+        return 'bg-[#E95420]/10 text-[#E95420]'; // Ubuntu Orange
       case 'warning':
-        return 'bg-amber-50 text-amber-600';
+        return 'bg-[#AEA79F]/20 text-[#5E2750]'; // Ubuntu Warm Grey / Aubergine
       case 'danger':
         return 'bg-red-50 text-red-600';
       default:
-        return 'bg-indigo-50 text-indigo-600';
+        return 'bg-[#2c001e]/10 text-[#2c001e]'; // Ubuntu Aubergine
     }
   };
 
@@ -91,9 +91,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-indigo-200 ${
+        className={`bg-white p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-[#E95420]/30 ${
           isInteractive
-            ? 'cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 focus:outline-none'
+            ? 'cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-[#E95420] focus:ring-opacity-50 focus:outline-none'
             : ''
         }`}
         onClick={handleClick}
@@ -243,13 +243,13 @@ const ProjectDashboardPage: React.FC<{
       );
 
       let status = t.proj_status_on_track,
-        statusColor = 'text-green-600';
+        statusColor = 'text-[#0E8420]'; // Canonical Green
       if (overallProgress >= 100) {
         status = t.proj_status_completed;
-        statusColor = 'text-blue-600';
+        statusColor = 'text-[#77216F]'; // Ubuntu Light Aubergine
       } else if (new Date() > projectEndDate) {
         status = t.proj_status_delayed;
-        statusColor = 'text-blue-600';
+        statusColor = 'text-[#E95420]'; // Ubuntu Orange
       }
 
       return { ...project, progress: overallProgress, status, statusColor };
@@ -360,9 +360,9 @@ const ProjectDashboardPage: React.FC<{
     const delayed = projectsSummary.filter((p) => p.status === t.proj_status_delayed).length;
     const completed = projectsSummary.filter((p) => p.status === t.proj_status_completed).length;
     return [
-      { label: t.projects_on_track, value: onTrack, color: '#16A34A' },
-      { label: t.projects_delayed, value: delayed, color: '#DC2626' },
-      { label: t.projects_completed_count, value: completed, color: '#2563EB' },
+      { label: t.projects_on_track, value: onTrack, color: '#0E8420' },
+      { label: t.projects_delayed, value: delayed, color: '#E95420' },
+      { label: t.projects_completed_count, value: completed, color: '#77216F' },
     ];
   }, [projectsSummary, t]);
 
@@ -378,44 +378,48 @@ const ProjectDashboardPage: React.FC<{
       .slice(0, 5); // Limit to 5
   }, [tasks]);
 
-  // Progress trend data (simulated monthly data for demonstration)
-  const progressTrendData = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return [
-      {
-        id: 'Overall Progress',
-        data: months.map((month, index) => ({
-          x: month,
-          y: Math.min(100, 20 + index * 15 + Math.random() * 10),
-        })),
-      },
-      {
-        id: 'On Track Projects',
-        data: months.map((month, index) => ({
-          x: month,
-          y: Math.min(100, 15 + index * 12 + Math.random() * 8),
-        })),
-      },
-      {
-        id: 'Completed Projects',
-        data: months.map((month, index) => ({
-          x: month,
-          y: Math.min(100, 5 + index * 8 + Math.random() * 5),
-        })),
-      },
-    ];
-  }, []);
+  // Tasks Forecast Data (Real Data)
+  const tasksForecastData = useMemo(() => {
+    const today = startOfDay(new Date());
+    const startMonth = startOfMonth(addMonths(today, -2)); // Start 2 months ago
+    const months = Array.from({ length: 6 }, (_, i) => addMonths(startMonth, i));
 
-  // Resource allocation data (simulated)
-  const resourceAllocationData = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map((month) => ({
-      month,
-      active: Math.floor(Math.random() * 20) + 10,
-      overdue: Math.floor(Math.random() * 8) + 2,
-      completed: Math.floor(Math.random() * 15) + 5,
-    }));
-  }, []);
+    return months.map((month) => {
+      const monthLabel = format(month, 'MMM yyyy');
+      const monthStart = startOfMonth(month);
+      const nextMonthStart = addMonths(monthStart, 1);
+
+      // Filter tasks planned for this month
+      const tasksInMonth = tasks.filter((task) => {
+        const plannedEnd = new Date(task.planned_end);
+        return plannedEnd >= monthStart && plannedEnd < nextMonthStart;
+      });
+
+      let active = 0;
+      let overdue = 0;
+      let completed = 0;
+
+      tasksInMonth.forEach((task) => {
+        if (task.percent_complete === 100) {
+          completed++;
+        } else {
+          const plannedEnd = new Date(task.planned_end);
+          if (isBefore(plannedEnd, today)) {
+            overdue++; // Task is incomplete and past due date
+          } else {
+            active++; // Task is incomplete but due in future (or today)
+          }
+        }
+      });
+
+      return {
+        month: monthLabel,
+        active,
+        overdue,
+        completed,
+      };
+    });
+  }, [tasks]);
 
   // Critical issues detection
   const criticalIssues = useMemo(() => {
@@ -468,26 +472,26 @@ const ProjectDashboardPage: React.FC<{
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="min-h-screen bg-[#F7F7F7]">
       <div className="w-full p-4 lg:p-6 space-y-6">
-        {/* Modern Dashboard Header */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+        {/* Modern Dashboard Header - Ubuntu Themed */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#2c001e] via-[#5E2750] to-[#77216F] rounded-2xl shadow-xl border border-[#2c001e]/20">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#E95420]/10 rounded-full -translate-y-20 translate-x-20"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
 
           <div className="relative p-6 lg:p-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                    <PresentationChartLineIcon className="w-7 h-7 text-indigo-200" />
+                    <PresentationChartLineIcon className="w-7 h-7 text-[#E95420]" />
                   </div>
                   <div>
                     <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
                       {t.project_dashboard_title || 'Project Management Dashboard'}
                     </h1>
-                    <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+                    <p className="text-sm text-white/80 font-medium mt-0.5">
                       {t.executive_insights || 'Comprehensive project overview and analytics'}
                     </p>
                   </div>
@@ -547,7 +551,7 @@ const ProjectDashboardPage: React.FC<{
               <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
                 <div className="flex gap-2">
                   <EnhancedButton
-                    variant="secondary"
+                    variant="glass"
                     size="sm"
                     onClick={handleRefresh}
                     disabled={refreshing}
@@ -559,10 +563,10 @@ const ProjectDashboardPage: React.FC<{
                     {refreshing ? 'Refreshing...' : 'Refresh'}
                   </EnhancedButton>
                   <EnhancedButton
-                    variant="success"
+                    variant="custom"
                     size="sm"
                     onClick={handleExport}
-                    className="bg-green-600 hover:bg-green-700 text-white border-green-500"
+                    className="bg-[#E95420] hover:bg-[#D34610] text-white border-transparent"
                     aria-label="Export project data to CSV"
                   >
                     <ChartBarSquareIcon className="w-4 h-4 mr-2" />
@@ -592,149 +596,191 @@ const ProjectDashboardPage: React.FC<{
         </div>
 
         {/* Main Content */}
-        <div className="space-y-6">
-          <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-200/50">
-            <div className="flex flex-col xs:flex-row gap-1 items-center justify-between">
-              <div className="flex flex-col xs:flex-row gap-1 flex-1">
-                <div className="relative flex-1 max-w-xs">
-                  <input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-6 pr-2 py-1 text-sm border border-slate-300 rounded bg-white text-slate-900"
-                    aria-label="Search projects"
+        {/* Bento Box Layout Grid */}
+        <div className="grid grid-cols-12 gap-4 lg:gap-6 pb-8">
+          {/* Bento Item 1: Search & Filter (Full Width) */}
+          <div className="col-span-12 bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 justify-between items-center transition-all hover:shadow-md">
+            <div className="relative w-full sm:max-w-md">
+              <input
+                type="text"
+                placeholder="Search projects..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-4 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-[#E95420] focus:border-transparent transition-all outline-none"
+                aria-label="Search projects"
+              />
+              <div className="absolute right-3 top-2.5 text-slate-400">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
-                </div>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-2 py-1 text-sm border border-slate-300 rounded bg-white text-slate-900"
-                  aria-label="Filter projects by status"
-                >
-                  <option value="all">All Status</option>
-                  <option value="On Track">On Track</option>
-                  <option value="Delayed">Delayed</option>
-                  <option value="Completed">Completed</option>
-                </select>
+                </svg>
               </div>
-              <div className="flex gap-1">
+            </div>
+            <div className="flex w-full sm:w-auto gap-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:ring-2 focus:ring-[#E95420] outline-none cursor-pointer"
+                aria-label="Filter projects by status"
+              >
+                <option value="all">All Status</option>
+                <option value="On Track">On Track</option>
+                <option value="Delayed">Delayed</option>
+                <option value="Completed">Completed</option>
+              </select>
+              <div className="hidden sm:flex gap-2">
                 <EnhancedButton
-                  variant="primary"
-                  size="xs"
+                  variant="glass"
+                  size="sm"
                   onClick={handleRefresh}
                   disabled={refreshing}
                   loading={refreshing}
-                  aria-label={refreshing ? 'Refreshing data...' : 'Refresh dashboard data'}
+                  className="border-slate-200 text-slate-600 hover:text-[#E95420] hover:bg-orange-50 bg-white"
                 >
-                  {refreshing ? '...' : 'Refresh'}
+                  <ArrowPathRoundedSquareIcon className="w-5 h-5" />
                 </EnhancedButton>
                 <EnhancedButton
-                  variant="success"
-                  size="xs"
+                  variant="glass"
+                  size="sm"
                   onClick={handleExport}
-                  aria-label="Export project data to CSV"
+                  className="border-slate-200 text-slate-600 hover:text-[#0E8420] hover:bg-green-50 bg-white"
                 >
-                  Export
+                  <ChartBarSquareIcon className="w-5 h-5" />
                 </EnhancedButton>
               </div>
             </div>
           </div>
 
-          {/* Enhanced Metric Cards - Ultra Compact */}
-          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1">
+          {/* Bento Item 2: Metrics Tiles (Managed in Subgrid) */}
+          <div className="col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
               {
-                key: 'total',
                 title: t.total_projects,
                 value: overallMetrics.totalProjects,
-                icon: <ClipboardDocumentListIcon className="w-3 h-3" />,
-                colorScheme: 'default' as const,
+                icon: <ClipboardDocumentListIcon className="w-5 h-5 text-[#2c001e]" />,
+                color: 'bg-slate-50',
               },
               {
-                key: 'progress',
                 title: t.overall_progress_all,
                 value: overallMetrics.avgProgress,
-                icon: <PresentationChartLineIcon className="w-3 h-3" />,
-                colorScheme: 'success' as const,
+                icon: <PresentationChartLineIcon className="w-5 h-5 text-[#E95420]" />,
+                color: 'bg-orange-50',
               },
               {
-                key: 'completed',
                 title: t.projects_completed_count,
                 value: overallMetrics.completedProjects,
-                icon: <CheckBadgeIcon className="w-3 h-3" />,
-                colorScheme: 'success' as const,
+                icon: <CheckBadgeIcon className="w-5 h-5 text-[#0E8420]" />,
+                color: 'bg-green-50',
               },
               {
-                key: 'delayed',
                 title: t.projects_delayed,
                 value: overallMetrics.delayedProjects,
-                icon: <ExclamationTriangleIcon className="w-3 h-3" />,
-                colorScheme: 'danger' as const,
+                icon: <ExclamationTriangleIcon className="w-5 h-5 text-[#E95420]" />,
+                color: 'bg-orange-50',
               },
               {
-                key: 'tasks',
-                title: t.active_tasks || 'Active Tasks',
+                title: t.active_tasks,
                 value: overallMetrics.activeTasks,
-                icon: <ClockIcon className="w-3 h-3" />,
-                colorScheme: 'warning' as const,
+                icon: <ClockIcon className="w-5 h-5 text-[#2c001e]" />,
+                color: 'bg-purple-50',
               },
               {
-                key: 'overdue',
-                title: t.overdue_tasks || 'Overdue Tasks',
+                title: t.overdue_tasks,
                 value: overallMetrics.overdueTasks,
-                icon: <FireIcon className="w-3 h-3" />,
-                colorScheme: 'danger' as const,
+                icon: <FireIcon className="w-5 h-5 text-red-500" />,
+                color: 'bg-red-50',
               },
-            ].map((card, index) => (
-              <div key={card.key}>
-                <MetricCard
-                  title={card.title}
-                  value={card.value}
-                  icon={card.icon}
-                  colorScheme={card.colorScheme}
-                />
+            ].map((metric, idx) => (
+              <div
+                key={idx}
+                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-start justify-between hover:shadow-md transition-all h-28 group cursor-default"
+              >
+                <div
+                  className={`p-2 rounded-lg ${metric.color} mb-2 group-hover:scale-110 transition-transform`}
+                >
+                  {metric.icon}
+                </div>
+                <div className="w-full">
+                  <p className="text-xs font-medium text-slate-500 mb-0.5 truncate">
+                    {metric.title}
+                  </p>
+                  <p className="text-xl font-bold text-slate-800">{metric.value}</p>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Financial Overview - Ultra Compact */}
-          {overallMetrics.totalBudget > 0 && (
-            <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-200/50">
-              <h3 className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1">
-                <CurrencyDollarIcon className="w-3 h-3 text-slate-500" />
-                {t.financial_overview || 'Financial Overview'}
+          {/* Bento Item 3: Tasks Forecast Chart (Large) */}
+          <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-[#2c001e]">
+                {t.tasks_forecast || 'Tasks Forecast'}
               </h3>
-              <div className="grid grid-cols-2 xs:grid-cols-4 gap-1">
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-1.5 rounded border border-green-200">
-                  <p className="text-xs font-medium text-green-700">
-                    {t.total_budget || 'Total Budget'}
-                  </p>
-                  <p className="text-xs font-bold text-green-900">
-                    {formatRupiah(overallMetrics.totalBudget)}
-                  </p>
-                </div>
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-1.5 rounded border border-blue-200">
-                  <p className="text-xs font-medium text-blue-700">
-                    {t.avg_project_budget || 'Average Budget'}
-                  </p>
-                  <p className="text-xs font-bold text-blue-900">
-                    {formatRupiah(overallMetrics.avgBudget)}
-                  </p>
-                </div>
-                <div className="bg-gradient-to-r from-primary-50 to-primary-100 p-1.5 rounded border border-primary-200">
-                  <p className="text-xs font-medium text-primary-700">
-                    {t.high_budget_projects || 'High Budget Projects'}
-                  </p>
-                  <p className="text-xs font-bold text-primary-900">
-                    {overallMetrics.highBudgetProjects}
-                  </p>
-                </div>
-                <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-1.5 rounded border border-yellow-200">
-                  <p className="text-xs font-medium text-yellow-700">
-                    {t.budget_utilization || 'Budget Utilization'}
-                  </p>
-                  <p className="text-xs font-bold text-yellow-900">
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                6 Months Horizon
+              </span>
+            </div>
+            <div className="h-72 w-full">
+              <ResourceAllocationChart data={tasksForecastData} t={t} />
+            </div>
+          </div>
+
+          {/* Bento Item 4: Project Status (Side) */}
+          <div className="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-[#2c001e]">{t.projects_by_status}</h3>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-center min-h-[280px]">
+              <div className="scale-125 mb-8">
+                <DonutChart data={statusCounts} t={t} />
+              </div>
+              <div className="w-full space-y-3 mt-auto">
+                {statusCounts.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between text-sm p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="w-3 h-3 rounded-full shadow-sm"
+                        style={{ backgroundColor: item.color }}
+                      ></span>
+                      <span className="text-slate-700 font-medium">{item.label}</span>
+                    </div>
+                    <span className="font-bold text-slate-800 bg-white px-2 py-0.5 rounded shadow-sm">
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bento Item 5: Financial Overview */}
+          <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+            <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2">
+              <CurrencyDollarIcon className="w-6 h-6 text-[#0E8420]" />
+              {t.financial_overview || 'Financial Overview'}
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-[#0E8420]/5 border border-[#0E8420]/10 hover:bg-[#0E8420]/10 transition-colors">
+                <p className="text-xs font-semibold text-[#0E8420] mb-1 uppercase tracking-wider">
+                  {t.total_budget || 'Total Budget'}
+                </p>
+                <p className="text-lg sm:text-xl font-bold text-[#2c001e] truncate">
+                  {formatRupiah(overallMetrics.totalBudget)}
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-[#77216F]/5 border border-[#77216F]/10 hover:bg-[#77216F]/10 transition-colors">
+                <p className="text-xs font-semibold text-[#77216F] mb-1 uppercase tracking-wider">
+                  {t.budget_utilization || 'Utilization'}
+                </p>
+                <div className="flex items-end gap-2">
+                  <p className="text-lg sm:text-xl font-bold text-[#2c001e]">
                     {(
                       (overallMetrics.completedProjects /
                         Math.max(overallMetrics.totalProjects, 1)) *
@@ -742,366 +788,69 @@ const ProjectDashboardPage: React.FC<{
                     ).toFixed(1)}
                     %
                   </p>
+                  <p className="text-xs text-slate-400 mb-1">of total</p>
                 </div>
               </div>
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                  {t.avg_project_budget || 'Avg per Project'}
+                </p>
+                <p className="text-base sm:text-lg font-bold text-slate-800 truncate">
+                  {formatRupiah(overallMetrics.avgBudget)}
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-[#E95420]/5 border border-[#E95420]/10 hover:bg-[#E95420]/10 transition-colors">
+                <p className="text-xs font-semibold text-[#E95420] mb-1 uppercase tracking-wider">
+                  {t.high_budget_projects || 'High Value'}
+                </p>
+                <p className="text-base sm:text-lg font-bold text-slate-800">
+                  {overallMetrics.highBudgetProjects} Projects
+                </p>
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* Critical Issues Alert - Ultra Compact */}
-          {criticalIssues.length > 0 && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 p-2 rounded-lg">
-              <h3 className="text-xs font-semibold text-amber-800 mb-1 flex items-center gap-1">
-                <ExclamationTriangleIcon className="w-3 h-3 text-amber-600" />
-                {t.critical_issues || 'Critical Issues'} ({criticalIssues.length})
-              </h3>
-              <div className="space-y-0.5">
-                {criticalIssues.map((issue, index) => (
+          {/* Bento Item 6: Critical Issues */}
+          <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-white to-red-50 p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all relative overflow-hidden">
+            {/* Decorative Element */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -translate-y-12 translate-x-12 pointer-events-none"></div>
+
+            <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2 relative z-10">
+              <ExclamationTriangleIcon className="w-6 h-6 text-[#E95420]" />
+              {t.critical_issues || 'Attention Needed'}
+            </h3>
+
+            <div className="space-y-3 relative z-10 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+              {criticalIssues.length > 0 ? (
+                criticalIssues.map((issue, index) => (
                   <div
                     key={index}
-                    className="flex items-start space-x-1 p-1.5 bg-white rounded border border-amber-100"
+                    className="flex items-start gap-4 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-red-100 shadow-sm hover:border-red-200 transition-colors"
                   >
                     <div
-                      className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                      className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 ${
                         issue.severity === 'high'
-                          ? 'bg-red-500'
+                          ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'
                           : issue.severity === 'medium'
-                            ? 'bg-yellow-500'
+                            ? 'bg-[#E95420]'
                             : 'bg-blue-500'
                       }`}
                     ></div>
                     <div>
-                      <p className="text-xs font-medium text-slate-900">{issue.title}</p>
-                      <p className="text-xs text-slate-600">{issue.description}</p>
+                      <p className="text-sm font-bold text-slate-800">{issue.title}</p>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        {issue.description}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {/* Projects by Status - Compact */}
-            <div className="bg-white p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50">
-              <h3 className="text-sm font-semibold text-slate-800 mb-2">{t.projects_by_status}</h3>
-              <div className="flex flex-col md:flex-row lg:flex-col items-center gap-3">
-                <DonutChart data={statusCounts} t={t} />
-                <div className="space-y-1">
-                  {statusCounts.map((item) => (
-                    <div key={item.label} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center">
-                        <span
-                          className="w-2 h-2 rounded-sm mr-1.5"
-                          style={{ backgroundColor: item.color }}
-                        ></span>
-                        <span>{item.label}</span>
-                      </div>
-                      <span className="font-semibold">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Risk Assessment - Compact */}
-            <div className="bg-white p-3 rounded-lg shadow-sm lg:col-span-1 border border-slate-200/50">
-              <h3 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-1">
-                <ShieldCheckIcon className="w-4 h-4 text-slate-500" />
-                {t.risk_assessment || 'Risk Assessment'}
-              </h3>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-1.5 bg-red-50 rounded-md border border-red-200">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-xs font-medium text-red-700">
-                      {t.high_risk_projects || 'High Risk'}
-                    </span>
-                  </div>
-                  <span className="text-sm font-bold text-red-900">
-                    {overallMetrics.highRiskCount}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-1.5 bg-yellow-50 rounded-md border border-yellow-200">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-xs font-medium text-yellow-700">
-                      {t.medium_risk_projects || 'Medium Risk'}
-                    </span>
-                  </div>
-                  <span className="text-sm font-bold text-yellow-900">
-                    {overallMetrics.mediumRiskCount}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-1.5 bg-green-50 rounded-md border border-green-200">
-                  <div className="flex items-center space-x-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs font-medium text-green-700">
-                      {t.low_risk_projects || 'Low Risk'}
-                    </span>
-                  </div>
-                  <span className="text-sm font-bold text-green-900">
-                    {overallMetrics.lowRiskCount}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Upcoming Deadlines - Ultra Compact */}
-            <div className="bg-white p-2 rounded-lg shadow-sm xl:col-span-1 border border-slate-200/50">
-              <h3 className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1">
-                <CalendarDaysIcon className="w-3 h-3 text-slate-500" />
-                {t.upcoming_deadlines}
-              </h3>
-              {upcomingTasks.length > 0 ? (
-                <ul className="divide-y divide-slate-200 space-y-0">
-                  {upcomingTasks.map((task) => (
-                    <li key={task.id} className="py-1">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-xs font-medium text-slate-800">{task.activity}</p>
-                          <p className="text-xs text-slate-500">
-                            {projects.find((p) => p.id === task.project_id)?.title}
-                          </p>
-                        </div>
-                        <div className="text-xs font-semibold text-blue-600">
-                          {formatDate(task.planned_end)}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                ))
               ) : (
-                <p className="text-center text-slate-500 py-2 text-xs">{t.no_upcoming_deadlines}</p>
+                <div className="flex flex-col items-center justify-center h-48 text-center bg-white/50 rounded-xl border border-dashed border-slate-200">
+                  <ShieldCheckIcon className="w-12 h-12 text-green-400 mb-3" />
+                  <p className="text-slate-600 font-medium">All systems operational</p>
+                  <p className="text-xs text-slate-400">No critical issues detected</p>
+                </div>
               )}
-            </div>
-          </div>
-
-          {/* Progress Trends and Resource Allocation Charts - Ultra Compact */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
-            <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-200/50">
-              <h3 className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1">
-                <ChartPieIcon className="w-3 h-3 text-slate-500" />
-                {t.progress_trends || 'Progress Trends'}
-              </h3>
-              <ProgressTrendChart data={progressTrendData} t={t} />
-            </div>
-
-            <div className="bg-white p-2 rounded-lg shadow-sm border border-slate-200/50">
-              <h3 className="text-xs font-semibold text-slate-800 mb-1 flex items-center gap-1">
-                <ChartBarSquareIcon className="w-3 h-3 text-slate-500" />
-                {t.resource_allocation || 'Resource Allocation'}
-              </h3>
-              <ResourceAllocationChart data={resourceAllocationData} t={t} />
-            </div>
-          </div>
-
-          {/* Enhanced Project Summary List - Compact */}
-          <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200/50">
-            <h3 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-1">
-              <ClipboardDocumentListIcon className="w-4 h-4 text-slate-500" aria-hidden="true" />
-              {t.project_summary}
-            </h3>
-            {filteredProjectsSummary.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                <div className="text-2xl mb-2">📋</div>
-                <p className="text-sm">
-                  {searchTerm || statusFilter !== 'all'
-                    ? t.no_projects_match_filters || 'No projects match your current filters.'
-                    : t.no_projects_available || 'No projects available.'}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2" role="list" aria-label="Project summary list">
-                {filteredProjectsSummary.map((p) => {
-                  const projectTasks = tasks.filter((t) => t.project_id === p.id);
-                  const completedTasks = projectTasks.filter(
-                    (t) => t.percent_complete === 100
-                  ).length;
-                  const overdueTasks = projectTasks.filter((t) => {
-                    const endDate = new Date(t.planned_end);
-                    return t.percent_complete < 100 && endDate < new Date();
-                  }).length;
-
-                  return (
-                    <div
-                      key={p.id}
-                      className="p-2 border rounded-md hover:bg-slate-50 transition-colors"
-                    >
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="text-sm font-semibold text-slate-900">{p.title}</p>
-                            <span
-                              className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
-                                p.statusColor
-                              } ${
-                                p.status === t.proj_status_completed
-                                  ? 'bg-blue-100'
-                                  : p.status === t.proj_status_delayed
-                                    ? 'bg-orange-100'
-                                    : 'bg-green-100'
-                              }`}
-                            >
-                              {p.status}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-slate-600">
-                            <span>{projectTasks.length} tasks</span>
-                            <span>{completedTasks} completed</span>
-                            {overdueTasks > 0 && (
-                              <span className="text-red-600 font-medium">
-                                {overdueTasks} overdue
-                              </span>
-                            )}
-                            {p.budget && (
-                              <span className="font-medium">{formatRupiah(p.budget)}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex-1 w-full lg:w-auto">
-                          <div className="flex items-center gap-1">
-                            <div className="w-full bg-slate-200 rounded-full h-2">
-                              <div
-                                className="bg-indigo-600 h-2 rounded-full"
-                                style={{ width: `${p.progress}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-xs font-medium text-slate-700 min-w-[2.5rem]">
-                              {p.progress.toFixed(0)}%
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex-shrink-0">
-                          <EnhancedButton
-                            variant="primary"
-                            size="xs"
-                            onClick={() => onNavigateToDetail(p.id)}
-                            aria-label={`View details for project ${p.title}`}
-                          >
-                            {t.view_details_button}
-                          </EnhancedButton>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Executive Summary & Recommendations - Ultra Compact */}
-          <div className="bg-gradient-to-r from-slate-50 to-gray-50 p-3 rounded-lg border border-slate-200">
-            <h3 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-1">
-              <FireIcon className="w-4 h-4 text-slate-500" />
-              {t.executive_insights || 'Executive Insights & Recommendations'}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {/* Performance Summary */}
-              <div className="bg-white p-2 rounded border border-slate-200">
-                <h4 className="text-xs font-semibold text-slate-800 mb-1">
-                  {t.performance_analytics || 'Performance Summary'}
-                </h4>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">
-                      {t.on_time_delivery || 'On-Time Delivery'}:
-                    </span>
-                    <span className="font-medium text-slate-900">
-                      {overallMetrics.totalProjects > 0
-                        ? (
-                            ((overallMetrics.totalProjects - overallMetrics.delayedProjects) /
-                              overallMetrics.totalProjects) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">
-                      {t.completion_rate || 'Completion Rate'}:
-                    </span>
-                    <span className="font-medium text-slate-900">
-                      {overallMetrics.totalProjects > 0
-                        ? (
-                            (overallMetrics.completedProjects / overallMetrics.totalProjects) *
-                            100
-                          ).toFixed(1)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">
-                      {t.efficiency_score || 'Efficiency Score'}:
-                    </span>
-                    <span className="font-medium text-slate-900">
-                      {overallMetrics.projectHealthScore}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Key Insights */}
-              <div className="bg-white p-2 rounded border border-slate-200">
-                <h4 className="text-xs font-semibold text-slate-800 mb-1">
-                  {t.recommendations || 'Key Insights'}
-                </h4>
-                <div className="space-y-1 text-xs">
-                  {overallMetrics.delayedProjects > 0 && (
-                    <div className="flex items-start gap-1">
-                      <div className="w-1.5 h-1.5 bg-red-500 rounded-full mt-0.5"></div>
-                      <span className="text-slate-700">
-                        {overallMetrics.delayedProjects} projects need immediate attention
-                      </span>
-                    </div>
-                  )}
-                  {overallMetrics.highRiskCount > 0 && (
-                    <div className="flex items-start gap-1">
-                      <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-0.5"></div>
-                      <span className="text-slate-700">
-                        {overallMetrics.highRiskCount} projects are at high risk
-                      </span>
-                    </div>
-                  )}
-                  {overallMetrics.overdueTasks > 0 && (
-                    <div className="flex items-start gap-1">
-                      <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-0.5"></div>
-                      <span className="text-slate-700">
-                        {overallMetrics.overdueTasks} tasks are overdue
-                      </span>
-                    </div>
-                  )}
-                  {overallMetrics.projectHealthScore >= 80 && (
-                    <div className="flex items-start gap-1">
-                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-0.5"></div>
-                      <span className="text-slate-700">Overall project health is excellent</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Items */}
-              <div className="bg-white p-2 rounded border border-slate-200">
-                <h4 className="text-xs font-semibold text-slate-800 mb-1">Action Items</h4>
-                <div className="space-y-1 text-xs">
-                  <div className="flex items-start gap-1">
-                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-0.5"></div>
-                    <span className="text-slate-700">Review delayed projects weekly</span>
-                  </div>
-                  <div className="flex items-start gap-1">
-                    <div className="w-1.5 h-1.5 bg-primary-500 rounded-full mt-0.5"></div>
-                    <span className="text-slate-700">Optimize resource allocation</span>
-                  </div>
-                  <div className="flex items-start gap-1">
-                    <div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-0.5"></div>
-                    <span className="text-slate-700">Implement risk mitigation plans</span>
-                  </div>
-                  <div className="flex items-start gap-1">
-                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full mt-0.5"></div>
-                    <span className="text-slate-700">Monitor budget utilization</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

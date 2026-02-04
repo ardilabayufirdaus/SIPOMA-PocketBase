@@ -24,28 +24,28 @@ const SiloCapacityForm: React.FC<FormProps> = ({
   // Theme configuration
   const themeConfig = {
     red: {
-      gradient: 'from-red-600 to-red-700',
-      text: 'text-red-700',
-      bg_light: 'bg-red-50',
-      border_focus: 'focus:border-red-500',
-      ring_focus: 'focus:ring-red-500',
-      button_primary: 'bg-red-600 hover:bg-red-700',
-      button_secondary: 'text-slate-600 hover:bg-red-50',
-      icon_color: 'text-red-600',
-      subtle_text: 'text-red-100',
-      border_light: 'border-red-100',
+      gradient: 'from-[#772953] to-[#2C001E]',
+      text: 'text-[#333333]',
+      bg_light: 'bg-[#F0F0F0]',
+      border_focus: 'focus:border-[#E95420]',
+      ring_focus: 'focus:ring-[#E95420]',
+      button_primary: 'bg-[#E95420] hover:bg-[#d94612] text-white',
+      button_secondary: 'text-[#333333] hover:bg-[#E95420]/10',
+      icon_color: 'text-[#E95420]',
+      subtle_text: 'text-white/80',
+      border_light: 'border-[#AEA79F]/20',
     },
     indigo: {
-      gradient: 'from-indigo-600 to-indigo-700',
-      text: 'text-indigo-700',
-      bg_light: 'bg-indigo-50',
-      border_focus: 'focus:border-indigo-500',
-      ring_focus: 'focus:ring-indigo-500',
-      button_primary: 'bg-indigo-600 hover:bg-indigo-700',
-      button_secondary: 'text-slate-600 hover:bg-indigo-50',
-      icon_color: 'text-indigo-600',
-      subtle_text: 'text-indigo-100',
-      border_light: 'border-indigo-100',
+      gradient: 'from-[#772953] to-[#2C001E]',
+      text: 'text-[#333333]',
+      bg_light: 'bg-[#F0F0F0]',
+      border_focus: 'focus:border-[#E95420]',
+      ring_focus: 'focus:ring-[#E95420]',
+      button_primary: 'bg-[#E95420] hover:bg-[#d94612] text-white',
+      button_secondary: 'text-[#333333] hover:bg-[#E95420]/10',
+      icon_color: 'text-[#E95420]',
+      subtle_text: 'text-white/80',
+      border_light: 'border-[#AEA79F]/20',
     },
   };
 
@@ -152,13 +152,13 @@ const SiloCapacityForm: React.FC<FormProps> = ({
 
   const getInputClass = (error?: string) => `
     block w-full px-4 py-3 bg-white border rounded-xl shadow-sm 
-    text-slate-900 placeholder-slate-400
+    text-[#333333] placeholder-[#AEA79F]
     focus:outline-none focus:ring-2 focus:ring-offset-1 
     transition-all duration-200 sm:text-sm
     ${
       error
-        ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-        : `border-slate-200 ${colors.border_focus} ${colors.ring_focus} focus:ring-opacity-50 hover:border-slate-300`
+        ? 'border-[#C7162B] focus:border-[#C7162B] focus:ring-[#C7162B]/20'
+        : `border-[#AEA79F]/50 ${colors.border_focus} ${colors.ring_focus} focus:ring-opacity-50 hover:border-[#AEA79F]`
     }
   `;
 
@@ -188,8 +188,8 @@ const SiloCapacityForm: React.FC<FormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Category */}
           <div className="space-y-2">
-            <label htmlFor="plant_category" className="block text-sm font-medium text-slate-700">
-              {t.plant_category || 'Plant Category'} <span className="text-red-500">*</span>
+            <label htmlFor="plant_category" className="block text-sm font-medium text-[#333333]">
+              {t.plant_category || 'Plant Category'} <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <select
@@ -214,7 +214,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                  className="text-xs text-[#C7162B] flex items-center gap-1 mt-1"
                 >
                   <AlertCircle className="w-3 h-3" /> {errors.plant_category}
                 </motion.p>
@@ -225,7 +225,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           {/* Unit */}
           <div className="space-y-2">
             <label htmlFor="unit" className="block text-sm font-medium text-slate-700">
-              {t.unit || 'Unit'} <span className="text-red-500">*</span>
+              {t.unit || 'Unit'} <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <select
@@ -251,7 +251,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                  className="text-xs text-[#C7162B] flex items-center gap-1 mt-1"
                 >
                   <AlertCircle className="w-3 h-3" /> {errors.unit}
                 </motion.p>
@@ -262,7 +262,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           {/* Silo Name */}
           <div className="md:col-span-2 space-y-2">
             <label htmlFor="silo_name" className="block text-sm font-medium text-slate-700">
-              {t.silo_name || 'Silo Name'} <span className="text-red-500">*</span>
+              {t.silo_name || 'Silo Name'} <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <input
@@ -282,7 +282,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                  className="text-xs text-[#C7162B] flex items-center gap-1 mt-1"
                 >
                   <AlertCircle className="w-3 h-3" /> {errors.silo_name}
                 </motion.p>
@@ -293,7 +293,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           {/* Capacity */}
           <div className="space-y-2">
             <label htmlFor="capacity" className="block text-sm font-medium text-slate-700">
-              {t.capacity || 'Capacity'} (Ton) <span className="text-red-500">*</span>
+              {t.capacity || 'Capacity'} (Ton) <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <input
@@ -313,7 +313,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                  className="text-xs text-[#C7162B] flex items-center gap-1 mt-1"
                 >
                   <AlertCircle className="w-3 h-3" /> {errors.capacity}
                 </motion.p>
@@ -324,7 +324,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
           {/* Dead Stock */}
           <div className="space-y-2">
             <label htmlFor="dead_stock" className="block text-sm font-medium text-slate-700">
-              {t.dead_stock || 'Dead Stock'} (Ton) <span className="text-red-500">*</span>
+              {t.dead_stock || 'Dead Stock'} (Ton) <span className="text-[#C7162B]">*</span>
             </label>
             <div className="relative">
               <input
@@ -344,7 +344,7 @@ const SiloCapacityForm: React.FC<FormProps> = ({
                 <motion.p
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-red-500 flex items-center gap-1 mt-1"
+                  className="text-xs text-[#C7162B] flex items-center gap-1 mt-1"
                 >
                   <AlertCircle className="w-3 h-3" /> {errors.dead_stock}
                 </motion.p>

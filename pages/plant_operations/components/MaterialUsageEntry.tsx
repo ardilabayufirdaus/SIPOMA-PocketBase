@@ -277,9 +277,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
     // Only show loading if we have no data yet
     return (
       <div className="flex items-center justify-center py-16">
-        <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-[#772953] border-t-transparent rounded-full animate-spin"></div>
         <span className="ml-3 text-slate-600 font-medium">
-          {t.loading_data || 'Loading material usage data...'}
+          {t.loading_data || t.loading || 'Loading material usage data...'}
         </span>
       </div>
     );
@@ -288,7 +288,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
   if (error) {
     return (
       <div className="text-center py-8">
-        <div className="text-red-600 mb-2">Error loading material usage data</div>
+        <div className="text-red-600 mb-2">
+          {t.error_loading_material_usage || 'Error loading material usage data'}
+        </div>
         <div className="text-sm text-slate-500">{error.message}</div>
       </div>
     );
@@ -319,7 +321,9 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
         {isSyncing && (
           <div className="flex items-center">
             <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-            <span className="text-xs text-emerald-600 font-semibold animate-pulse">Syncing...</span>
+            <span className="text-xs text-emerald-600 font-semibold animate-pulse">
+              {t.syncing || 'Syncing...'}
+            </span>
           </div>
         )}
       </div>
@@ -327,7 +331,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
       {/* Material Usage Table */}
       <div className="overflow-x-auto rounded-2xl border border-white/20 shadow-2xl backdrop-blur-md bg-white/10">
         <table className="min-w-full divide-y divide-slate-200 border border-slate-200">
-          <thead className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-slate-800 text-white shadow-xl backdrop-blur-md">
+          <thead className="bg-gradient-to-r from-[#772953] via-[#A83D55] to-[#E95420] text-white shadow-xl backdrop-blur-md">
             {/* Header Row 1 */}
             <tr>
               <th
@@ -397,7 +401,7 @@ const MaterialUsageEntry: React.FC<MaterialUsageEntryProps> = ({
                           disabled={true}
                           readOnly
                           className="w-full px-2 py-1.5 text-sm text-center bg-white/50 border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/50 backdrop-blur-sm text-slate-800 font-medium transition-all duration-200 cursor-not-allowed hover:bg-white/60"
-                          placeholder="Real-time"
+                          placeholder={t.real_time || 'Real-time'}
                         />
                       </td>
                     );

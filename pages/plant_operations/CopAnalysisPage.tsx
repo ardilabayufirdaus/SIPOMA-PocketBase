@@ -99,25 +99,25 @@ const getPerformanceStatus = (percentage: number) => {
   if (percentage <= 15)
     return {
       status: 'Excellent',
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-100',
+      color: 'text-emerald-700 dark:text-emerald-400',
+      bg: 'bg-emerald-100/80 dark:bg-emerald-900/40',
     };
   if (percentage <= 30)
     return {
       status: 'Good',
-      color: 'text-blue-600',
-      bg: 'bg-blue-100',
+      color: 'text-ubuntu-midAubergine dark:text-pink-300',
+      bg: 'bg-ubuntu-midAubergine/10 dark:bg-ubuntu-midAubergine/20',
     };
   if (percentage <= 45)
     return {
       status: 'Fair',
-      color: 'text-amber-600',
-      bg: 'bg-amber-100',
+      color: 'text-amber-700 dark:text-amber-400',
+      bg: 'bg-amber-100/80 dark:bg-amber-900/40',
     };
   return {
     status: 'Needs Improvement',
-    color: 'text-red-600',
-    bg: 'bg-red-100',
+    color: 'text-red-700 dark:text-red-400',
+    bg: 'bg-red-100/80 dark:bg-red-900/40',
   };
 };
 
@@ -126,35 +126,47 @@ const getPercentageColor = (
 ): { bg: string; text: string; status: string; darkBg?: string } => {
   if (percentage === null)
     return {
-      bg: 'bg-slate-50',
-      text: 'text-slate-500',
+      bg: 'bg-slate-50/50 dark:bg-slate-800/50',
+      text: 'text-slate-500 dark:text-slate-400',
       status: 'N/A',
     };
   if (percentage < 0)
     return {
-      bg: 'bg-red-100',
-      text: 'text-red-800',
+      bg: 'bg-red-100/80 dark:bg-red-900/40',
+      text: 'text-red-800 dark:text-red-200',
       status: 'Low',
     };
   if (percentage > 100)
     return {
-      bg: 'bg-amber-100',
-      text: 'text-amber-800',
+      bg: 'bg-amber-100/80 dark:bg-amber-900/40',
+      text: 'text-amber-800 dark:text-amber-200',
       status: 'High',
     };
   return {
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-800',
+    bg: 'bg-emerald-100/80 dark:bg-emerald-900/40',
+    text: 'text-emerald-800 dark:text-emerald-200',
     darkBg: 'bg-emerald-500',
     status: 'Normal',
   };
 };
 
 const getQafColor = (qaf: number | null): { bg: string; text: string } => {
-  if (qaf === null) return { bg: 'bg-slate-100', text: 'text-slate-600' };
-  if (qaf >= 95) return { bg: 'bg-emerald-100', text: 'text-emerald-800' };
-  if (qaf >= 85) return { bg: 'bg-amber-100', text: 'text-amber-800' };
-  return { bg: 'bg-red-100', text: 'text-red-800' };
+  if (qaf === null)
+    return {
+      bg: 'bg-slate-100/50 dark:bg-slate-800/50',
+      text: 'text-slate-600 dark:text-slate-400',
+    };
+  if (qaf >= 95)
+    return {
+      bg: 'bg-emerald-100/80 dark:bg-emerald-900/40',
+      text: 'text-emerald-800 dark:text-emerald-200',
+    };
+  if (qaf >= 85)
+    return {
+      bg: 'bg-amber-100/80 dark:bg-amber-900/40',
+      text: 'text-amber-800 dark:text-amber-200',
+    };
+  return { bg: 'bg-red-100/80 dark:bg-red-900/40', text: 'text-red-800 dark:text-red-200' };
 };
 
 interface AnalysisDataRow {
@@ -478,13 +490,13 @@ const ChartContainer: React.FC<{
         {
           label: parameter.parameter,
           data: chartData.map((item) => item.value),
-          borderColor: '#3b82f6',
-          backgroundColor: '#3b82f6',
+          borderColor: '#E95420', // Ubuntu Orange
+          backgroundColor: '#E95420',
           borderWidth: 4,
           fill: false,
           pointRadius: 5,
           pointHoverRadius: 7,
-          pointBackgroundColor: '#3b82f6',
+          pointBackgroundColor: '#E95420',
           pointBorderColor: '#ffffff',
           pointBorderWidth: 2,
           spanGaps: false,
@@ -2558,50 +2570,62 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 p-6">
-      <div className="max-w-full mx-auto space-y-6">
-        {/* Header Title Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+    <div className="min-h-screen bg-[#F7F7F7] dark:bg-ubuntu-aubergine text-slate-900 dark:text-slate-100 font-sans">
+      <div className="max-w-full mx-auto space-y-8 px-6 pb-12">
+        {/* Premium Ubuntu Header */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-aubergine p-8 shadow-2xl rounded-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-ubuntu-orange opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-ubuntu-midAubergine opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
-          <div className="relative flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-              <TrendingUp className="w-7 h-7 text-indigo-200" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_cop_analysis}</h2>
-              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
-                Advanced COP Performance Analytics & Monitoring Dashboard
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="animate-fade-in">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2.5 bg-ubuntu-orange rounded-xl shadow-lg shadow-ubuntu-orange/30">
+                  <TrendingUp className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-display font-extrabold text-white tracking-tight">
+                  {t.op_cop_analysis}
+                </h1>
+              </div>
+              <p className="text-ubuntu-warmGrey text-lg max-w-2xl font-medium">
+                Comprehensive parameter performance monitoring and analytics for Plant Operations.
               </p>
             </div>
 
-            {/* Global Sync Button - Removed */}
+            <div className="flex flex-wrap items-center gap-4 animate-slide-in-right">
+              <button
+                onClick={exportToExcel}
+                className="group flex items-center gap-2.5 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 rounded-xl text-white font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl"
+              >
+                <div className="p-1 px-2.5 bg-emerald-500 rounded-lg group-hover:bg-emerald-400 transition-colors">
+                  <span className="text-sm">XLSX</span>
+                </div>
+                Export Report
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Sync Progress Modal */}
 
-        {/* Filter Section - Separate Card */}
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
-          <div className="flex flex-wrap items-end gap-4">
+        {/* Filter Section - Ubuntu Glassmorphism */}
+        <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-6 animate-scale-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {/* Plant Category */}
-            <div className="flex-1 min-w-[180px]">
+            <div className="space-y-2">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
                 <Layers className="w-3.5 h-3.5" />
                 Plant Category
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2609,26 +2633,26 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Unit Name */}
-            <div className="flex-1 min-w-[180px]">
+            <div className="space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
                 <Building2 className="w-3.5 h-3.5" />
                 Unit
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-unit"
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2636,49 +2660,49 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Cement Type */}
-            <div className="flex-1 min-w-[160px]">
+            <div className="space-y-2">
               <label
                 htmlFor="cop-filter-cement-type"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
                 <Beaker className="w-3.5 h-3.5" />
                 Cement Type
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-cement-type"
                   value={selectedCementType}
                   onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   <option value="">Pilih Cement Type</option>
                   <option value="OPC">OPC</option>
                   <option value="PCC">PCC</option>
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Month */}
-            <div className="flex-1 min-w-[140px]">
+            <div className="space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
                 <Calendar className="w-3.5 h-3.5" />
                 Month
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2686,25 +2710,25 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Year */}
-            <div className="flex-1 min-w-[120px]">
+            <div className="space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 Year
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -2712,135 +2736,103 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
           </div>
         </div>
-        {/* Analysis Features Tabs */}
-        <Card
-          variant="elevated"
-          padding="md"
-          className="bg-white/80 backdrop-blur-sm shadow-xl border-0"
-        >
-          <div className="flex flex-wrap gap-3">
+        {/* Feature Navigation Tabs - Ubuntu Styled */}
+        <div className="bg-slate-200/50 dark:bg-white/5 backdrop-blur-xl rounded-[2rem] p-3 flex flex-wrap gap-3 shadow-inner border border-white/10 overflow-x-auto scrollbar-hide">
+          {[
+            {
+              label: '📊 Statistical',
+              state: showStatisticalSummary,
+              setter: setShowStatisticalSummary,
+            },
+            {
+              label: '🔄 Comparison',
+              state: showPeriodComparison,
+              setter: setShowPeriodComparison,
+            },
+            {
+              label: '🔗 Correlation',
+              state: showCorrelationMatrix,
+              setter: setShowCorrelationMatrix,
+            },
+            { label: '⚠️ Anomalies', state: showAnomalyDetection, setter: setShowAnomalyDetection },
+            {
+              label: '🔮 Predictions',
+              state: showPredictiveInsights,
+              setter: setShowPredictiveInsights,
+            },
+            { label: '🏆 Quality', state: showQualityMetrics, setter: setShowQualityMetrics },
+          ].map((tab, idx) => (
             <button
-              onClick={() => setShowStatisticalSummary(!showStatisticalSummary)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
-                showStatisticalSummary
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 border border-blue-200'
+              key={idx}
+              onClick={() => tab.setter(!tab.state)}
+              className={`flex-1 min-w-[150px] px-6 py-4 rounded-2xl text-[13px] font-black tracking-wider uppercase transition-all duration-300 active:scale-90 shadow-sm ${
+                tab.state
+                  ? 'bg-ubuntu-orange text-white shadow-2xl shadow-ubuntu-orange/40 ring-2 ring-white/20'
+                  : 'bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-slate-700/80 border border-white/20 dark:border-white/5'
               }`}
             >
-              📊 Statistical Summary
+              {tab.label}
             </button>
-            <button
-              onClick={() => setShowPeriodComparison(!showPeriodComparison)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
-                showPeriodComparison
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30'
-                  : 'bg-gradient-to-r from-green-50 to-green-100 text-green-700 border border-green-200'
-              }`}
-            >
-              📈 Period Comparison
-            </button>
-            <button
-              onClick={() => setShowCorrelationMatrix(!showCorrelationMatrix)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
-                showCorrelationMatrix
-                  ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-lg shadow-purple-500/30'
-                  : 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border border-purple-200'
-              }`}
-            >
-              🔗 Correlation Matrix
-            </button>
-            <button
-              onClick={() => setShowAnomalyDetection(!showAnomalyDetection)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
-                showAnomalyDetection
-                  ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg shadow-red-500/30'
-                  : 'bg-gradient-to-r from-red-50 to-red-100 text-red-700 border border-red-200'
-              }`}
-            >
-              ⚠️ Anomaly Detection
-            </button>
-            <button
-              onClick={() => setShowPredictiveInsights(!showPredictiveInsights)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
-                showPredictiveInsights
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg shadow-orange-500/30'
-                  : 'bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 border border-orange-200'
-              }`}
-            >
-              🔮 Predictive Insights
-            </button>
-            <button
-              onClick={() => setShowQualityMetrics(!showQualityMetrics)}
-              className={`px-4 py-3 sm:px-5 sm:py-3 rounded-xl text-sm font-semibold min-h-[48px] ${
-                showQualityMetrics
-                  ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                  : 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 border border-indigo-200'
-              }`}
-            >
-              🏆 Quality Metrics
-            </button>
-          </div>
-        </Card>
-        {/* Statistical Summary Panel */}
+          ))}
+        </div>
+        {/* Statistical Summary Panel - Ubuntu Redesigned */}
         {showStatisticalSummary && statisticalSummary.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-blue-50 to-indigo-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-blue-800">📊 Statistical Summary</h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Ringkasan statistik parameter COP bulan ini
-              </p>
+          <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-300 uppercase tracking-widest">
+                  Statistical Summary
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                  Monthly parameter distribution and central tendency metrics.
+                </p>
+              </div>
             </div>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
               {statisticalSummary.map((stat) => (
                 <div
                   key={stat.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200"
+                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300 group"
                 >
-                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
                     {stat.parameter}
                   </h3>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Mean:</span>
-                      <span className="font-mono text-slate-800 font-medium">
+                  <div className="space-y-3 font-mono text-[11px]">
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Mean
+                      </span>
+                      <span className="text-slate-900 dark:text-white font-black">
                         {stat.mean !== null ? formatCopNumber(stat.mean) : '-'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Median:</span>
-                      <span className="font-mono text-slate-800 font-medium">
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Median
+                      </span>
+                      <span className="text-slate-900 dark:text-white font-black">
                         {stat.median !== null ? formatCopNumber(stat.median) : '-'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Std:</span>
-                      <span className="font-mono text-slate-800 font-medium">
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Std Dev
+                      </span>
+                      <span className="text-slate-900 dark:text-white font-black">
                         {stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-'}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Range:</span>
-                      <span className="font-mono text-slate-800 font-medium text-xs">
-                        {stat.min !== null ? formatCopNumber(stat.min) : '-'}-
-                        {stat.max !== null ? formatCopNumber(stat.max) : '-'}
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Complete
                       </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Complete:</span>
                       <span
-                        className={`font-mono font-medium ${
+                        className={`font-black ${
                           stat.completeness >= 80
                             ? 'text-green-600'
                             : stat.completeness >= 60
@@ -2848,402 +2840,272 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               : 'text-red-600'
                         }`}
                       >
-                        {stat.completeness.toFixed(0)}%
+                        {stat.completeness.toFixed(1)}%
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Trend:</span>
-                      <span
-                        className={`font-medium text-xs ${
-                          stat.trend === 'increasing'
-                            ? 'text-green-600'
-                            : stat.trend === 'decreasing'
-                              ? 'text-red-600'
-                              : 'text-slate-600'
-                        }`}
-                      >
-                        {stat.trend === 'increasing'
-                          ? '↗️'
-                          : stat.trend === 'decreasing'
-                            ? '↘️'
-                            : stat.trend === 'stable'
-                              ? '➡️'
-                              : '?'}
-                      </span>
-                    </div>
-                    {stat.targetMin !== undefined && stat.targetMax !== undefined && (
-                      <div className="pt-1 mt-1 border-t border-slate-200">
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-500 text-xs">Target:</span>
-                          <span className="font-mono text-blue-600 text-xs font-medium">
-                            {formatCopNumber(stat.targetMin)}-{formatCopNumber(stat.targetMax)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         )}
-        {/* Anomaly Detection Panel */}
-        {showAnomalyDetection && anomalyDetection.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-red-50 to-pink-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Deteksi nilai abnormal menggunakan metode 3-sigma rule
-              </p>
-            </div>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-            >
-              {anomalyDetection.map((anomaly) => (
-                <div
-                  key={anomaly.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200"
-                >
-                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
-                    {anomaly.parameter}
-                  </h3>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Outliers:</span>
-                      <span
-                        className={`font-mono font-bold ${
-                          anomaly.severity === 'high'
-                            ? 'text-red-600'
-                            : anomaly.severity === 'medium'
-                              ? 'text-yellow-600'
-                              : 'text-green-600'
-                        }`}
-                      >
-                        {anomaly.outliers.length}/{anomaly.totalDays}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Severity:</span>
-                      <span
-                        className={`font-medium px-1.5 py-0.5 rounded text-xs ${
-                          anomaly.severity === 'high'
-                            ? 'bg-red-100 text-red-800'
-                            : anomaly.severity === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {anomaly.severity.toUpperCase()}
-                      </span>
-                    </div>
-                    {anomaly.outliers.length > 0 && (
-                      <div className="pt-1 mt-1 border-t border-slate-200">
-                        <span className="text-slate-500 text-xs">Outlier Values:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {anomaly.outliers.slice(0, 3).map((value, idx) => (
-                            <span
-                              key={idx}
-                              className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
-                            >
-                              {formatCopNumber(value)}
-                            </span>
-                          ))}
-                          {anomaly.outliers.length > 3 && (
-                            <span className="text-slate-500 text-xs">
-                              +{anomaly.outliers.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
-        {/* Correlation Matrix Panel */}
-        {showCorrelationMatrix && correlationMatrix.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-purple-50 to-violet-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-purple-800">
-                🔗 Parameter Correlation Matrix
-              </h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Analisis korelasi antar parameter untuk mengidentifikasi hubungan dan dependensi
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-slate-200 rounded-lg">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-800">
-                      Parameter Pair
-                    </th>
-                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                      Correlation
-                    </th>
-                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                      Strength
-                    </th>
-                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                      Direction
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {correlationMatrix.map((corr, idx) => (
-                    <tr key={idx} className="border-t border-slate-200">
-                      <td className="px-3 py-2 text-xs text-slate-800">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-xs">{corr.param1}</span>
-                          <span className="text-slate-500 text-xs">vs {corr.param2}</span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 text-center text-xs font-mono">
-                        {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
-                      </td>
-                      <td className="px-3 py-2 text-center">
+
+        {/* Dynamic Analytics Panels - Ubuntu Redesigned */}
+        <div className="grid gap-8">
+          {showAnomalyDetection && anomalyDetection.length > 0 && (
+            <div className="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-900/10 dark:to-pink-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+              <div className="mb-8">
+                <h2 className="text-2xl font-black text-red-900 dark:text-red-400 uppercase tracking-widest">
+                  ⚠️ Anomaly Detection
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                  Detecting abnormal values using advanced 3-sigma rule methodology.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
+                {anomalyDetection.map((anomaly) => (
+                  <div
+                    key={anomaly.parameterId}
+                    className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                  >
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
+                      {anomaly.parameter}
+                    </h3>
+                    <div className="space-y-3 font-mono text-[11px]">
+                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          Outliers
+                        </span>
                         <span
-                          className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                            corr.strength === 'strong'
-                              ? 'bg-red-100 text-red-800'
-                              : corr.strength === 'moderate'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : corr.strength === 'weak'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-slate-100 text-slate-800'
+                          className={`font-black ${
+                            anomaly.severity === 'high'
+                              ? 'text-red-600'
+                              : anomaly.severity === 'medium'
+                                ? 'text-yellow-600'
+                                : 'text-emerald-600'
                           }`}
                         >
-                          {corr.strength.toUpperCase()}
+                          {anomaly.outliers.length}/{anomaly.totalDays}
                         </span>
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {corr.correlation !== null && (
+                      </div>
+                      <div className="flex justify-between py-1">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          Severity
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-lg text-[9px] font-black tracking-widest uppercase ${
+                            anomaly.severity === 'high'
+                              ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
+                              : anomaly.severity === 'medium'
+                                ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                                : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                          }`}
+                        >
+                          {anomaly.severity}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showCorrelationMatrix && correlationMatrix.length > 0 && (
+            <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/10 dark:to-violet-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+              <div className="mb-8">
+                <h2 className="text-2xl font-black text-purple-900 dark:text-purple-400 uppercase tracking-widest">
+                  🔗 Correlation Matrix
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                  Identifying relationships and dependencies between operational parameters.
+                </p>
+              </div>
+              <div className="overflow-x-auto rounded-3xl border border-white/20 shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="bg-purple-900/10 dark:bg-purple-900/30 text-purple-900 dark:text-purple-300">
+                      <th className="px-6 py-5 text-left text-[11px] font-black uppercase tracking-[0.2em]">
+                        Parameter Pair
+                      </th>
+                      <th className="px-6 py-5 text-center text-[11px] font-black uppercase tracking-[0.2em]">
+                        Correlation
+                      </th>
+                      <th className="px-6 py-5 text-center text-[11px] font-black uppercase tracking-[0.2em]">
+                        Strength
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-purple-100 dark:divide-purple-900/20">
+                    {correlationMatrix.map((corr, idx) => (
+                      <tr key={idx} className="hover:bg-purple-500/5 transition-colors">
+                        <td className="px-6 py-5">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-slate-900 dark:text-white text-sm">
+                              {corr.param1}
+                            </span>
+                            <span className="text-[10px] uppercase font-black text-purple-500/60 dark:text-purple-400/40">
+                              vs {corr.param2}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5 text-center font-mono font-black text-purple-600 dark:text-purple-400">
+                          {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
+                        </td>
+                        <td className="px-6 py-5 text-center">
                           <span
-                            className={`text-sm ${
-                              corr.correlation > 0 ? 'text-green-600' : 'text-red-600'
+                            className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
+                              corr.strength === 'strong'
+                                ? 'bg-red-500 text-white'
+                                : corr.strength === 'moderate'
+                                  ? 'bg-amber-500 text-white'
+                                  : 'bg-blue-500 text-white'
                             }`}
                           >
-                            {corr.correlation > 0 ? '↗️' : '↘️'}
+                            {corr.strength}
                           </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </Card>
-        )}
-        {/* Quality Metrics Dashboard */}
+          )}
+        </div>
         {showQualityMetrics && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className="bg-gradient-to-br from-indigo-50 to-blue-50"
-          >
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-indigo-800">
-                🏆 Quality Metrics Dashboard
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/10 dark:to-blue-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest">
+                🏆 Quality Metrics
               </h2>
-              <p className="text-sm text-slate-600 mt-2">
-                Metrik kualitas data dan performa proses secara keseluruhan
+              <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                Advanced data integrity and process compliance indicators.
               </p>
             </div>
-            <div
-              className="grid gap-6"
-              style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
-            >
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <span className="text-2xl">📊</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {[
+                {
+                  label: 'Stability Score',
+                  val: `${qualityMetrics.overallStability.toFixed(1)}%`,
+                  icon: '📊',
+                  color: 'text-blue-600',
+                },
+                {
+                  label: 'Data Completeness',
+                  val: `${qualityMetrics.averageCompleteness.toFixed(1)}%`,
+                  icon: '✅',
+                  color: 'text-emerald-600',
+                },
+                {
+                  label: 'Monitored Metrics',
+                  val: qualityMetrics.parameterCount,
+                  icon: '🔢',
+                  color: 'text-purple-600',
+                },
+                {
+                  label: 'Data Points',
+                  val: `${qualityMetrics.validDataPoints}/${qualityMetrics.totalDataPoints}`,
+                  icon: '📈',
+                  color: 'text-ubuntu-orange',
+                },
+              ].map((m, i) => (
+                <div
+                  key={i}
+                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-2xl">{m.icon}</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                      {m.label}
+                    </span>
                   </div>
-                  <span className="text-sm text-slate-500">Stability Score</span>
+                  <div className={`text-3xl font-black ${m.color} mb-1 font-display`}>{m.val}</div>
                 </div>
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {qualityMetrics.overallStability.toFixed(1)}%
-                </div>
-                <p className="text-sm text-slate-600">
-                  Average parameter stability across all metrics
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <span className="text-2xl">✅</span>
-                  </div>
-                  <span className="text-sm text-slate-500">Data Completeness</span>
-                </div>
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  {qualityMetrics.averageCompleteness.toFixed(1)}%
-                </div>
-                <p className="text-sm text-slate-600">
-                  Average data completeness across all parameters
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <span className="text-2xl">🔢</span>
-                  </div>
-                  <span className="text-sm text-slate-500">Parameters</span>
-                </div>
-                <div className="text-3xl font-bold text-purple-600 mb-2">
-                  {qualityMetrics.parameterCount}
-                </div>
-                <p className="text-sm text-slate-600">Total parameters being monitored</p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <span className="text-2xl">📈</span>
-                  </div>
-                  <span className="text-sm text-slate-500">Data Points</span>
-                </div>
-                <div className="text-3xl font-bold text-orange-600 mb-2">
-                  {qualityMetrics.validDataPoints}/{qualityMetrics.totalDataPoints}
-                </div>
-                <p className="text-sm text-slate-600">Valid data points out of total expected</p>
-              </div>
+              ))}
             </div>
-          </Card>
+          </div>
         )}
-        {/* Period Comparison Panel */}
         {showPeriodComparison && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-green-50 to-emerald-50"
-          >
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-semibold text-green-800">📈 Period Comparison</h2>
-                <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="comparison-year-select"
-                    className="text-sm font-medium text-slate-700"
-                  >
-                    Compare with:
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="comparison-year-select"
-                      value={comparisonPeriod.year}
-                      onChange={(e) =>
-                        setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
-                      }
-                      className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium appearance-none"
-                    >
-                      {availableYearsWithData.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
-                  </div>
-                </div>
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">
+                  📈 Period Comparison
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                  Benchmarking current performance against historical data.
+                </p>
               </div>
-              <p className="text-xs text-slate-600">
-                Perbandingan performa dengan periode sebelumnya ({comparisonPeriod.year})
-              </p>
+              <div className="flex items-center gap-3 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30">
+                <span className="text-xs font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-tighter">
+                  Compare With:
+                </span>
+                <select
+                  value={comparisonPeriod.year}
+                  onChange={(e) =>
+                    setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
+                  }
+                  className="bg-transparent border-none text-sm font-black text-emerald-950 focus:ring-0 cursor-pointer"
+                >
+                  {availableYearsWithData.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {isLoadingComparison ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-                  <p className="text-sm text-slate-600">Memuat data perbandingan...</p>
-                </div>
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent shadow-glow"></div>
               </div>
             ) : periodComparison.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-slate-400 mb-2">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <p className="text-sm text-slate-600">
-                  Tidak ada data perbandingan tersedia untuk tahun {comparisonPeriod.year}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Pilih tahun lain yang memiliki data COP
-                </p>
+              <div className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest">
+                No Comparison Matrix Found
               </div>
             ) : (
-              <div
-                className="grid gap-4"
-                style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
                 {periodComparison.map((comparison) => (
                   <div
                     key={comparison.parameterId}
-                    className="bg-white p-3 rounded-md border border-slate-200"
+                    className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
                   >
-                    <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
                       {comparison.parameter}
                     </h3>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Current:</span>
-                        <span className="font-mono text-slate-800 font-medium">
+                    <div className="space-y-3 font-mono text-[11px]">
+                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          Current
+                        </span>
+                        <span className="text-slate-900 font-black">
                           {comparison.current.mean !== null
                             ? formatCopNumber(comparison.current.mean)
                             : '-'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Previous:</span>
-                        <span className="font-mono text-slate-800 font-medium">
+                      <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          Previous
+                        </span>
+                        <span className="text-slate-500 font-black">
                           {comparison.previous.mean !== null
                             ? formatCopNumber(comparison.previous.mean)
                             : '-'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
-                        <span className="text-slate-500">Change:</span>
+                      <div className="flex justify-between py-1">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          Delta
+                        </span>
                         <span
-                          className={`font-bold text-xs ${
-                            comparison.delta !== null && comparison.delta > 0
-                              ? 'text-green-600'
-                              : comparison.delta !== null && comparison.delta < 0
-                                ? 'text-red-600'
-                                : 'text-slate-600'
-                          }`}
+                          className={`font-black ${comparison.delta !== null && comparison.delta > 0 ? 'text-emerald-600' : 'text-rose-600'}`}
                         >
                           {comparison.delta !== null
                             ? `${comparison.delta > 0 ? '+' : ''}${comparison.delta.toFixed(1)}%`
                             : 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Trend:</span>
-                        <span
-                          className={`font-medium text-xs px-1 py-0.5 rounded ${
-                            comparison.trend === 'increased'
-                              ? 'bg-green-100 text-green-800'
-                              : comparison.trend === 'decreased'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-slate-100 text-slate-800'
-                          }`}
-                        >
-                          {comparison.trend === 'increased'
-                            ? '↗️'
-                            : comparison.trend === 'decreased'
-                              ? '↘️'
-                              : '➡️'}
                         </span>
                       </div>
                     </div>
@@ -3251,99 +3113,61 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         )}
-        {/* Predictive Insights Panel */}
         {showPredictiveInsights && predictiveInsights.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-orange-50 to-amber-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-orange-800">🔮 Predictive Insights</h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Prediksi tren parameter dan peringatan dini untuk 7 hari ke depan
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+            <div className="mb-8">
+              <h2 className="text-2xl font-black text-orange-900 dark:text-orange-400 uppercase tracking-widest">
+                🔮 Predictive Insights
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                Advanced trend forecasting and risk detection for the next 7 days.
               </p>
             </div>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
               {predictiveInsights.map((insight) => (
                 <div
                   key={insight.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200"
+                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group"
                 >
-                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
                     {insight.parameter}
                   </h3>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Current:</span>
-                      <span className="font-mono text-slate-800 font-medium">
-                        {insight.currentValue !== null
-                          ? formatCopNumber(insight.currentValue)
-                          : '-'}
+                  <div className="space-y-3 font-mono text-[11px]">
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Forecast
                       </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">7-Day:</span>
-                      <span className="font-mono text-slate-800 font-medium">
+                      <span className="text-ubuntu-orange font-black">
                         {insight.forecast !== null ? formatCopNumber(insight.forecast) : '-'}
                       </span>
                     </div>
-                    {insight.targetMin !== undefined && insight.targetMax !== undefined && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Target:</span>
-                        <span className="font-mono text-blue-600 text-xs font-medium">
-                          {formatCopNumber(insight.targetMin)}-{formatCopNumber(insight.targetMax)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
-                      <span className="text-slate-500">Risk:</span>
-                      <span
-                        className={`font-medium px-1.5 py-0.5 rounded text-xs ${
-                          insight.risk === 'high'
-                            ? 'bg-red-100 text-red-800'
-                            : insight.risk === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {insight.risk.toUpperCase()}
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Risk Level
                       </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Trend:</span>
                       <span
-                        className={`font-medium text-xs ${
-                          insight.trend === 'increasing'
-                            ? 'text-green-600'
-                            : insight.trend === 'decreasing'
-                              ? 'text-red-600'
-                              : 'text-slate-600'
+                        className={`px-2 py-0.5 rounded-lg text-[9px] font-black tracking-widest uppercase ${
+                          insight.risk === 'high'
+                            ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
+                            : insight.risk === 'medium'
+                              ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                              : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                         }`}
                       >
-                        {insight.trend === 'increasing'
-                          ? '↗️'
-                          : insight.trend === 'decreasing'
-                            ? '↘️'
-                            : insight.trend === 'stable'
-                              ? '➡️'
-                              : '?'}
+                        {insight.risk}
                       </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         )}
 
-        {/* AI Operations Assistant */}
-        <div className="mb-6">
+        {/* AI Operations Assistant - Redesigned with Ubuntu Glass */}
+        <div className="animate-scale-in">
           <AiOperationsAssistant
             analysisData={analysisData}
             isLoading={isLoading}
@@ -3354,187 +3178,47 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           />
         </div>
 
-        <Card
-          variant="glass"
-          padding="lg"
-          className="backdrop-blur-xl bg-white/90 shadow-2xl border-0"
-        >
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center py-16 space-y-6">
-              <div className="flex items-center space-x-3">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
-                <span className="text-xl font-medium text-slate-600">
-                  Loading COP analysis data...
-                </span>
-              </div>
-              {/* Loading skeleton */}
-              <div className="w-full max-w-2xl">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/3 mb-4"></div>
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="flex space-x-2">
-                        <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/5"></div>
-                        <div className="h-4 bg-gradient-to-r from-green-200 to-blue-200 rounded w-1/3"></div>
-                        <div className="h-4 bg-gradient-to-r from-purple-200 to-pink-200 rounded w-1/5"></div>
-                        <div className="h-4 bg-gradient-to-r from-orange-200 to-red-200 rounded w-1/6"></div>
-                        {Array.from({ length: 10 }).map((_, j) => (
-                          <div
-                            key={j}
-                            className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded w-8"
-                          ></div>
-                        ))}
-                      </div>
-                    ))}
+        <div className="bg-white/90 dark:bg-ubuntu-aubergine/60 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/20 dark:border-white/10 overflow-hidden animate-scale-in">
+          <div className="p-8">
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center py-16 space-y-6">
+                <div className="flex items-center space-x-3">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+                  <span className="text-xl font-medium text-slate-600">
+                    Loading COP analysis data...
+                  </span>
+                </div>
+                {/* Loading skeleton */}
+                <div className="w-full max-w-2xl">
+                  <div className="animate-pulse">
+                    <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/3 mb-4"></div>
+                    <div className="space-y-3">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="flex space-x-2">
+                          <div className="h-4 bg-gradient-to-r from-blue-200 to-purple-200 rounded w-1/5"></div>
+                          <div className="h-4 bg-gradient-to-r from-green-200 to-blue-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-gradient-to-r from-purple-200 to-pink-200 rounded w-1/5"></div>
+                          <div className="h-4 bg-gradient-to-r from-orange-200 to-red-200 rounded w-1/6"></div>
+                          {Array.from({ length: 10 }).map((_, j) => (
+                            <div
+                              key={j}
+                              className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded w-8"
+                            ></div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center bg-gradient-to-r from-red-50 to-pink-50 p-8 rounded-2xl border border-red-200">
-                <div className="text-red-500 mb-2">
-                  <svg
-                    className="w-8 h-8 mx-auto"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <p className="text-lg text-slate-600 mb-4">{error}</p>
-                <button
-                  onClick={() => {
-                    setError(null);
-                    // Trigger re-fetch by calling the data fetch function
-                    const retryFetch = async () => {
-                      setIsLoading(true);
-                      try {
-                        // Re-run the data fetching logic
-                        const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-                        const dates = Array.from({ length: daysInMonth }, (_, i) => {
-                          const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
-                          return date.toISOString().split('T')[0];
-                        });
-
-                        const dailyAverages = new Map<string, Map<string, number>>();
-                        const footerDataPromises = dates.map((dateString) =>
-                          getFooterDataForDate(dateString)
-                        );
-                        const allFooterDataForMonth = await Promise.all(footerDataPromises);
-
-                        allFooterDataForMonth.flat().forEach((footerData) => {
-                          if (
-                            footerData.average !== null &&
-                            footerData.average !== undefined &&
-                            !isNaN(footerData.average)
-                          ) {
-                            if (!dailyAverages.has(footerData.parameter_id)) {
-                              dailyAverages.set(footerData.parameter_id, new Map());
-                            }
-                            dailyAverages
-                              .get(footerData.parameter_id)!
-                              .set(footerData.date, footerData.average);
-                          }
-                        });
-
-                        const data = filteredCopParameters
-                          .map((parameter) => {
-                            if (!parameter || !parameter.id || !parameter.parameter) return null;
-
-                            const dailyValues = dates.map((dateString) => {
-                              const avg = dailyAverages.get(parameter.id)?.get(dateString);
-                              const { min: min_value, max: max_value } = getMinMaxForCementType(
-                                parameter,
-                                selectedCementType
-                              );
-
-                              if (
-                                min_value === undefined ||
-                                max_value === undefined ||
-                                max_value <= min_value ||
-                                avg === undefined
-                              ) {
-                                return { value: null, raw: avg };
-                              }
-
-                              const percentage =
-                                ((avg - min_value) / (max_value - min_value)) * 100;
-                              return {
-                                value:
-                                  isNaN(percentage) || !isFinite(percentage) ? null : percentage,
-                                raw: avg,
-                              };
-                            });
-
-                            const validDailyPercentages = dailyValues
-                              .map((d) => d.value)
-                              .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
-                            const monthlyAverage =
-                              validDailyPercentages.length > 0
-                                ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                                  validDailyPercentages.length
-                                : null;
-
-                            return {
-                              parameter,
-                              dailyValues,
-                              monthlyAverage,
-                              monthlyAverageRaw: null,
-                            };
-                          })
-                          .filter((p): p is NonNullable<typeof p> => p !== null);
-
-                        setAnalysisData(data);
-                      } catch (retryError) {
-                        const errorMessage =
-                          retryError instanceof Error ? retryError.message : 'Retry failed';
-                        setError(
-                          `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
-                        );
-                        setAnalysisData([]);
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    };
-                    retryFetch();
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
-                >
-                  Try Again
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!isLoading && !error && (
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <div className="mb-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-slate-700 bg-clip-text text-transparent mb-2">
-                      COP Analysis Dashboard
-                    </h2>
-                    <p className="text-slate-500 text-sm">
-                      Comprehensive parameter performance monitoring and analytics
-                    </p>
-                  </div>
-                  <button
-                    onClick={refreshData}
-                    disabled={isLoading}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-green-400 disabled:to-emerald-500 text-white text-sm font-semibold rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[48px]"
-                  >
+            {error && (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center bg-gradient-to-r from-red-50 to-pink-50 p-8 rounded-2xl border border-red-200">
+                  <div className="text-red-500 mb-2">
                     <svg
-                      className="w-5 h-5 mr-2"
+                      className="w-8 h-8 mx-auto"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -3543,357 +3227,376 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    {isLoading ? 'Refreshing...' : 'Refresh Data'}
+                  </div>
+                  <p className="text-lg text-slate-600 mb-4">{error}</p>
+                  <button
+                    onClick={refreshData}
+                    className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl"
+                  >
+                    Try Again
                   </button>
                 </div>
               </div>
-              <div
-                className="overflow-x-auto scroll-smooth rounded-2xl shadow-2xl"
-                role="region"
-                aria-label="COP Analysis Data Table"
-                tabIndex={0}
-                style={{
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#cbd5e1 #f1f5f9',
-                }}
-              >
-                <table
-                  className="min-w-full text-xs border-collapse bg-white rounded-2xl overflow-hidden shadow-lg"
-                  role="table"
-                  aria-label="COP Analysis Table"
-                >
-                  <thead className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 text-white">
-                    <tr>
-                      <th className="sticky left-0 bg-indigo-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 rounded-tl-2xl">
-                        No.
-                      </th>
-                      <th className="sticky left-12 bg-indigo-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 min-w-[100px]">
-                        {t.parameter}
-                      </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-rose-600/90">
-                        {t.min}
-                      </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-emerald-600/90">
-                        {t.max}
-                      </th>
-                      {daysHeader.map((day) => (
-                        <th
-                          key={day}
-                          className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 bg-slate-700"
-                        >
-                          {day}
-                        </th>
-                      ))}
-                      <th className="sticky right-0 bg-indigo-600 z-30 px-3 py-4 text-center text-xs font-bold uppercase tracking-wider border-l-2 border-white/20 w-20 rounded-tr-2xl">
-                        Avg.
-                      </th>
-                    </tr>
-                  </thead>
-                  <Droppable droppableId="cop-analysis-table">
-                    {(provided) => (
-                      <tbody
-                        className="bg-white divide-y divide-slate-200"
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                      >
-                        {analysisData.map((row, rowIndex) => (
-                          <Draggable
-                            key={row.parameter.id}
-                            draggableId={row.parameter.id}
-                            index={rowIndex}
-                          >
-                            {(provided, snapshot) => (
-                              <tr
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`${
-                                  snapshot.isDragging
-                                    ? 'shadow-2xl bg-gradient-to-r from-blue-50 to-purple-50'
-                                    : 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50'
-                                } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                }}
-                              >
-                                <td className="sticky left-0 z-20 px-3 py-3 whitespace-nowrap text-slate-700 border-r-2 border-slate-200 bg-gradient-to-r from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 w-12 font-bold text-center rounded-l-xl">
-                                  {rowIndex + 1}
-                                </td>
-                                <td className="sticky left-12 z-20 px-3 py-3 whitespace-nowrap font-bold text-slate-800 border-r-2 border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 group-hover:from-slate-100 group-hover:to-slate-200 min-w-[100px]">
-                                  {row.parameter.parameter}
-                                </td>
-                                {/* Use helper function for consistent min/max display */}
-                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-red-50 to-red-100 font-semibold">
-                                  {(() => {
-                                    const { min } = getMinMaxForCementType(
-                                      row.parameter,
-                                      selectedCementType
-                                    );
-                                    return formatCopNumber(min);
-                                  })()}
-                                </td>
-                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-green-50 to-green-100 font-semibold">
-                                  {(() => {
-                                    const { max } = getMinMaxForCementType(
-                                      row.parameter,
-                                      selectedCementType
-                                    );
-                                    return formatCopNumber(max);
-                                  })()}
-                                </td>
-                                {row.dailyValues.map((day, dayIndex) => {
-                                  const colors = getPercentageColor(day.value);
-                                  return (
-                                    <td
-                                      key={dayIndex}
-                                      className={`relative px-2 py-3 whitespace-nowrap text-center border-b-2 border-r-2 border-white/20 ${colors.bg}`}
-                                    >
-                                      <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                        <span
-                                          className={`font-bold text-xs ${colors.text} drop-shadow-sm`}
-                                        >
-                                          {formatCopNumber(day.raw)}
-                                        </span>
-                                        {day.raw !== undefined && (
-                                          <div className="absolute bottom-full mb-2 w-max max-w-sm bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
-                                            <div className="flex items-center justify-between gap-2 mb-1">
-                                              <span className="font-bold text-xs text-blue-300">
-                                                {formatDate(
-                                                  new Date(
-                                                    Date.UTC(filterYear, filterMonth, dayIndex + 1)
-                                                  )
-                                                )}
-                                              </span>
-                                              <span
-                                                className={`px-2 py-1 rounded-lg text-white text-[10px] uppercase font-bold ${colors.bg} shadow-sm`}
-                                              >
-                                                {colors.status}
-                                              </span>
-                                            </div>
-                                            <hr className="border-slate-600 my-2" />
-                                            <p className="text-xs mb-1">
-                                              <strong className="text-blue-300">
-                                                {t.average}:
-                                              </strong>{' '}
-                                              <span className="font-mono text-green-300">
-                                                {formatCopNumber(day.raw)} {row.parameter.unit}
-                                              </span>
-                                            </p>
-                                            {/* Use helper function for consistent target display */}
-                                            <p className="text-xs mb-1">
-                                              <strong className="text-purple-300">Target:</strong>{' '}
-                                              <span className="font-mono text-xs text-yellow-300">
-                                                {(() => {
-                                                  const { min, max } = getMinMaxForCementType(
-                                                    row.parameter,
-                                                    selectedCementType
-                                                  );
-                                                  return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
-                                                })()}
-                                              </span>
-                                            </p>
-                                            {day.value !== null && (
-                                              <p className="text-xs">
-                                                <strong className="text-orange-300">
-                                                  Normalized:
-                                                </strong>{' '}
-                                                <span className="font-mono text-red-300">
-                                                  {day.value.toFixed(1)}%
-                                                </span>
-                                              </p>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </td>
-                                  );
-                                })}
-                                {(() => {
-                                  const avgColors = getPercentageColor(row.monthlyAverage);
-                                  return (
-                                    <td
-                                      className={`sticky right-0 z-20 px-3 py-3 whitespace-nowrap text-center font-bold border-b-2 border-l-4 border-white/30 ${avgColors.bg} w-20 rounded-r-xl`}
-                                    >
-                                      <span
-                                        className={`${avgColors.text} text-sm drop-shadow-sm font-extrabold`}
-                                      >
-                                        {formatCopNumber(row.monthlyAverageRaw)}
-                                      </span>
-                                    </td>
-                                  );
-                                })()}
-                              </tr>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
-                        {analysisData.length === 0 && (
-                          <tr>
-                            <td
-                              colSpan={daysHeader.length + 5}
-                              className="text-center py-10 text-slate-500"
-                            >
-                              {!selectedCategory || !selectedUnit
-                                ? 'Please select both Category and Unit to view COP analysis data.'
-                                : filteredCopParameters.length === 0
-                                  ? 'No COP parameters found for the selected Category and Unit.'
-                                  : 'No data available for the selected period.'}
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    )}
-                  </Droppable>
-                  <tfoot className="font-bold bg-gradient-to-r from-slate-100 to-slate-200">
-                    <tr className="border-t-4 border-slate-400">
-                      <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-slate-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-100 to-blue-200 font-bold rounded-bl-2xl"
-                      >
-                        {t.qaf_daily}
-                      </td>
-                      {dailyQaf.daily.map((qaf, index) => {
-                        const colors = getQafColor(qaf.value);
-                        return (
-                          <td
-                            key={index}
-                            className={`px-2 py-4 text-center border-b-2 border-r-2 border-white/30 ${colors.bg} ${colors.text}`}
-                          >
-                            <div className="relative group/cell h-full w-full flex items-center justify-center">
-                              <span className="text-sm font-extrabold drop-shadow-sm">
-                                {qaf.value !== null && !isNaN(qaf.value)
-                                  ? `${formatCopNumber(qaf.value)}%`
-                                  : '-'}
-                              </span>
-                              {qaf.total > 0 && (
-                                <div className="absolute bottom-full mb-2 w-max max-w-xs bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
-                                  {t.qaf_tooltip
-                                    ?.replace('{inRange}', qaf.inRange.toString())
-                                    .replace('{total}', qaf.total.toString())}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      })}
-                      {(() => {
-                        const qaf = dailyQaf.monthly;
-                        const colors = getQafColor(qaf.value);
-                        return (
-                          <td
-                            className={`sticky right-0 z-20 px-3 py-4 text-center border-b-2 border-l-4 border-white/30 ${colors.bg} ${colors.text} font-extrabold text-lg rounded-br-2xl`}
-                          >
-                            <div className="relative group/cell h-full w-full flex items-center justify-center">
-                              <span className="drop-shadow-sm">
-                                {qaf.value !== null && !isNaN(qaf.value)
-                                  ? `${formatCopNumber(qaf.value)}%`
-                                  : '-'}
-                              </span>
-                              {qaf.total > 0 && (
-                                <div className="absolute bottom-full mb-2 w-max max-w-xs bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
-                                  {t.qaf_tooltip
-                                    ?.replace('{inRange}', qaf.inRange.toString())
-                                    .replace('{total}', qaf.total.toString())}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      })()}
-                    </tr>
-                    {/* Moisture Content Row */}
-                    <tr className="border-t-2 border-slate-300 bg-gradient-to-r from-blue-50 to-cyan-50">
-                      <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-blue-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-200 to-cyan-200 font-bold"
-                      >
-                        % Moisture Content
-                      </td>
-                      {Array.from(
-                        { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                        (_, i) => {
-                          // Get daily average moisture content from monthly data
-                          const day = i + 1;
-                          const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                          const dailyAverage = monthlyMoistureData.get(dateString);
+            )}
 
+            {!isLoading && !error && (
+              <DragDropContext onDragEnd={handleDragEnd}>
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-10 pb-8 border-b border-slate-200/60 dark:border-slate-700/50 px-2 mt-4">
+                  <div>
+                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight font-display">
+                      Process Variables Matrix
+                    </h2>
+                    <p className="text-slate-500 dark:text-ubuntu-warmGrey text-base font-bold italic">
+                      Dynamic heatmap representing parameter adherence to target ranges.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className="overflow-x-auto scroll-smooth rounded-[2.5rem] shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20"
+                  role="region"
+                  aria-label="COP Analysis Data Table"
+                  tabIndex={0}
+                >
+                  <table
+                    className="min-w-full text-[13px] border-collapse"
+                    role="table"
+                    aria-label="COP Analysis Table"
+                  >
+                    <thead>
+                      <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.15em] font-black text-[11px] h-20 shadow-lg">
+                        <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-3 border-r border-white/10 w-14 rounded-tl-[2rem] text-center shadow-xl">
+                          #
+                        </th>
+                        <th className="sticky left-14 bg-ubuntu-aubergine z-40 px-6 border-r border-white/10 min-w-[220px] text-left">
+                          Parameter Specification
+                        </th>
+                        <th className="px-3 border-r border-white/10 w-20 bg-red-500/10 text-red-300">
+                          Min
+                        </th>
+                        <th className="px-3 border-r border-white/10 w-20 bg-emerald-500/10 text-emerald-300">
+                          Max
+                        </th>
+                        {daysHeader.map((day) => (
+                          <th
+                            key={day}
+                            className="px-2 border-r border-white/5 w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
+                          >
+                            <div className="flex flex-col items-center">
+                              <span className="opacity-40 group-hover/h:opacity-100 transition-opacity">
+                                Day
+                              </span>
+                              <span className="text-sm font-black">{day}</span>
+                            </div>
+                          </th>
+                        ))}
+                        <th className="sticky right-0 bg-ubuntu-orange z-40 px-6 w-24 rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
+                          AVG
+                        </th>
+                      </tr>
+                    </thead>
+                    <Droppable droppableId="cop-analysis-table">
+                      {(provided) => (
+                        <tbody
+                          className="bg-white/80 dark:bg-white/5 backdrop-blur-md divide-y divide-slate-200 dark:divide-white/5"
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                        >
+                          {analysisData.map((row, rowIndex) => (
+                            <Draggable
+                              key={row.parameter.id}
+                              draggableId={row.parameter.id}
+                              index={rowIndex}
+                            >
+                              {(provided, snapshot) => (
+                                <tr
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`${
+                                    snapshot.isDragging
+                                      ? 'shadow-2xl bg-white dark:bg-slate-800 ring-4 ring-ubuntu-orange/40 z-50'
+                                      : 'hover:bg-slate-100/50 dark:hover:bg-white/5 transition-colors'
+                                  } group/row`}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                  }}
+                                >
+                                  <td className="sticky left-0 z-30 px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors">
+                                    {rowIndex + 1}
+                                  </td>
+                                  <td className="sticky left-14 z-30 px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors">
+                                    <div className="flex flex-col">
+                                      <span className="truncate">{row.parameter.parameter}</span>
+                                      <span className="text-[10px] font-bold text-slate-400 dark:text-ubuntu-warmGrey uppercase tracking-tighter">
+                                        {row.parameter.unit}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono">
+                                    {(() => {
+                                      const { min } = getMinMaxForCementType(
+                                        row.parameter,
+                                        selectedCementType
+                                      );
+                                      return formatCopNumber(min);
+                                    })()}
+                                  </td>
+                                  <td className="px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono">
+                                    {(() => {
+                                      const { max } = getMinMaxForCementType(
+                                        row.parameter,
+                                        selectedCementType
+                                      );
+                                      return formatCopNumber(max);
+                                    })()}
+                                  </td>
+                                  {row.dailyValues.map((day, dayIndex) => {
+                                    const colors = getPercentageColor(day.value);
+                                    return (
+                                      <td
+                                        key={dayIndex}
+                                        className={`px-2 py-4 whitespace-nowrap text-center border-r border-slate-200 dark:border-slate-700/50 transition-colors duration-200 hover:brightness-95 ${colors.bg}`}
+                                      >
+                                        <div className="relative group/cell h-full w-full flex items-center justify-center">
+                                          <span className={`font-bold text-xs ${colors.text}`}>
+                                            {formatCopNumber(day.raw)}
+                                          </span>
+                                          {day.raw !== undefined && (
+                                            <div className="absolute bottom-full mb-3 w-64 p-4 bg-ubuntu-aubergine dark:bg-slate-800 text-white rounded-2xl opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-95 group-hover/cell:scale-100">
+                                              <div className="flex items-center justify-between gap-3 mb-3 pb-2 border-b border-white/10">
+                                                <span className="font-bold text-ubuntu-warmGrey">
+                                                  {formatDate(
+                                                    new Date(
+                                                      Date.UTC(
+                                                        filterYear,
+                                                        filterMonth,
+                                                        dayIndex + 1
+                                                      )
+                                                    )
+                                                  )}
+                                                </span>
+                                                <span
+                                                  className={`px-2.5 py-1 rounded-lg text-white text-[10px] uppercase font-black ${colors.bg} ring-1 ring-white/20`}
+                                                >
+                                                  {colors.status}
+                                                </span>
+                                              </div>
+
+                                              <div className="space-y-2">
+                                                <div className="flex justify-between items-center">
+                                                  <span className="text-white/60 font-medium">
+                                                    {t.average}
+                                                  </span>
+                                                  <span className="font-mono text-ubuntu-orange font-bold">
+                                                    {formatCopNumber(day.raw)} {row.parameter.unit}
+                                                  </span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[11px]">
+                                                  <span className="text-white/60 font-medium">
+                                                    Target
+                                                  </span>
+                                                  <span className="font-mono text-emerald-400">
+                                                    {(() => {
+                                                      const { min, max } = getMinMaxForCementType(
+                                                        row.parameter,
+                                                        selectedCementType
+                                                      );
+                                                      return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
+                                                    })()}
+                                                  </span>
+                                                </div>
+                                                {day.value !== null && (
+                                                  <div className="flex justify-between items-center text-[11px]">
+                                                    <span className="text-white/60 font-medium">
+                                                      Performance
+                                                    </span>
+                                                    <span className="font-mono text-blue-400">
+                                                      {day.value.toFixed(1)}%
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
+
+                                              {/* Triangle pointer */}
+                                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine dark:border-t-slate-800"></div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </td>
+                                    );
+                                  })}
+                                  {(() => {
+                                    const avgColors = getPercentageColor(row.monthlyAverage);
+                                    return (
+                                      <td
+                                        className={`sticky right-0 z-20 px-4 py-4 whitespace-nowrap text-center border-l border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 w-20 font-black shadow-[-4px_0_10px_rgba(0,0,0,0.05)]`}
+                                      >
+                                        <span
+                                          className={`${avgColors.text} text-sm font-black drop-shadow-sm`}
+                                        >
+                                          {formatCopNumber(row.monthlyAverageRaw)}
+                                        </span>
+                                      </td>
+                                    );
+                                  })()}
+                                </tr>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                          {analysisData.length === 0 && (
+                            <tr>
+                              <td
+                                colSpan={daysHeader.length + 5}
+                                className="text-center py-10 text-slate-500"
+                              >
+                                {!selectedCategory || !selectedUnit
+                                  ? 'Please select both Category and Unit to view COP analysis data.'
+                                  : filteredCopParameters.length === 0
+                                    ? 'No COP parameters found for the selected Category and Unit.'
+                                    : 'No data available for the selected period.'}
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      )}
+                    </Droppable>
+                    <tfoot className="bg-slate-100/80 dark:bg-white/5 backdrop-blur-md group/f">
+                      <tr className="border-t-2 border-slate-300 dark:border-white/10">
+                        <td
+                          colSpan={4}
+                          className="sticky left-0 z-30 px-6 py-6 text-right text-[11px] font-black tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
+                        >
+                          Quality Adherence (QAF)
+                        </td>
+                        {dailyQaf.daily.map((qaf, index) => {
+                          const colors = getQafColor(qaf.value);
                           return (
                             <td
-                              key={`moisture-${day}`}
-                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-blue-100 to-cyan-100"
+                              key={index}
+                              className={`px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
                             >
-                              <span className="text-sm font-bold text-blue-800 drop-shadow-sm">
+                              <div className="relative group/cell h-full w-full flex items-center justify-center">
+                                <span className="text-sm font-black drop-shadow-sm">
+                                  {qaf.value !== null && !isNaN(qaf.value)
+                                    ? `${formatCopNumber(qaf.value)}%`
+                                    : '-'}
+                                </span>
+                                {qaf.total > 0 && (
+                                  <div className="absolute bottom-full mb-4 w-56 p-5 bg-ubuntu-aubergine/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
+                                    <div className="text-[10px] font-black uppercase tracking-widest mb-2 text-white/60">
+                                      Compliance Status
+                                    </div>
+                                    <div className="text-xl font-black mb-1">
+                                      {formatCopNumber(qaf.value)}%
+                                    </div>
+                                    <div className="text-[11px] font-bold text-ubuntu-warmGrey">
+                                      {qaf.inRange} of {qaf.total} metrics in target
+                                    </div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine/95"></div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
+                        {(() => {
+                          const qaf = dailyQaf.monthly;
+                          const colors = getQafColor(qaf.value);
+                          return (
+                            <td
+                              className={`sticky right-0 z-30 px-6 py-6 text-center shadow-[-8px_0_20px_rgba(0,0,0,0.2)] ${colors.bg} ${colors.text} font-black text-xl border-l border-white/10`}
+                            >
+                              <div className="flex flex-col items-center">
+                                <span className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-1">
+                                  Index
+                                </span>
+                                <span className="drop-shadow-md">
+                                  {qaf.value !== null && !isNaN(qaf.value)
+                                    ? `${formatCopNumber(qaf.value)}%`
+                                    : '-'}
+                                </span>
+                              </div>
+                            </td>
+                          );
+                        })()}
+                      </tr>
+                      {/* Moisture Content Row - Ubuntu Themed */}
+                      <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
+                        <td
+                          colSpan={4}
+                          className="sticky left-0 z-30 px-6 py-5 text-right text-[11px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                        >
+                          Moisture Content (%)
+                        </td>
+                        {Array.from(
+                          { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                          (_, i) => {
+                            const day = i + 1;
+                            const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            const dailyAverage = monthlyMoistureData.get(dateString);
+
+                            return (
+                              <td
+                                key={`moisture-${day}`}
+                                className="px-2 py-5 text-center border-r border-slate-200 dark:border-white/5 font-mono text-blue-700 dark:text-blue-400 font-black text-xs"
+                              >
                                 {dailyAverage !== undefined && !isNaN(dailyAverage)
                                   ? `${formatCopNumber(dailyAverage)}%`
                                   : '-'}
-                              </span>
-                            </td>
-                          );
-                        }
-                      )}
-                      {/* Monthly average for moisture content */}
-                      <td className="sticky right-0 z-20 px-3 py-4 text-center border-b-2 border-l-4 border-white/30 bg-gradient-to-r from-emerald-100 to-green-100 font-bold text-lg rounded-r-2xl">
-                        <span className="text-emerald-800 drop-shadow-sm">
+                              </td>
+                            );
+                          }
+                        )}
+                        <td className="sticky right-0 z-30 px-6 py-5 text-center bg-blue-600 dark:bg-blue-900/40 text-white font-black text-lg shadow-[-8px_0_20px_rgba(37,99,235,0.2)] border-l border-white/10">
                           {(() => {
-                            // Calculate monthly average from daily moisture data
                             const validValues = Array.from(monthlyMoistureData.values()).filter(
                               (v) => v !== null && v !== undefined && !isNaN(v)
                             );
-
                             if (validValues.length === 0) return '-';
-
                             const average =
                               validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
                             return `${formatCopNumber(average)}%`;
                           })()}
-                        </span>
-                      </td>
-                    </tr>
-                    {/* Capacity Row */}
-                    <tr className="border-t-2 border-slate-300 bg-gradient-to-r from-green-50 to-emerald-50">
-                      <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-green-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-green-200 to-emerald-200 font-bold"
-                      >
-                        Capacity (ton)
-                      </td>
-                      {Array.from(
-                        { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
-                        (_, i) => {
-                          // Get daily feed and moisture data for capacity calculation
-                          const day = i + 1;
-                          const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                          const dailyFeed = monthlyFeedData.get(dateString);
-                          const dailyMoisture = monthlyMoistureData.get(dateString);
+                        </td>
+                      </tr>
+                      {/* Capacity Row - Ubuntu Themed */}
+                      <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
+                        <td
+                          colSpan={4}
+                          className="sticky left-0 z-30 px-6 py-5 text-right text-[11px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                        >
+                          Throughput Capacity (TPH)
+                        </td>
+                        {Array.from(
+                          { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
+                          (_, i) => {
+                            const day = i + 1;
+                            const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            const dailyFeed = monthlyFeedData.get(dateString);
+                            const dailyMoisture = monthlyMoistureData.get(dateString);
+                            const capacity =
+                              dailyFeed && dailyMoisture !== undefined
+                                ? dailyFeed - (dailyMoisture * dailyFeed) / 100
+                                : null;
 
-                          // Calculate capacity: Feed - (Moisture Content × Feed / 100)
-                          const capacity =
-                            dailyFeed && dailyMoisture !== undefined
-                              ? dailyFeed - (dailyMoisture * dailyFeed) / 100
-                              : null;
-
-                          return (
-                            <td
-                              key={`capacity-${day}`}
-                              className="px-2 py-4 text-center border-b-2 border-r-2 border-white/30 bg-gradient-to-r from-green-100 to-emerald-100"
-                            >
-                              <span className="text-sm font-bold text-green-800 drop-shadow-sm">
+                            return (
+                              <td
+                                key={`capacity-${day}`}
+                                className="px-2 py-5 text-center border-r border-slate-200 dark:border-white/5 font-mono text-emerald-700 dark:text-emerald-400 font-black text-xs"
+                              >
                                 {capacity !== null && !isNaN(capacity)
-                                  ? `${formatCopNumber(capacity)}`
+                                  ? formatCopNumber(capacity)
                                   : '-'}
-                              </span>
-                            </td>
-                          );
-                        }
-                      )}
-                      {/* Monthly average for capacity */}
-                      <td className="sticky right-0 z-20 px-3 py-4 text-center border-b-2 border-l-4 border-white/30 bg-gradient-to-r from-emerald-200 to-green-200 font-bold text-lg rounded-r-2xl">
-                        <span className="text-emerald-900 drop-shadow-sm">
+                              </td>
+                            );
+                          }
+                        )}
+                        <td className="sticky right-0 z-30 px-6 py-5 text-center bg-ubuntu-orange text-white font-black text-lg shadow-[-8px_0_20_rgba(233,84,32,0.3)] border-l border-white/10 rounded-br-[2rem]">
                           {(() => {
-                            // Calculate monthly average capacity
                             const validCapacities: number[] = [];
                             Array.from(
                               { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
@@ -3902,101 +3605,103 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 const dateString = `${filterYear}-${String(filterMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                                 const dailyFeed = monthlyFeedData.get(dateString);
                                 const dailyMoisture = monthlyMoistureData.get(dateString);
-
                                 if (dailyFeed && dailyMoisture !== undefined) {
                                   const capacity = dailyFeed - (dailyMoisture * dailyFeed) / 100;
-                                  if (!isNaN(capacity)) {
-                                    validCapacities.push(capacity);
-                                  }
+                                  if (!isNaN(capacity)) validCapacities.push(capacity);
                                 }
                               }
                             );
-
                             if (validCapacities.length === 0) return '-';
-
                             const average =
                               validCapacities.reduce((sum, val) => sum + val, 0) /
                               validCapacities.length;
-                            return `${formatCopNumber(average)}`;
+                            return formatCopNumber(average);
                           })()}
-                        </span>
-                      </td>
-                    </tr>
-                    {/* COP Footer Parameters */}
-                    {footerData.map((row, index) => (
-                      <tr key={`footer-${row.parameter.id}`} className="border-t border-slate-300">
-                        <td
-                          colSpan={4}
-                          className="sticky left-0 z-20 px-2 py-2 text-right text-sm text-slate-700 border-b border-r border-slate-200 bg-slate-100"
-                        >
-                          {row.parameter.parameter}
-                        </td>
-                        {row.dailyValues.map((day, dayIndex) => {
-                          const colors = getPercentageColor(day.value);
-                          return (
-                            <td
-                              key={dayIndex}
-                              className={`px-1 py-2 text-center border-b border-r border-slate-200 ${colors.bg}`}
-                            >
-                              <span className={`text-xs font-medium ${colors.text}`}>
-                                {formatCopNumber(day.raw)}
-                              </span>
-                            </td>
-                          );
-                        })}
-                        <td className="sticky right-0 z-20 px-2 py-2 text-center border-b border-l-2 border-slate-300 bg-slate-100 font-bold text-sm">
-                          <span className="text-slate-800">
-                            {formatCopNumber(row.monthlyAverageRaw)}
-                          </span>
                         </td>
                       </tr>
-                    ))}
-                  </tfoot>
-                </table>
-              </div>
-              {/* Export Button */}
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={exportToExcel}
-                  className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[44px]"
-                  disabled={analysisData.length === 0}
-                >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                      {/* COP Footer Parameters - Ubuntu Themed */}
+                      {footerData.map((row, index) => (
+                        <tr
+                          key={`footer-${row.parameter.id}`}
+                          className="border-t border-white/5 bg-slate-500/5 transition-colors hover:bg-ubuntu-orange/5 group/frow"
+                        >
+                          <td
+                            colSpan={4}
+                            className="sticky left-0 z-30 px-6 py-4 text-right text-[10px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange"
+                          >
+                            {row.parameter.parameter}
+                          </td>
+                          {row.dailyValues.map((day, dayIndex) => {
+                            const colors = getPercentageColor(day.value);
+                            return (
+                              <td
+                                key={dayIndex}
+                                className={`px-2 py-4 text-center border-r border-white/5 ${colors.bg} font-mono text-[10px] font-bold`}
+                              >
+                                {formatCopNumber(day.raw)}
+                              </td>
+                            );
+                          })}
+                          <td className="sticky right-0 z-30 px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-sm shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white">
+                            {formatCopNumber(row.monthlyAverageRaw)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tfoot>
+                  </table>
+                </div>
+                {/* Export Button */}
+                <div className="mt-8 flex justify-end pr-6 pb-6">
+                  <button
+                    onClick={exportToExcel}
+                    className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-500/30 uppercase tracking-widest text-xs"
+                    disabled={analysisData.length === 0}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                  Export to Excel
-                </button>
-              </div>
-            </DragDropContext>
-          )}
-        </Card>
-        {/* Parameter Line Charts */}
+                    <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-12 transition-transform">
+                      <svg
+                        className="w-5 h-5 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    Export Matrix
+                  </button>
+                </div>
+              </DragDropContext>
+            )}
+          </div>
+        </div>
+        {/* Parameter Line Charts - Ubuntu Theme */}
         {analysisData.length > 0 && (
           <Card
             variant="floating"
             padding="lg"
-            className="mt-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-2xl border-0"
+            className="mt-8 bg-gradient-to-br from-ubuntu-aubergine/5 via-ubuntu-midAubergine/5 to-ubuntu-orange/5 shadow-2xl border-0 backdrop-blur-sm"
           >
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-                📈 Trend Parameter COP
-              </h2>
-              <p className="text-base text-slate-700 leading-relaxed">
-                Visualisasi tren nilai parameter sepanjang bulan untuk monitoring performa dan
-                identifikasi pola
-              </p>
+            <div className="mb-10 relative">
+              <div className="absolute -top-4 -left-4 w-24 h-24 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-ubuntu-aubergine/10 rounded-full blur-3xl"></div>
+
+              <div className="relative">
+                <h2 className="text-4xl font-black bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-orange bg-clip-text text-transparent mb-4 tracking-tight">
+                  📈 Trend Parameter COP
+                </h2>
+                <p className="text-base text-slate-700 dark:text-ubuntu-warmGrey leading-relaxed font-medium">
+                  Visualisasi tren nilai parameter sepanjang bulan untuk monitoring performa dan
+                  identifikasi pola
+                </p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
               {analysisData.map((paramData, index) => {
                 // Prepare chart data
                 const chartData = paramData.dailyValues
@@ -4012,37 +3717,48 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   selectedCementType
                 );
 
-                // Color variations for each chart
+                // Ubuntu-themed color variations for each chart
                 const colorSchemes = [
                   {
-                    bg: 'from-blue-50 to-cyan-50',
-                    border: 'border-blue-200',
-                    accent: 'text-blue-700',
+                    bg: 'from-ubuntu-aubergine/10 via-ubuntu-midAubergine/10 to-ubuntu-aubergine/5',
+                    border: 'border-ubuntu-aubergine/30',
+                    accent: 'text-ubuntu-aubergine dark:text-ubuntu-midAubergine',
+                    badge:
+                      'bg-ubuntu-aubergine/10 text-ubuntu-aubergine border-ubuntu-aubergine/20',
                   },
                   {
-                    bg: 'from-green-50 to-emerald-50',
-                    border: 'border-green-200',
-                    accent: 'text-green-700',
+                    bg: 'from-ubuntu-orange/10 via-ubuntu-orange/15 to-ubuntu-orange/5',
+                    border: 'border-ubuntu-orange/30',
+                    accent: 'text-ubuntu-orange dark:text-ubuntu-orange',
+                    badge: 'bg-ubuntu-orange/10 text-ubuntu-orange border-ubuntu-orange/20',
                   },
                   {
-                    bg: 'from-purple-50 to-violet-50',
-                    border: 'border-purple-200',
-                    accent: 'text-purple-700',
+                    bg: 'from-emerald-50 via-green-50 to-emerald-50/50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-emerald-900/10',
+                    border: 'border-emerald-300/40 dark:border-emerald-700/40',
+                    accent: 'text-emerald-700 dark:text-emerald-400',
+                    badge:
+                      'bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-300/30 dark:border-emerald-700/30',
                   },
                   {
-                    bg: 'from-orange-50 to-amber-50',
-                    border: 'border-orange-200',
-                    accent: 'text-orange-700',
+                    bg: 'from-ubuntu-midAubergine/10 via-purple-100/50 to-ubuntu-midAubergine/5 dark:from-ubuntu-midAubergine/20 dark:via-purple-900/20 dark:to-ubuntu-midAubergine/10',
+                    border: 'border-ubuntu-midAubergine/30 dark:border-ubuntu-midAubergine/40',
+                    accent: 'text-ubuntu-midAubergine dark:text-purple-400',
+                    badge:
+                      'bg-ubuntu-midAubergine/10 dark:bg-ubuntu-midAubergine/20 text-ubuntu-midAubergine dark:text-purple-400 border-ubuntu-midAubergine/20 dark:border-ubuntu-midAubergine/30',
                   },
                   {
-                    bg: 'from-pink-50 to-rose-50',
-                    border: 'border-pink-200',
-                    accent: 'text-pink-700',
+                    bg: 'from-blue-50 via-cyan-50 to-blue-50/50 dark:from-blue-900/20 dark:via-cyan-900/20 dark:to-blue-900/10',
+                    border: 'border-blue-300/40 dark:border-blue-700/40',
+                    accent: 'text-blue-700 dark:text-blue-400',
+                    badge:
+                      'bg-blue-100/80 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-300/30 dark:border-blue-700/30',
                   },
                   {
-                    bg: 'from-indigo-50 to-blue-50',
-                    border: 'border-indigo-200',
-                    accent: 'text-indigo-700',
+                    bg: 'from-amber-50 via-yellow-50 to-amber-50/50 dark:from-amber-900/20 dark:via-yellow-900/20 dark:to-amber-900/10',
+                    border: 'border-amber-300/40 dark:border-amber-700/40',
+                    accent: 'text-amber-700 dark:text-amber-400',
+                    badge:
+                      'bg-amber-100/80 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300/30 dark:border-amber-700/30',
                   },
                 ];
                 const colorScheme = colorSchemes[index % colorSchemes.length];
@@ -4052,28 +3768,32 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   return (
                     <div
                       key={paramData.parameter.id}
-                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg`}
+                      className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-xl hover:shadow-2xl transition-all duration-300 backdrop-blur-sm`}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className={`text-xl font-bold ${colorScheme.accent} truncate`}>
+                        <h3
+                          className={`text-lg font-black ${colorScheme.accent} truncate tracking-tight`}
+                        >
                           {paramData.parameter.parameter}
                         </h3>
                         <div
-                          className={`px-3 py-1 bg-white/80 rounded-full text-xs font-semibold ${colorScheme.accent} border border-white/50`}
+                          className={`px-3 py-1.5 ${colorScheme.badge} rounded-xl text-xs font-bold border shadow-sm`}
                         >
                           No Data
                         </div>
                       </div>
-                      <p className="text-sm text-slate-600 mb-6 font-medium">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-semibold">
                         Target:{' '}
-                        <span className="font-mono text-slate-800">
+                        <span className="font-mono text-slate-900 dark:text-white font-bold">
                           {formatCopNumber(min)} - {formatCopNumber(max)}
                         </span>{' '}
-                        <span className="text-slate-500">{paramData.parameter.unit}</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {paramData.parameter.unit}
+                        </span>
                       </p>
-                      <div className="flex flex-col items-center justify-center h-64 bg-white/60 rounded-xl border-2 border-dashed border-slate-300">
-                        <div className="text-4xl mb-3">📊</div>
-                        <p className="text-slate-500 font-medium text-center">
+                      <div className="flex flex-col items-center justify-center h-64 bg-white/60 dark:bg-slate-800/30 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 backdrop-blur-sm">
+                        <div className="text-5xl mb-4 opacity-40">📊</div>
+                        <p className="text-slate-500 dark:text-slate-400 font-semibold text-center text-sm">
                           Tidak ada data
                           <br />
                           untuk periode ini
@@ -4086,26 +3806,30 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 return (
                   <div
                     key={paramData.parameter.id}
-                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-lg group`}
+                    className={`bg-gradient-to-br ${colorScheme.bg} p-6 rounded-2xl border-2 ${colorScheme.border} shadow-xl hover:shadow-2xl transition-all duration-300 group hover:scale-[1.02] backdrop-blur-sm`}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className={`text-xl font-bold ${colorScheme.accent} truncate`}>
+                      <h3
+                        className={`text-lg font-black ${colorScheme.accent} truncate tracking-tight group-hover:scale-105 transition-transform`}
+                      >
                         {paramData.parameter.parameter}
                       </h3>
                       <div
-                        className={`px-3 py-1 bg-white/90 rounded-full text-xs font-semibold ${colorScheme.accent} border border-white/50 shadow-sm`}
+                        className={`px-3 py-1.5 ${colorScheme.badge} rounded-xl text-xs font-bold border shadow-sm group-hover:scale-110 transition-transform`}
                       >
                         {chartData.length} hari
                       </div>
                     </div>
-                    <p className="text-sm text-slate-600 mb-6 font-medium">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 font-semibold">
                       Target:{' '}
-                      <span className="font-mono text-slate-800 font-bold">
+                      <span className="font-mono text-slate-900 dark:text-white font-bold">
                         {formatCopNumber(min)} - {formatCopNumber(max)}
                       </span>{' '}
-                      <span className="text-slate-500">{paramData.parameter.unit}</span>
+                      <span className="text-slate-500 dark:text-slate-400">
+                        {paramData.parameter.unit}
+                      </span>
                     </p>
-                    <div className="bg-white/80 rounded-xl p-2 shadow-inner">
+                    <div className="bg-white/80 dark:bg-slate-800/50 rounded-xl p-3 shadow-inner backdrop-blur-sm border border-white/20 dark:border-slate-700/50">
                       <ChartContainer
                         chartData={chartData}
                         parameter={paramData.parameter}

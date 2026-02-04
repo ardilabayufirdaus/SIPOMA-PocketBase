@@ -53,18 +53,18 @@ type ChartView = 's-curve' | 'gantt';
 
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full p-10">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
   </div>
 );
 
-// Helper function for status classes
+// Helper function for status classes - Ubuntu Themed
 const getStatusClasses = (status: string, t: any) => {
   if (status === t.proj_status_completed) {
-    return 'bg-green-100 text-green-800';
+    return 'bg-success-50 text-success-700 border border-success-200';
   } else if (status === t.proj_status_delayed) {
-    return 'bg-orange-100 text-orange-800';
+    return 'bg-primary-50 text-primary-700 border border-primary-200';
   } else {
-    return 'bg-blue-100 text-blue-800';
+    return 'bg-blue-50 text-blue-700 border border-blue-200';
   }
 };
 
@@ -79,7 +79,7 @@ const GanttChart: React.FC<{
 
   if (tasks.length === 0 || duration <= 0) {
     return (
-      <div className="h-96 flex items-center justify-center text-slate-500">
+      <div className="h-96 flex items-center justify-center text-slate-500 font-medium">
         {t.status_not_started}
       </div>
     );
@@ -87,17 +87,17 @@ const GanttChart: React.FC<{
 
   const ganttDimensions = {
     width: 800,
-    taskHeight: 20,
-    taskGap: 10,
-    leftPadding: 150,
-    topPadding: 30,
+    taskHeight: 24, // Increased for better touch targets
+    taskGap: 12,
+    leftPadding: 160,
+    topPadding: 40,
   };
   const totalHeight =
     tasks.length * (ganttDimensions.taskHeight + ganttDimensions.taskGap) +
     ganttDimensions.topPadding;
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize to the beginning of the day for accurate comparison
+  today.setHours(0, 0, 0, 0);
   const daysFromStart = (today.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
   const todayX =
     (daysFromStart / duration) * (ganttDimensions.width - ganttDimensions.leftPadding) +
@@ -112,7 +112,7 @@ const GanttChart: React.FC<{
   };
 
   return (
-    <div className="w-full overflow-x-auto relative">
+    <div className="w-full overflow-x-auto relative rounded-xl border border-slate-200 bg-white">
       <svg width={ganttDimensions.width} height={totalHeight} className="min-w-full">
         {/* Today Marker */}
         {todayX > ganttDimensions.leftPadding && todayX < ganttDimensions.width && (
@@ -121,8 +121,8 @@ const GanttChart: React.FC<{
             y1={ganttDimensions.topPadding - 5}
             x2={todayX}
             y2={totalHeight}
-            stroke="#DC2626"
-            strokeWidth="1"
+            stroke="#E95420" // Ubuntu Orange
+            strokeWidth="1.5"
             strokeDasharray="4,2"
           />
         )}
@@ -146,20 +146,22 @@ const GanttChart: React.FC<{
 
           const isOverdue = taskEnd < today && task.percent_complete < 100;
 
-          const plannedBarColor = isOverdue ? 'text-red-200' : 'text-blue-200';
-          const progressBarColor = isOverdue ? 'text-blue-600' : 'text-blue-600';
+          // Ubuntu Styled Bars
+          const plannedBarColor = isOverdue ? 'text-red-100' : 'text-slate-200';
+          const progressBarColor = isOverdue ? 'text-primary-500' : 'text-secondary-600'; // Aubergine for normal, Orange for overdue
 
           return (
             <g
               key={task.id}
               onMouseMove={(e) => handleMouseMove(e, task)}
               onMouseLeave={() => setHoveredTask(null)}
+              className="cursor-pointer"
             >
               <text
                 x="5"
                 y={y + ganttDimensions.taskHeight / 2}
                 dy=".35em"
-                className="text-xs fill-current text-slate-600 truncate"
+                className="text-xs fill-slate-700 font-medium truncate"
                 style={{ maxWidth: `${ganttDimensions.leftPadding - 10}px` }}
               >
                 {task.activity}
@@ -169,18 +171,18 @@ const GanttChart: React.FC<{
                 y={y}
                 width={width}
                 height={ganttDimensions.taskHeight}
-                rx="3"
-                ry="3"
-                className={`fill-current ${plannedBarColor}`}
+                rx="4"
+                ry="4"
+                className={`fill-current ${plannedBarColor} transition-colors duration-200`}
               />
               <rect
                 x={x}
                 y={y}
                 width={progressWidth}
                 height={ganttDimensions.taskHeight}
-                rx="3"
-                ry="3"
-                className={`fill-current ${progressBarColor}`}
+                rx="4"
+                ry="4"
+                className={`fill-current ${progressBarColor} transition-colors duration-200 shadow-sm`}
               />
             </g>
           );
@@ -188,18 +190,20 @@ const GanttChart: React.FC<{
       </svg>
       {hoveredTask && (
         <div
-          className="absolute p-2 text-xs text-white bg-slate-800 rounded-md shadow-lg pointer-events-none transform -translate-x-1/2"
+          className="absolute p-3 text-xs text-white bg-secondary-900 rounded-lg shadow-xl pointer-events-none transform -translate-x-1/2 z-50 border border-secondary-800"
           style={{ left: tooltipPos.x, top: tooltipPos.y + 10 }}
         >
-          <div className="font-bold">{hoveredTask.activity}</div>
-          <div>
-            {t.task_planned_start}: {formatDate(hoveredTask.planned_start)}
-          </div>
-          <div>
-            {t.task_planned_end}: {formatDate(hoveredTask.planned_end)}
-          </div>
-          <div>
-            {t.task_percent_complete}: {hoveredTask.percent_complete}%
+          <div className="font-bold mb-1 text-sm">{hoveredTask.activity}</div>
+          <div className="space-y-0.5 opacity-90">
+            <div>
+              {t.task_planned_start}: {formatDate(hoveredTask.planned_start)}
+            </div>
+            <div>
+              {t.task_planned_end}: {formatDate(hoveredTask.planned_end)}
+            </div>
+            <div>
+              {t.task_percent_complete}: {hoveredTask.percent_complete}%
+            </div>
           </div>
         </div>
       )}
@@ -240,15 +244,17 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
   return (
     <>
       <div
-        className={`bg-white p-4 rounded-lg shadow-md flex items-center transition-all duration-300 ${
-          isInteractive ? 'cursor-pointer hover:shadow-lg hover:scale-105' : ''
+        className={`bg-white p-5 rounded-2xl shadow-soft border border-slate-100 flex items-center transition-all duration-300 ${
+          isInteractive
+            ? 'cursor-pointer hover:shadow-medium hover:scale-[1.02] border-secondary-100'
+            : ''
         }`}
         onClick={handleClick}
       >
-        <div className="p-3 rounded-full bg-red-50 text-blue-600 mr-4">{icon}</div>
+        <div className="p-3.5 rounded-xl bg-slate-50 text-primary-600 mr-4 shadow-sm">{icon}</div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500">{title}</p>
+            <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">{title}</p>
             {isInteractive && (
               <div className="text-slate-400">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,9 +268,11 @@ const PerformanceMetricCard: React.FC<PerformanceMetricCardProps> = ({
               </div>
             )}
           </div>
-          <p className="text-xl font-semibold text-slate-900">{value}</p>
+          <p className="text-2xl font-bold text-secondary-900 mt-1">{value}</p>
           {subText && (
-            <p className={`text-xs font-medium ${subTextColor || 'text-slate-500'}`}>{subText}</p>
+            <p className={`text-xs font-medium mt-1 ${subTextColor || 'text-slate-500'}`}>
+              {subText}
+            </p>
           )}
         </div>
       </div>
@@ -347,7 +355,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       };
     }
 
-    // Use cached values if available
     const taskCount = activeProjectTasks.length;
     const budget = activeProject?.budget || 0;
 
@@ -355,7 +362,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       return { duration: 0, totalTasks: 0, budget };
     }
 
-    // Optimize date calculations
     const startDates = activeProjectTasks.map((t) => new Date(t.planned_start).getTime());
     const endDates = activeProjectTasks.map((t) => new Date(t.planned_end).getTime());
 
@@ -368,7 +374,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       totalTasks: taskCount,
       budget,
     };
-  }, [activeProjectTasks?.length, activeProject?.budget]); // More specific dependencies
+  }, [activeProjectTasks?.length, activeProject?.budget]);
 
   // --- Optimized Performance Calculations ---
   const performanceMetrics = useMemo(() => {
@@ -381,7 +387,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       };
     }
 
-    // Early return for empty tasks
     const taskCount = activeProjectTasks.length;
     if (taskCount === 0) {
       return {
@@ -392,7 +397,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       };
     }
 
-    // Pre-calculate dates for better performance
     const tasksWithDurations = activeProjectTasks.map((task) => {
       const plannedStart = new Date(task.planned_start);
       const plannedEnd = new Date(task.planned_end);
@@ -414,14 +418,12 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       };
     }
 
-    // Calculate overall progress
     const overallProgress =
       tasksWithDurations.reduce((sum, task) => {
         const weight = task.duration / totalWeight;
         return sum + (task.percent_complete / 100) * weight;
       }, 0) * 100;
 
-    // Calculate planned progress
     const projectStartDate = tasksWithDurations[0]?.plannedStart;
     const projectEndDate = tasksWithDurations[0]?.plannedEnd;
     const today = new Date();
@@ -443,7 +445,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
 
     const deviation = overallProgress - plannedProgress;
 
-    // Determine project status
     let projectStatus;
     if (overallProgress >= 100) {
       projectStatus = t.proj_status_completed;
@@ -457,7 +458,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       projectStatus = t.proj_status_on_track;
     }
 
-    // Calculate predicted completion
     let predictedCompletion: Date | null = null;
     const elapsedDays = projectStartDate
       ? Math.max(0, (today.getTime() - projectStartDate.getTime()) / (1000 * 3600 * 24))
@@ -478,7 +478,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       deviation: Math.round(deviation * 10) / 10,
       predictedCompletion,
     };
-  }, [activeProjectTasks, t]); // Keep t as dependency for translations
+  }, [activeProjectTasks, t]);
 
   // --- S-Curve Data Calculation ---
   const sCurveData = useMemo(() => {
@@ -512,14 +512,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
 
-      // Planned progress - S-curve distribution
       const normalizedDay = i / (duration - 1);
       const planned = Math.min(100, 100 * (1 / (1 + Math.exp(-8 * (normalizedDay - 0.5)))));
 
-      // Baseline progress - linear for comparison
       const baseline = Math.min(100, (i / (duration - 1)) * 100);
 
-      // Actual progress calculation
       let actualCompleted = 0;
       const activeTasks = [];
 
@@ -528,7 +525,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           activeTasks.push(task);
         }
 
-        // Count completed work
         if (task.actualEnd && currentDate >= task.actualEnd) {
           actualCompleted += (task as any).work_hours || task.duration;
         } else if (task.actualStart && currentDate >= task.actualStart) {
@@ -577,17 +573,17 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     return [
       {
         id: 'Planned Progress',
-        color: '#3B82F6',
+        color: '#772953', // Ubuntu Aubergine (Mid)
         data: plannedData,
       },
       {
         id: 'Actual Progress',
-        color: '#EF4444',
+        color: '#E95420', // Ubuntu Orange
         data: actualData,
       },
       {
         id: 'Baseline',
-        color: '#10B981',
+        color: '#AEA79F', // Ubuntu Warm Grey
         data: baselineData,
       },
     ];
@@ -603,22 +599,20 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     const startDate = sCurveData.startDate;
     const duration = sCurveData.duration;
 
-    // Calculate which day today is in the project timeline
     const daysFromStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
 
-    // Check if today is within project duration
     if (daysFromStart >= 0 && daysFromStart < duration) {
       return [
         {
           axis: 'x' as const,
           value: `Day ${daysFromStart + 1}`,
           lineStyle: {
-            stroke: '#F59E0B', // Amber color for today line
+            stroke: '#E95420', // Orange
             strokeWidth: 2,
-            strokeDasharray: '5,5', // Dashed line
+            strokeDasharray: '5,5',
           },
           textStyle: {
-            fill: '#F59E0B',
+            fill: '#E95420',
             fontSize: 12,
             fontWeight: 'bold',
           },
@@ -671,10 +665,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     setIsExporting(true);
 
     try {
-      // Dynamic import ExcelJS for lazy loading
       const ExcelJS = (await import('exceljs')).default;
 
-      // Prepare data for export
       const exportData = activeProjectTasks.map((task) => ({
         Activity: task.activity,
         'Planned Start': task.planned_start ? formatDate(task.planned_start) : '',
@@ -682,14 +674,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
         'Percent Complete': task.percent_complete || 0,
       }));
 
-      // Create workbook and worksheet
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Project Tasks');
 
-      // Add headers
       worksheet.addRow(['Activity', 'Planned Start', 'Planned End', 'Percent Complete']);
 
-      // Add data rows
       exportData.forEach((row) => {
         worksheet.addRow([
           row.Activity,
@@ -699,7 +688,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
         ]);
       });
 
-      // Set column widths
       worksheet.columns = [
         { header: 'Activity', width: 40 },
         { header: 'Planned Start', width: 15 },
@@ -707,11 +695,9 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
         { header: 'Percent Complete', width: 15 },
       ];
 
-      // Generate filename with project title
       const projectTitle = activeProject?.title || 'Project';
       const filename = `${projectTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_tasks.xlsx`;
 
-      // Save file
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -744,10 +730,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           const workbook = new ExcelJS.Workbook();
           await workbook.xlsx.load(arrayBuffer);
 
-          // Get first worksheet
           const worksheet = workbook.worksheets[0];
 
-          // Convert to array of arrays
           const jsonData: (string | number | null)[][] = [];
           worksheet.eachRow((row) => {
             jsonData.push(row.values as (string | number | null)[]);
@@ -759,7 +743,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
             return;
           }
 
-          // Check headers
           const headers = jsonData[0] as string[];
           const expectedHeaders = ['Activity', 'Planned Start', 'Planned End', 'Percent Complete'];
 
@@ -774,12 +757,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
             return;
           }
 
-          // Parse data rows
           const parsedTasks: Omit<ProjectTask, 'id' | 'project_id'>[] = [];
           for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i] as (string | number | null)[];
 
-            if (!row[0]) continue; // Skip empty rows
+            if (!row[0]) continue;
 
             const activity = row[0]?.toString().trim();
             const plannedStartStr = row[1]?.toString().trim();
@@ -793,7 +775,6 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               return;
             }
 
-            // Parse dates
             let plannedStart: Date | null = null;
             let plannedEnd: Date | null = null;
 
@@ -891,174 +872,143 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
     setProjectEditMode(false);
   };
 
-  const handleChartMouseMove = (e: React.MouseEvent) => {
-    // Chart mouse move logic here
-  };
-
-  const handleChartMouseLeave = () => {
-    // Chart mouse leave logic here
-  };
-
-  const handleChartClick = () => {
-    // Chart click logic here
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 font-sans">
       <div className="w-full">
-        {/* Enhanced Header with Better Mobile Support */}
-        <div className="bg-white border-b border-slate-200 px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Ubuntu Enhanced Header */}
+        <div className="bg-secondary-900 border-b border-secondary-800 px-4 py-6 sm:px-6 lg:px-8 shadow-md">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-[1400px] mx-auto">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-4 mb-2">
                 <h1
-                  className="text-xl sm:text-2xl font-bold text-slate-900 truncate"
+                  className="text-2xl sm:text-3xl font-display font-bold text-white truncate leading-tight"
                   role="heading"
                   aria-level={1}
                 >
                   {activeProject?.title || t.project_details}
                 </h1>
-                {/* Enhanced Status Badge with Screen Reader Support */}
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClasses(
-                    performanceMetrics.projectStatus,
-                    t
-                  )}`}
-                  role="status"
-                  aria-label={`Project status: ${performanceMetrics.projectStatus}`}
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                    performanceMetrics.projectStatus === t.proj_status_completed
+                      ? 'bg-success-600 text-white'
+                      : performanceMetrics.projectStatus === t.proj_status_delayed
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-blue-600 text-white'
+                  }`}
                 >
                   {performanceMetrics.projectStatus}
                 </span>
               </div>
-              <p className="text-sm text-slate-600" aria-describedby="project-meta">
-                {t.project_overview} G�� {projectOverview.totalTasks} tasks G��{' '}
-                {projectOverview.duration} days
+              <p className="text-secondary-200/80 text-lg flex items-center gap-2">
+                <span className="font-bold text-white">{projectOverview.totalTasks}</span> Tasks
+                <span className="w-1 h-1 rounded-full bg-secondary-400"></span>
+                <span className="font-bold text-white">{projectOverview.duration}</span> Days
               </p>
             </div>
 
-            {/* Enhanced Action Buttons - Better Mobile Layout */}
-            <div className="flex flex-wrap gap-2" role="toolbar" aria-label="Project actions">
+            <div className="flex flex-wrap gap-3">
               <EnhancedButton
                 onClick={handleEditProject}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1.5"
+                variant="custom"
+                className="bg-secondary-800 hover:bg-secondary-700 text-white border border-secondary-700 shadow-sm rounded-xl px-4 py-2"
                 aria-label={t.edit_project}
               >
-                <EditIcon className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">{t.edit_project}</span>
+                <EditIcon className="w-4 h-4 mr-2" aria-hidden="true" />
+                <span>{t.edit_project || 'Edit Project'}</span>
               </EnhancedButton>
               <EnhancedButton
                 onClick={() => setFormModalOpen(true)}
-                variant="primary"
-                size="sm"
-                className="flex items-center gap-1.5"
+                variant="custom"
+                className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/30 rounded-xl px-5 py-2 font-bold"
                 aria-label={t.add_task}
               >
-                <PlusIcon className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">{t.add_task}</span>
+                <PlusIcon className="w-5 h-5 mr-2" aria-hidden="true" />
+                <span>{t.add_task || 'Add Task'}</span>
               </EnhancedButton>
             </div>
           </div>
         </div>
 
-        <div className="px-4 py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-8 sm:px-6 lg:px-8 max-w-[1400px] mx-auto space-y-8">
           {loading ? (
             <LoadingSpinner />
           ) : (
             <>
-              {/* Modern Project Overview Header */}
-              <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-2xl shadow-2xl mb-8">
-                <div className="absolute inset-0 bg-black/10"></div>
-                <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+              {/* Project Main Metrics Card - Ubuntu Gradient */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-[#772953] to-[#300a24] rounded-3xl shadow-xl shadow-secondary-900/20">
+                <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-10 -translate-y-10">
+                  <PresentationChartLineIcon className="w-64 h-64 text-white" />
+                </div>
 
-                <div className="relative p-6 lg:p-8">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                          <PresentationChartLineIcon className="w-8 h-8 text-white" />
+                <div className="relative p-8">
+                  <div className="flex flex-col gap-8">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                        <PresentationChartLineIcon className="w-8 h-8 text-primary-400" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-white mb-1">Project Overview</h2>
+                        <p className="text-secondary-200">
+                          Real-time insights and progress tracking
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {/* Metric Items */}
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <ClipboardDocumentListIcon className="w-5 h-5 text-secondary-300" />
+                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
+                            {t.total_tasks || 'Total Tasks'}
+                          </span>
                         </div>
-                        <div>
-                          <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">
-                            {t.project_overview_title || 'Project Overview'}
-                          </h1>
-                          <div className="flex items-center gap-2">
-                            <div className="h-1 w-8 bg-white/60 rounded-full"></div>
-                            <p className="text-white/80 text-sm lg:text-base">
-                              Key metrics and performance insights
-                            </p>
-                          </div>
-                        </div>
+                        <p className="text-3xl font-bold text-white">
+                          {projectOverview.totalTasks}
+                        </p>
                       </div>
 
-                      {/* Quick Stats in Header */}
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white/20 rounded-lg">
-                              <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.total_tasks || 'Total Tasks'}
-                              </p>
-                              <p className="text-white text-xl font-bold">
-                                {projectOverview.totalTasks}
-                              </p>
-                            </div>
-                          </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <CalendarDaysIcon className="w-5 h-5 text-green-400" />
+                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
+                            {t.project_duration || 'Duration'}
+                          </span>
                         </div>
+                        <p className="text-3xl font-bold text-white">
+                          {projectOverview.duration}{' '}
+                          <span className="text-lg font-normal text-secondary-300">Days</span>
+                        </p>
+                      </div>
 
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-green-500/20 rounded-lg">
-                              <CalendarDaysIcon className="w-5 h-5 text-green-300" />
-                            </div>
-                            <div>
-                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.project_duration || 'Duration'}
-                              </p>
-                              <p className="text-white text-xl font-bold">
-                                {projectOverview.duration}{' '}
-                                <span className="text-sm font-normal text-white/80">
-                                  {t.days || 'days'}
-                                </span>
-                              </p>
-                            </div>
-                          </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <CurrencyDollarIcon className="w-5 h-5 text-yellow-400" />
+                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
+                            {t.project_budget || 'Budget'}
+                          </span>
                         </div>
+                        <p className="text-2xl font-bold text-white">
+                          {formatRupiah(projectOverview.budget)}
+                        </p>
+                      </div>
 
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-yellow-500/20 rounded-lg">
-                              <CurrencyDollarIcon className="w-5 h-5 text-yellow-300" />
-                            </div>
-                            <div>
-                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.project_budget || 'Budget'}
-                              </p>
-                              <p className="text-white text-lg font-bold">
-                                {formatRupiah(projectOverview.budget)}
-                              </p>
-                            </div>
-                          </div>
+                      <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <ChartPieIcon className="w-5 h-5 text-primary-400" />
+                          <span className="text-secondary-200 text-sm font-medium uppercase tracking-wider">
+                            {t.overall_progress || 'Progress'}
+                          </span>
                         </div>
-
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-red-500/20 rounded-lg">
-                              <ChartPieIcon className="w-5 h-5 text-red-300" />
-                            </div>
-                            <div>
-                              <p className="text-white/70 text-xs font-medium uppercase tracking-wide">
-                                {t.overall_progress || 'Progress'}
-                              </p>
-                              <p className="text-white text-xl font-bold">
-                                {performanceMetrics.overallProgress.toFixed(1)}%
-                              </p>
-                            </div>
+                        <div className="flex items-end gap-2">
+                          <p className="text-3xl font-bold text-white">
+                            {performanceMetrics.overallProgress.toFixed(1)}%
+                          </p>
+                          <div className="w-full bg-secondary-900/50 h-2 rounded-full mb-2 ml-2 flex-1 overflow-hidden">
+                            <div
+                              className="h-full bg-primary-500 rounded-full"
+                              style={{ width: `${performanceMetrics.overallProgress}%` }}
+                            ></div>
                           </div>
                         </div>
                       </div>
@@ -1067,345 +1017,222 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 </div>
               </div>
 
-              {/* Modern Performance Metrics Section */}
-              <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 mb-8 border border-slate-200/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-gradient-fire rounded-lg">
-                    <Bars4Icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">
-                      {t.performance_summary_title || 'Performance Metrics'}
-                    </h2>
-                    <p className="text-sm text-slate-600">
-                      Key performance indicators and project status
-                    </p>
-                  </div>
-                </div>
-
-                {/* Performance Metrics Grid - Ultra Compact */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        {t.deviation_from_plan || 'Deviation'}
-                      </p>
-                      {performanceMetrics.deviation > 0 ? (
-                        <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <ArrowTrendingDownIcon className="w-4 h-4 text-blue-600" />
-                      )}
-                    </div>
-                    <p
-                      className={`text-xl font-bold ${
-                        performanceMetrics.deviation > 5
-                          ? 'text-green-600'
-                          : performanceMetrics.deviation < -5
-                            ? 'text-blue-600'
-                            : 'text-slate-900'
-                      }`}
-                    >
-                      {performanceMetrics.deviation > 0 ? '+' : ''}
-                      {performanceMetrics.deviation.toFixed(1)}%
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {performanceMetrics.deviation > 5
-                        ? t.ahead_of_schedule || 'Ahead of schedule'
-                        : performanceMetrics.deviation < -5
-                          ? t.behind_schedule || 'Behind schedule'
-                          : t.on_track || 'On track'}
-                    </p>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        {t.predicted_completion || 'Predicted Completion'}
-                      </p>
-                      <CheckBadgeIcon className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <p className="text-lg font-bold text-slate-900">
-                      {performanceMetrics.predictedCompletion
-                        ? formatDate(performanceMetrics.predictedCompletion)
-                        : t.not_available || 'Not available'}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {t.estimated_completion_date || 'Estimated completion date'}
-                    </p>
-                  </div>
-
-                  <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        {t.tasks_completed || 'Tasks Completed'}
-                      </p>
-                      <CheckBadgeIcon className="w-4 h-4 text-green-600" />
-                    </div>
-                    <p className="text-xl font-bold text-slate-900">
-                      {activeProjectTasks?.filter((t) => t.percent_complete === 100).length || 0}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      dari {projectOverview.totalTasks} total tasks
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modern Chart Section */}
-              <div className="bg-gradient-to-r from-slate-50 to-gray-50 rounded-2xl p-6 border border-slate-200/50">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg">
-                      <ChartPieIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-slate-900">
-                        {t.project_progress_chart || 'Project Progress'}
-                      </h2>
-                      <p className="text-sm text-slate-600">
-                        Visual representation of project timeline and progress
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 bg-white rounded-xl p-1 border border-slate-200">
-                    <button
-                      onClick={() => setChartView('s-curve')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        chartView === 's-curve'
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      S-Curve
-                    </button>
-                    <button
-                      onClick={() => setChartView('gantt')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        chartView === 'gantt'
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      Gantt
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 border border-slate-200/50">
-                  <Suspense
-                    fallback={
-                      <div className="h-80 sm:h-96 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              {/* Performance & Charts Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column: Metrics */}
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl shadow-medium border border-slate-200 p-6">
+                    <h3 className="text-lg font-bold text-secondary-900 mb-4 flex items-center gap-2">
+                      <Bars4Icon className="w-5 h-5 text-primary-600" />
+                      Performance Metrics
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm text-slate-500 font-medium">Deviation</span>
+                          {performanceMetrics.deviation > 0 ? (
+                            <ArrowTrendingUpIcon className="w-4 h-4 text-green-600" />
+                          ) : (
+                            <ArrowTrendingDownIcon className="w-4 h-4 text-primary-600" /> // Orange for delay
+                          )}
+                        </div>
+                        <p
+                          className={`text-2xl font-bold ${performanceMetrics.deviation < -5 ? 'text-primary-600' : 'text-slate-800'}`}
+                        >
+                          {performanceMetrics.deviation > 0 ? '+' : ''}
+                          {performanceMetrics.deviation.toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {performanceMetrics.deviation > 5
+                            ? 'Ahead of Schedule'
+                            : performanceMetrics.deviation < -5
+                              ? 'Behind Schedule'
+                              : 'On Track'}
+                        </p>
                       </div>
-                    }
-                  >
-                    {chartView === 's-curve' ? (
-                      <div className="h-80 sm:h-96" ref={chartRef}>
-                        {nivoSCurveData.length > 0 ? (
-                          <Line
-                            data={{
-                              labels: nivoSCurveData[0]?.data.map((point) => point.x) || [],
-                              datasets: nivoSCurveData.map((series) => ({
-                                label: series.id,
-                                data: series.data.map((point) => point.y),
-                                borderColor: series.color,
-                                backgroundColor: series.color + '20',
-                                borderWidth: 2,
-                                fill: false,
-                                tension: 0.4,
-                                pointRadius: 3,
-                                pointHoverRadius: 5,
-                              })),
-                            }}
-                            options={{
-                              responsive: true,
-                              maintainAspectRatio: false,
-                              plugins: {
-                                legend: {
-                                  position: 'top' as const,
-                                  labels: {
-                                    padding: 10,
-                                    usePointStyle: true,
-                                    font: {
-                                      size: 11,
-                                    },
+
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm text-slate-500 font-medium">
+                            Predicted Completion
+                          </span>
+                          <CheckBadgeIcon className="w-4 h-4 text-blue-500" />
+                        </div>
+                        <p className="text-lg font-bold text-slate-800">
+                          {performanceMetrics.predictedCompletion
+                            ? formatDate(performanceMetrics.predictedCompletion)
+                            : 'Calculating...'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Charts */}
+                <div className="lg:col-span-2">
+                  <div className="bg-white rounded-2xl shadow-medium border border-slate-200 p-6 h-full">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-lg font-bold text-secondary-900">Project Timeline</h3>
+                      <div className="flex bg-slate-100 p-1 rounded-xl">
+                        <button
+                          onClick={() => setChartView('s-curve')}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${chartView === 's-curve' ? 'bg-white text-secondary-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                          S-Curve
+                        </button>
+                        <button
+                          onClick={() => setChartView('gantt')}
+                          className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${chartView === 'gantt' ? 'bg-white text-secondary-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                          Gantt
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="h-[400px]">
+                      <Suspense fallback={<LoadingSpinner />}>
+                        {chartView === 's-curve' ? (
+                          <div className="h-full w-full relative">
+                            <Line
+                              data={{
+                                labels: nivoSCurveData[0]?.data.map((d) => d.x) || [],
+                                datasets: nivoSCurveData.map((series) => ({
+                                  label: series.id,
+                                  data: series.data.map((d) => d.y),
+                                  borderColor: series.color,
+                                  backgroundColor: series.color,
+                                  borderWidth: 2,
+                                  tension: 0.4,
+                                  pointRadius: 0,
+                                  pointHoverRadius: 6,
+                                })),
+                              }}
+                              options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                  legend: {
+                                    position: 'top',
+                                    align: 'end',
+                                    labels: { usePointStyle: true, boxWidth: 8 },
                                   },
                                 },
-                                tooltip: {
-                                  mode: 'index' as const,
-                                  intersect: false,
-                                  callbacks: {
-                                    label: function (context: any) {
-                                      let label = context.dataset.label || '';
-                                      if (label) {
-                                        label += ': ';
-                                      }
-                                      if (context.parsed.y !== null) {
-                                        label += context.parsed.y + '%';
-                                      }
-                                      return label;
-                                    },
+                                scales: {
+                                  y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    grid: { color: '#f1f5f9' },
+                                  },
+                                  x: {
+                                    grid: { display: false },
                                   },
                                 },
-                              },
-                              scales: {
-                                x: {
-                                  display: true,
-                                  title: {
-                                    display: true,
-                                    text: 'Project Timeline',
-                                    font: {
-                                      size: 12,
-                                    },
-                                  },
-                                  grid: {
-                                    display: false,
-                                  },
-                                },
-                                y: {
-                                  display: true,
-                                  title: {
-                                    display: true,
-                                    text: 'Progress (%)',
-                                    font: {
-                                      size: 12,
-                                    },
-                                  },
-                                  beginAtZero: true,
-                                  max: 100,
-                                  grid: {
-                                    color: 'rgba(0, 0, 0, 0.1)',
-                                  },
-                                  ticks: {
-                                    stepSize: 20,
-                                  },
-                                },
-                              },
-                              interaction: {
-                                mode: 'nearest' as const,
-                                axis: 'x' as const,
-                                intersect: false,
-                              },
-                            }}
-                          />
+                              }}
+                            />
+                          </div>
                         ) : (
-                          <div className="h-full flex items-center justify-center text-slate-500">
-                            <div className="text-center">
-                              <ChartPieIcon className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                              <p className="text-sm">
-                                {t.no_data_available || 'No data available'}
-                              </p>
-                            </div>
+                          <div className="h-full overflow-auto">
+                            <GanttChart
+                              tasks={activeProjectTasks || []}
+                              startDate={sCurveData.startDate}
+                              duration={projectOverview.duration}
+                              t={t}
+                            />
                           </div>
                         )}
-                      </div>
-                    ) : (
-                      <div className="h-80 sm:h-96 overflow-x-auto">
-                        <GanttChart
-                          tasks={activeProjectTasks || []}
-                          startDate={
-                            activeProjectTasks && activeProjectTasks.length > 0
-                              ? new Date(
-                                  Math.min(
-                                    ...activeProjectTasks.map((t) =>
-                                      new Date(t.planned_start).getTime()
-                                    )
-                                  )
-                                )
-                              : new Date()
-                          }
-                          duration={projectOverview.duration}
-                          t={t}
-                        />
-                      </div>
-                    )}
-                  </Suspense>
+                      </Suspense>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Tasks Table */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-slate-900">{t.project_tasks}</h2>
+              {/* Tasks Table Section */}
+              <div className="bg-white rounded-2xl shadow-medium border border-slate-200 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-secondary-900">Project Tasks</h3>
                   <div className="flex gap-2">
                     <EnhancedButton
                       onClick={handleImportClick}
                       variant="secondary"
-                      size="md"
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                      disabled={isImporting}
+                      size="sm"
+                      className="border-slate-200 text-slate-600 hover:text-primary-600"
                     >
-                      <DocumentArrowUpIcon className="w-5 h-5" />
-                      <span className="text-sm font-medium">
-                        {isImporting ? 'Importing...' : t.import_excel}
-                      </span>
+                      <DocumentArrowUpIcon className="w-4 h-4 mr-2" />
+                      Import
                     </EnhancedButton>
                     <EnhancedButton
                       onClick={handleExport}
                       variant="secondary"
-                      size="md"
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                      disabled={isExporting}
+                      size="sm"
+                      className="border-slate-200 text-slate-600 hover:text-green-600"
                     >
-                      <DocumentArrowDownIcon className="w-5 h-5" />
-                      <span className="text-sm font-medium">
-                        {isExporting ? 'Exporting...' : t.export_excel}
-                      </span>
+                      <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
+                      Export
                     </EnhancedButton>
                   </div>
                 </div>
 
                 {activeProjectTasks && activeProjectTasks.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200">
-                      <thead className="bg-slate-50">
+                    <table className="min-w-full divide-y divide-slate-100">
+                      <thead className="bg-secondary-900">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                             {t.task_activity}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                             {t.task_planned_start}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                             {t.task_planned_end}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                             {t.task_percent_complete}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          <th className="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
                             {t.actions}
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-slate-200">
+                      <tbody className="bg-white divide-y divide-slate-100">
                         {activeProjectTasks.map((task) => (
-                          <tr key={task.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                          <tr key={task.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-4 text-sm font-medium text-slate-900">
                               {task.activity}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <td className="px-6 py-4 text-sm text-slate-500">
                               {formatDate(task.planned_start)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <td className="px-6 py-4 text-sm text-slate-500">
                               {formatDate(task.planned_end)}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                              {task.percent_complete}%
+                            <td className="px-6 py-4 text-sm">
+                              <div className="flex items-center gap-2">
+                                <div className="w-full bg-slate-100 rounded-full h-1.5 max-w-[100px]">
+                                  <div
+                                    className={`h-1.5 rounded-full ${task.percent_complete >= 100 ? 'bg-success-500' : 'bg-primary-500'}`}
+                                    style={{ width: `${task.percent_complete}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-slate-600 font-medium">
+                                  {task.percent_complete}%
+                                </span>
+                              </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div className="flex gap-2">
+                            <td className="px-6 py-4 text-right text-sm font-medium">
+                              <div className="flex justify-end gap-2">
                                 <button
                                   onClick={() => {
                                     setEditingTask(task);
                                     setFormModalOpen(true);
                                   }}
-                                  className="text-blue-600 hover:text-blue-900"
+                                  className="text-slate-400 hover:text-primary-600 p-1"
                                 >
                                   <EditIcon className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleOpenDeleteModal(task.id)}
-                                  className="text-blue-600 hover:text-red-900"
+                                  className="text-slate-400 hover:text-red-600 p-1"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </button>
@@ -1417,21 +1244,21 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                     </table>
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-slate-400" />
-                    <h3 className="mt-2 text-sm font-medium text-slate-900">{t.no_tasks_found}</h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {t.get_started_by_creating_a_task}
+                  <div className="text-center py-16 bg-slate-50/50">
+                    <ClipboardDocumentListIcon className="mx-auto h-16 w-16 text-slate-300" />
+                    <h3 className="mt-4 text-lg font-bold text-slate-900">{t.no_tasks_found}</h3>
+                    <p className="mt-2 text-slate-500 max-w-sm mx-auto">
+                      {t.get_started_by_creating_a_task ||
+                        'Get started by creating your first task for this project.'}
                     </p>
-                    <div className="mt-6">
+                    <div className="mt-8">
                       <EnhancedButton
                         onClick={() => setFormModalOpen(true)}
-                        variant="primary"
-                        size="sm"
-                        className="flex items-center gap-2 mx-auto"
+                        variant="custom"
+                        className="bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-600/20 rounded-xl px-6 py-2.5 font-bold"
                       >
-                        <PlusIcon className="w-4 h-4" />
-                        {t.add_first_task}
+                        <PlusIcon className="w-5 h-5 mr-2" />
+                        {t.add_first_task || 'Add New Task'}
                       </EnhancedButton>
                     </div>
                   </div>
@@ -1447,7 +1274,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 className="hidden"
               />
 
-              {/* Modals */}
+              {/* Modals using generic styling, could be enhanced further */}
               {isFormModalOpen && (
                 <Modal
                   isOpen={isFormModalOpen}
@@ -1476,24 +1303,14 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   title={t.confirm_delete}
                 >
                   <div className="p-6">
-                    <p className="text-slate-700 mb-4">{t.confirm_delete_task_message}</p>
+                    <p className="text-slate-700 mb-6 font-medium">
+                      {t.confirm_delete_task_message}
+                    </p>
                     <div className="flex justify-end gap-3">
-                      <EnhancedButton
-                        onClick={() => setDeleteModalOpen(false)}
-                        variant="outline"
-                        size="sm"
-                        rounded="lg"
-                        elevation="sm"
-                      >
+                      <EnhancedButton onClick={() => setDeleteModalOpen(false)} variant="secondary">
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton
-                        onClick={handleDeleteConfirm}
-                        variant="warning"
-                        size="sm"
-                        rounded="lg"
-                        elevation="sm"
-                      >
+                      <EnhancedButton onClick={handleDeleteConfirm} variant="error">
                         {t.delete}
                       </EnhancedButton>
                     </div>
@@ -1508,7 +1325,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   title={t.confirm_import}
                 >
                   <div className="p-6">
-                    <p className="text-slate-700 mb-4">
+                    <p className="text-slate-700 mb-6">
                       {t.confirm_import_message.replace(
                         '{count}',
                         pendingImportTasks.length.toString()
@@ -1518,11 +1335,10 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                       <EnhancedButton
                         onClick={() => setImportConfirmModalOpen(false)}
                         variant="secondary"
-                        size="sm"
                       >
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton onClick={handleConfirmImport} variant="primary" size="sm">
+                      <EnhancedButton onClick={handleConfirmImport} variant="primary">
                         {t.import}
                       </EnhancedButton>
                     </div>
@@ -1539,7 +1355,7 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                   <div className="p-6">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
                           {t.project_title}
                         </label>
                         <input
@@ -1551,11 +1367,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                               title: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                          className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all font-medium"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                        <label className="block text-sm font-bold text-slate-700 mb-1">
                           {t.project_budget}
                         </label>
                         <input
@@ -1567,19 +1383,19 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                               budget: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                          className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all font-medium"
                         />
                       </div>
                     </div>
-                    <div className="flex justify-end gap-3 mt-6">
-                      <EnhancedButton
-                        onClick={handleCancelProjectEdit}
-                        variant="secondary"
-                        size="sm"
-                      >
+                    <div className="flex justify-end gap-3 mt-8">
+                      <EnhancedButton onClick={handleCancelProjectEdit} variant="secondary">
                         {t.cancel}
                       </EnhancedButton>
-                      <EnhancedButton onClick={handleSaveProject} variant="primary" size="sm">
+                      <EnhancedButton
+                        onClick={handleSaveProject}
+                        variant="primary"
+                        className="bg-primary-600 hover:bg-primary-700 text-white"
+                      >
                         {t.save}
                       </EnhancedButton>
                     </div>

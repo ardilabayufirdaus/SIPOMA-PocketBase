@@ -10,10 +10,14 @@ import {
   Download,
   Calendar,
   Layers,
-  Server,
   FileSpreadsheet,
   Loader2,
   ChevronDown,
+  Activity,
+  Terminal,
+  Cpu,
+  ShieldCheck,
+  Clock,
 } from 'lucide-react';
 import { syncOperationalDataForMonth } from '../utils/operationalSyncUtils';
 
@@ -29,9 +33,17 @@ const DatabasePage: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string>('');
 
-  const tabs: { id: TabId; label: string }[] = [
-    { id: 'cm', label: t.plantOperations || 'CM Plant Operations' },
-    { id: 'rkc', label: t.rkcPlantOperations || 'RKC Plant Operations' },
+  const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    {
+      id: 'cm',
+      label: t.plantOperations || 'CM Plant Operations',
+      icon: <Layers className="w-3.5 h-3.5" />,
+    },
+    {
+      id: 'rkc',
+      label: t.rkcPlantOperations || 'RKC Plant Operations',
+      icon: <Cpu className="w-3.5 h-3.5" />,
+    },
   ];
 
   const months = [
@@ -54,7 +66,6 @@ const DatabasePage: React.FC = () => {
   const handleDownloadExcel = async () => {
     setIsDownloading(true);
     try {
-      // 0. Sinkronisasi & Kalkulasi Otomatis sebelum download
       setSyncStatus('Sinkronisasi & Update Kalkulasi...');
       await syncOperationalDataForMonth(selectedMonth, selectedYear, (current, total) => {
         setSyncStatus(`Sinkronisasi Data... ${Math.round((current / total) * 100)}%`);
@@ -62,27 +73,16 @@ const DatabasePage: React.FC = () => {
       setSyncStatus('Menyiapkan Laporan...');
 
       const workbook = new ExcelJS.Workbook();
-
-      // Calculate start and end date for the selected period
       const startDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
-      // Calculate last day of the month
       const lastDay = new Date(selectedYear, selectedMonth, 0).getDate();
       const endDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${lastDay}`;
       const filter = `date >= "${startDate}" && date <= "${endDate}"`;
 
-      logger.debug(`Downloading CM data for period: ${startDate} to ${endDate}`);
-
-      // 1. Fetch Plant Units to create sheets (and silo defs)
       const [plantUnits, siloDefs] = await Promise.all([
-        pb.collection('plant_units').getFullList({
-          sort: 'category,unit',
-        }),
-        pb.collection('silo_capacities').getFullList({
-          sort: 'silo_name',
-        }),
+        pb.collection('plant_units').getFullList({ sort: 'category,unit' }),
+        pb.collection('silo_capacities').getFullList({ sort: 'silo_name' }),
       ]);
 
-      // 2. Fetch all data for the month (optimized: fetch once, filter in memory)
       const [materialData, downtimeData, siloData, infoData] = await Promise.all([
         pb.collection('ccr_material_usage').getFullList({ filter, sort: 'date,created' }),
         pb.collection('ccr_downtime_data').getFullList({ filter, sort: 'date,created' }),
@@ -92,36 +92,26 @@ const DatabasePage: React.FC = () => {
         pb.collection('ccr_information').getFullList({ filter, sort: 'date,created' }),
       ]);
 
-      // 3. Process each plant unit
       for (const unit of plantUnits) {
-        // Create sanitized sheet name (max 31 chars, no invalid chars)
         const sheetName = `${unit.unit}`.replace(/[\\/*[\]:?]/g, '_').substring(0, 31);
         const worksheet = workbook.addWorksheet(sheetName);
 
-        // Filter data for this unit
         const unitMaterial = materialData.filter((d) => d.plant_unit === unit.unit);
         const unitDowntime = downtimeData.filter((d) => d.plant_unit === unit.unit);
-        // Silo data linked by unit_id in silo definition or directly (schema varies, checking logic)
-        // Based on useCcrSiloData, silo_id is expanded. We need to match unit name.
         const unitSiloData = siloData.filter((d) => {
           const expanded = d.expand?.silo_id as any;
           return expanded?.unit === unit.unit;
         });
         const unitInfo = infoData.filter((d) => d.plant_unit === unit.unit);
-
-        // Filter silo definitions for this unit
         const unitSiloDefs = siloDefs.filter((def) => def.unit === unit.unit);
 
-        // --- Header ---
         worksheet.addRow([`CM Plant Operations Data - ${unit.unit}`]);
         worksheet.addRow([
           `Period: ${months.find((m) => m.value === selectedMonth)?.label} ${selectedYear}`,
         ]);
         worksheet.addRow([]);
 
-        // --- Section 1: Material Usage (Daily Total) ---
         worksheet.addRow(['SECTION 1: MATERIAL USAGE (DAILY TOTAL)']);
-        // Remove 'Shift' from header
         const materialHeader = [
           'Date',
           'Clinker',
@@ -135,7 +125,6 @@ const DatabasePage: React.FC = () => {
         ];
         worksheet.addRow(materialHeader);
 
-        // Generate all dates for the selected month to ensure continuous timeline
         const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
         const allDates = Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1;
@@ -143,13 +132,12 @@ const DatabasePage: React.FC = () => {
         });
 
         if (allDates.length > 0) {
-          // Aggregate by date
           const dailyAggregated = unitMaterial.reduce(
             (acc, curr) => {
               const date = curr.date;
               if (!acc[date]) {
                 acc[date] = {
-                  date: date,
+                  date,
                   clinker: 0,
                   gypsum: 0,
                   limestone: 0,
@@ -173,7 +161,6 @@ const DatabasePage: React.FC = () => {
             {} as Record<string, any>
           );
 
-          // Iterate over all dates in the month
           allDates.forEach((dateStr) => {
             const item = dailyAggregated[dateStr] || {
               date: dateStr,
@@ -186,7 +173,6 @@ const DatabasePage: React.FC = () => {
               ckd: 0,
               total_production: 0,
             };
-
             worksheet.addRow([
               item.date,
               item.clinker,
@@ -199,12 +185,9 @@ const DatabasePage: React.FC = () => {
               item.total_production,
             ]);
           });
-        } else {
-          worksheet.addRow(['No Dates Generated']);
         }
         worksheet.addRow([]);
 
-        // --- Section 2: Silo Data ---
         worksheet.addRow(['SECTION 2: SILO DATA']);
         const siloHeader = [
           'Date',
@@ -221,12 +204,9 @@ const DatabasePage: React.FC = () => {
         if (allDates.length > 0 && unitSiloDefs.length > 0) {
           allDates.forEach((dateStr) => {
             unitSiloDefs.forEach((siloDef) => {
-              // Find matching record for this date and silo
-              const record = unitSiloData.find((d) => {
-                const dDate = d.date.split('T')[0];
-                return dDate === dateStr && d.silo_id === siloDef.id;
-              });
-
+              const record = unitSiloData.find(
+                (d) => d.date.split('T')[0] === dateStr && d.silo_id === siloDef.id
+              );
               if (record) {
                 worksheet.addRow([
                   dateStr,
@@ -239,28 +219,13 @@ const DatabasePage: React.FC = () => {
                   record.shift3_content,
                 ]);
               } else {
-                // Empty row for this specific silo on this date
-                worksheet.addRow([
-                  dateStr,
-                  siloDef.silo_name,
-                  '-', // shift1_empty
-                  '-', // shift1_content
-                  '-', // shift2_empty
-                  '-', // shift2_content
-                  '-', // shift3_empty
-                  '-', // shift3_content
-                ]);
+                worksheet.addRow([dateStr, siloDef.silo_name, '-', '-', '-', '-', '-', '-']);
               }
             });
           });
-        } else if (allDates.length > 0 && unitSiloDefs.length === 0) {
-          worksheet.addRow(['No Silos Configured for this Unit']);
-        } else {
-          worksheet.addRow(['No Dates Generated']);
         }
         worksheet.addRow([]);
 
-        // --- Section 3: Downtime Data ---
         worksheet.addRow(['SECTION 3: DOWNTIME DATA']);
         const downtimeHeader = [
           'Date',
@@ -281,18 +246,15 @@ const DatabasePage: React.FC = () => {
               item.start_time,
               item.end_time,
               item.duration_minutes,
-              item.equipment_tag || item.equipment, // Handle varying field names
-              item.description || item.problem, // Handle varying field names
+              item.equipment_tag || item.equipment,
+              item.description || item.problem,
               item.action,
               item.remarks,
             ]);
           });
-        } else {
-          worksheet.addRow(['No Data Available']);
         }
         worksheet.addRow([]);
 
-        // --- Section 4: Information ---
         worksheet.addRow(['SECTION 4: INFORMATION']);
         const infoHeader = ['Date', 'Information'];
         worksheet.addRow(infoHeader);
@@ -301,30 +263,23 @@ const DatabasePage: React.FC = () => {
           unitInfo.forEach((item) => {
             worksheet.addRow([item.date, item.information]);
           });
-        } else {
-          worksheet.addRow(['No Data Available']);
         }
 
-        // Formatting
         worksheet.columns.forEach((column) => {
           column.width = 15;
         });
         worksheet.getRow(1).font = { bold: true, size: 14 };
-        worksheet.getRow(2).font = { size: 12 };
       }
 
-      // Generate File
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
       const fileName = `CM_Plant_Operations_${months.find((m) => m.value === selectedMonth)?.label}_${selectedYear}.xlsx`;
       saveAs(blob, fileName);
-
-      alert('Download complete!');
     } catch (error) {
       console.error('Error downloading Excel:', error);
-      alert('Failed to download Excel. Please check console for details.');
+      alert('Failed to download Excel.');
     } finally {
       setIsDownloading(false);
       setSyncStatus('');
@@ -332,29 +287,46 @@ const DatabasePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 w-full px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-6"
-      >
-        <div>
-          <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 flex items-center gap-3">
-            <Database className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-            {t.database || 'Database Management'}
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg max-w-2xl">
-            {t.database_description ||
-              'Centralized hub for managing operational data, generating reports, and accessing system archives.'}
-          </p>
-        </div>
-      </motion.div>
+    <div className="relative flex flex-col h-screen max-h-screen overflow-hidden text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
+      {/* Subtle Ubuntu Gradient Overlay (Mirrors Main Dashboard) */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[#772953]/5 rounded-full blur-[120px]"></div>
+      </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex justify-center">
-        <div className="bg-slate-100 dark:bg-slate-900/50 p-1.5 rounded-2xl inline-flex space-x-2 border border-slate-200 dark:border-slate-800">
+      <div className="relative z-10 flex-1 flex flex-col p-4 lg:p-6 gap-4 lg:gap-6 overflow-hidden max-w-[1700px] mx-auto w-full">
+        {/* Header Area */}
+        <div className="flex-shrink-0 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-2">
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex flex-col"
+          >
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#333333] dark:text-white">
+                Database <span className="text-[#E95420]">Management</span>
+              </h1>
+              <span className="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-[#E95420] text-white">
+                Admin Tools
+              </span>
+            </div>
+            <p className="text-[11px] text-[#808080] dark:text-slate-400 font-bold uppercase tracking-[0.2em] mt-1 pl-0.5">
+              CENTRALIZED DATA REPOSITORY • OPERATIONAL REPORTING
+            </p>
+          </motion.div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 px-4 py-2 bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 shadow-sm">
+              <Activity className="w-3.5 h-3.5 text-[#E95420]" />
+              <span className="text-xs font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest">
+                Database Online
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs - Dashboard Style */}
+        <div className="flex-shrink-0 flex flex-wrap gap-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -362,172 +334,236 @@ const DatabasePage: React.FC = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  relative px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2.5 z-0
-                  ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}
+                  relative px-5 py-2.5 rounded text-[11px] font-bold uppercase tracking-widest transition-all duration-200 flex items-center gap-2 border
+                  ${
+                    isActive
+                      ? 'bg-[#E95420] text-white border-[#E95420] shadow-sm transform scale-105'
+                      : 'bg-white dark:bg-slate-900 text-[#333333] dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-[#E95420]/50'
+                  }
                 `}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabBg"
-                    className="absolute inset-0 bg-indigo-600 rounded-xl -z-10 shadow-lg shadow-indigo-500/30"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-                {tab.id === 'cm' ? <Layers className="w-4 h-4" /> : <Server className="w-4 h-4" />}
-                <span className="relative z-10">{tab.label}</span>
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
+
+        {/* Content Area - Scrollable like Dashboard Overview */}
+        <div className="flex-1 min-h-0 overflow-y-auto pr-1 custom-scrollbar">
+          <AnimatePresence mode="wait">
+            {activeTab === 'cm' && (
+              <motion.div
+                key="cm"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-6"
+              >
+                {/* Main Control Card */}
+                <div className="lg:col-span-8">
+                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 lg:p-10 shadow-sm relative overflow-hidden h-full">
+                    {/* Corner accent like in Widget */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
+
+                    <div className="relative z-10 flex flex-col md:flex-row gap-8 lg:gap-12 w-full">
+                      {/* Description */}
+                      <div className="flex-1 space-y-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+                            <FileSpreadsheet className="w-8 h-8 text-[#E95420]" />
+                          </div>
+                          <h3 className="text-xl font-bold uppercase tracking-tight border-l-2 border-[#E95420] pl-3">
+                            CM Plant Report Generator
+                          </h3>
+                        </div>
+                        <p className="text-sm text-[#4d4d4d] dark:text-slate-400 leading-relaxed max-w-xl">
+                          Module ekstraksi data operasional CM Plant. Sistem akan melakukan
+                          sinkronisasi kernel sebelum mengunduh laporan dalam format Microsoft Excel
+                          (.xlsx).
+                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 text-[10px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest">
+                          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                            <ShieldCheck className="w-4 h-4 text-emerald-500 font-bold" />
+                            <span>Data Integrity Verified</span>
+                          </div>
+                          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                            <Clock className="w-4 h-4 text-[#772953] font-bold" />
+                            <span>Auto-Sync Enabled</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Controls Section */}
+                      <div className="w-full md:w-80 space-y-6 bg-[#F7F7F7] dark:bg-slate-950/50 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-[10px] font-bold text-[#808080] uppercase tracking-widest mb-2 block">
+                              Pilih Bulan
+                            </label>
+                            <div className="relative group">
+                              <select
+                                value={selectedMonth}
+                                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-[#E95420]/20 outline-none appearance-none cursor-pointer"
+                              >
+                                {months.map((m) => (
+                                  <option key={m.value} value={m.value}>
+                                    {m.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-[#E95420] transition-colors" />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] font-bold text-[#808080] uppercase tracking-widest mb-2 block">
+                              Pilih Tahun
+                            </label>
+                            <div className="relative group">
+                              <select
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-3 px-4 text-xs font-bold transition-all focus:ring-2 focus:ring-[#E95420]/20 outline-none appearance-none cursor-pointer"
+                              >
+                                {years.map((y) => (
+                                  <option key={y} value={y}>
+                                    {y}
+                                  </option>
+                                ))}
+                              </select>
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none group-hover:text-[#E95420] transition-colors" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <motion.button
+                          whileHover={!isDownloading ? { scale: 1.02 } : {}}
+                          whileTap={!isDownloading ? { scale: 0.98 } : {}}
+                          onClick={handleDownloadExcel}
+                          disabled={isDownloading}
+                          className={`
+                              w-full flex items-center justify-center gap-3 py-4 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all
+                              ${
+                                isDownloading
+                                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-700'
+                                  : 'bg-[#E95420] text-white shadow-md shadow-[#E95420]/20 hover:bg-[#D44415]'
+                              }
+                            `}
+                        >
+                          {isDownloading ? (
+                            <>
+                              <Loader2 className="animate-spin w-4 h-4" />
+                              <span>Processing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Download className="w-4 h-4" />
+                              <span>Unduh Laporan</span>
+                            </>
+                          )}
+                        </motion.button>
+
+                        {isDownloading && (
+                          <div className="flex items-center gap-2.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/10 rounded border border-emerald-100 dark:border-emerald-800/30">
+                            <Activity className="w-3 h-3 text-emerald-500 animate-pulse" />
+                            <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter truncate">
+                              {syncStatus}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Side Stats Card (Like System Health Widget) */}
+                <div className="lg:col-span-4">
+                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col h-full relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-[#772953] opacity-50"></div>
+                    <h4 className="text-[10px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest mb-6 border-l-2 border-[#E95420] pl-2">
+                      System Diagnostics
+                    </h4>
+
+                    <div className="space-y-6 flex-1">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-[#808080] uppercase tracking-wide">
+                          Kernel Status
+                        </span>
+                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                          <span>VERIFIED_OK</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-[#808080] uppercase tracking-wide">
+                          Extraction Engine
+                        </span>
+                        <div className="flex items-center gap-2 text-xs font-bold text-[#333333] dark:text-slate-200">
+                          <Terminal className="w-3.5 h-3.5 text-[#E95420]" />
+                          <span>ExcelJS_v4.4.0</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'rkc' && (
+              <motion.div
+                key="rkc"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                className="w-full"
+              >
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 lg:p-20 text-center shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#E95420]/5 rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#772953]/5 rounded-full blur-3xl"></div>
+
+                  <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center">
+                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-700 shadow-inner">
+                      <Cpu className="w-10 h-10 text-[#E95420] animate-pulse" />
+                    </div>
+                    <h3 className="text-2xl font-bold uppercase tracking-tight mb-4 text-[#333333] dark:text-white">
+                      RKC Operations Kernel
+                    </h3>
+                    <p className="text-sm text-[#808080] dark:text-slate-400 leading-relaxed mb-10 font-bold uppercase tracking-wider">
+                      Initializing data mapping kernel • Status:{' '}
+                      <span className="text-[#E95420]">Deploying</span>
+                    </p>
+
+                    <div className="inline-flex items-center gap-4 px-6 py-2.5 bg-[#300a24]/5 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10 text-[10px] font-mono font-bold text-[#772953] dark:text-white/60 uppercase tracking-widest">
+                      <div className="w-2 h-2 rounded-full bg-[#E95420] animate-ping" />
+                      CORE_INITIALIZING_PHASE_09
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Content Area */}
-      <AnimatePresence mode="wait">
-        {activeTab === 'cm' && (
-          <motion.div
-            key="cm"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
-            className="w-full mx-auto"
-          >
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 md:p-12 border border-slate-100 dark:border-slate-700 shadow-2xl shadow-indigo-500/5 relative overflow-hidden group">
-              {/* Decorative Elements */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -mr-48 -mt-48 transition-opacity duration-1000 group-hover:opacity-75" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl -ml-32 -mb-32 transition-opacity duration-1000 group-hover:opacity-75" />
-
-              <div className="relative z-10">
-                <div className="flex flex-col items-center text-center mb-12">
-                  <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-900/20 dark:to-violet-900/20 rounded-3xl flex items-center justify-center mb-6 shadow-inner ring-1 ring-inset ring-indigo-500/10">
-                    <FileSpreadsheet className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
-                    CM Plant Operations Report
-                  </h3>
-                  <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto leading-relaxed">
-                    Generate comprehensive Excel reports covering material usage, silo statistics,
-                    downtime logs, and shift information.
-                  </p>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-8 border border-slate-100 dark:border-slate-700/50 backdrop-blur-sm">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    {/* Month Selection */}
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 pl-1">
-                        <Calendar className="w-4 h-4 text-indigo-500" />
-                        Select Month
-                      </label>
-                      <div className="relative group/select">
-                        <select
-                          value={selectedMonth}
-                          onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                          className="w-full pl-5 pr-12 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-700 dark:text-slate-200 appearance-none shadow-sm group-hover/select:border-indigo-400 cursor-pointer"
-                        >
-                          {months.map((m) => (
-                            <option key={m.value} value={m.value}>
-                              {m.label}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-hover/select:text-indigo-500 transition-colors">
-                          <ChevronDown className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Year Selection */}
-                    <div className="space-y-3">
-                      <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 pl-1">
-                        <Calendar className="w-4 h-4 text-indigo-500" />
-                        Select Year
-                      </label>
-                      <div className="relative group/select">
-                        <select
-                          value={selectedYear}
-                          onChange={(e) => setSelectedYear(Number(e.target.value))}
-                          className="w-full pl-5 pr-12 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium text-slate-700 dark:text-slate-200 appearance-none shadow-sm group-hover/select:border-indigo-400 cursor-pointer"
-                        >
-                          {years.map((y) => (
-                            <option key={y} value={y}>
-                              {y}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 group-hover/select:text-indigo-500 transition-colors">
-                          <ChevronDown className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <motion.button
-                    whileHover={!isDownloading ? { scale: 1.02, translateY: -2 } : {}}
-                    whileTap={!isDownloading ? { scale: 0.98 } : {}}
-                    onClick={handleDownloadExcel}
-                    disabled={isDownloading}
-                    className={`
-                      w-full relative overflow-hidden group/btn flex items-center justify-center py-5 px-8 rounded-xl text-white font-bold text-lg
-                      bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500
-                      focus:outline-none focus:ring-4 focus:ring-indigo-500/30
-                      transition-all duration-300 shadow-xl shadow-indigo-500/20
-                      disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none
-                    `}
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
-
-                    {isDownloading ? (
-                      <>
-                        <Loader2 className="animate-spin -ml-1 mr-3 h-6 w-6" />
-                        <span>{syncStatus || 'Processing Data...'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Download className="mr-3 h-6 w-6 group-hover/btn:scale-110 transition-transform duration-300" />
-                        <span>Download Excel Report</span>
-                      </>
-                    )}
-                  </motion.button>
-
-                  <p className="text-center text-slate-400 dark:text-slate-500 text-sm mt-4">
-                    Securely generates & downloads .xlsx file to your device
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'rkc' && (
-          <motion.div
-            key="rkc"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
-            className="w-full mx-auto"
-          >
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-16 text-center border border-slate-200 dark:border-slate-700 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-500 to-orange-600" />
-
-              <div className="w-24 h-24 mx-auto bg-orange-50 dark:bg-orange-900/20 rounded-3xl flex items-center justify-center mb-8 ring-1 ring-orange-500/10">
-                <Server className="w-12 h-12 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
-                RKC Plant Operations Database
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-8">
-                Data management and reporting modules for RKC operations are currently being
-                configured.
-              </p>
-              <div className="inline-flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg text-slate-500 dark:text-slate-400 text-sm font-medium">
-                Coming Soon
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #E9542033;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #E9542066;
+        }
+      `}</style>
     </div>
   );
 };

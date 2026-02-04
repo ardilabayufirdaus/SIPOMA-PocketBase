@@ -41,19 +41,15 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
   }
 
   return (
-    <div className="relative flex flex-col h-screen max-h-screen overflow-hidden text-slate-900 dark:text-slate-100 font-sans bg-slate-50 dark:bg-slate-900">
-      {/* Dynamic Background Layer */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[100px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px] animate-pulse delay-700"></div>
-        <div className="absolute top-[20%] left-[20%] w-[30%] h-[30%] bg-emerald-500/5 rounded-full blur-[80px] animate-bounce duration-[10s]"></div>
+    <div className="relative flex flex-col h-screen max-h-screen overflow-hidden text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
+      {/* Subtle Ubuntu Gradient Overlay */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[#772953]/5 rounded-full blur-[120px]"></div>
       </div>
 
-      {/* Glassmorphism Overlay */}
-      <div className="absolute inset-0 z-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px]"></div>
-
       {/* Main Content Container */}
-      <div className="relative z-10 flex-1 flex flex-col p-3 lg:p-5 gap-3 lg:gap-5 overflow-hidden max-w-[1920px] mx-auto w-full">
+      <div className="relative z-10 flex-1 flex flex-col p-4 lg:p-6 gap-4 lg:gap-6 overflow-hidden max-w-[1700px] mx-auto w-full">
         {/* Header Section */}
         <div className="flex-shrink-0">
           <DashboardHeader user={currentUser} t={t} onlineUsersCount={onlineUsersCount} />
@@ -65,8 +61,8 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
         </div>
 
         {/* Main Content - Grid Layout */}
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-5 overflow-hidden">
-          {/* Left Column: Operations Overview (8 cols) */}
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-hidden">
+          {/* Left Column: Operations Overview (8 cols) - Like a Main App Window */}
           <div className="lg:col-span-8 flex flex-col h-full overflow-hidden">
             <OperationsOverview
               unitStatuses={unitStatuses}
@@ -77,20 +73,20 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
           </div>
 
           {/* Right Column: Quick Actions & Widgets (4 cols) */}
-          <div className="lg:col-span-4 flex flex-col h-full overflow-hidden gap-3 lg:gap-5">
+          <div className="lg:col-span-4 flex flex-col h-full overflow-hidden gap-4 lg:gap-6">
             <div className="flex-shrink-0">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <h3 className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                  {t.dashboard_quick_actions || 'Quick Actions'}
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h3 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest">
+                  {t.dashboard_quick_actions || 'Akses Cepat'}
                 </h3>
               </div>
               <QuickActions onNavigate={onNavigate} t={t} />
             </div>
 
-            {/* System Health Widget */}
-            <div className="flex-1 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-2xl border border-white/50 dark:border-slate-700/50 p-5 flex flex-col shadow-sm relative group overflow-hidden">
-              {/* Internal Glow */}
-              <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
+            {/* System Health Widget - Ubuntu Sidebar/Widget Style */}
+            <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-sm relative overflow-hidden">
+              {/* Corner accent */}
+              <div className="absolute top-0 right-0 w-16 h-16 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
 
               <SystemStatusWidget t={t} />
             </div>
@@ -123,11 +119,11 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-4 relative z-10 w-full">
-        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-          System Status
+      <div className="flex items-center justify-between mb-6 relative z-10 w-full">
+        <h4 className="text-xs font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest border-l-2 border-[#E95420] pl-2">
+          Status Sistem
         </h4>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-700">
           <span className="relative flex h-2 w-2">
             {isLive && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -139,25 +135,29 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             ></span>
           </span>
           <span
-            className={`text-[10px] font-bold ${
+            className={`text-[10px] font-bold uppercase tracking-tight ${
               isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
             }`}
           >
-            {isLive ? 'Live' : 'Offline'}
+            {isLive ? 'Online' : 'Offline'}
           </span>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center gap-4 relative z-10 w-full">
+      <div className="flex-1 flex flex-col justify-center gap-5 relative z-10 w-full">
         {/* CPU Meter */}
         <div>
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-medium text-slate-500">CPU Load</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{cpuLoad}%</span>
+          <div className="flex justify-between mb-1.5 items-end">
+            <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wide">
+              CPU Load
+            </span>
+            <span className="text-xs font-black text-[#333333] dark:text-slate-300">
+              {cpuLoad}%
+            </span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
             <div
-              className={`h-1.5 rounded-full bg-gradient-to-r ${getLoadColor(cpuLoad)} transition-all duration-1000 ease-out`}
+              className={`h-1.5 rounded-full bg-[#E95420] transition-all duration-1000 ease-out`}
               style={{ width: `${cpuLoad}%` }}
             ></div>
           </div>
@@ -165,46 +165,49 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
         {/* Memory Meter */}
         <div>
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-medium text-slate-500">Memory</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="flex justify-between mb-1.5 items-end">
+            <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wide">
+              Memori
+            </span>
+            <span className="text-xs font-black text-[#333333] dark:text-slate-300">
               {memoryUsage}%
             </span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
             <div
-              className={`h-1.5 rounded-full bg-gradient-to-r ${getLoadColor(memoryUsage)} transition-all duration-1000 ease-out`}
+              className={`h-1.5 rounded-full bg-[#772953] transition-all duration-1000 ease-out`}
               style={{ width: `${memoryUsage}%` }}
             ></div>
           </div>
         </div>
 
         {/* Uptime Display */}
-        <div>
-          <div className="flex justify-between mb-1">
-            <span className="text-xs font-medium text-slate-500">Uptime</span>
-            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 font-mono">
-              {formatUptime(uptime)}
-            </span>
-          </div>
+        <div className="flex items-center justify-between p-3 bg-[#F7F7F7] dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+          <span className="text-[10px] font-bold text-[#808080] uppercase">Waktu Aktif</span>
+          <span className="text-xs font-bold text-[#333333] dark:text-white font-mono">
+            {formatUptime(uptime)}
+          </span>
         </div>
 
         {/* Latency Display */}
-        <div className="mt-0 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-          <p className="text-[10px] text-slate-400 text-center">
-            Database Sync Latency:{' '}
+        <div className="flex items-center justify-between p-3 bg-[#F7F7F7] dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+          <span className="text-[10px] font-bold text-[#808080] uppercase">
+            Sinkronisasi Basis Data
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${latency < 100 ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`}
+            ></div>
             <span
-              className={`font-mono ${
+              className={`text-xs font-bold font-mono ${
                 latency < 100
                   ? 'text-emerald-600 dark:text-emerald-400'
-                  : latency < 300
-                    ? 'text-yellow-600 dark:text-yellow-400'
-                    : 'text-rose-600 dark:text-rose-400'
+                  : 'text-rose-600 dark:text-rose-400'
               }`}
             >
               {latency}ms
             </span>
-          </p>
+          </div>
         </div>
       </div>
     </>

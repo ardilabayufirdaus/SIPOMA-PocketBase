@@ -83,57 +83,57 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
   return (
     <div
       ref={reportRef}
-      className="w-full space-y-4 overflow-hidden pb-4 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen p-4"
+      className="w-full space-y-6 overflow-hidden pb-8 bg-[#F7F7F7] min-h-screen p-6 font-sans"
     >
-      {/* Report Header */}
-      <div className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl shadow-2xl p-4 sm:p-6 border-2 border-white/20 backdrop-blur-sm">
+      {/* Report Header - Ubuntu Theme */}
+      <div className="bg-gradient-to-r from-[#772953] to-[#E95420] rounded-xl shadow-lg p-6 border-b-4 border-[#E95420]">
         <div className="flex items-center justify-between">
-          <div className="flex-shrink-0">
-            <img src="/sipoma-logo.png" alt="Sipoma Logo" className="h-10 w-auto drop-shadow-lg" />
+          <div className="flex-shrink-0 bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+            <img src="/sipoma-logo.png" alt="Sipoma Logo" className="h-10 w-auto" />
           </div>
           <div className="text-center flex-1">
             <h1
-              className={`${isDailyOperationalReport ? 'text-xl' : 'text-2xl'} font-bold text-white mb-1 drop-shadow-lg`}
+              className={`${isDailyOperationalReport ? 'text-2xl' : 'text-3xl'} font-bold text-white mb-1 tracking-tight`}
             >
               {title}
             </h1>
             <p
-              className={`${isDailyOperationalReport ? 'text-sm' : 'text-sm'} text-white/90 font-medium drop-shadow-md`}
+              className={`${isDailyOperationalReport ? 'text-sm' : 'text-base'} text-white/90 font-medium`}
             >
               {date}
             </p>
           </div>
-          <div className="flex-shrink-0">
-            <img src="/tonasa-logo.png" alt="Tonasa Logo" className="h-12 w-auto drop-shadow-lg" />
+          <div className="flex-shrink-0 bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+            <img src="/tonasa-logo.png" alt="Tonasa Logo" className="h-12 w-auto" />
           </div>
         </div>
       </div>
 
       {/* Parameter Data Table - Full Width */}
-      <div>
+      <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200">
         <ParameterTable groupedHeaders={groupedHeaders} rows={rows} footer={footer} t={t} />
       </div>
 
       {/* Downtime Report - Full Width */}
-      <div>
+      <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200">
         <DowntimeTable downtimeData={downtimeData} t={t} />
       </div>
 
       {/* Information Table - Full Width */}
-      <div>
+      <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200">
         <InformationTable informationData={informationData} t={t} />
       </div>
 
       {/* Compact Horizontal Layout for Remaining Tables */}
       {isDailyOperationalReport && (
-        <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: '0.8fr 1.8fr 1.8fr' }}>
-          <div>
+        <div className="grid gap-6 mt-6 xl:grid-cols-[0.8fr_1.8fr_1.8fr] lg:grid-cols-1">
+          <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
             <OperatorTable operatorData={operatorData} t={t} />
           </div>
-          <div>
+          <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
             <MaterialUsageTable materialUsageData={materialUsageData} t={t} />
           </div>
-          <div>
+          <div className="shadow-sm rounded-xl overflow-hidden bg-white border border-slate-200 h-fit">
             <SiloTable siloData={siloData} t={t} />
           </div>
         </div>
@@ -141,5 +141,3 @@ export const InteractiveReport: React.FC<InteractiveReportProps> = ({
     </div>
   );
 };
-
-

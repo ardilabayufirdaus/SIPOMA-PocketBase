@@ -14,22 +14,24 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
   }
 
   return (
-    <div className="bg-gradient-to-br from-teal-50 via-white to-green-50 rounded-2xl shadow-2xl overflow-hidden border-2 border-teal-200/50 mt-4">
-      <div className="p-3 border-b-2 border-teal-300/50 bg-gradient-to-r from-teal-500/10 via-green-500/10 to-emerald-500/10">
-        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-          <div className="w-2 h-2 bg-gradient-to-r from-teal-500 to-green-500 rounded-full"></div>
-          {t.operator_data || 'Operator Data'}
+    <div className="bg-white overflow-hidden h-full">
+      <div className="p-4 border-b border-slate-200 bg-[#F9F9F9]">
+        <h3 className="text-sm font-bold text-[#E95420] flex items-center gap-2 uppercase tracking-wider">
+          <div className="w-1.5 h-4 bg-[#772953] rounded-full"></div>
+          {t.operator_data || 'OPERATOR DATA'}
         </h3>
       </div>
 
       <div className="overflow-x-auto max-w-full">
-        <table className="w-full text-sm min-w-0">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gradient-to-r from-teal-400 via-green-400 to-emerald-400 text-white">
-              <th className="px-3 py-3 text-left font-bold border-r-2 border-white/30 align-middle">
+            <tr className="bg-[#772953] text-white">
+              <th className="px-3 py-3 text-left font-bold border-r border-white/20 align-middle text-xs uppercase">
                 {t.shift}
               </th>
-              <th className="px-3 py-3 text-left font-bold align-middle">{t.name}</th>
+              <th className="px-3 py-3 text-left font-bold align-middle text-xs uppercase">
+                {t.name}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -37,15 +39,13 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
               <tr
                 key={operator.shift}
                 className={`${
-                  index % 2 === 0
-                    ? 'bg-gradient-to-r from-white to-teal-50/30'
-                    : 'bg-gradient-to-r from-green-50/50 to-emerald-50/30'
-                }`}
+                  index % 2 === 0 ? 'bg-white' : 'bg-slate-50'
+                } hover:bg-orange-50/50 transition-colors border-b border-slate-100 last:border-0`}
               >
-                <td className="px-3 py-3 font-semibold text-slate-900 border-r-2 border-teal-200/50 align-middle">
+                <td className="px-3 py-3 font-bold text-slate-800 border-r border-slate-200 align-middle text-xs">
                   {operator.shift}
                 </td>
-                <td className="px-3 py-3 text-slate-800 align-middle font-medium">
+                <td className="px-3 py-3 text-slate-700 align-middle font-medium text-xs">
                   {operator.name}
                 </td>
               </tr>
@@ -56,5 +56,3 @@ export const OperatorTable: React.FC<OperatorTableProps> = ({ operatorData, t })
     </div>
   );
 };
-
-

@@ -172,19 +172,18 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 p-6 font-sans">
       <div className="w-full space-y-6">
-        {/* Header Section - Indigo/Slate Theme */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
+        {/* Header Section - Ubuntu Theme */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine rounded-2xl shadow-xl border border-white/10 p-6">
           {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(233,84,32,0.15),_transparent_40%)]"></div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
 
           <div className="relative flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+            <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
               <svg
-                className="w-7 h-7 text-indigo-200"
+                className="w-7 h-7 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -198,10 +197,10 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl font-bold text-white tracking-tight font-display">
                 {t.op_autonomous_data_entry || 'Autonomous Data Entry'}
               </h1>
-              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+              <p className="text-sm text-white/80 font-medium mt-0.5">
                 {t.autonomous_data_entry_description ||
                   'Monitor and manage autonomous operations data with real-time tracking'}
               </p>
@@ -210,11 +209,11 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
         </div>
 
         {/* Filter Section */}
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1.5 rounded-md bg-ubuntu-warmGrey/20">
               <svg
-                className="w-5 h-5 text-white"
+                className="w-5 h-5 text-ubuntu-coolGrey"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -227,24 +226,16 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-slate-800">{t.filters}</h3>
+            <h3 className="text-lg font-bold text-ubuntu-coolGrey">{t.filters}</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Plant Category */}
-            <div>
+            <div className="group">
               <label
                 htmlFor="auto-filter-category"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-bold text-ubuntu-coolGrey uppercase tracking-wider mb-2"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
                 {t.plant_category_label}
               </label>
               <div className="relative">
@@ -252,7 +243,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   id="auto-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-ubuntu-orange/50 cursor-pointer"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -261,7 +252,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-ubuntu-orange transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -277,19 +268,11 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             </div>
 
             {/* Filter by Month */}
-            <div>
+            <div className="group">
               <label
                 htmlFor="auto-filter-month"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-bold text-ubuntu-coolGrey uppercase tracking-wider mb-2"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
                 {t.filter_by_month}
               </label>
               <div className="relative">
@@ -297,7 +280,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   id="auto-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-ubuntu-orange/50 cursor-pointer"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -306,7 +289,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-ubuntu-orange transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -322,19 +305,11 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             </div>
 
             {/* Filter by Year */}
-            <div>
+            <div className="group">
               <label
                 htmlFor="auto-filter-year"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-1.5 text-xs font-bold text-ubuntu-coolGrey uppercase tracking-wider mb-2"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
                 {t.filter_by_year}
               </label>
               <div className="relative">
@@ -342,7 +317,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   id="auto-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-medium transition-all duration-200 hover:border-ubuntu-orange/50 cursor-pointer"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -351,7 +326,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   ))}
                 </select>
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-ubuntu-orange transition-colors"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -369,12 +344,12 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
         </div>
 
         {/* Downtime Follow-up Section */}
-        <div className="bg-white rounded-xl shadow-md border border-slate-200/60 overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-5 py-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-[#f2f2f2] border-b border-slate-200 px-5 py-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-ubuntu-orange flex items-center justify-center shadow-sm">
                 <svg
-                  className="w-5 h-5 text-white"
+                  className="w-4 h-4 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -382,12 +357,14 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                   />
                 </svg>
               </div>
-              <h2 className="text-lg font-bold text-white">{t.autonomous_downtime_follow_up}</h2>
+              <h2 className="text-lg font-bold text-ubuntu-coolGrey">
+                {t.autonomous_downtime_follow_up}
+              </h2>
             </div>
           </div>
 
@@ -395,31 +372,31 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.start_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.end_time}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.duration}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.problem}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.corrective_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -443,7 +420,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 font-mono">
                           {d.end_time}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-amber-600">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-semibold text-ubuntu-orange">
                           {duration}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-700 font-medium">
@@ -460,10 +437,10 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm">
                           <span
-                            className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            className={`px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full ${
                               d.status === DowntimeStatus.CLOSE
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-amber-100 text-amber-700'
+                                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                : 'bg-orange-100 text-orange-700 border border-orange-200'
                             }`}
                           >
                             {d.status || DowntimeStatus.OPEN}
@@ -475,7 +452,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                             size="xs"
                             onClick={() => handleOpenEditDowntime(d)}
                             aria-label={`Edit downtime record for ${d.unit}`}
-                            className="hover:bg-slate-100 text-slate-500 hover:text-indigo-600"
+                            className="text-slate-500 hover:text-ubuntu-orange hover:bg-orange-50"
                           >
                             <EditIcon />
                           </EnhancedButton>
@@ -485,7 +462,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   })
                 ) : (
                   <tr>
-                    <td colSpan={10} className="text-center py-8 text-slate-400">
+                    <td colSpan={10} className="text-center py-8 text-slate-400 font-medium">
                       {t.no_downtime_for_month}
                     </td>
                   </tr>
@@ -496,13 +473,13 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
         </div>
 
         {/* Risk Management Section */}
-        <div className="bg-white rounded-xl shadow-md border border-slate-200/60 overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-4">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-[#f2f2f2] border-b border-slate-200 px-5 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-ubuntu-midAubergine flex items-center justify-center shadow-sm">
                   <svg
-                    className="w-5 h-5 text-white"
+                    className="w-4 h-4 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -510,12 +487,14 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                     />
                   </svg>
                 </div>
-                <h2 className="text-lg font-bold text-white">{t.autonomous_risk_management}</h2>
+                <h2 className="text-lg font-bold text-ubuntu-coolGrey">
+                  {t.autonomous_risk_management}
+                </h2>
               </div>
               {canWrite && (
                 <EnhancedButton
@@ -523,7 +502,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                   size="sm"
                   onClick={handleOpenAddRisk}
                   aria-label={t.add_risk_button || 'Add new risk'}
-                  className="bg-white/20 hover:bg-white/30 text-white font-semibold shadow-md hover:shadow-lg transition-all duration-200 backdrop-blur-sm"
+                  className="bg-ubuntu-orange bg-none hover:bg-[#d84615] text-white font-bold shadow-md hover:shadow-lg transition-all duration-200 border border-transparent"
                 >
                   <PlusIcon className="w-4 h-4 mr-2" />
                   {t.add_risk_button}
@@ -536,22 +515,22 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.date}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.unit}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.potential_disruption}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.preventive_action}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.mitigation_plan}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-ubuntu-coolGrey/70 uppercase tracking-wider">
                     {t.status}
                   </th>
                   <th className="relative px-4 py-3">
@@ -579,12 +558,12 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                       <span
-                        className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        className={`px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full border ${
                           risk.status === RiskStatus.RESOLVED
-                            ? 'bg-emerald-100 text-emerald-700'
+                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
                             : risk.status === RiskStatus.IN_PROGRESS
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-amber-100 text-amber-700'
+                              ? 'bg-blue-100 text-blue-700 border-blue-200'
+                              : 'bg-amber-100 text-amber-700 border-amber-200'
                         }`}
                       >
                         {risk.status}
@@ -597,7 +576,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                           size="xs"
                           onClick={() => handleOpenEditRisk(risk)}
                           aria-label={`Edit risk for ${risk.unit}`}
-                          className="hover:bg-slate-100 text-slate-500 hover:text-indigo-600"
+                          className="text-slate-500 hover:text-ubuntu-orange hover:bg-orange-50"
                         >
                           <EditIcon />
                         </EnhancedButton>
@@ -607,7 +586,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                             size="xs"
                             onClick={() => handleOpenDeleteRisk(risk.id)}
                             aria-label={`Delete risk for ${risk.unit}`}
-                            className="hover:bg-red-50 text-slate-500 hover:text-red-600"
+                            className="text-slate-500 hover:text-red-600 hover:bg-red-50"
                           >
                             <TrashIcon />
                           </EnhancedButton>
@@ -618,7 +597,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
                 ))}
                 {filteredRiskRecords.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-slate-400">
+                    <td colSpan={7} className="text-center py-8 text-slate-400 font-medium">
                       {t.no_risks_found}
                     </td>
                   </tr>
@@ -669,7 +648,7 @@ const AutonomousDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t })
               variant="warning"
               size="sm"
               onClick={handleDeleteRiskConfirm}
-              className="sm:ml-3 bg-red-600 hover:bg-red-700"
+              className="sm:ml-3 bg-red-600 hover:bg-red-700 font-bold"
               rounded="lg"
               elevation="sm"
               aria-label={t.confirm_delete_button || 'Confirm delete'}

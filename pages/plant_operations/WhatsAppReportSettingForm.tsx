@@ -284,8 +284,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-slate-50 px-4 py-3 sm:px-6 rounded-t-lg border-b border-slate-200">
-        <h3 className="text-lg font-medium text-slate-900">
+      <div className="bg-[#F9F9F9] px-4 py-3 sm:px-6 rounded-t-lg border-b border-[#AEA79F]/20">
+        <h3 className="text-lg font-medium text-[#333333]">
           {recordToEdit ? t.edit_report_parameter_title : t.add_report_parameter_title}
         </h3>
       </div>
@@ -293,8 +293,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
       <div className="px-4 py-3 sm:px-6 space-y-6">
         {/* Jenis Field */}
         <div>
-          <label htmlFor="jenis" className="block text-sm font-medium text-slate-700">
-            Jenis <span className="text-red-500 ml-1">*</span>
+          <label htmlFor="jenis" className="block text-sm font-medium text-[#333333]">
+            Jenis <span className="text-[#C7162B] ml-1">*</span>
           </label>
           <select
             name="jenis"
@@ -306,8 +306,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             disabled={isSubmitting}
             aria-describedby={errors.jenis ? 'jenis-error' : undefined}
             aria-invalid={!!errors.jenis}
-            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-              errors.jenis ? 'border-red-500' : 'border-slate-300'
+            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+              errors.jenis ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
             }`}
           >
             <option value="text">Text (Custom Text)</option>
@@ -320,7 +320,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             <option value="summary">Summary (Report Summary)</option>
           </select>
           {errors.jenis && touched.jenis && (
-            <p id="jenis-error" className="mt-1 text-sm text-blue-600" role="alert">
+            <p id="jenis-error" className="mt-1 text-sm text-[#C7162B]" role="alert">
               {errors.jenis}
             </p>
           )}
@@ -341,15 +341,15 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             disabled={isSubmitting}
             aria-describedby={errors.report_type ? 'report_type-error' : undefined}
             aria-invalid={!!errors.report_type}
-            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-              errors.report_type ? 'border-red-500' : 'border-slate-300'
+            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+              errors.report_type ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
             }`}
           >
             <option value="daily">Daily Report</option>
             <option value="shift">Shift Report</option>
           </select>
           {errors.report_type && touched.report_type && (
-            <p id="report_type-error" className="mt-1 text-sm text-blue-600" role="alert">
+            <p id="report_type-error" className="mt-1 text-sm text-[#C7162B]" role="alert">
               {errors.report_type}
             </p>
           )}
@@ -372,8 +372,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               disabled={availableParameters.length === 0 || isSubmitting}
               aria-describedby={errors.parameter_id ? 'parameter_id-error' : undefined}
               aria-invalid={!!errors.parameter_id}
-              className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-                errors.parameter_id ? 'border-red-500' : 'border-slate-300'
+              className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+                errors.parameter_id ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             >
               <option value="">
@@ -395,7 +395,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               </p>
             )}
             {errors.parameter_id && touched.parameter_id && (
-              <p id="parameter_id-error" className="mt-1 text-sm text-blue-600" role="alert">
+              <p id="parameter_id-error" className="mt-1 text-sm text-[#C7162B]" role="alert">
                 {errors.parameter_id}
               </p>
             )}
@@ -419,8 +419,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               disabled={isSubmitting}
               aria-describedby={errors.kalkulasi ? 'kalkulasi-error' : undefined}
               aria-invalid={!!errors.kalkulasi}
-              className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-                errors.kalkulasi ? 'border-red-500' : 'border-slate-300'
+              className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+                errors.kalkulasi ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             >
               <option value="selisih">Selisih</option>
@@ -430,7 +430,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               <option value="max">Max</option>
             </select>
             {errors.kalkulasi && touched.kalkulasi && (
-              <p id="kalkulasi-error" className="mt-1 text-sm text-blue-600" role="alert">
+              <p id="kalkulasi-error" className="mt-1 text-sm text-[#C7162B]" role="alert">
                 {errors.kalkulasi}
               </p>
             )}
@@ -455,8 +455,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
               placeholder="Enter manual text data..."
               aria-describedby={errors.data ? 'data-error' : undefined}
               aria-invalid={!!errors.data}
-              className={`mt-1 block w-full px-3 py-2 bg-white border rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-                errors.data ? 'border-red-500' : 'border-slate-300'
+              className={`mt-1 block w-full px-3 py-2 bg-white border rounded-md shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+                errors.data ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
               }`}
             />
           ) : (
@@ -472,17 +472,17 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
                 placeholder="Masukkan label data bebas (opsional)"
                 aria-describedby={errors.data ? 'data-error' : undefined}
                 aria-invalid={!!errors.data}
-                className={`mt-1 block w-full px-3 py-2 bg-white border rounded-md shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-                  errors.data ? 'border-red-500' : 'border-slate-300'
+                className={`mt-1 block w-full px-3 py-2 bg-white border rounded-md shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+                  errors.data ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                 }`}
               />
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-[#555555]">
                 Masukkan label bebas sesuai kebutuhan report Anda.
               </p>
             </div>
           )}
           {errors.data && touched.data && (
-            <p id="data-error" className="mt-1 text-sm text-blue-600" role="alert">
+            <p id="data-error" className="mt-1 text-sm text-[#C7162B]" role="alert">
               {errors.data}
             </p>
           )}
@@ -490,9 +490,9 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
 
         {/* Category Field */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="category" className="block text-sm font-medium text-[#333333]">
             {t.plant_category_label}
-            <span className="text-red-500 ml-1">*</span>
+            <span className="text-[#C7162B] ml-1">*</span>
           </label>
           <select
             name="category"
@@ -504,8 +504,8 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             disabled={isSubmitting}
             aria-describedby={errors.category ? 'category-error' : undefined}
             aria-invalid={!!errors.category}
-            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
-              errors.category ? 'border-red-500' : 'border-slate-300'
+            className={`mt-1 block w-full pl-3 pr-10 py-2 bg-white text-base border text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] sm:text-sm rounded-md transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed ${
+              errors.category ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
             }`}
           >
             <option value="">
@@ -525,7 +525,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
             </p>
           )}
           {errors.category && touched.category && (
-            <p id="category-error" className="mt-1 text-sm text-blue-600" role="alert">
+            <p id="category-error" className="mt-1 text-sm text-[#C7162B]" role="alert">
               {errors.category}
             </p>
           )}
@@ -567,7 +567,7 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
         </div>
       </div>
 
-      <div className="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-slate-200">
+      <div className="bg-[#F9F9F9] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-lg border-t border-[#AEA79F]/20">
         <EnhancedButton
           type="submit"
           variant="primary"
@@ -599,6 +599,3 @@ const WhatsAppReportSettingForm: React.FC<FormProps> = ({
 };
 
 export default WhatsAppReportSettingForm;
-
-
-

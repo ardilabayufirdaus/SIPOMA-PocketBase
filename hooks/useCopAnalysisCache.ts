@@ -197,9 +197,11 @@ export const useCopAnalysisCache = () => {
         filter: `expires_at < "${now}"`,
       });
 
-      for (const record of expiredRecords) {
-        await pb.collection('cop_analysis_cache').delete(record.id);
-      }
+      // Optimize deletion with parallel execution
+      const deletePromises = expiredRecords.map((record) =>
+        pb.collection('cop_analysis_cache').delete(record.id)
+      );
+      await Promise.all(deletePromises);
 
       if (expiredRecords.length > 0) {
         console.log(`Cleaned up ${expiredRecords.length} expired COP Analysis cache entries`);

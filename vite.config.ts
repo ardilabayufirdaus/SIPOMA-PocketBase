@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
@@ -105,10 +105,11 @@ export default defineConfig(async (_env) => {
     ],
     build: {
       // Enable build cache for faster rebuilds
-      watch: null,
+      // Enable build cache for faster rebuilds
       // Enable minification for production
-      minify: 'esbuild',
-      cssMinify: 'esbuild',
+      minify: 'esbuild' as const,
+      cssMinify: 'esbuild' as const,
+
       // Enable compressed size reporting
       reportCompressedSize: true,
       rollupOptions: {
@@ -270,5 +271,5 @@ export default defineConfig(async (_env) => {
         },
       },
     },
-  };
+  } as UserConfig;
 });

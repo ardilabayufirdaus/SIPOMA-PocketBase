@@ -112,11 +112,11 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
           className="min-h-[600px]"
         >
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden h-full">
-            <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-blue-50 to-purple-50">
-              <h3 className="text-xl font-bold text-slate-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-midAubergine">
+              <h3 className="text-xl font-bold text-white font-display">
                 % Moisture Content - {plantUnit}
               </h3>
-              <p className="text-sm text-slate-600 mt-2">Real-time data for {filters.date}</p>
+              <p className="text-sm text-ubuntu-warmGrey mt-2">Real-time data for {filters.date}</p>
             </div>
 
             <div className="overflow-x-auto overflow-y-auto max-h-[480px]">
@@ -147,8 +147,8 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
-                      whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
-                      className="hover:bg-blue-50/50 transition-colors"
+                      whileHover={{ backgroundColor: 'rgba(233, 84, 32, 0.05)' }} // ubuntu orange hover
+                      className="hover:bg-orange-50/50 transition-colors"
                     >
                       <td className="px-6 py-4 text-sm font-semibold text-slate-900">{row.hour}</td>
                       <td className="px-6 py-4 text-sm text-slate-700 font-medium">
@@ -160,13 +160,13 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
                       <td className="px-6 py-4 text-sm text-slate-700 font-medium">
                         {formatValue(row.limestone)}
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-blue-600 bg-blue-50/50 rounded-lg mx-2">
+                      <td className="px-6 py-4 text-sm font-bold text-ubuntu-orange bg-orange-50 ring-1 ring-orange-100 rounded-lg mx-2">
                         {formatValue(row.total)}
                       </td>
                     </motion.tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-gradient-to-r from-blue-100 to-purple-100 border-t-2 border-slate-300">
+                <tfoot className="bg-slate-50 border-t-2 border-slate-300">
                   <tr>
                     <td className="px-6 py-4 text-sm font-bold text-slate-900">Average</td>
                     <td className="px-6 py-4 text-sm font-bold text-slate-900">
@@ -178,7 +178,7 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
                     <td className="px-6 py-4 text-sm font-bold text-slate-900">
                       {formatValue(averages.limestone)}
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-blue-600 bg-blue-200/50 rounded-lg mx-2">
+                    <td className="px-6 py-4 text-sm font-bold text-ubuntu-orange bg-orange-100 rounded-lg mx-2">
                       {formatValue(averages.total)}
                     </td>
                   </tr>
@@ -214,5 +214,3 @@ const MoistureContentTable: React.FC<MoistureContentTableProps> = ({ filters, pl
 };
 
 export default MoistureContentTable;
-
-

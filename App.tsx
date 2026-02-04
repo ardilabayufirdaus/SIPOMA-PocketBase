@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 // ...existing code...
 
 // Import ThemeProvider
@@ -18,6 +19,7 @@ const Toast = React.lazy(() => import('./components/Toast'));
 const LogoutProgress = React.lazy(() => import('./components/LogoutProgress'));
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 const Header = React.lazy(() => import('./components/Header'));
+const SignOutConfirmModal = React.lazy(() => import('./components/SignOutConfirmModal'));
 
 import { useUserStore } from './stores/userStore';
 import { useCurrentUser } from './hooks/useCurrentUser';
@@ -224,54 +226,65 @@ const App: React.FC = () => {
   ) {
     return (
       <div
-        className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 dark:from-slate-900 dark:via-indigo-950/30 dark:to-slate-800"
+        className="h-screen w-screen flex items-center justify-center bg-ubuntu-aubergine"
         data-testid="loading-indicator"
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-400/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-ubuntu-orange/10 rounded-full blur-[120px] animate-pulse" />
           <div
-            className="absolute -bottom-40 -left-40 w-80 h-80 bg-slate-500/10 dark:bg-slate-400/5 rounded-full blur-3xl animate-pulse"
+            className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-ubuntu-darkAubergine/20 rounded-full blur-[120px] animate-pulse"
             style={{ animationDelay: '1s' }}
           />
         </div>
 
-        <div className="relative z-10 text-center">
-          <div className="relative mb-8">
-            <div className="w-20 h-20 mx-auto rounded-2xl bg-white shadow-xl shadow-slate-200 dark:shadow-slate-900/20 flex items-center justify-center animate-pulse overflow-hidden">
+        <div className="relative z-10 text-center font-ubuntu">
+          <div className="relative mb-10">
+            <motion.div
+              className="w-24 h-24 mx-auto rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-2xl"
+              animate={{
+                scale: [1, 1.05, 1],
+                rotate: [0, 5, -5, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            >
               <img
                 src="/sipoma-logo.png"
                 alt="SIPOMA Logo"
-                className="w-14 h-14 object-contain drop-shadow-md"
+                className="w-16 h-16 object-contain brightness-0 invert opacity-90"
               />
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
+            </motion.div>
+            <div className="absolute inset-[-20px] flex items-center justify-center pointer-events-none">
               <div
-                className="w-28 h-28 rounded-full border-2 border-transparent border-t-indigo-500 border-r-indigo-300 dark:border-t-indigo-400 dark:border-r-indigo-600 animate-spin"
-                style={{ animationDuration: '1.5s' }}
+                className="w-32 h-32 rounded-full border-2 border-transparent border-t-ubuntu-orange border-r-ubuntu-orange/30 animate-spin"
+                style={{ animationDuration: '1s' }}
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-slate-700 to-indigo-600 dark:from-indigo-400 dark:via-slate-200 dark:to-indigo-400 bg-clip-text text-transparent">
-              SIPOMA
-            </h2>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Memuat sistem...
-            </p>
-            <div className="flex justify-center gap-1.5 pt-2">
-              <span
-                className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce"
-                style={{ animationDelay: '0ms' }}
-              />
-              <span
-                className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce"
-                style={{ animationDelay: '150ms' }}
-              />
-              <span
-                className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-bounce"
-                style={{ animationDelay: '300ms' }}
-              />
+          <div className="space-y-4">
+            <h2 className="text-3xl font-bold text-white tracking-widest uppercase">SIPOMA</h2>
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">
+                SISTEM INFORMASI PRODUKSI & MONITORING
+              </p>
+              <div className="flex justify-center gap-2 mt-4">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-ubuntu-orange animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -308,7 +321,7 @@ const App: React.FC = () => {
           <div
             className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300"
             style={{
-              marginLeft: isMobile ? '0' : isSidebarExpanded ? '16rem' : '6rem',
+              marginLeft: isMobile ? '0' : isSidebarExpanded ? '280px' : '70px',
             }}
           >
             <Header
@@ -454,41 +467,58 @@ const App: React.FC = () => {
             </main>
           </div>
         </div>
-        <UserForm
-          isOpen={isUserModalOpen}
-          user={editingUser as any}
-          onClose={handleCloseUserModal}
-        />
-        <ProfileEditModal
-          isOpen={isProfileModalOpen}
-          onClose={handleCloseProfileModal}
-          user={currentUser}
-          onSave={(updatedUser) => {
-            if (currentUser) {
-              import('./utils/pocketbase-simple')
-                .then(({ pb }) => {
-                  pb.collection('users').authRefresh();
-                })
-                .then(() => {
-                  updateUser(currentUser.id, updatedUser);
-                  window.dispatchEvent(new CustomEvent('user-profile-updated'));
-                  setToastMessage(t.avatar_updated || 'Profile updated successfully!');
-                  setToastType('success');
-                  setShowToast(true);
-                  handleCloseProfileModal();
-                })
-                .catch((err) => {
-                  import('./utils/logger').then(({ logger }) => {
-                    logger.error('Failed to refresh auth:', err);
-                  });
-                  setToastMessage('Profile updated but display may not refresh automatically');
-                  setToastType('warning');
-                  setShowToast(true);
-                });
-            }
-          }}
-          t={t}
-        />
+        {/* Optimized Modals Loading */}
+        <Suspense fallback={null}>
+          {isUserModalOpen && (
+            <UserForm
+              isOpen={isUserModalOpen}
+              user={editingUser as any}
+              onClose={handleCloseUserModal}
+            />
+          )}
+
+          {isProfileModalOpen && (
+            <ProfileEditModal
+              isOpen={isProfileModalOpen}
+              onClose={handleCloseProfileModal}
+              user={currentUser}
+              onSave={(updatedUser) => {
+                if (currentUser) {
+                  import('./utils/pocketbase-simple')
+                    .then(({ pb }) => {
+                      pb.collection('users').authRefresh();
+                    })
+                    .then(() => {
+                      updateUser(currentUser.id, updatedUser);
+                      window.dispatchEvent(new CustomEvent('user-profile-updated'));
+                      setToastMessage(t.avatar_updated || 'Profile updated successfully!');
+                      setToastType('success');
+                      setShowToast(true);
+                      handleCloseProfileModal();
+                    })
+                    .catch((err) => {
+                      import('./utils/logger').then(({ logger }) => {
+                        logger.error('Failed to refresh auth:', err);
+                      });
+                      setToastMessage('Profile updated but display may not refresh automatically');
+                      setToastType('warning');
+                      setShowToast(true);
+                    });
+                }
+              }}
+              t={t}
+            />
+          )}
+
+          {isSignOutModalOpen && (
+            <SignOutConfirmModal
+              isOpen={isSignOutModalOpen}
+              onClose={handleSignOutCancel}
+              onConfirm={handleSignOutConfirm}
+            />
+          )}
+        </Suspense>
+
         {showPasswordDisplay && (
           <PasswordDisplay
             password={generatedPassword}
@@ -505,77 +535,6 @@ const App: React.FC = () => {
           onClose={() => setShowToast(false)}
           duration={4000}
         />
-        <Modal
-          isOpen={isSignOutModalOpen}
-          onClose={handleSignOutCancel}
-          title={t.confirm_sign_out_title}
-        >
-          <div className="p-6">
-            <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-slate-100 dark:from-indigo-900/50 dark:to-slate-800 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/10">
-                <svg
-                  className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </div>
-
-              <h4 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                {t.confirm_sign_out_title || 'Konfirmasi Keluar'}
-              </h4>
-              <p className="text-slate-500 dark:text-slate-400">{t.confirm_sign_out_message}</p>
-            </div>
-
-            <div className="p-4 bg-gradient-to-r from-indigo-50 to-slate-50 dark:from-indigo-950/30 dark:to-slate-900/50 border border-indigo-200/50 dark:border-indigo-800/50 rounded-xl">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-indigo-600 dark:text-indigo-400"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-indigo-900 dark:text-indigo-200">
-                    Data yang akan dihapus
-                  </p>
-                  <p className="text-xs text-indigo-700/70 dark:text-indigo-300/70 mt-1">
-                    Cookies & site data untuk localhost dan sipoma.site
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-slate-50 to-indigo-50/30 dark:from-slate-800/50 dark:to-indigo-950/30 px-6 py-4 flex justify-end gap-3 border-t border-slate-200/50 dark:border-slate-700/50">
-            <button
-              onClick={handleSignOutCancel}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
-            >
-              {t.cancel_button}
-            </button>
-            <button
-              onClick={handleSignOutConfirm}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition-all duration-200"
-            >
-              {t.header_sign_out}
-            </button>
-          </div>
-        </Modal>
 
         <LogoutProgress isVisible={isLogoutInProgress} stage={logoutStage} />
       </Suspense>

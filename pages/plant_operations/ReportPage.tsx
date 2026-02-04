@@ -12,6 +12,7 @@ import { useCcrSiloData } from '../../hooks/useCcrSiloData';
 import { useSiloCapacities } from '../../hooks/useSiloCapacities';
 import { useCcrInformationData } from '../../hooks/useCcrInformationData';
 import { useCcrMaterialUsage } from '../../hooks/useCcrMaterialUsage';
+import { syncOperationalDataForDate } from '../../utils/operationalSyncUtils';
 import {
   ParameterSetting,
   CcrParameterData,
@@ -131,7 +132,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     if (plantCategories.length > 0 && !selectedCategory) {
       setSelectedCategory(plantCategories[0]);
     }
-  }, [plantCategories]); // Removed selectedCategory to prevent loop
+  }, [plantCategories]);
 
   useEffect(() => {
     if (unitsForCategory.length > 0) {
@@ -143,7 +144,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         setSelectedUnit('');
       }
     }
-  }, [unitsForCategory]); // Simplified dependency
+  }, [unitsForCategory]);
 
   useEffect(() => {
     setReportData(null);
@@ -162,7 +163,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     const paramMap = new Map(parameterSettings.map((p) => [p.id, p]));
 
     const filteredSettings = reportSettings.filter((rs) => {
-      // FIX: Use snake_case property `parameter_id`
       const param = paramMap.get(rs.parameter_id) as ParameterSetting | undefined;
       return param && param.unit === selectedUnit && param.category === selectedCategory;
     });
@@ -170,7 +170,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     const settingsWithDetails = filteredSettings
       .map((rs) => ({
         ...rs,
-        // FIX: Use snake_case property `parameter_id`
         parameter: paramMap.get(rs.parameter_id) as ParameterSetting | undefined,
       }))
       .filter((rs): rs is typeof rs & { parameter: ParameterSetting } => !!rs.parameter);
@@ -274,9 +273,10 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // FIX: await async data fetching functions
+      // Sync data before generating report
+      await syncOperationalDataForDate(selectedDate);
+
       const ccrDataForDate = await getDataForDate(selectedDate);
-      // FIX: Use snake_case property `parameter_id`
       const ccrDataMap = new Map(ccrDataForDate.map((d) => [d.parameter_id, d]));
 
       const downtimeDataForDate = getDowntimeForDate(selectedDate);
@@ -289,22 +289,19 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         .filter((d) => d.unit === selectedUnit)
         .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
 
-      // FIX: await async data fetching functions
       const allSiloDataForDate = await getSiloDataForDate(selectedDate);
       const siloMasterMap = new Map(siloMasterData.map((s) => [s.id, s]));
       const filteredSiloData = allSiloDataForDate
         .filter((data) => {
-          // FIX: Use snake_case property `silo_id`
           const master = siloMasterMap.get(data.silo_id) as SiloCapacity | undefined;
           return master && master.unit === selectedUnit;
         })
         .map((data) => ({
           ...data,
           master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
-        })) // FIX: Use snake_case property `silo_id`
+        }))
         .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
 
-      // Get material usage data for the selected date, category, and unit
       const materialUsageDataForDate = await getMaterialUsageForDate(
         selectedDate,
         selectedUnit,
@@ -326,10 +323,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       let operatorData: { shift: string; name: string }[] = [];
 
-      // Helper function to get operator name for a shift from user_name in hourly_values
       const getOperatorForShift = (hours: number[]): string => {
         for (const hour of hours) {
-          // Get operator name for this hour from user_name in any parameter data
           for (const param of allParams) {
             const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
             const hourData = paramData?.hourly_values[hour];
@@ -363,11 +358,9 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         const hour = i + 1;
         const values: Record<string, string | number> = {};
         allParams.forEach((param) => {
-          // FIX: Use snake_case property `hourly_values`
           const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
           const hourData = paramData?.hourly_values[hour];
 
-          // Handle new structure: {value, user_name, timestamp} or legacy direct value
           if (hourData && typeof hourData === 'object' && 'value' in (hourData as object)) {
             values[param.id] = (hourData as { value: string | number }).value;
           } else if (typeof hourData === 'string' || typeof hourData === 'number') {
@@ -392,15 +385,13 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       };
 
       allParams.forEach((param) => {
-        // FIX: Use snake_case property `data_type`
         if (param.data_type === ParameterDataType.NUMBER) {
           const values = rows
             .map((r) => {
               const val = r.values[param.id];
-              // Exclude empty strings, null, undefined, and convert to number
               return val !== '' && val != null && val != undefined ? Number(val) : NaN;
             })
-            .filter((v) => !isNaN(v) && v !== 0); // Exclude NaN and 0 values
+            .filter((v) => !isNaN(v) && v !== 0);
           if (values.length > 0) {
             footerStats[t.average][param.id] = formatNumberIndonesian(
               values.reduce((a, b) => a + b, 0) / values.length
@@ -409,7 +400,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             footerStats[t.max][param.id] = formatNumberIndonesian(Math.max(...values));
           }
 
-          // Calculate Counter Total (difference between hour 24 and hour 1)
           const hour1Value = rows.find((r) => r.hour === 1)?.values[param.id];
           const hour24Value = rows.find((r) => r.hour === 24)?.values[param.id];
 
@@ -445,7 +435,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       setReportData(dataForReport);
     } catch {
-      // Could add toast notification here for user feedback
+      // Error handling
     } finally {
       setIsLoading(false);
     }
@@ -465,7 +455,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const handleGenerateSimpleData = useCallback(async () => {
     if (simpleReportConfig.length === 0) return;
 
-    // Validasi filter sebelum generate
     if (!selectedCategory || !selectedUnit) {
       return;
     }
@@ -476,13 +465,12 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // FIX: await async data fetching functions
+      await syncOperationalDataForDate(selectedDate);
+
       const ccrDataForDate = await getDataForDate(selectedDate);
-      // FIX: Use snake_case property `parameter_id`
       const ccrDataMap = new Map(ccrDataForDate.map((d) => [d.parameter_id, d]));
 
       const downtimeDataForDate = getDowntimeForDate(selectedDate);
-      // Helper function to convert HH:MM to total minutes for proper sorting
       const timeToMinutes = (timeStr: string): number => {
         const [hours, minutes] = timeStr.split(':').map(Number);
         return hours * 60 + minutes;
@@ -491,22 +479,19 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         .filter((d) => d.unit === selectedUnit)
         .sort((a, b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
 
-      // FIX: await async data fetching functions
       const allSiloDataForDate = await getSiloDataForDate(selectedDate);
       const siloMasterMap = new Map(siloMasterData.map((s) => [s.id, s]));
       const filteredSiloData = allSiloDataForDate
         .filter((data) => {
-          // FIX: Use snake_case property `silo_id`
           const master = siloMasterMap.get(data.silo_id) as SiloCapacity | undefined;
           return master && master.unit === selectedUnit;
         })
         .map((data) => ({
           ...data,
           master: siloMasterMap.get(data.silo_id) as SiloCapacity | undefined,
-        })) // FIX: Use snake_case property `silo_id`
+        }))
         .filter((data): data is typeof data & { master: SiloCapacity } => !!data.master);
 
-      // Get material usage data for the selected date, category, and unit
       const materialUsageDataForDate = await getMaterialUsageForDate(
         selectedDate,
         selectedUnit,
@@ -528,10 +513,8 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       let operatorData: { shift: string; name: string }[] = [];
 
-      // Helper function to get operator name for a shift from user_name in hourly_values
       const getOperatorForShift = (hours: number[]): string => {
         for (const hour of hours) {
-          // Get operator name for this hour from user_name in any parameter data
           for (const param of allParams) {
             const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
             const hourData = paramData?.hourly_values[hour];
@@ -565,11 +548,9 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         const hour = i + 1;
         const values: Record<string, string | number> = {};
         allParams.forEach((param) => {
-          // FIX: Use snake_case property `hourly_values`
           const paramData = ccrDataMap.get(param.id) as CcrParameterData | undefined;
           const hourData = paramData?.hourly_values[hour];
 
-          // Handle new structure: {value, user_name, timestamp} or legacy direct value
           if (hourData && typeof hourData === 'object' && 'value' in (hourData as object)) {
             values[param.id] = (hourData as { value: string | number }).value;
           } else if (typeof hourData === 'string' || typeof hourData === 'number') {
@@ -594,15 +575,13 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       };
 
       allParams.forEach((param) => {
-        // FIX: Use snake_case property `data_type`
         if (param.data_type === ParameterDataType.NUMBER) {
           const values = rows
             .map((r) => {
               const val = r.values[param.id];
-              // Exclude empty strings, null, undefined, and convert to number
               return val !== '' && val != null && val != undefined ? Number(val) : NaN;
             })
-            .filter((v) => !isNaN(v) && v !== 0); // Exclude NaN and 0 values
+            .filter((v) => !isNaN(v) && v !== 0);
           if (values.length > 0) {
             footerStats[t.average][param.id] = formatNumberIndonesian(
               values.reduce((a, b) => a + b, 0) / values.length
@@ -611,7 +590,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             footerStats[t.max][param.id] = formatNumberIndonesian(Math.max(...values));
           }
 
-          // Calculate Counter Total (difference between hour 24 and hour 1)
           const hour1Value = rows.find((r) => r.hour === 1)?.values[param.id];
           const hour24Value = rows.find((r) => r.hour === 24)?.values[param.id];
 
@@ -647,7 +625,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       setReportData(dataForReport);
     } catch {
-      // Could add toast notification here for user feedback
+      // Error handling
     } finally {
       setIsLoading(false);
     }
@@ -667,7 +645,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const handleCopyImage = async () => {
     if (!reportRef.current) return;
 
-    // Check if clipboard API is supported
     if (!navigator.clipboard || !navigator.clipboard.write) {
       alert(
         'Clipboard API not supported in this browser. Please use a modern browser like Chrome, Firefox, or Edge.'
@@ -678,28 +655,24 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     setIsCopying(true);
     setCopySuccess(false);
 
-    // Initialize originalStyles outside try block so it's accessible in catch
     const originalStyles: Array<{ element: Element; originalClass: string }> = [];
 
     try {
       const element = reportRef.current;
 
-      // Temporarily adjust styling for better image capture
       const problemCells = element.querySelectorAll('.truncate');
 
       problemCells.forEach((cell) => {
         const originalClass = cell.className;
         originalStyles.push({ element: cell, originalClass });
-        // Remove truncate class and add word-wrap for better text rendering
         cell.className = cell.className.replace('truncate', 'break-words whitespace-normal');
       });
 
-      // Wait a bit for DOM to update (reduced from 100ms to 50ms)
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const rect = element.getBoundingClientRect();
       const canvas = await html2canvas(element, {
-        scale: 1.5, // Further reduced from 2 to 1.5 for better performance while maintaining quality
+        scale: 1.5,
         width: rect.width,
         height: rect.height,
         useCORS: true,
@@ -707,10 +680,9 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 0,
-        foreignObjectRendering: false, // Disable for better performance
+        foreignObjectRendering: false,
       });
 
-      // Disable image smoothing for sharper image
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.imageSmoothingEnabled = false;
@@ -718,21 +690,17 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       canvas.toBlob(async (blob) => {
         if (blob) {
-          // Restore original styling after canvas creation to avoid forced reflow
           originalStyles.forEach(({ element, originalClass }) => {
             element.className = originalClass;
           });
 
-          // Use PNG format as JPEG is not supported by Clipboard API
           await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
           setCopySuccess(true);
-          // Clear any existing timeout before setting new one
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
           }
           timeoutRef.current = setTimeout(() => setCopySuccess(false), 2000);
         } else {
-          // Restore styling even if blob creation failed
           originalStyles.forEach(({ element, originalClass }) => {
             element.className = originalClass;
           });
@@ -740,7 +708,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       });
     } catch (error) {
       console.error('Failed to copy report as image:', error);
-      // Restore original styling in case of error
       originalStyles.forEach(({ element, originalClass }) => {
         element.className = originalClass;
       });
@@ -755,28 +722,24 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
     setIsExportingPDF(true);
 
-    // Initialize originalStyles outside try block so it's accessible in catch
     const originalStyles: Array<{ element: Element; originalClass: string }> = [];
 
     try {
       const element = reportRef.current;
 
-      // Temporarily adjust styling for better PDF capture
       const problemCells = element.querySelectorAll('.truncate');
 
       problemCells.forEach((cell) => {
         const originalClass = cell.className;
         originalStyles.push({ element: cell, originalClass });
-        // Remove truncate class and add word-wrap for better text rendering
         cell.className = cell.className.replace('truncate', 'break-words whitespace-normal');
       });
 
-      // Wait a bit for DOM to update
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const rect = element.getBoundingClientRect();
       const canvas = await html2canvas(element, {
-        scale: 1.5, // Lower scale for PDF to keep file size reasonable
+        scale: 1.5,
         width: rect.width,
         height: rect.height,
         useCORS: true,
@@ -787,12 +750,10 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         foreignObjectRendering: false,
       });
 
-      // Restore original styling
       originalStyles.forEach(({ element, originalClass }) => {
         element.className = originalClass;
       });
 
-      // Create PDF
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -800,26 +761,22 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         format: 'a4',
       });
 
-      // Calculate dimensions to fit A4 page
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
       const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10; // Small top margin
+      const imgY = 10;
 
       pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
 
-      // Generate filename with current date
       const currentDate = new Date().toISOString().split('T')[0];
       const filename = `DAILY_OPERATIONAL_REPORT_${currentDate}.pdf`;
 
-      // Download PDF
       pdf.save(filename);
     } catch (error) {
       console.error('Failed to export PDF:', error);
-      // Restore original styling in case of error
       originalStyles.forEach(({ element, originalClass }) => {
         element.className = originalClass;
       });
@@ -829,7 +786,6 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     }
   };
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -839,18 +795,15 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Header Title Section - Indigo/Slate Theme */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+    <div className="space-y-6 font-sans">
+      {/* Header Title Section - Ubuntu Theme */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#E95420] rounded-xl shadow-lg border-b-4 border-[#E95420] p-6">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.05)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.05)_50%,rgba(255,255,255,0.05)_75%,transparent_75%,transparent)] bg-[length:24px_24px] opacity-20"></div>
 
         <div className="relative flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
+          <div className="w-14 h-14 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20 shadow-inner">
             <svg
-              className="w-7 h-7 text-indigo-200"
+              className="w-7 h-7 text-white"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -865,38 +818,30 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_report}</h2>
-            <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
+            <p className="text-sm text-white/90 font-medium mt-0.5">
               {t.op_report_description || 'Generate daily operational log sheets and reports'}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Filter Section - Separate Card */}
-      <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
-        <div className="flex flex-wrap items-end gap-4">
+      {/* Filter Section - Ubuntu Theme Card */}
+      <div className="bg-white rounded-xl shadow-md border-t-4 border-[#E95420] p-6">
+        <div className="flex flex-wrap items-end gap-6">
           {/* Plant Category */}
-          <div className="flex-1 min-w-[180px]">
+          <div className="flex-1 min-w-[200px]">
             <label
               htmlFor="report-category"
-              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#772953] uppercase tracking-wider mb-2"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-              {t.plant_category_label}
+              {t.plant_category_label || 'PLANT CATEGORY'}
             </label>
             <div className="relative">
               <select
                 id="report-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                className="w-full appearance-none px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
               >
                 {plantCategories.map((cat) => (
                   <option key={cat} value={cat}>
@@ -904,25 +849,17 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
           </div>
 
           {/* Unit Name */}
-          <div className="flex-1 min-w-[150px]">
+          <div className="flex-1 min-w-[200px]">
             <label
               htmlFor="report-unit"
-              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#772953] uppercase tracking-wider mb-2"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-              {t.unit_label}
+              {t.unit_label || 'UNIT NAME'}
             </label>
             <div className="relative">
               <select
@@ -930,7 +867,7 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
                 disabled={unitsForCategory.length === 0}
-                className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                className="w-full appearance-none px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-transparent disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
               >
                 {unitsForCategory.map((unit) => (
                   <option key={unit} value={unit}>
@@ -938,82 +875,82 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
           </div>
 
           {/* Select Date */}
-          <div className="flex-1 min-w-[160px]">
+          <div className="w-[200px]">
             <label
               htmlFor="report-date"
-              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#772953] uppercase tracking-wider mb-2"
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              {t.select_date}
+              {t.select_date || 'REPORT DATE'}
             </label>
             <input
               type="date"
               id="report-date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+              className="w-full px-4 py-2.5 bg-[#F7F7F7] border border-slate-300 rounded-lg text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-transparent text-sm font-medium transition-all duration-200 hover:bg-slate-50 cursor-pointer"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-end gap-2 flex-shrink-0">
+          <div className="flex items-end gap-3 flex-shrink-0 ml-auto">
             <EnhancedButton
               onClick={handleGenerateReport}
               disabled={isLoading || reportConfig.length === 0}
-              variant="primary"
+              variant="ghost"
               size="sm"
-              className="px-4 py-2.5 h-auto text-sm font-medium bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 shadow-md hover:shadow-lg transition-all duration-200"
+              className="px-6 py-2.5 h-[42px] text-sm font-bold !bg-[#E95420] hover:!bg-[#D74515] !text-white shadow-md hover:shadow-lg transition-all !border-0 rounded-lg tracking-wide"
               ariaLabel={t.generate_report_button}
               loading={isLoading}
             >
-              {isLoading ? t.generating_report_message : t.generate_report_button}
+              {isLoading
+                ? 'PROCESSING...'
+                : (t.generate_report_button || 'GENERATE LOG SHEET').toUpperCase()}
             </EnhancedButton>
 
             <EnhancedButton
               onClick={handleGenerateSimpleData}
               disabled={isLoading || simpleReportConfig.length === 0}
-              variant="success"
+              variant="ghost"
               size="sm"
-              className="px-4 py-2.5 h-auto text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200"
+              className="px-6 py-2.5 h-[42px] text-sm font-bold !border-2 !border-[#E95420] !text-[#E95420] hover:!bg-[#E95420]/10 rounded-lg tracking-wide"
               ariaLabel={t.generate_simple_data_button}
             >
-              {t.generate_simple_data_button}
+              SIMPLE
             </EnhancedButton>
 
             {reportData && (
               <>
+                <div className="w-px h-8 bg-slate-300 mx-2 hidden xl:block"></div>
+
                 <EnhancedButton
                   onClick={handleCopyImage}
-                  variant="warning"
+                  variant="secondary"
                   size="sm"
-                  className="px-4 py-2.5 h-auto text-sm whitespace-nowrap shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold"
+                  className={`px-4 py-2.5 h-[42px] text-sm font-bold shadow-md hover:shadow-lg transition-all rounded-lg border-0 ${
+                    copySuccess
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-[#772953] hover:bg-[#5E2142] text-white'
+                  }`}
                   ariaLabel="Copy report as image"
                   disabled={isCopying}
                 >
-                  {isCopying ? 'Copying...' : copySuccess ? 'Copied!' : 'Copy Image'}
+                  {isCopying ? 'COPYING...' : copySuccess ? 'COPIED!' : 'COPY IMAGE'}
                 </EnhancedButton>
 
                 <EnhancedButton
                   onClick={handleExportPDF}
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
-                  className="px-4 py-2.5 h-auto text-sm whitespace-nowrap border-2 border-indigo-500 text-indigo-600 font-semibold hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all duration-200"
+                  className="px-4 py-2.5 h-[42px] text-sm font-bold bg-[#333333] hover:bg-black text-white shadow-md hover:shadow-lg transition-all rounded-lg border-0"
                   ariaLabel="Export report as PDF"
                   disabled={isExportingPDF}
                 >
-                  {isExportingPDF ? 'Exporting...' : 'Export PDF'}
+                  {isExportingPDF ? 'EXPORTING...' : 'EXPORT PDF'}
                 </EnhancedButton>
               </>
             )}
@@ -1021,26 +958,25 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-slate-50 via-white to-gray-50 p-8 rounded-3xl shadow-2xl min-h-[80vh] flex items-center justify-center border-2 border-slate-200/50 backdrop-blur-sm">
+      <div className="bg-[#F7F7F7] p-8 rounded-xl min-h-[60vh] flex items-center justify-center border border-slate-200">
         {reportConfig.length === 0 && (
           <div className="text-center text-slate-500">
-            <h3 className="text-2xl font-semibold mb-4">{t.no_report_parameters}</h3>
+            <h3 className="text-2xl font-bold text-[#772953] mb-4">{t.no_report_parameters}</h3>
             <p className="text-lg">
               Please configure parameters in Plant Operations - Master Data.
             </p>
           </div>
         )}
         {isLoading && (
-          <div className="text-center text-slate-500">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-xl">{t.generating_report_message}</p>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#E95420] mx-auto mb-6"></div>
+            <p className="text-xl font-bold text-[#E95420] animate-pulse uppercase tracking-widest">
+              {t.generating_report_message || 'GENERATING REPORT...'}
+            </p>
           </div>
         )}
         {reportData && !isLoading && (
-          <div
-            ref={reportRef}
-            className="w-full max-w-full p-8 bg-white rounded-2xl shadow-xl border border-slate-200/30"
-          >
+          <div ref={reportRef} className="w-full max-w-full bg-white shadow-xl">
             <InteractiveReport
               groupedHeaders={reportData.groupedHeaders}
               rows={reportData.rows}
@@ -1057,10 +993,28 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
         {!isLoading && !reportData && reportConfig.length > 0 && (
-          <div className="text-center text-slate-400">
-            <p className="text-xl">
-              Select filters and click &quot;Generate Report&quot; to view the daily operational
-              report.
+          <div className="text-center max-w-lg">
+            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 mx-auto shadow-sm border border-slate-200">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-12 w-12 text-slate-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-[#333333] mb-2">No Report Generated</h3>
+            <p className="text-slate-500">
+              Select your filters above and click{' '}
+              <span className="font-bold text-[#E95420]">GENERATE REPORT</span> to view operational
+              data.
             </p>
           </div>
         )}
@@ -1068,12 +1022,12 @@ const ReportPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
       {/* Floating Loading Overlay for Copy Image */}
       {isCopying && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 min-w-[300px]">
-            <LoadingSpinner size="lg" color="blue" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4 min-w-[300px] border-t-4 border-[#E95420]">
+            <LoadingSpinner size="lg" className="border-[#E95420]" />
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-slate-800 mb-2">Copying Report Image</h3>
-              <p className="text-slate-600">Please wait while we prepare your image...</p>
+              <h3 className="text-lg font-bold text-[#333333] mb-1">Copying Report Image</h3>
+              <p className="text-slate-500 text-sm">Please wait while we prepare your image...</p>
             </div>
           </div>
         </div>

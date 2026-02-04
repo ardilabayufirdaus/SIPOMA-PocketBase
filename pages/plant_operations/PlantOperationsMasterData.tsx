@@ -1042,31 +1042,30 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-[#F0F0F0]">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-8 mb-8"
+          className="relative overflow-hidden bg-gradient-to-r from-[#772953] to-[#2C001E] rounded-xl shadow-lg border border-[#AEA79F]/20 p-6 mb-8"
         >
           {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-[#E95420]/10 rounded-full -translate-y-20 translate-x-20"></div>
 
           <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-                <Database className="w-7 h-7 text-indigo-200" />
+                <Database className="w-7 h-7 text-[#E95420]" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white tracking-tight">
-                  {t['op_master_data']}
+                  {t['plant_ops_master_data'] || 'Plant Operations Master Data'}
                 </h1>
-                <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
-                  Manage plant operations master data and configurations
+                <p className="text-sm text-white/80 font-medium mt-0.5">
+                  Manage master data and configurations for Plant Operations
                 </p>
               </div>
             </div>
@@ -1074,7 +1073,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               <RealtimeIndicator
                 isConnected={true}
                 lastUpdate={new Date()}
-                className="text-sm text-indigo-200"
+                className="text-sm text-white/80"
               />
               <div className="flex gap-2">
                 <input
@@ -1084,24 +1083,22 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   accept=".xlsx, .xls"
                   className="hidden"
                 />
-                {canWrite && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isImporting}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                  >
-                    <DocumentArrowUpIcon className="w-5 h-5" />
-                    {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
-                  </motion.button>
-                )}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting || !canWrite}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#333333] bg-white/90 backdrop-blur-sm border border-white/20 rounded-lg shadow-sm hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <DocumentArrowUpIcon className="w-5 h-5 text-[#772953]" />
+                  {isImporting ? t['importing'] || 'Importing...' : t['import_all']}
+                </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleExportAll}
                   disabled={isExporting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-500 rounded-xl shadow-sm hover:bg-indigo-400 ring-1 ring-indigo-400/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-[#E95420] rounded-lg shadow-sm hover:bg-[#d94612] ring-1 ring-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <DocumentArrowDownIcon className="w-5 h-5" />
                   {isExporting ? t['exporting'] || 'Exporting...' : t['export_all']}
@@ -1118,19 +1115,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-xl shadow-lg border border-[#AEA79F]/30 overflow-hidden"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <Settings className="w-5 h-5 text-indigo-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <Database className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['plant_unit_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['plant_unit_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['plant_unit_subtitle']}</p>
                   </div>
                 </div>
                 {canWrite && (
@@ -1138,7 +1135,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('plantUnit')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-lg shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -1148,13 +1145,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                  <thead className="bg-[#F7F7F7]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                        {t['unit']}
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
+                        {t['measurement_unit']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['plant_category']}
                       </th>
                       {canWrite && (
@@ -1164,19 +1161,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       )}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
+                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
                     {plantUnitsLoading ? (
                       <tr>
                         <td colSpan={3} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading plant units...</span>
+                            <span className="text-[#AEA79F]">Loading plant units...</span>
                           </div>
                         </td>
                       </tr>
                     ) : paginatedPlantUnits.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                        <td colSpan={3} className="px-4 py-8 text-center text-[#AEA79F]">
                           No plant units found
                         </td>
                       </tr>
@@ -1184,15 +1181,12 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       paginatedPlantUnits.map((unit, _index) => (
                         <tr
                           key={unit.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
+                          className="hover:bg-[#E95420]/5 transition-colors duration-200"
                         >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                             {unit.unit}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
-                            {unit.category}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                             {unit.category}
                           </td>
                           {canWrite && (
@@ -1202,7 +1196,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleOpenEditModal('plantUnit', unit)}
-                                  className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200 rounded-lg hover:bg-indigo-50"
+                                  className="p-2 text-[#AEA79F] hover:text-[#772953] transition-colors duration-200 rounded-lg hover:bg-[#772953]/10"
                                 >
                                   <EditIcon className="w-4 h-4" />
                                 </motion.button>
@@ -1210,7 +1204,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleOpenDeleteModal(unit.id, 'plantUnit')}
-                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                  className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </motion.button>
@@ -1238,19 +1232,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-xl shadow-lg border border-[#AEA79F]/30 overflow-hidden"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Users className="w-5 h-5 text-slate-600" />
+                  <div className="p-2 bg-[#F9F9F9] rounded-lg">
+                    <Users className="w-5 h-5 text-[#333333]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['pic_setting_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['pic_setting_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['pic_setting_subtitle']}</p>
                   </div>
                 </div>
 
@@ -1259,7 +1253,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('picSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-lg shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -1269,10 +1263,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                  <thead className="bg-[#F7F7F7]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['pic']}
                       </th>
                       {canWrite && (
@@ -1282,13 +1276,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       )}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
+                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
                     {paginatedPicSettings.map((pic, _index) => (
                       <tr
                         key={pic.id}
-                        className="hover:bg-slate-50/50 transition-colors duration-200"
+                        className="hover:bg-[#E95420]/5 transition-colors duration-200"
                       >
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                           {pic.pic}
                         </td>
 
@@ -1299,7 +1293,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleOpenEditModal('picSetting', pic)}
-                                className="p-2 text-slate-400 hover:text-indigo-600 transition-colors duration-200"
+                                className="p-2 text-[#AEA79F] hover:text-[#772953] transition-colors duration-200 rounded-lg hover:bg-[#772953]/10"
                               >
                                 <EditIcon className="h-4 w-4" />
                               </motion.button>
@@ -1307,7 +1301,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleOpenDeleteModal(pic.id, 'picSetting')}
-                                className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200"
+                                className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                               >
                                 <TrashIcon className="h-4 w-4" />
                               </motion.button>
@@ -1334,19 +1328,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="col-span-1 xl:col-span-2 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="col-span-1 xl:col-span-2 bg-white rounded-2xl shadow-lg border border-[#AEA79F]/30 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-indigo-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['parameter_settings_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['parameter_settings_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['parameter_settings_subtitle']}</p>
                   </div>
                 </div>
                 {canWrite && (
@@ -1354,7 +1348,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('parameterSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -1364,17 +1358,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             {/* Parameter Filters and Search */}
-            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-6 border-b border-[#AEA79F]/30 bg-[#F7F7F7]/50">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                  <Filter className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Filters:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="param-cat-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Plant Category:
                     </label>
@@ -1383,7 +1377,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="param-cat-filter"
                         value={parameterCategoryFilter}
                         onChange={handleParameterCategoryFilterChange}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] text-sm transition-colors appearance-none"
                       >
                         <option value="">{t['all_categories'] || 'All Categories'}</option>
                         {uniquePlantCategories.map((category) => (
@@ -1392,13 +1386,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="param-unit-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Unit:
                     </label>
@@ -1408,7 +1402,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         value={parameterUnitFilter}
                         onChange={handleParameterUnitFilterChange}
                         disabled={!parameterCategoryFilter}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                       >
                         <option value="">{t['all_units'] || 'All Units'}</option>
                         {unitsForParameterFilter.map((unit) => (
@@ -1417,7 +1411,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -1426,8 +1420,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               {/* Search Row */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-4">
                 <div className="flex items-center gap-3">
-                  <Search className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Search:</span>
+                  <Search className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Search:</span>
                 </div>
                 <div className="flex-1 max-w-md">
                   <div className="parameter-search-input">
@@ -1442,7 +1436,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
 
                 {isParameterSearchActive && (
                   <div className="flex items-center gap-3">
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-[#555555]">
                       {filteredParameterSettings.length}{' '}
                       {filteredParameterSettings.length === 1
                         ? t['parameter_search_results']
@@ -1450,7 +1444,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     </div>
                     <button
                       onClick={clearParameterSearch}
-                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium"
+                      className="text-sm text-[#E95420] hover:text-[#d94612] transition-colors font-medium"
                     >
                       {t['parameter_clear_search']}
                     </button>
@@ -1460,40 +1454,40 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+              <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                <thead className="bg-gradient-to-r from-[#F7F7F7] to-[#F0F0F0]">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['parameter_id']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['parameter']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['data_type']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['unit']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['category']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['min_value']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['max_value']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['opc_min']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['opc_max']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['pcc_min']}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                       {t['pcc_max']}
                     </th>
                     {canWrite && (
@@ -1503,50 +1497,50 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     )}
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-200">
+                <tbody className="bg-white divide-y divide-[#AEA79F]/20">
                   {paginatedParams.map((param) => (
-                    <tr key={param.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-slate-500">
+                    <tr key={param.id} className="hover:bg-[#E95420]/5">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-[#555555]">
                         {param.id}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                         {param.parameter}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.unit}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.category}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.min_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.max_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.opc_min_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.opc_max_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.pcc_min_value ?? '-')
                           : '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#555555]">
                         {param.data_type === ParameterDataType.NUMBER
                           ? (param.pcc_max_value ?? '-')
                           : '-'}
@@ -1556,13 +1550,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           <div className="flex items-center justify-end space-x-2">
                             <button
                               onClick={() => handleOpenEditModal('parameterSetting', param)}
-                              className="p-2 text-slate-400 hover:text-indigo-600"
+                              className="p-2 text-[#AEA79F] hover:text-[#772953]"
                             >
                               <EditIcon />
                             </button>
                             <button
                               onClick={() => handleOpenDeleteModal(param.id, 'parameterSetting')}
-                              className="p-2 text-slate-400 hover:text-red-600"
+                              className="p-2 text-[#AEA79F] hover:text-[#C7162B]"
                             >
                               <TrashIcon />
                             </button>
@@ -1573,7 +1567,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   ))}
                   {filteredParameterSettings.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="text-center py-10 text-slate-500">
+                      <td colSpan={8} className="text-center py-10 text-[#555555]">
                         No parameters match the selected filters.
                       </td>
                     </tr>
@@ -1593,19 +1587,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-2xl shadow-lg border border-[#AEA79F]/30 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Database className="w-5 h-5 text-slate-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <Database className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['silo_capacity_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['silo_capacity_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['silo_capacity_subtitle']}</p>
                   </div>
                 </div>
                 {canWrite && (
@@ -1613,7 +1607,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('siloCapacity')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -1623,17 +1617,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             {/* Filters Section */}
-            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-6 border-b border-[#AEA79F]/30 bg-[#F7F7F7]/50">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                  <Filter className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Filters:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="silo-cat-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Plant Category:
                     </label>
@@ -1642,7 +1636,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="silo-cat-filter"
                         value={siloCategoryFilter}
                         onChange={(e) => setSiloCategoryFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -1650,13 +1644,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="silo-unit-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Unit:
                     </label>
@@ -1665,7 +1659,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="silo-unit-filter"
                         value={siloUnitFilter}
                         onChange={(e) => setSiloUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForSiloFilter.length === 0}
                       >
                         {unitsForSiloFilter.map((unit) => (
@@ -1674,7 +1668,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -1684,25 +1678,25 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             {/* Table Section */}
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                  <thead className="bg-gradient-to-r from-[#F7F7F7] to-[#F0F0F0]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['plant_category']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['unit']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['silo_name']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['capacity']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['dead_stock']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['silo_lifestock']}
                       </th>
                       {canWrite && (
@@ -1712,19 +1706,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       )}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
+                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
                     {siloCapacitiesLoading ? (
                       <tr>
                         <td colSpan={7} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading silo capacities...</span>
+                            <span className="text-[#555555]">Loading silo capacities...</span>
                           </div>
                         </td>
                       </tr>
                     ) : filteredSiloCapacities.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                        <td colSpan={7} className="px-4 py-8 text-center text-[#555555]">
                           No silo capacities match the selected filters
                         </td>
                       </tr>
@@ -1734,21 +1728,21 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         return (
                           <tr
                             key={silo.id}
-                            className="hover:bg-slate-50/50 transition-colors duration-200"
+                            className="hover:bg-[#E95420]/5 transition-colors duration-200"
                           >
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                               {silo.plant_category}
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                               {silo.unit}
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                               {silo.silo_name}
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                               {formatNumber(silo.capacity)}
                             </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                               {formatNumber(silo.dead_stock)}
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-800 font-semibold">
@@ -1761,7 +1755,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => handleOpenEditModal('siloCapacity', silo)}
-                                    className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                    className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                   >
                                     <EditIcon className="w-4 h-4" />
                                   </motion.button>
@@ -1769,7 +1763,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => handleOpenDeleteModal(silo.id, 'siloCapacity')}
-                                    className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                    className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                   >
                                     <TrashIcon className="w-4 h-4" />
                                   </motion.button>
@@ -1798,19 +1792,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-2xl shadow-lg border border-[#AEA79F]/30 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <BarChart3 className="w-5 h-5 text-indigo-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['cop_parameters_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['cop_parameters_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['cop_parameters_subtitle']}</p>
                   </div>
                 </div>
                 {canWrite && (
@@ -1818,7 +1812,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleOpenCopModal}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -1828,17 +1822,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             {/* Filters Section */}
-            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-6 border-b border-[#AEA79F]/30 bg-[#F7F7F7]/50">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                  <Filter className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Filters:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="cop-cat-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Plant Category:
                     </label>
@@ -1847,7 +1841,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-cat-filter"
                         value={copCategoryFilter}
                         onChange={(e) => setCopCategoryFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -1855,13 +1849,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="cop-unit-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Unit:
                     </label>
@@ -1870,7 +1864,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-unit-filter"
                         value={copUnitFilter}
                         onChange={(e) => setCopUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForCopFilter.length === 0}
                       >
                         {unitsForCopFilter.map((unit) => (
@@ -1879,7 +1873,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -1889,16 +1883,16 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             {/* Table Section */}
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                  <thead className="bg-gradient-to-r from-[#F7F7F7] to-[#F0F0F0]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['parameter']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['unit']}
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         {t['category']}
                       </th>
                       {canWrite && (
@@ -1908,19 +1902,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       )}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
+                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
                     {copParametersLoading ? (
                       <tr>
                         <td colSpan={4} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading COP parameters...</span>
+                            <span className="text-[#555555]">Loading COP parameters...</span>
                           </div>
                         </td>
                       </tr>
                     ) : paginatedCopParams.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                        <td colSpan={4} className="px-4 py-8 text-center text-[#555555]">
                           No COP parameters selected for the current filters
                         </td>
                       </tr>
@@ -1928,15 +1922,15 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       paginatedCopParams.map((param, _index) => (
                         <tr
                           key={param.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
+                          className="hover:bg-[#E95420]/5 transition-colors duration-200"
                         >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                             {param.parameter}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                             {param.unit}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                             {param.category}
                           </td>
                           {canWrite && (
@@ -1946,7 +1940,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleRemoveCopParameter(param.id)}
-                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                  className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </motion.button>
@@ -1974,17 +1968,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.7 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-2xl shadow-lg border border-[#AEA79F]/30 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-slate-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <FileText className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">COP Parameters Footer</h3>
-                    <p className="text-sm text-slate-600">
+                    <h3 className="text-lg font-semibold text-[#333333]">COP Parameters Footer</h3>
+                    <p className="text-sm text-[#555555]">
                       Manage COP footer parameters configuration
                     </p>
                   </div>
@@ -1994,7 +1988,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleOpenCopFooterModal}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -2005,7 +1999,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   whileTap={{ scale: 0.95 }}
                   onClick={() => refetchCopFooterParameters()}
                   disabled={copFooterParametersLoading}
-                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-slate-50 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all duration-200"
+                  className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-[#333333] bg-white border border-slate-300 rounded-xl shadow-sm hover:bg-[#E95420]/5 disabled:bg-[#F0F0F0] disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <RefreshCw
                     className={`w-4 h-4 ${copFooterParametersLoading ? 'animate-spin' : ''}`}
@@ -2016,17 +2010,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             {/* Filters Section */}
-            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-6 border-b border-[#AEA79F]/30 bg-[#F7F7F7]/50">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                  <Filter className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Filters:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="cop-footer-cat-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Plant Category:
                     </label>
@@ -2035,7 +2029,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-footer-cat-filter"
                         value={copFooterCategoryFilter}
                         onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2043,13 +2037,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="cop-footer-unit-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Unit:
                     </label>
@@ -2058,7 +2052,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="cop-footer-unit-filter"
                         value={copFooterUnitFilter}
                         onChange={(e) => setCopFooterUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForCopFooterFilter.length === 0}
                       >
                         {unitsForCopFooterFilter.map((unit) => (
@@ -2067,7 +2061,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -2077,16 +2071,16 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             {/* Table Section */}
             <div className="p-6">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                  <thead className="bg-gradient-to-r from-[#F7F7F7] to-[#F0F0F0]">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         Parameter
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         Plant Unit
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                         Category
                       </th>
                       {canWrite && (
@@ -2096,19 +2090,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       )}
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-slate-200">
+                  <tbody className="bg-white divide-y divide-[#AEA79F]/20">
                     {copFooterParametersLoading ? (
                       <tr>
                         <td colSpan={4} className="px-4 py-8 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <LoadingSpinner size="sm" />
-                            <span className="text-slate-500">Loading COP footer parameters...</span>
+                            <span className="text-[#555555]">Loading COP footer parameters...</span>
                           </div>
                         </td>
                       </tr>
                     ) : paginatedCopFooterParams.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
+                        <td colSpan={4} className="px-4 py-8 text-center text-[#555555]">
                           No COP footer parameters selected for the current filters
                         </td>
                       </tr>
@@ -2116,15 +2110,15 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       paginatedCopFooterParams.map((param, _index) => (
                         <tr
                           key={param.id}
-                          className="hover:bg-slate-50/50 transition-colors duration-200"
+                          className="hover:bg-[#E95420]/5 transition-colors duration-200"
                         >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                             {param.parameter}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                             {param.unit}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                             {param.category}
                           </td>
                           {canWrite && (
@@ -2134,7 +2128,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
                                   onClick={() => handleRemoveCopFooterParameter(param.id)}
-                                  className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                  className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                 >
                                   <TrashIcon className="w-4 h-4" />
                                 </motion.button>
@@ -2162,19 +2156,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-2xl shadow-lg border border-[#AEA79F]/30 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-indigo-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <FileText className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['report_settings_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['report_settings_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['report_settings_subtitle']}</p>
                   </div>
                 </div>
                 {canWrite && (
@@ -2182,7 +2176,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('reportSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -2192,17 +2186,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             {/* Filters Section */}
-            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-6 border-b border-[#AEA79F]/30 bg-[#F7F7F7]/50">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                  <Filter className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Filters:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="report-cat-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Plant Category:
                     </label>
@@ -2211,7 +2205,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="report-cat-filter"
                         value={reportCategoryFilter}
                         onChange={handleReportCategoryChange}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2219,13 +2213,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="report-unit-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Unit:
                     </label>
@@ -2234,7 +2228,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="report-unit-filter"
                         value={reportUnitFilter}
                         onChange={(e) => setReportUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForReportFilter.length === 0}
                       >
                         {unitsForReportFilter.map((unit) => (
@@ -2243,7 +2237,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -2253,29 +2247,29 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             {/* Table Section */}
             <div className="p-6">
               <div className="mb-4">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 text-sm text-[#555555]">
                   <GripVertical className="w-4 h-4" />
                   <span>Drag rows to reorder report parameters</span>
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <DragDropContext onDragEnd={handleReportSettingsDragEnd}>
-                  <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                    <thead className="bg-gradient-to-r from-[#F7F7F7] to-[#F0F0F0]">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['order'] || 'Order'}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['parameter']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['plant_category']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['unit']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['category']}
                         </th>
                         {canWrite && (
@@ -2290,7 +2284,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <tbody
                           {...provided.droppableProps}
                           ref={provided.innerRef}
-                          className="bg-white divide-y divide-slate-200"
+                          className="bg-white divide-y divide-[#AEA79F]/20"
                         >
                           {paginatedReportSettings.map((setting, index) => {
                             const parameter = allParametersMap.get(setting.parameter_id);
@@ -2300,31 +2294,31 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                   <tr
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
-                                    className={`hover:bg-slate-50/50 transition-colors duration-200 ${
-                                      snapshot.isDragging ? 'bg-slate-100 shadow-lg' : ''
+                                    className={`hover:bg-[#E95420]/5 transition-colors duration-200 ${
+                                      snapshot.isDragging ? 'bg-[#F0F0F0] shadow-lg' : ''
                                     }`}
                                   >
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       <div className="flex items-center gap-2">
                                         <div
                                           {...provided.dragHandleProps}
                                           className="cursor-grab active:cursor-grabbing"
                                         >
-                                          <GripVertical className="w-4 h-4 text-slate-400" />
+                                          <GripVertical className="w-4 h-4 text-[#AEA79F]" />
                                         </div>
                                         <span className="font-medium">{setting.order}</span>
                                       </div>
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                                       {parameter?.parameter || 'Unknown Parameter'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {parameter?.category || '-'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {parameter?.unit || '-'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {setting.category}
                                     </td>
                                     {canWrite && (
@@ -2336,7 +2330,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                             onClick={() =>
                                               handleOpenEditModal('reportSetting', setting)
                                             }
-                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                            className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                           >
                                             <EditIcon className="w-4 h-4" />
                                           </motion.button>
@@ -2346,7 +2340,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                             onClick={() =>
                                               handleOpenDeleteModal(setting.id, 'reportSetting')
                                             }
-                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                            className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                           >
                                             <TrashIcon className="w-4 h-4" />
                                           </motion.button>
@@ -2380,19 +2374,19 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+            className="bg-white rounded-2xl shadow-lg border border-[#AEA79F]/30 overflow-hidden hover:shadow-xl transition-all duration-300"
           >
-            <div className="p-6 border-b border-slate-200">
+            <div className="p-6 border-b border-[#AEA79F]/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <FileText className="w-5 h-5 text-slate-600" />
+                  <div className="p-2 bg-[#E95420]/10 rounded-lg">
+                    <FileText className="w-5 h-5 text-[#E95420]" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">
+                    <h3 className="text-lg font-semibold text-[#333333]">
                       {t['simple_report_settings_title']}
                     </h3>
-                    <p className="text-sm text-slate-600">{t['simple_report_settings_subtitle']}</p>
+                    <p className="text-sm text-[#555555]">{t['simple_report_settings_subtitle']}</p>
                   </div>
                 </div>
                 {canWrite && (
@@ -2400,7 +2394,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleOpenAddModal('simpleReportSetting')}
-                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl shadow-sm hover:bg-indigo-700 transition-all duration-200"
+                    className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-[#E95420] rounded-xl shadow-sm hover:bg-[#d94612] transition-all duration-200"
                   >
                     <PlusIcon className="w-4 h-4" />
                     {t['add_data_button']}
@@ -2410,17 +2404,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             </div>
 
             {/* Filters Section */}
-            <div className="p-6 border-b border-slate-200 bg-slate-50/50">
+            <div className="p-6 border-b border-[#AEA79F]/30 bg-[#F7F7F7]/50">
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm font-medium text-slate-700">Filters:</span>
+                  <Filter className="w-4 h-4 text-[#555555]" />
+                  <span className="text-sm font-medium text-[#333333]">Filters:</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 flex-1">
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="simple-report-cat-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Plant Category:
                     </label>
@@ -2429,7 +2423,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="simple-report-cat-filter"
                         value={simpleReportCategoryFilter}
                         onChange={handleSimpleReportCategoryChange}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] text-sm transition-colors appearance-none"
                       >
                         {uniquePlantCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2437,13 +2431,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <label
                       htmlFor="simple-report-unit-filter"
-                      className="text-sm font-medium text-slate-600 whitespace-nowrap"
+                      className="text-sm font-medium text-[#555555] whitespace-nowrap"
                     >
                       Unit:
                     </label>
@@ -2452,7 +2446,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         id="simple-report-unit-filter"
                         value={simpleReportUnitFilter}
                         onChange={(e) => setSimpleReportUnitFilter(e.target.value)}
-                        className="pl-3 pr-8 py-2 bg-white text-slate-900 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed text-sm transition-colors appearance-none"
+                        className="pl-3 pr-8 py-2 bg-white text-[#333333] border border-[#AEA79F]/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed text-sm transition-colors appearance-none"
                         disabled={unitsForSimpleReportFilter.length === 0}
                       >
                         {unitsForSimpleReportFilter.map((unit) => (
@@ -2461,7 +2455,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#AEA79F] pointer-events-none" />
                     </div>
                   </div>
                 </div>
@@ -2471,32 +2465,32 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
             {/* Table Section */}
             <div className="p-6">
               <div className="mb-4">
-                <div className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 text-sm text-[#555555]">
                   <GripVertical className="w-4 h-4" />
                   <span>Drag rows to reorder simple report parameters</span>
                 </div>
               </div>
               <div className="overflow-x-auto">
                 <DragDropContext onDragEnd={handleSimpleReportSettingsDragEnd}>
-                  <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
+                  <table className="min-w-full divide-y divide-[#AEA79F]/20">
+                    <thead className="bg-gradient-to-r from-[#F7F7F7] to-[#F0F0F0]">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['order'] || 'Order'}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['parameter']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['plant_category']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['unit']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           {t['category']}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#772953] uppercase tracking-wider">
                           Active
                         </th>
                         {canWrite && (
@@ -2511,7 +2505,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <tbody
                           {...provided.droppableProps}
                           ref={provided.innerRef}
-                          className="bg-white divide-y divide-slate-200"
+                          className="bg-white divide-y divide-[#AEA79F]/20"
                         >
                           {paginatedSimpleReportSettings.map((setting, index) => {
                             const parameter = allParametersMap.get(setting.parameter_id);
@@ -2521,34 +2515,34 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                   <tr
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
-                                    className={`hover:bg-slate-50/50 transition-colors duration-200 ${
-                                      snapshot.isDragging ? 'bg-slate-100 shadow-lg' : ''
+                                    className={`hover:bg-[#E95420]/5 transition-colors duration-200 ${
+                                      snapshot.isDragging ? 'bg-[#F0F0F0] shadow-lg' : ''
                                     }`}
                                   >
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       <div className="flex items-center gap-2">
                                         <div
                                           {...provided.dragHandleProps}
                                           className="cursor-grab active:cursor-grabbing"
                                         >
-                                          <GripVertical className="w-4 h-4 text-slate-400" />
+                                          <GripVertical className="w-4 h-4 text-[#AEA79F]" />
                                         </div>
                                         <span className="font-medium">{setting.order}</span>
                                       </div>
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-[#333333]">
                                       {parameter?.parameter || 'Unknown Parameter'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {parameter?.category || '-'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {parameter?.unit || '-'}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {setting.category}
                                     </td>
-                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500">
+                                    <td className="px-4 py-4 whitespace-nowrap text-sm text-[#555555]">
                                       {setting.is_active ? 'Yes' : 'No'}
                                     </td>
                                     {canWrite && (
@@ -2560,7 +2554,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                             onClick={() =>
                                               handleOpenEditModal('simpleReportSetting', setting)
                                             }
-                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                            className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                           >
                                             <EditIcon className="w-4 h-4" />
                                           </motion.button>
@@ -2573,7 +2567,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                                 'simpleReportSetting'
                                               )
                                             }
-                                            className="p-2 text-slate-400 hover:text-red-600 transition-colors duration-200 rounded-lg hover:bg-red-50"
+                                            className="p-2 text-[#AEA79F] hover:text-[#C7162B] transition-colors duration-200 rounded-lg hover:bg-[#C7162B]/10"
                                           >
                                             <TrashIcon className="w-4 h-4" />
                                           </motion.button>
@@ -2746,17 +2740,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   <TrashIcon className="h-6 w-6 text-red-600" />
                 </motion.div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-slate-900 mb-2">Delete Record</h3>
-                  <p className="text-sm text-slate-600 mb-4">
+                  <h3 className="text-lg font-medium text-[#333333] mb-2">Delete Record</h3>
+                  <p className="text-sm text-[#555555] mb-4">
                     {t['delete_confirmation_message'] ||
                       'Are you sure you want to delete this record? This action cannot be undone.'}
                   </p>
-                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                  <div className="bg-[#F7F7F7] border border-[#AEA79F]/30 rounded-lg p-4">
                     <div className="flex items-center space-x-2">
-                      <Database className="h-4 w-4 text-slate-400" />
-                      <span className="text-sm font-medium text-slate-700">Record Details:</span>
+                      <Database className="h-4 w-4 text-[#AEA79F]" />
+                      <span className="text-sm font-medium text-[#333333]">Record Details:</span>
                     </div>
-                    <p className="text-sm text-slate-600 mt-2 font-mono">{getDeletingRecordName}</p>
+                    <p className="text-sm text-[#555555] mt-2 font-mono">{getDeletingRecordName}</p>
                   </div>
                 </div>
               </div>
@@ -2767,7 +2761,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              className="bg-slate-50 px-6 py-4 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0"
+              className="bg-[#F7F7F7] px-6 py-4 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0"
             >
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <EnhancedButton
@@ -2784,7 +2778,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                   type="button"
                   variant="error"
                   onClick={handleDeleteConfirm}
-                  className="w-full sm:w-auto px-6 py-2 bg-red-600 hover:bg-red-700 text-white"
+                  className="w-full sm:w-auto px-6 py-2 bg-[#C7162B] hover:bg-[#9e1122] text-white"
                 >
                   <TrashIcon className="h-4 w-4 mr-2" />
                   {t['confirm_delete_button'] || 'Delete'}
@@ -2807,7 +2801,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.3 }}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4"
+              className="bg-gradient-to-r from-[#772953] to-[#2C001E] px-6 py-4"
             >
               <div className="flex items-center space-x-3">
                 <BarChart3 className="h-6 w-6 text-white" />
@@ -2854,17 +2848,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                 >
                   <label
                     htmlFor="modal-cop-filter-category"
-                    className="block text-sm font-medium text-slate-700 mb-2"
+                    className="block text-sm font-medium text-[#333333] mb-2"
                   >
                     Plant Category
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-[#C7162B] ml-1">*</span>
                   </label>
                   <motion.select
                     whileFocus={{ scale: 1.02 }}
                     id="modal-cop-filter-category"
                     value={copCategoryFilter}
                     onChange={(e) => setCopCategoryFilter(e.target.value)}
-                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm"
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm"
                   >
                     <option value="">Select category...</option>
                     {uniquePlantCategories.map((cat) => (
@@ -2882,10 +2876,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                 >
                   <label
                     htmlFor="modal-cop-filter-unit"
-                    className="block text-sm font-medium text-slate-700 mb-2"
+                    className="block text-sm font-medium text-[#333333] mb-2"
                   >
                     Unit
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-[#C7162B] ml-1">*</span>
                   </label>
                   <motion.select
                     whileFocus={{ scale: 1.02 }}
@@ -2893,7 +2887,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     value={copUnitFilter}
                     onChange={(e) => setCopUnitFilter(e.target.value)}
                     disabled={unitsForCopFilter.length === 0}
-                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 sm:text-sm disabled:bg-slate-50 disabled:text-slate-500"
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm disabled:bg-[#F7F7F7] disabled:text-[#AEA79F]"
                   >
                     <option value="">
                       {unitsForCopFilter.length === 0 ? 'No units available' : 'Select unit...'}
@@ -2920,9 +2914,9 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.6, duration: 0.3 }}
-                      className="border border-slate-200 rounded-lg p-4"
+                      className="border border-[#AEA79F]/30 rounded-lg p-4"
                     >
-                      <h4 className="text-sm font-medium text-slate-700 mb-4">
+                      <h4 className="text-sm font-medium text-[#333333] mb-4">
                         Available Parameters (
                         {
                           parameterSettings
@@ -2956,8 +2950,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                               whileTap={{ scale: 0.98 }}
                               className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                                 tempCopSelection.includes(param.id)
-                                  ? 'border-blue-500 bg-blue-50 shadow-sm'
-                                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                  ? 'border-[#E95420] bg-[#E95420]/10 shadow-sm'
+                                  : 'border-[#AEA79F]/30 hover:border-slate-300 hover:bg-[#E95420]/5'
                               }`}
                             >
                               <motion.input
@@ -2969,10 +2963,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                 whileTap={{ scale: 0.9 }}
                               />
                               <div className="ml-3 flex-1 min-w-0">
-                                <div className="text-sm font-medium text-slate-900 truncate">
+                                <div className="text-sm font-medium text-[#333333] truncate">
                                   {param.parameter}
                                 </div>
-                                <div className="text-xs text-slate-500 truncate">
+                                <div className="text-xs text-[#555555] truncate">
                                   {param.category} • {param.unit}
                                 </div>
                               </div>
@@ -3000,7 +2994,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="text-center py-8 text-slate-500"
+                          className="text-center py-8 text-[#555555]"
                         >
                           <BarChart3 className="h-12 w-12 mx-auto mb-3 text-slate-300" />
                           <p className="text-sm">
@@ -3039,7 +3033,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     variant="primary"
                     onClick={handleSaveCopSelection}
                     disabled={!copCategoryFilter || !copUnitFilter}
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700"
+                    className="px-6 py-2 bg-[#E95420] hover:bg-[#d94612]"
                   >
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Save Selection
@@ -3063,7 +3057,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.3 }}
-              className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4"
+              className="bg-gradient-to-r from-[#772953] to-[#2C001E] px-6 py-4"
             >
               <div className="flex items-center space-x-3">
                 <FileText className="h-6 w-6 text-white" />
@@ -3110,17 +3104,17 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                 >
                   <label
                     htmlFor="modal-cop-footer-filter-category"
-                    className="block text-sm font-medium text-slate-700 mb-2"
+                    className="block text-sm font-medium text-[#333333] mb-2"
                   >
                     Plant Category
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-[#C7162B] ml-1">*</span>
                   </label>
                   <motion.select
                     whileFocus={{ scale: 1.02 }}
                     id="modal-cop-footer-filter-category"
                     value={copFooterCategoryFilter}
                     onChange={(e) => setCopFooterCategoryFilter(e.target.value)}
-                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 sm:text-sm"
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm"
                   >
                     <option value="">Select category...</option>
                     {uniquePlantCategories.map((cat) => (
@@ -3138,10 +3132,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                 >
                   <label
                     htmlFor="modal-cop-footer-filter-unit"
-                    className="block text-sm font-medium text-slate-700 mb-2"
+                    className="block text-sm font-medium text-[#333333] mb-2"
                   >
                     Unit
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-[#C7162B] ml-1">*</span>
                   </label>
                   <motion.select
                     whileFocus={{ scale: 1.02 }}
@@ -3149,7 +3143,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     value={copFooterUnitFilter}
                     onChange={(e) => setCopFooterUnitFilter(e.target.value)}
                     disabled={unitsForCopFooterFilter.length === 0}
-                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all duration-200 sm:text-sm"
+                    className="block w-full pl-3 pr-10 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] disabled:bg-[#F7F7F7] disabled:cursor-not-allowed transition-all duration-200 sm:text-sm"
                   >
                     {unitsForCopFooterFilter.length === 0 ? (
                       <option value="">No units available</option>
@@ -3176,10 +3170,10 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ delay: 0.6, duration: 0.3 }}
-                    className="border border-slate-200 rounded-lg overflow-hidden"
+                    className="border border-[#AEA79F]/30 rounded-lg overflow-hidden"
                   >
-                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                      <h3 className="text-sm font-medium text-slate-700">
+                    <div className="bg-[#F7F7F7] px-4 py-3 border-b border-[#AEA79F]/30">
+                      <h3 className="text-sm font-medium text-[#333333]">
                         Available Parameters (
                         {
                           parameterSettings
@@ -3196,7 +3190,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     </div>
 
                     <div className="max-h-96 overflow-y-auto">
-                      <div className="divide-y divide-slate-200">
+                      <div className="divide-y divide-[#AEA79F]/20">
                         {parameterSettings
                           .filter((p) => p.data_type === ParameterDataType.NUMBER)
                           .filter((p) => {
@@ -3213,8 +3207,8 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.7 + Math.random() * 0.3, duration: 0.3 }}
-                                className={`flex items-center justify-between p-4 hover:bg-slate-50 cursor-pointer transition-colors ${
-                                  isSelected ? 'bg-purple-50 border-l-4 border-purple-500' : ''
+                                className={`flex items-center justify-between p-4 hover:bg-[#E95420]/5 cursor-pointer transition-colors ${
+                                  isSelected ? 'bg-[#772953]/10 border-l-4 border-[#772953]' : ''
                                 }`}
                               >
                                 <div className="flex items-center space-x-3">
@@ -3222,13 +3216,13 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                                     type="checkbox"
                                     checked={isSelected}
                                     onChange={() => handleCopFooterSelectionChange(param.id)}
-                                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-slate-300 rounded"
+                                    className="h-4 w-4 text-[#772953] focus:ring-[#772953] border-slate-300 rounded"
                                   />
                                   <div>
-                                    <div className="text-sm font-medium text-slate-900">
+                                    <div className="text-sm font-medium text-[#333333]">
                                       {param.parameter}
                                     </div>
-                                    <div className="text-xs text-slate-500">
+                                    <div className="text-xs text-[#555555]">
                                       {param.unit} • {param.category}
                                     </div>
                                   </div>
@@ -3258,7 +3252,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="text-center py-8 text-slate-500"
+                          className="text-center py-8 text-[#555555]"
                         >
                           <FileText className="h-12 w-12 mx-auto mb-3 text-slate-300" />
                           <p className="text-sm">
@@ -3297,7 +3291,7 @@ const PlantOperationsMasterData: React.FC<{ t: Record<string, string> }> = ({ t 
                     variant="primary"
                     onClick={handleSaveCopFooterSelection}
                     disabled={!copFooterCategoryFilter || !copFooterUnitFilter}
-                    className="px-6 py-2 bg-purple-600 hover:bg-purple-700"
+                    className="px-6 py-2 bg-[#E95420] hover:bg-[#d94612]"
                   >
                     <FileText className="h-4 w-4 mr-2" />
                     Save Selection

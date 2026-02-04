@@ -335,16 +335,16 @@ const InspectionPage: React.FC = () => {
   return (
     <div className="min-h-full flex flex-col gap-6 relative">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] border border-slate-200/50 dark:border-white/10 shadow-xl shadow-slate-200/5 dark:shadow-none">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 bg-white/40 dark:bg-inspection-950/40 backdrop-blur-xl rounded-[2.5rem] border border-inspection-100 dark:border-inspection-800/50 shadow-xl shadow-inspection-900/5 dark:shadow-none">
         <div className="flex items-center gap-6">
-          <div className="p-4 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl text-white shadow-xl shadow-indigo-500/30">
+          <div className="p-4 bg-gradient-to-br from-inspection-700 to-inspection-500 rounded-2xl text-white shadow-xl shadow-inspection-500/30">
             <ClipboardCheckIcon className="w-8 h-8" />
           </div>
           <div>
             <motion.h1
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-4xl font-black text-slate-900 dark:text-white tracking-tight"
+              className="text-4xl font-black text-inspection-800 dark:text-white tracking-tight"
             >
               Inspection
             </motion.h1>
@@ -352,9 +352,9 @@ const InspectionPage: React.FC = () => {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center gap-2"
+              className="text-inspection-600/70 dark:text-inspection-300/70 mt-1 font-medium flex items-center gap-2"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-inspection-500"></span>
               {viewMode === 'reports'
                 ? 'Manage daily production shift reports.'
                 : 'Configure dynamic report templates (Grup > Alat > Point).'}
@@ -372,8 +372,8 @@ const InspectionPage: React.FC = () => {
             onClick={() => setViewMode(viewMode === 'reports' ? 'templates' : 'reports')}
             className={`group flex items-center gap-2.5 px-6 py-3 border rounded-2xl text-sm font-bold transition-all duration-300 shadow-sm ${
               viewMode === 'templates'
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-transparent shadow-lg shadow-indigo-500/25'
-                : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200'
+                ? 'bg-gradient-to-r from-inspection-600 to-inspection-500 text-white border-transparent shadow-lg shadow-inspection-500/25'
+                : 'bg-white/50 dark:bg-inspection-800/50 border-inspection-100 dark:border-inspection-700/50 text-inspection-700 dark:text-inspection-100'
             }`}
           >
             <FunnelIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
@@ -383,7 +383,7 @@ const InspectionPage: React.FC = () => {
           {isSuperAdmin && (
             <button
               onClick={() => setIsUnitManagerOpen(true)}
-              className="group flex items-center gap-2.5 px-6 py-3 bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 rounded-2xl text-sm font-bold shadow-sm hover:bg-white dark:hover:bg-slate-700 transition-all"
+              className="group flex items-center gap-2.5 px-6 py-3 bg-white/50 dark:bg-inspection-800/50 border border-inspection-100 dark:border-inspection-700/50 text-inspection-700 dark:text-inspection-100 rounded-2xl text-sm font-bold shadow-sm hover:bg-white dark:hover:bg-inspection-700 transition-all"
             >
               <CogIcon className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
               Manage Units
@@ -393,7 +393,7 @@ const InspectionPage: React.FC = () => {
           {viewMode === 'reports' && (
             <button
               onClick={() => setIsFormOpen(true)}
-              className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-2xl text-sm font-bold shadow-xl shadow-indigo-500/30 hover:shadow-indigo-500/40 transition-all active:scale-95"
+              className="group flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-inspection-700 to-inspection-600 hover:from-inspection-600 hover:to-inspection-500 text-white rounded-2xl text-sm font-bold shadow-xl shadow-inspection-700/30 hover:shadow-inspection-700/40 transition-all active:scale-95"
             >
               <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               New Shift Report
@@ -404,7 +404,7 @@ const InspectionPage: React.FC = () => {
 
       {/* Unit Selector Tabs */}
       <div className="flex flex-col gap-4">
-        <div className="flex bg-white/40 dark:bg-slate-900/40 backdrop-blur-md p-1.5 rounded-[1.5rem] border border-slate-200/50 dark:border-white/10 shadow-sm overflow-x-auto no-scrollbar w-fit max-w-full">
+        <div className="flex bg-white/40 dark:bg-inspection-950/40 backdrop-blur-md p-1.5 rounded-[1.5rem] border border-inspection-100 dark:border-inspection-800/50 shadow-sm overflow-x-auto no-scrollbar w-fit max-w-full">
           {mainUnits.map((unit) => (
             <button
               key={unit.id}
@@ -415,14 +415,14 @@ const InspectionPage: React.FC = () => {
               className={`px-8 py-3 text-xs font-black uppercase tracking-widest transition-all relative whitespace-nowrap rounded-2xl ${
                 activeUnitId === unit.id
                   ? 'text-white'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                  : 'text-inspection-500 hover:text-inspection-700 dark:text-inspection-400 dark:hover:text-inspection-100 hover:bg-white/50 dark:hover:bg-inspection-800/50'
               }`}
             >
               <span className="relative z-10">{unit.name}</span>
               {activeUnitId === unit.id && (
                 <motion.div
                   layoutId="activeUnitTab"
-                  className="absolute inset-0 bg-indigo-600 dark:bg-indigo-500 shadow-lg shadow-indigo-500/40 rounded-2xl"
+                  className="absolute inset-0 bg-inspection-700 dark:bg-inspection-600 shadow-lg shadow-inspection-500/40 rounded-2xl"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -437,20 +437,20 @@ const InspectionPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 ml-4"
           >
-            <div className="flex bg-white/30 dark:bg-slate-900/30 backdrop-blur-md p-1 rounded-2xl border border-slate-200/40 dark:border-white/5 shadow-inner overflow-x-auto no-scrollbar">
+            <div className="flex bg-white/30 dark:bg-inspection-950/30 backdrop-blur-md p-1 rounded-2xl border border-inspection-100/50 dark:border-inspection-700/50 shadow-inner overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setActiveSubUnitId(null)}
                 className={`px-5 py-2 text-[10px] font-black uppercase tracking-wider transition-all relative rounded-xl whitespace-nowrap ${
                   activeSubUnitId === null
                     ? 'text-white'
-                    : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                    : 'text-inspection-400 hover:text-inspection-600 dark:hover:text-inspection-100'
                 }`}
               >
                 <span className="relative z-10">Main Overview</span>
                 {activeSubUnitId === null && (
                   <motion.div
                     layoutId="activeSubTab"
-                    className="absolute inset-0 bg-slate-500 dark:bg-slate-600 rounded-xl shadow-md"
+                    className="absolute inset-0 bg-inspection-500 dark:bg-inspection-600 rounded-xl shadow-md"
                     transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                   />
                 )}
@@ -463,14 +463,14 @@ const InspectionPage: React.FC = () => {
                   className={`px-5 py-2 text-[10px] font-black uppercase tracking-wider transition-all relative rounded-xl whitespace-nowrap ${
                     activeSubUnitId === sub.id
                       ? 'text-white'
-                      : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                      : 'text-inspection-400 hover:text-inspection-600 dark:hover:text-inspection-100'
                   }`}
                 >
                   <span className="relative z-10">{sub.name}</span>
                   {activeSubUnitId === sub.id && (
                     <motion.div
                       layoutId="activeSubTab"
-                      className="absolute inset-0 bg-indigo-500 rounded-xl shadow-md"
+                      className="absolute inset-0 bg-inspection-600 rounded-xl shadow-md"
                       transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
                     />
                   )}
@@ -488,7 +488,7 @@ const InspectionPage: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3 px-2"
             >
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+              <span className="text-[9px] font-black text-inspection-400 uppercase tracking-widest">
                 Filter Area:
               </span>
               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -496,8 +496,8 @@ const InspectionPage: React.FC = () => {
                   onClick={() => setActiveAreaId('')}
                   className={`px-4 py-1.5 rounded-full text-[10px] font-black transition-all ${
                     !activeAreaId
-                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                      : 'bg-white/50 dark:bg-slate-800/50 text-slate-400 hover:text-slate-600'
+                      ? 'bg-inspection-700 text-white shadow-lg shadow-inspection-700/30'
+                      : 'bg-white/50 dark:bg-inspection-800/50 text-inspection-400 hover:text-inspection-600'
                   }`}
                 >
                   SEMUA AREA
@@ -510,8 +510,8 @@ const InspectionPage: React.FC = () => {
                       onClick={() => setActiveAreaId(area.id)}
                       className={`px-4 py-1.5 rounded-full text-[10px] font-black transition-all whitespace-nowrap ${
                         activeAreaId === area.id
-                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                          : 'bg-white/50 dark:bg-slate-800/50 text-slate-400 hover:text-slate-600'
+                          ? 'bg-inspection-700 text-white shadow-lg shadow-inspection-700/30'
+                          : 'bg-white/50 dark:bg-inspection-800/50 text-inspection-400 hover:text-inspection-600'
                       }`}
                     >
                       {area.name.toUpperCase()}
@@ -526,94 +526,109 @@ const InspectionPage: React.FC = () => {
         <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {stats.map((stat, idx) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 * idx }}
-                className="group p-8 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/10 rounded-[2.5rem] shadow-xl shadow-slate-200/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
-              >
-                <div className="absolute top-0 right-0 p-12 bg-indigo-500/5 rounded-full -mr-10 -mt-10 group-hover:bg-indigo-500/10 transition-colors"></div>
-
-                <div className="flex items-center justify-between relative z-10">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
-                      {stat.label}
-                    </p>
-                    <h3 className="text-4xl font-black text-slate-900 dark:text-white">
-                      {stat.value}
-                    </h3>
-                  </div>
-                  <div
-                    className={`p-4 rounded-[1.5rem] ${stat.bg} ${stat.color} shadow-lg transition-transform group-hover:scale-110 duration-300`}
-                  >
-                    <stat.icon className="w-8 h-8" />
-                  </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="group p-8 bg-white/40 dark:bg-inspection-950/40 backdrop-blur-xl border border-inspection-100 dark:border-inspection-800/50 rounded-[2.5rem] shadow-xl shadow-inspection-900/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 p-12 bg-inspection-500/5 rounded-full -mr-10 -mt-10 group-hover:bg-inspection-500/10 transition-colors"></div>
+              <div className="flex items-center justify-between relative z-10">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-inspection-400 dark:text-inspection-500 uppercase tracking-[0.2em]">
+                    Daily Reports
+                  </p>
+                  <h3 className="text-4xl font-black text-inspection-800 dark:text-white">
+                    {filteredReports.length}
+                  </h3>
                 </div>
-              </motion.div>
-            ))}
+                <div className="p-4 rounded-[1.5rem] bg-inspection-500/10 text-inspection-600 shadow-lg transition-transform group-hover:scale-110 duration-300">
+                  <ClipboardCheckIcon className="w-8 h-8" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="group p-8 bg-white/40 dark:bg-inspection-950/40 backdrop-blur-xl border border-inspection-100 dark:border-inspection-800/50 rounded-[2.5rem] shadow-xl shadow-inspection-900/5 hover:-translate-y-1 transition-all duration-300 overflow-hidden relative"
+            >
+              <div className="absolute top-0 right-0 p-12 bg-rose-500/5 rounded-full -mr-10 -mt-10 group-hover:bg-rose-500/10 transition-colors"></div>
+              <div className="flex items-center justify-between relative z-10">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black text-rose-400 dark:text-rose-500 uppercase tracking-[0.2em]">
+                    Critical Findings
+                  </p>
+                  <h3 className="text-4xl font-black text-rose-600 dark:text-rose-400">
+                    {filteredReports.filter((i) => i.status === 'critical').length}
+                  </h3>
+                </div>
+                <div className="p-4 rounded-[1.5rem] bg-rose-500/10 text-rose-600 shadow-lg transition-transform group-hover:scale-110 duration-300">
+                  <XMarkIcon className="w-8 h-8" />
+                </div>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Reports Table */}
+          {/* Reports Table Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="flex-1 bg-white dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl shadow-sm overflow-hidden flex flex-col"
+            transition={{ delay: 0.3 }}
+            className="flex-1 bg-white/60 dark:bg-inspection-950/40 backdrop-blur-xl border border-inspection-100 dark:border-inspection-800/50 rounded-[2.5rem] shadow-xl shadow-inspection-900/5 overflow-hidden flex flex-col"
           >
             {/* Toolbar */}
-            <div className="p-8 border-b border-slate-200/50 dark:border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white/20 dark:bg-slate-900/20 backdrop-blur-md">
+            <div className="p-8 border-b border-inspection-100 dark:border-inspection-800/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-inspection-50/30 dark:bg-inspection-900/20">
               <div className="relative flex-1 max-w-lg">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-inspection-400 group-focus-within:text-inspection-600 transition-colors" />
                 <input
                   type="text"
                   placeholder="Search by inspector or date..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-6 py-3.5 bg-white/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/10 rounded-[1.5rem] text-sm font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 transition-all shadow-inner"
+                  className="w-full pl-12 pr-6 py-4 bg-white/50 dark:bg-inspection-900/40 border border-inspection-100 dark:border-inspection-700/50 rounded-2xl text-sm font-bold text-inspection-800 dark:text-inspection-100 focus:outline-none focus:ring-4 focus:ring-inspection-500/10 focus:border-inspection-500/50 transition-all shadow-inner"
                 />
               </div>
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3 px-6 py-3 bg-white/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/10 rounded-[1.5rem] shadow-inner">
-                  <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                <div className="flex items-center gap-3 px-6 py-3 bg-white/50 dark:bg-inspection-900/40 border border-inspection-100 dark:border-inspection-700/50 rounded-2xl shadow-inner">
+                  <span className="text-[10px] font-black text-inspection-400 dark:text-inspection-500 uppercase tracking-widest">
                     Status
                   </span>
-                  <div className="h-4 w-px bg-slate-200 dark:bg-white/10 mx-1"></div>
+                  <div className="h-4 w-px bg-inspection-200 dark:bg-inspection-800 mx-1"></div>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="bg-transparent text-sm font-black text-indigo-600 dark:text-indigo-400 focus:outline-none cursor-pointer pr-4"
+                    className="bg-transparent text-sm font-black text-inspection-600 dark:text-inspection-400 focus:outline-none cursor-pointer pr-4"
                   >
-                    <option className="bg-white dark:bg-slate-900">All Status</option>
-                    <option className="bg-white dark:bg-slate-900">Pending</option>
-                    <option className="bg-white dark:bg-slate-900">Completed</option>
-                    <option className="bg-white dark:bg-slate-900">Critical</option>
+                    <option className="bg-white dark:bg-inspection-900">All Status</option>
+                    <option className="bg-white dark:bg-inspection-900">Pending</option>
+                    <option className="bg-white dark:bg-inspection-900">Completed</option>
+                    <option className="bg-white dark:bg-inspection-900">Critical</option>
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-inspection-200 dark:scrollbar-thumb-inspection-800 scrollbar-track-transparent">
               {filteredReports.length > 0 ? (
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] border-b border-slate-100/50 dark:border-white/5 bg-slate-50/30 dark:bg-slate-950/10">
+                    <tr className="text-[10px] font-black text-inspection-400 dark:text-inspection-500 uppercase tracking-[0.2em] border-b border-inspection-50 dark:border-inspection-900/50 bg-inspection-50/30 dark:bg-inspection-950/20">
                       <th className="px-8 py-5">Report Date</th>
                       <th className="px-8 py-5">Inspector</th>
                       <th className="px-8 py-5 text-center">Status</th>
                       <th className="px-8 py-5 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100/50 dark:divide-white/5 text-sm">
+                  <tbody className="divide-y divide-inspection-50/50 dark:divide-inspection-900/30 text-sm">
                     {filteredReports.map((report) => (
                       <tr
                         key={report.id}
                         onClick={() => setSelectedReport(report)}
-                        className="group hover:bg-white/60 dark:hover:bg-white/5 transition-all duration-300 cursor-pointer"
+                        className="group hover:bg-inspection-50/50 dark:hover:bg-inspection-900/20 transition-all duration-300 cursor-pointer"
                       >
                         <td className="px-8 py-6">
-                          <span className="font-extrabold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                          <span className="font-extrabold text-inspection-800 dark:text-inspection-100 group-hover:text-inspection-600 dark:group-hover:text-inspection-400 transition-colors">
                             {new Date(report.date).toLocaleDateString(undefined, {
                               weekday: 'short',
                               year: 'numeric',
@@ -625,15 +640,15 @@ const InspectionPage: React.FC = () => {
                         <td className="px-8 py-6">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 text-indigo-500 flex items-center justify-center font-black text-xs shadow-inner">
+                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-inspection-500/10 to-inspection-300/10 text-inspection-600 flex items-center justify-center font-black text-xs shadow-inner">
                                 {report.personnel.s1.tender.charAt(0)}
                               </div>
-                              <span className="font-bold text-slate-700 dark:text-slate-200">
+                              <span className="font-bold text-inspection-700 dark:text-inspection-200">
                                 {report.personnel.s1.tender}
                               </span>
                             </div>
                             {report.areaId && (
-                              <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400/70 border border-indigo-500/20 w-fit px-2 py-0.5 rounded-md ml-14 bg-indigo-500/5">
+                              <span className="text-[9px] font-black text-inspection-500 dark:text-inspection-400/70 border border-inspection-500/20 w-fit px-2 py-0.5 rounded-md ml-14 bg-inspection-500/5">
                                 {areas.find((a) => a.id === report.areaId)?.name || 'Unknown Area'}
                               </span>
                             )}
@@ -653,8 +668,8 @@ const InspectionPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-8 py-6 text-right">
-                          <div className="w-8 h-8 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center ml-auto group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 group-hover:scale-110 shadow-sm">
-                            <MagnifyingGlassIcon className="w-4 h-4" />
+                          <div className="w-10 h-10 rounded-xl bg-inspection-50 dark:bg-inspection-900/50 flex items-center justify-center ml-auto group-hover:bg-inspection-600 group-hover:text-white transition-all duration-300 group-hover:scale-110 shadow-sm">
+                            <MagnifyingGlassIcon className="w-5 h-5" />
                           </div>
                         </td>
                       </tr>
@@ -663,13 +678,13 @@ const InspectionPage: React.FC = () => {
                 </table>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner animate-pulse">
-                    <ClipboardCheckIcon className="w-12 h-12 text-indigo-500/50" />
+                  <div className="w-24 h-24 bg-gradient-to-br from-inspection-500/5 to-inspection-300/5 rounded-[3rem] flex items-center justify-center mb-6 shadow-inner animate-pulse">
+                    <ClipboardCheckIcon className="w-12 h-12 text-inspection-500/50" />
                   </div>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                  <h3 className="text-2xl font-black text-inspection-800 dark:text-white">
                     No Reports Found
                   </h3>
-                  <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                  <p className="text-inspection-600/60 dark:text-inspection-400 mt-2 font-medium">
                     {currentContextName} has no reports yet.
                   </p>
                 </div>
@@ -681,7 +696,7 @@ const InspectionPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex-1 bg-white dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-3xl shadow-sm p-8 flex flex-col"
+          className="flex-1 bg-white/60 dark:bg-inspection-950/40 backdrop-blur-xl border border-inspection-100 dark:border-inspection-800/50 rounded-[2.5rem] shadow-xl shadow-inspection-900/5 p-8 flex flex-col"
         >
           <TemplateManager
             groups={currentAreaTemplate as any}
@@ -728,19 +743,19 @@ const InspectionPage: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-full max-w-7xl bg-slate-50/30 dark:bg-slate-950/30 backdrop-blur-2xl shadow-2xl z-[101] flex flex-col border-l border-white/10"
+              className="fixed right-0 top-0 h-full w-full max-w-7xl bg-inspection-50/10 dark:bg-inspection-950/20 backdrop-blur-3xl shadow-2xl z-[101] flex flex-col border-l border-inspection-100 dark:border-inspection-800/50"
             >
-              <div className="p-6 border-b border-slate-200/50 dark:border-white/10 flex items-center justify-between bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
-                <div className="flex items-center gap-4">
-                  <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white shadow-lg shadow-indigo-500/20">
-                    <ClipboardCheckIcon className="w-6 h-6" />
+              <div className="p-8 border-b border-inspection-100 dark:border-inspection-800/50 flex items-center justify-between bg-white/40 dark:bg-inspection-900/40 backdrop-blur-md">
+                <div className="flex items-center gap-6">
+                  <div className="p-3 bg-gradient-to-br from-inspection-700 to-inspection-500 rounded-2xl text-white shadow-xl shadow-inspection-500/20">
+                    <ClipboardCheckIcon className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    <h3 className="text-2xl font-black text-inspection-800 dark:text-white tracking-tight">
                       Daily Shift Report Details
                     </h3>
-                    <p className="text-[11px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                    <p className="text-[11px] font-black text-inspection-500 dark:text-inspection-400 uppercase tracking-widest flex items-center gap-1.5 mt-1">
+                      <span className="w-2 h-2 rounded-full bg-inspection-500 animate-pulse"></span>
                       {currentContextName} •{' '}
                       {new Date(selectedReport.date).toLocaleDateString(undefined, {
                         weekday: 'long',
@@ -753,18 +768,18 @@ const InspectionPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setSelectedReport(null)}
-                  className="p-2.5 rounded-xl bg-white/50 dark:bg-slate-800/50 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 transition-all border border-slate-200/50 dark:border-white/10 shadow-sm group"
+                  className="p-3 rounded-2xl bg-white/50 dark:bg-inspection-800/50 text-inspection-500 hover:text-inspection-800 dark:hover:text-inspection-100 hover:bg-white dark:hover:bg-inspection-700 transition-all border border-inspection-100 dark:border-inspection-800/50 shadow-sm group"
                 >
-                  <XMarkIcon className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                  <XMarkIcon className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-8 scrollbar-thin scrollbar-thumb-inspection-200 dark:scrollbar-thumb-inspection-800 scrollbar-track-transparent">
                 {/* Table Rendering based on Template (Groups > Equipment > CP) */}
-                <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-[2.5rem] border border-slate-200/50 dark:border-white/10 shadow-xl overflow-hidden">
+                <div className="bg-white/40 dark:bg-inspection-950/40 backdrop-blur-md rounded-[3rem] border border-inspection-100 dark:border-inspection-800/50 shadow-2xl overflow-hidden">
                   <table className="w-full text-xs sm:text-sm text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-100/50 dark:bg-slate-800/50 text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400 border-b border-slate-200/50 dark:border-white/10">
+                      <tr className="bg-inspection-50/50 dark:bg-inspection-900/50 text-[10px] font-black uppercase tracking-[0.2em] text-inspection-500 dark:text-inspection-400 border-b border-inspection-100 dark:border-inspection-800/50">
                         <th className="px-6 py-5 w-16 text-center">No.</th>
                         <th className="px-6 py-5 min-w-[250px]">Check Point</th>
                         <th className="px-3 py-5 text-center w-28">Shift 1</th>
@@ -773,28 +788,28 @@ const InspectionPage: React.FC = () => {
                         <th className="px-6 py-5">Abnormalitas Peralatan</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100/50 dark:divide-white/5">
+                    <tbody className="divide-y divide-inspection-50/50 dark:divide-inspection-900/10">
                       {templates[currentContextName]?.map((group, gIdx) => (
                         <React.Fragment key={group.id}>
-                          <tr className="bg-gradient-to-r from-indigo-500/10 via-transparent to-transparent">
+                          <tr className="bg-gradient-to-r from-inspection-500/10 via-transparent to-transparent">
                             <td
                               colSpan={6}
-                              className="px-6 py-4 font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest text-[11px]"
+                              className="px-8 py-5 font-black text-inspection-700 dark:text-inspection-400 uppercase tracking-[0.2em] text-[11px]"
                             >
-                              <div className="flex items-center gap-3">
-                                <span className="w-1 h-4 bg-indigo-500 rounded-full"></span>
+                              <div className="flex items-center gap-4">
+                                <span className="w-1.5 h-6 bg-inspection-500 rounded-full"></span>
                                 {group.name}
                               </div>
                             </td>
                           </tr>
                           {group.equipments.map((eq, eIdx) => (
                             <React.Fragment key={eq.id}>
-                              <tr className="bg-slate-50/20 dark:bg-white/2 group/eq">
-                                <td className="px-6 py-3.5 text-center font-bold text-slate-400 group-hover/eq:text-indigo-500 transition-colors">
+                              <tr className="bg-inspection-50/10 dark:bg-inspection-900/5 group/eq">
+                                <td className="px-6 py-4 text-center font-black text-inspection-400 group-hover/eq:text-inspection-700 transition-colors">
                                   {eIdx + 1}
                                 </td>
                                 <td
-                                  className="px-6 py-3.5 font-extrabold text-slate-800 dark:text-slate-100 group-hover/eq:text-indigo-600 dark:group-hover/eq:text-indigo-400 transition-colors"
+                                  className="px-6 py-4 font-black text-inspection-800 dark:text-inspection-100 group-hover/eq:text-inspection-600 dark:group-hover/eq:text-inspection-400 transition-colors"
                                   colSpan={5}
                                 >
                                   {eq.name}

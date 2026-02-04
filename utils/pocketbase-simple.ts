@@ -98,9 +98,7 @@ export const Collections = {
   PROJECTS: 'projects',
   REPORT_SETTINGS: 'report_settings',
   SILO_CAPACITIES: 'silo_capacities',
-  USER_ACTIONS: 'user_actions',
   USER_PARAMETER_ORDERS: 'user_parameter_orders',
   USER_PERMISSIONS: 'user_permissions',
-  USER_SESSIONS: 'user_sessions',
   WORK_INSTRUCTIONS: 'work_instructions',
 };

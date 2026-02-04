@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import UserIcon from './icons/UserIcon';
 import { User } from '../types';
 import { Page } from '../types';
@@ -6,44 +7,43 @@ import { Page } from '../types';
 interface UserMenuButtonProps {
   currentUser: User | null;
   onNavigate: (page: Page) => void;
-  t: Record<string, string>;
 }
 
-const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate, t }) => {
+const UserMenuButton: React.FC<UserMenuButtonProps> = ({ currentUser, onNavigate }) => {
   const handleClick = () => {
     onNavigate('settings');
   };
 
   return (
-    <div className="relative flex flex-col items-center gap-1">
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="relative flex items-center justify-center"
+    >
       <div
-        className="relative cursor-pointer p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 group ring-2 ring-transparent hover:ring-indigo-100 dark:hover:ring-slate-700"
+        className="relative cursor-pointer p-0.5 rounded-full transition-all duration-200 group ring-1 ring-white/10 hover:ring-white/30"
         onClick={handleClick}
         aria-label="Open settings"
       >
-        <div className="relative w-10 h-10 flex items-center justify-center">
+        <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
           {currentUser?.avatar_url ? (
-            <div className="relative w-10 h-10">
+            <div className="relative w-full h-full">
               <img
-                className="w-full h-full rounded-full object-cover transition-all duration-300 group-hover:scale-105 shadow-sm"
+                className="w-full h-full rounded-full object-cover shadow-inner"
                 src={currentUser.avatar_url}
                 alt="User avatar"
               />
-              {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#1e1e1e]"></div>
             </div>
           ) : (
-            <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center transition-all duration-300 shadow-md group-hover:shadow-lg group-hover:scale-105">
-              <UserIcon className="w-5 h-5 text-white" />
-              {/* Online indicator */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+            <div className="relative w-full h-full rounded-full bg-[#E95420] flex items-center justify-center shadow-inner group-hover:bg-[#f06437] transition-colors">
+              <UserIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#1e1e1e] rounded-full"></div>
             </div>
           )}
         </div>
-        <span className="sr-only">Open settings</span>
       </div>
-      <span className="text-xs text-slate-300 font-medium">{t.profile || 'Profile'}</span>
-    </div>
+    </motion.div>
   );
 };
 

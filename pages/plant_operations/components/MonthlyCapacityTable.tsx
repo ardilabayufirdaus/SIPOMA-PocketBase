@@ -87,11 +87,11 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
       className="w-full mb-8"
     >
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <h3 className="text-xl font-bold text-slate-900 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-midAubergine">
+          <h3 className="text-xl font-bold text-white font-display">
             Monthly Capacity Report - {plantUnit}
           </h3>
-          <p className="text-sm text-slate-600 mt-2">
+          <p className="text-sm text-ubuntu-warmGrey mt-2">
             Periode:{' '}
             {new Date(filters.date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
           </p>
@@ -100,21 +100,30 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
         <div className="p-8">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-sm font-medium text-emerald-600 mb-1">Total Wet Production</p>
-              <p className="text-2xl font-bold text-emerald-700">
-                {loading ? '...' : formatNumber(totalWet)} Ton
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-ubuntu-orange/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+              <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">
+                Total Wet Production
+              </p>
+              <p className="text-2xl font-bold text-ubuntu-orange relative z-10">
+                {loading ? '...' : formatNumber(totalWet)}{' '}
+                <span className="text-sm font-medium text-slate-400">Ton</span>
               </p>
             </div>
-            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-              <p className="text-sm font-medium text-blue-600 mb-1">Total Dry Production</p>
-              <p className="text-2xl font-bold text-blue-700">
-                {loading ? '...' : formatNumber(totalDry)} Ton
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-ubuntu-darkAubergine/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+              <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">
+                Total Dry Production
+              </p>
+              <p className="text-2xl font-bold text-ubuntu-darkAubergine relative z-10">
+                {loading ? '...' : formatNumber(totalDry)}{' '}
+                <span className="text-sm font-medium text-slate-400">Ton</span>
               </p>
             </div>
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-              <p className="text-sm font-medium text-amber-600 mb-1">Avg Moisture</p>
-              <p className="text-2xl font-bold text-amber-700">
+            <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+              <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">Avg Moisture</p>
+              <p className="text-2xl font-bold text-slate-700 relative z-10">
                 {loading ? '...' : avgMoisture.toFixed(2)} %
               </p>
             </div>
@@ -183,10 +192,10 @@ const MonthlyCapacityTable: React.FC<MonthlyCapacityTableProps> = ({ filters, pl
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 text-right">
                           {row.moisture?.toFixed(2)}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-emerald-600 text-right">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ubuntu-orange text-right">
                           {formatNumber(row.wet)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600 text-right">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-ubuntu-darkAubergine text-right">
                           {formatNumber(row.dry)}
                         </td>
                       </tr>

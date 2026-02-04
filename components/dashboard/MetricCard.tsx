@@ -66,48 +66,37 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
+      transition={{ duration: 0.3, delay }}
       className={`
-        relative overflow-hidden rounded-2xl 
-        bg-white/70 dark:bg-slate-800/60 backdrop-blur-md
-        border border-white/50 dark:border-slate-700/50
-        shadow-sm hover:shadow-xl transition-all duration-300
+        relative overflow-hidden rounded-lg 
+        bg-white dark:bg-slate-900 
+        border border-slate-200 dark:border-slate-800
+        shadow-sm hover:shadow-md transition-all duration-200
         group
         ${onClick ? 'cursor-pointer' : ''}
-        ${getGradientBorder()}
       `}
       onClick={onClick}
     >
-      {/* Decorative Blob */}
-      <div
-        className={`absolute -top-10 -right-10 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${
-          status === 'success'
-            ? 'bg-emerald-400/20'
-            : status === 'warning'
-              ? 'bg-amber-400/20'
-              : status === 'danger'
-                ? 'bg-rose-400/20'
-                : 'bg-indigo-400/20'
-        }`}
-      ></div>
+      {/* Ubuntu Orange Top Accent on Hover */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-[#E95420] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
 
-      <div className="p-4 relative z-10">
-        <div className="flex justify-between items-start mb-3">
+      <div className="p-5 relative z-10">
+        <div className="flex justify-between items-start mb-4">
           <div
-            className={`p-2.5 rounded-xl ${getStatusBg()} ${getStatusColor()} transition-colors ring-1 ring-black/5 dark:ring-white/10`}
+            className={`p-2 rounded ${getStatusBg()} ${getStatusColor()} transition-colors border border-transparent group-hover:border-current`}
           >
             {icon}
           </div>
           {trend && (
             <span
               className={`
-              text-[9px] font-bold px-2 py-1 rounded-full uppercase tracking-wide
+              text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-widest
               ${
                 trend.isPositive
-                  ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                  : 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'
+                  ? 'bg-emerald-50 text-[#38B000] dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'bg-rose-50 text-[#EF2D56] dark:bg-rose-900/30 dark:text-rose-400'
               }
             `}
             >
@@ -118,38 +107,23 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
         <div>
           <div className="flex items-baseline gap-1">
-            <h3 className="text-2xl lg:text-3xl font-extrabold text-slate-800 dark:text-slate-100 mb-0.5 tracking-tight">
+            <h3 className="text-3xl font-bold text-[#333333] dark:text-white mb-1 tracking-tight">
               {value}
             </h3>
           </div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-wide uppercase">
+          <p className="text-[11px] font-bold text-[#808080] dark:text-slate-500 tracking-widest uppercase">
             {title}
           </p>
         </div>
 
         {subtitle && (
-          <div className="mt-2 pt-2 border-t border-slate-100/50 dark:border-slate-700/30">
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <span className="text-[10px] text-[#AEA79F] dark:text-slate-500 font-bold uppercase tracking-tight">
               {subtitle}
             </span>
           </div>
         )}
       </div>
-
-      {/* Bottom Highlight Line */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r 
-        ${
-          status === 'success'
-            ? 'from-emerald-400/0 via-emerald-500 to-emerald-400/0'
-            : status === 'warning'
-              ? 'from-amber-400/0 via-amber-500 to-amber-400/0'
-              : status === 'danger'
-                ? 'from-rose-400/0 via-rose-500 to-rose-400/0'
-                : 'from-indigo-400/0 via-indigo-500 to-indigo-400/0'
-        } 
-        opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-      />
     </motion.div>
   );
 };

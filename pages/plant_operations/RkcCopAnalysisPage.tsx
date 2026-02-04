@@ -3323,7 +3323,6 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
                       strokeLinecap="round"
@@ -3335,100 +3334,8 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 </div>
                 <p className="text-lg text-slate-600 mb-4">{error}</p>
                 <button
-                  onClick={() => {
-                    setError(null);
-                    // Trigger re-fetch by calling the data fetch function
-                    const retryFetch = async () => {
-                      setIsLoading(true);
-                      try {
-                        // Re-run the data fetching logic
-                        const daysInMonth = new Date(filterYear, filterMonth + 1, 0).getDate();
-                        const dates = Array.from({ length: daysInMonth }, (_, i) => {
-                          const date = new Date(Date.UTC(filterYear, filterMonth, i + 1));
-                          return date.toISOString().split('T')[0];
-                        });
-
-                        const dailyAverages = new Map<string, Map<string, number>>();
-                        const footerDataPromises = dates.map((dateString) =>
-                          getFooterDataForDate(dateString)
-                        );
-                        const allFooterDataForMonth = await Promise.all(footerDataPromises);
-
-                        allFooterDataForMonth.flat().forEach((footerData) => {
-                          if (
-                            footerData.average !== null &&
-                            footerData.average !== undefined &&
-                            !isNaN(footerData.average)
-                          ) {
-                            if (!dailyAverages.has(footerData.parameter_id)) {
-                              dailyAverages.set(footerData.parameter_id, new Map());
-                            }
-                            dailyAverages
-                              .get(footerData.parameter_id)!
-                              .set(footerData.date, footerData.average);
-                          }
-                        });
-
-                        const data = filteredCopParameters
-                          .map((parameter) => {
-                            if (!parameter || !parameter.id || !parameter.parameter) return null;
-
-                            const dailyValues = dates.map((dateString) => {
-                              const avg = dailyAverages.get(parameter.id)?.get(dateString);
-                              const min_value = parameter.min_value;
-                              const max_value = parameter.max_value;
-
-                              if (
-                                min_value === undefined ||
-                                max_value === undefined ||
-                                max_value <= min_value ||
-                                avg === undefined
-                              ) {
-                                return { value: null, raw: avg };
-                              }
-
-                              const percentage =
-                                ((avg - min_value) / (max_value - min_value)) * 100;
-                              return {
-                                value:
-                                  isNaN(percentage) || !isFinite(percentage) ? null : percentage,
-                                raw: avg,
-                              };
-                            });
-
-                            const validDailyPercentages = dailyValues
-                              .map((d) => d.value)
-                              .filter((v): v is number => v !== null && !isNaN(v) && isFinite(v));
-                            const monthlyAverage =
-                              validDailyPercentages.length > 0
-                                ? validDailyPercentages.reduce((a, b) => a + b, 0) /
-                                  validDailyPercentages.length
-                                : null;
-
-                            return {
-                              parameter,
-                              dailyValues,
-                              monthlyAverage,
-                              monthlyAverageRaw: null,
-                            };
-                          })
-                          .filter((p): p is NonNullable<typeof p> => p !== null);
-
-                        setAnalysisData(data);
-                      } catch (retryError) {
-                        const errorMessage =
-                          retryError instanceof Error ? retryError.message : 'Retry failed';
-                        setError(
-                          `Failed to load COP analysis data: ${errorMessage}. Please check your filters and try again.`
-                        );
-                        setAnalysisData([]);
-                      } finally {
-                        setIsLoading(false);
-                      }
-                    };
-                    retryFetch();
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 min-h-[48px] shadow-lg"
+                  onClick={refreshData}
+                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl"
                 >
                   Try Again
                 </button>

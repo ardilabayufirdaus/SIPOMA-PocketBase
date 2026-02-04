@@ -101,32 +101,33 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       case 'start_time':
       case 'end_time':
         if (!value) {
-          newErrors[name] = 'Time is required';
+          newErrors[name] = t.error_time_required || 'Time is required';
         } else if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
-          newErrors[name] = 'Invalid time format (HH:MM)';
+          newErrors[name] = t.error_invalid_time_format || 'Invalid time format (HH:MM)';
         } else {
           delete newErrors[name];
         }
         break;
       case 'unit':
         if (!value) {
-          newErrors.unit = 'Unit is required';
+          newErrors.unit = t.error_unit_required || 'Unit is required';
         } else {
           delete newErrors.unit;
         }
         break;
       case 'pic':
         if (!value) {
-          newErrors.pic = 'PIC is required';
+          newErrors.pic = t.error_pic_required || 'PIC is required';
         } else {
           delete newErrors.pic;
         }
         break;
       case 'problem':
         if (!value.trim()) {
-          newErrors.problem = 'Problem description is required';
+          newErrors.problem = t.error_problem_required || 'Problem description is required';
         } else if (value.trim().length < 10) {
-          newErrors.problem = 'Problem description must be at least 10 characters';
+          newErrors.problem =
+            t.error_problem_min_length || 'Problem description must be at least 10 characters';
         } else {
           delete newErrors.problem;
         }
@@ -203,7 +204,8 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
       if (startSeconds > endSeconds) {
         setErrors((prev) => ({
           ...prev,
-          end_time: 'End time must be after or equal to start time',
+          end_time:
+            t.error_end_time_before_start || 'End time must be after or equal to start time',
         }));
         return false;
       } else {
@@ -245,12 +247,16 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
 
     // Validate required fields
     if (plantUnits.length === 0) {
-      alert('No plant units available. Please configure plant units first.');
+      alert(
+        t.error_no_plant_units || 'No plant units available. Please configure plant units first.'
+      );
       return;
     }
 
     if (picSettings.length === 0) {
-      alert('No PIC settings available. Please configure PIC settings first.');
+      alert(
+        t.error_no_pic_settings || 'No PIC settings available. Please configure PIC settings first.'
+      );
       return;
     }
 
@@ -279,9 +285,9 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         {/* Time Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-[#E95420] rounded-full"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-              Time Period
+              {t.time_period || 'Time Period'}
             </h4>
           </div>
 
@@ -313,9 +319,9 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         {/* Assignment Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-[#772953] rounded-full"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-              Assignment
+              {t.assignment || 'Assignment'}
             </h4>
           </div>
 
@@ -345,15 +351,15 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 appearance-none transition-all duration-200 ${
                     isFieldInvalid('pic')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400'
+                      : 'border-slate-300 focus:ring-[#772953] focus:border-[#772953] hover:border-[#E95420]'
                   }`}
                   disabled={picSettings.length === 0 || readOnly}
                 >
                   {picSettings.length === 0 ? (
-                    <option value="">No PIC available</option>
+                    <option value="">{t.no_pic_available || 'No PIC available'}</option>
                   ) : (
                     <>
-                      <option value="">Pilih PIC</option>
+                      <option value="">{t.choose_pic || 'Choose PIC'}</option>
                       {picSettings.map((picSetting) => (
                         <option key={picSetting.id} value={picSetting.pic}>
                           {picSetting.pic}
@@ -388,9 +394,9 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
         {/* Details Section */}
         <div className="space-y-4">
           <div className="flex items-center space-x-2 mb-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-[#E95420] rounded-full"></div>
             <h4 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-              Details
+              {t.details || 'Details'}
             </h4>
           </div>
 
@@ -409,11 +415,13 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                   onBlur={handleBlur}
                   rows={4}
                   required
-                  placeholder="Describe the problem that occurred..."
+                  placeholder={
+                    t.placeholder_problem_description || 'Describe the problem that occurred...'
+                  }
                   className={`w-full px-4 py-3 bg-white/50 border rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 resize-none transition-all duration-200 ${
                     isFieldInvalid('problem')
                       ? 'border-orange-300 focus:ring-red-500 focus:border-red-500'
-                      : 'border-slate-300 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400'
+                      : 'border-slate-300 focus:ring-[#772953] focus:border-[#772953] hover:border-[#E95420]'
                   }`}
                   disabled={readOnly}
                 />
@@ -450,8 +458,11 @@ const CcrDowntimeForm: React.FC<FormProps> = ({
                 value={formData.action}
                 onChange={handleChange}
                 rows={6}
-                placeholder="Describe the actions taken or click 'AI RCA' for suggestions..."
-                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-400 resize-none transition-all duration-200 font-mono text-sm"
+                placeholder={
+                  t.placeholder_action_description ||
+                  "Describe the actions taken or click 'AI RCA' for suggestions..."
+                }
+                className="w-full px-4 py-3 bg-white/50 border border-slate-300 rounded-xl shadow-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#772953] focus:border-[#772953] hover:border-[#E95420] resize-none transition-all duration-200 font-mono text-sm"
                 disabled={readOnly}
               />
             </div>
