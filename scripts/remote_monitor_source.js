@@ -1,5 +1,6 @@
 const https = require('https');
 const os = require('os');
+const fs = require('fs');
 
 // CONFIG
 const CONFIG = {
@@ -129,10 +130,25 @@ function getStats() {
   const freeMem = os.freemem(); // Free memory
   const memUsage = ((totalMem - freeMem) / totalMem) * 100;
 
+  // Uptime Calculation (Prefer /proc/uptime on Linux)
+  let uptime = os.uptime();
+  try {
+    if (fs.existsSync('/proc/uptime')) {
+      const data = fs.readFileSync('/proc/uptime', 'utf8');
+      // Format: 579853.21 554819.82
+      const match = data.match(/([\d\.]+)/);
+      if (match) {
+        uptime = parseFloat(match[1]);
+      }
+    }
+  } catch (e) {
+    console.error('Failed to read /proc/uptime:', e);
+  }
+
   return {
     cpu: Math.max(0, Math.min(100, Math.round(cpuUsage * 10) / 10)),
     mem: Math.max(0, Math.min(100, Math.round(memUsage * 10) / 10)),
-    uptime: os.uptime(),
+    uptime: Math.round(uptime),
   };
 }
 

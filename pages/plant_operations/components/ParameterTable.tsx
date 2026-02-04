@@ -44,21 +44,31 @@ export const ParameterTable: React.FC<ParameterTableProps> = ({
             <tr className="bg-[#772953] text-white">
               <th
                 rowSpan={2}
-                className="px-1 py-2 text-left font-bold border-r border-white/20 sticky left-0 bg-[#772953] z-10 w-8 align-middle text-sm transform -rotate-90"
+                className="px-1 py-1 font-bold border-r border-white/20 sticky left-0 bg-[#772953] z-10 w-8 align-middle text-sm"
               >
-                {t.hour}
+                <div
+                  className="flex items-center justify-center w-full"
+                  style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
+                >
+                  {t.hour}
+                </div>
               </th>
               <th
                 rowSpan={2}
-                className="px-1 py-2 text-left font-bold border-r border-white/20 w-10 align-middle text-sm"
+                className="px-1 py-1 font-bold border-r border-white/20 w-8 align-middle text-sm"
               >
-                {t.shift}
+                <div
+                  className="flex items-center justify-center w-full"
+                  style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
+                >
+                  {t.shift}
+                </div>
               </th>
               {groupedHeaders.map((group) => (
                 <th
                   key={group.category}
                   colSpan={group.parameters.length}
-                  className="px-1 py-2 text-center font-bold border-r border-white/20 last:border-r-0 align-middle text-sm uppercase tracking-wide"
+                  className="px-1 py-1 text-center font-bold border-r border-white/20 last:border-r-0 align-middle text-sm uppercase tracking-wide"
                 >
                   {group.category}
                 </th>

@@ -11,7 +11,7 @@ const SSH_CONFIG = {
 };
 
 const LOCAL_SCRIPT = path.resolve('scripts/remote_monitor_source.js');
-const REMOTE_PATH = '/root/sipoma_monitor.js';
+const REMOTE_PATH = '/opt/sipoma-monitor/monitor.js';
 
 const conn = new Client();
 
@@ -32,15 +32,17 @@ conn
         // Check if running
         console.log('Restarting monitor process...');
         conn.exec(
-          `pkill -f sipoma_monitor.js; nohup node ${REMOTE_PATH} > /root/sipoma_monitor.log 2>&1 &`,
+          `pkill -f monitor.js; nohup node ${REMOTE_PATH} > /opt/sipoma-monitor/sipoma_monitor.log 2>&1 & sleep 2; tail -n 50 /opt/sipoma-monitor/sipoma_monitor.log`,
           (err, stream) => {
             if (err) throw err;
             stream
               .on('close', (code, signal) => {
-                console.log('Monitor started in background.');
+                console.log('Monitor started. Log output:');
                 conn.end();
               })
-              .resume(); // consume stream to allow close
+              .on('data', (data) => {
+                process.stdout.write(data);
+              });
           }
         );
       });

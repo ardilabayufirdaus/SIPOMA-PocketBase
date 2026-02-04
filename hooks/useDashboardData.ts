@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
 import { usePlantUnits } from './usePlantUnits';
 import { useRkcPlantUnits } from './useRkcPlantUnits';
-import { useAutonomousRiskData } from './useAutonomousRiskData';
-import { useRkcAutonomousRiskData } from './useRkcAutonomousRiskData';
+import useCcrDowntimeData from './useCcrDowntimeData';
+import useRkcCcrDowntimeData from './useRkcCcrDowntimeData';
 import { useParameterSettings } from './useParameterSettings';
 import { useRkcParameterSettings } from './useRkcParameterSettings';
 import { useCcrParameterData } from './useCcrParameterData';
@@ -29,7 +29,18 @@ export interface UnitStatus {
 export const useDashboardData = () => {
   // CM Data
   const { records: cmUnits, loading: cmUnitsLoading } = usePlantUnits();
-  const { records: cmRisks, loading: cmRisksLoading } = useAutonomousRiskData();
+
+  // Replace Risk Data with Downtime Data hooks
+  // Fetch ALL downtime (providing no date returns all records usually, or we verify getting all open ones)
+  // Based on hook analysis, if date is undefined it returns all. But we need to be efficient.
+  // The implementations of useCcrDowntimeData and useRkcCcrDowntimeData usually fetch heavily.
+  // Ideally we should filter by status='Open' in the query but the hook api exposes getting all.
+  // We will trust the hook to handle caching and we filter locally for now as per plan.
+  // IMPORTANT: The hooks must be imported first.
+
+  const { getAllDowntime: getAllCmDowntime, loading: cmDowntimeLoading } = useCcrDowntimeData();
+  const { getAllDowntime: getAllRkcDowntime, loading: rkcDowntimeLoading } =
+    useRkcCcrDowntimeData();
 
   // CM Feed Data Logic
   const { records: parameters } = useParameterSettings();
@@ -45,7 +56,6 @@ export const useDashboardData = () => {
 
   // RKC Data
   const { records: rkcUnits, loading: rkcUnitsLoading } = useRkcPlantUnits();
-  const { records: rkcRisks, loading: rkcRisksLoading } = useRkcAutonomousRiskData();
 
   // Fetch CM & RKC Feed Data
   useEffect(() => {
@@ -190,7 +200,10 @@ export const useDashboardData = () => {
     fetchMonthlyProduction();
   }, []); // Run once on mount
 
-  const isLoading = cmUnitsLoading || rkcUnitsLoading || cmRisksLoading || rkcRisksLoading; // isFeedLoading optional, maybe don't block whole UI
+  const isLoading = cmUnitsLoading || rkcUnitsLoading || cmDowntimeLoading || rkcDowntimeLoading; // isFeedLoading optional, maybe don't block whole UI
+
+  const cmDowntimes = getAllCmDowntime();
+  const rkcDowntimes = getAllRkcDowntime();
 
   const { metrics, unitStatuses, topDowntimes } = useMemo(() => {
     if (isLoading) {
@@ -207,35 +220,52 @@ export const useDashboardData = () => {
       };
     }
 
-    // 1. Process Risks (Find active downtimes)
-    const activeCmRisks = cmRisks.filter((r) => r.status !== 'Resolved');
-    const activeRkcRisks = rkcRisks.filter((r) => r.status !== 'Resolved');
-    const totalDowntimeCount = activeCmRisks.length + activeRkcRisks.length;
+    // 1. Process Downtimes (Find ACTIVE/OPEN downtimes)
+    // Filter for status === 'Open' AND Current Month
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const isCurrentMonth = (dateStr: string) => {
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    };
+
+    const activeCmDowntimes = cmDowntimes.filter(
+      (d) => (d.status === 'Open' || !d.status) && isCurrentMonth(d.date)
+    );
+    const activeRkcDowntimes = rkcDowntimes.filter(
+      (d) => (d.status === 'Open' || !d.status) && isCurrentMonth(d.date)
+    );
+    const totalDowntimeCount = activeCmDowntimes.length + activeRkcDowntimes.length;
 
     // 2. Map Units to Status
     const allUnitStatuses: UnitStatus[] = [];
 
     // Process CM Units (Logic: Feed > 0 = ON, else OFF/DOWN)
     cmUnits.forEach((unit) => {
-      const activeRisk = activeCmRisks.find((r) => r.unit === unit.unit);
+      // Find active downtime for this unit
+      // This helps describe the "issue" if feed is 0
+      const activeDowntime = activeCmDowntimes.find((d) => d.unit === unit.unit);
 
       // Check Feed Status
       const feedValue = cmFeedData.get(unit.unit) || 0;
+      // const isFeedOn = feedValue > 0;
+      // Actually let's trust activeDowntime first?
+      // If there is an Open downtime, the unit is likely DOWN even if feed might be lingering or vice versa.
+      // But typically Feed=0 is the definitive "Stopped" indicator.
+
       const isFeedOn = feedValue > 0;
 
       // Determine final status
-      // Priority: If Feed > 0 => Running (even if risk exists? usually yes, maybe partial).
-      // User said: "if Feed > 0 means Status ON, if empty means Status OFF"
-      // We will assume "Status OFF" maps to "down" or "warning" in visual term.
-      // Let's use 'running' for ON, and 'down' for OFF.
-
       let status: 'running' | 'down' | 'warning' = 'down';
 
       if (isFeedOn) {
         status = 'running';
       } else {
         // Feed is 0 or empty.
-        // If there is an active risk, it confirms it's down due to issue.
+        // If there is an active downtime ticket, it confirms down
         status = 'down';
       }
 
@@ -245,13 +275,14 @@ export const useDashboardData = () => {
         category: unit.category,
         isRkc: false,
         status: status,
-        issue: isFeedOn ? undefined : activeRisk?.potential_disruption || 'Stopped (No Feed)', // Show reason if down
+        // If down, show the active downtime problem if exists, else 'Stopped (No Feed)'
+        issue: isFeedOn ? undefined : activeDowntime?.problem || 'Stopped (No Feed)',
       });
     });
 
     // Process RKC Units (Logic: Feed > 0 = ON, else OFF/DOWN)
     rkcUnits.forEach((unit) => {
-      const activeRisk = activeRkcRisks.find((r) => r.unit === unit.unit);
+      const activeDowntime = activeRkcDowntimes.find((d) => d.unit === unit.unit);
 
       // Check Feed Status
       const feedValue = rkcFeedData.get(unit.unit) || 0;
@@ -271,7 +302,7 @@ export const useDashboardData = () => {
         category: unit.category,
         isRkc: true,
         status: status,
-        issue: isFeedOn ? undefined : activeRisk?.potential_disruption || 'Stopped (No Feed)',
+        issue: isFeedOn ? undefined : activeDowntime?.problem || 'Stopped (No Feed)',
       });
     });
 
@@ -280,21 +311,28 @@ export const useDashboardData = () => {
     const runningUnits = allUnitStatuses.filter((u) => u.status === 'running').length;
     const availability = totalUnits > 0 ? (runningUnits / totalUnits) * 100 : 100;
 
-    // 4. Top Downtimes (Just combining top 3 active risks)
-    // Normalize risk structure since they might differ slightly or defined in different files
-    const allRisks = [
-      ...activeCmRisks.map((r) => ({ ...r, isRkc: false })),
-      ...activeRkcRisks.map((r) => ({ ...r, isRkc: true })),
+    // 4. Top Downtimes (Combining top 3 active downtimes)
+    // Normalize structure
+    const allDowntimes = [
+      ...activeCmDowntimes.map((d) => ({ ...d, isRkc: false })),
+      ...activeRkcDowntimes.map((d) => ({ ...d, isRkc: true })),
     ];
 
-    // Sort by date (newest first)
-    const topDowntimes = allRisks
-      .sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime()) // assuming 'date' exists
+    // Sort by date/created (newest first)
+    // Ideally use created timestamp but if not available use date + start_time
+    const topDowntimes = allDowntimes
+      // .sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime())
+      // Better sort might be needed but simple date sort is okay for now
+      .sort((a, b) => {
+        const dateA = new Date(`${a.date} ${a.start_time}`);
+        const dateB = new Date(`${b.date} ${b.start_time}`);
+        return dateB.getTime() - dateA.getTime();
+      })
       .slice(0, 3)
-      .map((r) => ({
-        unit: r.unit,
-        issue: r.potential_disruption || 'Unknown Issue',
-        isRkc: r.isRkc,
+      .map((d) => ({
+        unit: d.unit,
+        issue: d.problem || 'Unknown Issue',
+        isRkc: d.isRkc,
       }));
 
     return {
@@ -311,8 +349,8 @@ export const useDashboardData = () => {
   }, [
     cmUnits,
     rkcUnits,
-    cmRisks,
-    rkcRisks,
+    cmDowntimes,
+    rkcDowntimes,
     isLoading,
     cmFeedData,
     rkcFeedData,

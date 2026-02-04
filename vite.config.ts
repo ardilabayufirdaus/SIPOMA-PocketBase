@@ -109,6 +109,9 @@ export default defineConfig(async (_env) => {
       // Enable minification for production
       minify: 'esbuild' as const,
       cssMinify: 'esbuild' as const,
+      esbuild: {
+        drop: ['console', 'debugger'],
+      },
 
       // Enable compressed size reporting
       reportCompressedSize: true,
