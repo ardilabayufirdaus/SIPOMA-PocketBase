@@ -211,8 +211,8 @@ export interface InspectionUnit {
 
 export interface InspectionGroup {
   id: string;
-  unit?: string; // Relation to InspectionUnit (Legacy)
-  areaId?: string; // Relation to InspectionArea (New)
+  areaId?: string; // Relation to InspectionArea
+  unit?: string; // Relation to InspectionUnit
   name: string;
   sort_order: number;
 }

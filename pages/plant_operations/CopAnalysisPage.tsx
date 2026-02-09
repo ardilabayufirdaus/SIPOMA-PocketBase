@@ -2304,7 +2304,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
     // Set column widths
     worksheet.columns = [
       { width: 5 }, // No
-      { width: 25 }, // Parameter
+      { width: 35 }, // Parameter - increased width for better readability
       { width: 8 }, // Min
       { width: 8 }, // Max
       ...daysHeader.map(() => ({ width: 8 })), // Days
@@ -2331,11 +2331,30 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
 
-    // Data rows
+    // Helper to get Excel ARGB color based on percentage
+    const getExcelColor = (percentage: number | null): string => {
+      if (percentage === null) return 'FFF8FAFC'; // slate-50
+      if (percentage < 0) return 'FFFEE2E2'; // red-100
+      if (percentage > 100) return 'FFFEF3C7'; // amber-100
+      return 'FFD1FAE5'; // emerald-100
+    };
+
+    // Helper to clean parameter name by removing unit name
+    const cleanParameterName = (name: string) => {
+      if (!name || !selectedUnit) return name;
+      // Case insensitive replacement
+      const regex = new RegExp(`\\s*${selectedUnit}\\s*`, 'gi');
+      return name.replace(regex, ' ').trim();
+    };
+
+    let currentRowIndex = 0;
+
+    // 1. Main Analysis Data rows
     analysisData.forEach((row, rowIndex) => {
+      currentRowIndex++;
       const dataRow = [
-        rowIndex + 1,
-        row.parameter.parameter,
+        currentRowIndex,
+        cleanParameterName(row.parameter.parameter),
         formatCopNumber(getMinMaxForCementType(row.parameter, selectedCementType).min),
         formatCopNumber(getMinMaxForCementType(row.parameter, selectedCementType).max),
         ...row.dailyValues.map((day) => formatCopNumber(day.raw)),
@@ -2370,39 +2389,108 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           const dayIndex = colNumber - 5;
           const dayData = row.dailyValues[dayIndex];
           if (dayData && dayData.value !== null) {
-            const colors = getPercentageColor(dayData.value);
-            let bgColor = 'FFFFFFFF'; // default white
-
-            if (colors.bg.includes('bg-red-')) bgColor = 'FFFFE5E5';
-            else if (colors.bg.includes('bg-yellow-')) bgColor = 'FFFFF3CD';
-            else if (colors.bg.includes('bg-green-')) bgColor = 'FFD1ECF1';
-
+            const argbColor = getExcelColor(dayData.value);
             cell.fill = {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: bgColor },
+              fgColor: { argb: argbColor },
             };
           }
         }
 
         // Monthly average column
         if (colNumber === 4 + daysHeader.length + 1) {
-          const colors = getPercentageColor(row.monthlyAverage);
-          let bgColor = 'FFFFFFFF'; // default white
-
-          if (colors.bg.includes('bg-red-')) bgColor = 'FFFFE5E5';
-          else if (colors.bg.includes('bg-yellow-')) bgColor = 'FFFFF3CD';
-          else if (colors.bg.includes('bg-green-')) bgColor = 'FFD1ECF1';
-
+          const argbColor = getExcelColor(row.monthlyAverage);
           cell.fill = {
             type: 'pattern',
             pattern: 'solid',
-            fgColor: { argb: bgColor },
+            fgColor: { argb: argbColor },
           };
           cell.font = { bold: true, size: 9 };
         }
       });
     });
+
+    // 2. COP Parameters Footer rows
+    if (footerData.length > 0) {
+      // Optional: Add a section header row for clarity
+      const sectionHeaderRow = worksheet.addRow([
+        '',
+        'COP Parameters Footer',
+        '',
+        '',
+        ...daysHeader.map(() => ''),
+        '',
+      ]);
+      sectionHeaderRow.font = { bold: true, italic: true, size: 9 };
+      sectionHeaderRow.getCell(2).alignment = { horizontal: 'center' };
+      sectionHeaderRow.eachCell((cell) => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      });
+
+      footerData.forEach((row, rowIndex) => {
+        // We do NOT increment currentRowIndex here if we want them separate,
+        // or we can just list them without a number.
+        // Let's use a unique prefix for these parameters.
+        const dataRow = [
+          `F-${rowIndex + 1}`,
+          cleanParameterName(row.parameter.parameter),
+          formatCopNumber(getMinMaxForCementType(row.parameter, selectedCementType).min),
+          formatCopNumber(getMinMaxForCementType(row.parameter, selectedCementType).max),
+          ...row.dailyValues.map((day) => formatCopNumber(day.raw)),
+          formatCopNumber(row.monthlyAverageRaw),
+        ];
+
+        const excelRow = worksheet.addRow(dataRow);
+
+        // Style data cells
+        excelRow.eachCell((cell, colNumber) => {
+          cell.font = { size: 9 };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+
+          if (colNumber === 1 || colNumber === 2) {
+            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+          } else {
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          }
+
+          // Color coding for daily values
+          if (colNumber >= 5 && colNumber <= 4 + daysHeader.length) {
+            const dayIndex = colNumber - 5;
+            const dayData = row.dailyValues[dayIndex];
+            if (dayData && dayData.value !== null) {
+              const argbColor = getExcelColor(dayData.value);
+              cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: argbColor },
+              };
+            }
+          }
+
+          // Monthly average column
+          if (colNumber === 4 + daysHeader.length + 1) {
+            const argbColor = getExcelColor(row.monthlyAverage);
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: argbColor },
+            };
+            cell.font = { bold: true, size: 9 };
+          }
+        });
+      });
+    }
 
     // Footer rows - QAF Daily
     const qafRow = worksheet.addRow([
@@ -3266,7 +3354,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     aria-label="COP Analysis Table"
                   >
                     <thead>
-                      <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.15em] font-black text-[11px] h-20 shadow-lg">
+                      <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.15em] font-black text-[13px] h-20 shadow-lg">
                         <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-3 border-r border-white/10 w-14 rounded-tl-[2rem] text-center shadow-xl">
                           #
                         </th>
@@ -3285,10 +3373,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             className="px-2 border-r border-white/5 w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
                           >
                             <div className="flex flex-col items-center">
-                              <span className="opacity-40 group-hover/h:opacity-100 transition-opacity">
+                              <span className="opacity-40 group-hover/h:opacity-100 transition-opacity text-[11px]">
                                 Day
                               </span>
-                              <span className="text-sm font-black">{day}</span>
+                              <span className="text-[13px] font-black">{day}</span>
                             </div>
                           </th>
                         ))}
@@ -3324,15 +3412,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     ...provided.draggableProps.style,
                                   }}
                                 >
-                                  <td className="sticky left-0 z-30 px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors">
+                                  <td className="sticky left-0 z-30 px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors text-[13px]">
                                     {rowIndex + 1}
                                   </td>
-                                  <td className="sticky left-14 z-30 px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors">
+                                  <td className="sticky left-14 z-30 px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors text-[13px]">
                                     <div className="flex flex-col">
                                       <span className="truncate">{row.parameter.parameter}</span>
-                                      <span className="text-[10px] font-bold text-slate-400 dark:text-ubuntu-warmGrey uppercase tracking-tighter">
-                                        {row.parameter.unit}
-                                      </span>
+                                      {/* Plant Unit Display Removed as per request */}
                                     </div>
                                   </td>
                                   <td className="px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono">
@@ -3361,7 +3447,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         className={`px-2 py-4 whitespace-nowrap text-center border-r border-slate-200 dark:border-slate-700/50 transition-colors duration-200 hover:brightness-95 ${colors.bg}`}
                                       >
                                         <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                          <span className={`font-bold text-xs ${colors.text}`}>
+                                          <span className={`font-bold text-[13px] ${colors.text}`}>
                                             {formatCopNumber(day.raw)}
                                           </span>
                                           {day.raw !== undefined && (
@@ -3386,19 +3472,19 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                               </div>
 
                                               <div className="space-y-2">
-                                                <div className="flex justify-between items-center">
+                                                <div className="flex justify-between items-center text-[13px]">
                                                   <span className="text-white/60 font-medium">
                                                     {t.average}
                                                   </span>
-                                                  <span className="font-mono text-ubuntu-orange font-bold">
+                                                  <span className="text-ubuntu-orange font-bold">
                                                     {formatCopNumber(day.raw)} {row.parameter.unit}
                                                   </span>
                                                 </div>
-                                                <div className="flex justify-between items-center text-[11px]">
+                                                <div className="flex justify-between items-center text-[13px]">
                                                   <span className="text-white/60 font-medium">
                                                     Target
                                                   </span>
-                                                  <span className="font-mono text-emerald-400">
+                                                  <span className="text-emerald-400">
                                                     {(() => {
                                                       const { min, max } = getMinMaxForCementType(
                                                         row.parameter,
@@ -3409,11 +3495,11 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                                   </span>
                                                 </div>
                                                 {day.value !== null && (
-                                                  <div className="flex justify-between items-center text-[11px]">
+                                                  <div className="flex justify-between items-center text-[13px]">
                                                     <span className="text-white/60 font-medium">
                                                       Performance
                                                     </span>
-                                                    <span className="font-mono text-blue-400">
+                                                    <span className="text-blue-400">
                                                       {day.value.toFixed(1)}%
                                                     </span>
                                                   </div>
@@ -3435,7 +3521,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                         className={`sticky right-0 z-20 px-4 py-4 whitespace-nowrap text-center border-l border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 w-20 font-black shadow-[-4px_0_10px_rgba(0,0,0,0.05)]`}
                                       >
                                         <span
-                                          className={`${avgColors.text} text-sm font-black drop-shadow-sm`}
+                                          className={`${avgColors.text} text-[13px] font-black drop-shadow-sm`}
                                         >
                                           {formatCopNumber(row.monthlyAverageRaw)}
                                         </span>
@@ -3468,7 +3554,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <tr className="border-t-2 border-slate-300 dark:border-white/10">
                         <td
                           colSpan={4}
-                          className="sticky left-0 z-30 px-6 py-6 text-right text-[11px] font-black tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
+                          className="sticky left-0 z-30 px-6 py-6 text-right text-[13px] font-black tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
                         >
                           Quality Adherence (QAF)
                         </td>
@@ -3480,20 +3566,20 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               className={`px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
                             >
                               <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                <span className="text-sm font-black drop-shadow-sm">
+                                <span className="text-[13px] font-black drop-shadow-sm">
                                   {qaf.value !== null && !isNaN(qaf.value)
                                     ? `${formatCopNumber(qaf.value)}%`
                                     : '-'}
                                 </span>
                                 {qaf.total > 0 && (
                                   <div className="absolute bottom-full mb-4 w-56 p-5 bg-ubuntu-aubergine/95 backdrop-blur-xl text-white rounded-[1.5rem] opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/20 text-center scale-90 group-hover/cell:scale-100">
-                                    <div className="text-[10px] font-black uppercase tracking-widest mb-2 text-white/60">
+                                    <div className="text-[13px] font-black uppercase tracking-widest mb-2 text-white/60">
                                       Compliance Status
                                     </div>
                                     <div className="text-xl font-black mb-1">
                                       {formatCopNumber(qaf.value)}%
                                     </div>
-                                    <div className="text-[11px] font-bold text-ubuntu-warmGrey">
+                                    <div className="text-[13px] font-bold text-ubuntu-warmGrey">
                                       {qaf.inRange} of {qaf.total} metrics in target
                                     </div>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-ubuntu-aubergine/95"></div>
@@ -3511,7 +3597,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                               className={`sticky right-0 z-30 px-6 py-6 text-center shadow-[-8px_0_20px_rgba(0,0,0,0.2)] ${colors.bg} ${colors.text} font-black text-xl border-l border-white/10`}
                             >
                               <div className="flex flex-col items-center">
-                                <span className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-1">
+                                <span className="text-[13px] font-black uppercase tracking-widest opacity-60 mb-1">
                                   Index
                                 </span>
                                 <span className="drop-shadow-md">
@@ -3528,7 +3614,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
                         <td
                           colSpan={4}
-                          className="sticky left-0 z-30 px-6 py-5 text-right text-[11px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                          className="sticky left-0 z-30 px-6 py-5 text-right text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
                         >
                           Moisture Content (%)
                         </td>
@@ -3542,7 +3628,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             return (
                               <td
                                 key={`moisture-${day}`}
-                                className="px-2 py-5 text-center border-r border-slate-200 dark:border-white/5 font-mono text-blue-700 dark:text-blue-400 font-black text-xs"
+                                className="py-4 px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-[13px]"
                               >
                                 {dailyAverage !== undefined && !isNaN(dailyAverage)
                                   ? `${formatCopNumber(dailyAverage)}%`
@@ -3567,7 +3653,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
                         <td
                           colSpan={4}
-                          className="sticky left-0 z-30 px-6 py-5 text-right text-[11px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                          className="sticky left-0 z-30 px-6 py-5 text-right text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
                         >
                           Throughput Capacity (TPH)
                         </td>
@@ -3586,7 +3672,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             return (
                               <td
                                 key={`capacity-${day}`}
-                                className="px-2 py-5 text-center border-r border-slate-200 dark:border-white/5 font-mono text-emerald-700 dark:text-emerald-400 font-black text-xs"
+                                className="py-4 px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-emerald-700 dark:text-emerald-400 font-bold text-[13px]"
                               >
                                 {capacity !== null && !isNaN(capacity)
                                   ? formatCopNumber(capacity)
@@ -3627,7 +3713,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                         >
                           <td
                             colSpan={4}
-                            className="sticky left-0 z-30 px-6 py-4 text-right text-[10px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange"
+                            className="sticky left-0 z-30 px-6 py-4 text-right text-[13px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange"
                           >
                             {row.parameter.parameter}
                           </td>
@@ -3636,13 +3722,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             return (
                               <td
                                 key={dayIndex}
-                                className={`px-2 py-4 text-center border-r border-white/5 ${colors.bg} font-mono text-[10px] font-bold`}
+                                className={`px-2 py-4 text-center border-r border-white/5 ${colors.bg} text-[13px] font-bold`}
                               >
                                 {formatCopNumber(day.raw)}
                               </td>
                             );
                           })}
-                          <td className="sticky right-0 z-30 px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-sm shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white">
+                          <td className="sticky right-0 z-30 px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white">
                             {formatCopNumber(row.monthlyAverageRaw)}
                           </td>
                         </tr>

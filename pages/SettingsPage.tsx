@@ -4,15 +4,58 @@ import { Language } from '../types';
 import CogIcon from '../components/icons/CogIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import LanguageIcon from '../components/icons/LanguageIcon';
-import BellIcon from '../components/icons/BellIcon';
 import { supabase } from '../utils/pocketbaseClient';
+import { EnhancedButton, EnhancedCard } from '../components/ui/EnhancedComponents';
 
-// Import Enhanced Components
-import {
-  EnhancedButton,
-  EnhancedCard,
-  useAccessibility,
-} from '../components/ui/EnhancedComponents';
+// Icons using Lucide style (approximated with existing components or SVGs)
+const UserIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+    <circle cx="12" cy="7" r="4"></circle>
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="2" y1="12" x2="22" y2="12"></line>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+  </svg>
+);
 
 interface SettingsPageProps {
   t: Record<string, string>;
@@ -26,14 +69,45 @@ const SettingsCard: React.FC<{
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
-}> = ({ title, icon, children }) => (
-  <EnhancedCard className="w-full">
-    <div className="flex items-center gap-3 p-4 border-b border-slate-200">
-      <div className="text-slate-500">{icon}</div>
-      <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
+  className?: string; // Add className prop
+  description?: string;
+}> = ({ title, icon, children, className = '', description }) => (
+  <div
+    className={`glass-card overflow-hidden border-0 shadow-lg ring-1 ring-white/20 ${className}`}
+  >
+    <div className="bg-gradient-to-r from-slate-50/80 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-900/50 p-4 border-b border-white/20 flex items-start gap-4">
+      <div className="p-2 bg-gradient-to-br from-ubuntu-orange to-pink-500 rounded-lg shadow-md text-white">
+        {icon}
+      </div>
+      <div>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white leading-tight">{title}</h3>
+        {description && (
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>
+        )}
+      </div>
     </div>
-    <div className="p-6 space-y-6">{children}</div>
-  </EnhancedCard>
+    <div className="p-6 space-y-6 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm">
+      {children}
+    </div>
+  </div>
+);
+
+// Styled Input Component
+const UbuntuInput = ({
+  label,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) => (
+  <div className="group">
+    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-ubuntu-orange">
+      {label}
+    </label>
+    <div className="relative">
+      <input
+        {...props}
+        className="w-full px-4 py-3 bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-ubuntu-orange focus:border-ubuntu-orange transition-all duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm/50"
+      />
+    </div>
+  </div>
 );
 
 const SettingsPage: React.FC<SettingsPageProps> = ({
@@ -43,49 +117,23 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   currentLanguage,
   onLanguageChange,
 }) => {
-  // Permission check removed - Settings now accessible to all users
-
   const [passwordData, setPasswordData] = useState({
     current: '',
     new: '',
     confirm: '',
   });
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    projectUpdates: false,
-  });
-
-  // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-
-  // Load notification preferences from localStorage
-  React.useEffect(() => {
-    const savedPrefs = localStorage.getItem('sipoma_notification_prefs');
-    if (savedPrefs) {
-      try {
-        setNotificationPrefs(JSON.parse(savedPrefs));
-      } catch {
-        // Error logging removed for production
-      }
-    }
-  }, []);
-
-  // Save notification preferences to localStorage
-  const saveNotificationPrefs = (prefs: typeof notificationPrefs) => {
-    setNotificationPrefs(prefs);
-    localStorage.setItem('sipoma_notification_prefs', JSON.stringify(prefs));
-  };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordData.new !== passwordData.confirm) {
+      // Use a more subtle notification if possible, but keeping alert for now as per constraints
       alert(t.password_no_match);
       return;
     }
     try {
-      // PocketBase requires the current password for password change
       const result = await supabase.collection('users').update(user.id, {
         password: passwordData.new,
-        passwordConfirm: passwordData.confirm, // PocketBase requires password confirmation
+        passwordConfirm: passwordData.confirm,
         oldPassword: passwordData.current,
       });
 
@@ -102,192 +150,148 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
   if (!user) {
     return (
-      <div className="p-6 lg:p-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl font-bold text-slate-900">{t.header_settings}</h1>
-          <p className="mt-2 text-slate-600">Loading user information...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-12 w-12 bg-slate-200 dark:bg-slate-700 rounded-full mb-4"></div>
+          <div className="h-4 w-48 bg-slate-200 dark:bg-slate-700 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
-      <div className="h-full p-4 lg:p-6 xl:p-8">
-        <div className="w-full">
-          {/* Header Section */}
-          <div className="mb-8 lg:mb-12">
-            <div className="text-center lg:text-left">
-              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 bg-clip-text text-transparent mb-3">
-                {t.header_settings}
-              </h1>
-              <p className="text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0">
-                {t.settings_page_subtitle}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[url('https://res.cloudinary.com/practicaldev/image/fetch/s--_MFOcsk1--/c_limit%2Cf_auto%2Cfl_progressive%2Cq_auto%2Cw_880/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/bg4s1a9w6q1j2j6z2c.jpg')] bg-cover bg-fixed bg-center">
+      {/* Abstract Ubuntu-like Overlay */}
+      <div className="absolute inset-0 bg-slate-100/80 dark:bg-slate-900/80 backdrop-blur-xl z-0"></div>
 
-          {/* Settings Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-            {/* Profile Information */}
-            <div className="xl:col-span-2">
-              <SettingsCard title={t.profile_information} icon={<CogIcon className="w-6 h-6" />}>
-                <div className="flex flex-col lg:flex-row items-center gap-8">
-                  <div className="flex-shrink-0">
+      <div className="relative z-10 p-4 lg:p-8 max-w-7xl mx-auto h-full space-y-8 animate-fade-in">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-200/50 dark:border-slate-700/50">
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-orange mb-2 tracking-tight">
+              {t.header_settings}
+            </h1>
+            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl font-medium">
+              {t.settings_page_subtitle || 'Manage your workspace preferences and profile.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Profile Information (Left Col - Span 2) */}
+          <div className="xl:col-span-2 space-y-8">
+            <SettingsCard
+              title={t.profile_information}
+              icon={<UserIcon />}
+              description="View and update your personal account details."
+            >
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                {/* Avatar Section */}
+                <div className="flex-shrink-0 flex flex-col items-center space-y-4 w-full md:w-auto">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-ubuntu-orange to-purple-600 rounded-full blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
                     {user.avatar_url ? (
-                      <div className="relative">
-                        <img
-                          className="h-24 w-24 lg:h-32 lg:w-32 rounded-full object-cover ring-4 ring-white shadow-xl"
-                          src={user.avatar_url}
-                          alt="User avatar"
-                        />
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
-                      </div>
+                      <img
+                        className="relative h-32 w-32 rounded-full object-cover ring-4 ring-white dark:ring-slate-800 shadow-2xl"
+                        src={user.avatar_url}
+                        alt="User avatar"
+                      />
                     ) : (
-                      <div className="h-24 w-24 lg:h-32 lg:w-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-xl">
-                        <CogIcon className="h-12 w-12 lg:h-16 lg:w-16 text-white" />
+                      <div className="relative h-32 w-32 rounded-full bg-gradient-to-br from-ubuntu-orange to-purple-600 flex items-center justify-center shadow-2xl ring-4 ring-white dark:ring-slate-800">
+                        <span className="text-4xl text-white font-bold">
+                          {user.full_name?.charAt(0) || user.username?.charAt(0)}
+                        </span>
                       </div>
                     )}
+                    <div
+                      className="absolute bottom-2 right-2 w-5 h-5 bg-green-500 rounded-full border-2 border-white dark:border-slate-800 ring-1 ring-green-600 shadow-sm"
+                      title="Active"
+                    ></div>
                   </div>
-                  <div className="flex-1 w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm lg:text-base">
-                      <div className="space-y-3">
-                        <div>
-                          <span className="font-semibold text-slate-500 block text-xs uppercase tracking-wide">
-                            {t.full_name_label}
-                          </span>
-                          <span className="text-slate-900 font-medium">{user.full_name}</span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-500 block text-xs uppercase tracking-wide">
-                            {t.username_label || 'Username'}
-                          </span>
-                          <span className="text-slate-900 font-medium">{user.username}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div>
-                          <span className="font-semibold text-slate-500 block text-xs uppercase tracking-wide">
-                            {t.role_label}
-                          </span>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                            {user.role}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-500 block text-xs uppercase tracking-wide">
-                            Status
-                          </span>
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                            Active
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="text-center">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-ubuntu-aubergine/10 text-ubuntu-aubergine dark:bg-purple-900/30 dark:text-purple-300 border border-ubuntu-aubergine/10">
+                      {user.role}
+                    </span>
                   </div>
                 </div>
-                <div className="flex justify-end mt-6 pt-6 border-t border-slate-200">
-                  <EnhancedButton
-                    variant="primary"
-                    size="md"
-                    onClick={onOpenProfileModal}
-                    aria-label={t.edit_profile || 'Edit profile'}
-                    className="shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    {t.edit_profile}
-                  </EnhancedButton>
-                </div>
-              </SettingsCard>
-            </div>
 
-            {/* Change Password */}
-            <SettingsCard title={t.change_password} icon={<ShieldCheckIcon className="w-6 h-6" />}>
-              <form onSubmit={handlePasswordUpdate} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      {t.current_password}
-                    </label>
-                    <input
-                      type="password"
-                      value={passwordData.current}
-                      onChange={(e) => setPasswordData((p) => ({ ...p, current: e.target.value }))}
-                      autoComplete="current-password"
-                      className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                      placeholder="Enter current password"
-                      required
-                    />
+                {/* Info Grid */}
+                <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                  <div className="space-y-1">
+                    <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">
+                      {t.full_name_label}
+                    </span>
+                    <p className="text-lg font-bold text-slate-800 dark:text-slate-100 break-words">
+                      {user.full_name}
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">
-                        {t.new_password}
-                      </label>
-                      <input
-                        type="password"
-                        value={passwordData.new}
-                        onChange={(e) => setPasswordData((p) => ({ ...p, new: e.target.value }))}
-                        autoComplete="new-password"
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                        placeholder="Enter new password"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-2">
-                        {t.confirm_password}
-                      </label>
-                      <input
-                        type="password"
-                        value={passwordData.confirm}
-                        onChange={(e) =>
-                          setPasswordData((p) => ({ ...p, confirm: e.target.value }))
-                        }
-                        autoComplete="new-password"
-                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
-                        placeholder="Confirm new password"
-                        required
-                      />
+                  <div className="space-y-1">
+                    <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">
+                      {t.username_label || 'Username'}
+                    </span>
+                    <p className="text-lg font-mono text-slate-800 dark:text-slate-100">
+                      {user.username}
+                    </p>
+                  </div>
+                  <div className="space-y-1 md:col-span-2">
+                    <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">
+                      Account Status
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                      <p className="font-medium text-green-700 dark:text-green-400">
+                        Active - Full Access
+                      </p>
                     </div>
                   </div>
                 </div>
-                <div className="flex justify-end pt-4 border-t border-slate-200">
-                  <EnhancedButton
-                    variant="primary"
-                    size="md"
-                    type="submit"
-                    aria-label={t.save_password || 'Save password'}
-                    className="shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    {t.save_password}
-                  </EnhancedButton>
-                </div>
-              </form>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <EnhancedButton
+                  variant="primary"
+                  onClick={onOpenProfileModal}
+                  aria-label={t.edit_profile || 'Edit profile'}
+                  className="!bg-ubuntu-orange hover:!bg-orange-600 shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 text-white font-semibold px-6"
+                >
+                  <CogIcon className="w-4 h-4 mr-2" />
+                  {t.edit_profile}
+                </EnhancedButton>
+              </div>
             </SettingsCard>
 
-            {/* Language Settings */}
-            <SettingsCard title={t.language_settings} icon={<LanguageIcon className="w-6 h-6" />}>
-              <div className="space-y-4">
-                <div>
+            <SettingsCard
+              title={t.language_settings}
+              icon={<GlobeIcon />}
+              description="Localize your application interface."
+            >
+              <div className="flex flex-col sm:flex-row gap-6 p-4 rounded-xl bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30">
+                <div className="flex-1">
                   <label
                     htmlFor="language-select"
-                    className="block text-sm font-semibold text-slate-700 mb-3"
+                    className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2"
                   >
                     {t.language}
                   </label>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                    Select your preferred language for the dashboard interface. Changes apply
+                    immediately.
+                  </p>
+                </div>
+                <div className="w-full sm:w-64">
                   <div className="relative">
                     <select
                       id="language-select"
                       value={currentLanguage}
                       onChange={(e) => onLanguageChange(e.target.value as Language)}
-                      className="w-full px-4 py-3 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white appearance-none"
+                      className="w-full pl-4 pr-10 py-3 appearance-none bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-ubuntu-orange focus:ring-1 focus:ring-ubuntu-orange transition-all font-medium text-slate-700 dark:text-slate-200 cursor-pointer hover:border-slate-300 dark:hover:border-slate-600"
                     >
-                      <option value="en">🇺🇸 English</option>
+                      <option value="en">🇺🇸 English (US)</option>
                       <option value="id">🇮🇩 Bahasa Indonesia</option>
                     </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                    <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
                       <svg
-                        className="w-5 h-5 text-slate-400"
+                        className="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -295,107 +299,98 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
+                          strokeWidth="2"
                           d="M19 9l-7 7-7-7"
-                        />
+                        ></path>
                       </svg>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 text-blue-600 mt-0.5">
-                      <svg fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-blue-900 mb-1">Language Settings</h4>
-                      <p className="text-sm text-blue-700">
-                        Choose your preferred language for the application interface.
-                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             </SettingsCard>
+          </div>
 
-            {/* Notifications */}
-            <div className="xl:col-span-2">
-              <SettingsCard title={t.notifications} icon={<BellIcon className="w-6 h-6" />}>
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-slate-900 mb-2">
-                          {t.push_notifications_project}
-                        </h4>
-                        <p className="text-sm text-slate-600">
-                          {t.push_notifications_project_desc}
-                        </p>
-                      </div>
-                      <div className="ml-6">
-                        <EnhancedButton
-                          variant={notificationPrefs.projectUpdates ? 'primary' : 'outline'}
-                          size="md"
-                          onClick={() => {
-                            const newPrefs = {
-                              ...notificationPrefs,
-                              projectUpdates: !notificationPrefs.projectUpdates,
-                            };
-                            saveNotificationPrefs(newPrefs);
-                            announceToScreenReader(
-                              `Project deadline reminders ${
-                                newPrefs.projectUpdates ? 'enabled' : 'disabled'
-                              }`
-                            );
-                          }}
-                          aria-label={`${
-                            notificationPrefs.projectUpdates ? t.disable : t.enable
-                          } ${t.push_notifications_project}`}
-                          aria-pressed={notificationPrefs.projectUpdates}
-                          className="shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          {notificationPrefs.projectUpdates
-                            ? t.enabled || 'Enabled'
-                            : t.disabled || 'Disabled'}
-                        </EnhancedButton>
-                      </div>
-                    </div>
+          {/* Right Column - Password */}
+          <div className="xl:col-span-1">
+            <SettingsCard
+              title={t.change_password}
+              icon={<LockIcon />}
+              className="h-full"
+              description="Ensure your account stays secure."
+            >
+              <form onSubmit={handlePasswordUpdate} className="space-y-5">
+                <div className="p-4 rounded-lg bg-orange-50/50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/30 mb-2">
+                  <p className="text-xs text-orange-800 dark:text-orange-300 flex items-start gap-2">
+                    <svg
+                      className="w-4 h-4 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    Password must be at least 8 characters long and include a mix of letters and
+                    numbers.
+                  </p>
+                </div>
+
+                <UbuntuInput
+                  label={t.current_password}
+                  type="password"
+                  value={passwordData.current}
+                  onChange={(e) => setPasswordData((p) => ({ ...p, current: e.target.value }))}
+                  autoComplete="current-password"
+                  placeholder="..."
+                  required
+                />
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
                   </div>
-
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <svg
-                          className="w-6 h-6 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-green-900 mb-1">Notifications Active</h4>
-                        <p className="text-sm text-green-700">
-                          Your notification preferences have been saved successfully.
-                        </p>
-                      </div>
-                    </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white dark:bg-slate-900 px-2 text-xs text-slate-400 uppercase">
+                      New Credentials
+                    </span>
                   </div>
                 </div>
-              </SettingsCard>
-            </div>
+
+                <UbuntuInput
+                  label={t.new_password}
+                  type="password"
+                  value={passwordData.new}
+                  onChange={(e) => setPasswordData((p) => ({ ...p, new: e.target.value }))}
+                  autoComplete="new-password"
+                  placeholder="..."
+                  required
+                />
+
+                <UbuntuInput
+                  label={t.confirm_password}
+                  type="password"
+                  value={passwordData.confirm}
+                  onChange={(e) => setPasswordData((p) => ({ ...p, confirm: e.target.value }))}
+                  autoComplete="new-password"
+                  placeholder="..."
+                  required
+                />
+
+                <div className="pt-4">
+                  <EnhancedButton
+                    variant="primary"
+                    type="submit"
+                    className="w-full !bg-slate-800 hover:!bg-slate-900 dark:!bg-slate-700 dark:hover:!bg-slate-600 text-white shadow-lg py-3"
+                  >
+                    {t.save_password}
+                  </EnhancedButton>
+                </div>
+              </form>
+            </SettingsCard>
           </div>
         </div>
       </div>

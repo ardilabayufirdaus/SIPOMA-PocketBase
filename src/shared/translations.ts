@@ -117,8 +117,7 @@ export const translations = {
     language_settings: 'Language Settings',
     language: 'Language',
     notifications: 'Notifications',
-    push_notifications_project: 'Project Deadline Reminders',
-    push_notifications_project_desc: 'Get push notifications for upcoming project task deadlines.',
+
     edit_profile: 'Edit Profile',
     save_changes: 'Save Changes',
     edit_profile_title: 'Edit Profile',
@@ -759,9 +758,7 @@ export const translations = {
     language_settings: 'Pengaturan Bahasa',
     language: 'Bahasa',
     notifications: 'Notifikasi',
-    push_notifications_project: 'Pengingat Tenggat Proyek',
-    push_notifications_project_desc:
-      'Dapatkan notifikasi push untuk tenggat waktu tugas proyek yang akan datang.',
+
     edit_profile: 'Ubah Profil',
     save_changes: 'Simpan Perubahan',
     edit_profile_title: 'Ubah Profil',
