@@ -291,7 +291,8 @@ export type Page =
   | 'database'
   | 'rkc_operations'
   | 'whatsapp-reports'
-  | 'inspection';
+  | 'inspection'
+  | 'server';
 
 export type Language = 'en' | 'id';
 export type Theme = 'light';

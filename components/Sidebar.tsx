@@ -20,6 +20,7 @@ import FireIcon from './icons/FireIcon';
 import Bars4Icon from './icons/Bars4Icon';
 import BellIcon from './icons/BellIcon';
 import ClockIcon from './icons/ClockIcon';
+import ServerIcon from './icons/ServerIcon';
 import ClipboardCheckIcon from './icons/ClipboardCheckIcon';
 import NotificationCreator from './NotificationCreator';
 import { usePermissions } from '../utils/permissions';
@@ -268,6 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const usersButtonRef = useRef<HTMLButtonElement>(null);
   const notificationCreatorButtonRef = useRef<HTMLButtonElement>(null);
   const databaseButtonRef = useRef<HTMLButtonElement>(null);
+  const serverButtonRef = useRef<HTMLButtonElement>(null);
 
   // ESC key handler for mobile
   useEffect(() => {
@@ -441,6 +443,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                 label={t.database || 'Database'}
                 isActive={currentPage === 'database'}
                 onClick={() => handleNavigate('database')}
+                isSidebarExpanded={isExpanded}
+              />
+            )}
+
+            {isSuperAdmin(currentUser?.role) && (
+              <NavigationItem
+                ref={serverButtonRef}
+                icon={<ServerIcon className={iconClass} />}
+                label="Server"
+                isActive={currentPage === 'server'}
+                onClick={() => handleNavigate('server')}
                 isSidebarExpanded={isExpanded}
               />
             )}
