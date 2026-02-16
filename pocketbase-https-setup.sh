@@ -68,7 +68,7 @@ EOF
 cat << EOF | sudo tee /etc/nginx/sites-available/pocketbase
 server {
     listen 80;
-    server_name 141.11.25.69;
+    server_name db.sipoma.online;
 
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -133,8 +133,8 @@ echo "sudo certbot --nginx -d yourdomain.com"
 echo ""
 echo "For IP address access, you may need to configure your firewall or use a VPN"
 echo ""
-echo "PocketBase is accessible at: https://141.11.25.69"
-echo "Admin panel: https://141.11.25.69/_/"
+echo "PocketBase is accessible at: https://db.sipoma.online"
+echo "Admin panel: https://db.sipoma.online/_/"
 echo ""
-echo "Make sure to update your frontend to use: https://141.11.25.69"</content>
+echo "Make sure to update your frontend to use: https://db.sipoma.online"</content>
 <parameter name="filePath">d:\Repository Github\sipoma-ver-2\sipoma-versi-2\pocketbase-https-setup.sh

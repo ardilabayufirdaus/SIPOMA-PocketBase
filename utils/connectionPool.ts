@@ -44,7 +44,7 @@ class ConnectionPool {
       logger.info('Inisialisasi koneksi ke PocketBase...');
 
       // Always use direct URL for health check to avoid proxy issues
-      const healthCheckUrl = 'https://api.sipoma.site/api/health';
+      const healthCheckUrl = 'https://db.sipoma.online/api/health';
 
       // Coba ping server untuk memverifikasi koneksi
       const response = await fetch(healthCheckUrl, {
@@ -84,7 +84,7 @@ class ConnectionPool {
     this.healthCheckInterval = setInterval(async () => {
       try {
         // Always use direct URL for health check to avoid proxy issues
-        const response = await fetch('https://api.sipoma.site/api/health', {
+        const response = await fetch('https://db.sipoma.online/api/health', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

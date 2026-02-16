@@ -10,7 +10,7 @@ export default defineConfig(async (_env) => {
   if (!xAiApiKey) {
     try {
       const { default: PocketBase } = await import('pocketbase');
-      const pb = new PocketBase('https://api.sipoma.site');
+      const pb = new PocketBase('https://db.sipoma.online');
       // Attempt to fetch without auth
       const record = await pb.collection('api_key').getFirstListItem('provider="xai"');
       xAiApiKey = record.key;
@@ -267,7 +267,7 @@ export default defineConfig(async (_env) => {
           },
         },
         '/api': {
-          target: 'https://api.sipoma.site',
+          target: 'https://db.sipoma.online',
           changeOrigin: true,
           secure: false, // karena SSL self-signed
           ws: true, // Enable WebSocket proxying for realtime connections

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
  * - Tests connection to backend server to check for mixed content blocking
  * - Returns state variables indicating if there's a mixed content issue
  *
- * NOTE: Since backend is now HTTPS (api.sipoma.site via Caddy), mixed content
+ * NOTE: Since backend is now HTTPS (db.sipoma.online via Caddy), mixed content
  * issues should not occur. This hook now returns false by default for sipoma.site.
  */
 export const useMixedContentDetection = () => {
@@ -34,7 +34,7 @@ export const useMixedContentDetection = () => {
       // For sipoma.site with HTTPS - backend is now also HTTPS
       // So we can safely assume no mixed content issues
       if (hostname.includes('sipoma.site')) {
-        // Backend api.sipoma.site is served via HTTPS through Caddy
+        // Backend db.sipoma.online is served via HTTPS through Caddy
         // No mixed content issues should occur
         setHasMixedContentIssue(false);
         setCheckedStatus(true);
@@ -44,7 +44,7 @@ export const useMixedContentDetection = () => {
       // For other deployments, do actual check
       const checkForMixedContent = async () => {
         try {
-          const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
+          const backendUrl = import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online';
           const url =
             backendUrl.startsWith('http') || backendUrl.startsWith('/')
               ? backendUrl

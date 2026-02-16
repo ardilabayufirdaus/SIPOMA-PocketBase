@@ -65,7 +65,7 @@ const authRequired = import.meta.env.VITE_AUTH_REQUIRED !== 'false'; // Defaultn
  * Sekarang menggunakan URL langsung tanpa proxy karena PocketBase sudah HTTPS.
  */
 export const getPocketbaseUrl = (): string => {
-  return 'https://api.sipoma.site/';
+  return 'https://db.sipoma.online/';
 };
 
 // Fungsi untuk mendeteksi protokol yang berfungsi (dinonaktifkan)

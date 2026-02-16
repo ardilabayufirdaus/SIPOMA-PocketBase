@@ -20,7 +20,7 @@ sudo chown pocketbase:pocketbase /opt/pocketbase /var/lib/pocketbase
 # Create self-signed certificate for testing
 echo "Creating self-signed SSL certificate..."
 sudo mkdir -p /etc/pocketbase/ssl
-sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/pocketbase/ssl/key.pem -out /etc/pocketbase/ssl/cert.pem -days 365 -nodes -subj "/C=ID/ST=Jakarta/L=Jakarta/O=SIPOMA/CN=141.11.25.69"
+sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/pocketbase/ssl/key.pem -out /etc/pocketbase/ssl/cert.pem -days 365 -nodes -subj "/C=ID/ST=Jakarta/L=Jakarta/O=SIPOMA/CN=db.sipoma.online"
 
 # Set proper permissions
 sudo chown pocketbase:pocketbase /etc/pocketbase/ssl/*.pem
@@ -55,7 +55,7 @@ sudo systemctl start pocketbase-https
 echo ""
 echo "=== PocketBase HTTPS Setup Complete ==="
 echo "PocketBase is now running on HTTPS port 443"
-echo "Admin panel: https://141.11.25.69/_/"
+echo "Admin panel: https://db.sipoma.online/_/"
 echo ""
 echo "Note: Using self-signed certificate - browsers will show security warning"
 echo "For production, use Let's Encrypt or commercial SSL certificate"

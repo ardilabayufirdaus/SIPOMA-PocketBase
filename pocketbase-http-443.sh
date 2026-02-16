@@ -33,7 +33,7 @@ sudo systemctl start pocketbase
 echo ""
 echo "=== Setup Complete ==="
 echo "PocketBase is now running on HTTP port 443"
-echo "Admin panel: http://141.11.25.69:443/_/"
+echo "Admin panel: http://db.sipoma.online:443/_/"
 echo ""
 echo "Note: This uses HTTP on port 443 - not true HTTPS"
 echo "For proper HTTPS, we need to debug the SSL certificate issue"

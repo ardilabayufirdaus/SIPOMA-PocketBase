@@ -26,7 +26,7 @@ wrangler deploy
 
 ## Konfigurasi
 
-Worker dikonfigurasi untuk merutekan request dari `sipoma.site/api/*` ke PocketBase di `https://api.sipoma.site/`.
+Worker dikonfigurasi untuk merutekan request dari `sipoma.site/api/*` ke PocketBase di `https://db.sipoma.online/`.
 
 ## Testing
 

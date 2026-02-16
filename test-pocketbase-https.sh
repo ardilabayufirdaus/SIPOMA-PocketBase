@@ -11,7 +11,7 @@ pkill -f "pocketbase serve" 2>/dev/null || true
 sudo mkdir -p /etc/pocketbase/ssl
 if [ ! -f /etc/pocketbase/ssl/cert.pem ]; then
     echo "Generating SSL certificate..."
-    sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/pocketbase/ssl/key.pem -out /etc/pocketbase/ssl/cert.pem -days 365 -nodes -subj "/C=ID/ST=Jakarta/L=Jakarta/O=SIPOMA/CN=141.11.25.69"
+    sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/pocketbase/ssl/key.pem -out /etc/pocketbase/ssl/cert.pem -days 365 -nodes -subj "/C=ID/ST=Jakarta/L=Jakarta/O=SIPOMA/CN=db.sipoma.online"
 fi
 
 # Test run as root

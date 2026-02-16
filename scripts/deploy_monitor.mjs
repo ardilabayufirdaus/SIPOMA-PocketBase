@@ -4,7 +4,7 @@ import path from 'path';
 
 // CONFIG
 const SSH_CONFIG = {
-  host: '141.11.25.69',
+  host: 'db.sipoma.online',
   port: 22,
   username: 'root',
   password: 'makassar@270989',

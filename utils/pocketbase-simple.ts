@@ -46,7 +46,7 @@ export const isSecureContext = (): boolean => {
  */
 export const getPocketbaseUrl = (): string => {
   // Use environment variable if available, otherwise fallback
-  const url = import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
+  const url = import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online';
   return url.replace(/\/$/, ''); // Remove trailing slash
 };
 

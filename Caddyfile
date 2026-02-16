@@ -1,4 +1,4 @@
-api.sipoma.site {
+db.sipoma.online {
     # Enable automatic HTTPS
     tls {
         protocols tls1.2 tls1.3

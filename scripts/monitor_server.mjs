@@ -1,7 +1,7 @@
 import PocketBase from 'pocketbase';
 import 'dotenv/config';
 
-const PB_URL = process.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site';
+const PB_URL = process.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online';
 const PB_EMAIL = process.env.PB_EMAIL || 'ardila.firdaus@sig.id';
 const PB_PASSWORD = process.env.PB_PASSWORD || 'makassar@270989';
 

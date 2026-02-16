@@ -1,6 +1,6 @@
 import PocketBase from 'pocketbase';
 
-const PB_URL = 'https://api.sipoma.site';
+const PB_URL = 'https://db.sipoma.online';
 const pb = new PocketBase(PB_URL);
 
 async function checkDowntime() {

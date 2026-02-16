@@ -52,8 +52,8 @@ sudo systemctl start caddy
 
 echo ""
 echo "=== Setup Complete ==="
-echo "PocketBase is now accessible at: https://141.11.25.69"
+echo "PocketBase is now accessible at: https://db.sipoma.online"
 echo "Caddy will automatically obtain and renew SSL certificates"
 echo ""
-echo "Update your frontend to use: https://141.11.25.69"</content>
+echo "Update your frontend to use: https://db.sipoma.online"</content>
 <parameter name="filePath">d:\Repository Github\sipoma-ver-2\sipoma-versi-2\setup-caddy-https.sh

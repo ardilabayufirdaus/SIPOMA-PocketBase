@@ -1,15 +1,17 @@
-const https = require('https');
+const http = require('http');
 const os = require('os');
 const fs = require('fs');
 
 // CONFIG
+// Menggunakan localhost karena berjalan di server yang sama (behind Cloudflare Tunnel)
 const CONFIG = {
-  pbUrl: 'api.sipoma.site',
+  pbHost: '127.0.0.1',
+  pbPort: 8090,
   pbEmail: 'ardila.firdaus@sig.id',
   pbPassword: 'makassar@270989',
   collection: 'system_status',
   recordId: 'monitor_srv_001',
-  interval: 1000,
+  interval: 2000, // Update setiap 2 detik
 };
 
 let token = '';
@@ -23,8 +25,8 @@ function login(cb) {
   });
 
   const options = {
-    hostname: CONFIG.pbUrl,
-    port: 443,
+    hostname: CONFIG.pbHost,
+    port: CONFIG.pbPort,
     path: '/api/admins/auth-with-password',
     method: 'POST',
     headers: {
@@ -33,7 +35,7 @@ function login(cb) {
     },
   };
 
-  const req = https.request(options, (res) => {
+  const req = http.request(options, (res) => {
     let body = '';
     res.on('data', (d) => (body += d));
     res.on('end', () => {
@@ -41,59 +43,19 @@ function login(cb) {
         try {
           const json = JSON.parse(body);
           token = json.token;
-          console.log('Login successful');
+          console.log('Login successful (Localhost)');
           if (cb) cb();
         } catch (e) {
           console.error('Login parse error', e);
         }
       } else {
         console.error('Admin Login failed', res.statusCode);
-        loginAsUser(cb);
+        // Retry logic could be added here
       }
     });
   });
 
-  req.on('error', (e) => console.error('Login Request Error', e));
-  req.write(data);
-  req.end();
-}
-
-function loginAsUser(cb) {
-  const data = JSON.stringify({
-    identity: CONFIG.pbEmail,
-    password: CONFIG.pbPassword,
-  });
-
-  const options = {
-    hostname: CONFIG.pbUrl,
-    port: 443,
-    path: '/api/collections/users/auth-with-password',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': data.length,
-    },
-  };
-
-  const req = https.request(options, (res) => {
-    let body = '';
-    res.on('data', (d) => (body += d));
-    res.on('end', () => {
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        try {
-          const json = JSON.parse(body);
-          token = json.token;
-          console.log('User Login successful');
-          if (cb) cb();
-        } catch (e) {
-          console.error(e);
-        }
-      } else {
-        console.error('All Login methods failed', res.statusCode);
-      }
-    });
-  });
-  req.on('error', (e) => console.error(e));
+  req.on('error', (e) => console.error('Login Request Error:', e.message));
   req.write(data);
   req.end();
 }
@@ -167,31 +129,32 @@ function sendUpdate(stats) {
   });
 
   const options = {
-    hostname: CONFIG.pbUrl,
-    port: 443,
+    hostname: CONFIG.pbHost,
+    port: CONFIG.pbPort,
     path: `/api/collections/${CONFIG.collection}/records/${CONFIG.recordId}`,
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': data.length,
-      Authorization: token, // Standard header
+      Authorization: token,
     },
   };
 
-  const req = https.request(options, (res) => {
+  const req = http.request(options, (res) => {
     if (res.statusCode === 404) {
       console.log('Record not found (404). Creating...');
       createRecord(data);
     } else if (res.statusCode === 401 || res.statusCode === 403) {
       console.log('Token expired. Re-logging...');
       token = '';
+      login(); // Re-login strictly
     } else if (res.statusCode >= 400) {
       console.error('Update Error:', res.statusCode);
     }
     res.on('data', () => {}); // Consume
   });
 
-  req.on('error', (e) => console.error('Update Request Error', e));
+  req.on('error', (e) => console.error('Update Request Error:', e.message));
   req.write(data);
   req.end();
 }
@@ -202,8 +165,8 @@ function createRecord(jsonData) {
   const data = JSON.stringify(payloadObj);
 
   const options = {
-    hostname: CONFIG.pbUrl,
-    port: 443,
+    hostname: CONFIG.pbHost,
+    port: CONFIG.pbPort,
     path: `/api/collections/${CONFIG.collection}/records`,
     method: 'POST',
     headers: {
@@ -213,7 +176,7 @@ function createRecord(jsonData) {
     },
   };
 
-  const req = https.request(options, (res) => {
+  const req = http.request(options, (res) => {
     res.on('data', () => {});
     res.on('end', () => console.log('Create attempted:', res.statusCode));
   });
@@ -223,14 +186,13 @@ function createRecord(jsonData) {
 }
 
 // MAIN LOOP
-console.log('Starting SIPOMA Native Monitor...');
+console.log('Starting SIPOMA Native Monitor (Localhost Mode)...');
 console.log(`Node ${process.version}, Platform ${process.platform}`);
+console.log(`Target: http://${CONFIG.pbHost}:${CONFIG.pbPort}`);
 
 function loop() {
   try {
     const stats = getStats();
-    // Only log occasionally or if verbose? console.log fills up logs.
-    // console.log(`Stats: CPU ${stats.cpu}%, Mem ${stats.mem}%`);
     sendUpdate(stats);
   } catch (err) {
     console.error('Loop Error:', err);

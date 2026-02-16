@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     // Note: Vercel functions support ESM if package.json has "type": "module" or .mjs extension
     // Since this is .js and project is type: module, it should work.
     const PocketBase = (await import('pocketbase')).default;
-    const pb = new PocketBase('https://api.sipoma.site');
+    const pb = new PocketBase('https://db.sipoma.online');
 
     // Attempt to fetch without auth (assuming public read or specific API rule)
     // If strict rules apply, we would need admin auth here.

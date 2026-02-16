@@ -12,7 +12,7 @@ export interface CopFooterParameter {
 
 export const useCopFooterParameters = () => {
   const [pb] = useState(
-    () => new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'https://api.sipoma.site')
+    () => new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'https://db.sipoma.online')
   );
   const [data, setData] = useState<CopFooterParameter[]>([]);
   const [loading, setLoading] = useState(false);

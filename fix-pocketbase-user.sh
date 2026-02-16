@@ -20,7 +20,7 @@ sudo chown pocketbase:pocketbase /etc/pocketbase/ssl
 # Generate SSL certificate if not exists
 if [ ! -f /etc/pocketbase/ssl/cert.pem ]; then
     echo "Generating SSL certificate..."
-    sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/pocketbase/ssl/key.pem -out /etc/pocketbase/ssl/cert.pem -days 365 -nodes -subj "/C=ID/ST=Jakarta/L=Jakarta/O=SIPOMA/CN=141.11.25.69"
+    sudo openssl req -x509 -newkey rsa:4096 -keyout /etc/pocketbase/ssl/key.pem -out /etc/pocketbase/ssl/cert.pem -days 365 -nodes -subj "/C=ID/ST=Jakarta/L=Jakarta/O=SIPOMA/CN=db.sipoma.online"
 fi
 
 # Set certificate permissions

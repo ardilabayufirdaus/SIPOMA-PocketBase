@@ -1,0 +1,14 @@
+[Unit]
+Description=Sipoma System Monitor (Local)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/sipoma-monitor
+ExecStart=/usr/bin/env node /opt/sipoma-monitor/monitor.js
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
