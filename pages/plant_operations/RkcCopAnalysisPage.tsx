@@ -695,12 +695,12 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         // (Keep existing Raw Calculation Logic - it is robust)
         // ... (Parameter fetching logic) ...
-        const paramSettings = await pb.collection('parameter_settings').getFullList({
+        const paramSettings = (await pb.collection('parameter_settings').getFullList({
           filter: `unit="${selectedUnit}" && (parameter~"H2O" || parameter~"Set. Feeder")`,
-        });
+        })) as unknown as ParameterSetting[];
 
         const paramMap = new Map<string, string>();
-        paramSettings.forEach((s: any) => paramMap.set(s.parameter, s.id));
+        paramSettings.forEach((s: ParameterSetting) => paramMap.set(s.parameter, s.id!));
 
         const h2oGypsumId = paramMap.get('H2O Gypsum (%)');
         const setGypsumId = paramMap.get('Set. Feeder Gypsum (%)');
@@ -2504,23 +2504,25 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-100 p-6">
-      <div className="max-w-full mx-auto space-y-6">
-        {/* Header Title Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 rounded-2xl shadow-xl border border-indigo-500/20 p-6">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-400/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-400/5 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-slate-400/5 rounded-full translate-y-16 -translate-x-16"></div>
+    <div className="min-h-screen bg-[#F7F7F7] dark:bg-ubuntu-aubergine text-slate-900 dark:text-slate-100 font-sans">
+      <div className="max-w-full mx-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-12">
+        {/* Premium Ubuntu Header */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-aubergine p-4 sm:p-6 lg:p-8 shadow-2xl rounded-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-ubuntu-orange opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-ubuntu-midAubergine opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
-          <div className="relative flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center ring-1 ring-white/20">
-              <TrendingUp className="w-7 h-7 text-indigo-200" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-white tracking-tight">{t.op_cop_analysis}</h2>
-              <p className="text-sm text-indigo-200/80 font-medium mt-0.5">
-                Advanced COP Performance Analytics & Monitoring Dashboard
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div className="animate-fade-in group">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-2 sm:p-2.5 bg-ubuntu-orange rounded-xl shadow-lg shadow-ubuntu-orange/30 group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-extrabold text-white tracking-tight">
+                  {t.op_cop_analysis} (RKC)
+                </h1>
+              </div>
+              <p className="text-ubuntu-warmGrey text-sm sm:text-base lg:text-lg max-w-2xl font-medium opacity-90">
+                RKC Comprehensive parameter performance monitoring and analytics.
               </p>
             </div>
 
@@ -2531,23 +2533,23 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* Sync Progress Modal */}
 
         {/* Filter Section - Separate Card */}
-        <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-slate-200/60 p-4">
-          <div className="flex flex-wrap items-end gap-4">
+        <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {/* Plant Category */}
-            <div className="flex-1 min-w-[180px]">
+            <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Layers className="w-3.5 h-3.5" />
-                Plant Category
+                <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                Category
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2555,26 +2557,26 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Unit Name */}
-            <div className="flex-1 min-w-[180px]">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Building2 className="w-3.5 h-3.5" />
+                <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-unit"
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2582,25 +2584,25 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Month */}
-            <div className="flex-1 min-w-[140px]">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2608,25 +2610,25 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Year */}
-            <div className="flex-1 min-w-[120px]">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <CalendarDays className="w-3.5 h-3.5" />
+                <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <select
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 text-sm font-medium transition-all duration-200 hover:border-slate-300 cursor-pointer"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -2710,558 +2712,396 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         </Card>
         {/* Statistical Summary Panel */}
         {showStatisticalSummary && statisticalSummary.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-blue-50 to-indigo-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-blue-800">📊 Statistical Summary</h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Ringkasan statistik parameter COP bulan ini
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest">
+                📊 Statistical Summary
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                Advanced statistical breakdown of RKC parameters for the current month.
               </p>
             </div>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 text-xs transition-all duration-300">
               {statisticalSummary.map((stat) => (
                 <div
                   key={stat.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200"
+                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
                 >
-                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
                     {stat.parameter}
                   </h3>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Mean:</span>
-                      <span className="font-mono text-slate-800 font-medium">
-                        {stat.mean !== null ? formatCopNumber(stat.mean) : '-'}
+                  <div className="space-y-2.5 font-mono text-[10px] sm:text-[11px]">
+                    {[
+                      { label: 'Mean', val: stat.mean !== null ? formatCopNumber(stat.mean) : '-' },
+                      { label: 'Median', val: stat.median !== null ? formatCopNumber(stat.median) : '-' },
+                      { label: 'Std Dev', val: stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-' },
+                      { label: 'Range', val: `${stat.min !== null ? formatCopNumber(stat.min) : '-'}-${stat.max !== null ? formatCopNumber(stat.max) : '-'}` },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          {item.label}
+                        </span>
+                        <span className="text-slate-900 dark:text-white font-black">
+                          {item.val}
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Complete
                       </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Median:</span>
-                      <span className="font-mono text-slate-800 font-medium">
-                        {stat.median !== null ? formatCopNumber(stat.median) : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Std:</span>
-                      <span className="font-mono text-slate-800 font-medium">
-                        {stat.stdDev !== null ? formatCopNumber(stat.stdDev) : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Range:</span>
-                      <span className="font-mono text-slate-800 font-medium text-xs">
-                        {stat.min !== null ? formatCopNumber(stat.min) : '-'}-
-                        {stat.max !== null ? formatCopNumber(stat.max) : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Complete:</span>
                       <span
-                        className={`font-mono font-medium ${
+                        className={`font-black ${
                           stat.completeness >= 80
-                            ? 'text-green-600'
+                            ? 'text-emerald-600'
                             : stat.completeness >= 60
-                              ? 'text-yellow-600'
-                              : 'text-red-600'
+                              ? 'text-ubuntu-orange'
+                              : 'text-rose-600'
                         }`}
                       >
                         {stat.completeness.toFixed(0)}%
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Trend:</span>
-                      <span
-                        className={`font-medium text-xs ${
-                          stat.trend === 'increasing'
-                            ? 'text-green-600'
-                            : stat.trend === 'decreasing'
-                              ? 'text-red-600'
-                              : 'text-slate-600'
-                        }`}
-                      >
-                        {stat.trend === 'increasing'
-                          ? '↗️'
-                          : stat.trend === 'decreasing'
-                            ? '↘️'
-                            : stat.trend === 'stable'
-                              ? '➡️'
-                              : '?'}
-                      </span>
-                    </div>
-                    {stat.targetMin !== undefined && stat.targetMax !== undefined && (
-                      <div className="pt-1 mt-1 border-t border-slate-200">
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-500 text-xs">Target:</span>
-                          <span className="font-mono text-blue-600 text-xs font-medium">
-                            {formatCopNumber(stat.targetMin)}-{formatCopNumber(stat.targetMax)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         )}
         {/* Anomaly Detection Panel */}
         {showAnomalyDetection && anomalyDetection.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-red-50 to-pink-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-red-800">⚠️ Anomaly Detection</h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Deteksi nilai abnormal menggunakan metode 3-sigma rule
+          <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-900/10 dark:to-pink-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-black text-rose-900 dark:text-rose-400 uppercase tracking-widest">
+                ⚠️ Anomaly Detection
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                Intelligent outlier detection using the advanced 3-sigma rule methodology.
               </p>
             </div>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 text-xs transition-all duration-300">
               {anomalyDetection.map((anomaly) => (
                 <div
                   key={anomaly.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200"
+                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
                 >
-                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
                     {anomaly.parameter}
                   </h3>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Outliers:</span>
-                      <span
-                        className={`font-mono font-bold ${
-                          anomaly.severity === 'high'
-                            ? 'text-red-600'
-                            : anomaly.severity === 'medium'
-                              ? 'text-yellow-600'
-                              : 'text-green-600'
-                        }`}
-                      >
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px]">
+                        Outliers
+                      </span>
+                      <span className={`font-mono font-black ${anomaly.outliers.length > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                         {anomaly.outliers.length}/{anomaly.totalDays}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Severity:</span>
-                      <span
-                        className={`font-medium px-1.5 py-0.5 rounded text-xs ${
-                          anomaly.severity === 'high'
-                            ? 'bg-red-100 text-red-800'
-                            : anomaly.severity === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {anomaly.severity.toUpperCase()}
+                    <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-widest text-[9px]">
+                        Severity
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        anomaly.severity === 'high' ? 'bg-rose-100 text-rose-700' :
+                        anomaly.severity === 'medium' ? 'bg-amber-100 text-amber-700' :
+                        'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {anomaly.severity}
                       </span>
                     </div>
-                    {anomaly.outliers.length > 0 && (
-                      <div className="pt-1 mt-1 border-t border-slate-200">
-                        <span className="text-slate-500 text-xs">Outlier Values:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {anomaly.outliers.slice(0, 3).map((value, idx) => (
-                            <span
-                              key={idx}
-                              className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-xs font-mono"
-                            >
-                              {formatCopNumber(value)}
-                            </span>
-                          ))}
-                          {anomaly.outliers.length > 3 && (
-                            <span className="text-slate-500 text-xs">
-                              +{anomaly.outliers.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         )}
         {/* Correlation Matrix Panel */}
         {showCorrelationMatrix && correlationMatrix.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-purple-50 to-violet-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-purple-800">
-                🔗 Parameter Correlation Matrix
+          <div className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/10 dark:to-violet-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300 overflow-hidden">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-black text-purple-900 dark:text-purple-400 uppercase tracking-widest">
+                🔗 Parameter Correlation
               </h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Analisis korelasi antar parameter untuk mengidentifikasi hubungan dan dependensi
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                Identifying hidden dependencies and process relationships across RKC parameters.
               </p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-slate-200 rounded-lg">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-800">
-                      Parameter Pair
-                    </th>
-                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                      Correlation
-                    </th>
-                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                      Strength
-                    </th>
-                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-800">
-                      Direction
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {correlationMatrix.map((corr, idx) => (
-                    <tr key={idx} className="border-t border-slate-200">
-                      <td className="px-3 py-2 text-xs text-slate-800">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-xs">{corr.param1}</span>
-                          <span className="text-slate-500 text-xs">vs {corr.param2}</span>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 text-center text-xs font-mono">
-                        {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        <span
-                          className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                            corr.strength === 'strong'
-                              ? 'bg-red-100 text-red-800'
-                              : corr.strength === 'moderate'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : corr.strength === 'weak'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-slate-100 text-slate-800'
-                          }`}
-                        >
-                          {corr.strength.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-center">
-                        {corr.correlation !== null && (
-                          <span
-                            className={`text-sm ${
-                              corr.correlation > 0 ? 'text-green-600' : 'text-red-600'
-                            }`}
-                          >
-                            {corr.correlation > 0 ? '↗️' : '↘️'}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="overflow-x-auto custom-scrollbar">
+              <div className="min-w-full inline-block align-middle">
+                <div className="overflow-hidden border border-white/20 rounded-3xl">
+                  <table className="min-w-full divide-y divide-white/10">
+                    <thead className="bg-white/40 dark:bg-white/5 backdrop-blur-md">
+                      <tr>
+                        {['Parameter Pair', 'Correlation', 'Strength', 'Direction'].map((h) => (
+                          <th key={h} className="px-6 py-4 text-left text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10 bg-white/10">
+                      {correlationMatrix.map((corr, idx) => (
+                        <tr key={idx} className="hover:bg-white/20 transition-colors group">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-black text-slate-900 dark:text-white group-hover:text-ubuntu-orange transition-colors">{corr.param1}</span>
+                              <span className="text-[10px] font-bold text-slate-500">vs {corr.param2}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-xs font-mono font-black text-slate-700 dark:text-slate-300">
+                            {corr.correlation !== null ? corr.correlation.toFixed(3) : 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                              corr.strength === 'strong' ? 'bg-rose-100 text-rose-700 shadow-lg shadow-rose-500/20' :
+                              corr.strength === 'moderate' ? 'bg-amber-100 text-amber-700 shadow-lg shadow-amber-500/20' :
+                              corr.strength === 'weak' ? 'bg-sky-100 text-sky-700 shadow-lg shadow-sky-500/20' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {corr.strength}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            {corr.correlation !== null && (
+                              <span className={`p-2 rounded-xl text-lg font-black bg-white/40 backdrop-blur-sm shadow-inner ${
+                                corr.correlation > 0 ? 'text-emerald-600' : 'text-rose-600'
+                              }`}>
+                                {corr.correlation > 0 ? '↗️' : '↘️'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </Card>
+          </div>
         )}
         {/* Quality Metrics Dashboard */}
         {showQualityMetrics && (
-          <Card
-            variant="floating"
-            padding="lg"
-            className="bg-gradient-to-br from-indigo-50 to-blue-50"
-          >
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-indigo-800">
-                🏆 Quality Metrics Dashboard
+          <div className="bg-gradient-to-br from-indigo-900/10 via-slate-900/5 to-blue-900/10 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-2xl backdrop-blur-3xl transition-all duration-500">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-[0.2em]">
+                🏆 Quality Metrics
               </h2>
-              <p className="text-sm text-slate-600 mt-2">
-                Metrik kualitas data dan performa proses secara keseluruhan
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-2 font-bold italic opacity-80">
+                Advanced structural integrity and data compliance indicators for RKC operations.
               </p>
             </div>
-            <div
-              className="grid gap-6"
-              style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}
-            >
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <span className="text-2xl">📊</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+              {[
+                {
+                  label: 'Stability Score',
+                  val: `${qualityMetrics.overallStability.toFixed(1)}%`,
+                  icon: '📊',
+                  color: 'text-blue-600 dark:text-blue-400',
+                  desc: 'Average parameter stability index'
+                },
+                {
+                  label: 'Data Completeness',
+                  val: `${qualityMetrics.averageCompleteness.toFixed(1)}%`,
+                  icon: '✅',
+                  color: 'text-emerald-600 dark:text-emerald-400',
+                  desc: 'Data capture rate across RKC'
+                },
+                {
+                  label: 'Monitored Metrics',
+                  val: qualityMetrics.parameterCount,
+                  icon: '🔢',
+                  color: 'text-purple-600 dark:text-purple-400',
+                  desc: 'Total active sensors monitored'
+                },
+                {
+                  label: 'Data Points',
+                  val: `${qualityMetrics.validDataPoints}/${qualityMetrics.totalDataPoints}`,
+                  icon: '📈',
+                  color: 'text-ubuntu-orange',
+                  desc: 'Verified vs expected captures'
+                },
+              ].map((m, i) => (
+                <div
+                  key={i}
+                  className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/30 dark:border-white/5 shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group cursor-default"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="text-3xl filter drop-shadow-md group-hover:rotate-12 transition-transform duration-500">{m.icon}</div>
+                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                      {m.label}
+                    </span>
                   </div>
-                  <span className="text-sm text-slate-500">Stability Score</span>
+                  <div className={`text-3xl sm:text-4xl font-black ${m.color} mb-2 font-display`}>{m.val}</div>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold tracking-tight opacity-80">{m.desc}</p>
                 </div>
-                <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {qualityMetrics.overallStability.toFixed(1)}%
-                </div>
-                <p className="text-sm text-slate-600">
-                  Average parameter stability across all metrics
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <span className="text-2xl">✅</span>
-                  </div>
-                  <span className="text-sm text-slate-500">Data Completeness</span>
-                </div>
-                <div className="text-3xl font-bold text-green-600 mb-2">
-                  {qualityMetrics.averageCompleteness.toFixed(1)}%
-                </div>
-                <p className="text-sm text-slate-600">
-                  Average data completeness across all parameters
-                </p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <span className="text-2xl">🔢</span>
-                  </div>
-                  <span className="text-sm text-slate-500">Parameters</span>
-                </div>
-                <div className="text-3xl font-bold text-purple-600 mb-2">
-                  {qualityMetrics.parameterCount}
-                </div>
-                <p className="text-sm text-slate-600">Total parameters being monitored</p>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg border border-slate-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <span className="text-2xl">📈</span>
-                  </div>
-                  <span className="text-sm text-slate-500">Data Points</span>
-                </div>
-                <div className="text-3xl font-bold text-orange-600 mb-2">
-                  {qualityMetrics.validDataPoints}/{qualityMetrics.totalDataPoints}
-                </div>
-                <p className="text-sm text-slate-600">Valid data points out of total expected</p>
-              </div>
+              ))}
             </div>
-          </Card>
+          </div>
         )}
+
         {/* Period Comparison Panel */}
         {showPeriodComparison && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-green-50 to-emerald-50"
-          >
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-semibold text-green-800">📈 Period Comparison</h2>
-                <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="comparison-year-select"
-                    className="text-sm font-medium text-slate-700"
+          <div className="bg-gradient-to-br from-emerald-900/5 via-slate-900/5 to-teal-900/5 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-2xl backdrop-blur-3xl transition-all duration-500">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-[0.2em]">
+                  📈 Period Comparison
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-2 font-bold italic opacity-80">
+                  Benchmarking real-time RKC performance against deep historical baselines.
+                </p>
+              </div>
+              <div className="flex items-center gap-4 bg-white/30 dark:bg-slate-800/30 backdrop-blur-2xl px-6 py-3 rounded-2xl border border-white/30 dark:border-white/10 shadow-lg">
+                <span className="text-[10px] sm:text-xs font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">
+                  Benchmark Year:
+                </span>
+                <div className="relative">
+                  <select
+                    value={comparisonPeriod.year}
+                    onChange={(e) =>
+                      setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
+                    }
+                    className="bg-transparent border-none text-sm font-black text-emerald-950 dark:text-emerald-300 focus:ring-0 cursor-pointer appearance-none pr-8 py-0"
                   >
-                    Compare with:
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="comparison-year-select"
-                      value={comparisonPeriod.year}
-                      onChange={(e) =>
-                        setComparisonPeriod((prev) => ({ ...prev, year: parseInt(e.target.value) }))
-                      }
-                      className="pl-3 pr-8 py-1.5 bg-white text-slate-900 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-medium appearance-none"
-                    >
-                      {availableYearsWithData.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
-                  </div>
+                    {availableYearsWithData.map((y) => (
+                      <option key={y} value={y} className="bg-slate-900 text-white">
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 text-emerald-600 pointer-events-none" />
                 </div>
               </div>
-              <p className="text-xs text-slate-600">
-                Perbandingan performa dengan periode sebelumnya ({comparisonPeriod.year})
-              </p>
             </div>
 
             {isLoadingComparison ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-2"></div>
-                  <p className="text-sm text-slate-600">Memuat data perbandingan...</p>
-                </div>
-              </div>
+               <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent shadow-glow"></div>
+                 <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest animate-pulse">Computing Delta...</span>
+               </div>
             ) : periodComparison.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-slate-400 mb-2">
-                  <span className="text-2xl">📊</span>
+              <div className="text-center py-20">
+                <div className="text-4xl mb-4 opacity-20">📊</div>
+                <div className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-[0.3em]">
+                  No Historical Alignment Found
                 </div>
-                <p className="text-sm text-slate-600">
-                  Tidak ada data perbandingan tersedia untuk tahun {comparisonPeriod.year}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">
-                  Pilih tahun lain yang memiliki data COP
-                </p>
               </div>
             ) : (
-              <div
-                className="grid gap-4"
-                style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-6">
                 {periodComparison.map((comparison) => (
                   <div
                     key={comparison.parameterId}
-                    className="bg-white p-3 rounded-md border border-slate-200"
+                    className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl p-6 rounded-[2rem] border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
                   >
-                    <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                    <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-6 leading-tight group-hover:text-ubuntu-orange transition-colors truncate tracking-tight">
                       {comparison.parameter}
                     </h3>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Current:</span>
-                        <span className="font-mono text-slate-800 font-medium">
+                    <div className="space-y-4 font-mono text-[10px] sm:text-[11px]">
+                      <div className="flex justify-between items-end pb-2 border-b border-slate-200/50 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter text-[9px]">
+                          Current
+                        </span>
+                        <span className="text-slate-900 dark:text-white font-black text-base leading-none">
                           {comparison.current.mean !== null
                             ? formatCopNumber(comparison.current.mean)
                             : '-'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Previous:</span>
-                        <span className="font-mono text-slate-800 font-medium">
+                      <div className="flex justify-between items-end pb-2 border-b border-slate-200/50 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter text-[9px]">
+                          Previous
+                        </span>
+                        <span className="text-slate-400 dark:text-slate-500 font-black text-sm leading-none">
                           {comparison.previous.mean !== null
                             ? formatCopNumber(comparison.previous.mean)
                             : '-'}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
-                        <span className="text-slate-500">Change:</span>
-                        <span
-                          className={`font-bold text-xs ${
-                            comparison.delta !== null && comparison.delta > 0
-                              ? 'text-green-600'
-                              : comparison.delta !== null && comparison.delta < 0
-                                ? 'text-red-600'
-                                : 'text-slate-600'
-                          }`}
-                        >
+                      <div className="flex justify-between items-center pt-2">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter text-[9px]">
+                          Delta
+                        </span>
+                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-black text-sm ${
+                          comparison.delta !== null && comparison.delta > 0 
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                        }`}>
+                          <span className="text-xs">{comparison.delta !== null && comparison.delta > 0 ? '↗' : '↘'}</span>
                           {comparison.delta !== null
-                            ? `${comparison.delta > 0 ? '+' : ''}${comparison.delta.toFixed(1)}%`
-                            : 'N/A'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Trend:</span>
-                        <span
-                          className={`font-medium text-xs px-1 py-0.5 rounded ${
-                            comparison.trend === 'increased'
-                              ? 'bg-green-100 text-green-800'
-                              : comparison.trend === 'decreased'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-slate-100 text-slate-800'
-                          }`}
-                        >
-                          {comparison.trend === 'increased'
-                            ? '↗️'
-                            : comparison.trend === 'decreased'
-                              ? '↘️'
-                              : '➡️'}
-                        </span>
+                            ? `${Math.abs(comparison.delta).toFixed(1)}%`
+                            : '0.0%'}
+                        </div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </Card>
+          </div>
         )}
         {/* Predictive Insights Panel */}
         {showPredictiveInsights && predictiveInsights.length > 0 && (
-          <Card
-            variant="floating"
-            padding="md"
-            className="bg-gradient-to-br from-orange-50 to-amber-50"
-          >
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-orange-800">🔮 Predictive Insights</h2>
-              <p className="text-xs text-slate-600 mt-1">
-                Prediksi tren parameter dan peringatan dini untuk 7 hari ke depan
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl transition-all duration-300">
+            <div className="mb-8">
+              <h2 className="text-xl sm:text-2xl font-black text-orange-900 dark:text-orange-400 uppercase tracking-widest">
+                🔮 Predictive Insights
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-ubuntu-warmGrey mt-1.5 font-bold italic">
+                Advanced AI-driven forecasting and risk assessment for the next 7 days.
               </p>
             </div>
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
               {predictiveInsights.map((insight) => (
                 <div
                   key={insight.parameterId}
-                  className="bg-white p-3 rounded-md border border-slate-200"
+                  className="bg-white/80 dark:bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-3xl border border-white/30 dark:border-white/5 shadow-xl group hover:shadow-2xl transition-all duration-300"
                 >
-                  <h3 className="text-sm font-semibold text-slate-800 mb-2 truncate leading-tight">
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mb-4 leading-tight group-hover:text-ubuntu-orange transition-colors truncate">
                     {insight.parameter}
                   </h3>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Current:</span>
-                      <span className="font-mono text-slate-800 font-medium">
-                        {insight.currentValue !== null
-                          ? formatCopNumber(insight.currentValue)
-                          : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">7-Day:</span>
-                      <span className="font-mono text-slate-800 font-medium">
-                        {insight.forecast !== null ? formatCopNumber(insight.forecast) : '-'}
-                      </span>
-                    </div>
-                    {insight.targetMin !== undefined && insight.targetMax !== undefined && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-500">Target:</span>
-                        <span className="font-mono text-blue-600 text-xs font-medium">
-                          {formatCopNumber(insight.targetMin)}-{formatCopNumber(insight.targetMax)}
+                  <div className="space-y-2.5 font-mono text-[10px] sm:text-[11px]">
+                    {[
+                      { label: 'Current', val: insight.currentValue !== null ? formatCopNumber(insight.currentValue) : '-' },
+                      { label: '7-Day Forecast', val: insight.forecast !== null ? formatCopNumber(insight.forecast) : '-' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                        <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                          {item.label}
+                        </span>
+                        <span className="text-slate-900 dark:text-white font-black">
+                          {item.val}
                         </span>
                       </div>
-                    )}
-                    <div className="flex justify-between items-center pt-1 mt-1 border-t border-slate-200">
-                      <span className="text-slate-500">Risk:</span>
-                      <span
-                        className={`font-medium px-1.5 py-0.5 rounded text-xs ${
-                          insight.risk === 'high'
-                            ? 'bg-red-100 text-red-800'
-                            : insight.risk === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {insight.risk.toUpperCase()}
+                    ))}
+                    <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-700/50">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Risk Level
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        insight.risk === 'high' ? 'bg-rose-100 text-rose-700' :
+                        insight.risk === 'medium' ? 'bg-amber-100 text-amber-700' :
+                        'bg-emerald-100 text-emerald-700'
+                      }`}>
+                        {insight.risk}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500">Trend:</span>
-                      <span
-                        className={`font-medium text-xs ${
-                          insight.trend === 'increasing'
-                            ? 'text-green-600'
-                            : insight.trend === 'decreasing'
-                              ? 'text-red-600'
-                              : 'text-slate-600'
-                        }`}
-                      >
-                        {insight.trend === 'increasing'
-                          ? '↗️'
-                          : insight.trend === 'decreasing'
-                            ? '↘️'
-                            : insight.trend === 'stable'
-                              ? '➡️'
-                              : '?'}
+                    <div className="flex justify-between py-1">
+                      <span className="text-slate-500 font-bold uppercase tracking-tighter">
+                        Trend
+                      </span>
+                      <span className={`text-base ${
+                        insight.trend === 'increasing' ? 'text-emerald-600' :
+                        insight.trend === 'decreasing' ? 'text-rose-600' :
+                        'text-slate-500'
+                      }`}>
+                        {insight.trend === 'increasing' ? '↗️' : insight.trend === 'decreasing' ? '↘️' : '➡️'}
                       </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         )}
 
         {/* AI Operations Assistant */}
@@ -3346,89 +3186,72 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           {!isLoading && !error && (
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="mb-6">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div>
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-slate-700 bg-clip-text text-transparent mb-2">
+                    <h2 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-600 to-indigo-900 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent mb-2 uppercase tracking-widest">
                       COP Analysis Dashboard
                     </h2>
-                    <p className="text-slate-500 text-sm">
+                    <p className="text-slate-500 dark:text-ubuntu-warmGrey text-xs sm:text-sm font-bold italic">
                       Comprehensive parameter performance monitoring and analytics
                     </p>
                   </div>
                   <button
                     onClick={refreshData}
                     disabled={isLoading}
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-green-400 disabled:to-emerald-500 text-white text-sm font-semibold rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 min-h-[48px]"
+                    className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 text-white text-xs sm:text-sm font-black rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
                   >
-                    <svg
-                      className="w-5 h-5 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
-                    {isLoading ? 'Refreshing...' : 'Refresh Data'}
+                    <div className={`w-4 h-4 ${isLoading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`}>
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </div>
+                    {isLoading ? 'REFRESHING...' : 'REFRESH DATA'}
                   </button>
                 </div>
               </div>
+              
               <div
-                className="overflow-x-auto scroll-smooth rounded-2xl shadow-2xl"
-                role="region"
-                aria-label="COP Analysis Data Table"
-                tabIndex={0}
-                style={{
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#cbd5e1 #f1f5f9',
-                }}
+                className="overflow-x-auto custom-scrollbar rounded-3xl shadow-2xl border border-white/20"
+                style={{ scrollbarWidth: 'thin' }}
               >
-                <table
-                  className="min-w-full text-xs border-collapse bg-white rounded-2xl overflow-hidden shadow-lg"
-                  role="table"
-                  aria-label="COP Analysis Table"
-                >
-                  <thead className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-800 text-white">
-                    <tr>
-                      <th className="sticky left-0 bg-indigo-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 rounded-tl-2xl">
-                        No.
+                <table className="min-w-full text-xs border-collapse bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white">
+                      <th className="sticky left-0 bg-indigo-950 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 rounded-tl-3xl">
+                        NO.
                       </th>
-                      <th className="sticky left-12 bg-indigo-700 z-30 px-3 py-4 text-left text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 min-w-[100px]">
+                      <th className="sticky left-12 bg-indigo-950 z-30 px-4 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/10 min-w-[140px]">
                         {t.parameter}
                       </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-rose-600/90">
+                      <th className="px-3 py-6 text-center text-[10px] font-black uppercase tracking-widest border-r border-white/10 bg-rose-900/40">
                         {t.min}
                       </th>
-                      <th className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-16 bg-emerald-600/90">
+                      <th className="px-3 py-6 text-center text-[10px] font-black uppercase tracking-widest border-r border-white/10 bg-emerald-900/40">
                         {t.max}
                       </th>
                       {daysHeader.map((day) => (
                         <th
                           key={day}
-                          className="px-2 py-4 text-center text-xs font-bold uppercase tracking-wider border-r-2 border-white/20 w-12 bg-slate-700"
+                          className="px-2 py-6 text-center text-[10px] font-black uppercase tracking-widest border-r border-white/10 min-w-[45px] bg-slate-800/20"
                         >
                           {day}
                         </th>
                       ))}
-                      <th className="sticky right-0 bg-indigo-600 z-30 px-3 py-4 text-center text-xs font-bold uppercase tracking-wider border-l-2 border-white/20 w-20 rounded-tr-2xl">
-                        Avg.
+                      <th className="sticky right-0 bg-indigo-950 z-30 px-4 py-6 text-center text-[10px] font-black uppercase tracking-widest border-l border-white/10 rounded-tr-3xl">
+                        AVG.
                       </th>
                     </tr>
                   </thead>
                   <Droppable droppableId="cop-analysis-table">
                     {(provided) => (
                       <tbody
-                        className="bg-white divide-y divide-slate-200"
                         ref={provided.innerRef}
                         {...provided.droppableProps}
+                        className="divide-y divide-white/5"
                       >
                         {analysisData.map((row, rowIndex) => (
                           <Draggable
-                            key={row.parameter.id}
+                            key={`param-${row.parameter.id}`}
                             draggableId={row.parameter.id}
                             index={rowIndex}
                           >
@@ -3437,93 +3260,64 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                className={`${
+                                className={`group/row transition-all duration-300 ${
                                   snapshot.isDragging
-                                    ? 'shadow-2xl bg-gradient-to-r from-blue-50 to-purple-50'
-                                    : 'hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50'
-                                } ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                }}
+                                    ? 'bg-indigo-500/20 shadow-2xl scale-[1.01] z-50'
+                                    : 'hover:bg-white/10 dark:hover:bg-white/5'
+                                } ${rowIndex % 2 === 0 ? 'bg-white/30 dark:bg-white/2' : 'bg-transparent'}`}
+                                style={{ ...provided.draggableProps.style }}
                               >
-                                <td className="sticky left-0 z-20 px-3 py-3 whitespace-nowrap text-slate-700 border-r-2 border-slate-200 bg-gradient-to-r from-blue-50 to-blue-100 group-hover:from-blue-100 group-hover:to-blue-200 w-12 font-bold text-center rounded-l-xl">
+                                <td className="sticky left-0 z-20 px-4 py-4 text-center font-black text-slate-500 dark:text-slate-400 border-r border-white/10 bg-inherit backdrop-blur-md">
                                   {rowIndex + 1}
                                 </td>
-                                <td className="sticky left-12 z-20 px-3 py-3 whitespace-nowrap font-bold text-slate-800 border-r-2 border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100 group-hover:from-slate-100 group-hover:to-slate-200 min-w-[100px]">
+                                <td className="sticky left-12 z-20 px-4 py-4 font-black text-slate-800 dark:text-white border-r border-white/10 bg-inherit backdrop-blur-md truncate max-w-[140px]">
                                   {row.parameter.parameter}
                                 </td>
-                                {/* Use helper function for consistent min/max display */}
-                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-red-50 to-red-100 font-semibold">
-                                  {(() => {
-                                    const min = row.parameter.min_value;
-                                    return formatCopNumber(min);
-                                  })()}
+                                <td className="px-3 py-4 text-center font-bold text-rose-600 dark:text-rose-400 border-r border-white/10 bg-rose-500/5">
+                                  {formatCopNumber(row.parameter.min_value)}
                                 </td>
-                                <td className="px-2 py-3 whitespace-nowrap text-center text-slate-700 border-r-2 border-slate-200 w-16 bg-gradient-to-r from-green-50 to-green-100 font-semibold">
-                                  {(() => {
-                                    const max = row.parameter.max_value;
-                                    return formatCopNumber(max);
-                                  })()}
+                                <td className="px-3 py-4 text-center font-bold text-emerald-600 dark:text-emerald-400 border-r border-white/10 bg-emerald-500/5">
+                                  {formatCopNumber(row.parameter.max_value)}
                                 </td>
                                 {row.dailyValues.map((day, dayIndex) => {
                                   const colors = getPercentageColor(day.value);
                                   return (
                                     <td
                                       key={dayIndex}
-                                      className={`relative px-2 py-3 whitespace-nowrap text-center border-b-2 border-r-2 border-white/20 ${colors.bg}`}
+                                      className={`relative px-2 py-4 text-center border-r border-white/5 transition-colors duration-300 ${colors.bg} group-hover/row:opacity-90`}
                                     >
                                       <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                        <span
-                                          className={`font-bold text-xs ${colors.text} drop-shadow-sm`}
-                                        >
+                                        <span className={`font-black text-[11px] ${colors.text} drop-shadow-sm`}>
                                           {formatCopNumber(day.raw)}
                                         </span>
                                         {day.raw !== undefined && (
-                                          <div className="absolute bottom-full mb-2 w-max max-w-sm bg-gradient-to-r from-slate-800 to-slate-900 text-white text-xs rounded-xl py-2 px-3 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2">
-                                            <div className="flex items-center justify-between gap-2 mb-1">
-                                              <span className="font-bold text-xs text-blue-300">
-                                                {formatDate(
-                                                  new Date(
-                                                    Date.UTC(filterYear, filterMonth, dayIndex + 1)
-                                                  )
-                                                )}
+                                          <div className="absolute bottom-full mb-3 w-max max-w-sm bg-slate-900/95 backdrop-blur-xl text-white text-[10px] rounded-2xl py-3 px-4 opacity-0 group-hover/cell:opacity-100 transition-all duration-300 pointer-events-none z-50 shadow-2xl border border-white/10 left-1/2 -translate-x-1/2 scale-90 group-hover/cell:scale-100">
+                                            <div className="flex items-center justify-between gap-4 mb-2">
+                                              <span className="font-black text-indigo-400 uppercase tracking-widest">
+                                                {formatDate(new Date(Date.UTC(filterYear, filterMonth, dayIndex + 1)))}
                                               </span>
-                                              <span
-                                                className={`px-2 py-1 rounded-lg text-white text-[10px] uppercase font-bold ${colors.bg} shadow-sm`}
-                                              >
+                                              <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${colors.bg} ${colors.text}`}>
                                                 {colors.status}
                                               </span>
                                             </div>
-                                            <hr className="border-slate-600 my-2" />
-                                            <p className="text-xs mb-1">
-                                              <strong className="text-blue-300">
-                                                {t.average}:
-                                              </strong>{' '}
-                                              <span className="font-mono text-green-300">
-                                                {formatCopNumber(day.raw)} {row.parameter.unit}
-                                              </span>
-                                            </p>
-                                            {/* Use helper function for consistent target display */}
-                                            <p className="text-xs mb-1">
-                                              <strong className="text-purple-300">Target:</strong>{' '}
-                                              <span className="font-mono text-xs text-yellow-300">
-                                                {(() => {
-                                                  const min = row.parameter.min_value;
-                                                  const max = row.parameter.max_value;
-                                                  return `${formatCopNumber(min)} - ${formatCopNumber(max)}`;
-                                                })()}
-                                              </span>
-                                            </p>
-                                            {day.value !== null && (
-                                              <p className="text-xs">
-                                                <strong className="text-orange-300">
-                                                  Normalized:
-                                                </strong>{' '}
-                                                <span className="font-mono text-red-300">
-                                                  {day.value.toFixed(1)}%
+                                            <div className="space-y-1 font-mono">
+                                              <p className="flex justify-between gap-4">
+                                                <span className="text-slate-400 font-bold uppercase">VAL:</span>
+                                                <span className="text-emerald-400 font-black">{formatCopNumber(day.raw)} {row.parameter.unit}</span>
+                                              </p>
+                                              <p className="flex justify-between gap-4">
+                                                <span className="text-slate-400 font-bold uppercase">TARGET:</span>
+                                                <span className="text-amber-400 font-black">
+                                                  {formatCopNumber(row.parameter.min_value)} - {formatCopNumber(row.parameter.max_value)}
                                                 </span>
                                               </p>
-                                            )}
+                                              {day.value !== null && (
+                                                <p className="flex justify-between gap-4 border-t border-white/10 pt-1 mt-1">
+                                                  <span className="text-slate-400 font-bold uppercase">NORM:</span>
+                                                  <span className="text-indigo-400 font-black">{day.value.toFixed(1)}%</span>
+                                                </p>
+                                              )}
+                                            </div>
                                           </div>
                                         )}
                                       </div>
@@ -3533,12 +3327,8 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                 {(() => {
                                   const avgColors = getPercentageColor(row.monthlyAverage);
                                   return (
-                                    <td
-                                      className={`sticky right-0 z-20 px-3 py-3 whitespace-nowrap text-center font-bold border-b-2 border-l-4 border-white/30 ${avgColors.bg} w-20 rounded-r-xl`}
-                                    >
-                                      <span
-                                        className={`${avgColors.text} text-sm drop-shadow-sm font-extrabold`}
-                                      >
+                                    <td className={`sticky right-0 z-20 px-4 py-4 text-center font-black border-l border-white/10 bg-inherit backdrop-blur-md ${avgColors.bg}`}>
+                                      <span className={`${avgColors.text} text-xs drop-shadow-sm`}>
                                         {formatCopNumber(row.monthlyAverageRaw)}
                                       </span>
                                     </td>
@@ -3548,32 +3338,39 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             )}
                           </Draggable>
                         ))}
-                        {provided.placeholder}
                         {analysisData.length === 0 && (
                           <tr>
                             <td
                               colSpan={daysHeader.length + 5}
-                              className="text-center py-10 text-slate-500"
+                              className="text-center py-20 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-xs"
                             >
-                              {!selectedCategory || !selectedUnit
-                                ? 'Please select both Category and Unit to view COP analysis data.'
-                                : filteredCopParameters.length === 0
-                                  ? 'No COP parameters found for the selected Category and Unit.'
-                                  : 'No data available for the selected period.'}
+                              <div className="flex flex-col items-center gap-4">
+                                <span className="text-4xl opacity-20">📊</span>
+                                <span>
+                                  {!selectedCategory || !selectedUnit
+                                    ? 'Select Category & Unit to Begin Analysis'
+                                    : filteredCopParameters.length === 0
+                                      ? 'No parameters found for selection'
+                                      : 'No operational data available for this period'}
+                                </span>
+                              </div>
                             </td>
                           </tr>
                         )}
+                        {provided.placeholder}
                       </tbody>
                     )}
                   </Droppable>
                   <tfoot className="font-bold bg-gradient-to-r from-slate-100 to-slate-200">
                     <tr className="border-t-4 border-slate-400">
                       <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-slate-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-100 to-blue-200 font-bold rounded-bl-2xl"
+                        colSpan={2}
+                        className="sticky left-0 z-20 px-3 py-4 text-right text-xs sm:text-sm text-slate-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-100 to-blue-200 font-bold rounded-bl-2xl"
                       >
                         {t.qaf_daily}
                       </td>
+                      <td className="bg-blue-100 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                      <td className="bg-blue-100 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
                       {dailyQaf.daily.map((qaf, index) => {
                         const colors = getQafColor(qaf.value);
                         return (
@@ -3626,11 +3423,13 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     {/* Moisture Content Row */}
                     <tr className="border-t-2 border-slate-300 bg-gradient-to-r from-blue-50 to-cyan-50">
                       <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-blue-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-200 to-cyan-200 font-bold"
+                        colSpan={2}
+                        className="sticky left-0 z-20 px-3 py-4 text-right text-xs sm:text-sm text-blue-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-blue-200 to-cyan-200 font-bold"
                       >
                         % Moisture Content
                       </td>
+                      <td className="bg-blue-200 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                      <td className="bg-blue-200 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
                       {Array.from(
                         { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
                         (_, i) => {
@@ -3674,11 +3473,13 @@ const RkcCopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     {/* Capacity Row */}
                     <tr className="border-t-2 border-slate-300 bg-gradient-to-r from-green-50 to-emerald-50">
                       <td
-                        colSpan={4}
-                        className="sticky left-0 z-20 px-3 py-4 text-right text-sm text-green-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-green-200 to-emerald-200 font-bold"
+                        colSpan={2}
+                        className="sticky left-0 z-20 px-3 py-4 text-right text-xs sm:text-sm text-green-800 border-b-2 border-r-2 border-slate-300 bg-gradient-to-r from-green-200 to-emerald-200 font-bold"
                       >
                         Capacity (ton)
                       </td>
+                      <td className="bg-green-200 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                      <td className="bg-green-200 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
                       {Array.from(
                         { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
                         (_, i) => {

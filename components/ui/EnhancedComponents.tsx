@@ -1071,6 +1071,7 @@ export const EnhancedModal: React.FC<EnhancedModalProps> = ({
         className={cn(
           'relative w-full rounded-xl shadow-2xl transform transition-all duration-300',
           'animate-in fade-in-0 zoom-in-95',
+          'max-h-[calc(100vh-2rem)] overflow-y-auto',
           sizeClasses[size],
           variantClasses[variant],
           className
@@ -1232,7 +1233,7 @@ export const ABTest: React.FC<ABTestProps> = ({
       setSelectedVariant(variants[0]);
       onVariantSelected?.(variants[0].id);
     }
-  }, [testId, variants, onVariantSelected, userId]);
+  }, [testId, variants, onVariantSelected, userId, selectedVariant]);
 
   if (!selectedVariant) {
     return Fallback ? <Fallback /> : null;

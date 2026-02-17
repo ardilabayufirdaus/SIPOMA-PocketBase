@@ -7,7 +7,7 @@ interface QuickActionsProps {
   t: Record<string, string>;
 }
 
-const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, t }) => {
+const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
   const actions = [
     {
       label: 'Log CM Downtime',
@@ -86,7 +86,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, t }) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 h-full content-start">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full content-start">
       {actions.map((action, index) => (
         <motion.button
           key={action.label}

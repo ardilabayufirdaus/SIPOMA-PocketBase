@@ -14,10 +14,8 @@ import PencilIcon from '../../../components/icons/PencilIcon';
 import TrashIcon from '../../../components/icons/TrashIcon';
 import UserGroupIcon from '../../../components/icons/UserGroupIcon';
 import ShieldCheckIcon from '../../../components/icons/ShieldCheckIcon';
-import { useTranslation } from '../../../hooks/useTranslation';
 
 const UserListPage: React.FC = () => {
-  const { t } = useTranslation();
   const [filter, setFilter] = useState<UserFilter>({
     page: 1,
     perPage: 20,
@@ -74,7 +72,7 @@ const UserListPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -140,7 +138,7 @@ const UserListPage: React.FC = () => {
 
       {/* Control Bar (Search & Filter) */}
       <EnhancedCard variant="glass" padding="md" className="backdrop-blur-xl">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <EnhancedInput
               placeholder="Search by name, email, or username..."
@@ -193,7 +191,7 @@ const UserListPage: React.FC = () => {
               <select
                 className="w-full h-[48px] px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all outline-none appearance-none cursor-pointer"
                 value={filter.status}
-                onChange={(e) => setFilter({ ...filter, status: e.target.value as any, page: 1 })}
+                onChange={(e) => setFilter({ ...filter, status: e.target.value as UserFilter['status'], page: 1 })}
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: `right 1rem center`,
@@ -287,7 +285,7 @@ const UserListPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <EnhancedBadge
-                        variant={getRoleColor(user.role) as any}
+                        variant={getRoleColor(user.role) as "primary" | "secondary" | "success" | "warning" | "error" | "neutral"}
                         className="px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-sm"
                       >
                         {user.role}
@@ -343,26 +341,26 @@ const UserListPage: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleEdit(user)}
-                          className="p-2 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40"
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </EnhancedButton>
-                        <EnhancedButton
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleDelete(user.id)}
-                          className="p-2 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </EnhancedButton>
-                      </div>
-                    </td>
+      <td className="px-6 py-4 text-right">
+        <div className="flex justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
+          <EnhancedButton
+            variant="ghost"
+            size="xs"
+            onClick={() => handleEdit(user)}
+            className="p-2 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40"
+          >
+            <PencilIcon className="w-4 h-4" />
+          </EnhancedButton>
+          <EnhancedButton
+            variant="ghost"
+            size="xs"
+            onClick={() => handleDelete(user.id)}
+            className="p-2 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </EnhancedButton>
+        </div>
+      </td>
                   </tr>
                 ))
               )}

@@ -1,11 +1,11 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { UnitStatus } from '../../hooks/useDashboardData';
+import { Page } from '../../types';
 
 interface OperationsOverviewProps {
   unitStatuses: UnitStatus[];
   topDowntimes: { unit: string; issue: string; isRkc: boolean }[];
-  onNavigate: (page: any, subPage?: string) => void;
+  onNavigate: (page: Page, subPage?: string) => void;
   t: Record<string, string>;
 }
 
@@ -18,7 +18,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
   const cmUnits = unitStatuses.filter((u) => !u.isRkc);
   const rkcUnits = unitStatuses.filter((u) => u.isRkc);
 
-  const StatusPill = ({ unit }: { unit: UnitStatus }) => (
+  const StatusPill: React.FC<{ unit: UnitStatus }> = ({ unit }) => (
     <div
       className={`
         group relative px-2.5 py-2.5 rounded-lg text-xs font-semibold border flex flex-col justify-between items-start gap-1 transition-all duration-200 h-full
@@ -28,7 +28,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
             : 'bg-rose-50/50 text-rose-700 border-rose-100 hover:bg-rose-50 dark:bg-rose-900/10 dark:text-rose-400 dark:border-rose-800/30 dark:hover:bg-rose-900/20'
         }
       `}
-      title={unit.issue || 'Running Normal'}
+      title={unit.issue || (t.running_normal || 'Running Normal')}
     >
       <div className="flex justify-between w-full items-center">
         <span className="truncate w-full font-bold">{unit.unit}</span>
@@ -43,16 +43,16 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
       </div>
       {unit.status !== 'running' && (
         <span className="text-[9px] leading-tight line-clamp-1 opacity-80 w-full">
-          {unit.issue || 'Stopped'}
+          {unit.issue || (t.stopped || 'Stopped')}
         </span>
       )}
     </div>
   );
 
   return (
-    <div className="flex flex-col h-full gap-4 lg:gap-6 overflow-hidden">
+    <div className="flex flex-col h-full gap-4 lg:gap-6">
       {/* Top Section: Unit Statuses */}
-      <div className="flex-shrink-0 grid grid-cols-2 gap-4 lg:gap-6 h-[170px]">
+      <div className="flex-shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6 min-h-[170px]">
         {/* CM Operations */}
         <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
           <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
@@ -74,7 +74,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
             </div>
             {cmUnits.length === 0 && (
               <p className="text-xs text-[#AEA79F] italic text-center py-5">
-                Unit CM tidak ditemukan
+                {t.no_cm_units || 'Unit CM tidak ditemukan'}
               </p>
             )}
           </div>
@@ -101,7 +101,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
             </div>
             {rkcUnits.length === 0 && (
               <p className="text-xs text-[#AEA79F] italic text-center py-5">
-                Unit RKC tidak ditemukan
+                {t.no_rkc_units || 'Unit RKC tidak ditemukan'}
               </p>
             )}
           </div>

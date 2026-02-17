@@ -739,12 +739,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       try {
         // (Keep existing Raw Calculation Logic - it is robust)
         // ... (Parameter fetching logic) ...
-        const paramSettings = await pb.collection('parameter_settings').getFullList({
+        const paramSettings = (await pb.collection('parameter_settings').getFullList({
           filter: `unit="${selectedUnit}" && (parameter~"H2O" || parameter~"Set. Feeder")`,
-        });
+        })) as unknown as ParameterSetting[];
 
         const paramMap = new Map<string, string>();
-        paramSettings.forEach((s: any) => paramMap.set(s.parameter, s.id));
+        paramSettings.forEach((s: ParameterSetting) => paramMap.set(s.parameter, s.id!));
 
         const h2oGypsumId = paramMap.get('H2O Gypsum (%)');
         const setGypsumId = paramMap.get('Set. Feeder Gypsum (%)');
@@ -2659,23 +2659,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
   return (
     <div className="min-h-screen bg-[#F7F7F7] dark:bg-ubuntu-aubergine text-slate-900 dark:text-slate-100 font-sans">
-      <div className="max-w-full mx-auto space-y-8 px-6 pb-12">
+      <div className="max-w-full mx-auto space-y-4 sm:space-y-6 lg:space-y-8 pb-12">
         {/* Premium Ubuntu Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-aubergine p-8 shadow-2xl rounded-2xl">
+        <div className="relative overflow-hidden bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-aubergine p-4 sm:p-6 lg:p-8 shadow-2xl rounded-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-ubuntu-orange opacity-10 rounded-full -mr-20 -mt-20 blur-3xl shadow-glow"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-ubuntu-midAubergine opacity-20 rounded-full -ml-10 -mb-10 blur-2xl"></div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="animate-fade-in">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2.5 bg-ubuntu-orange rounded-xl shadow-lg shadow-ubuntu-orange/30">
-                  <TrendingUp className="w-6 h-6 text-white" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div className="animate-fade-in group">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="p-2 sm:p-2.5 bg-ubuntu-orange rounded-xl shadow-lg shadow-ubuntu-orange/30 group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <h1 className="text-3xl md:text-4xl font-display font-extrabold text-white tracking-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-extrabold text-white tracking-tight">
                   {t.op_cop_analysis}
                 </h1>
               </div>
-              <p className="text-ubuntu-warmGrey text-lg max-w-2xl font-medium">
+              <p className="text-ubuntu-warmGrey text-sm sm:text-base lg:text-lg max-w-2xl font-medium opacity-90">
                 Comprehensive parameter performance monitoring and analytics for Plant Operations.
               </p>
             </div>
@@ -2697,23 +2697,23 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         {/* Sync Progress Modal */}
 
         {/* Filter Section - Ubuntu Glassmorphism */}
-        <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-6 animate-scale-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 p-4 sm:p-6 animate-scale-in">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
             {/* Plant Category */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2 col-span-2 sm:col-span-1">
               <label
                 htmlFor="cop-filter-category"
-                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Layers className="w-3.5 h-3.5" />
-                Plant Category
+                <Layers className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                Category
               </label>
               <div className="relative group">
                 <select
                   id="cop-filter-category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {plantCategories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -2726,12 +2726,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
 
             {/* Unit Name */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-unit"
-                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Building2 className="w-3.5 h-3.5" />
+                <Building2 className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Unit
               </label>
               <div className="relative group">
@@ -2740,7 +2740,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={unitsForCategory.length === 0}
-                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {unitsForCategory.map((unit) => (
                     <option key={unit} value={unit}>
@@ -2753,36 +2753,36 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
 
             {/* Cement Type */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-cement-type"
-                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Beaker className="w-3.5 h-3.5" />
-                Cement Type
+                <Beaker className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
+                Type
               </label>
               <div className="relative group">
                 <select
                   id="cop-filter-cement-type"
                   value={selectedCementType}
                   onChange={(e) => setSelectedCementType(e.target.value)}
-                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
-                  <option value="">Pilih Cement Type</option>
+                  <option value="">Choose</option>
                   <option value="OPC">OPC</option>
-                  <option value="PCC">PCC</option>
+                  <option value="PPC">PPC</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-hover:text-ubuntu-orange transition-colors pointer-events-none" />
               </div>
             </div>
 
             {/* Month */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-month"
-                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Month
               </label>
               <div className="relative group">
@@ -2790,7 +2790,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-month"
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {monthOptions.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -2803,12 +2803,12 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
             </div>
 
             {/* Year */}
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <label
                 htmlFor="cop-filter-year"
-                className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
+                className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-slate-500 dark:text-ubuntu-warmGrey uppercase tracking-widest pl-1"
               >
-                <CalendarDays className="w-3.5 h-3.5" />
+                <CalendarDays className="w-3 sm:w-3.5 h-3 sm:h-3.5" />
                 Year
               </label>
               <div className="relative group">
@@ -2816,7 +2816,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                   id="cop-filter-year"
                   value={filterYear}
                   onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                  className="w-full appearance-none px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
+                  className="w-full appearance-none px-3 sm:px-4 py-2 sm:py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ubuntu-orange/40 focus:border-ubuntu-orange text-xs sm:text-sm font-semibold transition-all duration-300 hover:border-ubuntu-orange hover:shadow-md cursor-pointer shadow-sm"
                 >
                   {yearOptions.map((y) => (
                     <option key={y} value={y}>
@@ -3062,7 +3062,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           )}
         </div>
         {showQualityMetrics && (
-          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/10 dark:to-blue-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/10 dark:to-blue-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl">
             <div className="mb-8">
               <h2 className="text-2xl font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest">
                 🏆 Quality Metrics
@@ -3115,7 +3115,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           </div>
         )}
         {showPeriodComparison && (
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-[2.5rem] p-10 border border-white/20 animate-slide-up shadow-xl">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/10 dark:to-teal-900/10 rounded-3xl lg:rounded-[2.5rem] p-6 sm:p-8 lg:p-10 border border-white/20 animate-slide-up shadow-xl">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">
@@ -3332,55 +3332,57 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
 
             {!isLoading && !error && (
               <DragDropContext onDragEnd={handleDragEnd}>
-                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 mb-10 pb-8 border-b border-slate-200/60 dark:border-slate-700/50 px-2 mt-4">
-                  <div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight font-display">
-                      Process Variables Matrix
-                    </h2>
-                    <p className="text-slate-500 dark:text-ubuntu-warmGrey text-base font-bold italic">
-                      Dynamic heatmap representing parameter adherence to target ranges.
-                    </p>
-                  </div>
-                </div>
-                <div
-                  className="overflow-x-auto scroll-smooth rounded-[2.5rem] shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20"
-                  role="region"
-                  aria-label="COP Analysis Data Table"
-                  tabIndex={0}
-                >
-                  <table
-                    className="min-w-full text-[13px] border-collapse"
+                <div className="bg-white/70 dark:bg-ubuntu-aubergine/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] lg:rounded-[2.5rem] p-4 sm:p-6 lg:p-10 border border-white/20 dark:border-white/10 shadow-2xl animate-scale-in overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+            <div className="relative">
+              <div className="absolute -top-6 -left-6 w-20 h-20 bg-ubuntu-orange/10 rounded-full blur-2xl"></div>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-orange bg-clip-text text-transparent tracking-tight relative z-10">
+                📊 Parameter Analytics Matrix
+              </h2>
+              <p className="text-slate-500 dark:text-ubuntu-warmGrey text-xs sm:text-sm lg:text-base font-bold italic">
+                Dynamic heatmap representing parameter adherence to target ranges.
+              </p>
+            </div>
+          </div>
+          <div
+            className="overflow-x-auto scroll-smooth rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] shadow-2xl bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 custom-scrollbar"
+            role="region"
+            aria-label="COP Analysis Data Table"
+            tabIndex={0}
+          >
+            <table
+              className="min-w-full text-[11px] sm:text-[13px] border-collapse"
                     role="table"
                     aria-label="COP Analysis Table"
                   >
                     <thead>
-                      <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.15em] font-black text-[13px] h-20 shadow-lg">
-                        <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-3 border-r border-white/10 w-14 rounded-tl-[2rem] text-center shadow-xl">
+                      <tr className="bg-gradient-to-r from-ubuntu-aubergine to-ubuntu-darkAubergine text-white uppercase tracking-[0.1em] sm:tracking-[0.15em] font-black text-[10px] sm:text-[13px] h-16 sm:h-20 shadow-lg">
+                        <th className="sticky left-0 bg-ubuntu-aubergine z-40 px-2 sm:px-3 border-r border-white/10 w-10 sm:w-14 rounded-tl-[1.5rem] sm:rounded-tl-[2rem] text-center shadow-xl">
                           #
                         </th>
-                        <th className="sticky left-14 bg-ubuntu-aubergine z-40 px-6 border-r border-white/10 min-w-[220px] text-left">
+                        <th className="sticky left-10 sm:left-14 bg-ubuntu-aubergine z-40 px-3 sm:px-6 border-r border-white/10 min-w-[120px] sm:min-w-[220px] text-left">
                           Parameter Specification
                         </th>
-                        <th className="px-3 border-r border-white/10 w-20 bg-red-500/10 text-red-300">
-                          Min
+                        <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-red-500/10 text-red-300">
+                          {t.min}
                         </th>
-                        <th className="px-3 border-r border-white/10 w-20 bg-emerald-500/10 text-emerald-300">
-                          Max
+                        <th className="px-2 sm:px-3 border-r border-white/10 w-16 sm:w-20 bg-emerald-500/10 text-emerald-300">
+                          {t.max}
                         </th>
                         {daysHeader.map((day) => (
                           <th
                             key={day}
-                            className="px-2 border-r border-white/5 w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
+                            className="px-1 sm:px-2 border-r border-white/5 w-10 sm:w-14 hover:bg-white/10 transition-all duration-300 cursor-default group/h"
                           >
                             <div className="flex flex-col items-center">
-                              <span className="opacity-40 group-hover/h:opacity-100 transition-opacity text-[11px]">
-                                Day
+                              <span className="opacity-40 group-hover/h:opacity-100 transition-opacity text-[8px] sm:text-[11px]">
+                                {t.day || 'Day'}
                               </span>
-                              <span className="text-[13px] font-black">{day}</span>
+                              <span className="text-[10px] sm:text-[13px] font-black">{day}</span>
                             </div>
                           </th>
                         ))}
-                        <th className="sticky right-0 bg-ubuntu-orange z-40 px-6 w-24 rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
+                        <th className="sticky right-0 bg-ubuntu-orange z-40 px-3 sm:px-6 w-16 sm:w-24 rounded-tr-[1.5rem] sm:rounded-tr-[2rem] shadow-[-8px_0_20px_rgba(0,0,0,0.2)] text-center">
                           AVG
                         </th>
                       </tr>
@@ -3412,16 +3414,15 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     ...provided.draggableProps.style,
                                   }}
                                 >
-                                  <td className="sticky left-0 z-30 px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors text-[13px]">
+                                  <td className="sticky left-0 z-30 px-2 sm:px-3 py-4 text-slate-900 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-[#F3F3F3] dark:bg-slate-800 w-10 sm:w-14 font-black text-center shadow-lg group-hover/row:bg-ubuntu-orange/10 group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
                                     {rowIndex + 1}
                                   </td>
-                                  <td className="sticky left-14 z-30 px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors text-[13px]">
+                                  <td className="sticky left-10 sm:left-14 z-30 px-3 sm:px-6 py-4 font-black text-slate-800 dark:text-white border-r border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-900 min-w-[120px] sm:min-w-[220px] shadow-lg group-hover/row:text-ubuntu-orange transition-colors text-[11px] sm:text-[13px]">
                                     <div className="flex flex-col">
                                       <span className="truncate">{row.parameter.parameter}</span>
-                                      {/* Plant Unit Display Removed as per request */}
                                     </div>
                                   </td>
-                                  <td className="px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono">
+                                  <td className="px-2 sm:px-3 py-4 text-center text-red-600 dark:text-red-400 border-r border-slate-200 dark:border-slate-700/50 bg-red-50/20 dark:bg-red-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
                                     {(() => {
                                       const { min } = getMinMaxForCementType(
                                         row.parameter,
@@ -3430,7 +3431,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                       return formatCopNumber(min);
                                     })()}
                                   </td>
-                                  <td className="px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono">
+                                  <td className="px-2 sm:px-3 py-4 text-center text-emerald-600 dark:text-emerald-400 border-r border-slate-200 dark:border-slate-700/50 bg-emerald-50/20 dark:bg-emerald-900/10 font-bold font-mono text-[10px] sm:text-[13px]">
                                     {(() => {
                                       const { max } = getMinMaxForCementType(
                                         row.parameter,
@@ -3444,10 +3445,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                                     return (
                                       <td
                                         key={dayIndex}
-                                        className={`px-2 py-4 whitespace-nowrap text-center border-r border-slate-200 dark:border-slate-700/50 transition-colors duration-200 hover:brightness-95 ${colors.bg}`}
+                                        className={`px-1 sm:px-2 py-4 whitespace-nowrap text-center border-r border-slate-200 dark:border-slate-700/50 transition-colors duration-200 hover:brightness-95 ${colors.bg}`}
                                       >
                                         <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                          <span className={`font-bold text-[13px] ${colors.text}`}>
+                                          <span className={`font-bold text-[10px] sm:text-[13px] ${colors.text}`}>
                                             {formatCopNumber(day.raw)}
                                           </span>
                                           {day.raw !== undefined && (
@@ -3553,20 +3554,22 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     <tfoot className="bg-slate-100/80 dark:bg-white/5 backdrop-blur-md group/f">
                       <tr className="border-t-2 border-slate-300 dark:border-white/10">
                         <td
-                          colSpan={4}
-                          className="sticky left-0 z-30 px-6 py-6 text-right text-[13px] font-black tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
+                          colSpan={2}
+                          className="sticky left-0 z-30 px-3 sm:px-6 py-6 text-right text-[10px] sm:text-[13px] font-black tracking-[0.1em] sm:tracking-[0.2em] text-ubuntu-aubergine dark:text-ubuntu-orange uppercase bg-white dark:bg-slate-900 shadow-xl border-r border-slate-200 font-display"
                         >
                           Quality Adherence (QAF)
                         </td>
+                        <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                        <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
                         {dailyQaf.daily.map((qaf, index) => {
                           const colors = getQafColor(qaf.value);
                           return (
                             <td
                               key={index}
-                              className={`px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
+                              className={`px-1 sm:px-2 py-6 text-center border-r border-slate-200 dark:border-slate-700/50 ${colors.bg} ${colors.text} transition-all duration-300`}
                             >
                               <div className="relative group/cell h-full w-full flex items-center justify-center">
-                                <span className="text-[13px] font-black drop-shadow-sm">
+                                <span className="text-[11px] sm:text-[13px] font-black drop-shadow-sm">
                                   {qaf.value !== null && !isNaN(qaf.value)
                                     ? `${formatCopNumber(qaf.value)}%`
                                     : '-'}
@@ -3594,13 +3597,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                           const colors = getQafColor(qaf.value);
                           return (
                             <td
-                              className={`sticky right-0 z-30 px-6 py-6 text-center shadow-[-8px_0_20px_rgba(0,0,0,0.2)] ${colors.bg} ${colors.text} font-black text-xl border-l border-white/10`}
+                              className={`sticky right-0 z-30 px-3 sm:px-6 py-6 text-center shadow-[-8px_0_20px_rgba(0,0,0,0.2)] ${colors.bg} ${colors.text} font-black border-l border-white/10`}
                             >
                               <div className="flex flex-col items-center">
-                                <span className="text-[13px] font-black uppercase tracking-widest opacity-60 mb-1">
+                                <span className="text-[8px] sm:text-[13px] font-black uppercase tracking-widest opacity-60 mb-1">
                                   Index
                                 </span>
-                                <span className="drop-shadow-md">
+                                <span className="text-sm sm:text-xl drop-shadow-md">
                                   {qaf.value !== null && !isNaN(qaf.value)
                                     ? `${formatCopNumber(qaf.value)}%`
                                     : '-'}
@@ -3613,11 +3616,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       {/* Moisture Content Row - Ubuntu Themed */}
                       <tr className="border-t border-white/10 bg-blue-500/5 transition-colors hover:bg-blue-500/10">
                         <td
-                          colSpan={4}
-                          className="sticky left-0 z-30 px-6 py-5 text-right text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                          colSpan={2}
+                          className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-blue-800 dark:text-blue-300 uppercase bg-[#F3F6FF] dark:bg-slate-800 shadow-xl border-r border-slate-200"
                         >
                           Moisture Content (%)
                         </td>
+                        <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                        <td className="bg-[#F3F6FF] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
                         {Array.from(
                           { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
                           (_, i) => {
@@ -3628,7 +3633,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             return (
                               <td
                                 key={`moisture-${day}`}
-                                className="py-4 px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-[13px]"
+                                className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-blue-700 dark:text-blue-400 font-bold text-[11px] sm:text-[13px] bg-blue-50/10"
                               >
                                 {dailyAverage !== undefined && !isNaN(dailyAverage)
                                   ? `${formatCopNumber(dailyAverage)}%`
@@ -3637,7 +3642,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             );
                           }
                         )}
-                        <td className="sticky right-0 z-30 px-6 py-5 text-center bg-blue-600 dark:bg-blue-900/40 text-white font-black text-lg shadow-[-8px_0_20px_rgba(37,99,235,0.2)] border-l border-white/10">
+                        <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-blue-600 dark:bg-blue-900/40 text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(37,99,235,0.2)] border-l border-white/10">
                           {(() => {
                             const validValues = Array.from(monthlyMoistureData.values()).filter(
                               (v) => v !== null && v !== undefined && !isNaN(v)
@@ -3652,11 +3657,13 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       {/* Capacity Row - Ubuntu Themed */}
                       <tr className="border-t border-white/10 bg-emerald-500/5 transition-colors hover:bg-emerald-500/10">
                         <td
-                          colSpan={4}
-                          className="sticky left-0 z-30 px-6 py-5 text-right text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
+                          colSpan={2}
+                          className="sticky left-0 z-30 px-3 sm:px-6 py-5 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-emerald-800 dark:text-emerald-300 uppercase bg-[#F3FFF6] dark:bg-slate-800 shadow-xl border-r border-slate-200"
                         >
                           Throughput Capacity (TPH)
                         </td>
+                        <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
+                        <td className="bg-[#F3FFF6] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50"></td>
                         {Array.from(
                           { length: new Date(filterYear, filterMonth + 1, 0).getDate() },
                           (_, i) => {
@@ -3672,7 +3679,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             return (
                               <td
                                 key={`capacity-${day}`}
-                                className="py-4 px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-emerald-700 dark:text-emerald-400 font-bold text-[13px]"
+                                className="py-4 px-1 sm:px-2 text-center border-r border-slate-200 dark:border-slate-700/50 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] sm:text-[13px] bg-emerald-50/10"
                               >
                                 {capacity !== null && !isNaN(capacity)
                                   ? formatCopNumber(capacity)
@@ -3681,7 +3688,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                             );
                           }
                         )}
-                        <td className="sticky right-0 z-30 px-6 py-5 text-center bg-ubuntu-orange text-white font-black text-lg shadow-[-8px_0_20_rgba(233,84,32,0.3)] border-l border-white/10 rounded-br-[2rem]">
+                        <td className="sticky right-0 z-30 px-3 sm:px-6 py-5 text-center bg-ubuntu-orange text-white font-black text-sm sm:text-lg shadow-[-8px_0_20px_rgba(233,84,32,0.3)] border-l border-white/10">
                           {(() => {
                             const validCapacities: number[] = [];
                             Array.from(
@@ -3709,26 +3716,28 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                       {footerData.map((row, index) => (
                         <tr
                           key={`footer-${row.parameter.id}`}
-                          className="border-t border-white/5 bg-slate-500/5 transition-colors hover:bg-ubuntu-orange/5 group/frow"
+                          className={`border-t border-white/5 transition-colors hover:bg-ubuntu-orange/5 group/frow ${index === footerData.length - 1 ? 'rounded-b-[2rem]' : ''}`}
                         >
                           <td
-                            colSpan={4}
-                            className="sticky left-0 z-30 px-6 py-4 text-right text-[13px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange"
+                            colSpan={2}
+                            className={`sticky left-0 z-30 px-3 sm:px-6 py-4 text-right text-[10px] sm:text-[13px] font-black tracking-widest text-slate-500 dark:text-ubuntu-warmGrey uppercase bg-white dark:bg-slate-900 border-r border-slate-200 shadow-lg group-hover/frow:text-ubuntu-orange ${index === footerData.length - 1 ? 'rounded-bl-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}
                           >
                             {row.parameter.parameter}
                           </td>
+                          <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
+                          <td className="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700/50"></td>
                           {row.dailyValues.map((day, dayIndex) => {
                             const colors = getPercentageColor(day.value);
                             return (
                               <td
                                 key={dayIndex}
-                                className={`px-2 py-4 text-center border-r border-white/5 ${colors.bg} text-[13px] font-bold`}
+                                className={`px-1 sm:px-2 py-4 text-center border-r border-white/5 ${colors.bg} text-[11px] sm:text-[13px] font-bold`}
                               >
                                 {formatCopNumber(day.raw)}
                               </td>
                             );
                           })}
-                          <td className="sticky right-0 z-30 px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white">
+                          <td className={`sticky right-0 z-30 px-3 sm:px-6 py-4 text-center bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-black text-[11px] sm:text-[13px] shadow-xl border-l border-slate-200 group-hover/frow:bg-ubuntu-orange group-hover/frow:text-white ${index === footerData.length - 1 ? 'rounded-br-[1.5rem] sm:rounded-bl-[2rem]' : ''}`}>
                             {formatCopNumber(row.monthlyAverageRaw)}
                           </td>
                         </tr>
@@ -3740,7 +3749,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                 <div className="mt-8 flex justify-end pr-6 pb-6">
                   <button
                     onClick={exportToExcel}
-                    className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-500/30 uppercase tracking-widest text-xs"
+                    className="group flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black rounded-xl sm:rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-500/30 uppercase tracking-widest text-[10px] sm:text-xs w-full sm:w-auto"
                     disabled={analysisData.length === 0}
                   >
                     <div className="p-2 bg-white/20 rounded-xl group-hover:rotate-12 transition-transform">
@@ -3761,6 +3770,7 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
                     Export Matrix
                   </button>
                 </div>
+                </div>
               </DragDropContext>
             )}
           </div>
@@ -3777,10 +3787,10 @@ const CopAnalysisPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
               <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-ubuntu-aubergine/10 rounded-full blur-3xl"></div>
 
               <div className="relative">
-                <h2 className="text-4xl font-black bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-orange bg-clip-text text-transparent mb-4 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black bg-gradient-to-r from-ubuntu-aubergine via-ubuntu-darkAubergine to-ubuntu-orange bg-clip-text text-transparent mb-2 sm:mb-4 tracking-tight">
                   📈 Trend Parameter COP
                 </h2>
-                <p className="text-base text-slate-700 dark:text-ubuntu-warmGrey leading-relaxed font-medium">
+                <p className="text-sm sm:text-base text-slate-700 dark:text-ubuntu-warmGrey leading-relaxed font-medium">
                   Visualisasi tren nilai parameter sepanjang bulan untuk monitoring performa dan
                   identifikasi pola
                 </p>

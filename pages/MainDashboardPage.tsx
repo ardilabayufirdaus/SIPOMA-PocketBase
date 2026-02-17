@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from '../hooks/useTranslation';
+import React from 'react';
 import { Page } from '../types';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import KPISection from '../components/dashboard/KPISection';
@@ -7,7 +6,6 @@ import OperationsOverview from '../components/dashboard/OperationsOverview';
 import QuickActions from '../components/dashboard/QuickActions';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { useCurrentUser } from '../hooks/useCurrentUser';
-import { pb } from '../utils/pocketbase-simple';
 
 import { usePresenceTracker } from '../hooks/usePresenceTracker';
 import { useSystemHealth } from '../hooks/useSystemHealth';
@@ -41,7 +39,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
   }
 
   return (
-    <div className="relative flex flex-col h-screen max-h-screen overflow-hidden text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
+    <div className="relative flex flex-col min-h-full text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
       {/* Subtle Ubuntu Gradient Overlay */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
@@ -49,7 +47,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 flex-1 flex flex-col p-4 lg:p-6 gap-4 lg:gap-6 overflow-hidden max-w-[1700px] mx-auto w-full">
+      <div className="relative z-10 flex-1 flex flex-col gap-4 lg:gap-6 max-w-[1700px] mx-auto w-full">
         {/* Header Section */}
         <div className="flex-shrink-0">
           <DashboardHeader user={currentUser} t={t} onlineUsersCount={onlineUsersCount} />
@@ -61,9 +59,9 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
         </div>
 
         {/* Main Content - Grid Layout */}
-        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 overflow-hidden">
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           {/* Left Column: Operations Overview (8 cols) - Like a Main App Window */}
-          <div className="lg:col-span-8 flex flex-col h-full overflow-hidden">
+          <div className="lg:col-span-8 flex flex-col h-full">
             <OperationsOverview
               unitStatuses={unitStatuses}
               topDowntimes={topDowntimes}
@@ -73,14 +71,14 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
           </div>
 
           {/* Right Column: Quick Actions & Widgets (4 cols) */}
-          <div className="lg:col-span-4 flex flex-col h-full overflow-hidden gap-4 lg:gap-6">
+          <div className="lg:col-span-4 flex flex-col h-full gap-4 lg:gap-6">
             <div className="flex-shrink-0">
               <div className="flex items-center justify-between mb-3 px-1">
                 <h3 className="text-[11px] font-bold text-[#808080] dark:text-slate-500 uppercase tracking-widest">
                   {t.dashboard_quick_actions || 'Akses Cepat'}
                 </h3>
               </div>
-              <QuickActions onNavigate={onNavigate} t={t} />
+              <QuickActions onNavigate={onNavigate} />
             </div>
 
             {/* System Health Widget - Ubuntu Sidebar/Widget Style */}
@@ -88,7 +86,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
               {/* Corner accent */}
               <div className="absolute top-0 right-0 w-16 h-16 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
 
-              <SystemStatusWidget t={t} />
+              <SystemStatusWidget />
             </div>
           </div>
         </div>
@@ -98,7 +96,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
 };
 
 // Extracted for cleaner component code
-const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
+const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
   /* Helper to format uptime */
   const formatUptime = (seconds: number) => {
     if (!seconds) return '0m';
@@ -109,13 +107,6 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   };
 
   const { cpuLoad, memoryUsage, uptime, latency, isLive } = useSystemHealth();
-
-  // Determine color based on load
-  const getLoadColor = (load: number) => {
-    if (load < 50) return 'from-emerald-400 to-green-500';
-    if (load < 80) return 'from-yellow-400 to-orange-500';
-    return 'from-red-400 to-pink-500';
-  };
 
   return (
     <>

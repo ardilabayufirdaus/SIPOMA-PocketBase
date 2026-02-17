@@ -3,12 +3,9 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { useTranslation } from '../hooks/useTranslation';
 import { pb } from '../utils/pocketbase-simple';
-import { logger } from '../utils/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Database,
   Download,
-  Calendar,
   Layers,
   FileSpreadsheet,
   Loader2,
@@ -99,7 +96,7 @@ const DatabasePage: React.FC = () => {
         const unitMaterial = materialData.filter((d) => d.plant_unit === unit.unit);
         const unitDowntime = downtimeData.filter((d) => d.plant_unit === unit.unit);
         const unitSiloData = siloData.filter((d) => {
-          const expanded = d.expand?.silo_id as any;
+          const expanded = d.expand?.silo_id as { unit: string } | undefined;
           return expanded?.unit === unit.unit;
         });
         const unitInfo = infoData.filter((d) => d.plant_unit === unit.unit);
@@ -158,7 +155,7 @@ const DatabasePage: React.FC = () => {
               acc[date].total_production += curr.total_production || 0;
               return acc;
             },
-            {} as Record<string, any>
+            {} as Record<string, { date: string; [key: string]: number | string | undefined }>
           );
 
           allDates.forEach((dateStr) => {
@@ -287,14 +284,14 @@ const DatabasePage: React.FC = () => {
   };
 
   return (
-    <div className="relative flex flex-col h-screen max-h-screen overflow-hidden text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
+    <div className="relative flex flex-col min-h-full text-[#333333] dark:text-slate-100 font-sans bg-[#F7F7F7] dark:bg-slate-950">
       {/* Subtle Ubuntu Gradient Overlay (Mirrors Main Dashboard) */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-30">
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#E95420]/5 rounded-full blur-[120px]"></div>
         <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[#772953]/5 rounded-full blur-[120px]"></div>
       </div>
 
-      <div className="relative z-10 flex-1 flex flex-col p-4 lg:p-6 gap-4 lg:gap-6 overflow-hidden max-w-[1700px] mx-auto w-full">
+      <div className="relative z-10 flex-1 flex flex-col gap-4 lg:gap-6 max-w-[1700px] mx-auto w-full">
         {/* Header Area */}
         <div className="flex-shrink-0 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-2">
           <motion.div
@@ -366,7 +363,7 @@ const DatabasePage: React.FC = () => {
                     {/* Corner accent like in Widget */}
                     <div className="absolute top-0 right-0 w-24 h-24 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
 
-                    <div className="relative z-10 flex flex-col md:flex-row gap-8 lg:gap-12 w-full">
+                    <div className="relative z-10 flex flex-col lg:flex-row gap-8 lg:gap-12 w-full">
                       {/* Description */}
                       <div className="flex-1 space-y-6">
                         <div className="flex items-center gap-4">
