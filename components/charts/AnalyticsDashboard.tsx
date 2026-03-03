@@ -44,43 +44,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 }) => {
   const { announceToScreenReader } = useAccessibility();
 
-  const formatValue = (value: number, type: string) => {
-    switch (type) {
-      case 'percentage':
-        return `${value.toFixed(1)}%`;
-      case 'hours':
-        return `${value.toFixed(1)}h`;
-      case 'kwh':
-        return `${value.toFixed(0)} kWh`;
-      default:
-        return value.toString();
-    }
-  };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
-          <p className="font-medium text-slate-800 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}:{' '}
-              {formatValue(
-                entry.value,
-                entry.dataKey === 'energy'
-                  ? 'kwh'
-                  : entry.dataKey === 'downtime'
-                    ? 'hours'
-                    : 'percentage'
-              )}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="space-y-6">
       {/* Time Range Selector */}
@@ -321,7 +284,6 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {data.length > 0 &&
           (() => {
-            const latest = data[data.length - 1];
             const avgProduction =
               data.reduce((sum, item) => sum + item.production, 0) / data.length;
             const avgEfficiency =
@@ -364,5 +326,3 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 };
 
 export default AnalyticsDashboard;
-
-

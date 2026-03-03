@@ -98,9 +98,9 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
   colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
   showGrid = true,
   showLegend = true,
-  showBrush = false,
+  showBrush: _showBrush = false,
   onDataPointClick,
-  onChartClick,
+  onChartClick: _onChartClick,
 }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [selectedData, setSelectedData] = useState<ChartDataPoint | null>(null);
@@ -119,21 +119,6 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
 
     return () => clearInterval(interval);
   }, [realTime, data]);
-
-  // Handle drill down
-  const handleDrillDown = useCallback(
-    (dataPoint: ChartDataPoint) => {
-      if (!drillDown?.enabled || currentLevel >= drillDown.levels.length - 1) return;
-
-      setCurrentLevel((prev) => prev + 1);
-      setSelectedData(dataPoint);
-
-      if (onDataPointClick) {
-        onDataPointClick(dataPoint, drillDown.levels[currentLevel].key);
-      }
-    },
-    [drillDown, currentLevel, onDataPointClick]
-  );
 
   // Handle drill up
   const handleDrillUp = useCallback(() => {
@@ -181,39 +166,6 @@ const InteractiveChart: React.FC<InteractiveChartProps> = ({
     },
     [exportConfig, data]
   );
-
-  // Custom tooltip
-  const CustomTooltip = useMemo(() => {
-    const TooltipComponent = ({
-      active,
-      payload,
-      label,
-    }: {
-      active?: boolean;
-      payload?: Array<{
-        name: string;
-        value: string | number;
-        color: string;
-      }>;
-      label?: string | number;
-    }) => {
-      if (!active || !payload || !payload.length) return null;
-
-      return (
-        <div className="bg-white p-3 border border-slate-200 rounded-lg shadow-lg">
-          <p className="font-medium text-slate-900">{`${xAxisKey}: ${label}`}</p>
-          {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }} className="text-sm">
-              {`${entry.name}: ${typeof entry.value === 'number' ? formatNumber(entry.value) : entry.value}`}
-            </p>
-          ))}
-          {drillDown?.enabled && <p className="text-xs text-slate-500 mt-2">Click to drill down</p>}
-        </div>
-      );
-    };
-    TooltipComponent.displayName = 'CustomTooltip';
-    return TooltipComponent;
-  }, [xAxisKey, drillDown]);
 
   // Render chart based on type
   const renderChart = () => {
@@ -446,5 +398,3 @@ function exportToPDF(filename: string) {
 }
 
 export default InteractiveChart;
-
-

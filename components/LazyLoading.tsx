@@ -4,15 +4,12 @@
  * untuk lazy loading komponen di aplikasi
  */
 
-import React, { lazy, ComponentType, LazyExoticComponent, Suspense } from 'react';
-// Use the simpler error boundary
-import SimpleErrorBoundary from './SimpleErrorBoundary';
-import LoadingSkeleton from './LoadingSkeleton';
+import React, { lazy, ComponentType, LazyExoticComponent } from 'react';
 
 /**
  * Interface untuk komponen yang menggunakan lazy loading
  */
-export interface LazyComponentOptions<P = any> {
+export interface LazyComponentOptions {
   /** Path import file komponen */
   importPath: string;
   /** Nama komponen untuk debugging */
@@ -47,33 +44,6 @@ export interface SafeLazyProps {
 }
 
 /**
- * Utility untuk diagnostic pada lazy loading error
- *
- * @param error Error yang terjadi
- * @param componentName Nama komponen
- * @param importPath Path import
- */
-function diagnoseImportError(error: any, componentName: string, importPath: string): string {
-  let diagnosis = `Error loading component ${componentName} from ${importPath}`;
-
-  if (error.message?.includes('Cannot find module')) {
-    diagnosis +=
-      '\nPossible causes:\n' +
-      '- File path is incorrect\n' +
-      '- File does not exist\n' +
-      '- There might be a typo in the path';
-  } else if (error.message?.includes('Invalid module structure')) {
-    diagnosis +=
-      '\nPossible causes:\n' +
-      '- Component does not have a default export\n' +
-      '- There might be a name collision with different extensions (.js/.tsx)\n' +
-      '- The exported component is not valid';
-  }
-
-  return diagnosis;
-}
-
-/**
  * Buat lazy component dengan pattern standar
  *
  * @param options Opsi konfigurasi untuk lazy component
@@ -104,5 +74,3 @@ export function createStandardLazy<T extends ComponentType<any>>(
 
   return LazyComponent as LazyExoticComponent<T>;
 }
-
-

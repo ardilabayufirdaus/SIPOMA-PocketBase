@@ -1,6 +1,6 @@
 import { pb } from './pocketbase-simple';
 import { optimizedQuery, optimizedGetOne } from './optimization/queryOptimizer';
-import { useCachedData } from './optimization/dataCache';
+import { fetchCachedData } from './optimization/dataCache';
 import { logger } from './logger';
 
 /**
@@ -21,6 +21,7 @@ export async function getListOptimized(
   collection: string,
   page: number = 1,
   perPage: number = 50,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: Record<string, any> = {}
 ) {
   try {
@@ -72,6 +73,7 @@ export async function getListOptimized(
 export async function getOneOptimized(
   collection: string,
   id: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: Record<string, any> = {}
 ) {
   try {
@@ -117,6 +119,7 @@ export async function getOneOptimized(
  * @param options Opsi query
  * @returns Full list data
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getFullListOptimized(collection: string, options: Record<string, any> = {}) {
   try {
     // Untuk getFullList, kita akan menggunakan fetch function yang membungkus pb.collection().getFullList()
@@ -140,7 +143,7 @@ export async function getFullListOptimized(collection: string, options: Record<s
       : 5 * 60 * 1000; // 5 menit untuk data lain
 
     // Gunakan cached data
-    return await useCachedData(fetchFunction, cacheKey, cacheTtl);
+    return await fetchCachedData(fetchFunction, cacheKey, cacheTtl);
   } catch (error) {
     // Jika terjadi error dengan cached data, fallback ke metode original
     logger.warn(

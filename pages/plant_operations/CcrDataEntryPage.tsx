@@ -79,6 +79,11 @@ import CcrFilters from '../../components/ccr/filters/CcrFilters';
 import CcrQuickActions from '../../components/ccr/actions/CcrQuickActions';
 import InformationSection from '../../components/ccr/sections/InformationSection';
 
+// Import Offline Sync & Connection Status Components
+import { useCcrOfflineSync } from '../../hooks/useCcrOfflineSync';
+import CcrConnectionBanner from '../../components/ccr/CcrConnectionBanner';
+import { useOfflineStatus } from '../../hooks/useOfflineStatus';
+
 const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +98,9 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const [columnSearchQuery, setColumnSearchQuery] = useState('');
   const [isFooterVisible, setIsFooterVisible] = useState(false);
   const [materialUsageRefreshTrigger, setMaterialUsageRefreshTrigger] = useState(0);
+
+  // Offline sync state
+  const { isOnline: isNetworkOnline } = useOfflineStatus();
 
   // Parameter reorder state
   const [showReorderModal, setShowReorderModal] = useState(false);
@@ -356,6 +364,75 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   }, [plantUnits, selectedCategory]);
 
   // Hapus auto-select: biarkan user memilih unit secara manual
+
+  // Offline Sync Hook - untuk menyimpan data lokal saat server offline
+  const offlineSync = useCcrOfflineSync({
+    date: selectedDate,
+    unit: selectedUnit,
+    autoSaveIntervalMs: 10000, // auto-save setiap 10 detik
+  });
+
+  // Handler untuk memulihkan draft yang ditemukan
+  const handleRecoverDraft = useCallback(() => {
+    const draft = offlineSync.loadDraft();
+    if (!draft) return;
+
+    // Jika ada pending operations dalam draft, proses ke pending queue
+    if (draft.parameters && Object.keys(draft.parameters).length > 0) {
+      Object.values(draft.parameters).forEach((entry) => {
+        const { parameterId, hour, value, userName } = entry as Record<string, unknown>;
+        offlineSync.addToPendingQueue({
+          type: 'parameter',
+          data: {
+            parameterId,
+            date: selectedDate,
+            hour,
+            value,
+            userName,
+            selectedUnit,
+          },
+        });
+      });
+    }
+
+    if (draft.silos && Object.keys(draft.silos).length > 0) {
+      Object.values(draft.silos).forEach((entry) => {
+        const { siloId, shift, field, value } = entry as Record<string, unknown>;
+        offlineSync.addToPendingQueue({
+          type: 'silo',
+          data: {
+            date: selectedDate,
+            siloId,
+            shift,
+            field,
+            value,
+            selectedUnit,
+          },
+        });
+      });
+    }
+
+    // Proses queue jika online
+    if (isNetworkOnline) {
+      offlineSync.processPendingQueue();
+    }
+
+    // Clear the draft after recovering
+    offlineSync.clearDraft();
+    showToast('Data berhasil dipulihkan');
+  }, [offlineSync, selectedDate, selectedUnit, isNetworkOnline, showToast]);
+
+  // Handler untuk manual sync
+  const handleManualSync = useCallback(() => {
+    offlineSync.processPendingQueue().then(({ success, failed }) => {
+      if (success > 0) {
+        showToast(`${success} data berhasil disinkronkan`);
+      }
+      if (failed > 0) {
+        showToast(`${failed} data gagal disinkronkan`);
+      }
+    });
+  }, [offlineSync, showToast]);
 
   // Silo Data Hooks and Filtering
   const { records: siloMasterData } = useSiloCapacities();
@@ -1811,15 +1888,33 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
         return;
       }
 
-      // Save ke database dengan nilai yang sudah dipastikan sebagai number
-      await updateSiloDataWithCreate(selectedDate, siloId, shift, field, valueToSave);
+      // Save ke draft lokal terlebih dahulu (safety net)
+      offlineSync.saveSiloDraft(siloId, shift, field, valueToSave);
 
-      // Hapus dari unsaved changes setelah berhasil save
-      setUnsavedSiloChanges((prev) => {
-        const newChanges = { ...prev };
-        delete newChanges[key];
-        return newChanges;
-      });
+      try {
+        // Coba save ke database
+        await updateSiloDataWithCreate(selectedDate, siloId, shift, field, valueToSave);
+
+        // Hapus dari unsaved changes setelah berhasil save
+        setUnsavedSiloChanges((prev) => {
+          const newChanges = { ...prev };
+          delete newChanges[key];
+          return newChanges;
+        });
+      } catch {
+        // Jika gagal (server offline), tambahkan ke pending queue
+        offlineSync.addToPendingQueue({
+          type: 'silo',
+          data: {
+            date: selectedDate,
+            siloId,
+            shift,
+            field,
+            value: valueToSave,
+            selectedUnit,
+          },
+        });
+      }
     } catch {
       // Error handling quietly
     } finally {
@@ -1903,11 +1998,14 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   // Fungsi untuk menyimpan perubahan ke database saat berpindah sel
   const saveParameterChange = useCallback(
     async (parameterId: string, hour: number, value: string, userName?: string) => {
+      const effectiveUserName =
+        userName || loggedInUser?.full_name || currentUser?.full_name || 'Unknown User';
+
+      // Selalu simpan ke draft lokal terlebih dahulu (safety net)
+      offlineSync.saveParameterDraft(parameterId, hour, value, effectiveUserName);
+
       try {
-        const effectiveUserName =
-          userName || loggedInUser?.full_name || currentUser?.full_name || 'Unknown User';
-        // Use updateParameterData directly for individual changes
-        // Pass opts.skipTrigger = true to avoid triggering a full data refresh on every cell save
+        // Coba kirim ke server
         await updateParameterData(
           parameterId,
           selectedDate,
@@ -1917,20 +2015,22 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
           undefined,
           { skipTrigger: true }
         );
-
-        // Hapus dari pending changes setelah berhasil disimpan
-        // const changeKey = `${parameterId}_${hour}`;
-        // setPendingChanges((prev) => {
-        //   const newMap = new Map(prev);
-        //   newMap.delete(changeKey);
-        //   return newMap;
-        // });
       } catch {
-        // Error logging removed for production
-        showToast('Error saving parameter data');
+        // Jika gagal (server offline), tambahkan ke pending queue
+        offlineSync.addToPendingQueue({
+          type: 'parameter',
+          data: {
+            parameterId,
+            date: selectedDate,
+            hour,
+            value,
+            userName: effectiveUserName,
+            selectedUnit,
+          },
+        });
       }
     },
-    [updateParameterData, loggedInUser, currentUser, selectedDate, showToast]
+    [updateParameterData, loggedInUser, currentUser, selectedDate, selectedUnit, offlineSync]
   );
 
   // Bulk save function for efficient import
@@ -3679,6 +3779,17 @@ const CcrDataEntryPage: React.FC<{ t: Record<string, string> }> = ({ t }) => {
       </div>
 
       <div className="relative space-y-6 p-4 lg:p-8">
+        {/* Connection Status Banner */}
+        <CcrConnectionBanner
+          pendingCount={offlineSync.pendingCount}
+          isSyncing={offlineSync.isSyncing}
+          hasDraft={offlineSync.hasDraft}
+          lastSyncTime={offlineSync.lastSyncTime}
+          onRecoverDraft={handleRecoverDraft}
+          onDiscardDraft={() => offlineSync.clearDraft()}
+          onManualSync={handleManualSync}
+        />
+
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

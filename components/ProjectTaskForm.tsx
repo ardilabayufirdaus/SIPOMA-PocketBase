@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProjectTask } from '../types';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from './ui/EnhancedComponents';
+import { EnhancedButton } from './ui/EnhancedComponents';
 
 type TaskFormData = Omit<ProjectTask, 'id' | 'project_id'>;
 
@@ -28,12 +22,6 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
     actual_end: null,
     percent_complete: 0,
   });
-
-  // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
 
   useEffect(() => {
     if (taskToEdit) {
@@ -200,5 +188,3 @@ const ProjectTaskForm: React.FC<FormProps> = ({ taskToEdit, onSave, onCancel, t 
 };
 
 export default ProjectTaskForm;
-
-

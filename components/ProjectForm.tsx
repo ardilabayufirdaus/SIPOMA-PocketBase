@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { Project, ProjectStatus } from '../types';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from './ui/EnhancedComponents';
+import { EnhancedButton } from './ui/EnhancedComponents';
 
 interface ProjectFormProps {
   t: any;
@@ -23,12 +17,6 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ t, onSave, onCancel, project 
     budget: project?.budget || 0,
     status: project?.status || ProjectStatus.ACTIVE,
   });
-
-  // Enhanced accessibility hooks
-  const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;

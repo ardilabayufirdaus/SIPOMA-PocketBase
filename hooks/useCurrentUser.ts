@@ -5,6 +5,7 @@ import { secureStorage } from '../utils/secureStorage';
 import { safeApiCall, isNetworkConnected } from '../utils/connectionCheck';
 import { logger } from '../utils/logger';
 import { clearBrowserData } from '../utils/browserCacheUtils';
+import { flushOfflineSyncBeforeLogout } from './useCcrOfflineSync';
 
 export const useCurrentUser = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -396,6 +397,8 @@ export const useCurrentUser = () => {
       setLoading(false);
 
       // Clear SIPOMA domain data (localhost & sipoma.site)
+      // Flush offline sync pending queue SEBELUM clear data
+      await flushOfflineSyncBeforeLogout();
       await clearBrowserData();
 
       // Dispatch custom event to notify other components

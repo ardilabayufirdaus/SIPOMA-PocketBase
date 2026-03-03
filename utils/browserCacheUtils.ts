@@ -37,7 +37,10 @@ const clearSipomaDomainData = async (): Promise<void> => {
             key.startsWith('pocketbase') ||
             key.includes('currentUser') ||
             key.includes('auth') ||
-            key.includes('session'))
+            key.includes('session')) &&
+          // Preserve offline sync data — akan di-recovery setelah login kembali
+          !key.startsWith('sipoma_ccr_draft_') &&
+          !key.startsWith('sipoma_ccr_pending_')
         ) {
           sipomaKeys.push(key);
         }
@@ -149,41 +152,6 @@ const clearSipomaDomainData = async (): Promise<void> => {
   } catch (error) {
     logger.error('SIPOMA domain data clearing failed:', error);
     throw error;
-  }
-};
-
-/**
- * Clear domain-specific service worker caches (hanya cache yang related ke current domain)
- */
-const clearDomainCaches = async (): Promise<void> => {
-  try {
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      const currentOrigin = window.location.origin;
-
-      // Filter caches yang related ke current domain atau SIPOMA
-      const domainCaches = cacheNames.filter(
-        (cacheName) =>
-          cacheName.includes(currentOrigin) ||
-          cacheName.includes('sipoma') ||
-          cacheName.includes('workbox') ||
-          cacheName.includes('runtime') ||
-          cacheName.includes('precache')
-      );
-
-      await Promise.all(
-        domainCaches.map(async (cacheName) => {
-          await caches.delete(cacheName);
-          logger.info(`Domain cache '${cacheName}' cleared`);
-        })
-      );
-
-      logger.info(
-        `Cleared ${domainCaches.length} domain-specific caches (total: ${cacheNames.length})`
-      );
-    }
-  } catch (error) {
-    logger.warn('Domain cache clearing failed:', error);
   }
 };
 

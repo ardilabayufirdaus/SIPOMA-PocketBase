@@ -182,7 +182,7 @@ export const dataCache = DataCache.getInstance();
  * @param cacheKey Kunci cache
  * @param expiryMs Waktu kedaluwarsa dalam milidetik
  */
-export async function useCachedData<T>(
+export async function fetchCachedData<T>(
   fetcher: () => Promise<T>,
   cacheKey: string,
   expiryMs: number = 300000 // 5 menit default

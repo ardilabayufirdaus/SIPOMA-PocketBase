@@ -51,6 +51,40 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 type ChartView = 's-curve' | 'gantt';
 
+const parseExcelDate = (val: any): Date | null => {
+  if (!val) return null;
+
+  if (val instanceof Date) {
+    return isNaN(val.getTime()) ? null : val;
+  }
+
+  if (typeof val === 'object' && val !== null && 'result' in val) {
+    return parseExcelDate(val.result);
+  }
+
+  if (typeof val === 'number') {
+    const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+    const dt = new Date(excelEpoch.getTime() + val * 86400000);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
+
+  const strVal = String(val).trim();
+
+  const dmmyyyyMatch = strVal.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (dmmyyyyMatch) {
+    const d = parseInt(dmmyyyyMatch[1], 10);
+    const m = parseInt(dmmyyyyMatch[2], 10) - 1;
+    const y = parseInt(dmmyyyyMatch[3], 10);
+    const dt = new Date(y, m, d);
+    if (!isNaN(dt.getTime())) return dt;
+  }
+
+  const dt = new Date(strVal);
+  if (!isNaN(dt.getTime())) return dt;
+
+  return null;
+};
+
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full p-10">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -671,19 +705,30 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
         Activity: task.activity,
         'Planned Start': task.planned_start ? formatDate(task.planned_start) : '',
         'Planned End': task.planned_end ? formatDate(task.planned_end) : '',
+        'Actual Start': task.actual_start ? formatDate(task.actual_start) : '',
+        'Actual End': task.actual_end ? formatDate(task.actual_end) : '',
         'Percent Complete': task.percent_complete || 0,
       }));
 
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Project Tasks');
 
-      worksheet.addRow(['Activity', 'Planned Start', 'Planned End', 'Percent Complete']);
+      worksheet.addRow([
+        'Activity',
+        'Planned Start',
+        'Planned End',
+        'Actual Start',
+        'Actual End',
+        'Percent Complete',
+      ]);
 
       exportData.forEach((row) => {
         worksheet.addRow([
           row.Activity,
           row['Planned Start'],
           row['Planned End'],
+          row['Actual Start'],
+          row['Actual End'],
           row['Percent Complete'],
         ]);
       });
@@ -692,6 +737,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
         { header: 'Activity', width: 40 },
         { header: 'Planned Start', width: 15 },
         { header: 'Planned End', width: 15 },
+        { header: 'Actual Start', width: 15 },
+        { header: 'Actual End', width: 15 },
         { header: 'Percent Complete', width: 15 },
       ];
 
@@ -744,7 +791,14 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           }
 
           const headers = jsonData[0] as string[];
-          const expectedHeaders = ['Activity', 'Planned Start', 'Planned End', 'Percent Complete'];
+          const expectedHeaders = [
+            'Activity',
+            'Planned Start',
+            'Planned End',
+            'Actual Start',
+            'Actual End',
+            'Percent Complete',
+          ];
 
           const normalizedHeaders = headers.map((h) => h?.toString().trim());
           const hasValidHeaders = expectedHeaders.every((expected) =>
@@ -761,13 +815,11 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
           for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i] as (string | number | null)[];
 
-            if (!row[0]) continue;
+            if (!row[1]) continue;
 
-            const activity = row[0]?.toString().trim();
-            const plannedStartStr = row[1]?.toString().trim();
-            const plannedEndStr = row[2]?.toString().trim();
+            const activity = row[1]?.toString().trim();
             const percentComplete =
-              typeof row[3] === 'number' ? row[3] : parseFloat(row[3]?.toString() || '0') || 0;
+              typeof row[6] === 'number' ? row[6] : parseFloat(row[6]?.toString() || '0') || 0;
 
             if (!activity) {
               alert(`Row ${i + 1}: Activity is required`);
@@ -775,27 +827,30 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               return;
             }
 
-            let plannedStart: Date | null = null;
-            let plannedEnd: Date | null = null;
+            const plannedStart = parseExcelDate(row[2]);
+            const plannedEnd = parseExcelDate(row[3]);
+            const actualStart = parseExcelDate(row[4]);
+            const actualEnd = parseExcelDate(row[5]);
 
-            if (plannedStartStr) {
-              const parsedStart = new Date(plannedStartStr);
-              if (isNaN(parsedStart.getTime())) {
-                alert(`Row ${i + 1}: Invalid Planned Start date format`);
-                setIsImporting(false);
-                return;
-              }
-              plannedStart = parsedStart;
+            if (row[2] && !plannedStart) {
+              alert(`Row ${i + 1}: Invalid Planned Start date format`);
+              setIsImporting(false);
+              return;
             }
-
-            if (plannedEndStr) {
-              const parsedEnd = new Date(plannedEndStr);
-              if (isNaN(parsedEnd.getTime())) {
-                alert(`Row ${i + 1}: Invalid Planned End date format`);
-                setIsImporting(false);
-                return;
-              }
-              plannedEnd = parsedEnd;
+            if (row[3] && !plannedEnd) {
+              alert(`Row ${i + 1}: Invalid Planned End date format`);
+              setIsImporting(false);
+              return;
+            }
+            if (row[4] && !actualStart) {
+              alert(`Row ${i + 1}: Invalid Actual Start date format`);
+              setIsImporting(false);
+              return;
+            }
+            if (row[5] && !actualEnd) {
+              alert(`Row ${i + 1}: Invalid Actual End date format`);
+              setIsImporting(false);
+              return;
             }
 
             if (percentComplete < 0 || percentComplete > 100) {
@@ -809,8 +864,8 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
               planned_start: plannedStart ? plannedStart.toISOString().split('T')[0] : null,
               planned_end: plannedEnd ? plannedEnd.toISOString().split('T')[0] : null,
               percent_complete: percentComplete,
-              actual_start: null,
-              actual_end: null,
+              actual_start: actualStart ? actualStart.toISOString().split('T')[0] : null,
+              actual_end: actualEnd ? actualEnd.toISOString().split('T')[0] : null,
             });
           }
 
@@ -1326,10 +1381,10 @@ const ProjectDetailPage: React.FC<{ t: any; projectId: string }> = ({ t, project
                 >
                   <div className="p-6">
                     <p className="text-slate-700 mb-6">
-                      {t.confirm_import_message.replace(
-                        '{count}',
-                        pendingImportTasks.length.toString()
-                      )}
+                      {(
+                        t.confirm_import_message ||
+                        'Are you sure you want to import {count} tasks? This will replace all existing tasks.'
+                      ).replace('{count}', pendingImportTasks.length.toString())}
                     </p>
                     <div className="flex justify-end gap-3">
                       <EnhancedButton

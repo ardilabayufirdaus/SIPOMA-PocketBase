@@ -78,7 +78,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
                   {t.dashboard_quick_actions || 'Akses Cepat'}
                 </h3>
               </div>
-              <QuickActions onNavigate={onNavigate} />
+              <QuickActions onNavigate={onNavigate} t={t} />
             </div>
 
             {/* System Health Widget - Ubuntu Sidebar/Widget Style */}
@@ -86,7 +86,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
               {/* Corner accent */}
               <div className="absolute top-0 right-0 w-16 h-16 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
 
-              <SystemStatusWidget />
+              <SystemStatusWidget t={t} />
             </div>
           </div>
         </div>
