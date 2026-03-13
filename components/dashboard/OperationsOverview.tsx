@@ -28,7 +28,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
             : 'bg-rose-50/50 text-rose-700 border-rose-100 hover:bg-rose-50 dark:bg-rose-900/10 dark:text-rose-400 dark:border-rose-800/30 dark:hover:bg-rose-900/20'
         }
       `}
-      title={unit.issue || (t.running_normal || 'Running Normal')}
+      title={unit.issue || t.unit_running_normal || 'Running Normal'}
     >
       <div className="flex justify-between w-full items-center">
         <span className="truncate w-full font-bold">{unit.unit}</span>
@@ -43,7 +43,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
       </div>
       {unit.status !== 'running' && (
         <span className="text-[9px] leading-tight line-clamp-1 opacity-80 w-full">
-          {unit.issue || (t.stopped || 'Stopped')}
+          {unit.issue || t.unit_stopped || 'Stopped'}
         </span>
       )}
     </div>
@@ -57,13 +57,14 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
         <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
           <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
             <h3 className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#772953] rounded-full"></span> Operasional CM
+              <span className="w-1.5 h-1.5 bg-[#772953] rounded-full"></span>{' '}
+              {t.unit_cm_title || 'CM Operations'}
             </h3>
             <button
               onClick={() => onNavigate('operations', 'op_dashboard')}
               className="text-[10px] font-bold text-[#E95420] hover:underline uppercase tracking-tight"
             >
-              LIHAT SEMUA
+              {t.unit_view_all || 'VIEW ALL'}
             </button>
           </div>
           <div className="p-3.5 overflow-y-auto custom-scrollbar">
@@ -74,7 +75,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
             </div>
             {cmUnits.length === 0 && (
               <p className="text-xs text-[#AEA79F] italic text-center py-5">
-                {t.no_cm_units || 'Unit CM tidak ditemukan'}
+                {t.unit_no_units || 'No units found'}
               </p>
             )}
           </div>
@@ -84,13 +85,14 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
         <div className="flex flex-col bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden group hover:shadow-md transition-shadow">
           <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-[#F7F7F7] dark:bg-slate-900/50">
             <h3 className="text-[11px] font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#E95420] rounded-full"></span> Operasional RKC
+              <span className="w-1.5 h-1.5 bg-[#E95420] rounded-full"></span>{' '}
+              {t.unit_rkc_title || 'RKC Operations'}
             </h3>
             <button
               onClick={() => onNavigate('rkc_operations', 'op_dashboard')}
               className="text-[10px] font-bold text-[#E95420] hover:underline uppercase tracking-tight"
             >
-              LIHAT SEMUA
+              {t.unit_view_all || 'VIEW ALL'}
             </button>
           </div>
           <div className="p-3.5 overflow-y-auto custom-scrollbar">
@@ -101,7 +103,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
             </div>
             {rkcUnits.length === 0 && (
               <p className="text-xs text-[#AEA79F] italic text-center py-5">
-                {t.no_rkc_units || 'Unit RKC tidak ditemukan'}
+                {t.unit_no_units || 'No units found'}
               </p>
             )}
           </div>
@@ -112,10 +114,10 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
       <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden relative">
         <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-[#F7F7F7] dark:bg-slate-900/50 sticky top-0 z-10 flex justify-between items-center">
           <h4 className="text-xs font-bold text-[#333333] dark:text-slate-200 uppercase tracking-widest">
-            Isu Terbaru
+            {t.unit_latest_issues || 'Latest Issues'}
           </h4>
           <span className="bg-[#EF2D56] text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-[0.1em]">
-            Live Feed
+            {t.unit_live_feed || 'Live Feed'}
           </span>
         </div>
 
@@ -136,7 +138,7 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
                         {downtime.unit}
                       </span>
                       <span className="text-[10px] font-bold text-[#AEA79F] uppercase">
-                        Hari Ini
+                        {t.unit_today || 'Today'}
                       </span>
                     </div>
                     <p className="text-xs text-[#808080] dark:text-slate-400 truncate group-hover:text-[#333333] dark:group-hover:text-slate-200 transition-colors font-medium">
@@ -163,8 +165,8 @@ const OperationsOverview: React.FC<OperationsOverviewProps> = ({
                   />
                 </svg>
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-widest">
-                Tidak ada isu aktif yang dilaporkan.
+              <span className="text-[11px] font-bold uppercase tracking-widest text-center">
+                {t.unit_no_active_issues || 'No active issues reported.'}
               </span>
             </div>
           )}

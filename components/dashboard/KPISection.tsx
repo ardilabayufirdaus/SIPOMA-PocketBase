@@ -1,7 +1,6 @@
 import React from 'react';
 import MetricCard from './MetricCard';
 import { DashboardMetrics } from '../../hooks/useDashboardData';
-import { motion } from 'framer-motion';
 
 interface KPISectionProps {
   metrics: DashboardMetrics;
@@ -11,11 +10,11 @@ interface KPISectionProps {
 const KPISection: React.FC<KPISectionProps> = ({ metrics, t }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-      {/* Total Production (Placeholders for now) */}
+      {/* Total Production */}
       <MetricCard
         title={t.dashboard_total_production || 'Total Cement Production'}
         value={`${metrics.totalProduction.toLocaleString()} Tons`}
-        subtitle="Current Month Production"
+        subtitle={t.dashboard_kpi_production_subtitle || 'Current Month Production'}
         status="neutral"
         delay={0.1}
         icon={
@@ -34,7 +33,7 @@ const KPISection: React.FC<KPISectionProps> = ({ metrics, t }) => {
       <MetricCard
         title={t.dashboard_availability || 'Plant Availability'}
         value={`${metrics.availability}%`}
-        subtitle="Operational units vs Total"
+        subtitle={t.dashboard_kpi_availability_subtitle || 'Operational units vs Total'}
         status={
           metrics.availability >= 90 ? 'success' : metrics.availability >= 80 ? 'warning' : 'danger'
         }
@@ -59,7 +58,7 @@ const KPISection: React.FC<KPISectionProps> = ({ metrics, t }) => {
       <MetricCard
         title={t.dashboard_critical_downtime || 'Active Downtime'}
         value={metrics.criticalDowntime}
-        subtitle="Open Risk/Issues"
+        subtitle={t.dashboard_kpi_downtime_subtitle || 'Open Risk/Issues'}
         status={metrics.criticalDowntime === 0 ? 'success' : 'danger'}
         delay={0.3}
         icon={
@@ -86,7 +85,7 @@ const KPISection: React.FC<KPISectionProps> = ({ metrics, t }) => {
       <MetricCard
         title={t.dashboard_pending_projects || 'Pending Projects'}
         value={metrics.pendingProjects}
-        subtitle="Active tasks assigned"
+        subtitle={t.dashboard_kpi_project_subtitle || 'Active tasks assigned'}
         status="neutral"
         delay={0.4}
         icon={

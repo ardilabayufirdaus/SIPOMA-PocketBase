@@ -5,11 +5,7 @@ import { PlantUnit, ParameterSetting, ParameterDataType } from '../../types';
 import { Settings, CheckCircle, AlertCircle, BarChart3 } from 'lucide-react';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useReducedMotion,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton } from '../../components/ui/EnhancedComponents';
 
 interface FormProps {
   recordToEdit: ParameterSetting | null;
@@ -30,10 +26,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   loading: providedLoading,
   hideCementSettings = false,
 }) => {
-  // Enhanced accessibility hooks
-  const announceToScreenReader = useAccessibility();
-  const prefersReducedMotion = useReducedMotion();
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
@@ -47,12 +39,14 @@ const ParameterSettingForm: React.FC<FormProps> = ({
     opc_max_value: undefined as number | undefined,
     pcc_min_value: undefined as number | undefined,
     pcc_max_value: undefined as number | undefined,
+    is_oee_feeder: false,
+    is_oee_quality: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   // Validasi field
-  const validateField = (name: string, value: string | number | undefined): string => {
+  const validateField = (name: string, value: any): string => {
     switch (name) {
       case 'parameter':
         if (!value || typeof value !== 'string' || !value.trim()) return 'Parameter wajib diisi';
@@ -65,7 +59,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         if (!value || typeof value !== 'string' || !value.trim()) return 'Kategori wajib diisi';
         return '';
       case 'min_value':
-        // Allow empty values (undefined/null), only validate if both values exist
         if (
           value !== undefined &&
           value !== null &&
@@ -77,7 +70,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           return 'Min tidak boleh lebih dari Max';
         return '';
       case 'max_value':
-        // Allow empty values (undefined/null), only validate if both values exist
         if (
           value !== undefined &&
           value !== null &&
@@ -89,8 +81,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           return 'Max tidak boleh kurang dari Min';
         return '';
       case 'opc_min_value':
-        if (hideCementSettings) return ''; // Skip validation if hidden
-        // Allow empty values (undefined/null), only validate if both values exist
+        if (hideCementSettings) return '';
         if (
           value !== undefined &&
           value !== null &&
@@ -102,8 +93,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           return 'OPC Min tidak boleh lebih dari OPC Max';
         return '';
       case 'opc_max_value':
-        if (hideCementSettings) return ''; // Skip validation if hidden
-        // Allow empty values (undefined/null), only validate if both values exist
+        if (hideCementSettings) return '';
         if (
           value !== undefined &&
           value !== null &&
@@ -115,8 +105,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           return 'OPC Max tidak boleh kurang dari OPC Min';
         return '';
       case 'pcc_min_value':
-        if (hideCementSettings) return ''; // Skip validation if hidden
-        // Allow empty values (undefined/null), only validate if both values exist
+        if (hideCementSettings) return '';
         if (
           value !== undefined &&
           value !== null &&
@@ -128,8 +117,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           return 'PCC Min tidak boleh lebih dari PCC Max';
         return '';
       case 'pcc_max_value':
-        if (hideCementSettings) return ''; // Skip validation if hidden
-        // Allow empty values (undefined/null), only validate if both values exist
+        if (hideCementSettings) return '';
         if (
           value !== undefined &&
           value !== null &&
@@ -144,11 +132,11 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         return '';
     }
   };
-  // Validasi sebelum submit
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     Object.keys(formData).forEach((key) => {
-      const value = (formData as Record<string, string | number | undefined>)[key];
+      const value = (formData as Record<string, any>)[key];
       const err = validateField(key, value);
       if (err) newErrors[key] = err;
     });
@@ -165,7 +153,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
       [name]: processedValue,
     }));
     setTouched((prev: Record<string, boolean>) => ({ ...prev, [name]: true }));
-    // Pass the processed value to validateField, not the raw string value
     setErrors((prev: Record<string, string>) => ({
       ...prev,
       [name]: validateField(name, processedValue),
@@ -175,7 +162,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
-      // Focus ke field error pertama
       const firstErrorKey = Object.keys(errors)[0];
       if (formRef.current && firstErrorKey) {
         const el = formRef.current.querySelector(`[name='${firstErrorKey}']`);
@@ -191,7 +177,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         onSave(formData);
       }
       setIsSubmitting(false);
-    }, 1000); // simulasi loading
+    }, 1000);
   };
 
   useEffect(() => {
@@ -207,6 +193,8 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         opc_max_value: recordToEdit.opc_max_value ?? undefined,
         pcc_min_value: recordToEdit.pcc_min_value ?? undefined,
         pcc_max_value: recordToEdit.pcc_max_value ?? undefined,
+        is_oee_feeder: recordToEdit.is_oee_feeder ?? false,
+        is_oee_quality: recordToEdit.is_oee_quality ?? false,
       });
     } else {
       setFormData({
@@ -220,35 +208,18 @@ const ParameterSettingForm: React.FC<FormProps> = ({
         opc_max_value: undefined,
         pcc_min_value: undefined,
         pcc_max_value: undefined,
+        is_oee_feeder: false,
+        is_oee_quality: false,
       });
     }
   }, [recordToEdit]);
 
-  // Use props if available, otherwise use hook (legacy behavior for CM)
   const { records: hookPlantUnits, loading: hookPlantUnitsLoading } = usePlantUnits();
-
   const plantUnits = providedPlantUnits || hookPlantUnits;
   const plantUnitsLoading = providedLoading !== undefined ? providedLoading : hookPlantUnitsLoading;
 
-  // Get unique units and categories from plantUnits
   const unitOptions = Array.from(new Set(plantUnits.map((u) => u.unit)));
   const categoryOptions = Array.from(new Set(plantUnits.map((u) => u.category)));
-  const handleInputChange = (name: string) => (value: string) => {
-    const processedValue = name.includes('value')
-      ? value === ''
-        ? undefined
-        : parseFloat(value)
-      : value;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: processedValue,
-    }));
-    setTouched((prev: Record<string, boolean>) => ({ ...prev, [name]: true }));
-    setErrors((prev: Record<string, string>) => ({
-      ...prev,
-      [name]: validateField(name, processedValue),
-    }));
-  };
 
   return (
     <motion.div
@@ -257,7 +228,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
       transition={{ duration: 0.3 }}
       className="bg-white rounded-lg shadow-lg overflow-hidden"
     >
-      {/* Header with title */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -287,7 +257,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
           transition={{ delay: 0.2, duration: 0.3 }}
           className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6"
         >
-          {/* Parameter Name */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -306,8 +275,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 value={formData.parameter}
                 onChange={handleChange}
                 required
-                aria-invalid={!!errors.parameter}
-                aria-describedby={errors.parameter ? 'parameter-error' : undefined}
                 placeholder={t.parameter_placeholder || 'Enter parameter name'}
                 className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm ${
                   errors.parameter ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
@@ -319,7 +286,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    id="parameter-error"
                     className="text-sm text-[#C7162B] flex items-center"
                     role="alert"
                   >
@@ -349,14 +315,9 @@ const ParameterSettingForm: React.FC<FormProps> = ({
               className="block w-full pl-3 pr-10 py-3 bg-white border border-[#AEA79F]/50 rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#E95420] focus:border-[#E95420] transition-all duration-200 sm:text-sm"
             >
               {Object.values(ParameterDataType).map((type) => (
-                <motion.option
-                  key={type}
-                  value={type}
-                  whileHover={{ backgroundColor: '#fee2e2' }}
-                  className="py-2"
-                >
+                <option key={type} value={type}>
                   {type}
-                </motion.option>
+                </option>
               ))}
             </motion.select>
           </motion.div>
@@ -385,14 +346,9 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 {plantUnitsLoading ? t.loading : t.select_unit}
               </option>
               {unitOptions.map((unit) => (
-                <motion.option
-                  key={unit}
-                  value={unit}
-                  whileHover={{ backgroundColor: '#fee2e2' }}
-                  className="py-2"
-                >
+                <option key={unit} value={unit}>
                   {unit}
-                </motion.option>
+                </option>
               ))}
             </motion.select>
             <AnimatePresence>
@@ -401,7 +357,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  id="unit-error"
                   className="mt-2 text-sm text-[#C7162B] flex items-center"
                   role="alert"
                 >
@@ -437,14 +392,9 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 {plantUnitsLoading ? t.loading : t.select_category}
               </option>
               {categoryOptions.map((category) => (
-                <motion.option
-                  key={category}
-                  value={category}
-                  whileHover={{ backgroundColor: '#fee2e2' }}
-                  className="py-2"
-                >
+                <option key={category} value={category}>
                   {category}
-                </motion.option>
+                </option>
               ))}
             </motion.select>
             <AnimatePresence>
@@ -453,7 +403,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  id="category-error"
                   className="mt-2 text-sm text-[#C7162B] flex items-center"
                   role="alert"
                 >
@@ -475,12 +424,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                 className="sm:col-span-2 space-y-6"
               >
                 {/* Basic Range Settings */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7, duration: 0.3 }}
-                  className="bg-[#F9F9F9] rounded-lg p-4 border border-[#AEA79F]/20"
-                >
+                <div className="bg-[#F9F9F9] rounded-lg p-4 border border-[#AEA79F]/20">
                   <h4 className="text-lg font-medium text-[#772953] mb-4 flex items-center">
                     <Settings className="h-5 w-5 mr-2 text-[#E95420]" />
                     {t.basic_range_title || 'Basic Range Settings'}
@@ -493,8 +437,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                       >
                         {t.min_value_label}
                       </label>
-                      <motion.input
-                        whileFocus={{ scale: 1.02 }}
+                      <input
                         type="number"
                         name="min_value"
                         id="min_value"
@@ -505,20 +448,6 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           errors.min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                         }`}
                       />
-                      <AnimatePresence>
-                        {errors.min_value && touched.min_value && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-[#C7162B] flex items-center"
-                            role="alert"
-                          >
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            {errors.min_value}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
                     </div>
                     <div className="space-y-2">
                       <label
@@ -527,8 +456,7 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                       >
                         {t.max_value_label}
                       </label>
-                      <motion.input
-                        whileFocus={{ scale: 1.02 }}
+                      <input
                         type="number"
                         name="max_value"
                         id="max_value"
@@ -539,32 +467,12 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                           errors.max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
                         }`}
                       />
-                      <AnimatePresence>
-                        {errors.max_value && touched.max_value && (
-                          <motion.p
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-sm text-[#C7162B] flex items-center"
-                            role="alert"
-                          >
-                            <AlertCircle className="h-4 w-4 mr-1" />
-                            {errors.max_value}
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
-                {/* OPC Cement Settings */}
                 {!hideCementSettings && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.3 }}
-                    className="bg-[#E95420]/5 rounded-lg p-4"
-                  >
+                  <div className="bg-[#E95420]/5 rounded-lg p-4">
                     <h4 className="text-lg font-medium text-[#333333] mb-4 flex items-center">
                       <BarChart3 className="h-5 w-5 mr-2 text-[#E95420]" />
                       OPC Cement Settings
@@ -577,32 +485,14 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                         >
                           OPC Min Value
                         </label>
-                        <motion.input
-                          whileFocus={{ scale: 1.02 }}
+                        <input
                           type="number"
                           name="opc_min_value"
                           id="opc_min_value"
                           value={formData.opc_min_value?.toString() || ''}
                           onChange={handleChange}
-                          placeholder="0"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
-                            errors.opc_min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
-                          }`}
+                          className="block w-full px-4 py-3 bg-white border border-[#AEA79F]/50 rounded-lg sm:text-sm"
                         />
-                        <AnimatePresence>
-                          {errors.opc_min_value && touched.opc_min_value && (
-                            <motion.p
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-[#C7162B] flex items-center"
-                              role="alert"
-                            >
-                              <AlertCircle className="h-4 w-4 mr-1" />
-                              {errors.opc_min_value}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
                       </div>
                       <div className="space-y-2">
                         <label
@@ -611,174 +501,89 @@ const ParameterSettingForm: React.FC<FormProps> = ({
                         >
                           OPC Max Value
                         </label>
-                        <motion.input
-                          whileFocus={{ scale: 1.02 }}
+                        <input
                           type="number"
                           name="opc_max_value"
                           id="opc_max_value"
                           value={formData.opc_max_value?.toString() || ''}
                           onChange={handleChange}
-                          placeholder="100"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
-                            errors.opc_max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
-                          }`}
+                          className="block w-full px-4 py-3 bg-white border border-[#AEA79F]/50 rounded-lg sm:text-sm"
                         />
-                        <AnimatePresence>
-                          {errors.opc_max_value && touched.opc_max_value && (
-                            <motion.p
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-[#C7162B] flex items-center"
-                              role="alert"
-                            >
-                              <AlertCircle className="h-4 w-4 mr-1" />
-                              {errors.opc_max_value}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
-                {/* PCC Cement Settings */}
-                {!hideCementSettings && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.9, duration: 0.3 }}
-                    className="bg-[#0E8420]/5 rounded-lg p-4"
-                  >
-                    <h4 className="text-lg font-medium text-[#333333] mb-4 flex items-center">
-                      <BarChart3 className="h-5 w-5 mr-2 text-[#0E8420]" />
-                      PCC Cement Settings
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="pcc_min_value"
-                          className="block text-sm font-medium text-[#333333]"
-                        >
-                          PCC Min Value
-                        </label>
-                        <motion.input
-                          whileFocus={{ scale: 1.02 }}
-                          type="number"
-                          name="pcc_min_value"
-                          id="pcc_min_value"
-                          value={formData.pcc_min_value?.toString() || ''}
-                          onChange={handleChange}
-                          placeholder="0"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
-                            errors.pcc_min_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
-                          }`}
-                        />
-                        <AnimatePresence>
-                          {errors.pcc_min_value && touched.pcc_min_value && (
-                            <motion.p
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-[#C7162B] flex items-center"
-                              role="alert"
-                            >
-                              <AlertCircle className="h-4 w-4 mr-1" />
-                              {errors.pcc_min_value}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
+                {/* OEE Mapping Settings */}
+                <div className="bg-slate-50 rounded-lg p-5 border border-slate-200">
+                  <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-[#E95420]" />
+                    OEE Analysis Mapping
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <label className="flex items-start gap-4 p-3 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-[#E95420]/50 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_oee_feeder}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, is_oee_feeder: e.target.checked }))
+                        }
+                        className="w-5 h-5 text-[#E95420] border-slate-300 rounded"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">
+                          Design Capacity Feeder
+                        </span>
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          Mark this as the primary feeder for OEE Performance.
+                        </p>
                       </div>
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="pcc_max_value"
-                          className="block text-sm font-medium text-[#333333]"
-                        >
-                          PCC Max Value
-                        </label>
-                        <motion.input
-                          whileFocus={{ scale: 1.02 }}
-                          type="number"
-                          name="pcc_max_value"
-                          id="pcc_max_value"
-                          value={formData.pcc_max_value?.toString() || ''}
-                          onChange={handleChange}
-                          placeholder="100"
-                          className={`block w-full px-4 py-3 bg-white border rounded-lg shadow-sm text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#C7162B] focus:border-[#C7162B] transition-all duration-200 sm:text-sm ${
-                            errors.pcc_max_value ? 'border-[#C7162B]' : 'border-[#AEA79F]/50'
-                          }`}
-                        />
-                        <AnimatePresence>
-                          {errors.pcc_max_value && touched.pcc_max_value && (
-                            <motion.p
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="text-sm text-[#C7162B] flex items-center"
-                              role="alert"
-                            >
-                              <AlertCircle className="h-4 w-4 mr-1" />
-                              {errors.pcc_max_value}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
+                    </label>
+
+                    <label className="flex items-start gap-4 p-3 bg-white rounded-xl border border-slate-100 cursor-pointer hover:border-[#772953]/50 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_oee_quality}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, is_oee_quality: e.target.checked }))
+                        }
+                        className="w-5 h-5 text-[#772953] border-slate-300 rounded"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-tight">
+                          Quality Compliance Param
+                        </span>
+                        <p className="text-[10px] text-slate-500 mt-1">
+                          Include this in OEE Quality calculations.
+                        </p>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
+                    </label>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
 
-        {/* Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.3 }}
-          className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#AEA79F]/20"
-        >
-          <AnimatePresence>
-            {isSubmitting && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="flex items-center justify-center space-x-2 text-[#E95420] bg-[#E95420]/10 px-4 py-2 rounded-lg"
-              >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                  className="w-4 h-4 border-2 border-[#E95420] border-t-transparent rounded-full"
-                />
-                <span className="text-sm font-medium">Saving parameter settings...</span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="flex space-x-3">
-            <EnhancedButton
-              type="button"
-              variant="error"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              className="px-6 py-2"
-            >
-              {t.cancel_button}
-            </EnhancedButton>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <EnhancedButton
-                type="submit"
-                variant="primary"
-                disabled={isSubmitting}
-                className="px-6 py-2 bg-[#E95420] hover:bg-[#d94612] text-white border-transparent"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {t.save_button}
-              </EnhancedButton>
-            </motion.div>
-          </div>
-        </motion.div>
+        <div className="mt-8 flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 pt-6 border-t border-[#AEA79F]/20">
+          {isSubmitting && (
+            <div className="flex items-center justify-center space-x-2 text-[#E95420] bg-[#E95420]/10 px-4 py-2 rounded-lg mr-auto">
+              <span className="text-sm font-medium">Saving...</span>
+            </div>
+          )}
+          <EnhancedButton type="button" variant="error" onClick={onCancel} disabled={isSubmitting}>
+            {t.cancel_button}
+          </EnhancedButton>
+          <EnhancedButton
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+            className="bg-[#E95420] hover:bg-[#d94612] text-white"
+          >
+            <CheckCircle className="h-4 w-4 mr-2" />
+            {t.save_button}
+          </EnhancedButton>
+        </div>
       </form>
     </motion.div>
   );

@@ -60,7 +60,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
 
         {/* Main Content - Grid Layout */}
         <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-          {/* Left Column: Operations Overview (8 cols) - Like a Main App Window */}
+          {/* Left Column: Operations Overview */}
           <div className="lg:col-span-8 flex flex-col h-full">
             <OperationsOverview
               unitStatuses={unitStatuses}
@@ -70,7 +70,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
             />
           </div>
 
-          {/* Right Column: Quick Actions & Widgets (4 cols) */}
+          {/* Right Column: Quick Actions & Widgets */}
           <div className="lg:col-span-4 flex flex-col h-full gap-4 lg:gap-6">
             <div className="flex-shrink-0">
               <div className="flex items-center justify-between mb-3 px-1">
@@ -81,11 +81,9 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
               <QuickActions onNavigate={onNavigate} t={t} />
             </div>
 
-            {/* System Health Widget - Ubuntu Sidebar/Widget Style */}
+            {/* System Health Widget */}
             <div className="flex-1 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-sm relative overflow-hidden">
-              {/* Corner accent */}
               <div className="absolute top-0 right-0 w-16 h-16 bg-[#E95420]/5 rounded-bl-full pointer-events-none"></div>
-
               <SystemStatusWidget t={t} />
             </div>
           </div>
@@ -96,8 +94,7 @@ const MainDashboardPage: React.FC<MainDashboardPageProps> = ({ t, onNavigate }) 
 };
 
 // Extracted for cleaner component code
-const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
-  /* Helper to format uptime */
+const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = ({ t }) => {
   const formatUptime = (seconds: number) => {
     if (!seconds) return '0m';
     const d = Math.floor(seconds / (3600 * 24));
@@ -112,7 +109,7 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
     <>
       <div className="flex items-center justify-between mb-6 relative z-10 w-full">
         <h4 className="text-xs font-bold text-[#333333] dark:text-slate-300 uppercase tracking-widest border-l-2 border-[#E95420] pl-2">
-          Status Sistem
+          {t.system_status_title || 'Status Sistem'}
         </h4>
         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-100 dark:border-slate-700">
           <span className="relative flex h-2 w-2">
@@ -130,7 +127,7 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
               isLive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
             }`}
           >
-            {isLive ? 'Online' : 'Offline'}
+            {isLive ? t.system_status_online || 'Online' : t.system_status_offline || 'Offline'}
           </span>
         </div>
       </div>
@@ -140,7 +137,7 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
         <div>
           <div className="flex justify-between mb-1.5 items-end">
             <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wide">
-              CPU Load
+              {t.system_status_cpu || 'CPU Load'}
             </span>
             <span className="text-xs font-black text-[#333333] dark:text-slate-300">
               {cpuLoad}%
@@ -158,7 +155,7 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
         <div>
           <div className="flex justify-between mb-1.5 items-end">
             <span className="text-[11px] font-bold text-[#808080] uppercase tracking-wide">
-              Memori
+              {t.system_status_memory || 'Memori'}
             </span>
             <span className="text-xs font-black text-[#333333] dark:text-slate-300">
               {memoryUsage}%
@@ -174,7 +171,9 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
 
         {/* Uptime Display */}
         <div className="flex items-center justify-between p-3 bg-[#F7F7F7] dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-          <span className="text-[10px] font-bold text-[#808080] uppercase">Waktu Aktif</span>
+          <span className="text-[10px] font-bold text-[#808080] uppercase">
+            {t.system_status_uptime || 'Waktu Aktif'}
+          </span>
           <span className="text-xs font-bold text-[#333333] dark:text-white font-mono">
             {formatUptime(uptime)}
           </span>
@@ -183,7 +182,7 @@ const SystemStatusWidget: React.FC<{ t: Record<string, string> }> = () => {
         {/* Latency Display */}
         <div className="flex items-center justify-between p-3 bg-[#F7F7F7] dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
           <span className="text-[10px] font-bold text-[#808080] uppercase">
-            Sinkronisasi Basis Data
+            {t.system_status_sync || 'Sinkronisasi Basis Data'}
           </span>
           <div className="flex items-center gap-1.5">
             <div

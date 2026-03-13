@@ -9,19 +9,14 @@ import {
   calculateQualityRange,
   calculateOee,
 } from '../../utils/oeeUtils';
-import {
-  Loader2,
-  AlertCircle,
-  FileSpreadsheet,
-  TrendingUp,
-  History,
-  ListFilter,
-} from 'lucide-react';
+import { Loader2, FileSpreadsheet, TrendingUp } from 'lucide-react';
 import DowntimeParetoChart from './DowntimeParetoChart';
 import QualityStabilityChart from './QualityStabilityChart';
 import StatusTimeline from './StatusTimeline';
 import OeeLeaderboard from './OeeLeaderboard';
 import { exportOeeDashboard } from '../../utils/exportOeeDashboard';
+import DowntimeHeatmap from './DowntimeHeatmap';
+import OeeTrendChart from './OeeTrendChart';
 
 interface OeeDashboardSectionProps {
   date: string;
@@ -36,7 +31,8 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
     parameters: any[];
     downtime: any[];
     capacity: any[];
-  }>({ parameters: [], downtime: [], capacity: [] });
+    summaries: any[];
+  }>({ parameters: [], downtime: [], capacity: [], summaries: [] });
   const [loading, setLoading] = useState(false);
 
   // --- CACHE KEYS ---
@@ -49,14 +45,17 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       setLoading(true);
 
       const cached = localStorage.getItem(cacheKey);
+      // Force fresh fetch for now to clear any stuck 0% results
       let needsFullRange = true;
+      localStorage.removeItem(cacheKey);
 
-      // Smart Check: If we have OEE results for this hour and date,
-      // we only need DAILY data for the analytical charts (charts/timeline).
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (parsed.unitMetrics && parsed.unitMetrics.length > 0) {
+          // Only use cache if it has valid results (not all 0)
+          const hasValidData =
+            parsed.unitMetrics && parsed.unitMetrics.some((m: any) => m.daily.oee > 0);
+          if (hasValidData) {
             needsFullRange = false;
           }
         } catch (e) {
@@ -66,7 +65,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
 
       const targetDate = new Date(date);
       const year = targetDate.getFullYear();
-      const month = targetDate.getMonth();
 
       // Range for Charts (Always just the selected date)
       const chartRangeFilter = `date = "${date}"`;
@@ -75,23 +73,23 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       const firstDayOfYear = `${year}-01-01`;
       const fullRangeFilter = `date >= "${firstDayOfYear}" && date <= "${date}"`;
 
-      const activeFilter = needsFullRange ? fullRangeFilter : chartRangeFilter;
-
       try {
-        const [params, downtime, capacity] = await Promise.all([
+        const [params, downtime, capacity, summaries] = await Promise.all([
           pb.collection('ccr_parameter_data').getFullList({
-            filter: activeFilter,
+            filter: chartRangeFilter,
             fields:
               'id,date,parameter_id,plant_unit,hour1,hour2,hour3,hour4,hour5,hour6,hour7,hour8,hour9,hour10,hour11,hour12,hour13,hour14,hour15,hour16,hour17,hour18,hour19,hour20,hour21,hour22,hour23,hour24',
           }),
-          pb.collection('ccr_downtime_data').getFullList({ filter: activeFilter }),
-          pb.collection('monitoring_production_capacity').getFullList({ filter: activeFilter }),
+          pb.collection('ccr_downtime_data').getFullList({ filter: chartRangeFilter }),
+          pb.collection('monitoring_production_capacity').getFullList({ filter: chartRangeFilter }),
+          pb.collection('oee_daily_summary').getFullList({ filter: fullRangeFilter }),
         ]);
 
         setAllData({
           parameters: params || [],
           downtime: downtime || [],
           capacity: capacity || [],
+          summaries: summaries || [],
         });
       } catch (err) {
         console.error('Failed to fetch OEE data:', err);
@@ -105,7 +103,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
   const unitMetrics = useMemo(() => {
     if (plantUnits.length === 0 || parameterSettings.length === 0) return [];
 
-    // Attempt to load from HOURLY cache first
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try {
@@ -118,39 +115,60 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
       }
     }
 
-    // IF CACHE MISS: Perform heavy calculations (requires full YTD data in allData)
     const targetDateStr = date;
-    const targetDate = new Date(date);
-    const month = targetDate.getMonth() + 1;
-    const year = targetDate.getFullYear();
+    const targetDateObject = new Date(date);
+    const month = targetDateObject.getMonth() + 1;
+    const year = targetDateObject.getFullYear();
     const startOfYear = `${year}-01-01`;
     const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
 
     const unitsToProcess =
       selectedUnit === 'all' ? plantUnits : plantUnits.filter((u) => u.unit === selectedUnit);
 
+    const normalize = (dStr: string) => dStr?.substring(0, 10) || '';
+
     const calculatedMetrics = unitsToProcess.map((unit) => {
       const unitId = unit.unit;
       const unitParams = parameterSettings.filter((p) => p.unit === unitId);
-      const feederParam = unitParams.find(
-        (p) =>
-          p.parameter.toLowerCase().includes('feeder') &&
-          (p.parameter.toLowerCase().includes('clinker') ||
-            p.parameter.toLowerCase().includes('raw'))
-      );
-      const qualityParams = unitParams.filter(
-        (p) => p.unit !== 'ton' && (p.min_value !== null || p.max_value !== null)
-      );
+
+      const feederParam =
+        unitParams.find((p) => p.is_oee_feeder) ||
+        unitParams.find((p) => {
+          const name = p.parameter.toLowerCase();
+          return (
+            (name.includes('feeder') || name.includes('feed')) &&
+            (name.includes('clinker') ||
+              name.includes('raw') ||
+              (p.unit || '').toLowerCase().includes('tph'))
+          );
+        });
+
+      const explicitlyMarkedQualityParams = unitParams.filter((p) => p.is_oee_quality);
+      const qualityParams =
+        explicitlyMarkedQualityParams.length > 0
+          ? explicitlyMarkedQualityParams
+          : unitParams.filter(
+              (p) => p.unit !== 'ton' && (p.min_value !== null || p.max_value !== null)
+            );
 
       const calculateRangeOee = (startDate: string, endDate: string) => {
         const downtimeInRange = allData.downtime.filter(
-          (d) => d.plant_unit === unitId && d.date >= startDate && d.date <= endDate
+          (d) =>
+            d.plant_unit === unitId &&
+            normalize(d.date) >= startDate &&
+            normalize(d.date) <= endDate
         );
         const capacityInRange = allData.capacity.filter(
-          (c) => c.plant_unit === unitId && c.date >= startDate && c.date <= endDate
+          (c) =>
+            c.plant_unit === unitId &&
+            normalize(c.date) >= startDate &&
+            normalize(c.date) <= endDate
         );
         const paramsInRange = allData.parameters.filter(
-          (p) => p.plant_unit === unitId && p.date >= startDate && p.date <= endDate
+          (p) =>
+            p.plant_unit === unitId &&
+            normalize(p.date) >= startDate &&
+            normalize(p.date) <= endDate
         );
 
         const s = new Date(startDate);
@@ -187,22 +205,60 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         };
       };
 
+      const calculateRangeFromSummaries = (startDate: string, endDate: string) => {
+        const rangeSummaries = allData.summaries.filter(
+          (s) => s.unit === unitId && s.date >= startDate && s.date <= endDate
+        );
+
+        if (rangeSummaries.length === 0) {
+          if (startDate === targetDateStr && endDate === targetDateStr) {
+            return calculateRangeOee(targetDateStr, targetDateStr);
+          }
+          return { availability: 0, performance: 0, quality: 0, oee: 0 };
+        }
+
+        const avg = (field: string) =>
+          rangeSummaries.reduce((sum, s) => sum + (s[field] || 0), 0) / rangeSummaries.length;
+
+        const availability = avg('availability');
+        const performance = avg('performance');
+        const quality = avg('quality');
+        const oee = avg('oee');
+
+        return { availability, performance, quality, oee };
+      };
+
       const daily = calculateRangeOee(targetDateStr, targetDateStr);
-      const mtd = calculateRangeOee(startOfMonth, targetDateStr);
-      const ytd = calculateRangeOee(startOfYear, targetDateStr);
+      const mtd = calculateRangeFromSummaries(startOfMonth, targetDateStr);
+      const ytd = calculateRangeFromSummaries(startOfYear, targetDateStr);
+
+      const dailyFromSummary = allData.summaries.find(
+        (s) => normalize(s.date) === targetDateStr && s.unit === unitId
+      );
+
+      // We use the raw calculation ('daily') if it has OEE > 0
+      // Otherwise, we fallback to the pre-calculated summary from backend
+      const finalDaily =
+        daily.oee > 0 || !dailyFromSummary
+          ? daily
+          : {
+              availability: dailyFromSummary.availability || 0,
+              performance: dailyFromSummary.performance || 0,
+              quality: dailyFromSummary.quality || 0,
+              oee: dailyFromSummary.oee || 0,
+            };
 
       return {
         unit: unitId,
-        daily,
+        daily: finalDaily,
         comparisons: {
-          monthly: mtd.oee, // Using MTD as proxy for Monthly in this context
+          monthly: mtd.oee,
           mtd: mtd.oee,
           ytd: ytd.oee,
         },
       };
     });
 
-    // Persistent storage of results
     if (calculatedMetrics.length > 0) {
       localStorage.setItem(
         cacheKey,
@@ -230,7 +286,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
 
   return (
     <div className="space-y-8">
-      {/* Header with Export */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-emerald-500" />
@@ -245,7 +300,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         </button>
       </div>
 
-      {/* Plant-wide Overall Summary - Redesigned */}
       <div className="relative group">
         <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-purple-600 to-indigo-600 rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-20 transition-opacity duration-700" />
         <div className="relative bg-white/40 backdrop-blur-3xl p-1 rounded-[3rem] border border-white/60 shadow-2xl shadow-slate-200/50">
@@ -287,7 +341,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         </div>
       </div>
 
-      {/* Leaderboard Section - Redesigned */}
       <div className="relative">
         <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
           <div className="flex items-center gap-3 mb-8 px-2">
@@ -308,7 +361,6 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         </div>
       </div>
 
-      {/* Unit Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
         {unitMetrics.map((m) => (
           <OeeMetricCard
@@ -322,64 +374,37 @@ const OeeDashboardSection: React.FC<OeeDashboardSectionProps> = ({ date, selecte
         ))}
       </div>
 
-      {/* Advanced Insights Section - Redesigned Containers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Pareto Section */}
-        <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-          <div className="flex items-center justify-between mb-8 px-2">
-            <div className="flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-rose-500 rounded-full" />
-              <h3 className="text-xl font-black text-slate-800 tracking-tight">
-                Downtime Pareto Analysis
-              </h3>
-            </div>
-            <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest bg-white/60 px-3 py-1 rounded-full border border-white">
-              Duration (min)
-            </span>
-          </div>
-          <DowntimeParetoChart data={allData.downtime} type="duration" />
-        </div>
-
-        {/* Quality Stability Section */}
-        <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
-          <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+      <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
+        <div className="flex items-center justify-between mb-8 px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-1.5 h-6 bg-orange-600 rounded-full" />
             <h3 className="text-xl font-black text-slate-800 tracking-tight">
-              Quality Stability Trend
+              Downtime Distribution (Heatmap 24H)
             </h3>
           </div>
-          <div className="space-y-8 max-h-[600px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-slate-200/50">
-            {unitMetrics.map((m) => {
-              const qParams = parameterSettings.filter(
-                (p) =>
-                  p.unit === m.unit &&
-                  p.unit !== 'ton' &&
-                  (p.min_value !== null || p.max_value !== null)
-              );
-              const mainQ = qParams[0];
-              if (!mainQ) return null;
-              const pData = allData.parameters.filter((d) => d.parameter_id === mainQ.id);
-              return (
-                <div
-                  key={m.unit}
-                  className="bg-white/50 p-6 rounded-[2rem] border border-white/80 shadow-sm transition-all hover:shadow-md"
-                >
-                  <p className="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-[0.2em] border-b border-slate-100 pb-2">
-                    {m.unit} — {mainQ.parameter}
-                  </p>
-                  <QualityStabilityChart
-                    parameterData={pData}
-                    settings={mainQ}
-                    label={mainQ.parameter}
-                  />
-                </div>
-              );
-            })}
-          </div>
         </div>
+        <DowntimeHeatmap units={plantUnits} downtimeData={allData.downtime} />
       </div>
 
-      {/* Operational Timeline - Redesigned Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {unitMetrics.map((m) => (
+          <div
+            key={`trend-${m.unit}`}
+            className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40"
+          >
+            <div className="flex items-center justify-between mb-8 px-2">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-6 bg-ubuntu-orange rounded-full" />
+                <h3 className="text-xl font-black text-slate-800 tracking-tight">
+                  {m.unit} — OEE Trend (30D)
+                </h3>
+              </div>
+            </div>
+            <OeeTrendChart summaries={allData.summaries} unitId={m.unit} />
+          </div>
+        ))}
+      </div>
+
       <div className="bg-white/40 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/60 shadow-2xl shadow-slate-200/40">
         <div className="flex items-center gap-3 mb-10 px-2">
           <div className="w-1.5 h-6 bg-purple-600 rounded-full" />

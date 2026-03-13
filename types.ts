@@ -75,6 +75,8 @@ export interface ParameterSetting {
   opc_max_value?: number;
   pcc_min_value?: number;
   pcc_max_value?: number;
+  is_oee_feeder?: boolean;
+  is_oee_quality?: boolean;
 }
 
 export interface SiloCapacity {

@@ -42,3 +42,6 @@ migrations/
 
 # Vercel Functions
 api/
+
+# PocketBase Hooks
+pb_hooks/

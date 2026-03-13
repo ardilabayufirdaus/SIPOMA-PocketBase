@@ -1,28 +1,16 @@
 import React, { useMemo, useState } from 'react';
 import { useProjects } from '../../hooks/useProjects';
-import { Project, ProjectTask } from '../../types';
-import { formatDate, formatNumber, formatRupiah } from '../../utils/formatters';
-import { InteractiveCardModal, BreakdownData } from '../../components/InteractiveCardModal';
+import { formatRupiah } from '../../utils/formatters';
 
 // Import Enhanced Components
-import {
-  EnhancedButton,
-  useAccessibility,
-  useHighContrast,
-  useReducedMotion,
-  useColorScheme,
-} from '../../components/ui/EnhancedComponents';
+import { EnhancedButton, useAccessibility } from '../../components/ui/EnhancedComponents';
 
 // Icons
 import PresentationChartLineIcon from '../../components/icons/PresentationChartLineIcon';
 import CheckBadgeIcon from '../../components/icons/CheckBadgeIcon';
 import ExclamationTriangleIcon from '../../components/icons/ExclamationTriangleIcon';
 import ClipboardDocumentListIcon from '../../components/icons/ClipboardDocumentListIcon';
-import CalendarDaysIcon from '../../components/icons/CalendarDaysIcon';
 import CurrencyDollarIcon from '../../components/icons/CurrencyDollarIcon';
-import ChartPieIcon from '../../components/icons/ChartPieIcon';
-import ArrowTrendingUpIcon from '../../components/icons/ArrowTrendingUpIcon';
-import ArrowTrendingDownIcon from '../../components/icons/ArrowTrendingDownIcon';
 import ChartBarSquareIcon from '../../components/icons/ChartBarSquareIcon';
 import ShieldCheckIcon from '../../components/icons/ShieldCheckIcon';
 import FireIcon from '../../components/icons/FireIcon';
@@ -32,6 +20,7 @@ import ArrowPathRoundedSquareIcon from '../../components/icons/ArrowPathRoundedS
 // Import Chart Components
 import { DonutChart } from '../../components/charts/DonutChart';
 import { ResourceAllocationChart } from '../../components/charts/ResourceAllocationChart';
+import { BudgetComparisonChart } from '../../components/charts/BudgetComparisonChart';
 import { addMonths, format, isBefore, startOfMonth, startOfDay } from 'date-fns';
 
 const LoadingSpinner: React.FC = () => (
@@ -43,146 +32,29 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-interface MetricCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ReactNode;
-  trend?: number;
-  trendLabel?: string;
-  colorScheme?: 'default' | 'success' | 'warning' | 'danger';
-  breakdownData?: BreakdownData;
-  onClick?: () => void;
-}
-const MetricCard: React.FC<MetricCardProps> = ({
-  title,
-  value,
-  icon,
-  trend,
-  trendLabel,
-  colorScheme = 'default',
-  breakdownData,
-  onClick,
-}) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleClick = () => {
-    if (onClick) {
-      onClick();
-    } else if (breakdownData) {
-      setIsModalOpen(true);
-    }
-  };
-
-  const getColorClasses = () => {
-    switch (colorScheme) {
-      case 'success':
-        return 'bg-[#E95420]/10 text-[#E95420]'; // Ubuntu Orange
-      case 'warning':
-        return 'bg-[#AEA79F]/20 text-[#5E2750]'; // Ubuntu Warm Grey / Aubergine
-      case 'danger':
-        return 'bg-red-50 text-red-600';
-      default:
-        return 'bg-[#2c001e]/10 text-[#2c001e]'; // Ubuntu Aubergine
-    }
-  };
-
-  const isInteractive = breakdownData || onClick;
-
-  return (
-    <>
-      <div
-        className={`bg-white p-2 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:scale-101 cursor-pointer border border-transparent hover:border-[#E95420]/30 ${
-          isInteractive
-            ? 'cursor-pointer hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-[#E95420] focus:ring-opacity-50 focus:outline-none'
-            : ''
-        }`}
-        onClick={handleClick}
-        role={isInteractive ? 'button' : undefined}
-        tabIndex={isInteractive ? 0 : undefined}
-        aria-label={isInteractive ? `View details for ${title}` : undefined}
-        onKeyDown={(e) => {
-          if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            handleClick();
-          }
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className={`p-1 rounded-full ${getColorClasses()} mr-1.5`}>{icon}</div>
-            <div>
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-slate-500">{title}</p>
-                {isInteractive && (
-                  <div className="ml-1 text-slate-400">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <p className="text-sm font-semibold text-slate-900">{value}</p>
-              {trend !== undefined && (
-                <div className="flex items-center mt-0.5">
-                  {trend > 0 ? (
-                    <ArrowTrendingUpIcon className="w-3 h-3 text-green-500 mr-0.5" />
-                  ) : trend < 0 ? (
-                    <ArrowTrendingDownIcon className="w-3 h-3 text-red-500 mr-0.5" />
-                  ) : null}
-                  <span
-                    className={`text-xs font-medium ${
-                      trend > 0 ? 'text-green-600' : trend < 0 ? 'text-blue-600' : 'text-gray-600'
-                    }`}
-                  >
-                    {trend > 0 ? '+' : ''}
-                    {trend}% {trendLabel}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {breakdownData && (
-        <InteractiveCardModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          data={breakdownData}
-        />
-      )}
-    </>
-  );
-};
-
 const ProjectDashboardPage: React.FC<{
   t: any;
   onNavigateToDetail: (projectId: string) => void;
 }> = ({ t, onNavigateToDetail }) => {
-  const { projects, tasks, loading } = useProjects();
+  const { projects, tasks, loading, refetch } = useProjects();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('title');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [refreshing, setRefreshing] = useState(false);
 
   // Enhanced accessibility hooks
   const { announceToScreenReader } = useAccessibility();
-  const isHighContrast = useHighContrast();
-  const prefersReducedMotion = useReducedMotion();
-  const colorScheme = useColorScheme();
 
   // Handle refresh
   const handleRefresh = async () => {
     setRefreshing(true);
-    // Simulate refresh delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setRefreshing(false);
+    try {
+      await refetch();
+      announceToScreenReader('Dashboard data refreshed successfully');
+    } catch (err) {
+      console.error('Refresh failed:', err);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Handle export
@@ -192,9 +64,10 @@ const ProjectDashboardPage: React.FC<{
       Status: p.status,
       Progress: `${p.progress.toFixed(1)}%`,
       Budget: p.budget ? formatRupiah(p.budget) : 'N/A',
-      Tasks: tasks.filter((t) => t.project_id === p.id).length,
-      CompletedTasks: tasks.filter((t) => t.project_id === p.id && t.percent_complete === 100)
-        .length,
+      Tasks: tasks.filter((task) => task.project_id === p.id).length,
+      CompletedTasks: tasks.filter(
+        (task) => task.project_id === p.id && task.percent_complete === 100
+      ).length,
     }));
 
     const csvContent = [
@@ -256,49 +129,15 @@ const ProjectDashboardPage: React.FC<{
     });
   }, [projects, tasks, t]);
 
-  // Filtered and sorted projects
   const filteredProjectsSummary = useMemo(() => {
-    const filtered = projectsSummary.filter((project) => {
-      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-
-    // Sort projects
-    filtered.sort((a, b) => {
-      let aValue: any, bValue: any;
-
-      switch (sortBy) {
-        case 'title':
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-          break;
-        case 'progress':
-          aValue = a.progress;
-          bValue = b.progress;
-          break;
-        case 'status':
-          aValue = a.status;
-          bValue = b.status;
-          break;
-        case 'budget':
-          aValue = a.budget || 0;
-          bValue = b.budget || 0;
-          break;
-        default:
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
-    });
-
-    return filtered;
-  }, [projectsSummary, searchTerm, statusFilter, sortBy, sortOrder]);
+    return projectsSummary
+      .filter((project) => {
+        const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => b.progress - a.progress);
+  }, [projectsSummary, searchTerm, statusFilter]);
 
   const overallMetrics = useMemo(() => {
     const totalProjects = projects.length;
@@ -309,12 +148,10 @@ const ProjectDashboardPage: React.FC<{
     const totalProgress = projectsSummary.reduce((sum, p) => sum + p.progress, 0);
     const avgProgress = totalProjects > 0 ? totalProgress / totalProjects : 0;
 
-    // Financial metrics
     const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
     const avgBudget = totalProjects > 0 ? totalBudget / totalProjects : 0;
     const highBudgetProjects = projects.filter((p) => (p.budget || 0) > avgBudget * 1.5).length;
 
-    // Task metrics
     const allTasks = tasks.length;
     const activeTasks = tasks.filter((t) => t.percent_complete < 100).length;
     const overdueTasks = tasks.filter((t) => {
@@ -322,7 +159,6 @@ const ProjectDashboardPage: React.FC<{
       return t.percent_complete < 100 && endDate < new Date();
     }).length;
 
-    // Risk assessment
     const riskProjects = projectsSummary.map((p) => {
       let riskLevel = 'low';
       if (p.status === t.proj_status_delayed || p.progress < 25) {
@@ -334,8 +170,6 @@ const ProjectDashboardPage: React.FC<{
     });
 
     const highRiskCount = riskProjects.filter((p) => p.riskLevel === 'high').length;
-    const mediumRiskCount = riskProjects.filter((p) => p.riskLevel === 'medium').length;
-    const lowRiskCount = riskProjects.filter((p) => p.riskLevel === 'low').length;
 
     return {
       totalProjects,
@@ -349,8 +183,6 @@ const ProjectDashboardPage: React.FC<{
       activeTasks,
       overdueTasks,
       highRiskCount,
-      mediumRiskCount,
-      lowRiskCount,
       projectHealthScore: Math.round(100 - (delayedProjects / Math.max(totalProjects, 1)) * 100),
     };
   }, [projectsSummary, projects, tasks, t]);
@@ -366,22 +198,9 @@ const ProjectDashboardPage: React.FC<{
     ];
   }, [projectsSummary, t]);
 
-  const upcomingTasks = useMemo(() => {
-    const now = new Date();
-    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return tasks
-      .filter((task) => {
-        const endDate = new Date(task.planned_end);
-        return task.percent_complete < 100 && endDate >= now && endDate <= oneWeekFromNow;
-      })
-      .sort((a, b) => new Date(a.planned_end).getTime() - new Date(b.planned_end).getTime())
-      .slice(0, 5); // Limit to 5
-  }, [tasks]);
-
-  // Tasks Forecast Data (Real Data)
   const tasksForecastData = useMemo(() => {
     const today = startOfDay(new Date());
-    const startMonth = startOfMonth(addMonths(today, -2)); // Start 2 months ago
+    const startMonth = startOfMonth(addMonths(today, -2));
     const months = Array.from({ length: 6 }, (_, i) => addMonths(startMonth, i));
 
     return months.map((month) => {
@@ -389,15 +208,14 @@ const ProjectDashboardPage: React.FC<{
       const monthStart = startOfMonth(month);
       const nextMonthStart = addMonths(monthStart, 1);
 
-      // Filter tasks planned for this month
       const tasksInMonth = tasks.filter((task) => {
         const plannedEnd = new Date(task.planned_end);
         return plannedEnd >= monthStart && plannedEnd < nextMonthStart;
       });
 
-      let active = 0;
-      let overdue = 0;
-      let completed = 0;
+      let active = 0,
+        overdue = 0,
+        completed = 0;
 
       tasksInMonth.forEach((task) => {
         if (task.percent_complete === 100) {
@@ -405,26 +223,19 @@ const ProjectDashboardPage: React.FC<{
         } else {
           const plannedEnd = new Date(task.planned_end);
           if (isBefore(plannedEnd, today)) {
-            overdue++; // Task is incomplete and past due date
+            overdue++;
           } else {
-            active++; // Task is incomplete but due in future (or today)
+            active++;
           }
         }
       });
 
-      return {
-        month: monthLabel,
-        active,
-        overdue,
-        completed,
-      };
+      return { month: monthLabel, active, overdue, completed };
     });
   }, [tasks]);
 
-  // Critical issues detection
   const criticalIssues = useMemo(() => {
     const issues = [];
-
     if (overallMetrics.delayedProjects > 0) {
       issues.push({
         title: `${overallMetrics.delayedProjects} ${t.projects_delayed || 'projects delayed'}`,
@@ -432,7 +243,6 @@ const ProjectDashboardPage: React.FC<{
         description: 'Projects behind schedule require immediate attention',
       });
     }
-
     if (overallMetrics.overdueTasks > 0) {
       issues.push({
         title: `${overallMetrics.overdueTasks} ${t.overdue_tasks || 'overdue tasks'}`,
@@ -440,7 +250,6 @@ const ProjectDashboardPage: React.FC<{
         description: 'Tasks past their deadline affecting project timeline',
       });
     }
-
     if (overallMetrics.highRiskCount > 0) {
       issues.push({
         title: `${overallMetrics.highRiskCount} ${t.high_risk_projects || 'high risk projects'}`,
@@ -448,15 +257,23 @@ const ProjectDashboardPage: React.FC<{
         description: 'Projects with high probability of failure or delay',
       });
     }
-
     return issues;
   }, [overallMetrics, t]);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const budgetComparisonData = useMemo(() => {
+    return projectsSummary
+      .filter((p) => (p.budget || 0) > 0)
+      .sort((a, b) => (b.budget || 0) - (a.budget || 0))
+      .slice(0, 5)
+      .map((p) => ({
+        title: p.title,
+        planned: p.budget || 0,
+        actual: ((p.progress || 0) / 100) * (p.budget || 0),
+      }));
+  }, [projectsSummary]);
 
-  // Error state for when no data is available
+  if (loading) return <LoadingSpinner />;
+
   if (!projects || projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -474,12 +291,8 @@ const ProjectDashboardPage: React.FC<{
   return (
     <div className="min-h-screen bg-[#F7F7F7]">
       <div className="w-full p-4 lg:p-6 space-y-6">
-        {/* Modern Dashboard Header - Ubuntu Themed */}
         <div className="relative overflow-hidden bg-gradient-to-r from-[#2c001e] via-[#5E2750] to-[#77216F] rounded-2xl shadow-xl border border-[#2c001e]/20">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent"></div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#E95420]/10 rounded-full -translate-y-20 translate-x-20"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
-
           <div className="relative p-6 lg:p-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="flex-1">
@@ -497,7 +310,6 @@ const ProjectDashboardPage: React.FC<{
                   </div>
                 </div>
 
-                {/* Key Stats in Header */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div className="flex items-center gap-3">
@@ -514,7 +326,6 @@ const ProjectDashboardPage: React.FC<{
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-yellow-500/20 rounded-lg">
@@ -528,7 +339,6 @@ const ProjectDashboardPage: React.FC<{
                       </div>
                     </div>
                   </div>
-
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-red-500/20 rounded-lg">
@@ -547,7 +357,6 @@ const ProjectDashboardPage: React.FC<{
                 </div>
               </div>
 
-              {/* Header Actions */}
               <div className="flex flex-col sm:flex-row gap-3 lg:flex-shrink-0">
                 <div className="flex gap-2">
                   <EnhancedButton
@@ -557,7 +366,6 @@ const ProjectDashboardPage: React.FC<{
                     disabled={refreshing}
                     loading={refreshing}
                     className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm"
-                    aria-label={refreshing ? 'Refreshing data...' : 'Refresh dashboard data'}
                   >
                     <ArrowPathRoundedSquareIcon className="w-4 h-4 mr-2" />
                     {refreshing ? 'Refreshing...' : 'Refresh'}
@@ -567,14 +375,11 @@ const ProjectDashboardPage: React.FC<{
                     size="sm"
                     onClick={handleExport}
                     className="bg-[#E95420] hover:bg-[#D34610] text-white border-transparent"
-                    aria-label="Export project data to CSV"
                   >
                     <ChartBarSquareIcon className="w-4 h-4 mr-2" />
                     Export
                   </EnhancedButton>
                 </div>
-
-                {/* Health Score Badge */}
                 <div className="flex items-center justify-center lg:justify-end">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
                     <div className="flex items-center gap-2">
@@ -595,19 +400,15 @@ const ProjectDashboardPage: React.FC<{
           </div>
         </div>
 
-        {/* Main Content */}
-        {/* Bento Box Layout Grid */}
         <div className="grid grid-cols-12 gap-4 lg:gap-6 pb-8">
-          {/* Bento Item 1: Search & Filter (Full Width) */}
-          <div className="col-span-12 bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 justify-between items-center transition-all hover:shadow-md">
+          <div className="col-span-12 bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div className="relative w-full sm:max-w-md">
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-4 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-[#E95420] focus:border-transparent transition-all outline-none"
-                aria-label="Search projects"
+                className="w-full pl-4 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-900 focus:ring-2 focus:ring-[#E95420] outline-none"
               />
               <div className="absolute right-3 top-2.5 text-slate-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -624,38 +425,16 @@ const ProjectDashboardPage: React.FC<{
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:ring-2 focus:ring-[#E95420] outline-none cursor-pointer"
-                aria-label="Filter projects by status"
+                className="px-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 outline-none cursor-pointer"
               >
                 <option value="all">All Status</option>
                 <option value="On Track">On Track</option>
                 <option value="Delayed">Delayed</option>
                 <option value="Completed">Completed</option>
               </select>
-              <div className="hidden sm:flex gap-2">
-                <EnhancedButton
-                  variant="glass"
-                  size="sm"
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  loading={refreshing}
-                  className="border-slate-200 text-slate-600 hover:text-[#E95420] hover:bg-orange-50 bg-white"
-                >
-                  <ArrowPathRoundedSquareIcon className="w-5 h-5" />
-                </EnhancedButton>
-                <EnhancedButton
-                  variant="glass"
-                  size="sm"
-                  onClick={handleExport}
-                  className="border-slate-200 text-slate-600 hover:text-[#0E8420] hover:bg-green-50 bg-white"
-                >
-                  <ChartBarSquareIcon className="w-5 h-5" />
-                </EnhancedButton>
-              </div>
             </div>
           </div>
 
-          {/* Bento Item 2: Metrics Tiles (Managed in Subgrid) */}
           <div className="col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
               {
@@ -697,7 +476,7 @@ const ProjectDashboardPage: React.FC<{
             ].map((metric, idx) => (
               <div
                 key={idx}
-                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-start justify-between hover:shadow-md transition-all h-28 group cursor-default"
+                className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-start justify-between hover:shadow-md transition-all h-28 group"
               >
                 <div
                   className={`p-2 rounded-lg ${metric.color} mb-2 group-hover:scale-110 transition-transform`}
@@ -714,13 +493,12 @@ const ProjectDashboardPage: React.FC<{
             ))}
           </div>
 
-          {/* Bento Item 3: Tasks Forecast Chart (Large) */}
-          <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+          <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-[#2c001e]">
                 {t.tasks_forecast || 'Tasks Forecast'}
               </h3>
-              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                 6 Months Horizon
               </span>
             </div>
@@ -729,11 +507,8 @@ const ProjectDashboardPage: React.FC<{
             </div>
           </div>
 
-          {/* Bento Item 4: Project Status (Side) */}
-          <div className="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-[#2c001e]">{t.projects_by_status}</h3>
-            </div>
+          <div className="col-span-12 lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+            <h3 className="text-lg font-bold text-[#2c001e] mb-6">{t.projects_by_status}</h3>
             <div className="flex-1 flex flex-col items-center justify-center min-h-[280px]">
               <div className="scale-125 mb-8">
                 <DonutChart data={statusCounts} t={t} />
@@ -742,114 +517,153 @@ const ProjectDashboardPage: React.FC<{
                 {statusCounts.map((item) => (
                   <div
                     key={item.label}
-                    className="flex items-center justify-between text-sm p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                    className="flex items-center justify-between text-sm p-3 rounded-xl bg-slate-50"
                   >
                     <div className="flex items-center gap-3">
                       <span
-                        className="w-3 h-3 rounded-full shadow-sm"
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: item.color }}
                       ></span>
                       <span className="text-slate-700 font-medium">{item.label}</span>
                     </div>
-                    <span className="font-bold text-slate-800 bg-white px-2 py-0.5 rounded shadow-sm">
-                      {item.value}
-                    </span>
+                    <span className="font-bold text-slate-800">{item.value}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Bento Item 5: Financial Overview */}
-          <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all">
+          <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
             <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2">
               <CurrencyDollarIcon className="w-6 h-6 text-[#0E8420]" />
               {t.financial_overview || 'Financial Overview'}
             </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[#0E8420]/5 border border-[#0E8420]/10 hover:bg-[#0E8420]/10 transition-colors">
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="p-4 rounded-xl bg-[#0E8420]/5 border border-[#0E8420]/10">
                 <p className="text-xs font-semibold text-[#0E8420] mb-1 uppercase tracking-wider">
                   {t.total_budget || 'Total Budget'}
                 </p>
-                <p className="text-lg sm:text-xl font-bold text-[#2c001e] truncate">
+                <p className="text-lg font-bold text-[#2c001e] truncate">
                   {formatRupiah(overallMetrics.totalBudget)}
                 </p>
               </div>
-              <div className="p-4 rounded-xl bg-[#77216F]/5 border border-[#77216F]/10 hover:bg-[#77216F]/10 transition-colors">
+              <div className="p-4 rounded-xl bg-[#77216F]/5 border border-[#77216F]/10">
                 <p className="text-xs font-semibold text-[#77216F] mb-1 uppercase tracking-wider">
                   {t.budget_utilization || 'Utilization'}
                 </p>
-                <div className="flex items-end gap-2">
-                  <p className="text-lg sm:text-xl font-bold text-[#2c001e]">
-                    {(
-                      (overallMetrics.completedProjects /
-                        Math.max(overallMetrics.totalProjects, 1)) *
-                      100
-                    ).toFixed(1)}
-                    %
-                  </p>
-                  <p className="text-xs text-slate-400 mb-1">of total</p>
-                </div>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
-                  {t.avg_project_budget || 'Avg per Project'}
-                </p>
-                <p className="text-base sm:text-lg font-bold text-slate-800 truncate">
-                  {formatRupiah(overallMetrics.avgBudget)}
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-[#E95420]/5 border border-[#E95420]/10 hover:bg-[#E95420]/10 transition-colors">
-                <p className="text-xs font-semibold text-[#E95420] mb-1 uppercase tracking-wider">
-                  {t.high_budget_projects || 'High Value'}
-                </p>
-                <p className="text-base sm:text-lg font-bold text-slate-800">
-                  {overallMetrics.highBudgetProjects} Projects
+                <p className="text-lg font-bold text-[#2c001e]">
+                  {(
+                    (overallMetrics.completedProjects / Math.max(overallMetrics.totalProjects, 1)) *
+                    100
+                  ).toFixed(1)}
+                  %
                 </p>
               </div>
             </div>
+            <div className="flex-1 min-h-[150px]">
+              <BudgetComparisonChart data={budgetComparisonData} t={t} />
+            </div>
           </div>
 
-          {/* Bento Item 6: Critical Issues */}
-          <div className="col-span-12 lg:col-span-6 bg-gradient-to-br from-white to-red-50 p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all relative overflow-hidden">
-            {/* Decorative Element */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -translate-y-12 translate-x-12 pointer-events-none"></div>
-
-            <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2 relative z-10">
+          <div className="col-span-12 lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+            <h3 className="text-lg font-bold text-[#2c001e] mb-6 flex items-center gap-2">
               <ExclamationTriangleIcon className="w-6 h-6 text-[#E95420]" />
               {t.critical_issues || 'Attention Needed'}
             </h3>
-
-            <div className="space-y-3 relative z-10 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 max-h-[220px] overflow-y-auto">
               {criticalIssues.length > 0 ? (
                 criticalIssues.map((issue, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-4 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-red-100 shadow-sm hover:border-red-200 transition-colors"
+                    className="flex items-start gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100"
                   >
                     <div
-                      className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 ${
-                        issue.severity === 'high'
-                          ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'
-                          : issue.severity === 'medium'
-                            ? 'bg-[#E95420]'
-                            : 'bg-blue-500'
-                      }`}
+                      className={`mt-1.5 w-2.5 h-2.5 rounded-full ${issue.severity === 'high' ? 'bg-red-500' : 'bg-orange-500'}`}
                     ></div>
                     <div>
                       <p className="text-sm font-bold text-slate-800">{issue.title}</p>
-                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                        {issue.description}
-                      </p>
+                      <p className="text-xs text-slate-600 mt-1">{issue.description}</p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-center bg-white/50 rounded-xl border border-dashed border-slate-200">
+                <div className="flex flex-col items-center justify-center h-48 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
                   <ShieldCheckIcon className="w-12 h-12 text-green-400 mb-3" />
                   <p className="text-slate-600 font-medium">All systems operational</p>
-                  <p className="text-xs text-slate-400">No critical issues detected</p>
                 </div>
+              )}
+            </div>
+          </div>
+
+          <div className="col-span-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[#2c001e] flex items-center gap-2">
+                <ClipboardDocumentListIcon className="w-6 h-6 text-[#77216F]" />
+                {t.project_list || 'Project Performance List'}
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase">
+                    <th className="px-6 py-4">Project Name</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Progress</th>
+                    <th className="px-6 py-4">Budget</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredProjectsSummary.slice(0, 10).map((project) => (
+                    <tr
+                      key={project.id}
+                      className="hover:bg-slate-50 transition-colors cursor-pointer"
+                      onClick={() => onNavigateToDetail(project.id)}
+                    >
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-slate-800">{project.title}</p>
+                        <p className="text-xs text-slate-500 truncate max-w-[200px]">
+                          {project.description || 'No description'}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium border ${project.status === t.proj_status_on_track ? 'bg-green-50 text-green-700 border-green-100' : 'bg-orange-50 text-orange-700 border-orange-100'}`}
+                        >
+                          {project.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="w-full max-w-[100px] bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="h-full bg-[#E95420]"
+                            style={{ width: `${project.progress}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500">
+                          {project.progress.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium">
+                        {project.budget ? formatRupiah(project.budget) : '-'}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          className="text-[#E95420] text-xs font-bold hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onNavigateToDetail(project.id);
+                          }}
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredProjectsSummary.length === 0 && (
+                <div className="p-12 text-center text-slate-500">No projects found.</div>
               )}
             </div>
           </div>
